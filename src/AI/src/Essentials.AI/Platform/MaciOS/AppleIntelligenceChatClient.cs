@@ -144,54 +144,13 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			nativeOptions,
 			onUpdate: (update) =>
 			{
-				switch (update.UpdateType)
+				try
 				{
-					case ResponseUpdateTypeNative.Content:
-						// Handle text updates
-						if (update.Text is not null)
-						{
-							// Use stream chunker to compute delta - handles both JSON and plain text
-							var delta = chunker.Process(update.Text);
-
-							if (!string.IsNullOrEmpty(delta))
-							{
-								var chatUpdate = new ChatResponseUpdate
-								{
-									Role = ChatRole.Assistant,
-									Contents = { new TextContent(delta) }
-								};
-
-								channel.Writer.TryWrite(chatUpdate);
-							}
-						}
-						break;
-
-					case ResponseUpdateTypeNative.ToolCall:
-						// Reset chunker so post-tool text is treated as a fresh stream
-						chunker.Reset();
-
-						var args = update.ToolCallArguments is null
-							? null
-#pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
-							: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
-#pragma warning restore IL3050, IL2026
-
-						var toolCallUpdate = new ChatResponseUpdate
-						{
-							Role = ChatRole.Assistant,
-							Contents = { new FunctionCallContent(update.ToolCallId!, update.ToolCallName!, args) }
-						};
-						channel.Writer.TryWrite(toolCallUpdate);
-						break;
-
-					case ResponseUpdateTypeNative.ToolResult:
-						var toolResultUpdate = new ChatResponseUpdate
-						{
-							Role = ChatRole.Tool,
-							Contents = { new FunctionResultContent(update.ToolCallId!, update.ToolCallResult!) }
-						};
-						channel.Writer.TryWrite(toolResultUpdate);
-						break;
+					ProcessStreamUpdate(update, chunker, channel.Writer);
+				}
+				catch (Exception ex)
+				{
+					channel.Writer.TryComplete(ex);
 				}
 			},
 			onComplete: (finalResult, error) =>
@@ -200,30 +159,20 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
-					{
-						channel.Writer.Complete(new OperationCanceledException(cancellationToken));
-					}
+						channel.Writer.TryComplete(new OperationCanceledException(cancellationToken));
 					else
-					{
-						channel.Writer.Complete(new NSErrorException(error));
-					}
+						channel.Writer.TryComplete(new NSErrorException(error));
 				}
 				else
 				{
-					// Flush any remaining content from the chunker
-					var finalChunk = chunker.Flush();
-					if (!string.IsNullOrEmpty(finalChunk))
+					try
 					{
-						var finalUpdate = new ChatResponseUpdate
-						{
-							Role = ChatRole.Assistant,
-							Contents = { new TextContent(finalChunk) }
-						};
-
-						channel.Writer.TryWrite(finalUpdate);
+						CompleteStream(chunker, channel.Writer);
 					}
-
-					channel.Writer.Complete();
+					catch (Exception ex)
+					{
+						channel.Writer.TryComplete(ex);
+					}
 				}
 			});
 
@@ -236,6 +185,68 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		await foreach (var update in channel.Reader.ReadAllAsync(cancellationToken))
 		{
 			yield return update;
+		}
+
+		// Local function: process a single streaming update into channel messages
+		static void ProcessStreamUpdate(ResponseUpdateNative update, StreamChunkerBase chunker, ChannelWriter<ChatResponseUpdate> writer)
+		{
+			switch (update.UpdateType)
+			{
+				case ResponseUpdateTypeNative.Content:
+					if (update.Text is not null)
+					{
+						var delta = chunker.Process(update.Text);
+						if (!string.IsNullOrEmpty(delta))
+						{
+							writer.TryWrite(new ChatResponseUpdate
+							{
+								Role = ChatRole.Assistant,
+								Contents = { new TextContent(delta) }
+							});
+						}
+					}
+					break;
+
+				case ResponseUpdateTypeNative.ToolCall:
+					chunker.Reset();
+
+					var args = update.ToolCallArguments is null
+						? null
+#pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
+						: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
+#pragma warning restore IL3050, IL2026
+
+					writer.TryWrite(new ChatResponseUpdate
+					{
+						Role = ChatRole.Assistant,
+						Contents = { new FunctionCallContent(update.ToolCallId!, update.ToolCallName!, args) }
+					});
+					break;
+
+				case ResponseUpdateTypeNative.ToolResult:
+					writer.TryWrite(new ChatResponseUpdate
+					{
+						Role = ChatRole.Tool,
+						Contents = { new FunctionResultContent(update.ToolCallId!, update.ToolCallResult!) }
+					});
+					break;
+			}
+		}
+
+		// Local function: flush remaining chunker content and complete the channel
+		static void CompleteStream(StreamChunkerBase chunker, ChannelWriter<ChatResponseUpdate> writer)
+		{
+			var finalChunk = chunker.Flush();
+			if (!string.IsNullOrEmpty(finalChunk))
+			{
+				writer.TryWrite(new ChatResponseUpdate
+				{
+					Role = ChatRole.Assistant,
+					Contents = { new TextContent(finalChunk) }
+				});
+			}
+
+			writer.TryComplete();
 		}
 	}
 
