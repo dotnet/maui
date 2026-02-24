@@ -22,8 +22,27 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// Base handler for ItemsView controls on Windows, providing item source management,
+	/// layout, scrolling, snap points, empty views, headers, and footers.
+	/// </summary>
 	public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WItemsView> where TItemsView : ItemsView
 	{
+		/// <summary>
+		/// Alignment ratio that positions the item at the start (top/left) of the viewport.
+		/// </summary>
+		const double AlignToStart = 0.0;
+
+		/// <summary>
+		/// Alignment ratio that positions the item at the center of the viewport.
+		/// </summary>
+		const double AlignToCenter = 0.5;
+
+		/// <summary>
+		/// Alignment ratio that positions the item at the end (bottom/right) of the viewport.
+		/// </summary>
+		const double AlignToEnd = 1.0;
+
 		CollectionViewSource? _collectionViewSource;
 		IList? _itemsSource;
 		ItemFactory? _itemFactory;
@@ -92,7 +111,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 		};
 
-		private bool _scrollUpdatePending;
+		bool _scrollUpdatePending;
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
@@ -228,9 +247,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				VirtualView.ScrollToRequested -= ScrollToRequested;
 			}
 
-			// Safe subscription cleanup only — do NOT call CleanUpCollectionViewSource() here
-			// because it sets _collectionViewSource.Source = null and accesses PlatformView.GetChildren,
-			// which triggers WinUI side effects (element recycling, collection changes) during teardown.
+			// Safe subscription cleanup only — do NOT call CleanUpCollectionViewSource() here.
+			//
+			// CleanUpCollectionViewSource() performs two operations that trigger WinUI side effects
+			// during teardown:
+			//   1. Sets _collectionViewSource.Source = null → causes WinUI to recycle/release elements
+			//   2. Calls PlatformView.GetChildren<ItemContentControl>() → triggers element enumeration
+			//      while the ItemsRepeater is tearing down, leading to collection change notifications
+			//      and potential InvalidOperationException.
+			//
+			// The CleanUp() methods below are safe because they ONLY unsubscribe event handlers
+			// (CollectionChanged, group change notifications) without touching WinUI state.
 			if (_collectionViewSource?.Source is ObservableItemTemplateCollection2 observableCollection)
 			{
 				observableCollection.CleanUp();
@@ -495,8 +522,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions()
 					{
 						AnimationDesired = false,
-						VerticalAlignmentRatio = 0.0,
-						HorizontalAlignmentRatio = 0.0
+						VerticalAlignmentRatio = AlignToStart,
+						HorizontalAlignmentRatio = AlignToStart
 					});
 				});
 			}
@@ -527,8 +554,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							PlatformView.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
 							{
 								AnimationDesired = false,
-								VerticalAlignmentRatio = 1.0,
-								HorizontalAlignmentRatio = 1.0
+								VerticalAlignmentRatio = AlignToEnd,
+								HorizontalAlignmentRatio = AlignToEnd
 							});
 						}
 
@@ -1383,17 +1410,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			float offset = 0.0f;
+			double offset = AlignToStart;
 			switch (args.ScrollToPosition)
 			{
 				case ScrollToPosition.Start:
-					offset = 0.0f;
+					offset = AlignToStart;
 					break;
 				case ScrollToPosition.Center:
-					offset = 0.5f;
+					offset = AlignToCenter;
 					break;
 				case ScrollToPosition.End:
-					offset = 1.0f;
+					offset = AlignToEnd;
 					break;
 			}
 

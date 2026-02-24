@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// A lazily-populated read-only list that wraps an <see cref="IList"/> items source,
+	/// creating <see cref="ItemTemplateContext2"/> instances on demand and caching them by index.
+	/// Used for non-observable list sources.
+	/// </summary>
 	internal class ItemTemplateContextList2 : IReadOnlyList<ItemTemplateContext2>
 	{
 		readonly IList _itemsSource;
@@ -52,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (itemSpacing.HasValue)
 				_itemSpacing = itemSpacing.Value;
 
+			// Cap initial dictionary capacity at 64 to avoid over-allocation for small collections
 			_itemTemplateContexts = new(capacity: Math.Min(64, _itemsSource.Count));
 		}
 
