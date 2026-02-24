@@ -326,7 +326,8 @@ public class AndroidProvider : IAndroidProvider
 		{
 			progress?.Report("Step 2/4: Installing Android SDK command-line tools...");
 			var targetSdkPath = sdkPath ?? PlatformDetector.Paths.DefaultAndroidSdkPath;
-			await _sdkManager.InstallSdkAsync(targetSdkPath, cancellationToken);
+			var sdkProgress = progress != null ? new Progress<string>(msg => progress.Report(msg)) : null;
+			await _sdkManager.InstallSdkAsync(targetSdkPath, sdkProgress, cancellationToken);
 			_sdkPath = targetSdkPath;
 			progress?.Report($"Android SDK installed to {_sdkPath}");
 		}
