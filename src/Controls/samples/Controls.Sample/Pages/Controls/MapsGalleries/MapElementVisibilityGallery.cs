@@ -1,8 +1,9 @@
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
+using GeoLocation = Microsoft.Maui.Devices.Sensors.Location;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
 {
@@ -17,7 +18,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		{
 			Title = "Element Visibility & ZIndex";
 
-			var center = new Location(47.6062, -122.3321); // Seattle
+			var center = new GeoLocation(47.6062, -122.3321); // Seattle
 
 			_polygon = new Polygon
 			{
@@ -26,10 +27,10 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				FillColor = Color.FromRgba(0, 0, 255, 64),
 				ZIndex = 1,
 			};
-			_polygon.Geopath.Add(new Location(47.615, -122.345));
-			_polygon.Geopath.Add(new Location(47.615, -122.320));
-			_polygon.Geopath.Add(new Location(47.600, -122.320));
-			_polygon.Geopath.Add(new Location(47.600, -122.345));
+			_polygon.Geopath.Add(new GeoLocation(47.615, -122.345));
+			_polygon.Geopath.Add(new GeoLocation(47.615, -122.320));
+			_polygon.Geopath.Add(new GeoLocation(47.600, -122.320));
+			_polygon.Geopath.Add(new GeoLocation(47.600, -122.345));
 
 			_polyline = new Polyline
 			{
@@ -37,8 +38,8 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				StrokeWidth = 5,
 				ZIndex = 2,
 			};
-			_polyline.Geopath.Add(new Location(47.610, -122.350));
-			_polyline.Geopath.Add(new Location(47.610, -122.315));
+			_polyline.Geopath.Add(new GeoLocation(47.610, -122.350));
+			_polyline.Geopath.Add(new GeoLocation(47.610, -122.315));
 
 			_circle = new Circle
 			{
