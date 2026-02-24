@@ -39,5 +39,13 @@ namespace Microsoft.Maui.LifecycleEvents
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
 		internal delegate void OnPlatformWindowCreated(UIWindow window);
+
+#if IOS && !MACCATALYST
+		// CarPlay (iOS only - not available on MacCatalyst)
+		public delegate void CarPlayDidConnect(CarPlay.CPTemplateApplicationScene scene, CarPlay.CPInterfaceController interfaceController);
+		public delegate void CarPlayDidDisconnect(CarPlay.CPTemplateApplicationScene scene, CarPlay.CPInterfaceController interfaceController);
+		public delegate void CarPlayDidSelectManeuver(CarPlay.CPTemplateApplicationScene scene, CarPlay.CPManeuver maneuver);
+		public delegate void CarPlayDidSelectNavigationAlert(CarPlay.CPTemplateApplicationScene scene, CarPlay.CPNavigationAlert navigationAlert);
+#endif
 	}
 }

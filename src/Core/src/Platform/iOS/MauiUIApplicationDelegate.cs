@@ -15,6 +15,7 @@ namespace Microsoft.Maui
 	public abstract partial class MauiUIApplicationDelegate : UIResponder, IUIApplicationDelegate, IPlatformApplication
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+		internal const string MauiCarPlaySceneConfigurationKey = "__MAUI_CARPLAY_SCENE_CONFIGURATION__";
 		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IMauiContext is a non-NSObject in MAUI.")]
@@ -89,7 +90,23 @@ namespace Microsoft.Maui
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.1")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.1")]
 		public virtual UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
-			=> new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
+		{
+#if IOS && !MACCATALYST
+			if (OperatingSystem.IsIOSVersionAtLeast(14) &&
+				connectingSceneSession.Role.GetConstant() == CarPlaySceneSessionRole)
+			{
+				var config = new UISceneConfiguration(MauiCarPlaySceneConfigurationKey, connectingSceneSession.Role);
+				config.DelegateType = typeof(MauiCarPlaySceneDelegate);
+				return config;
+			}
+#endif
+
+			return new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
+		}
+
+#if IOS && !MACCATALYST
+		static readonly Foundation.NSString CarPlaySceneSessionRole = new Foundation.NSString("CPTemplateApplicationSceneSessionRoleApplication");
+#endif
 
 		[Export("application:performActionForShortcutItem:completionHandler:")]
 		public virtual void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
