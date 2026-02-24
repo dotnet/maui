@@ -3,8 +3,8 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.Maui.Essentials.AI;
 
 /// <summary>
-/// Handles the TaskCompletionSource and response conversion for non-streaming responses.
-/// Extracted from <see cref="AppleIntelligenceChatClient"/> for testability.
+/// Handles the TaskCompletionSource and completion for non-streaming responses.
+/// Extracted from the platform-specific chat client for testability.
 /// </summary>
 internal sealed class NonStreamingResponseHandler
 {
@@ -17,19 +17,11 @@ internal sealed class NonStreamingResponseHandler
 	public Task<ChatResponse> Task => _tcs.Task;
 
 	/// <summary>
-	/// Completes with a successful response, converting from native format.
+	/// Completes with a successful response.
 	/// </summary>
-	public void Complete(ChatResponseNative? response)
+	public void Complete(ChatResponse response)
 	{
-		try
-		{
-			var chatResponse = AppleIntelligenceChatClient.FromNativeChatResponse(response);
-			_tcs.TrySetResult(chatResponse);
-		}
-		catch (Exception ex)
-		{
-			_tcs.TrySetException(ex);
-		}
+		_tcs.TrySetResult(response);
 	}
 
 	/// <summary>

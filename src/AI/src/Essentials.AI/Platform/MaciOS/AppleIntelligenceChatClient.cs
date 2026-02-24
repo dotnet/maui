@@ -86,7 +86,14 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				}
 				else
 				{
-					handler.Complete(response);
+					try
+					{
+						handler.Complete(FromNativeChatResponse(response));
+					}
+					catch (Exception ex)
+					{
+						handler.CompleteWithError(ex);
+					}
 				}
 			});
 
@@ -239,7 +246,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		return nativeMessages;
 	}
 
-	internal static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
+	private static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
 	{
 		if (response is null || response.Messages is null || response.Messages.Length == 0)
 		{
