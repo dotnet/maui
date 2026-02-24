@@ -44,7 +44,7 @@ namespace Microsoft.Maui
 
 		/// <inheritdoc/>
 		public UIFont DefaultFont =>
-			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
+			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize)!;
 
 		static double? defaultFontSize;
 
@@ -151,7 +151,7 @@ namespace Microsoft.Maui
 					}
 
 					var cleansedFont = CleanseFontName(family);
-					result = UIFont.FromName(cleansedFont, size);
+					result = cleansedFont is not null ? UIFont.FromName(cleansedFont, size) : null;
 					if (result != null)
 						return ApplyScaling(font, result);
 
@@ -167,12 +167,12 @@ namespace Microsoft.Maui
 
 			if (hasAttributes)
 			{
-				var defaultFont = UIFont.SystemFontOfSize(size);
+				var defaultFont = UIFont.SystemFontOfSize(size) ?? DefaultFont;
 				var descriptor = defaultFont.FontDescriptor.CreateWithAttributes(GetFontAttributes(font));
-				return ApplyScaling(font, UIFont.FromDescriptor(descriptor, size));
+				return ApplyScaling(font, UIFont.FromDescriptor(descriptor, size) ?? DefaultFont);
 			}
 
-			return ApplyScaling(font, UIFont.SystemFontOfSize(size));
+			return ApplyScaling(font, UIFont.SystemFontOfSize(size) ?? DefaultFont);
 
 			UIFont ApplyScaling(Font font, UIFont uiFont)
 			{
