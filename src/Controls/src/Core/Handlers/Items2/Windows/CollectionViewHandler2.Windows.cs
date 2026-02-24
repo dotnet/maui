@@ -47,6 +47,9 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
 	{
+		// Layout type may change: UniformGridLayout for non-grouped grids,
+		// StackLayout for grouped grids (with native Grid panels per group)
+		handler.UpdateItemsLayout();
 		handler.UpdateItemsSource();
 	}
 
@@ -123,14 +126,24 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
 		if (PlatformView is not null)
 		{
-			PlatformView.SetBinding(WItemsView.SelectionModeProperty,
-					new UI.Xaml.Data.Binding
-					{
-						Source = ItemsView,
-						Path = new UI.Xaml.PropertyPath("SelectionMode"),
-						Converter = new SelectionModeConvert(),
-						Mode = UI.Xaml.Data.BindingMode.TwoWay
-					});
+			// In grouped grid mode, item-level selection is handled by GroupGridPanel's
+			// tap handlers. The platform ItemsView only sees group-level items, so we
+			// set SelectionMode to None on the platform to prevent group selection.
+			if (IsGroupedGridMode())
+			{
+				PlatformView.SelectionMode = ItemsViewSelectionMode.None;
+			}
+			else
+			{
+				PlatformView.SetBinding(WItemsView.SelectionModeProperty,
+						new UI.Xaml.Data.Binding
+						{
+							Source = ItemsView,
+							Path = new UI.Xaml.PropertyPath("SelectionMode"),
+							Converter = new SelectionModeConvert(),
+							Mode = UI.Xaml.Data.BindingMode.TwoWay
+						});
+			}
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
 		}
@@ -204,6 +217,19 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 		if (PlatformView is null || ItemsView is null)
 			return;
+
+		// In grouped grid mode, visual states are managed by GroupGridPanel
+		if (IsGroupedGridMode())
+		{
+			foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())
+			{
+				if (itemcontainer?.Child is GroupGridPanel groupPanel)
+				{
+					groupPanel.UpdateVisualStates(ItemsView);
+				}
+			}
+			return;
+		}
 
 		foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())
 		{
@@ -288,6 +314,15 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 		if (PlatformView is null || ItemsView is null)
 		{
+			return;
+		}
+
+		// In grouped grid mode, platform selection is disabled (set to None).
+		// Selection is handled by GroupGridPanel's tap handlers.
+		// Just update visual states.
+		if (IsGroupedGridMode())
+		{
+			UpdateVisualStates();
 			return;
 		}
 
