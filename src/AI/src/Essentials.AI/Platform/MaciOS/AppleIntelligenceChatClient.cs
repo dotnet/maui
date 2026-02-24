@@ -285,13 +285,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	{
 		ArgumentNullException.ThrowIfNull(messages);
 
-		var toConvert = options?.Instructions is not null
-			? messages.Prepend(new(ChatRole.System, options.Instructions))
-			: messages;
+		var messagesList = messages.ToList();
 
 		// Build a callId → name lookup from FunctionCallContent so FunctionResultContent can reference the tool name
 		var callIdToName = new Dictionary<string, string>();
-		foreach (var msg in messages)
+		foreach (var msg in messagesList)
 		{
 			foreach (var content in msg.Contents.OfType<FunctionCallContent>())
 			{
@@ -299,6 +297,10 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 					callIdToName[content.CallId] = content.Name;
 			}
 		}
+
+		var toConvert = options?.Instructions is not null
+			? messagesList.Prepend(new(ChatRole.System, options.Instructions))
+			: messagesList;
 
 		// Filter out any messages that produce empty native content as a safety net.
 		ChatMessageNative[] nativeMessages = [.. toConvert
