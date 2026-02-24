@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.AI;
 

@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-namespace Maui.Controls.Sample.Models;
+namespace Maui.Controls.Sample.ViewModels;
 
 public enum ChatBubbleType
 {

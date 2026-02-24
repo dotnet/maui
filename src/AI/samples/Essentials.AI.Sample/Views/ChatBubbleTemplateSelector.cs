@@ -1,4 +1,4 @@
-using Maui.Controls.Sample.Models;
+using Maui.Controls.Sample.ViewModels;
 
 namespace Maui.Controls.Sample.Views;
 
