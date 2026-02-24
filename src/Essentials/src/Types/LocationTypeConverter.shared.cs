@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (string.IsNullOrEmpty(strValue))
 				throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Location)}");
 
-			var parts = strValue.Split(',');
+			var parts = strValue!.Split(',');
 
 			if (parts.Length == 2
 				&& double.TryParse(parts[0].Trim(), NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out double latitude)

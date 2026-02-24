@@ -267,5 +267,9 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		// Namescope diagnostics
 		internal static string NamescopeError => ResourceManager.GetString("NamescopeError", resourceCulture);
 		internal static string NamescopeDuplicate => ResourceManager.GetString("NamescopeDuplicate", resourceCulture);
+
+		// Event handler diagnostics
+		internal static string MissingEventHandlerTitle => ResourceManager.GetString("MissingEventHandlerTitle", resourceCulture);
+		internal static string MissingEventHandler => ResourceManager.GetString("MissingEventHandler", resourceCulture);
 	}
 }
