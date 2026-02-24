@@ -172,6 +172,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (VirtualView is not null && Content is null)
 			{
+				if (XamlRoot is null)
+				{
+					// Element is not yet in the visual tree. Defer ToPlatform()
+					// to avoid a COM exception when GesturePlatformManager tries
+					// to subscribe pointer events on a disconnected element.
+					// Re-trigger layout once the element is loaded.
+					Loaded += OnLoadedCreatePlatformView;
+					return;
+				}
+
 				var platformView = VirtualView.ToPlatform(_context);
 				Content = platformView;
 
@@ -187,6 +197,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					fe.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
 				}
 			}
+		}
+
+		void OnLoadedCreatePlatformView(object sender, RoutedEventArgs e)
+		{
+			Loaded -= OnLoadedCreatePlatformView;
+			EnsurePlatformViewCreated();
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)

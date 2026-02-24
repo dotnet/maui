@@ -1054,6 +1054,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Apply MAUI margin as WinUI margin — the CV header is placed in a
+			// WinUI ContentControl, not a MAUI layout, so the cross-platform
+			// layout system never applies the margin.
+			if (_mauiHeader is not null && _header is not null)
+			{
+				var margin = _mauiHeader.Margin;
+				_header.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
+			}
+
 			if (PlatformView is MauiItemsView platformItemsView && _header is not null)
 			{
 				platformItemsView.SetHeader(_header, _mauiHeader);
@@ -1133,6 +1142,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				// This shouldn't happen due to null check above, but handle it safely
 				return;
+			}
+
+			// Apply MAUI margin as WinUI margin — the CV footer is placed in a
+			// WinUI ContentControl, not a MAUI layout, so the cross-platform
+			// layout system never applies the margin.
+			if (_mauiFooter is not null && _footer is not null)
+			{
+				var margin = _mauiFooter.Margin;
+				_footer.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
 			}
 
 			if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
