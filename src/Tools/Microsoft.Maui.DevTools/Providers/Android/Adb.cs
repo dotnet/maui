@@ -14,16 +14,12 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 /// </summary>
 public class Adb
 {
-	private readonly Func<string?> _getSdkPath;
 	private readonly AdbRunner _runner;
 
 	public Adb(Func<string?> getSdkPath)
 	{
-		_getSdkPath = getSdkPath;
 		_runner = new AdbRunner(getSdkPath);
 	}
-
-	private string? SdkPath => _getSdkPath();
 
 	public string? AdbPath => _runner.AdbPath;
 

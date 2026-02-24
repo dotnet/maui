@@ -14,21 +14,14 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 /// </summary>
 public class AvdManager
 {
-	private readonly Func<string?> _getSdkPath;
-	private readonly Func<string?> _getJdkPath;
 	private readonly AvdManagerRunner _runner;
 	private readonly EmulatorRunner _emulatorRunner;
 
 	public AvdManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
 	{
-		_getSdkPath = getSdkPath;
-		_getJdkPath = getJdkPath;
 		_runner = new AvdManagerRunner(getSdkPath, getJdkPath);
 		_emulatorRunner = new EmulatorRunner(getSdkPath, getJdkPath);
 	}
-
-	private string? SdkPath => _getSdkPath();
-	private string? JdkPath => _getJdkPath();
 
 	public string? AvdManagerPath => _runner.AvdManagerPath;
 

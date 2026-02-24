@@ -28,32 +28,26 @@ public class SdkManager : IDisposable
 			if (level >= TraceLevel.Info)
 				Console.WriteLine($"[SdkManager] {msg}");
 		});
-		UpdatePaths();
 	}
 
-	private void UpdatePaths()
+	private void SyncPaths()
 	{
 		_sdkManager.AndroidSdkPath = _getSdkPath();
 		_sdkManager.JavaSdkPath = _getJdkPath();
 	}
 
-	private string? SdkPath => _getSdkPath();
-	private string? JdkPath => _getJdkPath();
-
-	public string? SdkManagerPath => _sdkManager.FindSdkManagerPath();
+	public string? SdkManagerPath { get { SyncPaths(); return _sdkManager.FindSdkManagerPath(); } }
 
 	public bool IsAvailable => !string.IsNullOrEmpty(SdkManagerPath);
 
-	public void Dispose()
-	{
-		_sdkManager.Dispose();
-	}
+	public void Dispose() => _sdkManager.Dispose();
 
 	public Task<HealthCheck> CheckHealthAsync(CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
-		
-		if (!IsAvailable || string.IsNullOrEmpty(SdkPath))
+		SyncPaths();
+		var sdkPath = _getSdkPath();
+
+		if (!IsAvailable || string.IsNullOrEmpty(sdkPath))
 		{
 			return Task.FromResult(new HealthCheck
 			{
@@ -77,17 +71,13 @@ public class SdkManager : IDisposable
 			Name = "Android SDK",
 			Status = CheckStatus.Ok,
 			Message = "Android SDK installed",
-			Details = new Dictionary<string, object>
-			{
-				["path"] = SdkPath
-			}
+			Details = new Dictionary<string, object> { ["path"] = sdkPath }
 		});
 	}
 
 	public async Task<List<SdkPackage>> GetInstalledPackagesAsync(CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
-		
+		SyncPaths();
 		try
 		{
 			var (installed, _) = await _sdkManager.ListAsync(cancellationToken);
@@ -101,8 +91,7 @@ public class SdkManager : IDisposable
 
 	public async Task<List<SdkPackage>> GetAvailablePackagesAsync(CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
-		
+		SyncPaths();
 		try
 		{
 			var (_, available) = await _sdkManager.ListAsync(cancellationToken);
@@ -114,33 +103,25 @@ public class SdkManager : IDisposable
 		}
 	}
 
-	private static SdkPackage MapToMauiPackage(XatSdkPackage pkg)
+	private static SdkPackage MapToMauiPackage(XatSdkPackage pkg) => new()
 	{
-		return new SdkPackage
-		{
-			Path = pkg.Path,
-			Version = pkg.Version,
-			Description = pkg.Description,
-			IsInstalled = pkg.IsInstalled
-		};
-	}
+		Path = pkg.Path,
+		Version = pkg.Version,
+		Description = pkg.Description,
+		IsInstalled = pkg.IsInstalled
+	};
 
 	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false,
 		CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
-		
-		if (!IsAvailable)
-			throw MauiToolException.AutoFixable(
-				ErrorCodes.AndroidSdkManagerNotFound,
-				"SDK Manager not found. Run 'maui android install' first.",
-				"maui android install");
+		SyncPaths();
+		EnsureAvailable();
 
 		try
 		{
 			await _sdkManager.InstallAsync(packages, acceptLicenses, cancellationToken);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidPackageInstallFailed,
@@ -151,32 +132,21 @@ public class SdkManager : IDisposable
 
 	public async Task AcceptLicensesAsync(CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
-		
-		if (!IsAvailable)
-			throw MauiToolException.AutoFixable(
-				ErrorCodes.AndroidSdkManagerNotFound,
-				"SDK Manager not found",
-				"maui android install");
-
+		SyncPaths();
+		EnsureAvailable();
 		await _sdkManager.AcceptLicensesAsync(cancellationToken);
 	}
 
 	public async Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
-		
-		if (!IsAvailable)
-			throw MauiToolException.AutoFixable(
-				ErrorCodes.AndroidSdkManagerNotFound,
-				"SDK Manager not found. Run 'maui android install' first.",
-				"maui android install");
+		SyncPaths();
+		EnsureAvailable();
 
 		try
 		{
 			await _sdkManager.UninstallAsync(packages, cancellationToken);
 		}
-		catch (Exception ex)
+		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidPackageInstallFailed,
@@ -187,21 +157,25 @@ public class SdkManager : IDisposable
 
 	public Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
 	{
-		UpdatePaths();
+		SyncPaths();
 		return Task.FromResult(_sdkManager.AreLicensesAccepted());
 	}
 
 	public async Task InstallSdkAsync(string targetPath, IProgress<string>? progress = null, 
 		CancellationToken cancellationToken = default)
 	{
-		// Use the new BootstrapAsync from android-tools
 		_sdkManager.AndroidSdkPath = targetPath;
-		
 		var bootstrapProgress = new Progress<Xamarin.Android.Tools.SdkBootstrapProgress>(p =>
-		{
-			progress?.Report($"{p.Phase}: {p.Message}");
-		});
-
+			progress?.Report($"{p.Phase}: {p.Message}"));
 		await _sdkManager.BootstrapAsync(targetPath, bootstrapProgress, cancellationToken);
+	}
+
+	private void EnsureAvailable()
+	{
+		if (!IsAvailable)
+			throw MauiToolException.AutoFixable(
+				ErrorCodes.AndroidSdkManagerNotFound,
+				"SDK Manager not found. Run 'maui android install' first.",
+				"maui android install");
 	}
 }
