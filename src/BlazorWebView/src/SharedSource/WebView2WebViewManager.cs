@@ -207,9 +207,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				return;
 			}
 
-			var coreWebView = _webview.CoreWebView2;
-			if (coreWebView == null)
-			{	
+			// Store a local reference to prevent race condition where _webview could be set to null
+			// in DisposeAsyncCore after the disposal check but before accessing CoreWebView2
+			var webview = _webview;
+			if (webview is null)
+			{
+				return;
+			}
+
+			var coreWebView = webview.CoreWebView2;
+			if (coreWebView is null)
+			{
 				return;
 			}
 
@@ -219,7 +227,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			try
 			{
 				coreWebView.PostWebMessageAsString(message);
-			}	
+			}
 			catch (InvalidOperationException)
 			{
 				// Set flag so subsequent calls use the fast path
