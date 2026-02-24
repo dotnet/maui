@@ -133,14 +133,14 @@ public partial class Maui29459 : ContentPage
 	public Maui29459() => InitializeComponent();
 
 	[Collection("Issue")]
-	public class Tests : IDisposable
+	class Tests : IDisposable
 	{
 		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
 		[Theory]
 		[XamlInflatorData]
-		public void SwitchingBindingTriggersPropertyChanged(XamlInflator inflator)
+		internal void SwitchingBindingTriggersPropertyChanged(XamlInflator inflator)
 		{
 			// Arrange: Create page and set up view model
 			var page = new Maui29459(inflator);
@@ -167,7 +167,7 @@ public partial class Maui29459 : ContentPage
 
 		[Theory]
 		[XamlInflatorData]
-		public void SwitchingBindingAfterModifyingValueTriggersPropertyChanged(XamlInflator inflator)
+		internal void SwitchingBindingAfterModifyingValueTriggersPropertyChanged(XamlInflator inflator)
 		{
 			// This test reproduces the exact scenario from issue #29459:
 			// A --> B (press Increase button on control) --> A (no changes) --> B (should show updated B value)
@@ -222,7 +222,7 @@ public partial class Maui29459 : ContentPage
 
 		[Theory]
 		[XamlInflatorData]
-		public void SwitchingBindingToSameValueMaintainsCorrectValue(XamlInflator inflator)
+		internal void SwitchingBindingToSameValueMaintainsCorrectValue(XamlInflator inflator)
 		{
 			// The value should be correct regardless of PropertyChanged firing behavior
 
