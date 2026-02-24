@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Input;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -150,6 +151,50 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(windowRootView.AppTitleBarContainer.Visibility == UI.Xaml.Visibility.Visible);
 					Assert.True(windowRootView.NavigationViewControl.ButtonHolderGrid.Visibility == UI.Xaml.Visibility.Visible);
 				}));
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ModalPageDisablesHitTestOnUnderlyingPage(bool useColor)
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage() { Content = new Label() { Text = "Root Page" } });
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+				async (handler) =>
+				{
+					var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
+					ContentPage modalPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
+
+					if (useColor)
+						modalPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
+					else
+						modalPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
+
+					var rootPageRootView = navPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var modalRootView = modalPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					// The underlying page should have IsHitTestVisible disabled
+					Assert.False(rootPageRootView.IsHitTestVisible,
+						"Underlying page should have IsHitTestVisible=false when a modal is displayed");
+
+					// The modal page should have IsHitTestVisible enabled
+					Assert.True(modalRootView.IsHitTestVisible,
+						"Modal page should have IsHitTestVisible=true");
+
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+
+					// After popping the modal, the underlying page should be interactive again
+					Assert.True(rootPageRootView.IsHitTestVisible,
+						"Underlying page should have IsHitTestVisible=true after modal is dismissed");
+				});
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 
 namespace Microsoft.Maui.Platform
@@ -56,12 +57,18 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!CachedChildren.Contains(pageView))
 			{
+				// Disable interaction on the page being covered by the modal
+				_topPage?.SetValue(IsHitTestVisibleProperty, false);
+
 				int indexOFTopPage = 0;
-				if (_topPage != null)
+				if (_topPage is not null)
 					indexOFTopPage = CachedChildren.IndexOf(_topPage) + 1;
 
 				CachedChildren.Insert(indexOFTopPage, pageView);
 				_topPage = pageView;
+
+				// Move keyboard focus to the new top page
+				TryMoveFocusToPage(_topPage);
 			}
 		}
 
@@ -74,9 +81,49 @@ namespace Microsoft.Maui.Platform
 			CachedChildren.Remove(pageView);
 
 			if (indexOFTopPage >= 0)
+			{
 				_topPage = (FrameworkElement)CachedChildren[indexOFTopPage];
+
+				// Re-enable interaction on the revealed page and restore focus
+				if (_topPage is not null)
+				{
+					_topPage.IsHitTestVisible = true;
+					TryMoveFocusToPage(_topPage);
+				}
+			}
 			else
+			{
 				_topPage = null;
+			}
+		}
+
+		static void TryMoveFocusToPage(FrameworkElement page)
+		{
+			if (page.IsLoaded)
+			{
+				SetFocusToFirstElement(page);
+			}
+			else
+			{
+				page.Loaded += OnPageLoadedForFocus;
+			}
+		}
+
+		static void OnPageLoadedForFocus(object sender, RoutedEventArgs e)
+		{
+			if (sender is FrameworkElement page)
+			{
+				page.Loaded -= OnPageLoadedForFocus;
+				SetFocusToFirstElement(page);
+			}
+		}
+
+		static void SetFocusToFirstElement(FrameworkElement page)
+		{
+			if (FocusManager.FindFirstFocusableElement(page) is Control focusable)
+			{
+				focusable.Focus(FocusState.Programmatic);
+			}
 		}
 
 		internal void AddOverlay(FrameworkElement overlayView)
