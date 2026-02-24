@@ -73,15 +73,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	public static void MapSelectedItem(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
-
+		handler.UpdatePlatformSelection();
 	}
 
 	public static void MapSelectedItems(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		handler.UpdatePlatformSelection();
 	}
 
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		handler.UpdatePlatformSelection();
 	}
 
 	/// <summary>
@@ -210,7 +212,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			if (itemcontainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
 				var actualItem = visualElement.BindingContext;
-				bool isSelected = ItemsView.SelectedItem == actualItem || ItemsView.SelectedItems.Contains(actualItem);
+				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 			}
 		}
@@ -315,11 +317,11 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 						{
 							if (item is ItemTemplateContext2 itemPair)
 							{
-								return itemPair.Item == ItemsView.SelectedItem;
+								return object.Equals(itemPair.Item, ItemsView.SelectedItem);
 							}
 							else
 							{
-								return item == ItemsView.SelectedItem;
+								return object.Equals(item, ItemsView.SelectedItem);
 							}
 						});
 
