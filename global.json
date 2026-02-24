@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "11.0.100-preview.2.26103.111"
+    "dotnet": "11.0.100-preview.2.26122.107"
   },
   "sdk": {
     "paths": [
