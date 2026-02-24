@@ -68,9 +68,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 		var tcs = new TaskCompletionSource<ChatResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		CancellationTokenRegistration registration = default;
+		// Set up cancellation registration before invoking native to avoid race
+		CancellationTokenNative? nativeToken = null;
+		var registration = cancellationToken.Register(() => nativeToken?.Cancel());
 
-		var nativeToken = native.GetResponse(
+		nativeToken = native.GetResponse(
 			nativeMessages,
 			nativeOptions,
 			onUpdate: (update) =>
@@ -84,7 +86,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
 					{
-						tcs.TrySetCanceled();
+						tcs.TrySetCanceled(cancellationToken);
 					}
 					else
 					{
@@ -93,12 +95,23 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				}
 				else
 				{
-					var chatResponse = FromNativeChatResponse(response);
-					tcs.TrySetResult(chatResponse);
+					try
+					{
+						var chatResponse = FromNativeChatResponse(response);
+						tcs.TrySetResult(chatResponse);
+					}
+					catch (Exception ex)
+					{
+						tcs.TrySetException(ex);
+					}
 				}
 			});
 
-		registration = cancellationToken.Register(() => nativeToken?.Cancel());
+		// If cancellation was already requested before native call started
+		if (cancellationToken.IsCancellationRequested)
+		{
+			nativeToken?.Cancel();
+		}
 
 		return tcs.Task;
 	}
@@ -114,16 +127,19 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 		var native = new ChatClientNative();
 
-		var channel = Channel.CreateUnbounded<ChatResponseUpdate>();
+		var channel = Channel.CreateUnbounded<ChatResponseUpdate>(
+			new UnboundedChannelOptions { SingleReader = true });
 
 		// Use appropriate stream chunker based on response format
 		StreamChunkerBase chunker = nativeOptions?.ResponseJsonSchema is not null
 			? new JsonStreamChunker()
 			: new PlainTextStreamChunker();
 
-		CancellationTokenRegistration registration = default;
+		// Set up cancellation registration before invoking native to avoid race
+		CancellationTokenNative? nativeToken = null;
+		var registration = cancellationToken.Register(() => nativeToken?.Cancel());
 
-		var nativeToken = native.StreamResponse(
+		nativeToken = native.StreamResponse(
 			nativeMessages,
 			nativeOptions,
 			onUpdate: (update) =>
@@ -171,7 +187,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 					case ResponseUpdateTypeNative.ToolResult:
 						var toolResultUpdate = new ChatResponseUpdate
 						{
-							Role = ChatRole.Assistant,
+							Role = ChatRole.Tool,
 							Contents = { new FunctionResultContent(update.ToolCallId!, update.ToolCallResult!) }
 						};
 						channel.Writer.TryWrite(toolResultUpdate);
@@ -185,7 +201,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
 					{
-						channel.Writer.Complete(new OperationCanceledException());
+						channel.Writer.Complete(new OperationCanceledException(cancellationToken));
 					}
 					else
 					{
@@ -211,7 +227,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				}
 			});
 
-		registration = cancellationToken.Register(() => nativeToken?.Cancel());
+		// If cancellation was already requested before native call started
+		if (cancellationToken.IsCancellationRequested)
+		{
+			nativeToken?.Cancel();
+		}
 
 		await foreach (var update in channel.Reader.ReadAllAsync(cancellationToken))
 		{
@@ -453,7 +473,13 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				// Look up the tool name from the corresponding FunctionCallContent via callId
 				(functionResult.CallId is not null && callIdToName?.TryGetValue(functionResult.CallId, out var name) == true) ? name : string.Empty,
 #pragma warning disable IL3050, IL2026
-				functionResult.Result is not null ? JsonSerializer.Serialize(functionResult.Result, AIJsonUtilities.DefaultOptions) : "{}")],
+				// If Result is already a string (common when replaying history), pass through to avoid double-serialization
+				functionResult.Result switch
+				{
+					string s => s,
+					not null => JsonSerializer.Serialize(functionResult.Result, AIJsonUtilities.DefaultOptions),
+					_ => "{}"
+				})],
 #pragma warning restore IL3050, IL2026
 
 			// Throw for unsupported content types
@@ -491,7 +517,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				var result = await function.InvokeAsync(aiArgs, cancellationToken: cancellationToken);
 
 				var resultJson = result is not null
-					? JsonSerializer.Serialize(result)
+					? JsonSerializer.Serialize(result, AIJsonUtilities.DefaultOptions)
 					: "{}";
 
 				completionHandler(new NSString(resultJson), null);

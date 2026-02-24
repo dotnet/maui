@@ -197,6 +197,42 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 	}
 
 	[Fact]
+	public async Task GetStreamingResponseAsync_ToolResultHasCorrectRole()
+	{
+		// Verifies that streaming updates containing FunctionResultContent
+		// use ChatRole.Tool (not ChatRole.Assistant), matching M.E.AI conventions.
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Rainy, 55°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var client = EnableFunctionCalling(new T());
+		var options = new ChatOptions { Tools = [weatherTool] };
+
+		ChatRole? toolResultRole = null;
+		ChatRole? toolCallRole = null;
+
+		await foreach (var update in client.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Portland?")], options))
+		{
+			foreach (var content in update.Contents)
+			{
+				if (content is FunctionCallContent)
+					toolCallRole = update.Role;
+				else if (content is FunctionResultContent)
+					toolResultRole = update.Role;
+			}
+		}
+
+		Assert.NotNull(toolCallRole);
+		Assert.Equal(ChatRole.Assistant, toolCallRole);
+
+		Assert.NotNull(toolResultRole);
+		Assert.Equal(ChatRole.Tool, toolResultRole);
+	}
+
+	[Fact]
 	public async Task GetStreamingResponseAsync_StreamsToolCallBeforeToolResult()
 	{
 		var weatherTool = AIFunctionFactory.Create(

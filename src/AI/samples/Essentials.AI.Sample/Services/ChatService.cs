@@ -66,15 +66,14 @@ public class ChatService
 	public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IList<ChatMessage> messages, CancellationToken cancellationToken = default)
 	{
-		// Prepend system prompt if not already present
-		if (messages.Count == 0 || messages[0].Role != ChatRole.System)
-		{
-			messages.Insert(0, new ChatMessage(ChatRole.System, SystemPrompt));
-		}
+		// Prepend system prompt without mutating the caller's list
+		IEnumerable<ChatMessage> effectiveMessages = (messages.Count == 0 || messages[0].Role != ChatRole.System)
+			? messages.Prepend(new ChatMessage(ChatRole.System, SystemPrompt))
+			: messages;
 
 		var options = new ChatOptions { Tools = _tools };
 
-		return _toolClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+		return _toolClient.GetStreamingResponseAsync(effectiveMessages, options, cancellationToken);
 	}
 
 	[Description("Search for travel destinations by a natural language query. Uses semantic search to find the most relevant landmarks.")]

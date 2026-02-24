@@ -43,6 +43,8 @@ public partial class ChatViewModel : ObservableObject
 	void NewChat()
 	{
 		_cts?.Cancel();
+		_cts?.Dispose();
+		_cts = null;
 		Messages.Clear();
 		_conversationHistory.Clear();
 		MessageText = string.Empty;
@@ -83,6 +85,7 @@ public partial class ChatViewModel : ObservableObject
 		ChatBubble? assistantBubble = null;
 		ChatMessage? textMessage = null; // Accumulates text deltas into one assistant message
 		var seenCallIds = new HashSet<string>();
+		var callIdToToolName = new Dictionary<string, string>(); // Cache tool names for result bubbles
 
 		// Show "Thinking..." placeholder immediately
 		var thinkingBubble = new ChatBubble
@@ -143,6 +146,10 @@ public partial class ChatViewModel : ObservableObject
 							if (!seenCallIds.Add($"call:{functionCall.CallId}"))
 								break;
 
+							// Cache tool name for the result bubble
+							if (functionCall.CallId is not null)
+								callIdToToolName[functionCall.CallId] = functionCall.Name;
+
 							// Add to history immediately, preserving stream order
 							_conversationHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCall]));
 							textMessage = null; // Next text starts a new message
@@ -178,9 +185,12 @@ public partial class ChatViewModel : ObservableObject
 							// Add to history immediately, preserving stream order
 							_conversationHistory.Add(new ChatMessage(ChatRole.Tool, [functionResult]));
 
-							// Update UI
+							// Update UI — use cached tool name instead of raw CallId
 							var resultText = functionResult.Result?.ToString() ?? "(no result)";
-							var toolName = functionResult.CallId ?? "tool";
+							var toolName = (functionResult.CallId is not null &&
+								callIdToToolName.TryGetValue(functionResult.CallId, out var cachedName))
+								? cachedName
+								: "tool";
 
 							Messages.Add(new ChatBubble
 							{
@@ -211,7 +221,16 @@ public partial class ChatViewModel : ObservableObject
 		}
 		finally
 		{
+			// Clean up thinking bubble if it was never replaced
+			if (assistantBubble is null && Messages.Contains(thinkingBubble))
+				Messages.Remove(thinkingBubble);
+
+			// Stop streaming indicator on any remaining bubble
+			if (assistantBubble is { IsStreaming: true })
+				assistantBubble.IsStreaming = false;
+
 			IsSending = false;
+			_cts?.Dispose();
 			_cts = null;
 		}
 	}
