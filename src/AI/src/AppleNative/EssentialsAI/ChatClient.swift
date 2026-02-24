@@ -383,60 +383,72 @@ public class ChatClientNative: NSObject {
     private func toTranscriptEntries(message: ChatMessageNative) throws -> [Transcript.Entry] {
         switch message.role {
         case .user:
-            let segments: [Transcript.Segment] = message.contents.compactMap { content in
-                guard let textContent = content as? TextContentNative else { return nil }
-                return .text(Transcript.TextSegment(content: textContent.text))
-            }
-            return [.prompt(Transcript.Prompt(segments: segments))]
+            return [toUserEntry(message)]
         case .assistant:
-            // Process contents in order, flushing batches when the content type changes.
-            // This preserves interleaving: [text, funcCall, text] → [.response, .toolCalls, .response]
-            var entries: [Transcript.Entry] = []
-            var pendingTextSegments: [Transcript.Segment] = []
-            var pendingToolCalls: [Transcript.ToolCall] = []
-
-            for content in message.contents {
-                if let textContent = content as? TextContentNative {
-                    // Flush pending tool calls before starting text
-                    if !pendingToolCalls.isEmpty {
-                        entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
-                        pendingToolCalls = []
-                    }
-                    pendingTextSegments.append(.text(Transcript.TextSegment(content: textContent.text)))
-                } else if let funcCall = content as? FunctionCallContentNative {
-                    // Flush pending text before starting tool calls
-                    if !pendingTextSegments.isEmpty {
-                        entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
-                        pendingTextSegments = []
-                    }
-                    let argsContent = (try? GeneratedContent(json: funcCall.arguments)) ?? GeneratedContent(funcCall.arguments)
-                    pendingToolCalls.append(Transcript.ToolCall(id: funcCall.callId, toolName: funcCall.name, arguments: argsContent))
-                }
-            }
-
-            // Flush remaining batches
-            if !pendingTextSegments.isEmpty {
-                entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
-            }
-            if !pendingToolCalls.isEmpty {
-                entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
-            }
-            return entries
+            return toAssistantEntries(message)
         case .system:
-            let segments: [Transcript.Segment] = message.contents.compactMap { content in
-                guard let textContent = content as? TextContentNative else { return nil }
-                return .text(Transcript.TextSegment(content: textContent.text))
-            }
-            return [.instructions(Transcript.Instructions(segments: segments, toolDefinitions: []))]
+            return [toSystemEntry(message)]
         case .tool:
-            let toolOutputs: [Transcript.Entry] = message.contents.compactMap { content in
-                guard let funcResult = content as? FunctionResultContentNative else { return nil }
-                let segment = Transcript.Segment.text(Transcript.TextSegment(content: funcResult.result))
-                return .toolOutput(Transcript.ToolOutput(id: funcResult.callId, toolName: funcResult.name, segments: [segment]))
-            }
-            return toolOutputs
+            return toToolEntries(message)
         default:
             throw NSError.chatError(.invalidRole, description: "Unsupported role in transcript. Found: \(message.role)")
+        }
+    }
+
+    private func toUserEntry(_ message: ChatMessageNative) -> Transcript.Entry {
+        let segments: [Transcript.Segment] = message.contents.compactMap { content in
+            guard let textContent = content as? TextContentNative else { return nil }
+            return .text(Transcript.TextSegment(content: textContent.text))
+        }
+        return .prompt(Transcript.Prompt(segments: segments))
+    }
+
+    private func toAssistantEntries(_ message: ChatMessageNative) -> [Transcript.Entry] {
+        // Process contents in order, flushing batches when the content type changes.
+        // This preserves interleaving: [text, funcCall, text] → [.response, .toolCalls, .response]
+        var entries: [Transcript.Entry] = []
+        var pendingTextSegments: [Transcript.Segment] = []
+        var pendingToolCalls: [Transcript.ToolCall] = []
+
+        for content in message.contents {
+            if let textContent = content as? TextContentNative {
+                if !pendingToolCalls.isEmpty {
+                    entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
+                    pendingToolCalls = []
+                }
+                pendingTextSegments.append(.text(Transcript.TextSegment(content: textContent.text)))
+            } else if let funcCall = content as? FunctionCallContentNative {
+                if !pendingTextSegments.isEmpty {
+                    entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
+                    pendingTextSegments = []
+                }
+                let argsContent = (try? GeneratedContent(json: funcCall.arguments)) ?? GeneratedContent(funcCall.arguments)
+                pendingToolCalls.append(Transcript.ToolCall(id: funcCall.callId, toolName: funcCall.name, arguments: argsContent))
+            }
+        }
+
+        if !pendingTextSegments.isEmpty {
+            entries.append(.response(Transcript.Response(assetIDs: [], segments: pendingTextSegments)))
+        }
+        if !pendingToolCalls.isEmpty {
+            entries.append(.toolCalls(Transcript.ToolCalls(pendingToolCalls)))
+        }
+        return entries
+    }
+
+    private func toSystemEntry(_ message: ChatMessageNative) -> Transcript.Entry {
+        let segments: [Transcript.Segment] = message.contents.compactMap { content in
+            guard let textContent = content as? TextContentNative else { return nil }
+            return .text(Transcript.TextSegment(content: textContent.text))
+        }
+        return .instructions(Transcript.Instructions(segments: segments, toolDefinitions: []))
+    }
+
+    private func toToolEntries(_ message: ChatMessageNative) -> [Transcript.Entry] {
+        return message.contents.compactMap { content in
+            guard let funcResult = content as? FunctionResultContentNative else { return nil }
+            let segment = Transcript.Segment.text(Transcript.TextSegment(content: funcResult.result))
+            return .toolOutput(Transcript.ToolOutput(id: funcResult.callId, toolName: funcResult.name, segments: [segment]))
         }
     }
 
