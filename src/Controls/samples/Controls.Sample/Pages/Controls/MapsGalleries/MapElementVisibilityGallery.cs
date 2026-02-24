@@ -1,5 +1,7 @@
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
@@ -97,6 +99,28 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				UpdateStatus();
 			};
 
+			var controls = new VerticalStackLayout
+			{
+				Spacing = 4,
+				Padding = new Thickness(8),
+				Children =
+				{
+					_statusLabel,
+					new HorizontalStackLayout
+					{
+						Spacing = 4,
+						HorizontalOptions = LayoutOptions.Center,
+						Children = { togglePolygonBtn, togglePolylineBtn, toggleCircleBtn }
+					},
+					new HorizontalStackLayout
+					{
+						Spacing = 4,
+						HorizontalOptions = LayoutOptions.Center,
+						Children = { bringPolygonTopBtn, resetZIndexBtn }
+					}
+				}
+			};
+
 			Content = new Grid
 			{
 				RowDefinitions =
@@ -107,27 +131,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				Children =
 				{
 					map,
-					new VerticalStackLayout
-					{
-						Spacing = 4,
-						Padding = new Thickness(8),
-						Children =
-						{
-							_statusLabel,
-							new HorizontalStackLayout
-							{
-								Spacing = 4,
-								HorizontalOptions = LayoutOptions.Center,
-								Children = { togglePolygonBtn, togglePolylineBtn, toggleCircleBtn }
-							},
-							new HorizontalStackLayout
-							{
-								Spacing = 4,
-								HorizontalOptions = LayoutOptions.Center,
-								Children = { bringPolygonTopBtn, resetZIndexBtn }
-							}
-						}
-					}.Assign(out var controls)
+					controls
 				}
 			};
 
