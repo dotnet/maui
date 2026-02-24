@@ -50,15 +50,19 @@ public class DeviceManager : IDeviceManager
 						string.Equals(d.EmulatorId, avd.Name, StringComparison.OrdinalIgnoreCase)
 					));
 
+				// Extract metadata from system image path (e.g., "system-images;android-35;google_apis_playstore;arm64-v8a")
+				var (apiLevel, tagId, abi) = ParseSystemImage(avd.SystemImage);
+				var playStoreEnabled = tagId?.Contains("playstore", StringComparison.OrdinalIgnoreCase) ?? false;
+
 				if (runningIndex >= 0)
 				{
 					// Merge AVD metadata into the running emulator device
 					var running = devices[runningIndex];
-					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId, avd.PlayStoreEnabled);
+					var subModel = AndroidEnvironment.MapTagIdToSubModel(tagId, playStoreEnabled);
 					var details = running.Details != null
 						? new Dictionary<string, object>(running.Details)
 						: new Dictionary<string, object>();
-					details["tag_id"] = avd.TagId ?? "default";
+					details["tag_id"] = tagId ?? "default";
 					details["target"] = avd.Target ?? "unknown";
 
 					devices[runningIndex] = running with
@@ -70,10 +74,10 @@ public class DeviceManager : IDeviceManager
 				}
 				else
 				{
-					var architecture = AndroidEnvironment.MapAbiToArchitecture(avd.Abi) ?? (PlatformDetector.IsArm64 ? "arm64" : "x64");
-					var abi = avd.Abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
-					var versionName = AndroidEnvironment.MapApiLevelToVersion(avd.ApiLevel);
-					var subModel = AndroidEnvironment.MapTagIdToSubModel(avd.TagId, avd.PlayStoreEnabled);
+					var architecture = AndroidEnvironment.MapAbiToArchitecture(abi) ?? (PlatformDetector.IsArm64 ? "arm64" : "x64");
+					var resolvedAbi = abi ?? (PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64");
+					var versionName = AndroidEnvironment.MapApiLevelToVersion(apiLevel);
+					var subModel = AndroidEnvironment.MapTagIdToSubModel(tagId, playStoreEnabled);
 					devices.Add(new Device
 					{
 						Id = avd.Name,
@@ -88,19 +92,19 @@ public class DeviceManager : IDeviceManager
 						Model = avd.DeviceProfile,
 						SubModel = subModel,
 						Manufacturer = "Google",
-						Version = avd.ApiLevel,
+						Version = apiLevel,
 						VersionName = versionName,
 						Architecture = architecture,
-						PlatformArchitecture = abi,
+						PlatformArchitecture = resolvedAbi,
 						RuntimeIdentifiers = AndroidEnvironment.GetRuntimeIdentifiers(architecture),
 						Idiom = DeviceIdiom.Phone,
 						Details = new Dictionary<string, object>
 						{
 							["avd"] = avd.Name,
 							["target"] = avd.Target ?? "unknown",
-							["api_level"] = avd.ApiLevel ?? "unknown",
-							["abi"] = abi,
-							["tag_id"] = avd.TagId ?? "default"
+							["api_level"] = apiLevel ?? "unknown",
+							["abi"] = resolvedAbi,
+							["tag_id"] = tagId ?? "default"
 						}
 					});
 				}
@@ -182,5 +186,32 @@ public class DeviceManager : IDeviceManager
 		}
 
 		return outputPath;
+	}
+
+	/// <summary>
+	/// Parses a system image path like "system-images;android-35;google_apis_playstore;arm64-v8a"
+	/// to extract API level, tag ID, and ABI.
+	/// </summary>
+	private static (string? ApiLevel, string? TagId, string? Abi) ParseSystemImage(string? systemImage)
+	{
+		if (string.IsNullOrEmpty(systemImage))
+			return (null, null, null);
+
+		var parts = systemImage.Split(';', '/');
+		string? apiLevel = null;
+		string? tagId = null;
+		string? abi = null;
+
+		foreach (var part in parts)
+		{
+			if (part.StartsWith("android-", StringComparison.OrdinalIgnoreCase))
+				apiLevel = part.Substring("android-".Length);
+			else if (part.Contains("google_apis", StringComparison.OrdinalIgnoreCase) || part == "default")
+				tagId = part;
+			else if (part is "arm64-v8a" or "x86_64" or "x86" or "armeabi-v7a")
+				abi = part;
+		}
+
+		return (apiLevel, tagId, abi);
 	}
 }
