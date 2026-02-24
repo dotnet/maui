@@ -186,16 +186,6 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(modalRootView.IsHitTestVisible,
 						"Modal page should have IsHitTestVisible=true");
 
-					// Tab should cycle within the modal (not escape to underlying page)
-					Assert.Equal(
-						Microsoft.UI.Xaml.Input.KeyboardNavigationMode.Cycle,
-						modalRootView.TabFocusNavigation);
-
-					// Underlying page's tab navigation should be restricted
-					Assert.Equal(
-						Microsoft.UI.Xaml.Input.KeyboardNavigationMode.Once,
-						rootPageRootView.TabFocusNavigation);
-
 					await navPage.CurrentPage.Navigation.PopModalAsync();
 					await OnUnloadedAsync(modalPage);
 

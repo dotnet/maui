@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.Maui.Platform
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		FrameworkElement? _topPage;
 		UIElementCollection? _cachedChildren;
+		bool _modalFocusTrapActive;
 
 		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
 		internal UIElementCollection CachedChildren
@@ -59,10 +61,8 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_topPage is not null)
 				{
-					// Disable pointer and keyboard interaction on the page being covered
-					_topPage.SetValue(IsHitTestVisibleProperty, false);
-					// Belt-and-suspenders: prevent tab navigation into the underlying subtree
-					_topPage.SetValue(TabFocusNavigationProperty, KeyboardNavigationMode.Once);
+					// Block pointer/touch input on the page being covered
+					_topPage.IsHitTestVisible = false;
 				}
 
 				int indexOFTopPage = 0;
@@ -72,46 +72,96 @@ namespace Microsoft.Maui.Platform
 				CachedChildren.Insert(indexOFTopPage, pageView);
 				_topPage = pageView;
 
-				// Trap Tab within the modal so it cycles instead of escaping.
-				// Only do this when covering another page (i.e., this is a modal).
+				// When covering another page, activate keyboard focus trapping
+				// so Tab cannot escape the modal — mirroring how WinUI ContentDialog works.
 				if (indexOFTopPage > 0)
 				{
-					_topPage.SetValue(TabFocusNavigationProperty, KeyboardNavigationMode.Cycle);
+					EnableModalFocusTrap();
 				}
 
-				// Move keyboard focus to the new top page
 				TryMoveFocusToPage(_topPage);
 			}
 		}
 
 		internal void RemovePage(FrameworkElement pageView)
 		{
-			// Unsubscribe any pending Loaded handler to prevent memory leaks
-			// and stale focus changes after the page leaves the container
+			// Clean up any pending Loaded handler to prevent memory leaks
 			pageView.Loaded -= OnPageLoadedForFocus;
-
-			int indexOFTopPage = -1;
-			if (_topPage != null)
-				indexOFTopPage = CachedChildren.IndexOf(_topPage) - 1;
 
 			CachedChildren.Remove(pageView);
 
-			if (indexOFTopPage >= 0)
+			if (CachedChildren.Count > 0)
 			{
-				_topPage = (FrameworkElement)CachedChildren[indexOFTopPage];
+				_topPage = (FrameworkElement)CachedChildren[CachedChildren.Count - 1];
 
-				// Re-enable interaction on the revealed page and restore focus
-				if (_topPage is not null)
+				// Re-enable pointer/touch on the revealed page
+				_topPage.IsHitTestVisible = true;
+
+				// If only one page remains, no focus trapping is needed
+				if (CachedChildren.Count <= 1)
 				{
-					_topPage.IsHitTestVisible = true;
-					_topPage.ClearValue(TabFocusNavigationProperty);
-					TryMoveFocusToPage(_topPage);
+					DisableModalFocusTrap();
 				}
+
+				TryMoveFocusToPage(_topPage);
 			}
 			else
 			{
 				_topPage = null;
+				DisableModalFocusTrap();
 			}
+		}
+
+		void EnableModalFocusTrap()
+		{
+			if (!_modalFocusTrapActive)
+			{
+				// Use AddHandler with handledEventsToo so we intercept focus changes
+				// even if a child element already handled the event.
+				AddHandler(GettingFocusEvent, new TypedEventHandler<UIElement, GettingFocusEventArgs>(OnContainerGettingFocus), true);
+				_modalFocusTrapActive = true;
+			}
+		}
+
+		void DisableModalFocusTrap()
+		{
+			if (_modalFocusTrapActive)
+			{
+				RemoveHandler(GettingFocusEvent, new TypedEventHandler<UIElement, GettingFocusEventArgs>(OnContainerGettingFocus));
+				_modalFocusTrapActive = false;
+			}
+		}
+
+		void OnContainerGettingFocus(UIElement sender, GettingFocusEventArgs args)
+		{
+			if (_topPage is null || args.NewFocusedElement is not DependencyObject newElement)
+				return;
+
+			// Allow focus changes within the current top (modal) page
+			if (newElement == _topPage || IsDescendantOf(newElement, _topPage))
+				return;
+
+			// Focus is trying to leave the modal — redirect it back
+			if (FocusManager.FindFirstFocusableElement(_topPage) is DependencyObject firstFocusable)
+			{
+				args.TrySetNewFocusedElement(firstFocusable);
+			}
+			else
+			{
+				args.TryCancel();
+			}
+		}
+
+		static bool IsDescendantOf(DependencyObject element, DependencyObject ancestor)
+		{
+			var current = VisualTreeHelper.GetParent(element);
+			while (current is not null)
+			{
+				if (current == ancestor)
+					return true;
+				current = VisualTreeHelper.GetParent(current);
+			}
+			return false;
 		}
 
 		static void TryMoveFocusToPage(FrameworkElement page)
@@ -122,7 +172,6 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Unsubscribe first to prevent duplicate subscriptions if called multiple times before load
 				page.Loaded -= OnPageLoadedForFocus;
 				page.Loaded += OnPageLoadedForFocus;
 			}
@@ -142,12 +191,9 @@ namespace Microsoft.Maui.Platform
 			if (FocusManager.FindFirstFocusableElement(page) is UIElement focusableElement)
 			{
 				if (focusableElement.Focus(FocusState.Programmatic))
-				{
 					return;
-				}
 			}
 
-			// Fallback: ensure the page itself takes focus so keyboard input does not remain on the underlying content
 			page.Focus(FocusState.Programmatic);
 		}
 
