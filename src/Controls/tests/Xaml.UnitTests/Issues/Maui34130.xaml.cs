@@ -21,8 +21,7 @@ public partial class Maui34130 : ContentPage
 	public class Tests
 	{
 		[Theory]
-		[InlineData(XamlInflator.Runtime)]
-		[InlineData(XamlInflator.SourceGen)]
+		[XamlInflatorData]
 		internal void ReproducesSourceGenNullabilityDiagnostics(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
