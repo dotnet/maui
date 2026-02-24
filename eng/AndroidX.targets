@@ -14,10 +14,9 @@
     <PackageReference Update="Xamarin.AndroidX.Navigation.UI" Version="2.9.6.1" />
     <!-- Navigation 2.9.6.1 transitively pulls in NavigationEvent which depends on both
          Compose.Runtime.Annotation.Android and Compose.Runtime.Annotation.Jvm. Both contain
-         androidx.compose.runtime.Immutable, causing a duplicate class error during D8/R8 dex
-         compilation. Override as a direct reference with ExcludeAssets="all" so its buildTransitive
-         targets (which add the JVM jar to AndroidJavaLibrary) are never evaluated. The Android AAR
-         variant already provides these classes, so no functionality is lost. -->
+         androidx.compose.runtime.Immutable, causing a duplicate class error during D8/R8 dex.
+         Source builds use project references (not NuGet), so the fix in Microsoft.Maui.Controls.targets
+         buildTransitive does not apply here. This entry covers source tree builds. -->
     <PackageReference Include="Xamarin.AndroidX.Compose.Runtime.Annotation.Jvm" Version="1.10.0.1" ExcludeAssets="all" />
     <PackageReference Update="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.4-alpha07" />
     <PackageReference Update="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.2.0.1" />

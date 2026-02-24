@@ -388,4 +388,19 @@
     </PropertyGroup>
   </Target>
 
+  <!--
+    Xamarin.AndroidX.Navigation 2.9.6.1+ transitively pulls in NavigationEvent, which depends on both
+    Compose.Runtime.Annotation.Android (AAR) and Compose.Runtime.Annotation.Jvm (JAR). Both contain
+    androidx.compose.runtime.Immutable, causing a D8/R8 "type defined multiple times" dex error.
+    Remove the JVM jar from AndroidJavaLibrary before dexing; the Android AAR already provides these classes.
+  -->
+  <Target Name="_MauiRemoveComposeAnnotationJvmDuplicate"
+          AfterTargets="ResolveAssemblyReferences"
+          Condition="'$(AndroidApplication)' == 'true'">
+    <ItemGroup>
+      <AndroidJavaLibrary Remove="@(AndroidJavaLibrary)"
+                          Condition="'%(Filename)%(Extension)' == 'runtime-annotation-jvm.jar'" />
+    </ItemGroup>
+  </Target>
+
 </Project>
