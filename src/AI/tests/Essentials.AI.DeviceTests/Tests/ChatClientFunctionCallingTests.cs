@@ -1024,8 +1024,9 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 	[Fact]
 	public async Task GetStreamingResponseAsync_WithToolCalling_StreamOrderPreservedThroughFICC()
 	{
-		// Tests the stream order through a FunctionInvokingChatClient middleware chain,
-		// matching the sample app's pipeline (NonFunctionInvokingChatClient pattern).
+		// Tests the stream order through a FunctionInvokingChatClient middleware chain.
+		// The Apple Intelligence client sets InformationalOnly=true on FunctionCallContent,
+		// so FICC passes them through without trying to invoke them.
 		// The raw client sends ToolCall→ToolResult→Text. Verify FICC doesn't reorder.
 
 		var weatherTool = AIFunctionFactory.Create(
@@ -1035,16 +1036,13 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 
 		var rawClient = EnableFunctionCalling(new T());
 
-		// Wrap in a DelegatingChatClient that hides FunctionCallContent from FICC
-		// (same pattern as NonFunctionInvokingChatClient/ToolCallPassThroughHandler)
-		var wrappedClient = new WrapperClient(rawClient);
-		var ficc = new FunctionInvokingChatClient(wrappedClient);
-		var outerClient = new UnwrapperClient(ficc);
+		// FICC wraps the raw client — InformationalOnly FunctionCallContent should pass through
+		var ficc = new FunctionInvokingChatClient(rawClient);
 
 		var options = new ChatOptions { Tools = [weatherTool] };
 		var streamLog = new List<(string Type, string Snippet)>();
 
-		await foreach (var update in outerClient.GetStreamingResponseAsync(
+		await foreach (var update in ficc.GetStreamingResponseAsync(
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
 		{
 			foreach (var content in update.Contents)
@@ -1080,50 +1078,43 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 			$"Stream order: {typeOrder}\nFull log:\n{logSummary}");
 	}
 
-	/// <summary>Wraps FunctionCallContent/FunctionResultContent so FICC ignores them.</summary>
-	private sealed class WrapperClient(IChatClient inner) : DelegatingChatClient(inner)
+	[Fact]
+	public async Task GetStreamingResponseAsync_InformationalOnlyFunctionCalls_NotInvokedByFICC()
 	{
-		public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-			IEnumerable<ChatMessage> messages, ChatOptions? options = null,
-			[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-		{
-			await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
+		// The native Apple Intelligence framework invokes tools itself (via AIFunctionToolAdapter).
+		// InformationalOnly=true prevents FICC from invoking them AGAIN.
+		// So we expect exactly 1 invocation (native), not 2 (native + FICC).
+
+		int invocationCount = 0;
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) =>
 			{
-				for (int i = 0; i < update.Contents.Count; i++)
-				{
-					if (update.Contents[i] is FunctionCallContent fcc)
-						update.Contents[i] = new MarkerFCC(fcc);
-					else if (update.Contents[i] is FunctionResultContent frc)
-						update.Contents[i] = new MarkerFRC(frc);
-				}
-				yield return update;
+				Interlocked.Increment(ref invocationCount);
+				return $"Clear skies, 72°F in {location}";
+			},
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var rawClient = EnableFunctionCalling(new T());
+		var ficc = new FunctionInvokingChatClient(rawClient);
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		var functionCallsSeen = new List<FunctionCallContent>();
+
+		await foreach (var update in ficc.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
+		{
+			foreach (var content in update.Contents.OfType<FunctionCallContent>())
+			{
+				Assert.True(content.InformationalOnly,
+					$"FunctionCallContent '{content.Name}' should have InformationalOnly=true");
+				functionCallsSeen.Add(content);
 			}
 		}
-	}
 
-	/// <summary>Unwraps marker types back to FunctionCallContent/FunctionResultContent.</summary>
-	private sealed class UnwrapperClient(IChatClient inner) : DelegatingChatClient(inner)
-	{
-		public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-			IEnumerable<ChatMessage> messages, ChatOptions? options = null,
-			[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-		{
-			await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken).ConfigureAwait(false))
-			{
-				for (int i = 0; i < update.Contents.Count; i++)
-				{
-					if (update.Contents[i] is MarkerFCC m1)
-						update.Contents[i] = m1.Inner;
-					else if (update.Contents[i] is MarkerFRC m2)
-						update.Contents[i] = m2.Inner;
-				}
-				yield return update;
-			}
-		}
+		Assert.NotEmpty(functionCallsSeen);
+		Assert.Equal(1, invocationCount); // 1 = native only; 2 would mean FICC also invoked
 	}
-
-	private sealed class MarkerFCC(FunctionCallContent inner) : AIContent { public FunctionCallContent Inner => inner; }
-	private sealed class MarkerFRC(FunctionResultContent inner) : AIContent { public FunctionResultContent Inner => inner; }
 
 	[Fact]
 	public async Task GetStreamingResponseAsync_MultiTurnWithToolCalling_ContentOrderPreserved()
@@ -1300,12 +1291,11 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 			name: "SearchLandmarks",
 			description: "Searches for landmarks and points of interest by query");
 
-		// Set up the SAME middleware pipeline as the app:
-		// AppleClient → WrapperClient → FunctionInvokingChatClient → UnwrapperClient
+		// Set up the pipeline: AppleClient → FunctionInvokingChatClient
+		// InformationalOnly=true on FunctionCallContent prevents FICC from invoking them
 		var rawClient = EnableFunctionCalling(new T());
-		var wrappedClient = new WrapperClient(rawClient);
-		var ficc = new FunctionInvokingChatClient(wrappedClient);
-		var pipeline = new UnwrapperClient(ficc);
+		var ficc = new FunctionInvokingChatClient(rawClient);
+		var pipeline = ficc;
 
 		var options = new ChatOptions { Tools = [landmarkTool] };
 

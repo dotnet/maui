@@ -28,6 +28,7 @@ public partial class StreamingResponseHandlerTests
 			Assert.Equal("GetWeather", fc.Name);
 			Assert.NotNull(fc.Arguments);
 			Assert.Equal("Boston", fc.Arguments["location"]?.ToString());
+			Assert.True(fc.InformationalOnly, "FunctionCallContent should have InformationalOnly=true");
 		}
 
 		[Fact]

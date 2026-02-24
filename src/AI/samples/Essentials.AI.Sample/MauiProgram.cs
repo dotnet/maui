@@ -112,9 +112,6 @@ public static class MauiProgram
 			return appleClient
 				.AsBuilder()
 				.UseLogging(loggerFactory)
-				// This prevents double tool invocation when using Microsoft Agent Framework
-				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
-				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
 				.Build();
 		});
 

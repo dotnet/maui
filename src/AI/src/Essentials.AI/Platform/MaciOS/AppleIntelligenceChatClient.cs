@@ -310,7 +310,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 					functionCall.Name,
 					JsonSerializer.Deserialize<AIFunctionArguments>(
 						functionCall.Arguments,
-						AIJsonUtilities.DefaultOptions)),
+						AIJsonUtilities.DefaultOptions))
+				{ InformationalOnly = true },
 #pragma warning restore IL3050, IL2026
 
 			FunctionResultContentNative functionResult =>

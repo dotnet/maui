@@ -65,7 +65,7 @@ internal sealed class StreamingResponseHandler
 		_channel.Writer.TryWrite(new ChatResponseUpdate
 		{
 			Role = ChatRole.Assistant,
-			Contents = { new FunctionCallContent(toolCallId!, toolCallName!, args) }
+			Contents = { new FunctionCallContent(toolCallId!, toolCallName!, args) { InformationalOnly = true } }
 		});
 	}
 
