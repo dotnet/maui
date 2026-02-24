@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading.Channels;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.Maui.Essentials.AI;
@@ -65,8 +64,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		var nativeMessages = ToNative(messages, options);
 		var nativeOptions = ToNative(options, cancellationToken);
 		var native = new ChatClientNative();
-
-		var tcs = new TaskCompletionSource<ChatResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var handler = new NonStreamingResponseHandler();
 
 		// Set up cancellation registration before invoking native to avoid race
 		CancellationTokenNative? nativeToken = null;
@@ -75,35 +73,20 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		nativeToken = native.GetResponse(
 			nativeMessages,
 			nativeOptions,
-			onUpdate: (update) =>
-			{
-				// Updates are not used in non-streaming mode
-			},
+			onUpdate: (_) => { },
 			onComplete: (response, error) =>
 			{
 				registration.Dispose();
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
-					{
-						tcs.TrySetCanceled(cancellationToken);
-					}
+						handler.CompleteCancelled(cancellationToken);
 					else
-					{
-						tcs.TrySetException(new NSErrorException(error));
-					}
+						handler.CompleteWithError(new NSErrorException(error));
 				}
 				else
 				{
-					try
-					{
-						var chatResponse = FromNativeChatResponse(response);
-						tcs.TrySetResult(chatResponse);
-					}
-					catch (Exception ex)
-					{
-						tcs.TrySetException(ex);
-					}
+					handler.Complete(response);
 				}
 			});
 
@@ -113,7 +96,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			nativeToken?.Cancel();
 		}
 
-		return tcs.Task;
+		return handler.Task;
 	}
 
 	/// <inheritdoc />
@@ -124,16 +107,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	{
 		var nativeMessages = ToNative(messages, options);
 		var nativeOptions = ToNative(options, cancellationToken);
-
 		var native = new ChatClientNative();
-
-		var channel = Channel.CreateUnbounded<ChatResponseUpdate>(
-			new UnboundedChannelOptions { SingleReader = true });
-
-		// Use appropriate stream chunker based on response format
-		StreamChunkerBase chunker = nativeOptions?.ResponseJsonSchema is not null
-			? new JsonStreamChunker()
-			: new PlainTextStreamChunker();
+		var handler = new StreamingResponseHandler(useJsonChunker: nativeOptions?.ResponseJsonSchema is not null);
 
 		// Set up cancellation registration before invoking native to avoid race
 		CancellationTokenNative? nativeToken = null;
@@ -146,11 +121,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			{
 				try
 				{
-					ProcessStreamUpdate(update, chunker, channel.Writer);
+					handler.ProcessUpdate(StreamUpdate.FromNative(update));
 				}
 				catch (Exception ex)
 				{
-					channel.Writer.TryComplete(ex);
+					handler.CompleteWithError(ex);
 				}
 			},
 			onComplete: (finalResult, error) =>
@@ -159,19 +134,19 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
-						channel.Writer.TryComplete(new OperationCanceledException(cancellationToken));
+						handler.CompleteWithError(new OperationCanceledException(cancellationToken));
 					else
-						channel.Writer.TryComplete(new NSErrorException(error));
+						handler.CompleteWithError(new NSErrorException(error));
 				}
 				else
 				{
 					try
 					{
-						CompleteStream(chunker, channel.Writer);
+						handler.Complete();
 					}
 					catch (Exception ex)
 					{
-						channel.Writer.TryComplete(ex);
+						handler.CompleteWithError(ex);
 					}
 				}
 			});
@@ -182,81 +157,9 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			nativeToken?.Cancel();
 		}
 
-		await foreach (var update in channel.Reader.ReadAllAsync(cancellationToken))
+		await foreach (var update in handler.ReadAllAsync(cancellationToken))
 		{
 			yield return update;
-		}
-
-		// Local function: process a single streaming update into channel messages
-		static void ProcessStreamUpdate(ResponseUpdateNative update, StreamChunkerBase chunker, ChannelWriter<ChatResponseUpdate> writer)
-		{
-			switch (update.UpdateType)
-			{
-				case ResponseUpdateTypeNative.Content:
-					if (update.Text is not null)
-					{
-						var delta = chunker.Process(update.Text);
-						if (!string.IsNullOrEmpty(delta))
-						{
-							writer.TryWrite(new ChatResponseUpdate
-							{
-								Role = ChatRole.Assistant,
-								Contents = { new TextContent(delta) }
-							});
-						}
-					}
-					break;
-
-				case ResponseUpdateTypeNative.ToolCall:
-					// Flush any pending content before resetting for tool call
-					var pendingContent = chunker.Flush();
-					if (!string.IsNullOrEmpty(pendingContent))
-					{
-						writer.TryWrite(new ChatResponseUpdate
-						{
-							Role = ChatRole.Assistant,
-							Contents = { new TextContent(pendingContent) }
-						});
-					}
-					chunker.Reset();
-
-					var args = update.ToolCallArguments is null
-						? null
-#pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
-						: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
-#pragma warning restore IL3050, IL2026
-
-					writer.TryWrite(new ChatResponseUpdate
-					{
-						Role = ChatRole.Assistant,
-						Contents = { new FunctionCallContent(update.ToolCallId!, update.ToolCallName!, args) }
-					});
-					break;
-
-				case ResponseUpdateTypeNative.ToolResult:
-					writer.TryWrite(new ChatResponseUpdate
-					{
-						Role = ChatRole.Tool,
-						Contents = { new FunctionResultContent(update.ToolCallId!, update.ToolCallResult!) }
-					});
-					break;
-			}
-		}
-
-		// Local function: flush remaining chunker content and complete the channel
-		static void CompleteStream(StreamChunkerBase chunker, ChannelWriter<ChatResponseUpdate> writer)
-		{
-			var finalChunk = chunker.Flush();
-			if (!string.IsNullOrEmpty(finalChunk))
-			{
-				writer.TryWrite(new ChatResponseUpdate
-				{
-					Role = ChatRole.Assistant,
-					Contents = { new TextContent(finalChunk) }
-				});
-			}
-
-			writer.TryComplete();
 		}
 	}
 
@@ -325,7 +228,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		return nativeMessages;
 	}
 
-	private static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
+	internal static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
 	{
 		if (response is null || response.Messages is null || response.Messages.Length == 0)
 		{
