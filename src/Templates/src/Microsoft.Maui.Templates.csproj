@@ -81,12 +81,29 @@
         DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
         Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
 
+    <!-- When not stabilized (preview builds), strip the build number and replace with a wildcard:
+         e.g. 11.0.0-preview.2.26103.111 -> 11.0.0-preview.2.*
+         MSBuild has no built-in API for semver parsing, so we use Regex to strip the trailing build segments. -->
+    <PropertyGroup Condition="'$(StabilizePackageVersion)' != 'true'">
+      <_PreviewWildcardPattern>(-[a-zA-Z][a-zA-Z0-9]*\.\d+)\.\d+\.\d+</_PreviewWildcardPattern>
+      <_TemplateLoggingDebugVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftExtensionsLoggingDebugVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateLoggingDebugVersion>
+      <_TemplateComponentsWebVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebVersion>
+      <_TemplateComponentsWebAssemblyVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebAssemblyVersion>
+      <_TemplateComponentsWebAssemblyServerVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebAssemblyServerVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(StabilizePackageVersion)' == 'true'">
+      <_TemplateLoggingDebugVersion>$(MicrosoftExtensionsLoggingDebugVersion)</_TemplateLoggingDebugVersion>
+      <_TemplateComponentsWebVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</_TemplateComponentsWebVersion>
+      <_TemplateComponentsWebAssemblyVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</_TemplateComponentsWebAssemblyVersion>
+      <_TemplateComponentsWebAssemblyServerVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)</_TemplateComponentsWebAssemblyServerVersion>
+    </PropertyGroup>
+
     <!-- Replace .NET TFM versions -->
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
         MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE"
-        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion);$(MicrosoftAspNetCoreComponentsWebPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion);$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)" />
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(_TemplateLoggingDebugVersion);$(_TemplateComponentsWebVersion);$(_TemplateComponentsWebAssemblyVersion);$(_TemplateComponentsWebAssemblyServerVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
