@@ -21,7 +21,7 @@ public class Issue16910 : _IssuesUITest
 	// the test reliably times out. On main (without RunWithTimeout), the same test takes
 	// ~1m16s per run but eventually succeeds because nothing caps the HTTP call.
 	// See: build 1299547 (main) vs build 1306375 (this PR) for timing comparison.
-#if !TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST
 	[Test]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
