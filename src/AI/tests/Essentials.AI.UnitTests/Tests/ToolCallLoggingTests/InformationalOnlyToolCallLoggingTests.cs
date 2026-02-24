@@ -100,7 +100,7 @@ public class InformationalOnlyToolCallLoggingTests
 
 		using var pipeline = new ChatClientBuilder(mockClient)
 			.UseFunctionInvocation(loggerFactory)
-			.Use(inner => new LoggingChatClient(inner, logs))
+			.UseLogging(loggerFactory)
 			.Build();
 
 		await pipeline.GetResponseAsync([new ChatMessage(ChatRole.User, "info?")]);
@@ -116,11 +116,12 @@ public class InformationalOnlyToolCallLoggingTests
 	public async Task NoTools_NoFunctionContentInLogs()
 	{
 		var logs = new LogCollector(LogLevel.Trace);
+		var loggerFactory = new SingleLoggerFactory(logs);
 		var mockClient = new MockToolCallClient(informationalOnly: true);
 		mockClient.AddTextContent("Hello there!");
 
 		using var pipeline = new ChatClientBuilder(mockClient)
-			.Use(inner => new LoggingChatClient(inner, logs))
+			.UseLogging(loggerFactory)
 			.Build();
 
 		await pipeline.GetResponseAsync([new ChatMessage(ChatRole.User, "hi")]);

@@ -29,7 +29,7 @@ internal static class ToolCallLoggingHelpers
 
 		var pipeline = new ChatClientBuilder(mockClient)
 			.UseFunctionInvocation(loggerFactory)
-			.Use(inner => new LoggingChatClient(inner, logs))
+			.UseLogging(loggerFactory)
 			.Build();
 
 		// For invocable tools, register the tool in ChatOptions so FICC can find it
