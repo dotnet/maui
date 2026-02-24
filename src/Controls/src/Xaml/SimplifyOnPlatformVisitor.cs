@@ -7,7 +7,8 @@ using System.Linq;
 namespace Microsoft.Maui.Controls.Xaml;
 
 class SimplifyOnPlatformVisitor : IXamlNodeVisitor
-{	public SimplifyOnPlatformVisitor(string targetFramework)
+{
+	public SimplifyOnPlatformVisitor(string targetFramework)
 	{
 
 		if (string.IsNullOrEmpty(targetFramework))
@@ -49,7 +50,7 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 		//`{OnPlatform}` markup extension
 		if (node.XmlType.IsOfAnyType("OnPlatformExtension"))
 		{
-			if (   node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
+			if (node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
 				|| node.Properties.TryGetValue(new XmlName(null, Target), out targetNode)
 				|| node.Properties.TryGetValue(new XmlName("", "Default"), out targetNode)
 				|| node.Properties.TryGetValue(new XmlName(null, "Default"), out targetNode))
@@ -87,12 +88,17 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 			bool hasKey = node.Properties.TryGetValue(XmlName.xKey, out keyNode);
 
 			// If no value found for target platform and no Default,
-			// create a default value node if we have x:TypeArguments
+			// create a default value node if we have x:TypeArguments.
+			// Mark it as IsOnPlatformDefaultValue so SourceGen can generate default(T)
+			// instead of trying to instantiate the type (which fails for abstract types
+			// or types with protected constructors).
 			if (onNode == null && node.XmlType.TypeArguments != null && node.XmlType.TypeArguments.Count > 0)
 			{
-				// Create default value for the type (to match OnPlatform<T> runtime behavior)
 				var typeArg = node.XmlType.TypeArguments[0];
-				var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
+				var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition)
+				{
+					IsOnPlatformDefaultValue = true
+				};
 				onNode = elementNode;
 			}
 
@@ -106,10 +112,10 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 					// Create a new ElementNode with the type from x:TypeArguments
 					var typeArg = node.XmlType.TypeArguments[0];
 					var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
-					
+
 					// Set the value as the collection item (for types like Color, this is how they're represented)
 					elementNode.CollectionItems.Add(valueNode);
-					
+
 					// Replace the ValueNode with the new ElementNode
 					onNode = elementNode;
 				}
@@ -190,7 +196,10 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 
 		INode GetDefault(ElementNode onPlatform)
 		{
+			// Check both empty namespace (attribute syntax) and MAUI namespace (element syntax)
 			if (onPlatform.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
+				return defaultNode;
+			if (onPlatform.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Default"), out defaultNode))
 				return defaultNode;
 			return null;
 		}

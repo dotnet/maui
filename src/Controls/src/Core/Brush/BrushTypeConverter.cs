@@ -9,21 +9,21 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BrushTypeConverter']/Docs/*" />
+	/// <summary>A <see cref="TypeConverter"/> that converts strings, colors, and paints to <see cref="Brush"/> objects.</summary>
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.BrushTypeConverter")]
 	public class BrushTypeConverter : TypeConverter
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='LinearGradient']/Docs/*" />
+		/// <summary>The CSS function name for linear gradients.</summary>
 		public const string LinearGradient = "linear-gradient";
-		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='RadialGradient']/Docs/*" />
+		/// <summary>The CSS function name for radial gradients.</summary>
 		public const string RadialGradient = "radial-gradient";
-		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Rgb']/Docs/*" />
+		/// <summary>The CSS function name for RGB colors.</summary>
 		public const string Rgb = "rgb";
-		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Rgba']/Docs/*" />
+		/// <summary>The CSS function name for RGBA colors with alpha.</summary>
 		public const string Rgba = "rgba";
-		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsl']/Docs/*" />
+		/// <summary>The CSS function name for HSL colors.</summary>
 		public const string Hsl = "hsl";
-		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsla']/Docs/*" />
+		/// <summary>The CSS function name for HSLA colors with alpha.</summary>
 		public const string Hsla = "hsla";
 
 		readonly ColorTypeConverter _colorTypeConverter = new();

@@ -4,14 +4,21 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.AppThemeChangedEventArgs']/Docs/*" />
+	/// <summary>
+	/// Event arguments for the <see cref="Application.RequestedThemeChanged"/> event.
+	/// </summary>
 	public class AppThemeChangedEventArgs : EventArgs
 	{
-		/// <param name="appTheme">The appTheme parameter.</param>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AppThemeChangedEventArgs"/> class.
+		/// </summary>
+		/// <param name="appTheme">The new app theme.</param>
 		public AppThemeChangedEventArgs(AppTheme appTheme) =>
 			RequestedTheme = appTheme;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppThemeChangedEventArgs.xml" path="//Member[@MemberName='RequestedTheme']/Docs/*" />
+		/// <summary>
+		/// Gets the new requested theme.
+		/// </summary>
 		public AppTheme RequestedTheme { get; }
 	}
 }

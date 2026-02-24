@@ -32,7 +32,6 @@ public class Issue21814FlyoutPage : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.FlyoutPage)]
-	[Category(UITestCategories.Navigation)]
 	public void InitialPageLoadShowsCorrectNavigationInfo()
 	{
 		// Verify Item 1 is initially loaded and shows correct navigation info
@@ -52,7 +51,6 @@ public class Issue21814FlyoutPage : _IssuesUITest
 
 	[Test, Order(2)]
 	[Category(UITestCategories.FlyoutPage)]
-	[Category(UITestCategories.Navigation)]
 	public void NavigationFromItem1ToItem2ShowsCorrectParameters()
 	{
 		// Start on Item 1
@@ -71,7 +69,6 @@ public class Issue21814FlyoutPage : _IssuesUITest
 
 	[Test, Order(3)]
 	[Category(UITestCategories.FlyoutPage)]
-	[Category(UITestCategories.Navigation)]
 	public void NavigationFromItem2ToItem3ShowsCorrectParameters()
 	{
 		// Starting on Item 1
@@ -94,7 +91,6 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	
 	[Test, Order(4)]
 	[Category(UITestCategories.FlyoutPage)]
-	[Category(UITestCategories.Navigation)]
 	public void PopNavigationPageAfterPush()
 	{
 #if ANDROID || WINDOWS

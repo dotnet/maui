@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			BindableProperty.Create("WindowSoftInputModeAdjust", typeof(WindowSoftInputModeAdjust),
 			typeof(Application), WindowSoftInputModeAdjust.Pan);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="//Member[@MemberName='GetWindowSoftInputModeAdjust'][1]/Docs/*" />
+		/// <summary>Gets a value that controls whether the soft input mode pans or resizes content to accommodate the on-screen keyboard.</summary>
+		/// <param name="element">The element to get the soft input mode for.</param>
+		/// <returns>The soft input mode adjustment behavior.</returns>
 		public static WindowSoftInputModeAdjust GetWindowSoftInputModeAdjust(BindableObject element)
 		{
 			return (WindowSoftInputModeAdjust)element.GetValue(WindowSoftInputModeAdjustProperty);
@@ -36,7 +38,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			element.SetValue(WindowSoftInputModeAdjustProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Application.xml" path="//Member[@MemberName='GetWindowSoftInputModeAdjust'][2]/Docs/*" />
+		/// <summary>Gets a value that controls whether the soft input mode pans or resizes content to accommodate the on-screen keyboard.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The soft input mode adjustment behavior.</returns>
 		public static WindowSoftInputModeAdjust GetWindowSoftInputModeAdjust(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
 			return GetWindowSoftInputModeAdjust(config.Element);

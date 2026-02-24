@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplateBinding']/Docs/*" />
+	/// <summary>Binds a property in a control template to a templated parent property.</summary>
 	[Obsolete("Use Binding.Source=RelativeBindingSource.TemplatedParent")]
 	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class TemplateBinding : BindingBase
@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Controls
 		BindingExpression _expression;
 		string _path;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a new <see cref="TemplateBinding"/> with default values.</summary>
 		public TemplateBinding()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="TemplateBinding"/> with the specified path and optional parameters.</summary>
 		public TemplateBinding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null)
 		{
 			if (path == null)
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			StringFormat = stringFormat;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>Gets or sets the converter used to convert values between source and target.</summary>
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter passed to the converter.</summary>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="//Member[@MemberName='Path']/Docs/*" />
+		/// <summary>Gets or sets the path to the property on the templated parent.</summary>
 		public string Path
 		{
 			get { return _path; }

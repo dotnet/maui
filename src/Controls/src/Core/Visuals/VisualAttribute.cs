@@ -4,11 +4,17 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualAttribute']/Docs/*" />
+	/// <summary>
+	/// Specifies an assembly-level mapping between a visual key name and an <see cref="IVisual"/> type.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public class VisualAttribute : Attribute
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/VisualAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VisualAttribute"/> class with the specified key and visual type.
+		/// </summary>
+		/// <param name="key">The key name used to reference the visual in XAML.</param>
+		/// <param name="visual">The <see cref="IVisual"/> type to associate with the key.</param>
 		public VisualAttribute(
 			string key,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type visual)

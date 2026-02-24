@@ -4,7 +4,9 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="Type[@FullName='Microsoft.Maui.Controls.BackButtonBehavior']/Docs/*" />
+	/// <summary>
+	/// Customizes the appearance and behavior of the back button in a <see cref="Shell"/> application.
+	/// </summary>
 	public class BackButtonBehavior : BindableObject
 	{
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
@@ -33,41 +35,54 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextOverrideProperty =
 			BindableProperty.Create(nameof(TextOverride), typeof(string), typeof(BackButtonBehavior), null, BindingMode.OneTime);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command to execute when the back button is pressed. This is a bindable property.
+		/// </summary>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter to pass to the <see cref="Command"/>. This is a bindable property.
+		/// </summary>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='IconOverride']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the icon to use instead of the default back button icon. This is a bindable property.
+		/// </summary>
 		public ImageSource IconOverride
 		{
 			get { return (ImageSource)GetValue(IconOverrideProperty); }
 			set { SetValue(IconOverrideProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the back button is enabled. This is a bindable property.
+		/// </summary>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value indicating whether the back button is visible. This is a bindable property.
+		/// </summary>
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
 			set { SetValue(IsVisibleProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='TextOverride']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the text to display instead of the default back button text. This is a bindable property.
+		/// </summary>
 		public string TextOverride
 		{
 			get { return (string)GetValue(TextOverrideProperty); }

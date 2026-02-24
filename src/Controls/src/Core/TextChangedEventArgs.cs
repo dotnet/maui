@@ -3,20 +3,22 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TextChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.TextChangedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for text changes.</summary>
 	public class TextChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TextChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="TextChangedEventArgs"/> with the old and new text values.</summary>
+		/// <param name="oldTextValue">The previous text value.</param>
+		/// <param name="newTextValue">The new text value.</param>
 		public TextChangedEventArgs(string oldTextValue, string newTextValue)
 		{
 			OldTextValue = oldTextValue;
 			NewTextValue = newTextValue;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TextChangedEventArgs.xml" path="//Member[@MemberName='NewTextValue']/Docs/*" />
+		/// <summary>Gets the new text value.</summary>
 		public string NewTextValue { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TextChangedEventArgs.xml" path="//Member[@MemberName='OldTextValue']/Docs/*" />
+		/// <summary>Gets the previous text value.</summary>
 		public string OldTextValue { get; private set; }
 	}
 }

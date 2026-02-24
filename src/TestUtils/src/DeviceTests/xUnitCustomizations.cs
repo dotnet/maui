@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,54 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Attribute to skip a test on iOS when running on a specific version or higher.
+	/// The test will be skipped at runtime when the iOS version is at least the specified major version.
+	/// </summary>
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
+	public class SkipOnIOSVersionAttribute : Attribute
+	{
+		public int Major { get; }
+		public int Minor { get; }
+		public int Build { get; }
+		public string Reason { get; }
+
+		public SkipOnIOSVersionAttribute(int major, string reason = "")
+			: this(major, 0, 0, reason)
+		{
+		}
+
+		public SkipOnIOSVersionAttribute(int major, int minor, string reason = "")
+			: this(major, minor, 0, reason)
+		{
+		}
+
+		public SkipOnIOSVersionAttribute(int major, int minor, int build, string reason = "")
+		{
+			Major = major;
+			Minor = minor;
+			Build = build;
+			Reason = reason;
+		}
+
+		public bool ShouldSkip()
+		{
+#if IOS || MACCATALYST
+			return OperatingSystem.IsIOSVersionAtLeast(Major, Minor, Build)
+				|| OperatingSystem.IsMacCatalystVersionAtLeast(Major, Minor, Build);
+#else
+			return false;
+#endif
+		}
+
+		public string GetSkipReason()
+		{
+			if (string.IsNullOrEmpty(Reason))
+				return $"Test skipped on iOS/MacCatalyst {Major}.{Minor}.{Build} or higher";
+			return Reason;
+		}
+	}
+
 	/// <summary>
 	/// This type provides the assembly name for the xUnit attributes specified in
 	/// the linked TestShared\xUnitSharedAttributes.cs file.
@@ -194,7 +243,40 @@ namespace Microsoft.Maui
 
 		public Task<RunSummary> RunAsync(IMessageSink diagnosticMessageSink, IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
 		{
+			// Check for SkipOnIOSVersionAttribute at runtime
+			var skipAttribute = GetSkipOnIOSVersionAttribute();
+			if (skipAttribute != null && skipAttribute.ShouldSkip())
+			{
+				return SkipTestAsync(messageBus, skipAttribute.GetSkipReason());
+			}
+
 			return _inner.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource);
+		}
+
+		private SkipOnIOSVersionAttribute? GetSkipOnIOSVersionAttribute()
+		{
+			var methodInfo = TestMethod.Method.ToRuntimeMethod();
+			var attribute = methodInfo?.GetCustomAttributes(typeof(SkipOnIOSVersionAttribute), inherit: true)
+				.FirstOrDefault() as SkipOnIOSVersionAttribute;
+
+			if (attribute != null)
+				return attribute;
+
+			// Also check the declaring type
+			var typeInfo = TestMethod.TestClass.Class.ToRuntimeType();
+			return typeInfo?.GetCustomAttributes(typeof(SkipOnIOSVersionAttribute), inherit: true)
+				.FirstOrDefault() as SkipOnIOSVersionAttribute;
+		}
+
+		private Task<RunSummary> SkipTestAsync(IMessageBus messageBus, string skipReason)
+		{
+			var test = new XunitTest(this, DisplayName);
+			
+			messageBus.QueueMessage(new TestStarting(test));
+			messageBus.QueueMessage(new TestSkipped(test, skipReason));
+			messageBus.QueueMessage(new TestFinished(test, 0, null));
+
+			return Task.FromResult(new RunSummary { Total = 1, Skipped = 1 });
 		}
 
 		public void Serialize(IXunitSerializationInfo info)

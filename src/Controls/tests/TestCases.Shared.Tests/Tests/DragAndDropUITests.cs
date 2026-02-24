@@ -9,6 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class DragAndDropUITests : CoreGalleryBasePageTest
 	{
 		const string DragAndDropGallery = "Drag and Drop Gallery";
+		public override string GalleryPageName => DragAndDropGallery;
 		public DragAndDropUITests(TestDevice device)
 			: base(device)
 		{
@@ -361,13 +362,24 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("Blue");
 			App.WaitForElement("Green");
-			App.DragAndDrop("Blue", "Green");
 
-			// Wait for all UI elements to confirm drag and drop operation completion
-			App.WaitForElement("DropRelativeLayout");
-			App.WaitForElement("DropRelativeScreen");
-			App.WaitForElement("DropRelativeLabel");
-			App.WaitForElement("DragStartRelativeScreen");
+			bool dragDropSuccess = false;
+			for (int i = 0; i < 3; i++)
+			{
+				App.DragAndDrop("Blue", "Green");
+				Thread.Sleep(500);
+				App.WaitForElement("DropRelativeLayout");
+				if (GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText()) != null)
+				{
+					dragDropSuccess = true;
+					break;
+				}
+			}
+
+			if (!dragDropSuccess)
+			{
+				Assert.Fail("Drag-and-drop operation failed after many attempts. Drop event did not fire.");
+			}
 
 			var dropRelativeToLayout = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
 			var dropRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DropRelativeScreen").GetText());

@@ -125,7 +125,14 @@ internal static partial class ImageProcessor
             if (preserveMetaData && originalMetadata != null)
             {
                 var finalStream = await ApplyMetadataAsync(outputStream, originalMetadata, originalFileName);
-                outputStream.Dispose();
+                
+                // Only dispose outputStream if finalStream is a different object
+                // On Windows, ApplyMetadataAsync returns the same stream, so we shouldn't dispose it
+                if (finalStream != outputStream)
+                {
+                    outputStream.Dispose();
+                }
+                
                 return finalStream;
             }
 
