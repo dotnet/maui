@@ -853,7 +853,7 @@ Microsoft.Maui.Storage.FileSystemImplementation.FileSystemImplementation() -> vo
 Microsoft.Maui.Storage.FileSystemImplementation.OpenAppPackageFileAsync(string! filename) -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.Storage.IFilePicker
 Microsoft.Maui.Storage.IFilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 Microsoft.Maui.Storage.IFileSystem
 Microsoft.Maui.Storage.IFileSystem.AppDataDirectory.get -> string!
 Microsoft.Maui.Storage.IFileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
@@ -1210,7 +1210,7 @@ static Microsoft.Maui.Networking.Connectivity.Current.get -> Microsoft.Maui.Netw
 static Microsoft.Maui.Networking.Connectivity.NetworkAccess.get -> Microsoft.Maui.Networking.NetworkAccess
 static Microsoft.Maui.Storage.FilePicker.Default.get -> Microsoft.Maui.Storage.IFilePicker!
 static Microsoft.Maui.Storage.FilePicker.PickAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
-static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 static Microsoft.Maui.Storage.FileSystem.AppDataDirectory.get -> string!
 static Microsoft.Maui.Storage.FileSystem.AppPackageFileExistsAsync(string! filename) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Storage.FileSystem.CacheDirectory.get -> string!
