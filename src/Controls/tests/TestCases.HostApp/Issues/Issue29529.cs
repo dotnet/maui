@@ -54,7 +54,7 @@ public class Issue29529 : ContentPage
 		var positionLabel = new Label
 		{
 			AutomationId = "positionLabel",
-			Text = $"Current Position{carouselView.Position}",
+			Text = $"Current Position: {carouselView.Position}",
 			HorizontalOptions = LayoutOptions.Center,
 			Padding = new Thickness(20),
 		};
@@ -62,7 +62,7 @@ public class Issue29529 : ContentPage
 		var itemLabel = new Label
 		{
 			AutomationId = "itemLabel",
-			Text = $"Current Item{carouselView.CurrentItem}",
+			Text = $"Current Item: {carouselView.CurrentItem}",
 			HorizontalOptions = LayoutOptions.Center,
 			Padding = new Thickness(20),
 		};
@@ -91,7 +91,7 @@ public class Issue29529 : ContentPage
 
 		var insertButton = new Button
 		{
-			Text = "Insert item at index 6",
+			Text = "Insert item at index 0",
 			AutomationId = "InsertButton",
 			Margin = new Thickness(20),
 		};
@@ -100,7 +100,7 @@ public class Issue29529 : ContentPage
 		{
 			_positionChangedCount = 0;
 			_currentItemChangedCount = 0;
-			carouselItems.Insert(6, "Item 0");
+			carouselItems.Insert(0, "Item 0");
 		};
 
 		verticalStackLayout.Children.Add(carouselView);

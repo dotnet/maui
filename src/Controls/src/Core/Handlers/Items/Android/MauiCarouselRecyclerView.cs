@@ -294,25 +294,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				GetDispatcher()
 					.Dispatch(() =>
 					{
-						// If someone called explicit ScrollTo before the dispatched
-						// callback was delivered then don't override it.
-						if (_scrollToCounter == savedScrollToCounter)
+						try
 						{
-							SetCurrentItem(carouselPosition);
-							UpdatePosition(carouselPosition);
-						}
+							// If someone called explicit ScrollTo before the dispatched
+							// callback was delivered then don't override it.
+							if (_scrollToCounter == savedScrollToCounter)
+							{
+								SetCurrentItem(carouselPosition);
+								UpdatePosition(carouselPosition);
+								//If we are adding or removing the last item we need to update
+								//the inset that we give to items so they are centered
+								if (e.NewStartingIndex == count - 1 || removingLastElement)
+								{
+									UpdateItemDecoration();
+								}
 
-						//If we are adding or removing the last item we need to update
-						//the inset that we give to items so they are centered
-						if (e.NewStartingIndex == count - 1 || removingLastElement)
+								UpdateVisualStates();
+							}
+						}
+						finally
 						{
-							UpdateItemDecoration();
+							// Reset flag after collection operations complete,
+							// always reset even if ScrollTo was called or an exception occurred
+							_isInternalPositionUpdate = false;
 						}
-
-						UpdateVisualStates();
-
-						// Reset flag after collection operations complete
-						_isInternalPositionUpdate = false;
 					});
 		}
 
@@ -452,6 +457,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!_initialized || !_isVisible)
 				return;
 
+			// Do not process scroll events triggered by internal collection changes
+			// (e.g. item inserted at index 0 shifts RecyclerView scroll offset)
+			if (_isInternalPositionUpdate)
+				return;
+
 			_noNeedForScroll = false;
 			var index = e.CenterItemIndex;
 			if (Carousel?.Loop == true)
@@ -534,7 +544,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_oldPosition = carouselPosition;
 				return;
 			}
-
 
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");

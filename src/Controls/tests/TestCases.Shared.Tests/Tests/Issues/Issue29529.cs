@@ -21,7 +21,7 @@ public class Issue29529 : _IssuesUITest
 		var text = App.FindElement("positionLabel").GetText();
 		Assert.That(text, Is.EqualTo("Current Position: 0, Previous Position: 3"));
 		text = App.FindElement("itemLabel").GetText();
-		Assert.That(text, Is.EqualTo("Current Item: Item 1, Previous Item: Item 4"));
+		Assert.That(text, Is.EqualTo("Current Item: Item 0, Previous Item: Item 4"));
 		text = App.FindElement("eventCountLabel").GetText();
 		Assert.That(text, Is.EqualTo("PositionChanged: 1, CurrentItemChanged: 1"));
 	}

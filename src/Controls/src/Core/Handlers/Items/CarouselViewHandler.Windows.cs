@@ -311,9 +311,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SetCarouselViewPosition(int position)
 		{
 			if (ItemCount == 0)
-			{
 				return;
-			}
 
 			if (!IsValidPosition(position))
 				return;
@@ -497,14 +495,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var position = e.CenterItemIndex;
 
 			if (position == -1)
-			{
 				return;
-			}
 
 			if (position == Element.Position)
-			{
 				return;
-			}
 
 			SetCarouselViewPosition(position);
 		}
@@ -543,7 +537,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (removingCurrentElementButNotFirst)
 				{
 					carouselPosition = ItemsView.Position - 1;
-
 				}
 				else if (removingFirstElement && !removingCurrentElement)
 				{
@@ -555,7 +548,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					&& currentItemPosition != -1)
 				{
 					carouselPosition = currentItemPosition;
-					ItemsView.Position = currentItemPosition;
 				}
 
 				if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
