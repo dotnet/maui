@@ -34,7 +34,7 @@
                TextColor="White"
                VerticalOptions="Fill"
                VerticalTextAlignment="Center"
-               Padding="5"
+               Padding="10"
                Grid.Row="1"
                Grid.Column="0"/>
 
@@ -60,8 +60,15 @@
             <Label x:Name="SafeAreaInsetsLabel"
                    AutomationId="SafeAreaInsetsLabel"
                    Text="Insets: Loading..."
-                   FontSize="12"
-                   TextColor="Gray"/>
+                   FontSize="12"/>
+              <HorizontalStackLayout>
+                     <Label Text="KeyboardHeight: "
+                   FontSize="12"/>
+              <Label x:Name="KeyboardHeightLabel"
+                   AutomationId="KeyboardHeightLabel"
+                   Text="0"
+                   FontSize="12"/>
+              </HorizontalStackLayout>
 
             <!-- SafeArea value buttons -->
             <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
@@ -106,7 +113,7 @@
                TextColor="White"
                VerticalOptions="Fill"
                VerticalTextAlignment="Center"
-               Padding="5"
+               Padding="10"
                Grid.Row="1"
                Grid.Column="2"/>
 

@@ -1,5 +1,6 @@
 #if ANDROID
 using Android.Views;
+using AndroidX.Core.View;
 #endif
 
 namespace Maui.Controls.Sample;
@@ -25,6 +26,13 @@ public partial class SafeAreaContentPage : ContentPage
     private void OnPageAppearing(object sender, EventArgs e)
     {
         Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), UpdateSafeAreaInsets);
+#if ANDROID
+        // Listen for window inset changes (keyboard show/hide) to update labels in real time
+        if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView is Android.Views.View decorView)
+        {
+            ViewCompat.SetOnApplyWindowInsetsListener(decorView, new SafeAreaInsetsListener(this));
+        }
+#endif
     }
 
     private void OnSizeChanged(object sender, EventArgs e)
@@ -32,39 +40,9 @@ public partial class SafeAreaContentPage : ContentPage
         Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), UpdateSafeAreaInsets);
     }
 
-    private void UpdateSafeAreaInsets()
+    public void UpdateSafeAreaInsets()
     {
-        SafeAreaInsetsLabel.Text = GetSafeAreaInfo();
-    }
-
-    private string GetSafeAreaInfo()
-    {
-#if ANDROID
-        try
-        {
-            if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView is Android.Views.View decorView)
-            {
-                var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(decorView);
-                if (insets != null)
-                {
-                    var systemBars = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars());
-                    return $"L:{systemBars.Left},T:{systemBars.Top},R:{systemBars.Right},B:{systemBars.Bottom}";
-                }
-            }
-        }
-        catch { }
-#elif IOS || MACCATALYST
-        try
-        {
-            if (this.Handler?.PlatformView is UIKit.UIView platformView && platformView.Window != null)
-            {
-                var safeAreaInsets = platformView.Window.SafeAreaInsets;
-                return $"L:{(int)safeAreaInsets.Left},T:{(int)safeAreaInsets.Top},R:{(int)safeAreaInsets.Right},B:{(int)safeAreaInsets.Bottom}";
-            }
-        }
-        catch { }
-#endif
-        return "L:0,T:0,R:0,B:0";
+        SafeAreaInsetsLabel.Text = SafeAreaExtensions.GetSafeAreaInfo(this);
     }
 
     private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
@@ -88,3 +66,24 @@ public partial class SafeAreaContentPage : ContentPage
     private void OnSafeAreaSoftInputClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.SoftInput);
     private void OnSafeAreaDefaultClicked(object sender, EventArgs e) => SetAllEdges(SafeAreaRegions.Default);
 }
+
+#if ANDROID
+/// <summary>
+/// Listens for window inset changes (keyboard show/hide) and updates the SafeAreaInsetsLabel.
+/// </summary>
+class SafeAreaInsetsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
+{
+    private readonly SafeAreaContentPage _page;
+
+    public SafeAreaInsetsListener(SafeAreaContentPage page)
+    {
+        _page = page;
+    }
+
+    public WindowInsetsCompat OnApplyWindowInsets(Android.Views.View v, WindowInsetsCompat insets)
+    {
+        _page.Dispatcher.Dispatch(() => _page.UpdateSafeAreaInsets());
+        return ViewCompat.OnApplyWindowInsets(v, insets);
+    }
+}
+#endif
