@@ -8,11 +8,6 @@ namespace Microsoft.Maui.Controls.Internals
 	internal static class SwipeGestureExtensions
 	{
 		/// <summary>
-		/// Threshold for rotation values below which transformation is skipped (in degrees)
-		/// </summary>
-		const double RotationThreshold = 0.01;
-
-		/// <summary>
 		/// Normalizes a rotation angle to be within the range [0, 360)
 		/// </summary>
 		/// <param name="rotation">The rotation angle in degrees</param>
@@ -20,44 +15,6 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static double NormalizeRotation(this double rotation)
 		{
 			return ((rotation % 360) + 360) % 360;
-		}
-
-		/// <summary>
-		/// Validates that floating-point coordinates are finite (not NaN or Infinity)
-		/// </summary>
-		/// <param name="x">X coordinate</param>
-		/// <param name="y">Y coordinate</param>
-		/// <returns>True if both coordinates are finite, false otherwise</returns>
-		internal static bool AreCoordinatesValid(double x, double y)
-		{
-			return !double.IsNaN(x) && !double.IsInfinity(x) &&
-				   !double.IsNaN(y) && !double.IsInfinity(y);
-		}
-
-		internal static (double x, double y) TransformSwipeCoordinatesWithRotation(double x, double y, double rotation)
-		{
-			// Skip transformation for negligible rotation values to avoid unnecessary computation
-			if (Math.Abs(rotation) < RotationThreshold)
-			{
-				return (x, y);
-			}
-
-			// Normalize rotation to [0, 360) range to handle negative angles and values > 360
-			var normalizedRotation = rotation.NormalizeRotation();
-			var radians = normalizedRotation * Math.PI / 180.0;
-
-			var cos = Math.Cos(radians);
-			var sin = Math.Sin(radians);
-			var transformedX = x * cos - y * sin;
-			var transformedY = x * sin + y * cos;
-
-			// Validate transformed coordinates for NaN or Infinity
-			if (!AreCoordinatesValid(transformedX, transformedY))
-			{
-				return (x, y);
-			}
-
-			return (transformedX, transformedY);
 		}
 
 		internal static SwipeDirection TransformSwipeDirectionForRotation(SwipeDirection direction, double rotation)

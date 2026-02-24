@@ -7,8 +7,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class SwipeGestureHandler
 	{
-		double _totalX, _totalY;
-
 		Func<double, double> PixelTranslation
 		{
 			get
@@ -38,22 +36,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return false;
 
-			if (view.Rotation != 0)
-			{
-				var transformedCoords = SwipeGestureExtensions.TransformSwipeCoordinatesWithRotation(x, y, view.Rotation);
-				_totalX = PixelTranslation(transformedCoords.x);
-				_totalY = PixelTranslation(transformedCoords.y);
-			}
-			else
-			{
-				_totalX = PixelTranslation(x);
-				_totalY = PixelTranslation(y);
-			}
-
 			var result = false;
-			foreach (SwipeGestureRecognizer swipeGesture in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
+			foreach (SwipeGestureRecognizer swipeGesture in
+					 view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)swipeGesture).SendSwipe(view, _totalX, _totalY);
+				((ISwipeGestureController)swipeGesture).SendSwipe(view, PixelTranslation(x), PixelTranslation(y));
 				result = true;
 			}
 
@@ -75,6 +62,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return true;
 				}
 			}
+
 			return false;
 		}
 
