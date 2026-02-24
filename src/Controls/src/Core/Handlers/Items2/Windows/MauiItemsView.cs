@@ -8,6 +8,7 @@ using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Pressed, Selected combinations) so they don't overlay on top of
 			// MAUI's own VisualStateManager states. Setting these on the parent
 			// ItemsView cascades to all child ItemContainer instances.
-			var transparent = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+			var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 			Resources["ItemContainerBackground"] = transparent;
 			Resources["ItemContainerPointerOverBackground"] = transparent;
 			Resources["ItemContainerPressedBackground"] = transparent;
