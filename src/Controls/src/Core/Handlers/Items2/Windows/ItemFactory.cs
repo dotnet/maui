@@ -172,7 +172,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (VirtualView is not null && Content is null)
 			{
-				Content = VirtualView.ToPlatform(_context);
+				var platformView = VirtualView.ToPlatform(_context);
+				Content = platformView;
+
+				// In MAUI, View.Margin is handled by the cross-platform layout system
+				// (ComputeDesiredSize/ComputeFrame) in the MAUI parent's layout pass.
+				// But in CollectionView2, the root template view's layout is managed by
+				// WinUI's ItemsRepeater, not a MAUI parent — so the margin is never
+				// applied. Set it as WinUI Margin on the platform view so the native
+				// layout respects the spacing.
+				if (VirtualView is View mauiView && platformView is FrameworkElement fe)
+				{
+					var margin = mauiView.Margin;
+					fe.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
+				}
 			}
 		}
 
