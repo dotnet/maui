@@ -23,4 +23,8 @@ public partial class ShellFeatureMainPage : ContentPage
 		Application.Current.MainPage = new ShellFlyoutControlPage();
 	}
 
+	private void OnShellTabbedButtonClicked(object sender, EventArgs e)
+	{
+		Application.Current.MainPage = new ShellTabbedControlPage();
+	}
 }
