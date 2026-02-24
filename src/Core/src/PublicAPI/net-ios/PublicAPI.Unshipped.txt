@@ -1,3 +1,24 @@
 #nullable enable
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+Microsoft.Maui.MauiCarPlaySceneDelegate
+Microsoft.Maui.MauiCarPlaySceneDelegate.MauiCarPlaySceneDelegate() -> void
+Microsoft.Maui.MauiCarPlaySceneDelegate.InterfaceController.get -> CarPlay.CPInterfaceController?
+Microsoft.Maui.MauiCarPlaySceneDelegate.CarPlayWindow.get -> CarPlay.CPWindow?
+virtual Microsoft.Maui.MauiCarPlaySceneDelegate.DidConnect(CarPlay.CPTemplateApplicationScene! templateApplicationScene, CarPlay.CPInterfaceController! interfaceController, CarPlay.CPWindow! window) -> void
+virtual Microsoft.Maui.MauiCarPlaySceneDelegate.DidConnect(CarPlay.CPTemplateApplicationScene! templateApplicationScene, CarPlay.CPInterfaceController! interfaceController) -> void
+virtual Microsoft.Maui.MauiCarPlaySceneDelegate.DidDisconnect(CarPlay.CPTemplateApplicationScene! templateApplicationScene, CarPlay.CPInterfaceController! interfaceController) -> void
+virtual Microsoft.Maui.MauiCarPlaySceneDelegate.DidSelectManeuver(CarPlay.CPTemplateApplicationScene! templateApplicationScene, CarPlay.CPManeuver! maneuver) -> void
+virtual Microsoft.Maui.MauiCarPlaySceneDelegate.DidSelectNavigationAlert(CarPlay.CPTemplateApplicationScene! templateApplicationScene, CarPlay.CPNavigationAlert! navigationAlert) -> void
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidConnect
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidConnect.Invoke(CarPlay.CPTemplateApplicationScene! scene, CarPlay.CPInterfaceController! interfaceController) -> void
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidDisconnect
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidDisconnect.Invoke(CarPlay.CPTemplateApplicationScene! scene, CarPlay.CPInterfaceController! interfaceController) -> void
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectManeuver
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectManeuver.Invoke(CarPlay.CPTemplateApplicationScene! scene, CarPlay.CPManeuver! maneuver) -> void
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectNavigationAlert
+virtual Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectNavigationAlert.Invoke(CarPlay.CPTemplateApplicationScene! scene, CarPlay.CPNavigationAlert! navigationAlert) -> void
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidConnect(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidConnect! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidDisconnect(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidDisconnect! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidSelectManeuver(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectManeuver! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidSelectNavigationAlert(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectNavigationAlert! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
