@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Controls
 				{
 					context.Values.Remove(SetterSpecificity.ManualValueSetter);
 				}
-				context.Values[SetterSpecificity.FromBinding] = currentValue;
+				context.Values.SetValue(SetterSpecificity.FromBinding, currentValue);
 			}
 
 			BindingBase oldBinding = null;
