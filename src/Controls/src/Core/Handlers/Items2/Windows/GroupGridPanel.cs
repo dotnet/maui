@@ -15,14 +15,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// <para>
 	/// Uses WinUI <see cref="VariableSizedWrapGrid"/> with <see cref="VariableSizedWrapGrid.MaximumRowsOrColumns"/>
 	/// set to the grid span. ItemWidth is dynamically calculated from the available width
-	/// via <see cref="SizeChanged"/> so columns divide the space equally.
+	/// via so columns divide the space equally.
 	/// </para>
 	/// <para>
 	/// This mirrors how grouped linear mode works with StackLayout — each group is a single item
 	/// in the outer ItemsView, and the native panel handles item arrangement within the group.
 	/// </para>
 	/// </summary>
-	internal class GroupGridPanel : WStackPanel
+	/// // Panel.Children is banned in favor of MauiPanel.CachedChildren, but GroupGridPanel
+	// uses native WinUI StackPanel/VariableSizedWrapGrid which don't have CachedChildren.
+#pragma warning disable RS0030 // Do not use banned APIs — Panel.Children is fine on native WinUI panels
+	internal partial class GroupGridPanel : WStackPanel
 	{
 		VariableSizedWrapGrid? _wrapGrid;
 		int _span = 1;
@@ -137,7 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					nativeElement.VerticalAlignment = VerticalAlignment.Stretch;
 
 					// Apply spacing via margin — VariableSizedWrapGrid doesn't have ColumnSpacing/RowSpacing
-					nativeElement.Margin = new Thickness(
+					nativeElement.Margin = new Microsoft.UI.Xaml.Thickness(
 						horizontalSpacing / 2, verticalSpacing / 2,
 						horizontalSpacing / 2, verticalSpacing / 2);
 
@@ -280,7 +283,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			foreach (var view in MauiViews)
 			{
-				if (view.Handler?.PlatformView == nativeElement)
+				if (view.Handler?.PlatformView is FrameworkElement fe && fe == nativeElement)
 					return view;
 			}
 			return null;

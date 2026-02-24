@@ -224,7 +224,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())
 			{
 				if (itemcontainer?.Child is ElementWrapper wrapper &&
-					wrapper.PlatformView is GroupGridPanel groupGridPanel)
+					wrapper.Content is GroupGridPanel groupGridPanel)
 				{
 					groupGridPanel.UpdateVisualStates(ItemsView);
 				}

@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// In this mode, the outer ItemsView uses StackLayout to virtualize groups,
 		/// and each group uses a native VariableSizedWrapGrid for item arrangement.
 		/// </summary>
-		protected bool IsGroupedGridMode() =>
+		internal bool IsGroupedGridMode() =>
 			Layout is GridItemsLayout &&
 			ItemsView is GroupableItemsView groupable &&
 			groupable.IsGrouped;
