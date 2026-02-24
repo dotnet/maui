@@ -3,40 +3,59 @@
 
 using Microsoft.Maui.DevTools.Errors;
 using Microsoft.Maui.DevTools.Models;
-using Microsoft.Maui.DevTools.Utils;
-using Xamarin.Android.Tools;
+using System.Diagnostics;
+using XatSdkManager = Xamarin.Android.Tools.SdkManager;
+using XatSdkPackage = Xamarin.Android.Tools.SdkPackage;
 
 namespace Microsoft.Maui.DevTools.Providers.Android;
 
 /// <summary>
 /// Wrapper for Android SDK Manager operations.
-/// Delegates to Xamarin.Android.Tools.SdkManagerRunner for core functionality.
+/// Delegates to Xamarin.Android.Tools.SdkManager for core functionality.
 /// </summary>
-public class SdkManager
+public class SdkManager : IDisposable
 {
 	private readonly Func<string?> _getSdkPath;
 	private readonly Func<string?> _getJdkPath;
-	private readonly SdkManagerRunner _runner;
+	private readonly XatSdkManager _sdkManager;
 
 	public SdkManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
 	{
 		_getSdkPath = getSdkPath;
 		_getJdkPath = getJdkPath;
-		_runner = new SdkManagerRunner(getSdkPath, getJdkPath);
+		_sdkManager = new XatSdkManager(logger: (level, msg) => 
+		{
+			if (level >= TraceLevel.Info)
+				Console.WriteLine($"[SdkManager] {msg}");
+		});
+		UpdatePaths();
+	}
+
+	private void UpdatePaths()
+	{
+		_sdkManager.AndroidSdkPath = _getSdkPath();
+		_sdkManager.JavaSdkPath = _getJdkPath();
 	}
 
 	private string? SdkPath => _getSdkPath();
 	private string? JdkPath => _getJdkPath();
 
-	public string? SdkManagerPath => _runner.SdkManagerPath;
+	public string? SdkManagerPath => _sdkManager.FindSdkManagerPath();
 
-	public bool IsAvailable => _runner.IsAvailable;
+	public bool IsAvailable => !string.IsNullOrEmpty(SdkManagerPath);
 
-	public async Task<HealthCheck> CheckHealthAsync(CancellationToken cancellationToken = default)
+	public void Dispose()
 	{
+		_sdkManager.Dispose();
+	}
+
+	public Task<HealthCheck> CheckHealthAsync(CancellationToken cancellationToken = default)
+	{
+		UpdatePaths();
+		
 		if (!IsAvailable || string.IsNullOrEmpty(SdkPath))
 		{
-			return new HealthCheck
+			return Task.FromResult(new HealthCheck
 			{
 				Category = "android",
 				Name = "Android SDK",
@@ -49,10 +68,10 @@ public class SdkManager
 					AutoFixable = true,
 					Command = "maui android install"
 				}
-			};
+			});
 		}
 
-		return new HealthCheck
+		return Task.FromResult(new HealthCheck
 		{
 			Category = "android",
 			Name = "Android SDK",
@@ -62,35 +81,46 @@ public class SdkManager
 			{
 				["path"] = SdkPath
 			}
-		};
+		});
 	}
 
 	public async Task<List<SdkPackage>> GetInstalledPackagesAsync(CancellationToken cancellationToken = default)
 	{
-		var result = await _runner.ListPackagesAsync(cancellationToken);
-		if (!result.Success || result.Data == default)
+		UpdatePaths();
+		
+		try
+		{
+			var (installed, _) = await _sdkManager.ListAsync(cancellationToken);
+			return installed.Select(MapToMauiPackage).ToList();
+		}
+		catch
+		{
 			return new List<SdkPackage>();
-
-		return result.Data.Installed.Select(MapToMauiPackage).ToList();
+		}
 	}
 
 	public async Task<List<SdkPackage>> GetAvailablePackagesAsync(CancellationToken cancellationToken = default)
 	{
-		var result = await _runner.ListPackagesAsync(cancellationToken);
-		if (!result.Success || result.Data == default)
+		UpdatePaths();
+		
+		try
+		{
+			var (_, available) = await _sdkManager.ListAsync(cancellationToken);
+			return available.Select(MapToMauiPackage).ToList();
+		}
+		catch
+		{
 			return new List<SdkPackage>();
-
-		return result.Data.Available.Select(MapToMauiPackage).ToList();
+		}
 	}
 
-	private static SdkPackage MapToMauiPackage(SdkPackageInfo pkg)
+	private static SdkPackage MapToMauiPackage(XatSdkPackage pkg)
 	{
 		return new SdkPackage
 		{
 			Path = pkg.Path,
 			Version = pkg.Version,
 			Description = pkg.Description,
-			Location = pkg.Location,
 			IsInstalled = pkg.IsInstalled
 		};
 	}
@@ -98,116 +128,80 @@ public class SdkManager
 	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false,
 		CancellationToken cancellationToken = default)
 	{
+		UpdatePaths();
+		
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"SDK Manager not found. Run 'maui android install' first.",
 				"maui android install");
 
-		var result = await _runner.InstallPackagesAsync(packages, acceptLicenses, cancellationToken);
-
-		if (!result.Success)
+		try
+		{
+			await _sdkManager.InstallAsync(packages, acceptLicenses, cancellationToken);
+		}
+		catch (Exception ex)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidPackageInstallFailed,
-				$"Failed to install packages: {result.ErrorMessage ?? result.StandardError}",
-				nativeError: result.StandardError);
+				$"Failed to install packages: {ex.Message}",
+				nativeError: ex.Message);
 		}
 	}
 
 	public async Task AcceptLicensesAsync(CancellationToken cancellationToken = default)
 	{
+		UpdatePaths();
+		
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"SDK Manager not found",
 				"maui android install");
 
-		// License acceptance may return non-zero even when successful
-		await _runner.AcceptLicensesAsync(cancellationToken);
+		await _sdkManager.AcceptLicensesAsync(cancellationToken);
 	}
 
 	public async Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default)
 	{
+		UpdatePaths();
+		
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"SDK Manager not found. Run 'maui android install' first.",
 				"maui android install");
 
-		var result = await _runner.UninstallPackagesAsync(packages, cancellationToken);
-
-		if (!result.Success)
+		try
+		{
+			await _sdkManager.UninstallAsync(packages, cancellationToken);
+		}
+		catch (Exception ex)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidPackageInstallFailed,
-				$"Failed to uninstall packages: {result.ErrorMessage ?? result.StandardError}",
-				nativeError: result.StandardError);
+				$"Failed to uninstall packages: {ex.Message}",
+				nativeError: ex.Message);
 		}
 	}
 
 	public Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
 	{
-		return Task.FromResult(_runner.AreLicensesAccepted());
+		UpdatePaths();
+		return Task.FromResult(_sdkManager.AreLicensesAccepted());
 	}
 
-	public async Task InstallSdkAsync(string targetPath, CancellationToken cancellationToken = default)
+	public async Task InstallSdkAsync(string targetPath, IProgress<string>? progress = null, 
+		CancellationToken cancellationToken = default)
 	{
-		// Create target directory
-		Directory.CreateDirectory(targetPath);
-
-		// Download command-line tools
-		var downloadUrl = GetCommandLineToolsUrl();
-		var tempZipPath = Path.Combine(Path.GetTempPath(), "commandlinetools.zip");
-
-		try
-		{
-			using var httpClient = new HttpClient();
-			httpClient.Timeout = TimeSpan.FromMinutes(10);
-			
-			var response = await httpClient.GetAsync(downloadUrl, cancellationToken);
-			response.EnsureSuccessStatusCode();
-
-			await using var fs = File.Create(tempZipPath);
-			await response.Content.CopyToAsync(fs, cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			throw new MauiToolException(
-				ErrorCodes.DownloadFailed,
-				$"Failed to download Android command-line tools: {ex.Message}",
-				nativeError: ex.Message);
-		}
-
-		// Extract to SDK path
-		var cmdlineToolsPath = Path.Combine(targetPath, "cmdline-tools");
-		Directory.CreateDirectory(cmdlineToolsPath);
-
-		System.IO.Compression.ZipFile.ExtractToDirectory(tempZipPath, cmdlineToolsPath, overwriteFiles: true);
-
-		// Rename to 'latest'
-		var extractedPath = Path.Combine(cmdlineToolsPath, "cmdline-tools");
-		var latestPath = Path.Combine(cmdlineToolsPath, "latest");
+		// Use the new BootstrapAsync from android-tools
+		_sdkManager.AndroidSdkPath = targetPath;
 		
-		if (Directory.Exists(extractedPath))
+		var bootstrapProgress = new Progress<Xamarin.Android.Tools.SdkBootstrapProgress>(p =>
 		{
-			if (Directory.Exists(latestPath))
-				Directory.Delete(latestPath, recursive: true);
-			Directory.Move(extractedPath, latestPath);
-		}
+			progress?.Report($"{p.Phase}: {p.Message}");
+		});
 
-		// Clean up
-		File.Delete(tempZipPath);
-	}
-
-	private static string GetCommandLineToolsUrl()
-	{
-		// Latest command-line tools URLs (universal binaries on macOS)
-		if (PlatformDetector.IsMacOS)
-			return "https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip";
-		else if (PlatformDetector.IsWindows)
-			return "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip";
-		else
-			return "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip";
+		await _sdkManager.BootstrapAsync(targetPath, bootstrapProgress, cancellationToken);
 	}
 }
