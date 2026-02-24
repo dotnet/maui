@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(WImage platformView)
 		{
 			platformView.ImageOpened -= OnImageOpened;
+			platformView.Loaded -= OnImageLoaded;
 
 			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
@@ -153,6 +154,8 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
+					// Prevent stacking multiple Loaded handlers if MapAspect is called before view loads
+					platformView.Loaded -= imghandler.OnImageLoaded;
 					platformView.Loaded += imghandler.OnImageLoaded;
 				}
 			}
@@ -168,6 +171,13 @@ namespace Microsoft.Maui.Handlers
 			if (sender is WImage platformView)
 			{
 				platformView.Loaded -= OnImageLoaded;
+
+				// Guard against calling after handler disconnect
+				if (!this.IsConnected())
+				{
+					return;
+				}
+
 				UpdateValue(nameof(IViewHandler.ContainerView));
 			}
 		}
