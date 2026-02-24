@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void Issue33304Test()
+		public void TitleViewPersistsAfterSwitchingTabs()
 		{
 			App.WaitForElement("HomeTabLabel");
 			App.Tap("Search");
