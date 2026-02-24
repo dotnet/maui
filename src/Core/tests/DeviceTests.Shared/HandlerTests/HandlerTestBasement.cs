@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -113,13 +114,13 @@ namespace Microsoft.Maui.DeviceTests
 				// since we're not doing that here, we need to ensure they have LayoutParams so that tests
 				// which update properties don't crash. 
 
-				var aView = viewHandler.PlatformView as Android.Views.View;
+				var aView = viewHandler.PlatformView as global::Android.Views.View;
 				if (aView.LayoutParameters == null)
 				{
 					aView.LayoutParameters =
-						new Android.Views.ViewGroup.LayoutParams(
-							Android.Views.ViewGroup.LayoutParams.WrapContent,
-							Android.Views.ViewGroup.LayoutParams.WrapContent);
+						new global::Android.Views.ViewGroup.LayoutParams(
+							global::Android.Views.ViewGroup.LayoutParams.WrapContent,
+							global::Android.Views.ViewGroup.LayoutParams.WrapContent);
 				}
 
 				var size = view.Measure(view.Width, view.Height);
@@ -175,10 +176,10 @@ namespace Microsoft.Maui.DeviceTests
 			return handler;
 		}
 
-		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType) =>
+		protected IPlatformViewHandler CreateHandler(IElement view, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType) =>
 			CreateHandler(view, handlerType, MauiContext);
 
-		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType, IMauiContext mauiContext)
+		protected IPlatformViewHandler CreateHandler(IElement view, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType, IMauiContext mauiContext)
 		{
 			if (view.Handler is IPlatformViewHandler t)
 				return t;
@@ -192,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task ValidateHasColor(
 			IView view,
 			Color color,
-			Type handlerType,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType,
 			Action action = null,
 			string updatePropertyValue = null,
 			double? tolerance = null)
@@ -278,7 +279,7 @@ namespace Microsoft.Maui.DeviceTests
 				return result;
 			});
 
-		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y)
+		protected Task AssertColorAtPoint(IView view, Color color, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType, int x, int y)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -291,7 +292,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task AssertColorsAtPoints(IView view, Type handlerType, Color[] colors, Point[] points)
+		protected Task AssertColorsAtPoints(IView view, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType, Color[] colors, Point[] points)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -300,7 +301,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task<ImageAnalysis.RawBitmap> GetRawBitmap(Controls.VisualElement view, Type handlerType)
+		protected Task<ImageAnalysis.RawBitmap> GetRawBitmap(Controls.VisualElement view, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type handlerType)
 		{
 			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
 			{

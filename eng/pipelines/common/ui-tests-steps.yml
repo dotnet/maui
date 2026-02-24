@@ -2,27 +2,40 @@ parameters:
   platform: '' # [ android, ios, windows, catalyst ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  deviceType: '' # the device type/skin for Android emulator (e.g., pixel_3XL, Nexus 5X)
   cakeArgs: '' # additional cake args
   app: '' #path to app to test
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
   configuration: "Release"
   runtimeVariant: "Mono"
+  useMaterial3: false # NEW PARAMETER - Enable Material3 build
   testFilter: ''
+  headless: true
   testConfigurationArgs: ''
   skipProvisioning: true
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
 
 steps:
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples
+
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'true'))
+  inputs:
+    artifact: ui-tests-samples-material3
 
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
   inputs:
     artifact: ui-tests-samples-nativeaot
+
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
+  inputs:
+    artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
   condition: eq('${{ parameters.platform }}' , 'windows')
@@ -37,14 +50,8 @@ steps:
     continueOnError: true
     timeoutInMinutes: 60
 
-# Enable KVM for Android builds on Linux
 - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
-  - bash: |
-      echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-      sudo udevadm control --reload-rules
-      sudo udevadm trigger --name-match=kvm
-    displayName: Enable KVM
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  - template: enable-kvm.yml
 
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
@@ -63,7 +70,8 @@ steps:
     skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
     skipAndroidCreateAvds: true
     androidEmulatorApiLevel: ${{ parameters.version }}
-    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+    skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
+    skipSimulatorSetup: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows'), eq(parameters.platform, 'catalyst')) }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
     ${{ if parameters.skipProvisioning }}:
       skipProvisionator: true
@@ -94,12 +102,10 @@ steps:
   displayName: 'Add .NET to PATH'
 
 # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
-- task: ScreenResolutionUtility@1
+- pwsh: |
+    $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+    & $scriptPath -Width 1920 -Height 1080
   condition: eq('${{ parameters.platform }}' , 'windows')
-  inputs:
-    displaySettings: 'specific'
-    width: '1920'
-    height: '1080'
   displayName: "Set screen resolution"
 
 - task: UseNode@1
@@ -124,6 +130,12 @@ steps:
     $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
     $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
 
+    # Add device skin parameter if specified (for Android emulator hardware profile)
+    $deviceType = "${{ parameters.deviceType }}"
+    if ($deviceType) {
+      $command += " --skin=""$deviceType"""
+    }
+
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
@@ -139,6 +151,11 @@ steps:
     }
     if ($testFilter) {
       $command += " --test-filter ""$testFilter"""
+    }
+    
+    $headless = ${{ parameters.headless }}
+    if ($headless) {
+      $command += " --headless ""$headless"""
     }
 
     Write-Host "Running command: $command"
@@ -170,6 +187,7 @@ steps:
   condition: always()
   displayName: publish artifacts
 
+# Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh

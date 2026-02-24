@@ -2,9 +2,13 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
+using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -63,6 +67,34 @@ namespace UITest.Appium
 				{ "element", uiElement },
 				{ "button", "right" }
 			});
+		}
+
+		/// <summary>
+		/// Closes a picker dialog using platform-specific dismiss actions.
+		/// For Android, taps the "Cancel" button.
+		/// For iOS/MacCatalyst, taps the "Done" button.
+		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
+		/// <param name="y">Optional Y coordinate for Windows tap. Default is 0.</param>
+		public static void ClosePicker(this IApp app, int windowsTapx = 0, int windowsTapy = 0)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap("Cancel");
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("Done");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				if (windowsTapx != 0 || windowsTapy != 0)
+				{
+					app.TapCoordinates(windowsTapx, windowsTapy);
+				}
+			}
 		}
 
 		/// <summary>
@@ -244,6 +276,68 @@ namespace UITest.Appium
 			var response = app.CommandExecutor.Execute("isKeyboardShown", ImmutableDictionary<string, object>.Empty);
 			var responseValue = response?.Value ?? false;
 			return (bool)responseValue;
+		}
+
+		/// <summary>
+		/// Waits for the soft keyboard to be shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes visible within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToShow(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Thread.Sleep(retryFrequency.Value.Milliseconds);
+			}
+		}
+
+		/// <summary>
+		/// Waits for the soft keyboard to be hidden from the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing. Default is 15 seconds.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each check. Default is 500ms.</param>
+		/// <returns>true if the keyboard becomes hidden within the timeout; otherwise, false.</returns>
+		public static bool WaitForKeyboardToHide(this IApp app, TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				if (!app.IsKeyboardShown())
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					return false;
+				}
+
+				Thread.Sleep(retryFrequency.Value);
+			}
 		}
 
 		/// <summary>
@@ -681,6 +775,102 @@ namespace UITest.Appium
 			return results;
 		}
 
+		public static void TapMinimizeButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return;
+
+			try
+			{
+				var minimizeButton = FindSystemButton(windowsDriver, "Minimize", "MinimizeButton", "PART_Min");
+
+				if (minimizeButton != null && minimizeButton.Displayed && minimizeButton.Enabled)
+				{
+					minimizeButton.Click();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing minimize button: {ex.Message}");
+			}
+		}
+
+		/// <summary>
+		/// Tests if the Windows maximize/restore button is accessible and responsive
+		/// </summary>
+		/// <param name="app">The Windows app instance</param>
+		/// <param name="clickButton">Whether to actually click the maximize button (default: false)</param>
+		/// <returns>True if the maximize/restore button is accessible and responsive</returns>
+		public static void TapMaximizeButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return;
+
+			try
+			{
+				var maximizeButton = FindSystemButton(windowsDriver, "Maximize", "MaximizeButton", "PART_Max", "Restore");
+
+				if (maximizeButton != null && maximizeButton.Displayed && maximizeButton.Enabled)
+				{
+					maximizeButton.Click();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing maximize button: {ex.Message}");
+			}
+		}
+
+		static IWebElement? FindSystemButton(WindowsDriver driver, params string[] identifiers)
+		{
+			foreach (var identifier in identifiers)
+			{
+				try
+				{
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@Name='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@AutomationId='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					//By XPath with partial name match (for localized systems)
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[contains(@Name, '{identifier}')]"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"UITest: Exception searching for {identifier}: {ex.Message}");
+				}
+			}
+
+			return null;
+		}
+
 		/// <summary>
 		/// Wait function that will repeatedly query the app until any matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
@@ -736,6 +926,40 @@ namespace UITest.Appium
 			var results = Wait(query, i => i != null, timeoutMessage, timeout, retryFrequency);
 
 			return results;
+		}
+
+		public static void RetryAssert(
+			this IApp app,
+			Action assertToRetry,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				try
+				{
+					assertToRetry();
+					return; // Assert succeeded, exit
+				}
+				catch
+				{
+
+					// Check if timeout has been reached
+					long elapsed = DateTime.Now.Subtract(start).Ticks;
+					if (elapsed >= timeout.Value.Ticks)
+					{
+						// Timeout reached, rethrow the last exception
+						throw;
+					}
+
+					// Wait before retrying
+					Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+				}
+			}
 		}
 
 		/// <summary>
@@ -914,6 +1138,15 @@ namespace UITest.Appium
 		public static void PressEnter(this IApp app)
 		{
 			app.CommandExecutor.Execute("pressEnter", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sends the tab key in the app.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SendTabKey(this IApp app)
+		{
+			app.CommandExecutor.Execute("sendTabKey", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1447,6 +1680,21 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("launchApp", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Executes an existing application on the device with additional parameters.
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="parameters">Additional parameters to send with the launch command.</param>
+		public static void LaunchApp(this IApp app, string parameters, bool isResetAfterEachTest = false)
+		{
+			app.CommandExecutor.Execute("launchApp", new Dictionary<string, object>
+			{
+				{ "testName", parameters },
+				{ "isResetAfterEachTest", isResetAfterEachTest }
+			});
+		}
+		
 		/// <summary>
 		/// Send the currently running app for this session to the background.
 		/// </summary>
@@ -2351,6 +2599,10 @@ namespace UITest.Appium
 			{
 				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
 			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("SecondaryToolbarMenuButton");
+			}
 			else
 			{
 				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
@@ -2371,6 +2623,10 @@ namespace UITest.Appium
 			else if (app is AppiumWindowsApp)
 			{
 				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap("SecondaryToolbarMenuButton");
 			}
 		}
 
@@ -2604,6 +2860,57 @@ namespace UITest.Appium
 			{
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// Gets the display density for the current device using the appropriate platform-specific method.
+		/// For Android, uses the Appium getDisplayDensity command for accurate results.
+		/// For iOS and Catalyst, uses the deviceScreenInfo command.
+		/// For other platforms, falls back to driver capabilities.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The display density as a double value (e.g., 1.0 for mdpi, 2.0 for xhdpi/Retina, 3.0 for xxhdpi/Retina HD)</returns>
+		public static double GetDisplayDensity(this IApp app)
+		{
+			if (app is not AppiumApp appiumApp)
+			{
+				throw new InvalidOperationException($"GetDisplayDensity is only supported on AppiumApp");
+			}
+
+			// Use platform-specific methods for accurate results
+			return app switch
+			{
+				AppiumAndroidApp androidApp => GetAndroidDisplayDensity(androidApp),
+				AppiumIOSApp iOSApp => GetIOSDisplayDensity(iOSApp),
+				_ => 1.0 // Fallback for other platforms (Catalyst, Windows)
+			};
+		}
+
+		static double GetAndroidDisplayDensity(AppiumAndroidApp androidApp)
+		{
+			// Use the command executor to call the Android-specific action
+			float? response = (androidApp.Driver as AndroidDriver)?.GetDisplayDensity();
+			if (response is not null)
+			{
+				return (double)response.Value / 160f;
+			}
+
+			return 1.0;
+		}
+
+		static double GetIOSDisplayDensity(AppiumIOSApp iOSApp)
+		{
+			var response = (iOSApp.Driver as IOSDriver)?.ExecuteScript("mobile: deviceScreenInfo");
+			if (response is not null && response is IDictionary<string, object> screenInfo)
+			{
+				// Extract the scale factor from the deviceScreenInfo response
+				if (screenInfo.TryGetValue("scale", out var scaleValue))
+				{
+					return Convert.ToDouble(scaleValue);
+				}
+			}
+
+			return 1.0;
 		}
 	}
 }

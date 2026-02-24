@@ -1,48 +1,38 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz54717 : ContentPage
 {
-	public partial class Bz54717 : ContentPage
+	public Bz54717()
 	{
-		public Bz54717()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz54717(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public void Dispose() => Application.Current = null;
 
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void FooBz54717(XamlInflator inflator)
 		{
-			[TearDown]
-			public void TearDown()
+			Application.Current = new MockApplication
 			{
-				Application.Current = null;
-			}
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void FooBz54717(bool useCompiledXaml)
-			{
-				Application.Current = new MockApplication
-				{
-					Resources = new ResourceDictionary {
-						{"Color1", Colors.Red},
-						{"Color2", Colors.Blue},
-					}
-				};
-				var layout = new Bz54717(useCompiledXaml);
-				Assert.That(layout.Resources.Count, Is.EqualTo(1));
-				var array = layout.Resources["SomeColors"] as Color[];
-				Assert.That(array[0], Is.EqualTo(Colors.Red));
-				Assert.That(array[1], Is.EqualTo(Colors.Blue));
-			}
+				Resources = new ResourceDictionary {
+					{"Color1", Colors.Red},
+					{"Color2", Colors.Blue},
+				}
+			};
+			var layout = new Bz54717(inflator);
+			Assert.Single(layout.Resources);
+			var array = layout.Resources["SomeColors"] as Color[];
+			Assert.Equal(Colors.Red, array[0]);
+			Assert.Equal(Colors.Blue, array[1]);
 		}
 	}
 }

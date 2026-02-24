@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No Add() method defined on "{0}{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Für "{0}{1}" wurde keine Add()-Methode definiert.]]></Val>
+            <Val><![CDATA[Für „{0}{1}“ wurde keine Add()-Methode definiert.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing a "public static Get{0}" method or a public instance property getter for the attached property "{1}.{0}Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Es fehlt eine Methode "public static Get{0}" oder ein Eigenschaftengetter der öffentlichen Instanz für die angefügte Eigenschaft "{1}.{0}Property".]]></Val>
+            <Val><![CDATA[Es fehlt eine Methode „public static Get{0}“ oder ein Eigenschaftengetter der öffentlichen Instanz für die angefügte Eigenschaft „{1}.{0}Property“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -32,7 +32,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The name of the BindableProperty {0} does not end with "Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Name der BindableProperty "{0}" endet nicht mit "Property".]]></Val>
+            <Val><![CDATA[Der Name der BindableProperty „{0}“ endet nicht mit „Property“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: "{0}" cannot be parsed as an index for a "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bindung: "{0}" kann nicht als Index für "{1}" analysiert werden.]]></Val>
+            <Val><![CDATA[Bindung: „{0}“ kann nicht als Index für „{1}“ analysiert werden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Unsupported indexer index type: "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Binding: nicht unterstützter Indexer-Indextyp: "{0}".]]></Val>
+            <Val><![CDATA[Binding: nicht unterstützter Indexer-Indextyp: „{0}“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -77,7 +77,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Property "{0}" not found on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Bindung: Die Eigenschaft "{0}" wurde in "{1}" nicht gefunden.]]></Val>
+            <Val><![CDATA[Bindung: Die Eigenschaft „{0}“ wurde in „{1}“ nicht gefunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing default constructor for "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fehlender Standardkonstruktor für "{0}".]]></Val>
+            <Val><![CDATA[Fehlender Standardkonstruktor für „{0}“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing constructor for "{0}" with matching x:Arguments.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fehlender Konstruktor für "{0}" mit übereinstimmendem Attribut "x:Arguments".]]></Val>
+            <Val><![CDATA[Fehlender Konstruktor für „{0}“ mit übereinstimmendem Attribut „x:Arguments“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -140,7 +140,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot set the content of "{0}" as it doesn't have a [ContentProperty]5D; attribute.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Inhalt von "{0}" kann nicht festgelegt werden, weil kein [ContentProperty]5D;-Attribut vorhanden ist.]]></Val>
+            <Val><![CDATA[Der Inhalt von „{0}“ kann nicht festgelegt werden, weil kein [ContentProperty]5D;-Attribut vorhanden ist.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot convert value "{0}" to "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Wert "{0}" kann nicht in "{1}" konvertiert werden.]]></Val>
+            <Val><![CDATA[Der Wert „{0}“ kann nicht in „{1}“ konvertiert werden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -158,7 +158,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enum value not found for "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Enumerationswert für "{0}" wurde nicht gefunden.]]></Val>
+            <Val><![CDATA[Der Enumerationswert für „{0}“ wurde nicht gefunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ungültiger XAML-Codeausschnitt "{0}".]]></Val>
+            <Val><![CDATA[Ungültiger XAML-Codeausschnitt „{0}“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No property, BindableProperty, or event found for "{0}", or mismatching type between value and property.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Für "{0}" wurde keine Eigenschaft, keine BindableProperty oder kein Ereignis gefunden, oder es gibt eine Typdiskrepanz zwischen Wert und Eigenschaft.]]></Val>
+            <Val><![CDATA[Für „{0}“ wurde keine Eigenschaft, keine BindableProperty oder kein Ereignis gefunden, oder es gibt eine Typdiskrepanz zwischen Wert und Eigenschaft.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No static method found for "{0}::{1} ({2})".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Für "{0}::{1} ({2})" wurde keine statische Methode gefunden.]]></Val>
+            <Val><![CDATA[Für „{0}:: {1} ({2})“ wurde keine statische Methode gefunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[EventHandler "{0}" with correct signature not found in type "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der EventHandler "{0}" mit der richtigen Signatur wurde im Typ "{1}" nicht gefunden.]]></Val>
+            <Val><![CDATA[Der EventHandler „{0}“ mit der richtigen Signatur wurde im Typ „{1}“ nicht gefunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[An element with the name "{0}" already exists in this NameScope.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ein Element mit dem Namen "{0}" ist in diesem NameScope bereits vorhanden.]]></Val>
+            <Val><![CDATA[Ein Element mit dem Namen „{0}“ ist in diesem NameScope bereits vorhanden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die erforderliche Eigenschaft "{0}" für "{1}" fehlt.]]></Val>
+            <Val><![CDATA[Die erforderliche Eigenschaft „{0}“ für „{1}“ fehlt.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -248,7 +248,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve property "{0}" on type "{1} (property missing or missing accessors)".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die Eigenschaft "{0}" für den Typ "{1} (Eigenschaft fehlt oder fehlende Accessoren)" kann nicht aufgelöst werden.]]></Val>
+            <Val><![CDATA[Die Eigenschaft „{0}“ für den Typ „{1}“ (Eigenschaft fehlt oder fehlende Accessoren)" kann nicht aufgelöst werden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA["A resource with the key "{0}" is already present in the ResourceDictionary.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["Eine Ressource mit dem Schlüssel "{0}" ist im ResourceDictionary bereits vorhanden.]]></Val>
+            <Val><![CDATA[„Eine Ressource mit dem Schlüssel „{0}“ ist im ResourceDictionary bereits vorhanden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resource "{0}" not found.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die Ressource "{0}" wurde nicht gefunden.]]></Val>
+            <Val><![CDATA[Die Ressource „{0}“ wurde nicht gefunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -341,7 +341,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve type "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Typ "{0}" kann nicht aufgelöst werden.]]></Val>
+            <Val><![CDATA[Der Typ „{0}“ kann nicht aufgelöst werden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -371,7 +371,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Key expects a string literal.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Für "x:Key" wird ein Zeichenfolgenliteral erwartet.]]></Val>
+            <Val><![CDATA[Für „x:Key“ wird ein Zeichenfolgenliteral erwartet.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -380,7 +380,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[x:Static: Ein öffentliches – oder zugängliches internes – statisches Feld, eine statische Eigenschaft oder ein const- oder enum-Wert mit dem Namen "{0}" wurde in "{1}" nicht gefunden.]]></Val>
+            <Val><![CDATA[x:Static: Ein öffentliches – oder zugängliches internes – statisches Feld, eine statische Eigenschaft oder ein const- oder enum-Wert mit dem Namen „{0}“ wurde in „{1}“ nicht gefunden.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -389,7 +389,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Syntax for x:Static is "[Member=]5D;[prefix:]5D;typeName.staticMemberName".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die Syntax für "x:Static" lautet "[Member=]5D;[prefix:]5D;typeName.staticMemberName".]]></Val>
+            <Val><![CDATA[Die Syntax für „x:Static“ lautet „[Member=]5D;[prefix:]5D;typeName.staticMemberName“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Undeclared xmlns prefix "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nicht deklariertes xmlns-Präfix "{0}".]]></Val>
+            <Val><![CDATA[Nicht deklariertes xmlns-Präfix „{0}“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

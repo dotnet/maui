@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue19007 : _IssuesUITest
 {
 	public Issue19007(TestDevice testDevice) : base(testDevice)

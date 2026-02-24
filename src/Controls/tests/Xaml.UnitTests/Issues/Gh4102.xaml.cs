@@ -1,35 +1,26 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Gh4102VM
 {
-	public class Gh4102VM
+	public Gh4102VM SomeNullValue { get; set; }
+	public string SomeProperty { get; set; } = "Foo";
+}
+
+public partial class Gh4102 : ContentPage
+{
+	public Gh4102() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Gh4102VM SomeNullValue { get; set; }
-		public string SomeProperty { get; set; } = "Foo";
-	}
-
-	public partial class Gh4102 : ContentPage
-	{
-		public Gh4102() => InitializeComponent();
-
-		public Gh4102(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void CompiledBindingsNullInPath(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void CompiledBindingsNullInPath(bool useCompiledXaml)
-			{
-				var layout = new Gh4102(useCompiledXaml) { BindingContext = new Gh4102VM() };
-				Assert.That(layout.label.Text, Is.EqualTo(null));
-			}
+			var layout = new Gh4102(inflator) { BindingContext = new Gh4102VM() };
+			Assert.Null(layout.label.Text);
 		}
 	}
 }

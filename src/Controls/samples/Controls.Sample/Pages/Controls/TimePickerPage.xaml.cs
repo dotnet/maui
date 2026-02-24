@@ -13,12 +13,28 @@ namespace Maui.Controls.Sample.Pages
 			UpdateTimePickerBackground();
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			IsOpenTimePicker.Opened += IsOpenTimePickerOpened;
+			IsOpenTimePicker.Closed += IsOpenTimePickerClosed;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+
+			IsOpenTimePicker.Opened -= IsOpenTimePickerOpened;
+			IsOpenTimePicker.Closed -= IsOpenTimePickerClosed;
+		}
+
+		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			UpdateTimePickerBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			BackgroundTimePicker.Background = null;
 		}
@@ -38,6 +54,36 @@ namespace Maui.Controls.Sample.Pages
 					new GradientStop { Color = endColor, Offset = 1 }
 				}
 			};
+		}
+
+		void SetTimePickerToNull(object sender, EventArgs e)
+		{
+			NullTimePicker.Time = null;
+		}
+
+		void SetTimePickerToNow(object sender, EventArgs e)
+		{
+			NullTimePicker.Time = DateTime.Now.TimeOfDay;
+		}
+
+		void OnOpenClicked(object sender, EventArgs e)
+		{
+			IsOpenTimePicker.IsOpen = true;
+		}
+
+		void OnCloseClicked(object sender, EventArgs e)
+		{
+			IsOpenTimePicker.IsOpen = false;
+		}
+
+		void IsOpenTimePickerOpened(object? sender, TimePickerOpenedEventArgs e)
+		{
+			Console.WriteLine("IsOpenTimePicker Opened");
+		}
+
+		void IsOpenTimePickerClosed(object? sender, TimePickerClosedEventArgs e)
+		{
+			Console.WriteLine("IsOpenTimePicker Closed");
 		}
 	}
 }

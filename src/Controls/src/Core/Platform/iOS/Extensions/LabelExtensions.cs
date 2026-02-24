@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this UILabel platformLabel, Label label)
 		{
+			var text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
+
 			switch (label.TextType)
 			{
 				case TextType.Html:
@@ -21,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// will be just disappear once we switch.
 					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
 					{
-						platformLabel.UpdateTextHtml(label);
+						platformLabel.UpdateTextHtml(text);
 
 						if (label.Handler is LabelHandler labelHandler)
 							Label.MapFormatting(labelHandler, label);
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 							platformLabel.AttributedText = null;
 						}
 
-						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						platformLabel.Text = text;
 					}
 					break;
 			}

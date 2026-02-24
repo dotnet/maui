@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.Commands.G7"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.ManualTests.Tests.Commands"
+             Title="G7"
+             x:DataType="local:G7">
+    <ContentPage.MenuBarItems>
+        <MenuBarItem Text="Pages">
+            <MenuFlyoutItem Command="{Binding MenuCommand}"
+                            Text="Page" />
+        </MenuBarItem>
+    </ContentPage.MenuBarItems>
+
+    <VerticalStackLayout>
+        <Label Text="1. Click on the 'Pages' menu bar item." />
+        <Label Text="2. The 'Page' menu flyout item should be disabled." />
+        <Label Text="3. The test fails if the 'Page' menu flyout item is not disabled." />
+    </VerticalStackLayout>
+</ContentPage>

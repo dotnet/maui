@@ -22,11 +22,13 @@ namespace Microsoft.Maui.UnitTesting.Hosting
 		}
 
 		[Fact]
-		public void ThrowsWhenNoMatchingHandlerServiceTypeIsRegistered()
+		public void ReturnsNullWhenNoMatchingHandlerServiceTypeIsRegistered()
 		{
 			var registeredTypes = new RegisteredHandlerServiceTypeSet();
 
-			Assert.Throws<HandlerNotFoundException>(() => registeredTypes.ResolveVirtualViewToRegisteredHandlerServiceType(typeof(ViewStub)));
+			var type = registeredTypes.ResolveVirtualViewToRegisteredHandlerServiceType(typeof(ViewStub));
+
+			Assert.Null(type);
 		}
 
 		[Theory]
@@ -90,7 +92,9 @@ namespace Microsoft.Maui.UnitTesting.Hosting
 			registeredTypes.Add(typeof(MyBaseViewStub));
 			registeredTypes.Add(typeof(MyDerivedViewStub));
 
-			Assert.Throws<HandlerNotFoundException>(() => registeredTypes.ResolveVirtualViewToRegisteredHandlerServiceType(typeof(ViewStub)));
+			var resolvedServiceType = registeredTypes.ResolveVirtualViewToRegisteredHandlerServiceType(typeof(ViewStub));
+
+			Assert.Null(resolvedServiceType);
 		}
 
 		[Theory]

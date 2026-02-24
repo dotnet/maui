@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.XStaticInheritance">
+	<StackLayout>
+		<!-- Test accessing const from base class -->
+		<Label x:Name="baseConstant"
+			   Text="{x:Static local:DerivedClassForStaticTest.BaseClassString}" />
+		<!-- Test accessing static property from base class -->
+		<Label x:Name="baseProperty"
+			   Text="{x:Static local:DerivedClassForStaticTest.BaseStaticProperty}" />
+		<!-- Test accessing static field from base class -->
+		<Label x:Name="baseField"
+			   Text="{x:Static local:DerivedClassForStaticTest.BaseStaticField}" />
+		<!-- Test accessing derived class member (should work) -->
+		<Label x:Name="derivedConstant"
+			   Text="{x:Static local:DerivedClassForStaticTest.DerivedClassString}" />
+	</StackLayout>
+</ContentPage>

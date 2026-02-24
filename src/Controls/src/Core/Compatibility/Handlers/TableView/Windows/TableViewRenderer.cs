@@ -9,7 +9,9 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public partial class TableViewRenderer : ViewRenderer<TableView, Microsoft.UI.Xaml.Controls.ListView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		bool _ignoreSelectionEvent;
 		bool _disposed;
@@ -24,7 +26,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return new Size(40, 40);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (e.OldElement != null)
 			{
@@ -90,12 +94,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				foreach (object item in e.AddedItems)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					if (item is Cell cell)
 					{
 						if (cell.IsEnabled)
 							Element.Model.RowSelected(cell);
 						break;
 					}
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 

@@ -77,6 +77,17 @@ namespace UITest.Appium
 				{ "env", args! }
 			});
 
+			// It can be faster for Appium to deal with the app hierarchy internally as JSON, rather than XML.
+			config.SetProperty("useJSONSource", "true");
+
+			var headless = config.GetProperty<bool>("Headless");
+			if (headless)
+			{
+				// Appium has the ability to start iOS simulators in a "headless" mode.
+				// This means that the devices won't have any graphical user interface; but they will still be running silently, testing the app.
+				options.AddAdditionalAppiumOption("isHeadless", true);
+			}
+
 			// Allows to change the default timeout for Simulator startup.
 			// By default this value is set to 120000ms (2 minutes).
 			options.AddAdditionalAppiumOption("appium:simulatorStartupTimeout", 90000);
@@ -89,7 +100,13 @@ namespace UITest.Appium
 			// XCTest requires the app's main thread to be idling in order to execute any action on it, so WDA might not even start/freeze if the app under test is constantly hogging the main thread.
 			// The default value is 10 (seconds).
 			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5);
-
+			
+			// Shows the Xcode build logs in the Appium server output.
+			options.AddAdditionalAppiumOption("showXcodeLog", true);
+			
+			// Shows device/system logs from the iOS simulator or real device.
+			options.AddAdditionalAppiumOption("showIOSLog", true);
+			
 			return options;
 		}
 	}

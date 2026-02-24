@@ -1,10 +1,11 @@
 #nullable disable
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ModalPoppedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ModalPoppedEventArgs']/Docs/*" />
+	/// <summary>Arguments for the event that is raised when a modal window is popped from the navigation stack.</summary>
 	public class ModalPoppedEventArgs : ModalEventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ModalPoppedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Constructs a new <see cref="Microsoft.Maui.Controls.ModalPoppedEventArgs"/> object for the page that was just popped.</summary>
+		/// <param name="modal">The modal page.</param>
 		public ModalPoppedEventArgs(Page modal) : base(modal)
 		{
 		}

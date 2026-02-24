@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 		NavigationRootManager? _navigationRootManager;
 		WFrame? _navigationFrame;
 		bool _connectedToHandler;
+		Page? _displayedPage;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
@@ -46,6 +48,29 @@ namespace Microsoft.Maui.Controls
 
 			_navigationRootManager = MauiContext.GetNavigationRootManager();
 			return _navigationFrame;
+		}
+
+		private void OnPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+			{
+				if (sender is Page page)
+				{
+					//Find the corresponding ViewModel for the triggering Page
+					if (Handler?.MauiContext is not null && _navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
+					{
+						foreach (var item in menuItems)
+						{
+							if (item.Data == page)
+							{
+								item.Icon = page.IconImageSource?.ToIconSource(Handler.MauiContext)?.CreateIconElement();
+								item.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
+								break;
+							}
+						}
+					}
+				}
+			}
 		}
 
 		static FrameworkElement? OnCreatePlatformView(ViewHandler<ITabbedView, FrameworkElement> arg)
@@ -82,6 +107,10 @@ namespace Microsoft.Maui.Controls
 			Appearing += OnTabbedPageAppearing;
 			Disappearing += OnTabbedPageDisappearing;
 			NavigationFrame.Navigated += OnNavigated;
+			foreach (var child in Children)
+			{
+				child.PropertyChanged += OnPagePropertyChanged;
+			}
 
 			// If CreatePlatformView didn't set the NavigationView then that means we are using the
 			// WindowRootView for our tabs
@@ -134,6 +163,10 @@ namespace Microsoft.Maui.Controls
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
+			foreach (var child in Children)
+			{
+				child.PropertyChanged -= OnPagePropertyChanged;
+			}
 			if (_navigationView != null)
 			{
 				_navigationView.SelectedItem = null;
@@ -145,6 +178,7 @@ namespace Microsoft.Maui.Controls
 			_navigationView = null;
 			_navigationRootManager = null;
 			_navigationFrame = null;
+			_displayedPage = null;
 		}
 
 		void OnTabbedPageAppearing(object? sender, EventArgs e)
@@ -223,8 +257,15 @@ namespace Microsoft.Maui.Controls
 
 		void NavigateToPage(Page page)
 		{
-			FrameNavigationOptions navOptions = new FrameNavigationOptions();
+			if (_displayedPage == page)
+				return;
+
+			// Detach content from old page to prevent "Element is already the child of another element" error
+			if (NavigationFrame.Content is WPage oldPage && oldPage.Content is WContentPresenter oldPresenter)
+				oldPresenter.Content = null;
+
 			CurrentPage = page;
+			FrameNavigationOptions navOptions = new FrameNavigationOptions();
 			navOptions.IsNavigationStackEnabled = false;
 			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
 		}
@@ -238,7 +279,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateCurrentPageContent(WPage page)
 		{
-			if (MauiContext == null)
+			if (MauiContext == null || _displayedPage == CurrentPage)
 				return;
 
 			WContentPresenter? presenter;
@@ -265,6 +306,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			presenter.Content = _currentPage.ToPlatform(MauiContext);
+			_displayedPage = CurrentPage;
 		}
 
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
@@ -329,6 +371,7 @@ namespace Microsoft.Maui.Controls
 					(vm, page) =>
 					{
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
+						vm.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
 						vm.Content = page.Title;
 						vm.Data = page;
 						vm.SelectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();

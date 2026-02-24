@@ -18,7 +18,12 @@ public class Project
 
 	public List<Tag> Tags { get; set; } = [];
 
-	public override string ToString() => $"{Name}";
+    public string AccessibilityDescription
+    {
+        get { return $"{Name} Project. {Description}"; }
+    }
+
+    public override string ToString() => $"{Name}";
 }
 
 public class ProjectsJson

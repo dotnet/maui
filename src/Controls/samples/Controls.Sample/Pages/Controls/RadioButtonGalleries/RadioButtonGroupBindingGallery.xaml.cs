@@ -15,9 +15,14 @@ namespace Maui.Controls.Sample.Pages.RadioButtonGalleries
 			BindingContext = _viewModel;
 		}
 
-		private void Button_Clicked(object sender, System.EventArgs e)
+		private void Set_Button_Clicked(object sender, System.EventArgs e)
 		{
 			_viewModel.Selection = "B";
+		}
+
+		private void Clear_Button_Clicked(object sender, System.EventArgs e)
+		{
+			_viewModel.Selection = null;
 		}
 	}
 

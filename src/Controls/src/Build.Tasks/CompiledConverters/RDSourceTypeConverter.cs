@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			while (!(rootNode is ILRootNode))
 				rootNode = rootNode.Parent;
 
-			var rdNode = node.Parent as IElementNode;
+			var rdNode = node.Parent as ElementNode;
 
 			var rootTargetPath = XamlCTask.GetPathForType(context.Cache, currentModule, ((ILRootNode)rootNode).TypeReference);
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			string asmName = null;
 			if (value.Contains(";assembly="))
 			{
-				var parts = value.Split(new[] { ";assembly=" }, StringSplitOptions.RemoveEmptyEntries);
+				var parts = value.Split([";assembly="], StringSplitOptions.RemoveEmptyEntries);
 				value = parts[0];
 				asmName = parts[1];
 				if (currentModule.Assembly.Name.Name != asmName)
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			ModuleDefinition currentModule,
 			ModuleDefinition module,
 			BaseNode node,
-			IElementNode rdNode,
+			ElementNode rdNode,
 			TypeReference resourceTypeRef,
 			VariableDefinition uriVarDef)
 		{
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			ModuleDefinition currentModule,
 			ILRootNode rootNode,
 			BaseNode node,
-			IElementNode rdNode,
+			ElementNode rdNode,
 			VariableDefinition uriVarDef,
 			string resourcePath,
 			string asmName)

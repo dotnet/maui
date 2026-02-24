@@ -47,14 +47,14 @@
 			grid.Children.Add(label);
 			grid.Children.Add(_boxView);
 			grid.Children.Add(button);
-
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = grid;
 		}
 
 		void AnimateButton_Clicked(object sender, EventArgs e)
 		{
-			_boxView.ScaleYTo(2, 250, Easing.CubicInOut);
-			_boxView.ScaleXTo(1.5, 400, Easing.BounceOut);
+			_boxView.ScaleYToAsync(2, 250, Easing.CubicInOut);
+			_boxView.ScaleXToAsync(1.5, 400, Easing.BounceOut);
 		}
 	}
 }

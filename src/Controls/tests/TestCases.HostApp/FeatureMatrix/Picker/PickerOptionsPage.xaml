@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.PickerOptionsPage"
+             x:DataType="local:PickerViewModel">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
+
+       <Grid Padding="10"
+             ColumnDefinitions="0.5*, 0.5*"
+             RowDefinitions="Auto">
+              <!-- Left Column -->
+              <StackLayout Grid.Column="0"
+                           Padding="10"
+                           Spacing="3">
+
+                     <!-- Title -->
+                     <Label Text="{Binding Title, StringFormat='Title: {0}'}"
+                            FontSize="15"/>
+                     <Entry x:Name="TitleEntry"
+                            AutomationId="TitleEntry"
+                            TextChanged="OnTitleChanged"
+                            HorizontalOptions="Start"
+                            WidthRequest="150"/>
+
+                     <!-- Selected Index -->
+                     <Label Text="{Binding SelectedIndex, StringFormat='Selected Index: {0}'}"
+                            FontSize="15"/>
+                     <Entry x:Name="SelectedIndexEntry"
+                            AutomationId="SelectedIndexEntry"
+                            TextChanged="OnSelectedIndexChanged"
+                            Keyboard="Numeric"
+                            HorizontalOptions="Start"
+                            WidthRequest="100"/>
+
+                     <!-- Selected Item -->
+                     <Label Text="{Binding SelectedItem, StringFormat='Selected Item: {0}'}"
+                            FontSize="15"/>
+                     <Entry x:Name="SelectedItemEntry"
+                            AutomationId="SelectedItemEntry"
+                            TextChanged="OnSelectedItemChanged"
+                            HorizontalOptions="Start"
+                            WidthRequest="150"/>
+
+                     <!-- Character Spacing -->
+                     <Label Text="{Binding CharacterSpacing, StringFormat='Character Spacing: {0}'}"
+                            FontSize="15"/>
+                     <Entry x:Name="CharacterSpacingEntry"
+                            AutomationId="CharacterSpacingEntry"
+                            TextChanged="OnCharacterSpacingChanged"
+                            Keyboard="Numeric"
+                            HorizontalOptions="Start"
+                            WidthRequest="100"/>
+
+                     <!-- Font Size -->
+                     <Label Text="{Binding FontSize, StringFormat='Font Size: {0}'}"
+                            FontSize="15"/>
+                     <Entry x:Name="FontSizeEntry"
+                            AutomationId="FontSizeEntry"
+                            TextChanged="OnFontSizeChanged"
+                            Keyboard="Numeric"
+                            HorizontalOptions="Start"
+                            WidthRequest="100"/>
+
+                     <!-- Flow Direction -->
+                     <Label Text="Flow Direction:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="FlowDirectionLTR"
+                                         AutomationId="FlowDirectionLTR"
+                                         GroupName="FlowDirection"
+                                         Content="LTR"
+                                         IsChecked="True"
+                                         FontSize="14"
+                                         CheckedChanged="OnFlowDirectionChanged"/>
+                            <RadioButton x:Name="FlowDirectionRTL"
+                                         AutomationId="FlowDirectionRTL"
+                                         GroupName="FlowDirection"
+                                         Content="RTL"
+                                         FontSize="14"
+                                         CheckedChanged="OnFlowDirectionChanged"/>
+                     </StackLayout>
+
+                     <!-- Font Attributes -->
+                     <Label Text="Font Attributes:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="FontAttributesBold"
+                                         AutomationId="FontAttributesBold"
+                                         GroupName="FontAttributes"
+                                         Content="Bold"
+                                         FontSize="14"
+                                         CheckedChanged="OnFontAttributesChanged"/>
+                            <RadioButton x:Name="FontAttributesItalic"
+                                         AutomationId="FontAttributesItalic"
+                                         GroupName="FontAttributes"
+                                         Content="Italic"
+                                         FontSize="14"
+                                         CheckedChanged="OnFontAttributesChanged"/>
+                     </StackLayout>
+
+                     <!-- Font Auto Scaling -->
+                     <Label Text="Font Auto Scaling:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="FontAutoScalingTrue"
+                                         AutomationId="FontAutoScalingTrue"
+                                         GroupName="FontAutoScaling"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="14"
+                                         CheckedChanged="OnFontAutoScalingChanged"/>
+                            <RadioButton x:Name="FontAutoScalingFalse"
+                                         AutomationId="FontAutoScalingFalse"
+                                         GroupName="FontAutoScaling"
+                                         Content="False"
+                                         FontSize="14"
+                                         CheckedChanged="OnFontAutoScalingChanged"/>
+                     </StackLayout>
+
+                     <!-- Is Enabled -->
+                     <Label Text="Is Enabled:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="IsEnabledTrueRadio"
+                                         AutomationId="IsEnabledTrueRadio"
+                                         GroupName="IsEnabled"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="14"
+                                         CheckedChanged="OnIsEnabledCheckedChanged"/>
+                            <RadioButton x:Name="IsEnabledFalseRadio"
+                                         AutomationId="IsEnabledFalseRadio"
+                                         GroupName="IsEnabled"
+                                         Content="False"
+                                         FontSize="14"
+                                         CheckedChanged="OnIsEnabledCheckedChanged"/>
+                     </StackLayout>
+              </StackLayout>
+
+              <!-- Right Column -->
+              <StackLayout Grid.Column="1"
+                           Padding="10"
+                           Spacing="4">
+
+                     <!-- Horizontal Text Alignment -->
+                     <Label Text="Horizontal Text Alignment:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="HorizontalTextAlignmentCenter"
+                                         AutomationId="HorizontalTextAlignmentCenter"
+                                         GroupName="HorizontalTextAlignment"
+                                         Content="Center"
+                                         FontSize="14"
+                                         CheckedChanged="OnHorizontalTextAlignmentChanged"/>
+                            <RadioButton x:Name="HorizontalTextAlignmentEnd"
+                                         AutomationId="HorizontalTextAlignmentEnd"
+                                         GroupName="HorizontalTextAlignment"
+                                         Content="End"
+                                         FontSize="14"
+                                         CheckedChanged="OnHorizontalTextAlignmentChanged"/>
+                     </StackLayout>
+
+                     <!-- Vertical Text Alignment -->
+                     <Label Text="Vertical Text Alignment:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="VerticalTextAlignmentStart"
+                                         AutomationId="VerticalTextAlignmentStart"
+                                         GroupName="VerticalTextAlignment"
+                                         Content="Start"
+                                         FontSize="14"
+                                         CheckedChanged="OnVerticalTextAlignmentChanged"/>
+                            <RadioButton x:Name="VerticalTextAlignmentEnd"
+                                         AutomationId="VerticalTextAlignmentEnd"
+                                         GroupName="VerticalTextAlignment"
+                                         Content="End"
+                                         FontSize="14"
+                                         CheckedChanged="OnVerticalTextAlignmentChanged"/>
+                     </StackLayout>
+
+                     <!-- Shadow -->
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="5">
+                            <Label Text="Shadow:"
+                                   FontSize="15"
+                                   VerticalOptions="Center"/>
+                            <RadioButton GroupName="Shadow"
+                                         AutomationId="ShadowTrueButton"
+                                         Content="True"
+                                         CheckedChanged="OnShadowRadioButtonCheckedChanged"/>
+                     </StackLayout>
+
+                     <!-- Text Color -->
+                     <Label Text="Text Color:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="5">
+                            <Button Text="Red"
+                                    BackgroundColor="Red"
+                                    TextColor="White"
+                                    Clicked="TextColorButton_Clicked"
+                                    AutomationId="TextColorRedButton"/>
+                            <Button Text="Blue"
+                                    BackgroundColor="Blue"
+                                    TextColor="White"
+                                    Clicked="TextColorButton_Clicked"
+                                    AutomationId="TextColorBlueButton"/>
+                     </StackLayout>
+
+                     <!-- Title Color -->
+                     <Label Text="Title Color:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="5">
+                            <Button Text="Purple"
+                                    BackgroundColor="Purple"
+                                    TextColor="White"
+                                    Clicked="TitleColorButton_Clicked"
+                                    AutomationId="TitleColorPurpleButton"/>
+                            <Button Text="Orange"
+                                    BackgroundColor="Orange"
+                                    TextColor="White"
+                                    Clicked="TitleColorButton_Clicked"
+                                    AutomationId="TitleColorOrangeButton"/>
+                     </StackLayout>
+
+                     <!-- Font Family -->
+                     <Label Text="Font Family:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="5">
+                            <RadioButton GroupName="FontFamily"
+                                         AutomationId="FontFamilyDokdoButton"
+                                         CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
+                                         Content="Dokdo"/>
+                     </StackLayout>
+
+                     <!-- Item Display Binding -->
+                     <Label Text="Item Display:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal"
+                                  Spacing="5">
+                            <Button Text="Name Only"
+                                    Clicked="ItemDisplayBindingButton_Clicked"
+                                    AutomationId="ItemDisplayNameButton"/>
+                            <Button Text="Description Only"
+                                    Clicked="ItemDisplayBindingButton_Clicked"
+                                    AutomationId="ItemDisplayDescriptionButton"/>
+                     </StackLayout>
+
+                     <!-- Is Visible -->
+                     <Label Text="Is Visible:"
+                            FontSize="15"/>
+                     <StackLayout Orientation="Horizontal">
+                            <RadioButton x:Name="IsVisibleTrueRadio"
+                                         AutomationId="IsVisibleTrueRadio"
+                                         GroupName="IsVisible"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="14"
+                                         CheckedChanged="OnIsVisibleCheckedChanged"/>
+                            <RadioButton x:Name="IsVisibleFalseRadio"
+                                         AutomationId="IsVisibleFalseRadio"
+                                         GroupName="IsVisible"
+                                         Content="False"
+                                         FontSize="14"
+                                         CheckedChanged="OnIsVisibleCheckedChanged"/>
+                     </StackLayout>
+              </StackLayout>
+       </Grid>
+</ContentPage>

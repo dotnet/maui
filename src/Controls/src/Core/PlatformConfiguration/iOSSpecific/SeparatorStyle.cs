@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SeparatorStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SeparatorStyle']/Docs/*" />
+	/// <summary>Enumerates list view separator styles.</summary>
 	public enum SeparatorStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SeparatorStyle.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates the default iOS separator behavior.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SeparatorStyle.xml" path="//Member[@MemberName='FullWidth']/Docs/*" />
+		/// <summary>Indicates that separators will be drawn from one edge of the list view to the other.</summary>
 		FullWidth
 	}
 

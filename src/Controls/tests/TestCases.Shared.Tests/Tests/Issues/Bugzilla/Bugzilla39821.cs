@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Animation)]
-		[Category(UITestCategories.Compatibility)]
 		public void DoesNotCrash()
 		{
 			App.WaitForElement("Animate");

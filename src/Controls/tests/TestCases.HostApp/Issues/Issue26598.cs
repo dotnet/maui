@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 26598, "Tabbar disappears when navigating back from page with hidden TabBar in iOS", PlatformAffected.iOS)]
 public class Issue26598 : TestShell
 {

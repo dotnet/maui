@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,10 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ToolbarItem)]
 		public void ToolbarItemCorrectSizeTest()
 		{
-			App.ToggleSecondaryToolbarItems();
+			App.WaitForMoreButton();
+			App.TapMoreButton();
 			App.Tap("Secondary Text Item");
 			VerifyScreenshot();
 		}
 	}
 }
-#endif

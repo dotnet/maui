@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
+
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
 {
 	public static Setter From(
 		IEnumerable<IPathPart> path,
-		uint bindingId,
 		string sourceVariableName = "source",
 		string assignedValueExpression = "value")
 	{
@@ -24,6 +24,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 		{
 			var skipConditionalAccess = skipNextConditionalAccess;
 			skipNextConditionalAccess = false;
+			bool isLastPart = part == path.Last();
 
 			if (part is Cast { TargetType: var targetType })
 			{
@@ -40,23 +41,41 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 					AddPatternMatchingExpression("{}");
 				}
 
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart, bindingId);
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
 			}
-			else
+			else if (part is MemberAccess { IsValueType: true } && !isLastPart)
 			{
-				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, bindingId, part == path.Last());
+				// It is necessary to create a variable for value types in order to set their properties.
+				// We can simply reuse the pattern matching mechanism to declare the variable.
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
+				AddPatternMatchingExpression("{}");
 			}
+			else if (!isLastPart)
+			{
+				// For non-last parts, extend the expression using the getter path
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
+			}
+			// For the last part, we don't extend the expression here
+			// The assignment is handled by BuildAssignmentStatement
 		}
 
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
-			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, bindingId, assignedValueExpression));
+			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
 	}
 
-	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, uint bindingId, string assignedValueExpression = "value") =>
+	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
 		lastPart switch
 		{
-			InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{CreateUnsafePropertyAccessorSetMethodName(bindingId, inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
+			MemberAccess { Kind: AccessorKind.Field, IsSetterInaccessible: true } memberAccess => $"{CreateUnsafeFieldAccessorMethodName(memberAccess.MemberName)}({accessAccumulator}) = {assignedValueExpression};",
+			MemberAccess { Kind: AccessorKind.Property, IsSetterInaccessible: true } memberAccess => $"{CreateUnsafePropertyAccessorSetMethodName(memberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
+			MemberAccess memberAccess => $"{accessAccumulator}.{memberAccess.MemberName} = {assignedValueExpression};",
+			IndexAccess indexAccess => indexAccess.Index switch
+			{
+				int numericIndex => $"{accessAccumulator}[{numericIndex}] = {assignedValueExpression};",
+				string stringIndex => $"{accessAccumulator}[\"{stringIndex}\"] = {assignedValueExpression};",
+				_ => throw new NotSupportedException($"Unsupported index type: {indexAccess.Index.GetType()}"),
+			},
 			_ => $"{accessAccumulator} = {assignedValueExpression};",
 		};
 }

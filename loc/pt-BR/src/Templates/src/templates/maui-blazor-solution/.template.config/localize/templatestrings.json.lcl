@@ -194,7 +194,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Chooses which interactive render mode to use for interactive components]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Escolhe qual modo de renderização interativo usar com os componentes interativos]]></Val>
+            <Val><![CDATA[Escolha qual modo de renderização interativo que será usado para componentes interativos]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Interactive render mode]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_Modo de renderização interativo]]></Val>
+            <Val><![CDATA[_Modo de renderização Interativo]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

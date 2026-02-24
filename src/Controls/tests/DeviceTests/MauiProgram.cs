@@ -10,13 +10,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static class MauiProgram
 	{
-		static MauiProgram()
-		{
-			AppContext.SetSwitch("HybridWebView.InvokeJavaScriptThrowsExceptions", isEnabled: true);
-		}
-
 #if ANDROID
-		public static Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
+		public static global::Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
 		public static Microsoft.UI.Xaml.Window CurrentWindow => MauiProgramDefaults.DefaultWindow;
 #endif

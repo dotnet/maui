@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarHiddenMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode']/Docs/*" />
+	/// <summary>Enumerates status bar hiding behavior preferences.</summary>
 	public enum StatusBarHiddenMode
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarHiddenMode.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Indicates that the default behavior on the system should be used.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarHiddenMode.xml" path="//Member[@MemberName='True']/Docs/*" />
+		/// <summary>Indicates that the status bar should be hidden.</summary>
 		True,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarHiddenMode.xml" path="//Member[@MemberName='False']/Docs/*" />
+		/// <summary>Indicates that the status bar should not be hidden.</summary>
 		False
 	}
 }

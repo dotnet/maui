@@ -23,16 +23,16 @@
         <Str Cat="Text">
           <Val><![CDATA[A multi-project app for creating a .NET MAUI Blazor Hybrid application with a Blazor Web project with a shared user interface.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[App multi-progetto per la creazione di un'applicazione i .NET MAUI Blazor Hybrid con un progetto Web Blazor con un'interfaccia utente condivisa.]]></Val>
+            <Val><![CDATA[App multi-progetto per la creazione di un'applicazione i .NET MAUI Blazor Hybrid con un progetto Blazor Web con un'interfaccia utente condivisa.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Blazor Hybrid and Web App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.NET MAUI Blazor Hybrid e app Web]]></Val>
+            <Val><![CDATA[App .NET MAUI Blazor Hybrid e Web]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Enable interactive rendering globally throughout the site]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_Enable rendering interattivo a livello globale in tutto il sito]]></Val>
+            <Val><![CDATA[_Abilita rendering interattivo a livello globale in tutto il sito]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Il framework di destinazione per il progetto.]]></Val>
+            <Val><![CDATA[Framework di destinazione per il progetto.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Include sample pages]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_Include pagine di esempio]]></Val>
+            <Val><![CDATA[_Includi pagine di esempio]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Indica se disattivare HTTPS. Questa opzione si applica solo se Individual non viene usata per --auth.]]></Val>
+            <Val><![CDATA[Indica se disattivare HTTPS. Questa opzione si applica solo se l'opzione Individual non viene usata per --auth.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Port number to use for the IIS Express HTTP endpoint in launchSettings.json.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numero di porta da usare per l'endpoint HTTP in launchSettings.json.]]></Val>
+            <Val><![CDATA[Numero di porta da usare per l'endpoint HTTP IIS Express in launchSettings.json.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -266,7 +266,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numero di porta da usare per l'endpoint HTTPS IIS Express in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato (no-https verrà ignorato se si usa l'autenticazione Individual).]]></Val>
+            <Val><![CDATA[Numero di porta da usare per l'endpoint HTTPS IIS Express in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato. No-https verrà ignorato se si usa l'autenticazione Individual.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -284,7 +284,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numero di porta da usare per l'endpoint HTTP in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato (no-https verrà ignorato se si usa l'autenticazione Individual).]]></Val>
+            <Val><![CDATA[Numero di porta da usare per l'endpoint HTTP in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato. No-https verrà ignorato se si usa l'autenticazione Individual.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

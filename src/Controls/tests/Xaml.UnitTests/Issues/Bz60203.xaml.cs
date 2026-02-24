@@ -1,36 +1,24 @@
-using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz60203 : ContentPage
 {
-	public partial class Bz60203 : ContentPage
+	public Bz60203() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Bz60203()
+		[Theory]
+		[XamlInflatorData]
+		internal void CanCompileMultiTriggersWithDifferentConditions(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Bz60203(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-
-			[TestCase(true), TestCase(false)]
-			public void CanCompileMultiTriggersWithDifferentConditions(bool useCompiledXaml)
-			{
-				var layout = new Bz60203(useCompiledXaml);
-				Assert.That(layout.label.BackgroundColor, Is.EqualTo(BackgroundColorProperty.DefaultValue));
-				layout.BindingContext = new { Text = "Foo" };
-				layout.label.TextColor = Colors.Blue;
-				Assert.That(layout.label.BackgroundColor, Is.EqualTo(Colors.Pink));
-			}
-
+			var layout = new Bz60203(inflator);
+			Assert.Equal(BackgroundColorProperty.DefaultValue, layout.label.BackgroundColor);
+			layout.BindingContext = new { Text = "Foo" };
+			layout.label.TextColor = Colors.Blue;
+			Assert.Equal(Colors.Pink, layout.label.BackgroundColor);
 		}
 	}
 }

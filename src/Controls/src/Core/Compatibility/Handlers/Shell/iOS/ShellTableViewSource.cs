@@ -248,7 +248,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void LayoutSubviews()
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				_line.Frame = new CoreGraphics.CGRect(15, 0, Frame.Width - 30, 1);
+#pragma warning restore CS0618 // Type or member is obsolete
 				base.LayoutSubviews();
 			}
 		}

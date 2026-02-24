@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetChildCount(ContentViewHandler contentViewHandler) =>
 			contentViewHandler.PlatformView.ChildCount;
 
-		static Android.Views.View GetChild(ContentViewHandler contentViewHandler, int index = 0) =>
+		static global::Android.Views.View GetChild(ContentViewHandler contentViewHandler, int index = 0) =>
 			contentViewHandler.PlatformView.GetChildAt(index);
 
 		[Fact]

@@ -1,20 +1,39 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 
 namespace Samples.ViewModel
 {
+	public class PhotoInfo
+	{
+		public ImageSource Source { get; set; }
+		public string Dimensions { get; set; }
+		public string FileSize { get; set; }
+	}
+
 	public class MediaPickerViewModel : BaseViewModel
 	{
 		ImageSource photoSource;
-		ImageSource videoSource;
 
 		bool showPhoto;
-		bool showVideo;
+		int pickerSelectionLimit = 1;
+		int pickerCompressionQuality = 100;
+		int pickerMaximumWidth = 0;
+		int pickerMaximumHeight = 0;
+		bool pickerRotateImage = false;
+		bool pickerPreserveMetaData = true;
+		long imageByteLength = 0;
+		string imageDimensions = "";
+		private ObservableCollection<PhotoInfo> photoList = [];
+		private bool showMultiplePhotos;
 
 		public MediaPickerViewModel()
 		{
@@ -33,16 +52,70 @@ namespace Samples.ViewModel
 
 		public ICommand CaptureVideoCommand { get; }
 
+		public int PickerSelectionLimit
+		{
+			get => pickerSelectionLimit;
+			set => SetProperty(ref pickerSelectionLimit, value);
+		}
+
+		public int PickerCompressionQuality
+		{
+			get => pickerCompressionQuality;
+			set => SetProperty(ref pickerCompressionQuality, value);
+		}
+
+		public int PickerMaximumWidth
+		{
+			get => pickerMaximumWidth;
+			set => SetProperty(ref pickerMaximumWidth, value);
+		}
+
+		public int PickerMaximumHeight
+		{
+			get => pickerMaximumHeight;
+			set => SetProperty(ref pickerMaximumHeight, value);
+		}
+
+		public bool PickerRotateImage
+		{
+			get => pickerRotateImage;
+			set => SetProperty(ref pickerRotateImage, value);
+		}
+
+		public bool PickerPreserveMetaData
+		{
+			get => pickerPreserveMetaData;
+			set => SetProperty(ref pickerPreserveMetaData, value);
+		}
+
+		public long ImageByteLength
+		{
+			get => imageByteLength;
+			set => SetProperty(ref imageByteLength, value);
+		}
+
+		public string ImageDimensions
+		{
+			get => imageDimensions;
+			set => SetProperty(ref imageDimensions, value);
+		}
+
 		public bool ShowPhoto
 		{
 			get => showPhoto;
 			set => SetProperty(ref showPhoto, value);
 		}
 
-		public bool ShowVideo
+		public bool ShowMultiplePhotos
 		{
-			get => showVideo;
-			set => SetProperty(ref showVideo, value);
+			get => showMultiplePhotos;
+			set => SetProperty(ref showMultiplePhotos, value);
+		}
+
+		public ObservableCollection<PhotoInfo> PhotoList
+		{
+			get => photoList;
+			set => SetProperty(ref photoList, value);
 		}
 
 		public ImageSource PhotoSource
@@ -51,17 +124,20 @@ namespace Samples.ViewModel
 			set => SetProperty(ref photoSource, value);
 		}
 
-		public ImageSource VideoSource
-		{
-			get => videoSource;
-			set => SetProperty(ref videoSource, value);
-		}
-
 		async void DoPickPhoto()
 		{
 			try
 			{
-				var photo = await MediaPicker.PickPhotoAsync();
+				var photo = await MediaPicker.PickPhotosAsync(new MediaPickerOptions
+				{
+					Title = "Pick a photo",
+					SelectionLimit = PickerSelectionLimit,
+					CompressionQuality = PickerCompressionQuality,
+					MaximumWidth = PickerMaximumWidth > 0 ? PickerMaximumWidth : null,
+					MaximumHeight = PickerMaximumHeight > 0 ? PickerMaximumHeight : null,
+					RotateImage = PickerRotateImage,
+					PreserveMetaData = PickerPreserveMetaData
+				});
 
 				await LoadPhotoAsync(photo);
 
@@ -77,7 +153,15 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var photo = await MediaPicker.CapturePhotoAsync();
+				var photo = await MediaPicker.CapturePhotoAsync(new MediaPickerOptions
+				{
+					Title = "Capture a photo",
+					CompressionQuality = PickerCompressionQuality,
+					MaximumWidth = PickerMaximumWidth > 0 ? PickerMaximumWidth : null,
+					MaximumHeight = PickerMaximumHeight > 0 ? PickerMaximumHeight : null,
+					RotateImage = PickerRotateImage,
+					PreserveMetaData = PickerPreserveMetaData
+				});
 
 				await LoadPhotoAsync(photo);
 
@@ -93,15 +177,26 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var video = await MediaPicker.PickVideoAsync();
+				var videos = await MediaPicker.PickVideosAsync(new MediaPickerOptions
+				{
+					Title = "Pick a video",
+					SelectionLimit = PickerSelectionLimit,
+					RotateImage = PickerRotateImage,
+					PreserveMetaData = PickerPreserveMetaData
+				});
 
-				await LoadVideoAsync(video);
+				ShowPhoto = false;
+				ShowMultiplePhotos = false;
+				ImageByteLength = 0;
+				ImageDimensions = "";
 
-				Console.WriteLine($"PickVideoAsync COMPLETED: {PhotoSource}");
+				await DisplayAlertAsync($"{videos.Count} videos successfully picked.");
+
+				Console.WriteLine($"PickVideosAsync COMPLETED: {videos.Count} selected");
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"PickVideoAsync THREW: {ex.Message}");
+				Console.WriteLine($"PickVideosAsync THREW: {ex.Message}");
 			}
 		}
 
@@ -109,11 +204,16 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var photo = await MediaPicker.CaptureVideoAsync();
+				var video = await MediaPicker.CaptureVideoAsync();
 
-				await LoadVideoAsync(photo);
+				ShowPhoto = false;
+				ShowMultiplePhotos = false;
+				ImageByteLength = 0;
+				ImageDimensions = "";
 
-				Console.WriteLine($"CaptureVideoAsync COMPLETED: {VideoSource}");
+				await DisplayAlertAsync($"Video successfully captured at {video.FullPath}.");
+
+				Console.WriteLine($"CaptureVideoAsync COMPLETED: {video.FullPath}");
 			}
 			catch (Exception ex)
 			{
@@ -123,40 +223,96 @@ namespace Samples.ViewModel
 
 		async Task LoadPhotoAsync(FileResult photo)
 		{
+			if (photo is null)
+			{
+				PhotoSource = null;
+				ImageDimensions = "";
+				return;
+			}
+
+			var stream = await photo.OpenReadAsync();
+
+			// Get image dimensions
+			try
+			{
+				var imageInfo = GetImageDimensions(stream);
+				ImageDimensions = $"{imageInfo.Width} × {imageInfo.Height} • {stream.Length:N0} bytes";
+				stream.Position = 0; // Reset stream position
+			}
+			catch
+			{
+				ImageDimensions = $"Unknown dimensions • {stream.Length:N0} bytes";
+			}
+
+			PhotoSource = ImageSource.FromStream(() => stream);
+			ImageByteLength = stream.Length;
+
+			ShowMultiplePhotos = false;
+			ShowPhoto = true;
+		}
+
+		async Task LoadPhotoAsync(List<FileResult> photo)
+		{
+			PhotoList.Clear();
+			ImageByteLength = 0;
+			ImageDimensions = "";
+
 			// canceled
-			if (photo == null)
+			if (photo is null || photo.Count == 0)
 			{
 				PhotoSource = null;
 				return;
 			}
 
-			var stream = await photo.OpenReadAsync();
-			PhotoSource = ImageSource.FromStream(() => stream);
-
-			ShowVideo = false;
-			ShowPhoto = true;
-		}
-
-		async Task LoadVideoAsync(FileResult video)
-		{
-			// canceled
-			if (video == null)
+			foreach (var item in photo)
 			{
-				VideoSource = null;
-				return;
+				var stream = await item.OpenReadAsync();
+
+				// Get image dimensions
+				var dimensions = GetImageDimensions(stream);
+				stream.Position = 0; // Reset stream position for ImageSource
+
+				var photoInfo = new PhotoInfo
+				{
+					Source = ImageSource.FromStream(() => stream),
+					Dimensions = $"{dimensions.Width} × {dimensions.Height}",
+					FileSize = $"{stream.Length:N0} bytes"
+				};
+
+				PhotoList.Add(photoInfo);
+				ImageByteLength += stream.Length;
 			}
 
-			var stream = await video.OpenReadAsync();
-			VideoSource = ImageSource.FromStream(() => stream);
+			// Show count for multiple photos
+			ImageDimensions = $"{photo.Count} photos selected";
 
-			ShowVideo = true;
 			ShowPhoto = false;
+			ShowMultiplePhotos = true;
+		}
+
+		(int Width, int Height) GetImageDimensions(Stream imageStream)
+		{
+			try
+			{
+				// Reset position to beginning of stream
+				imageStream.Position = 0;
+
+				// Use MAUI.Graphics to load the image and get dimensions
+				using var image = PlatformImage.FromStream(imageStream);
+				return ((int)image.Width, (int)image.Height);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to extract image dimensions: {ex.Message}");
+				return (0, 0);
+			}
 		}
 
 		public override void OnDisappearing()
 		{
+			PhotoList?.Clear();
 			PhotoSource = null;
-			VideoSource = null;
+			ImageDimensions = "";
 
 			base.OnDisappearing();
 		}

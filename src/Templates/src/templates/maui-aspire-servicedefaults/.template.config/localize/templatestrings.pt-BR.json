@@ -1,0 +1,10 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI para .NET Aspire Service Defaults",
+  "description": "Um modelo de projeto para criar um projeto padrão do serviço .NET Aspire para .NET MAUI.",
+  "symbols/Framework/description": "A estrutura de destino para o projeto.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto que está sendo criado.",
+  "postActions/restore/description": "Restaurar os pacotes NuGet exigidos por esse projeto.",
+  "postActions/restore/manualInstructions/default/text": "Execute 'dotnet restore'"
+}

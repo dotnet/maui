@@ -20,7 +20,9 @@ namespace Microsoft.Maui.DeviceTests
 			if (view is not ITextStyle)
 				return;
 
+#pragma warning disable IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 			view.GetType().GetProperty("Font").SetValue(view, Font.OfSize(family, 10));
+#pragma warning restore IL2075 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 
 			var handler = await CreateHandlerAsync(view);
 			var nativeFont = await GetValueAsync(view, handler => GetNativeFont(handler));

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
+    <MauiTestProject>true</MauiTestProject>
   </PropertyGroup>
 
   <ItemGroup>

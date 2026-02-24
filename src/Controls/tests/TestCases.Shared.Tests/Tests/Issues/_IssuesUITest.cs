@@ -19,37 +19,32 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public _IssuesUITest(TestDevice device) : base(device) { }
 
-		protected override void FixtureSetup()
+		protected override void TryToResetTestState()
 		{
-			int retries = 0;
-			while (true)
+#if !MACCATALYST
+			NavigateToIssue(Issue);
+#endif
+		}
+
+		public override IConfig GetTestConfig()
+		{
+			var config = base.GetTestConfig();
+
+#if MACCATALYST
+			// For Catalyst, pass the test name as a startup argument
+			// If the UITestContext is not null we can directly pass the Issue via LaunchAppWithTest
+			if (UITestContext is null)
 			{
-				try
-				{
-					base.FixtureSetup();
-#if ANDROID || MACCATALYST
-					App.ToggleSystemAnimations(false);
-#endif
-					NavigateToIssue(Issue);
-					break;
-				}
-				catch (Exception e)
-				{
-					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
-					if (retries++ < SetupMaxRetries)
-					{
-						App.Back();
-#if ANDROID || MACCATALYST
-						App.ToggleSystemAnimations(true);
-#endif
-						Reset();
-					}
-					else
-					{
-						throw;
-					}
-				}
+				config.SetTestConfigurationArg("test", Issue);
 			}
+#endif
+
+			return config;
+		}
+
+		public override void LaunchAppWithTest()
+		{
+			App.LaunchApp(Issue, ResetAfterEachTest);
 		}
 
 		public abstract string Issue { get; }

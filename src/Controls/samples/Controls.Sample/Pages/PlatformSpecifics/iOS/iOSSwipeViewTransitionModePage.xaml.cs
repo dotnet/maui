@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnDeleteSwipeItemInvoked(object sender, EventArgs e)
 		{
-			await DisplayAlert("SwipeView", "Delete invoked.", "OK");
+			await DisplayAlertAsync("SwipeView", "Delete invoked.", "OK");
 		}
 	}
 }

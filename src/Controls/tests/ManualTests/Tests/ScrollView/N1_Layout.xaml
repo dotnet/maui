@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Microsoft.Maui.ManualTests.ViewModels"
+             x:Class="Microsoft.Maui.ManualTests.Tests.ScrollView.N1_Layout"
+             x:DataType="viewmodels:MonkeysViewModel"
+             Title="N1_Layout">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="10">
+            <Label Text="1. Verify that the monkey items are displayed in 2 columns." />
+            <Label Text="2. Each item shows the monkey image on top and name below." />
+            <Label Text="3. Test scrolling through all items." />
+            
+            <CollectionView ItemsSource="{Binding Monkeys}"
+                           Margin="0,20,0,0">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                    Span="2"
+                                    HorizontalItemSpacing="10"
+                                    VerticalItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="{x:Null}">
+                        <VerticalStackLayout Spacing="10"
+                                           Padding="10">
+                            <Border Stroke="LightGray"
+                                    StrokeThickness="2"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="White"
+                                    Padding="5">
+                                <Image Source="{Binding ImageUrl}"
+                                       Aspect="AspectFit"
+                                       HeightRequest="120"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+                            
+                            <Label Text="{Binding Name}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"
+                                   LineBreakMode="WordWrap"
+                                   MaxLines="2" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

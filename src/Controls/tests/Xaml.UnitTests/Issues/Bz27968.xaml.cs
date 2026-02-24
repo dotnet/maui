@@ -4,39 +4,33 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Bz27968Page : ContentPage
 {
-	public class Bz27968Page : ContentPage
+}
+
+public partial class Bz27968 : Bz27968Page
+{
+	public Bz27968()
 	{
+		InitializeComponent();
 	}
 
-	public partial class Bz27968 : Bz27968Page
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Bz27968()
-		{
-			InitializeComponent();
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		public Bz27968(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void BaseClassIdentifiersAreValidForResources(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BaseClassIdentifiersAreValidForResources(bool useCompiledXaml)
-			{
-				var layout = new Bz27968(useCompiledXaml);
-				Assert.That(layout.Resources["listView"], Is.TypeOf<ListView>());
-			}
+			var layout = new Bz27968(inflator);
+			Assert.IsType<ListView>(layout.Resources["listView"]);
 		}
 	}
 }

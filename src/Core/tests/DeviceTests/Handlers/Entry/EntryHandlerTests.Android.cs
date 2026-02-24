@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Android.Text;
-using Android.Text.Method;
-using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
+using global::Android.Text;
+using global::Android.Text.Method;
+using global::Android.Views.InputMethods;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 				HorizontalTextAlignment = xplatHorizontalTextAlignment
 			};
 
-			Android.Views.TextAlignment expectedValue = Android.Views.TextAlignment.ViewEnd;
+			global::Android.Views.TextAlignment expectedValue = global::Android.Views.TextAlignment.ViewEnd;
 
 			var values = await GetValueAsync(entry, (handler) =>
 			{
@@ -318,13 +318,13 @@ namespace Microsoft.Maui.DeviceTests
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
-		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
+		global::Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
-		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Gravity & Android.Views.GravityFlags.VerticalGravityMask;
+		global::Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Gravity & global::Android.Views.GravityFlags.VerticalGravityMask;
 
-		Android.Views.GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+		global::Android.Views.GravityFlags GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
 			textAlignment.ToVerticalGravityFlags();
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>

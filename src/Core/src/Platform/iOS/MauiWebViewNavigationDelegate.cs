@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFinishNavigation:")]
-		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
+		public virtual void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var handler = Handler;
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFailNavigation:withError:")]
-		public void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+		public virtual void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
 
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFailProvisionalNavigation:withError:")]
-		public void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+		public virtual void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
 
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 
 		// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
 		[Export("webView:decidePolicyForNavigationAction:decisionHandler:")]
-		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
+		public virtual void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
 
@@ -122,10 +122,6 @@ namespace Microsoft.Maui.Platform
 			{
 				case WKNavigationType.LinkActivated:
 					navEvent = WebNavigationEvent.NewPage;
-
-					if (navigationAction.TargetFrame == null)
-						webView?.LoadRequest(navigationAction.Request);
-
 					break;
 				case WKNavigationType.FormSubmitted:
 					navEvent = WebNavigationEvent.NewPage;
@@ -151,7 +147,21 @@ namespace Microsoft.Maui.Platform
 
 			bool cancel = virtualView.Navigating(navEvent, lastUrl);
 			platformView.UpdateCanGoBackForward(virtualView);
-			decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
+
+			// Handle target="_blank" links - when TargetFrame is null, the link is meant to open in a new window
+			if (navigationAction.TargetFrame == null)
+			{
+				// If navigation was not cancelled, load the request in the same WebView
+				if (!cancel)
+					webView?.LoadRequest(navigationAction.Request);
+
+				// Always cancel the original navigation since we're handling it ourselves
+				decisionHandler(WKNavigationActionPolicy.Cancel);
+			}
+			else
+			{
+				decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
+			}
 		}
 
 		string GetCurrentUrl()

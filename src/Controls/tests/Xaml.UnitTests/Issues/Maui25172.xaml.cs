@@ -1,49 +1,36 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui25172 : CoreContentPage<VM25172>
 {
-	public Maui25172()
-	{
-		InitializeComponent();
-	}
+	public Maui25172() => InitializeComponent();
 
-	public Maui25172(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void CompilationWithGenericBaseClassSucceeds([Values(true, false)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void CompilationWithGenericBaseClassSucceeds(XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-			{
-				MockCompiler.Compile(typeof(Maui25172));
-			}
-
-			var page = new Maui25172(useCompiledXaml);
-			Assert.IsTrue(typeof(CoreContentPage<VM25172>).IsAssignableFrom(page.GetType()));
+			var page = new Maui25172(inflator);
+			Assert.True(typeof(CoreContentPage<VM25172>).IsAssignableFrom(page.GetType()));
 		}
 	}
 }

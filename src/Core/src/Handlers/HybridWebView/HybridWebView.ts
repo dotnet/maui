@@ -48,8 +48,12 @@ interface JSInvokeError {
     StackTrace?: string;
 }
 interface DotNetInvokeResult {
-    IsJson: boolean;
-    Result: any;
+    IsJson?: boolean;
+    Result?: any;
+    IsError?: boolean;
+    ErrorMessage?: string;
+    ErrorType?: string;
+    ErrorStackTrace?: string;
 }
 
 (() => {
@@ -201,24 +205,44 @@ interface DotNetInvokeResult {
 
         const message = JSON.stringify(body);
 
-        const requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
-
+        // send the request to .NET
+        const requestUrl = `${window.location.origin}/__hwvInvokeDotNet`;
         const rawResponse = await fetch(requestUrl, {
-            method: 'GET',
+            method: 'POST',
             headers: {
-                'Accept': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Maui-Invoke-Token': 'HybridWebView',
+                'X-Maui-Request-Body': message // Some platforms (Android) do not expose the POST body
+            },
+            body: message
         });
+
         const response: DotNetInvokeResult = await rawResponse.json();
 
+        // a null response is a null response
         if (!response) {
             return null;
         }
 
+        // Check if the response indicates an error
+        if (response.IsError) {
+            const error = new Error(response.ErrorMessage || 'Unknown error occurred in .NET method');
+            if (response.ErrorType) {
+                (error as any).dotNetErrorType = response.ErrorType;
+            }
+            if (response.ErrorStackTrace) {
+                (error as any).dotNetStackTrace = response.ErrorStackTrace;
+            }
+            throw error;
+        }
+
+        // deserialize if there is JSON data
         if (response.IsJson) {
             return JSON.parse(response.Result);
         }
 
+        // otherwise return the primitive
         return response.Result;
     }
 

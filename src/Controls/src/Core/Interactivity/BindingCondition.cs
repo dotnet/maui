@@ -4,7 +4,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/BindingCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindingCondition']/Docs/*" />
+	/// <summary>
+	/// A condition that is satisfied when a binding evaluates to a specified value.
+	/// </summary>
 	public sealed class BindingCondition : Condition
 	{
 		readonly BindableProperty _boundProperty;
@@ -12,13 +14,17 @@ namespace Microsoft.Maui.Controls
 		BindingBase _binding;
 		object _triggerValue;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BindingCondition.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BindingCondition"/> class.
+		/// </summary>
 		public BindingCondition()
 		{
 			_boundProperty = BindableProperty.CreateAttached("Bound", typeof(object), typeof(BindingCondition), null, propertyChanged: OnBoundPropertyChanged);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BindingCondition.xml" path="//Member[@MemberName='Binding']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the binding whose value is evaluated for this condition.
+		/// </summary>
 		public BindingBase Binding
 		{
 			get { return _binding; }
@@ -32,7 +38,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BindingCondition.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value that satisfies this condition when matched by the binding.
+		/// </summary>
 		public object Value
 		{
 			get { return _triggerValue; }

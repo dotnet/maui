@@ -1,63 +1,48 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui20244 : ContentPage
 {
-	public Maui20244()
-	{
-		InitializeComponent();
-	}
+	public Maui20244() => InitializeComponent();
 
-	public Maui20244(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void RowDefStaticResource([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void RowDefStaticResource(XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(Maui20244));
-
-			var page = new Maui20244(useCompiledXaml);
+			var page = new Maui20244(inflator);
 			var grid = page.grid;
 
-			Assert.That(grid.RowDefinitions.Count, Is.EqualTo(6));
-			Assert.That(grid.RowDefinitions[0].Height, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-			Assert.That(grid.RowDefinitions[1].Height, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-			Assert.That(grid.RowDefinitions[2].Height, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-			Assert.That(grid.RowDefinitions[3].Height, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-			Assert.That(grid.RowDefinitions[4].Height, Is.EqualTo(new GridLength(1, GridUnitType.Star)));
-			Assert.That(grid.RowDefinitions[5].Height, Is.EqualTo(new GridLength(1, GridUnitType.Auto)));
+			Assert.Equal(6, grid.RowDefinitions.Count);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[0].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[1].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[2].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[3].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Star), grid.RowDefinitions[4].Height);
+			Assert.Equal(new GridLength(1, GridUnitType.Auto), grid.RowDefinitions[5].Height);
 
-			Assert.That(grid.ColumnDefinitions.Count, Is.EqualTo(3));
+			Assert.Equal(3, grid.ColumnDefinitions.Count);
+
 		}
 	}
-
 }

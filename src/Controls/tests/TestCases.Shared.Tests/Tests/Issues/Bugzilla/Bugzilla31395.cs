@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla31395Test()
 		{
 			App.WaitForElement("SwitchMainPage");

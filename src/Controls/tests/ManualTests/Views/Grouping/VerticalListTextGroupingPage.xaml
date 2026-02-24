@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             x:Class="Microsoft.Maui.ManualTests.Views.VerticalListTextGroupingPage"
+             Title="Grouping (without DataTemplates)">
+    <Grid Margin="20" RowDefinitions="Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1. The test passes if display the names of all animals in order by animal category." />
+        </StackLayout>        
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Animals}"
+                        IsGrouped="true" />
+    </Grid>
+</ContentPage>

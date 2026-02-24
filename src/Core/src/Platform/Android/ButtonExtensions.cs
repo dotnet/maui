@@ -1,5 +1,6 @@
 ﻿using Android.Widget;
 using Google.Android.Material.Button;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 
@@ -86,6 +87,21 @@ namespace Microsoft.Maui.Platform
 					// overriding the background.
 					platformView.BackgroundTintList = null;
 				});
+		}
+
+		public static void UpdateRippleColor(this MaterialButton platformView, Color? rippleColor)
+		{
+			if (platformView.Background is global::Android.Graphics.Drawables.RippleDrawable ripple)
+			{
+				if (rippleColor?.ToPlatform() is not null)
+				{
+					ripple.SetColor(global::Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
+				}
+				else
+				{
+					ripple.ClearColorFilter();
+				}
+			}
 		}
 	}
 }

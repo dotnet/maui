@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
 		public void EntryOneWayBindingShouldUpdate()
 		{
 			App.WaitForElement(ButtonId);

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.CollectionViewHeaderPage"
+             SafeAreaEdges="Container"
              Title="CollectionViewFeature">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"

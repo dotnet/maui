@@ -1,33 +1,30 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class AutoMergedResourceDictionaries : ContentPage
 {
-	public partial class AutoMergedResourceDictionaries : ContentPage
+	public AutoMergedResourceDictionaries()
 	{
-		public AutoMergedResourceDictionaries()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public AutoMergedResourceDictionaries(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
+	{
+		public Tests() => Application.Current = new MockApplication();
+		public void Dispose() => Application.Current = null;
 
-		[TestFixture]
-		public class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void AutoMergedRd(XamlInflator inflator)
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void AutoMergedRd(bool useCompiledXaml)
-			{
-				var layout = new AutoMergedResourceDictionaries(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));
-				Assert.That(layout.label.BackgroundColor, Is.EqualTo(Color.FromArgb("#FF96F3")));
-			}
+			var layout = new AutoMergedResourceDictionaries(inflator);
+			Assert.Equal(Colors.Purple, layout.label.TextColor);
+			Assert.Equal(Color.FromArgb("#FF96F3"), layout.label.BackgroundColor);
 		}
 	}
 }

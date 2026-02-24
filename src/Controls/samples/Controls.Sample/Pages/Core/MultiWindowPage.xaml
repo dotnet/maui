@@ -21,6 +21,16 @@
             <Label Text="{Binding Window.Width, StringFormat='W = {0:0.00}'}" />
             <Label Text="{Binding Window.Height, StringFormat='H = {0:0.00}'}" />
 
+            <Grid ColumnDefinitions="*,auto">
+                <Label Text="IsMinimizable: "/>
+                <Switch Grid.Column="1" IsToggled="True" x:Name="isMinimizableSwitch" Toggled="isMinimizableSwitch_Toggled" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,auto">
+                <Label Text="IsMaximizable: "/>
+                <Switch Grid.Column="1" IsToggled="True" x:Name="isMaximizableSwitch" Toggled="isMaximizableSwitch_Toggled"/>
+            </Grid>
+
             <Label Text="Open/Close Windows:" />
             <Button
                 Clicked="OnNewWindowClicked"

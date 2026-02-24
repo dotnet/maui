@@ -1,33 +1,21 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Unreported009 : ContentPage
 {
-	public partial class Unreported009 : ContentPage
+	public Unreported009() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Unreported009()
+		[Theory]
+		[XamlInflatorData]
+		internal void AllowSetterValueAsElementProperties(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Unreported009(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void AllowSetterValueAsElementProperties(bool useCompiledXaml)
-			{
-				var p = new Unreported009(useCompiledXaml);
-				var s = p.Resources["Default"] as Style;
-				Assert.AreEqual("Bananas!", (s.Setters[0].Value as Label).Text);
-			}
+			var p = new Unreported009(inflator);
+			var s = p.Resources["Default"] as Style;
+			Assert.Equal("Bananas!", (s.Setters[0].Value as Label).Text);
 		}
 	}
 }

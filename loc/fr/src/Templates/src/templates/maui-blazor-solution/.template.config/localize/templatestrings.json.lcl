@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A multi-project app for creating a .NET MAUI Blazor Hybrid application with a Blazor Web project with a shared user interface.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Application à projets multiples permettant de créer une application .NET MAUI Blazor hybride avec un projet web Blazor avec une interface utilisateur partagée.]]></Val>
+            <Val><![CDATA[Application à projets multiples permettant de créer une application .NET MAUI Blazor Hybrid avec un projet web Blazor avec une interface utilisateur partagée.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Blazor Hybrid and Web App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens Shared Pages/Home.razor in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ouvre Pages partagées/Home.razor dans le Rédacteur.]]></Val>
+            <Val><![CDATA[Ouvre les Pages/Home.razor partagées dans l’éditeur.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -50,7 +50,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configure si chaque page doit être interactive en appliquant un mode de rendu interactif au niveau supérieur. Si la valeur est False, les pages utilisent le rendu de serveur statique par défaut et peuvent être marquées comme interactives par page ou par composant.]]></Val>
+            <Val><![CDATA[Configure si chaque page doit être interactive en appliquant un mode de rendu interactif au niveau global. Si la valeur est False, les pages utilisent le rendu de serveur statique par défaut et peuvent être marquées comme interactives par page ou par composant.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -59,7 +59,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Enable interactive rendering globally throughout the site]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[_Enable rendu interactif globalement sur l’ensemble du site]]></Val>
+            <Val><![CDATA[_Activer le rendu interactif globalement sur l’ensemble du site]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Configures whether to omit sample pages and styling that demonstrate basic usage patterns.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Configure s'il faut omettre les exemples de pages et le style qui illustrent les modèles d'utilisation de base.]]></Val>
+            <Val><![CDATA[Configure s'il faut omettre les exemples de pages et de style qui illustrent les modèles d'utilisation de base.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Le cadre cible du projet.]]></Val>
+            <Val><![CDATA[Infrastructure cible du projet.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -212,7 +212,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Indique s’il faut désactiver HTTPS. Cette option s’applique uniquement si Individual n’est pas utilisé pour --auth.]]></Val>
+            <Val><![CDATA[Indique s’il faut désactiver HTTPS. Cette option ne s’applique que si Individual n’est pas utilisé pour --auth.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -221,7 +221,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Whether to generate an explicit Program class and Main method instead of top-level statements.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.]]></Val>
+            <Val><![CDATA[Indique s’il faut générer une classe Program et une méthode Main explicites au lieu d’instructions de niveau global.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Do not use _top-level statements]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[N’utilisez pas _d’instructions de niveau supérieur.]]></Val>
+            <Val><![CDATA[N’utilisez pas _d’instructions de niveau global]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -266,7 +266,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numéro de port à utiliser pour le point de terminaison HTTPS IIS Express dans launchSettings.json. Cette option s’applique uniquement lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si l’authentification individuelle est utilisée).]]></Val>
+            <Val><![CDATA[Numéro de port à utiliser pour le point de terminaison HTTPS IIS Express dans launchSettings.json. Cette option ne s’applique que lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si l’authentification individuelle est utilisée).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -284,7 +284,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numéro de port à utiliser pour le point de terminaison HTTPS dans launchSettings.json. Cette option s’applique uniquement lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si l’authentification individuelle est utilisée).]]></Val>
+            <Val><![CDATA[Numéro de port à utiliser pour le point de terminaison HTTPS dans launchSettings.json. Cette option ne s’applique que lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si l’authentification individuelle est utilisée).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

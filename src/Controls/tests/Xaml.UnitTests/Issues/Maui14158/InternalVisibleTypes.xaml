@@ -4,8 +4,6 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui14158.InternalVisibleTypes">
 	<StackLayout>
-
 		<maui14158:InternalButVisible x:Name="internalButVisible" />
-
 	</StackLayout>
 </ContentPage>

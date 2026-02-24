@@ -80,7 +80,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
 		{
-			Performance.Start(out string reference);
 			if (e.OldElement != null)
 			{
 				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
@@ -94,8 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
-
-			Performance.Stop(reference);
 		}
 
 		void UpdateIsEnabled()

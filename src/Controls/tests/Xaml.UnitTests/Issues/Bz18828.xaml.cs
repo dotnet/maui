@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -32,19 +32,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz18828(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
 
-		[TestFixture]
-		class Tests
+		[Collection("Issue")]
+		public class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void GridItemsLayoutWithConverter(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void GridItemsLayoutWithConverter(XamlInflator inflator)
 			{
-				var layout = new Bz18828(useCompiledXaml);
+				var layout = new Bz18828(inflator);
 				Assert.True(((GridItemsLayout)layout.collectionView.ItemsLayout).Span == 2);
 			}
 		}

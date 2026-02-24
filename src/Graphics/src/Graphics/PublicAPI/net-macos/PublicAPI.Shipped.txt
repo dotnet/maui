@@ -698,6 +698,8 @@
 ~static readonly Microsoft.Maui.Graphics.Colors.YellowGreen -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Text.AttributedTextRunComparer.Instance -> Microsoft.Maui.Graphics.Text.AttributedTextRunComparer
 ~virtual Microsoft.Maui.Graphics.AbstractCanvas<TState>.StateRestored(TState state) -> void
+~virtual Microsoft.Maui.Graphics.DrawingCommand.Invoke(Microsoft.Maui.Graphics.ICanvas canvas) -> void
+~virtual Microsoft.Maui.Graphics.LayoutLine.Invoke(Microsoft.Maui.Graphics.PointF aPoint, Microsoft.Maui.Graphics.ITextAttributes aTextual, string aText, float aAscent, float aDescent, float aLeading) -> void
 abstract Microsoft.Maui.Graphics.AbstractCanvas<TState>.Alpha.set -> void
 abstract Microsoft.Maui.Graphics.AbstractCanvas<TState>.Antialias.set -> void
 abstract Microsoft.Maui.Graphics.AbstractCanvas<TState>.BlendMode.set -> void

@@ -7,16 +7,23 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public string Format { get; set; }
 
-		public DateTime Date { get; set; }
+		public DateTime? Date { get; set; }
 
-		public DateTime MinimumDate { get; set; }
+		public DateTime? MinimumDate { get; set; }
 
-		public DateTime MaximumDate { get; set; }
+		public DateTime? MaximumDate { get; set; }
 
 		public double CharacterSpacing { get; set; }
 
 		public Font Font { get; set; }
 
 		public Color TextColor { get; set; }
+
+		public bool IsOpen { get; set; }
+
+		public void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+
+		}
 	}
 }

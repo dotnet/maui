@@ -4,19 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class GraphicsViewFeatureTests : UITest
+public class GraphicsViewFeatureTests : _GalleryUITest
 {
 	public const string GraphicsViewFeatureMatrix = "GraphicsView Feature Matrix";
+
+	public override string GalleryPageName => GraphicsViewFeatureMatrix;
 
 	public GraphicsViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(GraphicsViewFeatureMatrix);
 	}
 
 	public void VerifyShapeScreenshot()
@@ -30,6 +26,7 @@ public class GraphicsViewFeatureTests : UITest
 
 	#region Default Values and Initial State Tests
 
+#if TEST_FAILS_ON_CATALYST // On MacCatalyst, when the test case is executed directly, the cursor automatically stays centered on the screen. Because of this, the cursor interacts with the GraphicsView and triggers the StartHoverInteraction event in CI. To avoid this false interaction, the test case is restricted.
 	[Test, Order(1)]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ValidateDefaultValues_VerifyInitialState()
@@ -47,7 +44,7 @@ public class GraphicsViewFeatureTests : UITest
 		var interactionLabel = App.FindElement("InteractionEventLabel");
 		Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
 	}
-
+#endif
 	#endregion
 
 	#region Drawable Type Tests
@@ -132,6 +129,7 @@ public class GraphicsViewFeatureTests : UITest
 		VerifyShapeScreenshot();
 	}
 
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30783
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_ImageDrawable_VerifyTypeAndRendering()
@@ -147,8 +145,9 @@ public class GraphicsViewFeatureTests : UITest
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Image"));
 		VerifyShapeScreenshot();
 	}
+#endif
 
-#if TEST_FAILS_ON_ANDROID	//See issue : https://github.com/dotnet/maui/issues/29394
+#if TEST_FAILS_ON_ANDROID  //See issue : https://github.com/dotnet/maui/issues/29394                                                            
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsView_TransparentEllipseDrawable_VerifyTypeAndRendering()
@@ -267,119 +266,118 @@ public class GraphicsViewFeatureTests : UITest
 
 	#region Shadow Tests
 #if TEST_FAILS_ON_WINDOWS
-// Note: Shadow tests are currently disabled on Windows due to known issues with GraphicsView                                                                                                    
-//See Issue : https://github.com/dotnet/maui/issues/30778	
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetShadowProperties_VerifyVisualState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Triangle");
-			App.Tap("Triangle");
-			App.WaitForElement("ShadowInputEntry");
-			App.EnterText("ShadowInputEntry", "5,5,10,0.5");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("DrawableTypeLabel");
-			App.Tap("DrawableTypeLabel");
-			VerifyShapeScreenshot();
-		}
+	// Note: Shadow tests are currently disabled on Windows due to known issues with GraphicsView                                                                                                    
+	//See Issue : https://github.com/dotnet/maui/issues/30778	
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SetShadowProperties_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Triangle");
+		App.Tap("Triangle");
+		App.WaitForElement("ShadowInputEntry");
+		App.EnterText("ShadowInputEntry", "5,5,10,0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("DrawableTypeLabel");
+		App.Tap("DrawableTypeLabel");
+		VerifyShapeScreenshot();
+	}
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetInvalidShadowProperties_VerifyGracefulHandling()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Triangle");
-			App.Tap("Triangle");
-			App.WaitForElement("ShadowInputEntry");
-			App.EnterText("ShadowInputEntry", "invalid,input");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("DrawableTypeLabel");
-			App.Tap("DrawableTypeLabel");
-			VerifyShapeScreenshot();
-		}
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SetInvalidShadowProperties_VerifyGracefulHandling()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Triangle");
+		App.Tap("Triangle");
+		App.WaitForElement("ShadowInputEntry");
+		App.EnterText("ShadowInputEntry", "invalid,input");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("DrawableTypeLabel");
+		App.Tap("DrawableTypeLabel");
+		VerifyShapeScreenshot();
+	}
 #endif
 	#endregion
 
 
 #if TEST_FAILS_ON_WINDOWS       //Note:These tests are currently disabled on Windows due to a Graphicsview automationid doesn't work.                                                                              
-		
-		#region Interaction Event Tests
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_StartInteraction_VerifyEventTriggered()
-		{
-			App.WaitForElement("ClearEventsButton");
-			App.Tap("ClearEventsButton");
-			App.WaitForElement("GraphicsViewControl");
-			App.Tap("GraphicsViewControl");
-			
-			var interactionLabel = App.FindElement("InteractionEventLabel");
-			Assert.That(interactionLabel.GetText(), Does.Contain("StartInteraction"));
-		}
+	#region Interaction Event Tests
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_EndInteraction_VerifyEventTriggered()
-		{
-			App.WaitForElement("ClearEventsButton");
-			App.Tap("ClearEventsButton");
-			App.WaitForElement("GraphicsViewControl");
-			App.Tap("GraphicsViewControl");
-			
-			var interactionLabel = App.FindElement("InteractionEventLabel");
-			Assert.That(interactionLabel.GetText(), Does.Contain("EndInteraction"));
-		}
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_StartInteraction_VerifyEventTriggered()
+	{
+		App.WaitForElement("ClearEventsButton");
+		App.Tap("ClearEventsButton");
+		App.WaitForElement("GraphicsViewControl");
+		App.Tap("GraphicsViewControl");
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		[Category(UITestCategories.Gestures)]
-		public void GraphicsView_DragInteraction_VerifyEventTriggered()
-		{
-			App.WaitForElement("ClearEventsButton");
-			App.Tap("ClearEventsButton");
-			App.WaitForElement("GraphicsViewControl");
-			
-			// Perform a longer drag gesture with multiple points to ensure DragInteraction is triggered
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			var bounds = graphicsView.GetRect();
-			
-			var startX = (float)(bounds.X + (bounds.Width * 0.3));
-			var startY = (float)(bounds.Y + (bounds.Height * 0.3));
-			var endX = (float)(bounds.X + (bounds.Width * 0.7));
-			var endY = (float)(bounds.Y + (bounds.Height * 0.7));
-			
-			App.DragCoordinates(startX, startY, endX, endY);
-						
-			var interactionLabel = App.FindElement("InteractionEventLabel");
-			var eventText = interactionLabel.GetText();
-			
-			Assert.That(eventText, Does.Contain("DragInteraction"));
-		}
-		#endregion
+		var interactionLabel = App.FindElement("InteractionEventLabel");
+		Assert.That(interactionLabel.GetText(), Does.Contain("StartInteraction"));
+	}
 
-		#region IsEnabled Tests
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_EndInteraction_VerifyEventTriggered()
+	{
+		App.WaitForElement("ClearEventsButton");
+		App.Tap("ClearEventsButton");
+		App.WaitForElement("GraphicsViewControl");
+		App.Tap("GraphicsViewControl");
 
-		[Test]
-		[Category(UITestCategories.GraphicsView)]
-		public void GraphicsView_SetEnabledToTrue_VerifyEnabledState()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsEnabledTrueRadio");
-			App.Tap("IsEnabledTrueRadio");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Options");
+		var interactionLabel = App.FindElement("InteractionEventLabel");
+		Assert.That(interactionLabel.GetText(), Does.Contain("EndInteraction"));
+	}
 
-			var graphicsView = App.FindElement("GraphicsViewControl");
-			Assert.That(graphicsView.IsEnabled(), Is.True);
-		}
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_DragInteraction_VerifyEventTriggered()
+	{
+		App.WaitForElement("ClearEventsButton");
+		App.Tap("ClearEventsButton");
+		App.WaitForElement("GraphicsViewControl");
+
+		// Perform a longer drag gesture with multiple points to ensure DragInteraction is triggered
+		var graphicsView = App.FindElement("GraphicsViewControl");
+		var bounds = graphicsView.GetRect();
+
+		var startX = (float)(bounds.X + (bounds.Width * 0.3));
+		var startY = (float)(bounds.Y + (bounds.Height * 0.3));
+		var endX = (float)(bounds.X + (bounds.Width * 0.7));
+		var endY = (float)(bounds.Y + (bounds.Height * 0.7));
+
+		App.DragCoordinates(startX, startY, endX, endY);
+
+		var interactionLabel = App.FindElement("InteractionEventLabel");
+		var eventText = interactionLabel.GetText();
+
+		Assert.That(eventText, Does.Contain("DragInteraction"));
+	}
+	#endregion
+
+	#region IsEnabled Tests
+
+	[Test]
+	[Category(UITestCategories.GraphicsView)]
+	public void GraphicsView_SetEnabledToTrue_VerifyEnabledState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsEnabledTrueRadio");
+		App.Tap("IsEnabledTrueRadio");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+
+		var graphicsView = App.FindElement("GraphicsViewControl");
+		Assert.That(graphicsView.IsEnabled(), Is.True);
+	}
 
 #if TEST_FAILS_ON_MACCATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID
 //See Issue : https://github.com/dotnet/maui/issues/30649
@@ -487,8 +485,8 @@ public class GraphicsViewFeatureTests : UITest
 #if WINDOWS
 			VerifyShapeScreenshot();
 #else
-				var graphicsView = App.FindElement("GraphicsViewControl");
-				Assert.That(graphicsView, Is.Not.Null);
+			var graphicsView = App.FindElement("GraphicsViewControl");
+			Assert.That(graphicsView, Is.Not.Null);
 #endif
 		}
 		else

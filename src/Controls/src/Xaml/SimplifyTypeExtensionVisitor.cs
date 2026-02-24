@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (IsValueOfXDataTypeOrTargetType(node, parentNode, out XmlName propertyName)
 				&& IsTypeExtension(node, out ValueNode typeNameValueNode))
 			{
-				(parentNode as IElementNode).Properties[propertyName] = typeNameValueNode;
+				(parentNode as ElementNode).Properties[propertyName] = typeNameValueNode;
 			}
 
 			static bool IsValueOfXDataTypeOrTargetType(ElementNode node, INode parentNode, out XmlName propertyName)
@@ -48,14 +48,14 @@ namespace Microsoft.Maui.Controls.Xaml
 						|| IsMultiTrigger(parentType));
 
 			static bool IsXDataType(XmlName name) => name == XmlName.xDataType;
-			static bool IsStyle(XmlType type) => type.Name == nameof(Style) && type.NamespaceUri == XamlParser.MauiUri;
-			static bool IsTrigger(XmlType type) => type.Name == nameof(Trigger) && type.NamespaceUri == XamlParser.MauiUri;
-			static bool IsDataTrigger(XmlType type) => type.Name == nameof(DataTrigger) && type.NamespaceUri == XamlParser.MauiUri;
-			static bool IsMultiTrigger(XmlType type) => type.Name == nameof(MultiTrigger) && type.NamespaceUri == XamlParser.MauiUri;
+			static bool IsStyle(XmlType type) => type.Name == "Style" && type.NamespaceUri == XamlParser.MauiUri;
+			static bool IsTrigger(XmlType type) => type.Name == "Trigger" && type.NamespaceUri == XamlParser.MauiUri;
+			static bool IsDataTrigger(XmlType type) => type.Name == "DataTrigger" && type.NamespaceUri == XamlParser.MauiUri;
+			static bool IsMultiTrigger(XmlType type) => type.Name == "MultiTrigger" && type.NamespaceUri == XamlParser.MauiUri;
 
 			static bool IsTypeExtension(ElementNode node, out ValueNode typeNameValueNode)
 			{
-				if (node.XmlType.Name == nameof(TypeExtension) && node.XmlType.NamespaceUri == XamlParser.X2009Uri)
+				if (node.XmlType.Name == "TypeExtension" && node.XmlType.NamespaceUri == XamlParser.X2009Uri)
 				{
 					XmlName typeNameXmlName = new("", "TypeName");
 					if (node.Properties.ContainsKey(typeNameXmlName)

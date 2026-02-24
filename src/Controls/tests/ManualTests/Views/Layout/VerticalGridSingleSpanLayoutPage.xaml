@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Views.VerticalGridSingleSpanLayoutPage"
+             Title="Vertical Grid (Single Span Layout)">
+    <Grid Margin="20" RowDefinitions="Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1. Confirm that the CollectionView below is populated with Monkeys in a single column list." />
+            <Label Text="2. Resize the window to make sure the items are not clipped." />
+        </StackLayout>
+        <CollectionView Grid.Row="1"
+                        BackgroundColor="LightBlue"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill"
+                        ItemsSource="{Binding Monkeys}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Span="1"
+                                 Orientation="Vertical"
+                                 HorizontalItemSpacing="10"
+                                 VerticalItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="20"
+                          BackgroundColor="Gainsboro"
+                          HeightRequest="100"
+                          VerticalOptions="Fill">
+                        <Label Text="{Binding Name}"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

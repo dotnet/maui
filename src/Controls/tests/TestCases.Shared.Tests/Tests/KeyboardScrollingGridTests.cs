@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class KeyboardScrollingGridTests : CoreGalleryBasePageTest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - Grid with Star Row";
+
+		public override string GalleryPageName => KeyboardScrollingGallery;
 		
 		public KeyboardScrollingGridTests(TestDevice device)
 			: base(device)

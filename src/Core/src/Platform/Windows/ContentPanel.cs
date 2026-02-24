@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Shapes;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentPanel : MauiPanel
+	public partial class ContentPanel : MauiPanel
 	{
 		readonly Path? _borderPath;
 		IBorderStroke? _borderStroke;

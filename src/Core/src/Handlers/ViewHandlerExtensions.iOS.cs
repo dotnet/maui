@@ -131,7 +131,8 @@ namespace Microsoft.Maui
 			var centerX = rect.Center.X;
 
 			var parent = platformView.Superview;
-			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft &&
+				parent is not MauiScrollView)
 			{
 				// We'll need to adjust the center point to reflect the RTL layout
 				// Find the center of the parent
