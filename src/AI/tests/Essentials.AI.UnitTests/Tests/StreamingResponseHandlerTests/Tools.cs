@@ -58,7 +58,7 @@ public partial class StreamingResponseHandlerTests
 
 			var updates = await ReadAll(handler);
 
-			Assert.True(updates.Count >= 2);
+			Assert.Equal(2, updates.Count);
 
 			var textIndex = updates.FindIndex(u => u.Contents.OfType<TextContent>().Any());
 			var toolIndex = updates.FindIndex(u => u.Contents.OfType<FunctionCallContent>().Any());

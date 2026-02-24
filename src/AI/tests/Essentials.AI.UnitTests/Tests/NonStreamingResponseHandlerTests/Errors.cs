@@ -33,7 +33,7 @@ public partial class NonStreamingResponseHandlerTests
 		}
 
 		[Fact]
-		public void DoubleComplete_DoesNotThrow()
+		public async Task DoubleComplete_PreservesFirstResult()
 		{
 			var handler = new NonStreamingResponseHandler();
 			var response = new Microsoft.Extensions.AI.ChatResponse(
@@ -42,7 +42,9 @@ public partial class NonStreamingResponseHandlerTests
 			handler.Complete(response);
 			handler.CompleteWithError(new InvalidOperationException("should be ignored"));
 			handler.CompleteCancelled(CancellationToken.None);
-			// No exception — TrySet* methods return false on subsequent calls
+
+			var result = await handler.Task;
+			Assert.Same(response, result);
 		}
 	}
 }

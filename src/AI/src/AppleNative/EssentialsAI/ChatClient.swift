@@ -383,21 +383,23 @@ public class ChatClientNative: NSObject {
     private func toTranscriptEntries(message: ChatMessageNative) throws -> [Transcript.Entry] {
         switch message.role {
         case .user:
-            return [toUserEntry(message)]
+            return [try toUserEntry(message)]
         case .assistant:
             return toAssistantEntries(message)
         case .system:
-            return [toSystemEntry(message)]
+            return [try toSystemEntry(message)]
         case .tool:
-            return toToolEntries(message)
+            return try toToolEntries(message)
         default:
             throw NSError.chatError(.invalidRole, description: "Unsupported role in transcript. Found: \(message.role)")
         }
     }
 
-    private func toUserEntry(_ message: ChatMessageNative) -> Transcript.Entry {
-        let segments: [Transcript.Segment] = message.contents.compactMap { content in
-            guard let textContent = content as? TextContentNative else { return nil }
+    private func toUserEntry(_ message: ChatMessageNative) throws -> Transcript.Entry {
+        let segments: [Transcript.Segment] = try message.contents.map { content in
+            guard let textContent = content as? TextContentNative else {
+                throw NSError.chatError(.invalidContent, description: "Unsupported content type in user message: \(type(of: content))")
+            }
             return .text(Transcript.TextSegment(content: textContent.text))
         }
         return .prompt(Transcript.Prompt(segments: segments))
@@ -436,17 +438,21 @@ public class ChatClientNative: NSObject {
         return entries
     }
 
-    private func toSystemEntry(_ message: ChatMessageNative) -> Transcript.Entry {
-        let segments: [Transcript.Segment] = message.contents.compactMap { content in
-            guard let textContent = content as? TextContentNative else { return nil }
+    private func toSystemEntry(_ message: ChatMessageNative) throws -> Transcript.Entry {
+        let segments: [Transcript.Segment] = try message.contents.map { content in
+            guard let textContent = content as? TextContentNative else {
+                throw NSError.chatError(.invalidContent, description: "Unsupported content type in system message: \(type(of: content))")
+            }
             return .text(Transcript.TextSegment(content: textContent.text))
         }
         return .instructions(Transcript.Instructions(segments: segments, toolDefinitions: []))
     }
 
-    private func toToolEntries(_ message: ChatMessageNative) -> [Transcript.Entry] {
-        return message.contents.compactMap { content in
-            guard let funcResult = content as? FunctionResultContentNative else { return nil }
+    private func toToolEntries(_ message: ChatMessageNative) throws -> [Transcript.Entry] {
+        return try message.contents.map { content in
+            guard let funcResult = content as? FunctionResultContentNative else {
+                throw NSError.chatError(.invalidContent, description: "Unsupported content type in tool message: \(type(of: content))")
+            }
             let segment = Transcript.Segment.text(Transcript.TextSegment(content: funcResult.result))
             return .toolOutput(Transcript.ToolOutput(id: funcResult.callId, toolName: funcResult.name, segments: [segment]))
         }

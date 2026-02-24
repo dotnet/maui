@@ -142,10 +142,13 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 						case ResponseUpdateTypeNative.ToolResult:
 							handler.ProcessToolResult(update.ToolCallId, update.ToolCallResult);
 							break;
+						default:
+							throw new NotSupportedException($"Unsupported update type: {update.UpdateType}");
 					}
 				}
 				catch (Exception ex)
 				{
+					nativeToken?.Cancel();
 					handler.CompleteWithError(ex);
 				}
 			},
@@ -390,7 +393,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		format switch
 		{
 			ChatResponseFormatJson jsonFormat when StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
-				(NSString?)ChatResponseFormat.ForJsonSchema(jsonSchema, jsonFormat.SchemaName ?? "json_schema", jsonFormat.SchemaDescription).Schema.ToString(),
+				(NSString?)jsonSchema.GetRawText(),
 			ChatResponseFormatJson jsonFormat when jsonFormat.Schema is not null =>
 				throw new InvalidOperationException("Failed to transform JSON schema for Apple Intelligence chat API."),
 			ChatResponseFormatJson =>
