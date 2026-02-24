@@ -91,17 +91,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			// Inherit font properties from defaultFont if not explicitly set
-			var fontFamily = span.IsSet(Span.FontFamilyProperty) ? span.FontFamily : defaultFont?.Family;
-			var fontSize = span.IsSet(Span.FontSizeProperty) ? span.FontSize : defaultFontSize;
-			var fontAttributes = span.IsSet(Span.FontAttributesProperty)
-				? span.FontAttributes
-				: (defaultFont?.GetFontAttributes() ?? FontAttributes.None);
-			var autoScaling = span.IsSet(Span.FontAutoScalingEnabledProperty)
-				? span.FontAutoScalingEnabled
-				: (defaultFont?.AutoScalingEnabled ?? true);
-			var font = Font.OfSize(fontFamily, fontSize, enableScaling: autoScaling)
-				.WithAttributes(fontAttributes);
+			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
 			var hasStrikethrough = false;
 			if (span.IsSet(Span.TextDecorationsProperty))
