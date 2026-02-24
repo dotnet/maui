@@ -24,9 +24,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("OpenModalButton");
 			App.WaitForElement("CloseModalButton");
 
-			// Take a screenshot to verify tabs are still visible while modal is open
-			// This is the key assertion - tabs should NOT be removed when showing a modal
-			VerifyScreenshot();
+			// Close the modal
+			App.Tap("CloseModalButton");
+
+			// Verify tabs still work after modal dismiss - this is the key assertion.
+			// If tabs were destroyed (RemoveTabs) during modal navigation, they won't
+			// be properly restored, and tab switching will fail.
+			App.WaitForElement("StatusLabel");
+			App.Tap("Tab2");
+			App.WaitForElement("Tab2");
+			App.Tap("Tab1");
+			App.WaitForElement("OpenModalButton");
 		}
 	}
 }
