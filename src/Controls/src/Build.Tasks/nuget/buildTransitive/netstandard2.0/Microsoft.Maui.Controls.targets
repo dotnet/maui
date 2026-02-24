@@ -76,11 +76,21 @@
 			Condition="'$(_MauiTargetsImportedAgain)' == 'True'" />
 	</Target>
 
-	<!-- Warn when MauiXamlHotReload is set to SourceGen (not yet fully implemented) -->
-	<Target Name="_ValidateMauiXamlHotReload" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(MauiXamlHotReload)' == 'SourceGen'">
-		<Warning 
+	<!-- Validate MauiXamlHotReload values (case-insensitive) -->
+	<Target Name="_ValidateMauiXamlHotReload" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+		<PropertyGroup>
+			<_MauiXamlHotReloadUpper>$([System.String]::Copy('$(MauiXamlHotReload)').Trim().ToUpperInvariant())</_MauiXamlHotReloadUpper>
+		</PropertyGroup>
+
+		<Warning
 			Code="MAUI1002"
-			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk." />
+			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk."
+			Condition="'$(_MauiXamlHotReloadUpper)' == 'SOURCEGEN'" />
+
+		<Warning
+			Code="MAUI1003"
+			Text="MauiXamlHotReload is set to an unrecognized value '$(MauiXamlHotReload)'. Supported values are 'Legacy' and 'SourceGen'."
+			Condition="'$(_MauiXamlHotReloadUpper)' != '' and '$(_MauiXamlHotReloadUpper)' != 'SOURCEGEN' and '$(_MauiXamlHotReloadUpper)' != 'LEGACY'" />
 	</Target>
 
 	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
