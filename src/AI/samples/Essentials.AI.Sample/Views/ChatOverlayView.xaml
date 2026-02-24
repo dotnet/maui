@@ -10,7 +10,7 @@
         <views:MarkdownConverter x:Key="MarkdownConverter" />
 
         <!-- User bubble: right-aligned, blue -->
-        <DataTemplate x:Key="UserBubbleTemplate" x:DataType="models:ChatBubble">
+        <DataTemplate x:Key="UserBubbleTemplate" x:DataType="models:ChatBubbleViewModel">
             <Border
                 BackgroundColor="#512BD4"
                 StrokeThickness="0"
@@ -29,7 +29,7 @@
         </DataTemplate>
 
         <!-- Assistant bubble: left-aligned, gray -->
-        <DataTemplate x:Key="AssistantBubbleTemplate" x:DataType="models:ChatBubble">
+        <DataTemplate x:Key="AssistantBubbleTemplate" x:DataType="models:ChatBubbleViewModel">
             <Grid Margin="16,4,60,4" HorizontalOptions="Start" MaximumWidthRequest="400">
                 <Border
                     BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2D2D2D}"
@@ -54,7 +54,7 @@
         </DataTemplate>
 
         <!-- Tool Call bubble: left-aligned, amber border, collapsible -->
-        <DataTemplate x:Key="ToolCallBubbleTemplate" x:DataType="models:ChatBubble">
+        <DataTemplate x:Key="ToolCallBubbleTemplate" x:DataType="models:ChatBubbleViewModel">
             <Border
                 Stroke="#E6A817"
                 StrokeThickness="1"
@@ -95,7 +95,7 @@
         </DataTemplate>
 
         <!-- Tool Result bubble: left-aligned, green border, collapsible -->
-        <DataTemplate x:Key="ToolResultBubbleTemplate" x:DataType="models:ChatBubble">
+        <DataTemplate x:Key="ToolResultBubbleTemplate" x:DataType="models:ChatBubbleViewModel">
             <Border
                 Stroke="#4CAF50"
                 StrokeThickness="1"

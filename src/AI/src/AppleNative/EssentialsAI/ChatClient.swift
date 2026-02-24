@@ -238,14 +238,11 @@ public class ChatClientNative: NSObject {
         }
 #endif
 
-        // Find the last user message to use as the prompt.
-        // After FunctionInvokingChatClient processes tool calls, the last message
-        // may be a Tool role message (function result), not a User message.
-        guard let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) else {
-            throw NSError.chatError(.invalidRole, description: "No user message found in conversation")
+        // The last message is the prompt; everything before is the transcript history.
+        guard let lastMessage = messages.last else {
+            throw NSError.chatError(.invalidRole, description: "No messages found in conversation")
         }
-        let lastMessage = messages[lastUserIndex]
-        let otherMessages = Array(messages[..<lastUserIndex]) + Array(messages[(lastUserIndex + 1)...])
+        let otherMessages = Array(messages.dropLast())
 
         let model = SystemLanguageModel.default
         let tools = options?.tools?.map { ToolNative($0, toolWatcher?.notifyToolCall, toolWatcher?.notifyToolResult) } ?? []

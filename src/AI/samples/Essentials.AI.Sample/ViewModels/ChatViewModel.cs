@@ -19,7 +19,7 @@ public partial class ChatViewModel : ObservableObject
 
 	public ChatService ChatService => _chatService;
 
-	public ObservableCollection<ChatBubble> Messages { get; } = [];
+	public ObservableCollection<ChatBubbleViewModel> Messages { get; } = [];
 
 	[ObservableProperty]
 	public partial string MessageText { get; set; } = string.Empty;
@@ -70,7 +70,7 @@ public partial class ChatViewModel : ObservableObject
 		MessageText = string.Empty;
 
 		// Add user bubble
-		Messages.Add(new ChatBubble
+		Messages.Add(new ChatBubbleViewModel
 		{
 			BubbleType = ChatBubbleType.User,
 			Text = userText
@@ -81,13 +81,13 @@ public partial class ChatViewModel : ObservableObject
 
 		// Prepare streaming
 		_cts = new CancellationTokenSource();
-		ChatBubble? assistantBubble = null;
+		ChatBubbleViewModel? assistantBubble = null;
 		ChatMessage? textMessage = null; // Accumulates text deltas into one assistant message
 		var seenCallIds = new HashSet<string>();
 		var callIdToToolName = new Dictionary<string, string>(); // Cache tool names for result bubbles
 
 		// Show "Thinking..." placeholder immediately
-		var thinkingBubble = new ChatBubble
+		var thinkingBubble = new ChatBubbleViewModel
 		{
 			BubbleType = ChatBubbleType.Assistant,
 			Text = "Thinking...",
@@ -126,7 +126,7 @@ public partial class ChatViewModel : ObservableObject
 								}
 								else
 								{
-									assistantBubble = new ChatBubble
+									assistantBubble = new ChatBubbleViewModel
 									{
 										BubbleType = ChatBubbleType.Assistant,
 										Text = textContent.Text,
@@ -168,7 +168,7 @@ public partial class ChatViewModel : ObservableObject
 								? JsonSerializer.Serialize(functionCall.Arguments, new JsonSerializerOptions { WriteIndented = true })
 								: "{}";
 
-							Messages.Add(new ChatBubble
+							Messages.Add(new ChatBubbleViewModel
 							{
 								BubbleType = ChatBubbleType.ToolCall,
 								Text = $"🔧 Called {functionCall.Name}",
@@ -191,7 +191,7 @@ public partial class ChatViewModel : ObservableObject
 								? cachedName
 								: "tool";
 
-							Messages.Add(new ChatBubble
+							Messages.Add(new ChatBubbleViewModel
 							{
 								BubbleType = ChatBubbleType.ToolResult,
 								Text = $"📋 {toolName} responded",
@@ -212,7 +212,7 @@ public partial class ChatViewModel : ObservableObject
 		}
 		catch (Exception ex)
 		{
-			Messages.Add(new ChatBubble
+			Messages.Add(new ChatBubbleViewModel
 			{
 				BubbleType = ChatBubbleType.Assistant,
 				Text = $"⚠️ Error: {ex.Message}"

@@ -11,7 +11,7 @@ public class ChatBubbleTemplateSelector : DataTemplateSelector
 
 	protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
 	{
-		if (item is ChatBubble bubble)
+		if (item is ChatBubbleViewModel bubble)
 		{
 			return bubble.BubbleType switch
 			{
