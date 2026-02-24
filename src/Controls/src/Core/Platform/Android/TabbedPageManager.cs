@@ -222,14 +222,19 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// Reset the content bottom margin when navigating away from the tabbed page
-		// This ensures subsequent pages can use the full screen height
-		// We don't remove the tabs themselves to avoid issues with modal navigation
-		SetContentBottomMargin(0);
+		// Hide tabs instead of removing them. This avoids destroying tab fragments
+		// which would cause visual glitches when the TabbedPage reappears
+		// (e.g., returning from modal navigation). Using Gone ensures tabs don't
+		// consume layout space, so pages pushed via NavigationPage get full height.
+		HideTabContainer();
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
 	{
+		// Restore tab container visibility and bottom margin before SetTabLayout().
+		// SetTabLayout() will early-return when _tabplacementId matches (tabs were
+		// kept alive), skipping its own margin restoration, so we handle it here.
+		ShowTabContainer();
 		SetTabLayout();
 	}
 
@@ -309,6 +314,50 @@ public class TabbedPageManager
 		if (layoutContent != null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
 		{
 			cl.BottomMargin = bottomMargin;
+		}
+	}
+
+	void HideTabContainer()
+	{
+		var rootView = _context.GetNavigationRootManager().RootView;
+		if (rootView is null)
+			return;
+
+		if (IsBottomTabPlacement)
+		{
+			var container = rootView.FindViewById(Resource.Id.navigationlayout_bottomtabs);
+			if (container is not null)
+				container.Visibility = ViewStates.Gone;
+
+			SetContentBottomMargin(0);
+		}
+		else
+		{
+			var container = rootView.FindViewById(Resource.Id.navigationlayout_toptabs);
+			if (container is not null)
+				container.Visibility = ViewStates.Gone;
+		}
+	}
+
+	void ShowTabContainer()
+	{
+		var rootView = _context.GetNavigationRootManager().RootView;
+		if (rootView is null)
+			return;
+
+		if (IsBottomTabPlacement)
+		{
+			var container = rootView.FindViewById(Resource.Id.navigationlayout_bottomtabs);
+			if (container is not null)
+				container.Visibility = ViewStates.Visible;
+
+			SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
+		}
+		else
+		{
+			var container = rootView.FindViewById(Resource.Id.navigationlayout_toptabs);
+			if (container is not null)
+				container.Visibility = ViewStates.Visible;
 		}
 	}
 
