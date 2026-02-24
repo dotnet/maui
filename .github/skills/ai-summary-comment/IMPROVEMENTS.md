@@ -31,9 +31,8 @@ $preFlightContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 
 **Example debug output:**
 ```
-[DEBUG] Found 7 section(s) in state file
+[DEBUG] Found 6 section(s) in state file
 [DEBUG] Section: '📋 Issue Summary' (803 chars)
-[DEBUG] Section: '🧪 Tests' (539 chars)
 [DEBUG] Section: '🚦 Gate - Test Verification' (488 chars)
 [DEBUG] Section: '🔧 Fix Candidates' (868 chars)
 [DEBUG] Section: '📋 Final Report' (2351 chars)
@@ -51,14 +50,14 @@ $preFlightContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 ```powershell
 # Matches any of these (and more!):
 - "📋 Final Report" ✅
-- "📋 Phase 5: Final Report" ✅
+- "📋 Phase 4: Final Report" ✅
 - "📋 Report - Final Recommendation" ✅
 - Any title containing "📋" and "Report" ✅
 ```
 
 **Pattern examples:**
 - `'📋.*Issue Summary'` matches "📋 Issue Summary", "📋 Pre-Flight Issue Summary", etc.
-- `'🧪.*Tests'` matches "🧪 Tests", "🧪 Phase 2: Tests", etc.
+- `'🚦.*Gate'` matches "🚦 Gate", "🚦 Phase 2: Gate", etc.
 - `'📋.*Report'` matches any title with 📋 and Report in it
 
 ---
@@ -182,17 +181,11 @@ Any title matching `'📋.*Issue Summary'` or `'📋.*Pre-Flight'`:
 - ✅ "📋 Pre-Flight Analysis"
 - ✅ "📋 Context and Issue Summary"
 
-### Tests Phase
-Any title matching `'🧪.*Tests'`:
-- ✅ "🧪 Tests"
-- ✅ "🧪 Phase 2: Tests"
-- ✅ "🧪 Test Verification"
-
 ### Gate Phase
 Any title matching `'🚦.*Gate'`:
 - ✅ "🚦 Gate - Test Verification"
 - ✅ "🚦 Gate"
-- ✅ "🚦 Phase 3: Gate"
+- ✅ "🚦 Phase 2: Gate"
 
 ### Fix Phase
 Any title matching `'🔧.*Fix'`:
@@ -203,7 +196,7 @@ Any title matching `'🔧.*Fix'`:
 ### Report Phase
 Any title matching `'📋.*Report'` or `'Final Report'`:
 - ✅ "📋 Final Report"
-- ✅ "📋 Phase 5: Report"
+- ✅ "📋 Phase 4: Report"
 - ✅ "📋 Report - Final Recommendation"
 - ✅ "Final Report"
 
@@ -217,7 +210,7 @@ Any title matching `'📋.*Report'` or `'Final Report'`:
 
 **Old state files** with exact headers like:
 ```markdown
-<summary><strong>📋 Phase 5: Report — Final Recommendation</strong></summary>
+<summary><strong>📋 Phase 4: Report — Final Recommendation</strong></summary>
 ```
 
 **New state files** with simpler headers like:
@@ -325,7 +318,7 @@ $reportContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 - Use `[regex]::Escape()` if you need literal special chars
 
 **Examples:**
-- `'🧪.*Tests'` - Title must contain both 🧪 and Tests
+- `'🚦.*Gate'` - Title must contain both 🚦 and Gate
 - `'^📋 Report'` - Title must START with "📋 Report"
 - `'Report$'` - Title must END with "Report"
 
@@ -334,7 +327,7 @@ $reportContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 ## Testing
 
 Tested with:
-- ✅ PR #27340 (7 sections extracted successfully)
+- ✅ PR #27340 (6 sections extracted successfully)
 - ✅ Debug mode showing section discovery
 - ✅ Various header formats
 - ✅ Dry run mode
@@ -343,16 +336,14 @@ Tested with:
 
 **Debug output example:**
 ```
-[DEBUG] Found 7 section(s) in state file
+[DEBUG] Found 6 section(s) in state file
 [DEBUG] Section: '📋 Issue Summary' (803 chars)
 [DEBUG] Section: '📁 Files Changed' (0 chars)
 [DEBUG] Section: '💬 PR Discussion Summary' (0 chars)
-[DEBUG] Section: '🧪 Tests' (539 chars)
 [DEBUG] Section: '🚦 Gate - Test Verification' (488 chars)
 [DEBUG] Section: '🔧 Fix Candidates' (868 chars)
 [DEBUG] Section: '📋 Final Report' (2351 chars)
 [DEBUG] Matched '📋 Issue Summary' with pattern '📋.*Issue Summary'
-[DEBUG] Matched '🧪 Tests' with pattern '🧪.*Tests'
 [DEBUG] Matched '🚦 Gate - Test Verification' with pattern '🚦.*Gate'
 [DEBUG] Matched '🔧 Fix Candidates' with pattern '🔧.*Fix'
 [DEBUG] Matched '📋 Final Report' with pattern '📋.*Report'
@@ -451,7 +442,7 @@ Found 1 validation error(s):
 
 ---
 
-### 5. **Relaxed Phase 5 Validation**
+### 5. **Relaxed Phase 4 Validation**
 
 **Before:** Report phase required:
 - Exact "Final Recommendation" text
@@ -505,10 +496,6 @@ Any of these variations will be recognized:
 - `📋 Pre-Flight` ✅
 - `🔍 Pre-Flight` ✅
 
-**Tests:**
-- `🧪 Tests` ✅ (preferred)
-- `📋 Tests` ✅
-
 **Gate:**
 - `🚦 Gate - Test Verification` ✅ (preferred)
 - `🚦 Gate` ✅
@@ -521,9 +508,9 @@ Any of these variations will be recognized:
 
 **Report:**
 - `📋 Final Report` ✅
-- `📋 Phase 5: Final Report` ✅
+- `📋 Phase 4: Final Report` ✅
 - `📋 Report` ✅
-- `Phase 5: Report` ✅
+- `Phase 4: Report` ✅
 - `Final Report` ✅
 
 ---
@@ -533,7 +520,7 @@ Any of these variations will be recognized:
 **No changes needed!** The script is backward compatible. If you have existing state files with the old header format, they'll continue to work.
 
 If you want to use the new flexibility:
-- Just use simpler headers like `📋 Final Report` instead of `📋 Phase 5: Report — Final Recommendation`
+- Just use simpler headers like `📋 Final Report` instead of `📋 Phase 4: Report — Final Recommendation`
 - The script will find it either way
 
 ---
@@ -609,12 +596,12 @@ To support a new header variation, just add it to the array:
 
 ```powershell
 $reportContent = Extract-PhaseContent -StateContent $Content -PhaseTitles @(
-    "📋 Phase 5: Report — Final Recommendation",
-    "📋 Phase 5: Final Report",
-    "📋 Phase 5: Report",
+    "📋 Phase 4: Report — Final Recommendation",
+    "📋 Phase 4: Final Report",
+    "📋 Phase 4: Report",
     "📋 Final Report",
     "📋 Report",
-    "Phase 5: Report",
+    "Phase 4: Report",
     "Final Report",
     "Your New Pattern Here"  # <-- Add here
 ) -Debug:$debugMode
