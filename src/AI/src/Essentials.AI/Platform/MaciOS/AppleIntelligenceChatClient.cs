@@ -208,6 +208,16 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 					break;
 
 				case ResponseUpdateTypeNative.ToolCall:
+					// Flush any pending content before resetting for tool call
+					var pendingContent = chunker.Flush();
+					if (!string.IsNullOrEmpty(pendingContent))
+					{
+						writer.TryWrite(new ChatResponseUpdate
+						{
+							Role = ChatRole.Assistant,
+							Contents = { new TextContent(pendingContent) }
+						});
+					}
 					chunker.Reset();
 
 					var args = update.ToolCallArguments is null
