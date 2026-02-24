@@ -74,6 +74,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void RemovePage(FrameworkElement pageView)
 		{
+			// Unsubscribe any pending Loaded handler to prevent memory leaks
+			// and stale focus changes after the page leaves the container
+			pageView.Loaded -= OnPageLoadedForFocus;
+
 			int indexOFTopPage = -1;
 			if (_topPage != null)
 				indexOFTopPage = CachedChildren.IndexOf(_topPage) - 1;
@@ -105,6 +109,8 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				// Unsubscribe first to prevent duplicate subscriptions if called multiple times before load
+				page.Loaded -= OnPageLoadedForFocus;
 				page.Loaded += OnPageLoadedForFocus;
 			}
 		}
