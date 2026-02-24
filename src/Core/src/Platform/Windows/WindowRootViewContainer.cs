@@ -120,10 +120,16 @@ namespace Microsoft.Maui.Platform
 
 		static void SetFocusToFirstElement(FrameworkElement page)
 		{
-			if (FocusManager.FindFirstFocusableElement(page) is Control focusable)
+			if (FocusManager.FindFirstFocusableElement(page) is UIElement focusableElement)
 			{
-				focusable.Focus(FocusState.Programmatic);
+				if (focusableElement.Focus(FocusState.Programmatic))
+				{
+					return;
+				}
 			}
+
+			// Fallback: ensure the page itself takes focus so keyboard input does not remain on the underlying content
+			page.Focus(FocusState.Programmatic);
 		}
 
 		internal void AddOverlay(FrameworkElement overlayView)

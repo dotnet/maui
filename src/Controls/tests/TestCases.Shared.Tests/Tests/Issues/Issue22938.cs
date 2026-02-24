@@ -21,14 +21,14 @@ public class Issue22938 : _IssuesUITest
 		// Open the modal page
 		App.Tap("OpenModalButton");
 
-		// Wait for modal to appear
-		App.WaitForElement("ModalPageLabel");
+		// Wait for modal to appear — the Entry is the first focusable element
+		App.WaitForElement("ModalEntry");
 
-		// Press Enter — if focus is correctly on the modal, this should NOT
-		// activate the MainPage button (click count should stay at 0)
+		// Press Enter — with the fix, focus is on ModalEntry (an Entry control),
+		// so Enter should NOT activate MainPageButton on the page beneath
 		App.PressEnter();
 
-		// Close the modal
+		// Close the modal by tapping the close button explicitly
 		App.Tap("CloseModalButton");
 
 		// Wait for main page to reappear

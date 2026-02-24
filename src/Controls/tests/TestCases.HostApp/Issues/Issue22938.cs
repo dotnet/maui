@@ -46,6 +46,11 @@ public class Issue22938 : ContentPage
 								FontSize = 24,
 								HorizontalOptions = LayoutOptions.Center
 							},
+							new Entry
+							{
+								Placeholder = "Focus target on modal",
+								AutomationId = "ModalEntry"
+							},
 							new Button
 							{
 								Text = "Close Modal",
@@ -54,11 +59,6 @@ public class Issue22938 : ContentPage
 								{
 									await Navigation.PopModalAsync();
 								})
-							},
-							new Entry
-							{
-								Placeholder = "Focus target on modal",
-								AutomationId = "ModalEntry"
 							}
 						}
 					}

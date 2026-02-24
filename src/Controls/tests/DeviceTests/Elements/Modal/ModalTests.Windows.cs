@@ -7,7 +7,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using Microsoft.UI.Xaml.Input;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -165,7 +164,6 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
 				async (handler) =>
 				{
-					var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
 					ContentPage modalPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
 
 					if (useColor)
