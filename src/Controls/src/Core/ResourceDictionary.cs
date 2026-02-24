@@ -487,8 +487,8 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
 			var lazyResource = new LazyResource(factory, shared);
 			_innerDictionary.Add(key, lazyResource);
-			// Note: We don't fire OnValueChanged here since the value hasn't been resolved yet.
-			// The event will contain the LazyResource wrapper, which is internal behavior.
+			// Fire OnValueChanged so DynamicResource bindings are notified of the new key.
+			// The event value is the LazyResource wrapper; actual resolution happens on first access.
 			OnValueChanged(key, lazyResource);
 		}
 
