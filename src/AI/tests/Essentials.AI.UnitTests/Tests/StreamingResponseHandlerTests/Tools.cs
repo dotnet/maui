@@ -14,7 +14,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessToolCall_EmitsFunctionCallContent()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessToolCall("call-1", "GetWeather", "{\"location\":\"Boston\"}");
 			handler.Complete();
@@ -33,7 +33,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessToolResult_EmitsWithToolRole()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessToolResult("call-1", "Sunny, 72°F");
 			handler.Complete();
@@ -50,7 +50,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessToolCall_AfterContent_FlushesContentFirst()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent("Let me check");
 			handler.ProcessToolCall("call-1", "GetWeather", "{\"location\":\"Boston\"}");
@@ -68,7 +68,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessToolCall_MalformedJson_Throws()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			var ex = Assert.Throws<System.Text.Json.JsonException>(() =>
 				handler.ProcessToolCall("call-1", "GetWeather", "not valid json {"));
@@ -81,7 +81,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ContentAfterToolResult_StartsNewStream()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessToolCall("call-1", "GetWeather", "{\"location\":\"Boston\"}");
 			handler.ProcessToolResult("call-1", "Sunny");

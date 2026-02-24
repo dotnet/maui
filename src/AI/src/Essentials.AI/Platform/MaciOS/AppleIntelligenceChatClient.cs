@@ -115,7 +115,10 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		var nativeMessages = ToNative(messages, options);
 		var nativeOptions = ToNative(options, cancellationToken);
 		var native = new ChatClientNative();
-		var handler = new StreamingResponseHandler(useJsonChunker: nativeOptions?.ResponseJsonSchema is not null);
+		StreamChunkerBase chunker = nativeOptions?.ResponseJsonSchema is not null
+			? new JsonStreamChunker()
+			: new PlainTextStreamChunker();
+		var handler = new StreamingResponseHandler(chunker);
 
 		// Set up cancellation registration before invoking native to avoid race
 		CancellationTokenNative? nativeToken = null;

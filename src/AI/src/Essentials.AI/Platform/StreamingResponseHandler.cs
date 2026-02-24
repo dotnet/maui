@@ -13,13 +13,11 @@ internal sealed class StreamingResponseHandler
 	private readonly Channel<ChatResponseUpdate> _channel;
 	private readonly StreamChunkerBase _chunker;
 
-	public StreamingResponseHandler(bool useJsonChunker)
+	public StreamingResponseHandler(StreamChunkerBase chunker)
 	{
 		_channel = Channel.CreateUnbounded<ChatResponseUpdate>(
 			new UnboundedChannelOptions { SingleReader = true });
-		_chunker = useJsonChunker
-			? new JsonStreamChunker()
-			: new PlainTextStreamChunker();
+		_chunker = chunker;
 	}
 
 	/// <summary>

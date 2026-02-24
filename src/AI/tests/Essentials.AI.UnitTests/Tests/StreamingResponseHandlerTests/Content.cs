@@ -13,7 +13,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessContent_EmitsTextDelta()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent("Hello");
 			handler.Complete();
@@ -28,7 +28,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessContent_ProgressiveUpdates_EmitDeltas()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent("Hello");
 			handler.ProcessContent("Hello world");
@@ -44,7 +44,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessContent_EmptyText_ProducesNoOutput()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent("");
 			handler.Complete();
@@ -56,7 +56,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task ProcessContent_NullText_ProducesNoOutput()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent(null);
 			handler.Complete();

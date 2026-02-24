@@ -12,7 +12,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task Complete_FlushesRemainingContent()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent("Hello");
 			handler.Complete();
@@ -26,7 +26,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public async Task CompleteWithError_SurfacesExceptionToReader()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.ProcessContent("Hello");
 			handler.CompleteWithError(new InvalidOperationException("test error"));
@@ -37,7 +37,7 @@ public partial class StreamingResponseHandlerTests
 		[Fact]
 		public void DoubleComplete_DoesNotThrow()
 		{
-			var handler = new StreamingResponseHandler(useJsonChunker: false);
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
 
 			handler.CompleteWithError(new InvalidOperationException("first error"));
 			handler.Complete();
