@@ -1,11 +1,11 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-// Note: This is a .rt.xaml file (runtime) which skips source generation and XamlC compilation
-// This file tests that MockCompiler (XamlC) emits the XC0067 warning
 public partial class Maui3059rt : ContentPage
 {
 	public Maui3059rt()
@@ -13,46 +13,31 @@ public partial class Maui3059rt : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Application.SetCurrentApplication(new MockApplication());
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TearDown]
-		public void TearDown()
+		[Fact]
+		internal void BorderWithMultipleChildren_OnlyLastChildIsUsed()
 		{
-			Application.SetCurrentApplication(null);
-		}
-
-		[Test]
-		public void BorderWithMultipleChildren_OnlyLastChildIsUsed()
-		{
-			// This test verifies the behavior that only the last child is actually used
-			// when multiple children are specified in a single-child content property
-			// Note: .rt.xaml files only support Runtime inflator
 			var page = new Maui3059rt(XamlInflator.Runtime);
 			
-			Assert.IsNotNull(page.Content);
-			Assert.IsInstanceOf<Microsoft.Maui.Controls.Border>(page.Content);
+			Assert.NotNull(page.Content);
+			Assert.IsType<Microsoft.Maui.Controls.Border>(page.Content);
 			
 			var border = (Microsoft.Maui.Controls.Border)page.Content;
-			Assert.IsNotNull(border.Content);
-			Assert.IsInstanceOf<Label>(border.Content);
+			Assert.NotNull(border.Content);
+			Assert.IsType<Label>(border.Content);
 			
 			var label = (Label)border.Content;
-			// Only the last child ("Second") should be set
-			Assert.AreEqual("Second", label.Text);
+			Assert.Equal("Second", label.Text);
 		}
 
-		[Test]
-		public void MockCompiler_CompileSucceeds()
+		[Fact]
+		internal void MockCompiler_CompileSucceeds()
 		{
-			// This test verifies that MockCompiler (XamlC) compiles successfully
-			// The XC0067 warning is emitted but doesn't fail the build (warnings are suppressed in csproj)
 			MockCompiler.Compile(typeof(Maui3059rt));
 		}
 	}

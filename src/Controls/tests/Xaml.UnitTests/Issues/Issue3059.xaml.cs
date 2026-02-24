@@ -1,6 +1,8 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,38 +13,27 @@ public partial class Issue3059 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Application.SetCurrentApplication(new MockApplication());
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TearDown]
-		public void TearDown()
+		[Theory]
+		[XamlInflatorData]
+		internal void BorderWithMultipleChildren_OnlyLastChildIsUsed(XamlInflator inflator)
 		{
-			Application.SetCurrentApplication(null);
-		}
-
-		[Test]
-		public void BorderWithMultipleChildren_OnlyLastChildIsUsed([Values] XamlInflator inflator)
-		{
-			// This test verifies the behavior that only the last child is actually used
-			// when multiple children are specified in a single-child content property
 			var page = new Issue3059(inflator);
 			
-			Assert.IsNotNull(page.Content);
-			Assert.IsInstanceOf<Microsoft.Maui.Controls.Border>(page.Content);
+			Assert.NotNull(page.Content);
+			Assert.IsType<Microsoft.Maui.Controls.Border>(page.Content);
 			
 			var border = (Microsoft.Maui.Controls.Border)page.Content;
-			Assert.IsNotNull(border.Content);
-			Assert.IsInstanceOf<Label>(border.Content);
+			Assert.NotNull(border.Content);
+			Assert.IsType<Label>(border.Content);
 			
 			var label = (Label)border.Content;
-			// Only the last child ("Second") should be set
-			Assert.AreEqual("Second", label.Text);
+			Assert.Equal("Second", label.Text);
 		}
 	}
 }

@@ -1,11 +1,11 @@
 using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-// This test verifies that VisualStateGroupList with multiple VisualState children
-// does NOT trigger XC0067 warning, as this is a valid collection pattern
 public partial class Maui3059VisualStates : ContentPage
 {
 	public Maui3059VisualStates()
@@ -13,29 +13,18 @@ public partial class Maui3059VisualStates : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Application.SetCurrentApplication(new MockApplication());
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TearDown]
-		public void TearDown()
+		[Fact]
+		internal void VisualStateGroupList_MultipleChildren_NoWarning()
 		{
-			Application.SetCurrentApplication(null);
-		}
-
-		[Test]
-		public void VisualStateGroupList_MultipleChildren_NoWarning()
-		{
-			// This test verifies that VisualStateGroupList with multiple VisualState children
-			// compiles without warnings (this is valid XAML for collection types)
 			var page = new Maui3059VisualStates();
-			Assert.IsNotNull(page.Content);
-			Assert.IsInstanceOf<Grid>(page.Content);
+			Assert.NotNull(page.Content);
+			Assert.IsType<Grid>(page.Content);
 		}
 	}
 }
