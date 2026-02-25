@@ -38,7 +38,7 @@ public static class MauiProgram
 						Log("CARPLAY: CarPlay scene connected! Setting root template...");
 						try
 						{
-							var item = new CarPlay.CPListItem("hello MauiCarkit", ".NET MAUI + CarPlay");
+							var item = new CarPlay.CPListItem("hello MauiCarPlay", ".NET MAUI + CarPlay");
 							var section = new CarPlay.CPListSection(
 								new CarPlay.ICPListTemplateItem[] { item }, "MAUI CarPlay", "");
 							var listTemplate = new CarPlay.CPListTemplate(
