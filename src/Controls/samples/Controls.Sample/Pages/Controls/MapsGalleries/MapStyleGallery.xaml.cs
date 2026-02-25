@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
