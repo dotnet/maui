@@ -33,8 +33,9 @@
                BackgroundColor="Green"
                TextColor="White"
                VerticalOptions="Fill"
+               HorizontalTextAlignment="Center"
                VerticalTextAlignment="Center"
-               Padding="10"
+               WidthRequest="55"
                Grid.Row="1"
                Grid.Column="0"/>
 
@@ -42,36 +43,29 @@
         <ScrollView Grid.Row="1"
                              Grid.Column="1">
         <VerticalStackLayout 
-                             VerticalOptions="Center"
                              Spacing="10"
-                             Padding="10">
-
-            <Button AutomationId="Options"
-                    Text="Options"
-                    Clicked="NavigateToOptionsPage_Clicked"/>
-
-            <Label Text="SafeAreaEdges:"
+                             Padding="10,60,10,0">
+              <HorizontalStackLayout>
+            <Label Text="SafeAreaEdges: "
                    FontAttributes="Bold"/>
 
             <Label AutomationId="SafeAreaEdgesValueLabel"
                    Text="{Binding DisplayString}"
                    FontSize="14"/>
+              </HorizontalStackLayout>
 
             <Label x:Name="SafeAreaInsetsLabel"
                    AutomationId="SafeAreaInsetsLabel"
                    Text="Insets: Loading..."
                    FontSize="12"/>
-              <HorizontalStackLayout>
-                     <Label Text="KeyboardHeight: "
-                   FontSize="12"/>
-              <Label x:Name="KeyboardHeightLabel"
-                   AutomationId="KeyboardHeightLabel"
-                   Text="0"
-                   FontSize="12"/>
-              </HorizontalStackLayout>
+
+              <Button AutomationId="Options"
+                    Text="Options"
+                    Clicked="NavigateToOptionsPage_Clicked"
+                    HorizontalOptions="Start"/>
 
             <!-- SafeArea value buttons -->
-            <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
+            <HorizontalStackLayout Spacing="5">
                 <Button AutomationId="SafeAreaNoneButton"
                         Text="None"
                         FontSize="12"
@@ -85,7 +79,7 @@
                         FontSize="12"
                         Clicked="OnSafeAreaContainerClicked"/>
             </HorizontalStackLayout>
-            <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
+            <HorizontalStackLayout Spacing="5">
                 <Button AutomationId="SafeAreaSoftInputButton"
                         Text="SoftInput"
                         FontSize="12"
@@ -102,7 +96,7 @@
 
             <Entry x:Name="SafeAreaTestEntry"
                    AutomationId="SafeAreaTestEntry"
-                   Placeholder="Tap to raise keyboard"/>
+                   Placeholder="Tap to raise keyboard"  HorizontalOptions="Start"/>
         </VerticalStackLayout>
        </ScrollView>
         <!-- Right Edge Indicator -->
@@ -112,8 +106,9 @@
                BackgroundColor="Orange"
                TextColor="White"
                VerticalOptions="Fill"
+               HorizontalTextAlignment="Center"
                VerticalTextAlignment="Center"
-               Padding="10"
+               WidthRequest="55"
                Grid.Row="1"
                Grid.Column="2"/>
 
