@@ -490,6 +490,11 @@ internal struct CompiledBindingMarkup
 							{
 								index = new EnumIndex($"{enumType.ToFQDisplayString()}.{indexArg}");
 							}
+							else
+							{
+								_context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingPropertyNotFound, GetLocation(_node), indexArg, enumType.ToFQDisplayString()));
+								return null;
+							}
 						}
 
 						var actualIndexerName = indexer.MetadataName;
