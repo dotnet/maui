@@ -14,7 +14,7 @@ public partial class Issue3059 : ContentPage
 	}
 
 	[Collection("Issue")]
-	class Tests : IDisposable
+	public class Tests : IDisposable
 	{
 		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
