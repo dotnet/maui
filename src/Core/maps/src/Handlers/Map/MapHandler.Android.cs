@@ -340,7 +340,7 @@ double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
 			var pinsByIdentifier = new Dictionary<string, List<IMapPin>>();
 			foreach (var pin in pins)
 			{
-				var identifier = pin.ClusteringIdentifier ?? Pin.DefaultClusteringIdentifier;
+				var identifier = pin.ClusteringIdentifier ?? "maui_default_cluster";
 				if (!pinsByIdentifier.ContainsKey(identifier))
 					pinsByIdentifier[identifier] = new List<IMapPin>();
 				pinsByIdentifier[identifier].Add(pin);
