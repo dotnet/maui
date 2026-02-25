@@ -152,13 +152,54 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 	}
 
-	internal partial class ElementWrapper(IMauiContext context) : ContentControl
+	internal partial class ElementWrapper : ContentControl
 	{
 		public IView? VirtualView { get; private set; }
 
-		private IMauiContext _context = context;
+		private IMauiContext _context;
 
 		public bool IsHeaderOrFooter { get; set; }
+
+		public ElementWrapper(IMauiContext context)
+		{
+			_context = context;
+			PointerEntered += OnPointerStateChanged;
+			PointerExited += OnPointerStateChanged;
+		}
+
+		/// <summary>
+		/// Re-applies the Selected visual state after pointer enter/exit on a selected CollectionView item.
+		/// <para>
+		/// On Windows, <see cref="VisualElement.ChangeVisualState"/> runs on pointer enter/exit and applies
+		/// PointerOver or Normal state respectively. It has no awareness of CollectionView selection, so:
+		/// <list type="bullet">
+		///   <item>On pointer enter: GoToState("PointerOver") unapplies Normal-state setters (e.g., Background),
+		///     causing Border items to become invisible when PointerOver state lacks matching setters. (Fixes #13197)</item>
+		///   <item>On pointer exit: GoToState("Normal") overwrites the Selected state, causing the selection
+		///     color to disappear when the mouse moves away. (Fixes #27086)</item>
+		/// </list>
+		/// This handler fires after MAUI's gesture system has processed the event, re-applying Selected
+		/// to preserve the correct visual state.
+		/// </para>
+		/// </summary>
+		void OnPointerStateChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+		{
+			if (VirtualView is not VisualElement ve || ve is not View { Parent: SelectableItemsView siv })
+				return;
+
+			if (siv.SelectionMode == SelectionMode.None)
+				return;
+
+			var item = ve.BindingContext;
+			bool isSelected = siv.SelectionMode == SelectionMode.Single
+				? siv.SelectedItem == item
+				: siv.SelectedItems?.Contains(item) == true;
+
+			if (isSelected)
+			{
+				VisualStateManager.GoToState(ve, VisualStateManager.CommonStates.Selected);
+			}
+		}
 
 		public void SetContent(IView view)
 		{
