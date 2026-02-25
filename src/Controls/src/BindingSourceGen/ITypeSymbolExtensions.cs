@@ -101,8 +101,15 @@ public static class ITypeSymbolExtensions
 
 	private static System.Collections.Generic.IEnumerable<string> GetRelayCommandMethodNameCandidates(string methodName)
 	{
-		yield return methodName;
-		yield return methodName + "Async";
+		// CommunityToolkit strips "On" prefix: OnSave() → SaveCommand, not OnSaveCommand.
+		// So if methodName starts with "On", the base name would only match methods that generate
+		// a *different* command property (e.g., "OnLoad" method → "LoadCommand", not "OnLoadCommand").
+		// We skip these candidates to avoid false-positive diagnostic suppression.
+		if (!methodName.StartsWith("On", System.StringComparison.Ordinal))
+		{
+			yield return methodName;
+			yield return methodName + "Async";
+		}
 
 		if (methodName.Length > 0
 			&& char.IsUpper(methodName[0])
