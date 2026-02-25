@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -94,6 +95,12 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// On Linux, only the maui-android workload is installed. Previous .NET
+			// templates may still include iOS/macOS TFMs causing NETSDK1178 errors
+			// during restore. Strip them so only Android remains.
+			if (TestEnvironment.IsLinux)
+				StripNonAndroidTfms(projectFile, framework);
+
 			var buildProps = BuildProps;
 			if (!string.IsNullOrEmpty(trimMode))
 			{
@@ -126,6 +133,21 @@ namespace Microsoft.Maui.IntegrationTests
 			FileUtilities.ReplaceInFile(Path.Combine(androidDir, "MainActivity.cs"),
 				"MainLauncher = true",
 				"MainLauncher = true, Name = \"com.microsoft.mauitemplate.MainActivity\"");
+		}
+
+		static void StripNonAndroidTfms(string projectFile, string framework)
+		{
+			var content = File.ReadAllText(projectFile);
+			var androidTfm = $"{framework}-android";
+			// Remove conditional TargetFrameworks lines (iOS/macOS/Windows additions)
+			content = Regex.Replace(content,
+				@"\s*<TargetFrameworks\s+Condition=""[^""]*"">[^<]*</TargetFrameworks>",
+				"");
+			// Set the base TargetFrameworks to Android only
+			content = Regex.Replace(content,
+				@"<TargetFrameworks>[^<]*</TargetFrameworks>",
+				$"<TargetFrameworks>{androidTfm}</TargetFrameworks>");
+			File.WriteAllText(projectFile, content);
 		}
 
 	}
