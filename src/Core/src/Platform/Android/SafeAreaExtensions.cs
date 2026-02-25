@@ -135,7 +135,7 @@ internal static class SafeAreaExtensions
 					// to zero via Math.Max, destroying the animation signal.
 					// Horizontal: during Shell tab animation, viewLeft=-1 gets clamped to 0,
 					// making it impossible to detect animation for the RIGHT edge afterward.
-					var isAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
+					var viewIsAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
 
 					// Vertical: During Shell navigation animations, the view may be positioned
 					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
@@ -146,7 +146,7 @@ internal static class SafeAreaExtensions
 					// 3. viewTop > 0 (view is not at origin)
 					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
 					// When we detect animation state, apply the full top inset since view will settle at Y=0.
-					var viewIsAnimating = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
+					var viewIsAnimatingVertically = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
 
 					// Adjust for view's position relative to parent (including margins) to calculate
 					// safe area insets relative to the parent's position, not the view's visual position.
@@ -172,7 +172,7 @@ internal static class SafeAreaExtensions
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
 					}
-					else if (top > 0 && viewIsAnimating)
+					else if (top > 0 && viewIsAnimatingVertically)
 					{
 						// View is animating - positioned beyond status bar but extends off-screen
 						// Apply full top inset since view will settle at Y=0
@@ -206,7 +206,7 @@ internal static class SafeAreaExtensions
 					// During Shell navigation animations, the view slides in from off-screen.
 					// We must check animation FIRST because near the end of animation
 					// (e.g., viewLeft=1), the overlap check would incorrectly reduce the inset.
-					if (left > 0 && isAnimatingHorizontally && viewLeft > 0)
+					if (left > 0 && viewIsAnimatingHorizontally && viewLeft > 0)
 					{
 						// View is animating - keep full inset since view will settle at X=0
 					}
@@ -226,7 +226,7 @@ internal static class SafeAreaExtensions
 					// Right: how much the view extends into the right safe area
 					// During animation, viewRight may be near screenWidth (e.g., 2991 vs 2992)
 					// causing incorrect partial overlap. Check animation before overlap.
-					if (right > 0 && isAnimatingHorizontally)
+					if (right > 0 && viewIsAnimatingHorizontally)
 					{
 						// View is animating - keep full inset
 					}
