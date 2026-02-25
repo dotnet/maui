@@ -321,30 +321,35 @@ maui android emulator create MyEmulator
 maui android emulator create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
 ```
 
-#### Apple Check
+#### Apple Install
 
 | State | Detection | Behavior |
 |-------|-----------|----------|
-| `MISSING` | No Xcode.app at `/Applications/Xcode*.app` | Error: "Install Xcode from App Store" (cannot auto-install) |
+| `MISSING` | No Xcode.app at `/Applications/Xcode*.app` | Error: "Install Xcode from App Store" (cannot auto-install today; could prompt user in future) |
 | `CLI_ONLY` | Only Command Line Tools installed | Error: "Full Xcode required for simulators" |
 | `READY` | `xcrun simctl list` succeeds | Delegate all operations to native tools |
 
-**Important**: Apple cannot be fully bootstrapped because:
-- Xcode cannot be installed programmatically (App Store or interactive install with Apple ID credentials)
-- Xcode license can be accepted programmatically (`xcodebuild -license accept`) via `apple xcode accept-license`
+**Important**: Xcode itself cannot be installed programmatically today (App Store or interactive install with Apple ID credentials). The `install` command focuses on what _can_ be automated:
+- Xcode license acceptance (`xcodebuild -license accept`) via `--accept-license`
+- iOS simulator runtime installation via `--runtime <version>`
+- In the future, could prompt the user to install Xcode
 
 ```bash
-# Check Xcode, runtimes, and environment status
-maui apple check
+# Check environment and report status
+maui apple install
+
+# Accept Xcode license and install a specific runtime
+maui apple install --accept-license --runtime 18.5
 ```
 
 This command:
-1. Verifies Xcode installation
-2. Checks Xcode license status
+1. Verifies Xcode installation (reports error with guidance if missing)
+2. Optionally accepts Xcode license (`--accept-license`)
 3. Lists installed runtimes
-4. Reports overall status and next steps
+4. Optionally installs a specific iOS runtime (`--runtime <version>`)
+5. Reports overall status and next steps
 
-Use `maui apple xcode accept-license` and `maui apple runtime install <version>` for remediation.
+`maui apple check` provides a read-only status check without modifying anything.
 
 #### Windows Install
 
@@ -969,6 +974,9 @@ maui
 │           └── --name        # Emulator name
 │
 ├── apple                     # Apple platform commands (macOS only)
+│   ├── install               # Set up Apple environment (license, runtimes)
+│   │   ├── --accept-license  # Accept Xcode license
+│   │   └── --runtime         # iOS runtime version to install
 │   ├── check                 # Check Xcode, runtimes, and environment status
 │   ├── simulator
 │   │   ├── list              # List simulators
@@ -1026,7 +1034,10 @@ maui android emulator start --name Pixel_8 --wait
 maui device logs --device emulator-5554
 
 # Apple-specific (macOS only)
-maui apple check                                # Check Xcode, runtimes, environment
+maui apple install                              # Check environment, report status
+maui apple install --accept-license             # Also accept Xcode license
+maui apple install --accept-license --runtime 18.5  # Accept license + install runtime
+maui apple check                                # Read-only status check
 maui apple simulator list
 maui apple simulator start <udid>
 maui apple runtime check
@@ -1137,7 +1148,8 @@ All commands follow a consistent exit code scheme:
 | `maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
 | `maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
 | `maui apple xcode accept-license` | Accept Xcode license | `--json` | Status | 0=success, 3=permission denied |
-| `maui apple check` | Check Xcode, runtimes, environment | `--json` | Status report | 0=success, 2=error |
+| `maui apple install` | Set up Apple environment | `--accept-license`, `--runtime` | Progress, result | 0=success, 2=error |
+| `maui apple check` | Read-only environment status | `--json` | Status report | 0=success, 2=error |
 | `maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
 
 ### 7.2 JSON Output Schemas
@@ -1268,6 +1280,7 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `maui apple simulator stop` | — | ✓ | No | None |
 | `maui apple simulator create` | — | ✓ | No | `device.create` |
 | `maui apple simulator delete` | — | ✓ | No | `device.create` |
+| `maui apple install` | — | ✓ | Sometimes* | `environment.modify` |
 | `maui apple check` | — | ✓ | No | None |
 | `maui apple runtime check` | — | ✓ | No | None |
 | `maui apple runtime list` | — | ✓ | No | None |
@@ -1418,7 +1431,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 2.14-draft | 2026-02-20 | Replaced `apple install` with `apple check` (Xcode can't be installed programmatically); renamed `accept-licenses` → `accept-license` (singular) for Apple/Xcode to match `xcodebuild -license accept`; Android SDK keeps plural `accept-licenses` |
+| 2.14-draft | 2026-02-25 | Restored `apple install` with `--accept-license` and `--runtime` flags (optionally accepts license, installs runtimes; could prompt for Xcode install in future); added `apple check` as read-only status; singular `accept-license` for Apple/Xcode matching `xcodebuild -license accept`; Android SDK keeps plural `accept-licenses` |
 | 2.13-draft | 2026-02-19 | Expanded §6.8: added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds. JDK install and SDK bootstrap planned for `dotnet/android-tools`. |
 | 2.12-draft | 2026-02-19 | Added §6.8 Shared Libraries & Code Reuse — documents reuse of `Xamarin.Android.Tools.AndroidSdk` for SDK/JDK discovery and plan to contribute JDK installation, sdkmanager wrapper, license acceptance back to `dotnet/android-tools` |
 | 2.10-draft | 2026-02-10 | Added `apple install` bootstrap command (Xcode + license + runtime), `runtime check`, `runtime list --available/--all`, `runtime install <version>`, `xcode check`, `xcode accept-licenses`; changed `doctor --category` → `doctor --platform`; changed `emulator stop <serial>` → `emulator stop <name>` for consistency |
