@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.AI;
 /// Extends ChatProtocolExecutor to support the chat protocol for workflow-as-agent.
 /// </summary>
 internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
-	: ChatProtocolExecutor("TravelPlannerExecutor")
+	: ChatProtocolExecutor("TravelPlannerExecutor", new ChatProtocolExecutorOptions { AutoSendTurnToken = true })
 {
 	public const string Instructions = """
 		You are a simple text parser. 
