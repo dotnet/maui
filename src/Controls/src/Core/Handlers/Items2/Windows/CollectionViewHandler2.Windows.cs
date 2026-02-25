@@ -372,24 +372,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					var selectedIndex = FindItemIndexInSource(itemList, ItemsView.SelectedItem);
 					if (selectedIndex >= 0)
 					{
-						PlatformView.DeselectAll();
-					}
-					else
-					{
-					var selectedItem = itemList.FirstOrDefault(item =>
-					{
-						if (item is ItemTemplateContext2 itemPair)
-						{
-							return object.Equals(itemPair.Item, ItemsView.SelectedItem);
-						}
-						else
-						{
-							return object.Equals(item, ItemsView.SelectedItem);
-						}
-					});						if (selectedItem is not null)
-						{
-							PlatformView.Select(itemList.IndexOf(selectedItem));
-						}
+						PlatformView.Select(selectedIndex);
 					}
 				}
 
