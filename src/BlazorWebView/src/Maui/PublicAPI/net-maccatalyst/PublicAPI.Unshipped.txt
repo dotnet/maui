@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions
+static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler<THandler>(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
