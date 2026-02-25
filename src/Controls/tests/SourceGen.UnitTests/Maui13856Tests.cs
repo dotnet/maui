@@ -81,7 +81,7 @@ namespace Test
 		Assert.True(generatedSource.SourceText != null, "Expected generated source file with xsg.cs extension");
 		var generatedCode = generatedSource.SourceText.ToString();
 
-		// Verify the binding path is in the generated code (even if using runtime binding fallback)
-		Assert.Contains("UserSettings[TBD]", generatedCode, System.StringComparison.Ordinal);
+		// Verify the enum index uses the fully qualified enum member name
+		Assert.Contains("UserSettings[global::Test.UserSetting.TBD]", generatedCode, System.StringComparison.Ordinal);
 	}
 }
