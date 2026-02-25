@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.ApplicationModel.MainThread.SetCustomImplementation(System.Func<bool>! isMainThread, System.Action<System.Action!>! beginInvokeOnMainThread) -> void
