@@ -176,14 +176,18 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
 
 		var logs = logCollector.Entries;
+		// Debug: "Invoking GetWeather." (before) and "GetWeather invocation completed. Duration: ..." (after)
 		Assert.Contains(logs, l =>
-			l.Message.Contains("Received tool call: GetWeather", StringComparison.Ordinal));
+			l.Message.Contains("Invoking GetWeather", StringComparison.Ordinal));
 		Assert.Contains(logs, l =>
-			l.Message.Contains("Received tool result for call ID:", StringComparison.Ordinal));
+			l.Message.Contains("GetWeather invocation completed", StringComparison.Ordinal)
+			&& l.Message.Contains("Duration:", StringComparison.Ordinal));
 
 		// Debug should NOT contain arguments or result values
 		Assert.DoesNotContain(logs, l =>
 			l.Message.Contains("Seattle", StringComparison.Ordinal));
+		Assert.DoesNotContain(logs, l =>
+			l.Message.Contains("72°F", StringComparison.Ordinal));
 	}
 
 	[Fact]
@@ -202,12 +206,13 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
 
 		var logs = logCollector.Entries;
-		// Trace includes arguments and results
+		// Trace: "Invoking GetWeather({arguments})." includes arguments
 		Assert.Contains(logs, l =>
-			l.Message.Contains("Received tool call: GetWeather", StringComparison.Ordinal)
-			&& l.Message.Contains("arguments:", StringComparison.OrdinalIgnoreCase));
+			l.Message.Contains("Invoking GetWeather(", StringComparison.Ordinal));
+		// Trace: "GetWeather invocation completed. Duration: ... Result: ..." includes result
 		Assert.Contains(logs, l =>
-			l.Message.Contains("Received tool result for call ID:", StringComparison.Ordinal)
+			l.Message.Contains("GetWeather invocation completed", StringComparison.Ordinal)
+			&& l.Message.Contains("Result:", StringComparison.Ordinal)
 			&& l.Message.Contains("72°F", StringComparison.Ordinal));
 	}
 
@@ -220,9 +225,9 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 		await client.GetResponseAsync(
 			[new ChatMessage(ChatRole.User, "What is 2+2?")]);
 
-		// No tool calls → no tool logging
+		// No tool calls → no invocation logging
 		Assert.DoesNotContain(logCollector.Entries, l =>
-			l.Message.Contains("Received tool", StringComparison.Ordinal));
+			l.Message.Contains("Invoking", StringComparison.Ordinal));
 	}
 
 	[Fact]
@@ -244,9 +249,10 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 
 		var logs = logCollector.Entries;
 		Assert.Contains(logs, l =>
-			l.Message.Contains("Received tool call: GetWeather", StringComparison.Ordinal));
+			l.Message.Contains("Invoking GetWeather", StringComparison.Ordinal));
 		Assert.Contains(logs, l =>
-			l.Message.Contains("Received tool result for call ID:", StringComparison.Ordinal));
+			l.Message.Contains("invocation completed", StringComparison.Ordinal)
+			&& l.Message.Contains("Duration:", StringComparison.Ordinal));
 	}
 
 	[Fact]
