@@ -5,6 +5,10 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// An observable collection that flattens grouped items into a single list with
+	/// header/footer contexts per group, keeping in sync with the source via INCC.
+	/// </summary>
 	internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 	{
 		readonly IEnumerable _itemsSource;
@@ -261,11 +265,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			int removeIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
 			var removedItems = new List<ItemTemplateContext2>(e.OldItems.Count);
 
+			_suppressNotifications = true;
 			for (int i = 0; i < e.OldItems.Count; i++)
 			{
 				removedItems.Add(Items[removeIndex]);
 				Items.RemoveAt(removeIndex);
 			}
+			_suppressNotifications = false;
 
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
 				NotifyCollectionChangedAction.Remove, removedItems, removeIndex));
@@ -340,6 +346,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			SubscribeToGroups(_itemsSource);
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+		}
+
+		/// <summary>
+		/// Unsubscribes from all group and top-level collection changed events.
+		/// Must be called when the collection is being replaced or the handler disconnects.
+		/// </summary>
+		public void CleanUp()
+		{
+			UnsubscribeFromAllGroups();
+
+			if (_itemsSource is INotifyCollectionChanged incc)
+			{
+				incc.CollectionChanged -= GroupsChanged;
+			}
 		}
 	}
 }

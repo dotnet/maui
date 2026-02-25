@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -29,7 +28,7 @@ public partial class CollectionViewHandler2
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
 		[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
-		
+
 	};
 }
 public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
@@ -74,15 +73,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	public static void MapSelectedItem(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
-
+		handler.UpdatePlatformSelection();
 	}
 
 	public static void MapSelectedItems(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		handler.UpdatePlatformSelection();
 	}
 
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		handler.UpdatePlatformSelection();
 	}
 
 	/// <summary>
@@ -200,11 +201,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		_ignorePlatformSelectionChange = false;
 	}
 
+	/// <summary>
+	/// Handles changes to the virtual (MAUI) selection and synchronizes them to the platform.
+	/// </summary>
 	void VirtualSelectionChanged(object? sender, SelectionChangedEventArgs? e)
 	{
 		UpdatePlatformSelection();
 	}
 
+	/// <summary>
+	/// Handles changes to the platform (WinUI) selection and synchronizes them to the virtual view.
+	/// </summary>
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
 		if (PlatformView is null)
@@ -213,6 +220,9 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		UpdateVirtualSelection();
 	}
 
+	/// <summary>
+	/// Reads the current platform selection state and updates the virtual (MAUI) selection accordingly.
+	/// </summary>
 	void UpdateVirtualSelection()
 	{
 		if (_ignorePlatformSelectionChange || ItemsView is null || PlatformView is null)
@@ -274,29 +284,24 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
-		// Get current platform selection
-		var currentPlatformSelection = new HashSet<object>();
-		foreach (var item in PlatformView.SelectedItems)
-		{
-			var selectedItem = item is ItemTemplateContext2 itc ? itc.Item : item;
-			if (selectedItem is not null)
-				currentPlatformSelection.Add(selectedItem);
-		}
+		var newSelection = ComputeNewMultipleSelection();
+		ItemsView.UpdateSelectedItems(newSelection);
 
-		// Get previous virtual selection
+		ItemsView.SelectionChanged += VirtualSelectionChanged;
+	}
+
+	/// <summary>
+	/// Computes the new multiple selection list by merging the current platform selection
+	/// with the existing virtual selection, preserving the order of previously selected items
+	/// and appending newly selected items at the end.
+	/// </summary>
+	List<object> ComputeNewMultipleSelection()
+	{
+		// Extract actual items from platform selection (unwrapping ItemTemplateContext2)
+		var currentPlatformSelection = ExtractPlatformSelectedItems();
 		var previousSelection = new HashSet<object>(ItemsView.SelectedItems);
-
-		// Find newly selected items (in platform but not in virtual)
-		var newlySelected = new List<object>();
-		foreach (var item in PlatformView.SelectedItems)
-		{
-			var selectedItem = item is ItemTemplateContext2 itc ? itc.Item : item;
-			if (selectedItem is not null && !previousSelection.Contains(selectedItem))
-				newlySelected.Add(selectedItem);
-		}
-
-		// Build new selection: existing items still selected + newly selected items
 		var newSelection = new List<object>();
+		var addedToSelection = new HashSet<object>();
 
 		// Keep existing items that are still selected (maintains their order)
 		foreach (var existingItem in ItemsView.SelectedItems)
@@ -304,30 +309,47 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			if (currentPlatformSelection.Contains(existingItem))
 			{
 				newSelection.Add(existingItem);
+				addedToSelection.Add(existingItem);
 			}
 		}
 
-		// Add newly selected items at the end (in selection order)
-		foreach (var item in newlySelected)
+		// Append newly selected items (in platform but not in previous virtual selection)
+		foreach (var item in currentPlatformSelection)
 		{
-			if (!newSelection.Contains(item))
+			if (!previousSelection.Contains(item) && !addedToSelection.Contains(item))
 			{
 				newSelection.Add(item);
 			}
 		}
 
-		ItemsView.UpdateSelectedItems(newSelection);
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		return newSelection;
 	}
 
+	/// <summary>
+	/// Extracts the actual data items from the platform's selected items,
+	/// unwrapping <see cref="ItemTemplateContext2"/> wrappers when present.
+	/// </summary>
+	HashSet<object> ExtractPlatformSelectedItems()
+	{
+		var result = new HashSet<object>();
+		foreach (var item in PlatformView.SelectedItems)
+		{
+			var selectedItem = item is ItemTemplateContext2 itc ? itc.Item : item;
+			if (selectedItem is not null)
+				result.Add(selectedItem);
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// Reads the current virtual (MAUI) selection state and updates the platform (WinUI) selection accordingly.
+	/// </summary>
 	void UpdatePlatformSelection()
 	{
 		if (PlatformView is null || ItemsView is null)
 		{
 			return;
 		}
-
-		_ignorePlatformSelectionChange = true;
 
 		var itemList = PlatformView.ItemsSource as ICollectionView;
 
@@ -336,12 +358,19 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 			return;
 		}
 
+		_ignorePlatformSelectionChange = true;
+
 		switch (PlatformView.SelectionMode)
 		{
 			case ItemsViewSelectionMode.Single:
-				if (ItemsView is not null)
+				if (ItemsView.SelectedItem is null)
 				{
-					if (ItemsView.SelectedItem is null)
+					PlatformView.DeselectAll();
+				}
+				else
+				{
+					var selectedIndex = FindItemIndexInSource(itemList, ItemsView.SelectedItem);
+					if (selectedIndex >= 0)
 					{
 						PlatformView.DeselectAll();
 					}
@@ -367,7 +396,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 				break;
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
-				
+
 				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
 				int index = 0;
 				foreach (var nativeItem in itemList)
@@ -392,10 +421,33 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		_ignorePlatformSelectionChange = false;
 		UpdateVisualStates();
 	}
+
+	/// <summary>
+	/// Finds the index of the specified item in the collection view source, using a single-pass
+	/// iteration. Returns -1 if the item is not found.
+	/// </summary>
+	static int FindItemIndexInSource(ICollectionView itemList, object targetItem)
+	{
+		int index = 0;
+		foreach (var nativeItem in itemList)
+		{
+			var actualItem = nativeItem is ItemTemplateContext2 itc ? itc.Item : nativeItem;
+			if (object.Equals(actualItem, targetItem))
+			{
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
 }
 
+/// <summary>
+/// Converts between MAUI <see cref="SelectionMode"/> and WinUI <see cref="ItemsViewSelectionMode"/> values.
+/// </summary>
 partial class SelectionModeConvert : UI.Xaml.Data.IValueConverter
 {
+	/// <inheritdoc />
 	public object Convert(object value, Type targetType, object parameter, string language)
 	{
 		var formSelectionMode = (SelectionMode)value;
@@ -410,6 +462,7 @@ partial class SelectionModeConvert : UI.Xaml.Data.IValueConverter
 		}
 	}
 
+	/// <inheritdoc />
 	public object ConvertBack(object value, Type targetType, object parameter, string language)
 	{
 		var uwpListViewSelectionMode = (ItemsViewSelectionMode)value;

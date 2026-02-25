@@ -17,14 +17,35 @@ using Microsoft.UI.Xaml.Input;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
+using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// Base handler for ItemsView controls on Windows, providing item source management,
+	/// layout, scrolling, snap points, empty views, headers, and footers.
+	/// </summary>
 	public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WItemsView> where TItemsView : ItemsView
 	{
+		/// <summary>
+		/// Alignment ratio that positions the item at the start (top/left) of the viewport.
+		/// </summary>
+		const double AlignToStart = 0.0;
+
+		/// <summary>
+		/// Alignment ratio that positions the item at the center of the viewport.
+		/// </summary>
+		const double AlignToCenter = 0.5;
+
+		/// <summary>
+		/// Alignment ratio that positions the item at the end (bottom/right) of the viewport.
+		/// </summary>
+		const double AlignToEnd = 1.0;
+
 		CollectionViewSource? _collectionViewSource;
 		IList? _itemsSource;
+		ItemFactory? _itemFactory;
 
 		FrameworkElement? _emptyView;
 		View? _mauiEmptyView;
@@ -49,6 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		PropertyChangedEventHandler? _layoutPropertyChanged;
 		bool _isScrollingForItemsUpdate;
 		int _pendingScrollToIndex = -1;
+		RoutedEventHandler? _pendingLoadedHandler;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 
@@ -89,13 +111,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 		};
 
-		private bool _scrollUpdatePending;
+		bool _scrollUpdatePending;
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateItemsSource();
 		}
 
+		// Intentionally empty: ItemsUpdatingScrollMode is handled during scroll events
+		// via ApplyItemsUpdatingScrollMode, not as a direct property map.
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 		}
@@ -198,12 +222,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void DisconnectHandler(WItemsView platformView)
 		{
-			if(_collectionViewSource?.Source is INotifyCollectionChanged incc)
+			// Phase 1: Unsubscribe ALL events first to prevent callbacks during cleanup
+			if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
 			{
 				incc.CollectionChanged -= ItemsChanged;
 			}
 
-			// Unsubscribe from LayoutUpdated before disconnecting to prevent exceptions
+			if (platformView.ScrollView is not null)
+			{
+				platformView.ScrollView.ViewChanged -= ScrollViewChanged;
+				platformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+				platformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
+			}
+
+			// Unsubscribe pending Loaded handler if ScrollView wasn't found yet
+			if (_pendingLoadedHandler is not null)
+			{
+				platformView.Loaded -= _pendingLoadedHandler;
+				_pendingLoadedHandler = null;
+			}
+
 			if (_scrollUpdatePending)
 			{
 				platformView.LayoutUpdated -= OnLayoutUpdated;
@@ -217,6 +255,57 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				VirtualView.ScrollToRequested -= ScrollToRequested;
 			}
+
+			// Safe subscription cleanup only — do NOT call CleanUpCollectionViewSource() here.
+			//
+			// CleanUpCollectionViewSource() performs two operations that trigger WinUI side effects
+			// during teardown:
+			//   1. Sets _collectionViewSource.Source = null → causes WinUI to recycle/release elements
+			//   2. Calls PlatformView.GetChildren<ItemContentControl>() → triggers element enumeration
+			//      while the ItemsRepeater is tearing down, leading to collection change notifications
+			//      and potential InvalidOperationException.
+			//
+			// The CleanUp() methods below are safe because they ONLY unsubscribe event handlers
+			// (CollectionChanged, group change notifications) without touching WinUI state.
+			if (_collectionViewSource?.Source is ObservableItemTemplateCollection2 observableCollection)
+			{
+				observableCollection.CleanUp();
+			}
+			else if (_collectionViewSource?.Source is GroupedItemTemplateCollection2 groupedCollection)
+			{
+				groupedCollection.CleanUp();
+			}
+
+			_itemFactory?.CleanUp();
+			_itemFactory = null;
+
+			// Clean up logical children for empty view, header, and footer to prevent memory leaks
+			if (_mauiEmptyView is not null && _emptyViewDisplayed)
+			{
+				ItemsView?.RemoveLogicalChild(_mauiEmptyView);
+			}
+			_mauiEmptyView = null;
+			_emptyView = null;
+			_emptyViewDisplayed = false;
+
+			if (_mauiHeader is not null && _headerDisplayed)
+			{
+				ItemsView?.RemoveLogicalChild(_mauiHeader);
+			}
+			_mauiHeader = null;
+			_header = null;
+			_headerDisplayed = false;
+
+			if (_mauiFooter is not null && _footerDisplayed)
+			{
+				ItemsView?.RemoveLogicalChild(_mauiFooter);
+			}
+			_mauiFooter = null;
+			_footer = null;
+			_footerDisplayed = false;
+
+			_cachedSnapPointOffsets = null;
+			_lastSnapPointExtent = 0;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -303,8 +392,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CleanUpCollectionViewSource();
 
-
-
 			_collectionViewSource = CreateCollectionViewSource();
 			_itemsSource = _collectionViewSource?.Source as IList;
 
@@ -313,13 +400,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				incc.CollectionChanged += ItemsChanged;
 			}
 
-				PlatformView.ItemsSource = null;
-				PlatformView.ItemsSource = _collectionViewSource?.View;
-			
+			PlatformView.ItemsSource = null;
+			PlatformView.ItemsSource = _collectionViewSource?.View;
+
 
 			if (VirtualView.ItemTemplate is not null)
 			{
-				PlatformView.ItemTemplate = new ItemFactory(Element);
+				_itemFactory = new ItemFactory(Element);
+				PlatformView.ItemTemplate = _itemFactory;
 			}
 			else if (PlatformView.ItemTemplate is not null)
 			{
@@ -331,11 +419,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void CleanUpCollectionViewSource()
 		{
+			// Clean up the recycle pool in the old ItemFactory to release pooled elements
+			_itemFactory?.CleanUp();
+			_itemFactory = null;
+
 			if (_collectionViewSource is not null)
 			{
 				if (_collectionViewSource.Source is ObservableItemTemplateCollection2 observableItemTemplateCollection)
 				{
 					observableItemTemplateCollection.CleanUp();
+				}
+				else if (_collectionViewSource.Source is GroupedItemTemplateCollection2 groupedItemTemplateCollection)
+				{
+					groupedItemTemplateCollection.CleanUp();
 				}
 
 				if (_collectionViewSource.Source is INotifyCollectionChanged incc)
@@ -348,7 +444,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// Remove all children inside the ItemsSource
-			if (VirtualView is not null)
+			if (VirtualView is not null && PlatformView is not null)
 			{
 				foreach (var item in PlatformView.GetChildren<ItemContentControl>())
 				{
@@ -376,7 +472,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			UpdateEmptyViewVisibility();
 
-			if(e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset )
+			if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
 			{
 				_lastRemainingItemsThresholdIndex = -1;
 			}
@@ -384,7 +480,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!_scrollUpdatePending && PlatformView is not null)
 			{
 				_scrollUpdatePending = true;
-				
+
 				PlatformView.LayoutUpdated += OnLayoutUpdated;
 			}
 		}
@@ -408,6 +504,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				return;
+			}
+
 			if (_itemsSource is null || _itemsSource.Count == 0)
 			{
 				return;
@@ -426,7 +527,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				_isScrollingForItemsUpdate = true;
-				
+
 				// Use dispatcher to ensure the scroll happens after layout is fully complete
 				VirtualView.Dispatcher.Dispatch(() =>
 				{
@@ -436,24 +537,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					}
 
 					// Keeps the first item in the list displayed when new items are added.
-					PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions() 
-					{ 
+					PlatformView.StartBringItemIntoView(0, new BringIntoViewOptions()
+					{
 						AnimationDesired = false,
-						VerticalAlignmentRatio = 0.0,
-						HorizontalAlignmentRatio = 0.0
+						VerticalAlignmentRatio = AlignToStart,
+						HorizontalAlignmentRatio = AlignToStart
 					});
 				});
 			}
 			else if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
 				_isScrollingForItemsUpdate = true;
-				
+
 				// Use the view count to ensure we're scrolling to the correct last item
 				var lastIndex = viewCount - 1;
 				if (lastIndex >= 0)
 				{
 					_pendingScrollToIndex = lastIndex;
-					
+
 					// Use dispatcher to ensure the scroll happens after layout is fully complete
 					VirtualView.Dispatcher.Dispatch(() =>
 					{
@@ -465,17 +566,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 						var currentViewCount = _collectionViewSource?.View?.Count ?? 0;
 						var scrollIndex = Math.Min(_pendingScrollToIndex, currentViewCount - 1);
-						
+
 						if (scrollIndex >= 0)
 						{
-							PlatformView.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions() 
-							{ 
+							PlatformView.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
+							{
 								AnimationDesired = false,
-								VerticalAlignmentRatio = 1.0,
-								HorizontalAlignmentRatio = 1.0
+								VerticalAlignmentRatio = AlignToEnd,
+								HorizontalAlignmentRatio = AlignToEnd
 							});
 						}
-						
+
 						_pendingScrollToIndex = -1;
 					});
 				}
@@ -528,11 +629,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
 			}
 
-			UpdateItemsSource();
-
 			PlatformView.Layout = CreateItemsLayout();
-
-			bool isHorizontal = IsLayoutHorizontal;
 
 			// Update header/footer orientation
 			if (PlatformView is MauiItemsView mauiItemsView)
@@ -619,14 +716,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			void ListViewLoaded(object sender, RoutedEventArgs e)
+			// Unsubscribe any previous pending Loaded handler
+			if (_pendingLoadedHandler is not null)
 			{
-				var lv = (WItemsView)sender;
-				lv.Loaded -= ListViewLoaded;
-				FindScrollViewer();
+				PlatformView.Loaded -= _pendingLoadedHandler;
 			}
 
-			PlatformView.Loaded += ListViewLoaded;
+			_pendingLoadedHandler = (sender, e) =>
+			{
+				var lv = (WItemsView)sender;
+				lv.Loaded -= _pendingLoadedHandler;
+				_pendingLoadedHandler = null;
+				FindScrollViewer();
+			};
+
+			PlatformView.Loaded += _pendingLoadedHandler;
 		}
 
 		void OnScrollViewerFound()
@@ -638,12 +742,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PlatformView.ScrollView.ViewChanged -= ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
+			PlatformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
 
 			PlatformView.ScrollView.ViewChanged += ScrollViewChanged;
 			PlatformView.ScrollView.PointerWheelChanged += PointerScrollChanged;
+			PlatformView.ScrollView.ExtentChanged += ScrollViewExtentChanged;
 
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
+			UpdateSnapPoints();
 		}
 
 		void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -659,6 +766,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
 			{
 				UpdateItemsLayoutItemSpacing();
+			}
+			else if (e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+					 e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment))
+			{
+				UpdateSnapPoints();
 			}
 		}
 
@@ -684,6 +796,148 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				stackLayout.Spacing = linearItemsLayout.ItemSpacing;
 			}
+		}
+
+		double _lastSnapPointExtent;
+		List<double>? _cachedSnapPointOffsets;
+		SnapPointsType _cachedSnapPointsType;
+		SnapPointsAlignment _cachedSnapPointsAlignment;
+
+		void ScrollViewExtentChanged(Microsoft.UI.Xaml.Controls.ScrollView sender, object args)
+		{
+			// Only recalculate snap points when the extent actually changes
+			// to avoid redundant work during intermediate layout passes.
+			var currentExtent = IsLayoutHorizontal ? sender.ExtentWidth : sender.ExtentHeight;
+			if (currentExtent != _lastSnapPointExtent)
+			{
+				_lastSnapPointExtent = currentExtent;
+				UpdateSnapPoints();
+			}
+		}
+
+		void UpdateSnapPoints()
+		{
+			if (PlatformView?.ScrollView?.ScrollPresenter is not WScrollPresenter scrollPresenter)
+			{
+				return;
+			}
+
+			if (Layout is not ItemsLayout itemsLayout)
+			{
+				return;
+			}
+
+			var snapPointsType = itemsLayout.SnapPointsType;
+
+			if (snapPointsType == SnapPointsType.None)
+			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+				scrollPresenter.VerticalSnapPoints.Clear();
+				_cachedSnapPointOffsets = null;
+				_cachedSnapPointsType = SnapPointsType.None;
+				return;
+			}
+
+			// NOTE: MandatorySingle is treated identically to Mandatory.
+			// WinUI's ScrollPresenter snap point object model does not natively support
+			// "single item per gesture" limiting. Both Mandatory and MandatorySingle
+			// will snap to the nearest snap point, but a fling gesture can skip past
+			// multiple items. A true MandatorySingle implementation would require
+			// intercepting scroll inertia to limit travel distance, which is not
+			// supported by the current ScrollPresenter API.
+
+			var itemCount = _collectionViewSource?.View?.Count ?? 0;
+			if (itemCount == 0)
+			{
+				scrollPresenter.HorizontalSnapPoints.Clear();
+				scrollPresenter.VerticalSnapPoints.Clear();
+				_cachedSnapPointOffsets = null;
+				return;
+			}
+
+			var snapAlignment = itemsLayout.SnapPointsAlignment;
+
+			// Compute offsets from realized item containers.
+			// Uses actual measured sizes to handle variable-size items,
+			// complex templates, and async image loading.
+			double runningOffset = 0;
+			double spacing = 0;
+			var newOffsets = new List<double>();
+
+			if (Layout is LinearItemsLayout linearLayout)
+			{
+				spacing = linearLayout.ItemSpacing;
+			}
+			else if (Layout is GridItemsLayout gridLayout)
+			{
+				spacing = IsLayoutHorizontal ? gridLayout.HorizontalItemSpacing : gridLayout.VerticalItemSpacing;
+			}
+
+			foreach (var container in PlatformView.GetChildren<ItemContainer>())
+			{
+				if (container is null)
+				{
+					continue;
+				}
+
+				double itemExtent = IsLayoutHorizontal ? container.ActualWidth : container.ActualHeight;
+				if (itemExtent <= 0)
+				{
+					continue;
+				}
+
+				newOffsets.Add(runningOffset);
+				runningOffset += itemExtent + spacing;
+			}
+
+			if (newOffsets.Count == 0)
+			{
+				// Items not yet realized; snap points will be applied
+				// when ExtentChanged fires after items are laid out.
+				return;
+			}
+
+			// Skip rebuild if snap points haven't changed — avoids redundant
+			// WinUI collection clears and allocations on every ExtentChanged.
+			if (_cachedSnapPointOffsets is not null &&
+				_cachedSnapPointsType == snapPointsType &&
+				_cachedSnapPointsAlignment == snapAlignment &&
+				_cachedSnapPointOffsets.Count == newOffsets.Count &&
+				_cachedSnapPointOffsets.SequenceEqual(newOffsets))
+			{
+				return;
+			}
+
+			// Rebuild snap points — clear both axes to handle orientation changes
+			var alignment = GetScrollSnapPointsAlignment(snapAlignment);
+
+			scrollPresenter.HorizontalSnapPoints.Clear();
+			scrollPresenter.VerticalSnapPoints.Clear();
+
+			var snapPoints = IsLayoutHorizontal
+				? scrollPresenter.HorizontalSnapPoints
+				: scrollPresenter.VerticalSnapPoints;
+
+			foreach (var offset in newOffsets)
+			{
+				snapPoints.Add(new Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint(
+					offset, alignment));
+			}
+
+			_cachedSnapPointOffsets = newOffsets;
+			_cachedSnapPointsType = snapPointsType;
+			_cachedSnapPointsAlignment = snapAlignment;
+		}
+
+		static WScrollSnapPointsAlignment GetScrollSnapPointsAlignment(SnapPointsAlignment alignment)
+		{
+			return alignment switch
+			{
+				SnapPointsAlignment.Start => WScrollSnapPointsAlignment.Near,
+				SnapPointsAlignment.Center => WScrollSnapPointsAlignment.Center,
+				SnapPointsAlignment.End => WScrollSnapPointsAlignment.Far,
+				_ => WScrollSnapPointsAlignment.Near,
+			};
 		}
 
 		void UpdateEmptyView()
@@ -725,6 +979,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// Resolve empty view
+			var oldMauiEmptyView = _mauiEmptyView;
 			_emptyView = emptyViewTemplate != null
 				? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView)
 				: emptyView switch
@@ -738,6 +993,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					View view => ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView),
 					_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView)
 				};
+
+			// Remove old logical child before adding the new one to prevent leak
+			if (oldMauiEmptyView is not null && _emptyViewDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(oldMauiEmptyView);
+				_emptyViewDisplayed = false;
+			}
 
 			(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
 			UpdateEmptyViewVisibility();
@@ -756,13 +1018,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (isEmpty)
 			{
-				if (_mauiEmptyView is not null)
+				if (_mauiEmptyView is not null && !_emptyViewDisplayed)
 				{
-					if (_emptyViewDisplayed)
-					{
-						ItemsView.RemoveLogicalChild(_mauiEmptyView);
-					}
-
 					if (ItemsView.EmptyViewTemplate is null)
 					{
 						ItemsView.AddLogicalChild(_mauiEmptyView);
@@ -821,6 +1078,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Save old logical child reference before realization overwrites _mauiHeader via ref
+			var oldMauiHeader = _mauiHeader;
+
 			// If HeaderTemplate is set, use it regardless of header value
 			if (headerTemplate is not null)
 			{
@@ -856,7 +1116,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				platformItemsView.HeaderVisibility = WVisibility.Visible;
 			}
 
-			// Add logical child for View
+			// Remove old logical child before adding the new one to prevent leak
+			if (oldMauiHeader is not null && _headerDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(oldMauiHeader);
+			}
+
 			if (_mauiHeader is not null)
 			{
 				ItemsView.AddLogicalChild(_mauiHeader);
@@ -894,6 +1159,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Save old logical child reference before realization overwrites _mauiFooter via ref
+			var oldMauiFooter = _mauiFooter;
+
 			// If FooterTemplate is set, use it regardless of footer value
 			if (footerTemplate is not null)
 			{
@@ -929,7 +1197,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				platformItemsView.FooterVisibility = WVisibility.Visible;
 			}
 
-			// Add logical child for View
+			// Remove old logical child before adding the new one to prevent leak
+			if (oldMauiFooter is not null && _footerDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(oldMauiFooter);
+			}
+
 			if (_mauiFooter is not null)
 			{
 				ItemsView.AddLogicalChild(_mauiFooter);
@@ -971,7 +1244,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
 					break;
 				case ScrollBarVisibility.Default:
-					scrollView.VerticalScrollBarVisibility =_defaultVerticalScrollVisibility.Value;
+					scrollView.VerticalScrollBarVisibility = _defaultVerticalScrollVisibility.Value;
 					break;
 			}
 
@@ -1005,7 +1278,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				case ScrollBarVisibility.Always:
 					scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
-						break;
+					break;
 				case ScrollBarVisibility.Never:
 					scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
 					break;
@@ -1037,7 +1310,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void HandleScroll(WScrollPresenter scrollViewer)
 		{
-			if(_isScrollingForItemsUpdate)
+			if (_isScrollingForItemsUpdate)
 			{
 				_isScrollingForItemsUpdate = false;
 				return;
@@ -1058,10 +1331,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (Layout)
 			{
 				case LinearItemsLayout linearItemsLayout:
-					advancing = itemsViewScrolledEventArgs.HorizontalDelta > 0;
+					advancing = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? itemsViewScrolledEventArgs.HorizontalDelta > 0
+						: itemsViewScrolledEventArgs.VerticalDelta > 0;
 					break;
 				case GridItemsLayout gridItemsLayout:
-					advancing = itemsViewScrolledEventArgs.VerticalDelta > 0;
+					advancing = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? itemsViewScrolledEventArgs.HorizontalDelta > 0
+						: itemsViewScrolledEventArgs.VerticalDelta > 0;
 					break;
 				default:
 					break;
@@ -1075,18 +1352,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_collectionViewSource != null && remainingItemsThreshold > -1)
 			{
 				var itemsRemaining = _collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
-					
-				if(itemsRemaining<= remainingItemsThreshold)
+
+				if (itemsRemaining <= remainingItemsThreshold)
 				{
-					if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex) 
+					if (itemsViewScrolledEventArgs.LastVisibleItemIndex > _lastRemainingItemsThresholdIndex)
 					{
 						_lastRemainingItemsThresholdIndex = itemsViewScrolledEventArgs.LastVisibleItemIndex;
-					Element.SendRemainingItemsThresholdReached();
+						Element.SendRemainingItemsThresholdReached();
 					}
-				
+					// When scrolling backward within the threshold zone, keep the
+					// high-water mark — don't reset, to avoid duplicate event fires.
+					// The reset happens in the outer else (when leaving the zone entirely)
+					// or in ItemsChanged (when new items are added).
 				}
-			
-			} 
+				else
+				{
+					// Reset when scrolling away from the threshold zone so the
+					// event can re-fire when the user scrolls back.
+					_lastRemainingItemsThresholdIndex = -1;
+				}
+			}
 		}
 
 		ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
@@ -1154,17 +1439,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			float offset = 0.0f;
+			double offset = AlignToStart;
 			switch (args.ScrollToPosition)
 			{
 				case ScrollToPosition.Start:
-					offset = 0.0f;
+					offset = AlignToStart;
 					break;
 				case ScrollToPosition.Center:
-					offset = 0.5f;
+					offset = AlignToCenter;
 					break;
 				case ScrollToPosition.End:
-					offset = 1.0f;
+					offset = AlignToEnd;
 					break;
 			}
 

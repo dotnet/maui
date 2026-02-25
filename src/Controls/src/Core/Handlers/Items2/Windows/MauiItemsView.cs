@@ -10,6 +10,10 @@ using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	/// <summary>
+	/// Custom <see cref="UI.Xaml.Controls.ItemsView"/> subclass that adds support for
+	/// empty views, headers, footers, and layout orientation for the CollectionView Handler 2.
+	/// </summary>
 	internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		ContentControl? _emptyViewContentControl;
@@ -48,6 +52,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
 		public WVisibility EmptyViewVisibility
 		{
 			get
@@ -72,6 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		/// <summary>Gets or sets the visibility of the header element.</summary>
 		public WVisibility HeaderVisibility
 		{
 			get => (WVisibility)GetValue(HeaderVisibilityProperty);
@@ -90,12 +96,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		/// <summary>Gets or sets the visibility of the footer element.</summary>
 		public WVisibility FooterVisibility
 		{
 			get => (WVisibility)GetValue(FooterVisibilityProperty);
 			set => SetValue(FooterVisibilityProperty, value);
 		}
 
+		/// <summary>Sets the empty view content and its MAUI view counterpart.</summary>
 		public void SetEmptyView(FrameworkElement emptyView, View mauiEmptyView)
 		{
 			_emptyView = emptyView;
@@ -108,6 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 		
+		/// <summary>Sets the header content and its MAUI view counterpart.</summary>
 		public void SetHeader(FrameworkElement header, View? mauiHeader)
 		{
 			_header = header;
@@ -120,6 +129,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 		
+		/// <summary>Sets the footer content and its MAUI view counterpart.</summary>
 		public void SetFooter(FrameworkElement footer, View? mauiFooter)
 		{
 			_footer = footer;
@@ -165,6 +175,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ApplyLayoutOrientation();
 		}
 		
+		/// <summary>Sets the layout orientation and updates the visual tree accordingly.</summary>
 		public void SetLayoutOrientation(bool isHorizontal)
 		{
 			_isHorizontalLayout = isHorizontal;
@@ -181,29 +192,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_isHorizontalLayout)
 			{
 				_containerPanel.Orientation = Orientation.Horizontal;
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+				// For horizontal layout, the container panel should stretch vertically
+				_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
+				
+				// Items should stretch vertically (cross-axis)
+				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
 				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
 				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
 				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 
 				if (_scrollView is not null)
 				{
 					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
 				}
- 			}
+			}
 			else
 			{
 				_containerPanel.Orientation = Orientation.Vertical;
+				// For vertical layout, the container panel should stretch horizontally
+				_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+				_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+
+				// Items should stretch horizontally (cross-axis)
 				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 
-				if(_scrollView is not null)
+				if (_scrollView is not null)
 				{
 					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
 				}
