@@ -61,9 +61,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					if (_view.Handler?.MauiContext is not null && viewContent is not null)
 					{
 						wrapper = new ElementWrapper(_view.Handler.MauiContext);
-						wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
+						wrapper.HorizontalAlignment = viewContent.HorizontalOptions.Alignment switch
+						{
+							LayoutAlignment.Start => HorizontalAlignment.Left,
+							LayoutAlignment.Center => HorizontalAlignment.Center,
+							LayoutAlignment.End => HorizontalAlignment.Right,
+							_ => HorizontalAlignment.Stretch
+						};
+						wrapper.VerticalAlignment = viewContent.VerticalOptions.Alignment switch
+						{
+							LayoutAlignment.Start => VerticalAlignment.Top,
+							LayoutAlignment.Center => VerticalAlignment.Center,
+							LayoutAlignment.End => VerticalAlignment.Bottom,
+							_ => VerticalAlignment.Stretch
+						};
 						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-						wrapper.VerticalAlignment = VerticalAlignment.Stretch;
 						wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
 						wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
