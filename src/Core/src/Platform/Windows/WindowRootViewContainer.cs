@@ -77,6 +77,10 @@ namespace Microsoft.Maui.Platform
 				// so Tab cannot escape the modal — mirroring how WinUI ContentDialog works.
 				if (indexOFTopPage > 0)
 				{
+					// Cycle Tab within the modal so it never escapes to underlying pages
+					if (pageView is Control modalControl)
+						modalControl.TabFocusNavigation = KeyboardNavigationMode.Cycle;
+
 					EnableModalFocusTrap();
 				}
 
@@ -89,27 +93,33 @@ namespace Microsoft.Maui.Platform
 			// Clean up any pending Loaded handler to prevent memory leaks
 			pageView.Loaded -= OnPageLoadedForFocus;
 
-			int remainingCount = CachedChildren.Count - 1;
-
-			// Update _topPage and disable focus trap BEFORE removing from the collection.
-			// WinUI3 fires GettingFocus synchronously when a focused element is removed from the tree.
-			// If _topPage still references the removed modal, OnContainerGettingFocus would redirect
-			// focus to a detached element or cancel focus changes, leaving focus in a broken state.
-			if (remainingCount > 0)
+			// Find the new top page by scanning backwards through children.
+			// CachedChildren may contain non-page elements (e.g., W2DGraphicsView for visual diagnostics),
+			// so we cannot rely on simple index arithmetic. We look for the topmost page that isn't
+			// the one being removed.
+			FrameworkElement? newTopPage = null;
+			int pageCount = 0;
+			for (int i = CachedChildren.Count - 1; i >= 0; i--)
 			{
-				// The new top page is the last element that isn't being removed
-				int removeIndex = CachedChildren.IndexOf(pageView);
-				int newTopIndex = removeIndex == CachedChildren.Count - 1
-					? removeIndex - 1
-					: CachedChildren.Count - 2;
-				_topPage = (FrameworkElement)CachedChildren[newTopIndex >= 0 ? newTopIndex : 0];
+				var child = CachedChildren[i] as FrameworkElement;
+				if (child is null || child == pageView)
+					continue;
 
-				if (remainingCount <= 1)
-					DisableModalFocusTrap();
+				// Only count actual page views (WindowRootView), not overlays
+				if (child is not WindowRootView)
+					continue;
+
+				pageCount++;
+				newTopPage ??= child;
 			}
-			else
+
+			// Update _topPage BEFORE removing from the collection.
+			// WinUI3 fires GettingFocus synchronously when a focused element is removed from the tree.
+			_topPage = newTopPage;
+
+			// Disable the focus trap if we're back to a single page (no more modals)
+			if (pageCount <= 1)
 			{
-				_topPage = null;
 				DisableModalFocusTrap();
 			}
 
@@ -144,6 +154,10 @@ namespace Microsoft.Maui.Platform
 
 		void OnContainerGettingFocus(UIElement sender, GettingFocusEventArgs args)
 		{
+			// Guard: only act when trap is explicitly active
+			if (!_modalFocusTrapActive)
+				return;
+
 			if (_topPage is null || args.NewFocusedElement is not DependencyObject newElement)
 				return;
 
