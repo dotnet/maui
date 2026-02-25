@@ -493,7 +493,7 @@ internal struct CompiledBindingMarkup
 							else
 							{
 								_context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingPropertyNotFound, GetLocation(_node), indexArg, enumType.ToFQDisplayString()));
-								return null;
+								return false;
 							}
 						}
 
