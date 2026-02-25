@@ -853,8 +853,10 @@ static class SetPropertyHelpers
 			!expr.StartsWith("..", StringComparison.Ordinal))
 			expr = expr.Substring(1);
 
-		// Strip "BindingContext." prefix (e.g., "BindingContext.Name" → "Name")
-		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal))
+		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
+		// not a user-defined member with the same name (e.g., a POCO with `public Person BindingContext;`)
+		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
+			&& !dataType.GetAllMembers("BindingContext", context).Any())
 			expr = expr.Substring("BindingContext.".Length);
 
 		if (string.IsNullOrEmpty(expr))
@@ -935,8 +937,10 @@ static class SetPropertyHelpers
 			!expr.StartsWith("..", StringComparison.Ordinal))
 			expr = expr.Substring(1);
 
-		// Strip "BindingContext." prefix (e.g., "BindingContext.Name" → "Name")
-		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal))
+		// Strip "BindingContext." prefix only when it refers to BindableObject.BindingContext,
+		// not a user-defined member with the same name (e.g., a POCO with `public Person BindingContext;`)
+		if (expr.StartsWith("BindingContext.", StringComparison.Ordinal)
+			&& !dataType.GetAllMembers("BindingContext", context).Any())
 			expr = expr.Substring("BindingContext.".Length);
 
 		if (string.IsNullOrEmpty(expr))
