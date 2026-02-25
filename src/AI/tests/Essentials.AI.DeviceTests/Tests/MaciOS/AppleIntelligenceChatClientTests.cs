@@ -160,8 +160,14 @@ public class AppleIntelligenceChatClientJsonSchemaTests : ChatClientJsonSchemaTe
 [Category("AppleIntelligenceChatClient")]
 public class AppleIntelligenceChatClientToolCallLoggingTests
 {
+	// ====================================================================
+	// Single tool, Debug level
+	// Expected: exactly 2 entries
+	//   [0] Debug: "Invoking GetWeather."
+	//   [1] Debug: "GetWeather invocation completed. Duration: {timespan}"
+	// ====================================================================
 	[Fact]
-	public async Task GetResponseAsync_ToolCallsLoggedAtDebug()
+	public async Task GetResponseAsync_SingleTool_Debug_ProducesExactly2Entries()
 	{
 		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
 		var client = new AppleIntelligenceChatClient(logCollector);
@@ -176,22 +182,30 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
 
 		var logs = logCollector.Entries;
-		// Debug: "Invoking GetWeather." (before) and "GetWeather invocation completed. Duration: ..." (after)
-		Assert.Contains(logs, l =>
-			l.Message.Contains("Invoking GetWeather", StringComparison.Ordinal));
-		Assert.Contains(logs, l =>
-			l.Message.Contains("GetWeather invocation completed", StringComparison.Ordinal)
-			&& l.Message.Contains("Duration:", StringComparison.Ordinal));
+		Assert.Equal(2, logs.Count);
 
-		// Debug should NOT contain arguments or result values
-		Assert.DoesNotContain(logs, l =>
-			l.Message.Contains("Seattle", StringComparison.Ordinal));
-		Assert.DoesNotContain(logs, l =>
-			l.Message.Contains("72°F", StringComparison.Ordinal));
+		// Entry 0: "Invoking GetWeather."
+		Assert.Equal(LogLevel.Debug, logs[0].Level);
+		Assert.Equal("Invoking GetWeather.", logs[0].Message);
+
+		// Entry 1: "GetWeather invocation completed. Duration: ..."
+		Assert.Equal(LogLevel.Debug, logs[1].Level);
+		Assert.StartsWith("GetWeather invocation completed. Duration: ", logs[1].Message, StringComparison.Ordinal);
+
+		// Debug must NOT leak arguments or results
+		var allText = string.Join("\n", logs.Select(l => l.Message));
+		Assert.DoesNotContain("Seattle", allText, StringComparison.Ordinal);
+		Assert.DoesNotContain("72°F", allText, StringComparison.Ordinal);
 	}
 
+	// ====================================================================
+	// Single tool, Trace level
+	// Expected: exactly 2 entries
+	//   [0] Trace: "Invoking GetWeather({"location": "Seattle"})."
+	//   [1] Trace: "GetWeather invocation completed. Duration: {ts}. Result: \"Clear skies, 72°F in Seattle\""
+	// ====================================================================
 	[Fact]
-	public async Task GetResponseAsync_ToolCallsLoggedAtTrace()
+	public async Task GetResponseAsync_SingleTool_Trace_ProducesExactly2EntriesWithSensitiveData()
 	{
 		var logCollector = new DeviceTestLogCollector(LogLevel.Trace);
 		var client = new AppleIntelligenceChatClient(logCollector);
@@ -206,18 +220,26 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
 
 		var logs = logCollector.Entries;
-		// Trace: "Invoking GetWeather({arguments})." includes arguments
-		Assert.Contains(logs, l =>
-			l.Message.Contains("Invoking GetWeather(", StringComparison.Ordinal));
-		// Trace: "GetWeather invocation completed. Duration: ... Result: ..." includes result
-		Assert.Contains(logs, l =>
-			l.Message.Contains("GetWeather invocation completed", StringComparison.Ordinal)
-			&& l.Message.Contains("Result:", StringComparison.Ordinal)
-			&& l.Message.Contains("72°F", StringComparison.Ordinal));
+		Assert.Equal(2, logs.Count);
+
+		// Entry 0: Trace with arguments in parentheses
+		Assert.Equal(LogLevel.Trace, logs[0].Level);
+		Assert.StartsWith("Invoking GetWeather(", logs[0].Message, StringComparison.Ordinal);
+		Assert.EndsWith(").", logs[0].Message, StringComparison.Ordinal);
+		Assert.Contains("Seattle", logs[0].Message, StringComparison.Ordinal);
+
+		// Entry 1: Trace with duration AND result
+		Assert.Equal(LogLevel.Trace, logs[1].Level);
+		Assert.StartsWith("GetWeather invocation completed. Duration: ", logs[1].Message, StringComparison.Ordinal);
+		Assert.Contains(". Result: ", logs[1].Message, StringComparison.Ordinal);
+		Assert.Contains("72°F", logs[1].Message, StringComparison.Ordinal);
 	}
 
+	// ====================================================================
+	// No tools — must produce zero log entries even at Trace
+	// ====================================================================
 	[Fact]
-	public async Task GetResponseAsync_NoToolCallsNoLogging()
+	public async Task GetResponseAsync_NoTools_ProducesZeroEntries()
 	{
 		var logCollector = new DeviceTestLogCollector(LogLevel.Trace);
 		var client = new AppleIntelligenceChatClient(logCollector);
@@ -225,38 +247,15 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 		await client.GetResponseAsync(
 			[new ChatMessage(ChatRole.User, "What is 2+2?")]);
 
-		// No tool calls → no invocation logging
-		Assert.DoesNotContain(logCollector.Entries, l =>
-			l.Message.Contains("Invoking", StringComparison.Ordinal));
+		Assert.Empty(logCollector.Entries);
 	}
 
+	// ====================================================================
+	// Information level — tool calls happen but produce zero log entries
+	// (our logging is Debug/Trace only)
+	// ====================================================================
 	[Fact]
-	public async Task GetStreamingResponseAsync_ToolCallsLoggedAtDebug()
-	{
-		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
-		var client = new AppleIntelligenceChatClient(logCollector);
-
-		var weatherTool = AIFunctionFactory.Create(
-			(string location) => $"Clear skies, 72°F in {location}",
-			name: "GetWeather",
-			description: "Gets the weather for a location");
-
-		var options = new ChatOptions { Tools = [weatherTool] };
-		await foreach (var _ in client.GetStreamingResponseAsync(
-			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
-		{
-		}
-
-		var logs = logCollector.Entries;
-		Assert.Contains(logs, l =>
-			l.Message.Contains("Invoking GetWeather", StringComparison.Ordinal));
-		Assert.Contains(logs, l =>
-			l.Message.Contains("invocation completed", StringComparison.Ordinal)
-			&& l.Message.Contains("Duration:", StringComparison.Ordinal));
-	}
-
-	[Fact]
-	public async Task GetResponseAsync_ToolCallsNotLoggedAtInformation()
+	public async Task GetResponseAsync_InformationLevel_ProducesZeroEntries()
 	{
 		var logCollector = new DeviceTestLogCollector(LogLevel.Information);
 		var client = new AppleIntelligenceChatClient(logCollector);
@@ -270,12 +269,101 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 		await client.GetResponseAsync(
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
 
-		// Tool call logging is Debug/Trace only — nothing at Information+
 		Assert.Empty(logCollector.Entries);
 	}
 
+	// ====================================================================
+	// Streaming, Debug — same 2 entries as non-streaming
+	// ====================================================================
 	[Fact]
-	public async Task GetResponseAsync_MultipleToolsEachLoggedIndividually()
+	public async Task GetStreamingResponseAsync_SingleTool_Debug_ProducesExactly2Entries()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await foreach (var _ in client.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
+		{ }
+
+		var logs = logCollector.Entries;
+		Assert.Equal(2, logs.Count);
+
+		Assert.Equal(LogLevel.Debug, logs[0].Level);
+		Assert.Equal("Invoking GetWeather.", logs[0].Message);
+
+		Assert.Equal(LogLevel.Debug, logs[1].Level);
+		Assert.StartsWith("GetWeather invocation completed. Duration: ", logs[1].Message, StringComparison.Ordinal);
+	}
+
+	// ====================================================================
+	// Streaming, Trace — same 2 entries as non-streaming, with sensitive data
+	// ====================================================================
+	[Fact]
+	public async Task GetStreamingResponseAsync_SingleTool_Trace_ProducesExactly2EntriesWithSensitiveData()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Trace);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await foreach (var _ in client.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
+		{ }
+
+		var logs = logCollector.Entries;
+		Assert.Equal(2, logs.Count);
+
+		Assert.Equal(LogLevel.Trace, logs[0].Level);
+		Assert.StartsWith("Invoking GetWeather(", logs[0].Message, StringComparison.Ordinal);
+		Assert.Contains("Seattle", logs[0].Message, StringComparison.Ordinal);
+
+		Assert.Equal(LogLevel.Trace, logs[1].Level);
+		Assert.Contains(". Result: ", logs[1].Message, StringComparison.Ordinal);
+		Assert.Contains("72°F", logs[1].Message, StringComparison.Ordinal);
+	}
+
+	// ====================================================================
+	// Ordering: for a single tool, "Invoking" must come before "completed"
+	// ====================================================================
+	[Fact]
+	public async Task GetResponseAsync_InvokingIsLoggedBeforeCompleted()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await client.GetResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
+
+		var logs = logCollector.Entries;
+		Assert.Equal(2, logs.Count);
+		Assert.StartsWith("Invoking GetWeather", logs[0].Message, StringComparison.Ordinal);
+		Assert.StartsWith("GetWeather invocation completed", logs[1].Message, StringComparison.Ordinal);
+	}
+
+	// ====================================================================
+	// Multiple tools — native framework invokes concurrently.
+	// Exactly 4 entries: Invoking + completed for each tool.
+	// Order across tools is non-deterministic, but each tool's
+	// "Invoking" must precede its "completed".
+	// ====================================================================
+	[Fact]
+	public async Task GetResponseAsync_MultipleTools_ProducesExactly4Entries()
 	{
 		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
 		var client = new AppleIntelligenceChatClient(logCollector);
@@ -295,66 +383,37 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle and the time in EST?")], options);
 
 		var logs = logCollector.Entries;
-		// Both tools should have completed — native framework may invoke concurrently
-		Assert.Contains(logs, l => l.Message.Contains("GetWeather invocation completed", StringComparison.Ordinal));
-		Assert.Contains(logs, l => l.Message.Contains("GetTime invocation completed", StringComparison.Ordinal));
-		// At least one Invoking log should be present
-		Assert.Contains(logs, l => l.Message.Contains("Invoking Get", StringComparison.Ordinal));
+		var messages = logs.Select(l => l.Message).ToList();
+
+		// Exactly 4 entries: 2 per tool (Invoking + completed)
+		Assert.Equal(4, logs.Count);
+
+		// All entries at Debug level
+		Assert.All(logs, l => Assert.Equal(LogLevel.Debug, l.Level));
+
+		// Exactly 1 "Invoking GetWeather." and 1 "GetWeather invocation completed..."
+		Assert.Single(messages, m => m == "Invoking GetWeather.");
+		Assert.Single(messages, m => m.StartsWith("GetWeather invocation completed. Duration: ", StringComparison.Ordinal));
+
+		// Exactly 1 "Invoking GetTime." and 1 "GetTime invocation completed..."
+		Assert.Single(messages, m => m == "Invoking GetTime.");
+		Assert.Single(messages, m => m.StartsWith("GetTime invocation completed. Duration: ", StringComparison.Ordinal));
+
+		// Each tool's "Invoking" precedes its "completed" (ordering within each tool)
+		var weatherInvoking = messages.FindIndex(m => m == "Invoking GetWeather.");
+		var weatherCompleted = messages.FindIndex(m => m.StartsWith("GetWeather invocation completed", StringComparison.Ordinal));
+		Assert.True(weatherInvoking < weatherCompleted, "GetWeather: Invoking should come before completed");
+
+		var timeInvoking = messages.FindIndex(m => m == "Invoking GetTime.");
+		var timeCompleted = messages.FindIndex(m => m.StartsWith("GetTime invocation completed", StringComparison.Ordinal));
+		Assert.True(timeInvoking < timeCompleted, "GetTime: Invoking should come before completed");
 	}
 
+	// ====================================================================
+	// Tool failure — exactly 2 entries: Invoking (Debug) + failed (Error)
+	// ====================================================================
 	[Fact]
-	public async Task GetStreamingResponseAsync_ToolCallsLoggedAtTrace()
-	{
-		var logCollector = new DeviceTestLogCollector(LogLevel.Trace);
-		var client = new AppleIntelligenceChatClient(logCollector);
-
-		var weatherTool = AIFunctionFactory.Create(
-			(string location) => $"Clear skies, 72°F in {location}",
-			name: "GetWeather",
-			description: "Gets the weather for a location");
-
-		var options = new ChatOptions { Tools = [weatherTool] };
-		await foreach (var _ in client.GetStreamingResponseAsync(
-			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
-		{
-		}
-
-		var logs = logCollector.Entries;
-		// Trace includes arguments and results in streaming too
-		Assert.Contains(logs, l =>
-			l.Message.Contains("Invoking GetWeather(", StringComparison.Ordinal));
-		Assert.Contains(logs, l =>
-			l.Message.Contains("invocation completed", StringComparison.Ordinal)
-			&& l.Message.Contains("Result:", StringComparison.Ordinal)
-			&& l.Message.Contains("72°F", StringComparison.Ordinal));
-	}
-
-	[Fact]
-	public async Task GetResponseAsync_InvokingLoggedBeforeCompleted()
-	{
-		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
-		var client = new AppleIntelligenceChatClient(logCollector);
-
-		var weatherTool = AIFunctionFactory.Create(
-			(string location) => $"Clear skies, 72°F in {location}",
-			name: "GetWeather",
-			description: "Gets the weather for a location");
-
-		var options = new ChatOptions { Tools = [weatherTool] };
-		await client.GetResponseAsync(
-			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
-
-		var logs = logCollector.Entries;
-		var invokingIndex = logs.FindIndex(l => l.Message.Contains("Invoking GetWeather", StringComparison.Ordinal));
-		var completedIndex = logs.FindIndex(l => l.Message.Contains("GetWeather invocation completed", StringComparison.Ordinal));
-
-		Assert.True(invokingIndex >= 0, "Should have 'Invoking' log entry");
-		Assert.True(completedIndex >= 0, "Should have 'completed' log entry");
-		Assert.True(invokingIndex < completedIndex, "Invoking should come before completed");
-	}
-
-	[Fact]
-	public async Task GetResponseAsync_ToolFailureLoggedAtError()
+	public async Task GetResponseAsync_ToolFailure_Produces2EntriesWithErrorLevel()
 	{
 		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
 		var client = new AppleIntelligenceChatClient(logCollector);
@@ -365,7 +424,7 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 			description: "Gets the weather for a location");
 
 		var options = new ChatOptions { Tools = [failingTool] };
-		// The native framework propagates tool errors as NSErrorException
+		// Native framework propagates tool errors as NSErrorException
 		try
 		{
 			await client.GetResponseAsync(
@@ -377,18 +436,23 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 		}
 
 		var logs = logCollector.Entries;
-		// Should log the invocation attempt
-		Assert.Contains(logs, l => l.Message.Contains("Invoking GetWeather", StringComparison.Ordinal));
-		// Should log the failure at Error level
-		Assert.Contains(logs, l =>
-			l.Level == LogLevel.Error
-			&& l.Message.Contains("GetWeather invocation failed", StringComparison.Ordinal));
+		Assert.Equal(2, logs.Count);
+
+		// Entry 0: Debug-level "Invoking GetWeather."
+		Assert.Equal(LogLevel.Debug, logs[0].Level);
+		Assert.Equal("Invoking GetWeather.", logs[0].Message);
+
+		// Entry 1: Error-level "GetWeather invocation failed."
+		Assert.Equal(LogLevel.Error, logs[1].Level);
+		Assert.Equal("GetWeather invocation failed.", logs[1].Message);
 	}
 
+	// ====================================================================
+	// No logger factory — tool invocation works without crashing
+	// ====================================================================
 	[Fact]
-	public async Task GetResponseAsync_NoLoggerFactory_DoesNotThrow()
+	public async Task GetResponseAsync_NoLoggerFactory_CompletesSuccessfully()
 	{
-		// Parameterless constructor should work without crashing
 		var client = new AppleIntelligenceChatClient();
 
 		var weatherTool = AIFunctionFactory.Create(
@@ -400,17 +464,18 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 		var response = await client.GetResponseAsync(
 			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
 
-		// Should complete successfully without any logger
 		Assert.NotNull(response);
 		Assert.NotEmpty(response.Messages);
 	}
 
 	/// <summary>
-	/// Simple log collector for device tests.
+	/// Thread-safe log collector for device tests. Uses lock because native
+	/// Apple Intelligence invokes tools concurrently from different threads.
 	/// </summary>
 	private class DeviceTestLogCollector : ILoggerFactory, ILogger
 	{
 		private readonly LogLevel _minimumLevel;
+		private readonly object _lock = new();
 
 		public DeviceTestLogCollector(LogLevel minimumLevel) => _minimumLevel = minimumLevel;
 
@@ -426,7 +491,13 @@ public class AppleIntelligenceChatClientToolCallLoggingTests
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 		{
 			if (IsEnabled(logLevel))
-				Entries.Add(new DeviceTestLogEntry(logLevel, formatter(state, exception)));
+			{
+				var entry = new DeviceTestLogEntry(logLevel, formatter(state, exception));
+				lock (_lock)
+				{
+					Entries.Add(entry);
+				}
+			}
 		}
 	}
 
