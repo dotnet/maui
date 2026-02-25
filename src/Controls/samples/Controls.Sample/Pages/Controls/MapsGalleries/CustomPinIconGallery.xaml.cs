@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			var customPin1 = new Pin
 			{
 				Label = "Custom Icon Pin",
-				Address = "Using embedded image",
+				Address = "Using app bundle image",
 				Location = new Location(47.6062, -122.3321),
 				ImageSource = ImageSource.FromFile("dotnet_bot.png")
 			};
