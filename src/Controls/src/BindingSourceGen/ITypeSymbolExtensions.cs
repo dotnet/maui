@@ -50,7 +50,7 @@ public static class ITypeSymbolExtensions
 		var globalName = typeSymbol.ToDisplayString(FullyQualifiedNullableFormat);
 
 		// Keep nullable annotations in generic arguments but avoid nullable top-level type syntax (e.g. typeof(Foo?)).
-		if (globalName.EndsWith("?"))
+		if (globalName.EndsWith("?", StringComparison.Ordinal))
 			globalName = globalName.Substring(0, globalName.Length - 1);
 
 		return globalName;
