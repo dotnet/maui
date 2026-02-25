@@ -31,9 +31,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
-			// Reset to default system blue color when TextColor is null.
-			// This is essential for VisualState setters to be properly unapplied.
-			var color = button.TextColor?.ToPlatform() ?? UIColor.SystemBlue;
+			if (button.TextColor is null)
+			{
+				// Only clear explicit overrides when attached to a window.
+				// Skipping during initial render prevents clearing Appearance-proxy colors.
+				if (platformButton.Window is UIWindow window)
+				{
+					platformButton.SetTitleColor(null, UIControlState.Normal);
+					platformButton.SetTitleColor(null, UIControlState.Highlighted);
+					platformButton.SetTitleColor(null, UIControlState.Disabled);
+					platformButton.TintColor = window.TintColor;
+				}
+
+				return;
+			}
+
+			var color = button.TextColor.ToPlatform();
 
 			platformButton.SetTitleColor(color, UIControlState.Normal);
 			platformButton.SetTitleColor(color, UIControlState.Highlighted);

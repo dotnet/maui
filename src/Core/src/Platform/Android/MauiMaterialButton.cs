@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Platform
 
 		protected MauiMaterialButton(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-			// Also cache here in case the .NET wrapper is recreated via JNI marshaling
+			// Note: TextColors here comes from the already-constructed native button,
+			// so it should reflect the applied Material theme colors.
 			DefaultTextColors = TextColors;
 		}
 
