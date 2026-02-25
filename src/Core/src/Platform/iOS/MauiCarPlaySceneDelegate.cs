@@ -56,6 +56,7 @@ namespace Microsoft.Maui
 				del => del(templateApplicationScene, interfaceController));
 
 			_interfaceController = null;
+			_carPlayWindow = null;
 		}
 
 		[Export("templateApplicationScene:didSelectManeuver:")]
