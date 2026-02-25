@@ -745,9 +745,10 @@ namespace Microsoft.Maui.Maps.Handlers
 						}
 					}
 				}
-				catch
+				catch (Exception ex)
 				{
 					// If image loading fails, use default pin icon
+					System.Diagnostics.Debug.WriteLine($"Failed to load custom pin icon: {ex.Message}");
 				}
 			}
 
@@ -791,8 +792,12 @@ var marker = Map.AddMarker(markerOptions);
 			var canvas = new ACanvas(bitmap);
 			drawable.SetBounds(0, 0, canvas.Width, canvas.Height);
 			drawable.Draw(canvas);
+			canvas.Dispose();
 
-			return ScaleBitmap(bitmap, 64, 64);
+			var scaled = ScaleBitmap(bitmap, 64, 64);
+			if (scaled != bitmap)
+				bitmap.Dispose();
+			return scaled;
 		}
 
 		static ABitmap ScaleBitmap(ABitmap source, int targetWidth, int targetHeight)
