@@ -44,14 +44,62 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Theory]
-			[InlineData("ANDROID123")]
-			[InlineData("Cars")]
-			[InlineData("123")]
-			public void ReturnsNullOnInvalidPlatform(string platform)
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void ReturnsDefaultFallbackForUnknownPlatform(string platform)
 			{
-				var paths = DpiPath.GetOriginal(platform);
+				var path = DpiPath.GetOriginal(platform);
 
-				Assert.Null(paths);
+				Assert.NotNull(path);
+				Assert.Equal("", path.Path);
+				Assert.Equal(1.0m, path.Scale);
+			}
+		}
+
+		public class GetDpis
+		{
+			[Theory]
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void ReturnsDefaultFallbackForUnknownPlatform(string platform)
+			{
+				var dpis = DpiPath.GetDpis(platform);
+
+				Assert.NotNull(dpis);
+				Assert.Equal(2, dpis.Length);
+				Assert.Equal(1.0m, dpis[0].Scale);
+				Assert.Equal(2.0m, dpis[1].Scale);
+				Assert.Equal("@2x", dpis[1].ScaleSuffix);
+			}
+
+			[Theory]
+			[InlineData("android", 5)]
+			[InlineData("ios", 3)]
+			[InlineData("uwp", 5)]
+			public void ReturnsCorrectCountForKnownPlatform(string platform, int count)
+			{
+				var dpis = DpiPath.GetDpis(platform);
+
+				Assert.Equal(count, dpis.Length);
+			}
+		}
+
+		public class GetAppIconDpis
+		{
+			[Theory]
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void ReturnsDefaultFallbackForUnknownPlatform(string platform)
+			{
+				var dpis = DpiPath.GetAppIconDpis(platform, "appicon");
+
+				Assert.NotNull(dpis);
+				Assert.Equal(7, dpis.Length);
+				Assert.Equal(16, dpis[0].Size.Value.Width);
+				Assert.Equal(1024, dpis[6].Size.Value.Width);
 			}
 		}
 	}

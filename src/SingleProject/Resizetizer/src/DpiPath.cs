@@ -326,9 +326,9 @@ namespace Microsoft.Maui.Resizetizer
 					return DpiPath.Wpf.Original;
 				case "tizen":
 					return DpiPath.Tizen.Original;
+				default:
+					return new DpiPath("", 1.0m);
 			}
-
-			return null;
 		}
 
 		public static DpiPath[] GetDpis(string platform)
@@ -345,14 +345,18 @@ namespace Microsoft.Maui.Resizetizer
 					return DpiPath.Wpf.Image;
 				case "tizen":
 					return DpiPath.Tizen.Image;
+				default:
+					return new[]
+					{
+						new DpiPath("", 1.0m),
+						new DpiPath("", 2.0m, null, "@2x"),
+					};
 			}
-
-			return null;
 		}
 
 		public static DpiPath[] GetAppIconDpis(string platform, string appIconName)
 		{
-			DpiPath[] result = null;
+			DpiPath[] result;
 
 			switch (platform.ToLowerInvariant())
 			{
@@ -370,6 +374,18 @@ namespace Microsoft.Maui.Resizetizer
 					break;
 				case "tizen":
 					result = DpiPath.Tizen.AppIcon;
+					break;
+				default:
+					result = new[]
+					{
+						new DpiPath("", 1.0m, null, null, new SKSize(16, 16)),
+						new DpiPath("", 1.0m, null, null, new SKSize(32, 32)),
+						new DpiPath("", 1.0m, null, null, new SKSize(48, 48)),
+						new DpiPath("", 1.0m, null, null, new SKSize(128, 128)),
+						new DpiPath("", 1.0m, null, null, new SKSize(256, 256)),
+						new DpiPath("", 1.0m, null, null, new SKSize(512, 512)),
+						new DpiPath("", 1.0m, null, null, new SKSize(1024, 1024)),
+					};
 					break;
 			}
 
