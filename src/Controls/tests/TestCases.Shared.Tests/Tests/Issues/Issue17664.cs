@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // PR Link - https://github.com/dotnet/maui/pull/34240
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,3 +28,4 @@ public class Issue17664 : _IssuesUITest
 		Assert.That(resultItem, Is.EqualTo("Category C item #2"));
 	}
 }
+#endif
