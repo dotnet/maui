@@ -1,5 +1,6 @@
 #if IOS || MACCATALYST
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
@@ -154,6 +155,145 @@ public class AppleIntelligenceChatClientJsonSchemaTests : ChatClientJsonSchemaTe
 		Assert.Contains("JSON schema", exception.Message, StringComparison.OrdinalIgnoreCase);
 	}
 
+}
+
+[Category("AppleIntelligenceChatClient")]
+public class AppleIntelligenceChatClientToolCallLoggingTests
+{
+	[Fact]
+	public async Task GetResponseAsync_ToolCallsLoggedAtDebug()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await client.GetResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
+
+		var logs = logCollector.Entries;
+		Assert.Contains(logs, l =>
+			l.Message.Contains("Received tool call: GetWeather", StringComparison.Ordinal));
+		Assert.Contains(logs, l =>
+			l.Message.Contains("Received tool result for call ID:", StringComparison.Ordinal));
+
+		// Debug should NOT contain arguments or result values
+		Assert.DoesNotContain(logs, l =>
+			l.Message.Contains("Seattle", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public async Task GetResponseAsync_ToolCallsLoggedAtTrace()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Trace);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await client.GetResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
+
+		var logs = logCollector.Entries;
+		// Trace includes arguments and results
+		Assert.Contains(logs, l =>
+			l.Message.Contains("Received tool call: GetWeather", StringComparison.Ordinal)
+			&& l.Message.Contains("arguments:", StringComparison.OrdinalIgnoreCase));
+		Assert.Contains(logs, l =>
+			l.Message.Contains("Received tool result for call ID:", StringComparison.Ordinal)
+			&& l.Message.Contains("72°F", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public async Task GetResponseAsync_NoToolCallsNoLogging()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Trace);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		await client.GetResponseAsync(
+			[new ChatMessage(ChatRole.User, "What is 2+2?")]);
+
+		// No tool calls → no tool logging
+		Assert.DoesNotContain(logCollector.Entries, l =>
+			l.Message.Contains("Received tool", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_ToolCallsLoggedAtDebug()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Debug);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await foreach (var _ in client.GetStreamingResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options))
+		{
+		}
+
+		var logs = logCollector.Entries;
+		Assert.Contains(logs, l =>
+			l.Message.Contains("Received tool call: GetWeather", StringComparison.Ordinal));
+		Assert.Contains(logs, l =>
+			l.Message.Contains("Received tool result for call ID:", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public async Task GetResponseAsync_ToolCallsNotLoggedAtInformation()
+	{
+		var logCollector = new DeviceTestLogCollector(LogLevel.Information);
+		var client = new AppleIntelligenceChatClient(logCollector);
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string location) => $"Clear skies, 72°F in {location}",
+			name: "GetWeather",
+			description: "Gets the weather for a location");
+
+		var options = new ChatOptions { Tools = [weatherTool] };
+		await client.GetResponseAsync(
+			[new ChatMessage(ChatRole.User, "What's the weather in Seattle?")], options);
+
+		// Tool call logging is Debug/Trace only — nothing at Information+
+		Assert.Empty(logCollector.Entries);
+	}
+
+	/// <summary>
+	/// Simple log collector for device tests.
+	/// </summary>
+	private class DeviceTestLogCollector : ILoggerFactory, ILogger
+	{
+		private readonly LogLevel _minimumLevel;
+
+		public DeviceTestLogCollector(LogLevel minimumLevel) => _minimumLevel = minimumLevel;
+
+		public List<DeviceTestLogEntry> Entries { get; } = [];
+
+		public ILogger CreateLogger(string categoryName) => this;
+		public void AddProvider(ILoggerProvider provider) { }
+		void IDisposable.Dispose() { }
+
+		public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+		public bool IsEnabled(LogLevel logLevel) => logLevel >= _minimumLevel;
+
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+		{
+			if (IsEnabled(logLevel))
+				Entries.Add(new DeviceTestLogEntry(logLevel, formatter(state, exception)));
+		}
+	}
+
+	private record DeviceTestLogEntry(LogLevel Level, string Message);
 }
 
 #endif

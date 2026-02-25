@@ -3,6 +3,8 @@ using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Maui.Essentials.AI;
 
@@ -13,13 +15,32 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
 [SupportedOSPlatform("tvos26.0")]
-public sealed class AppleIntelligenceChatClient : IChatClient
+public sealed partial class AppleIntelligenceChatClient : IChatClient
 {
 	/// <summary>The provider name for this chat client.</summary>
 	private const string ProviderName = "apple";
 
 	/// <summary>The default model identifier.</summary>
 	private const string DefaultModelId = "apple-intelligence";
+
+	private readonly ILogger _logger;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AppleIntelligenceChatClient"/> class.
+	/// </summary>
+	public AppleIntelligenceChatClient()
+		: this(null)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AppleIntelligenceChatClient"/> class.
+	/// </summary>
+	/// <param name="loggerFactory">Optional logger factory for logging tool invocations.</param>
+	public AppleIntelligenceChatClient(ILoggerFactory? loggerFactory)
+	{
+		_logger = (ILogger?)loggerFactory?.CreateLogger<AppleIntelligenceChatClient>() ?? NullLogger.Instance;
+	}
 
 	// static AppleIntelligenceChatClient()
 	// {
@@ -138,9 +159,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 							break;
 						case ResponseUpdateTypeNative.ToolCall:
 							handler.ProcessToolCall(update.ToolCallId, update.ToolCallName, update.ToolCallArguments);
+							LogStreamingToolCall(update.ToolCallName, update.ToolCallId, update.ToolCallArguments);
 							break;
 						case ResponseUpdateTypeNative.ToolResult:
 							handler.ProcessToolResult(update.ToolCallId, update.ToolCallResult);
+							LogStreamingToolResult(update.ToolCallId, update.ToolCallResult);
 							break;
 						default:
 							throw new NotSupportedException($"Unsupported update type: {update.UpdateType}");
@@ -252,7 +275,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		return nativeMessages;
 	}
 
-	private static ChatResponse FromNativeChatResponse(ChatResponseNative? response)
+	private ChatResponse FromNativeChatResponse(ChatResponseNative? response)
 	{
 		if (response is null || response.Messages is null || response.Messages.Length == 0)
 		{
@@ -269,7 +292,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		return new ChatResponse(messages);
 	}
 
-	private static ChatMessage FromNative(ChatMessageNative nativeMessage)
+	private ChatMessage FromNative(ChatMessageNative nativeMessage)
 	{
 		var message = new ChatMessage
 		{
@@ -280,7 +303,13 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		{
 			foreach (var content in nativeMessage.Contents)
 			{
-				message.Contents.Add(FromNative(content));
+				var managed = FromNative(content);
+				message.Contents.Add(managed);
+
+				if (managed is FunctionCallContent fcc)
+					LogFunctionCall(fcc);
+				else if (managed is FunctionResultContent frc)
+					LogFunctionResult(frc);
 			}
 		}
 
@@ -491,5 +520,66 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			}
 		}
 #pragma warning restore IL3050, IL2026
+	}
+
+	// Tool call logging — mirrors the logging that was previously in NonFunctionInvokingChatClient.
+	// Since InformationalOnly tools are skipped by FunctionInvokingChatClient, we log them ourselves.
+
+	[LoggerMessage(LogLevel.Debug, "Received tool call: {ToolName} (ID: {ToolCallId})")]
+	private partial void LogToolCall(string toolName, string toolCallId);
+
+	[LoggerMessage(LogLevel.Trace, "Received tool call: {ToolName} (ID: {ToolCallId}) with arguments: {Arguments}")]
+	private partial void LogToolCallSensitive(string toolName, string toolCallId, string arguments);
+
+	[LoggerMessage(LogLevel.Debug, "Received tool result for call ID: {ToolCallId}")]
+	private partial void LogToolResult(string toolCallId);
+
+	[LoggerMessage(LogLevel.Trace, "Received tool result for call ID: {ToolCallId}: {Result}")]
+	private partial void LogToolResultSensitive(string toolCallId, string result);
+
+	private void LogFunctionCall(FunctionCallContent fcc)
+	{
+		if (_logger.IsEnabled(LogLevel.Trace) && fcc.Arguments is not null)
+		{
+#pragma warning disable IL3050, IL2026
+			var argsJson = JsonSerializer.Serialize(fcc.Arguments, AIJsonUtilities.DefaultOptions);
+#pragma warning restore IL3050, IL2026
+			LogToolCallSensitive(fcc.Name, fcc.CallId, argsJson);
+		}
+		else if (_logger.IsEnabled(LogLevel.Debug))
+		{
+			LogToolCall(fcc.Name, fcc.CallId);
+		}
+	}
+
+	private void LogFunctionResult(FunctionResultContent frc)
+	{
+		if (_logger.IsEnabled(LogLevel.Trace) && frc.Result is not null)
+		{
+#pragma warning disable IL3050, IL2026
+			var resultJson = frc.Result is string s ? s : JsonSerializer.Serialize(frc.Result, AIJsonUtilities.DefaultOptions);
+#pragma warning restore IL3050, IL2026
+			LogToolResultSensitive(frc.CallId, resultJson);
+		}
+		else if (_logger.IsEnabled(LogLevel.Debug))
+		{
+			LogToolResult(frc.CallId);
+		}
+	}
+
+	private void LogStreamingToolCall(string? toolName, string? toolCallId, string? arguments)
+	{
+		if (_logger.IsEnabled(LogLevel.Trace) && arguments is not null)
+			LogToolCallSensitive(toolName ?? "", toolCallId ?? "", arguments);
+		else if (_logger.IsEnabled(LogLevel.Debug))
+			LogToolCall(toolName ?? "", toolCallId ?? "");
+	}
+
+	private void LogStreamingToolResult(string? toolCallId, string? result)
+	{
+		if (_logger.IsEnabled(LogLevel.Trace) && result is not null)
+			LogToolResultSensitive(toolCallId ?? "", result);
+		else if (_logger.IsEnabled(LogLevel.Debug))
+			LogToolResult(toolCallId ?? "");
 	}
 }
