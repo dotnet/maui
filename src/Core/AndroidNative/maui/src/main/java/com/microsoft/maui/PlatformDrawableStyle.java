@@ -147,6 +147,7 @@ public class PlatformDrawableStyle {
         if (this.context != null && this.context.getTheme().resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
             this.hasNoneColor = 1;
             this.noneColor = value.data;
+            return;
         }
 
         this.hasNoneColor = 0;
