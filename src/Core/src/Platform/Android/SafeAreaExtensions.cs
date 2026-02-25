@@ -131,11 +131,22 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Detect if view is off-screen horizontally BEFORE margin adjustment
-					// clamps negative positions to zero via Math.Max, destroying the signal.
-					// Example: during Shell tab animation, viewLeft=-1 gets clamped to 0,
+					// Detect if view is off-screen BEFORE margin adjustment clamps negative positions
+					// to zero via Math.Max, destroying the animation signal.
+					// Horizontal: during Shell tab animation, viewLeft=-1 gets clamped to 0,
 					// making it impossible to detect animation for the RIGHT edge afterward.
 					var isAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
+
+					// Vertical: During Shell navigation animations, the view may be positioned
+					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
+					// extend beyond the screen bottom. This happens because the fragment animation
+					// slides the view in from off-screen. We detect this animating state by checking:
+					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
+					// 2. viewBottom > screenHeight (view extends beyond screen - confirms it's not just a small view)
+					// 3. viewTop > 0 (view is not at origin)
+					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
+					// When we detect animation state, apply the full top inset since view will settle at Y=0.
+					var viewIsAnimating = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
 
 					// Adjust for view's position relative to parent (including margins) to calculate
 					// safe area insets relative to the parent's position, not the view's visual position.
@@ -155,22 +166,6 @@ internal static class SafeAreaExtensions
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
-					// 
-					// Special case: During Shell navigation animations, the view may be positioned
-					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
-					// extend beyond the screen bottom. This happens because the fragment animation
-					// slides the view in from off-screen. We detect this animating state by checking:
-					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
-					// 2. viewBottom > screenHeight (view extends beyond screen - confirms it's not just a small view)
-					// 3. viewTop > 0 (view is not at origin)
-					// 
-					// This is DIFFERENT from ScrollView where:
-					// - viewTop = 0 (view is at origin, not animating)
-					// - Content extends beyond screen (but view position is stable)
-					//
-					// When we detect animation state, apply the full top inset since the view
-					// will eventually settle at Y=0.
-					var viewIsAnimating = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
 
 					if (top > 0 && viewTop < top && viewTop >= 0)
 					{
