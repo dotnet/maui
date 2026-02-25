@@ -38,6 +38,9 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 	[ObservableProperty]
 	private Project? selectedProject;
 
+	[ObservableProperty]
+	private ProjectTask? selectedTask;
+
 	public bool HasCompletedTasks
 		=> Tasks?.Any(t => t.IsCompleted) ?? false;
 
