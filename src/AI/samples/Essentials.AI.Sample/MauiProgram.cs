@@ -90,9 +90,8 @@ public static class MauiProgram
 #pragma warning disable CA1416 // Validate platform compatibility - this sample requires iOS/macCatalyst 26.0+
 	private static MauiAppBuilder AddAppleIntelligenceServices(this MauiAppBuilder builder)
 	{
-		// Register the base Apple Intelligence client with logging
-		builder.Services.AddSingleton(sp =>
-			new AppleIntelligenceChatClient(sp.GetRequiredService<ILoggerFactory>()));
+		// Register the base Apple Intelligence client
+		builder.Services.AddSingleton<AppleIntelligenceChatClient>();
 
 		// Register the Apple Intelligence client as IChatClient to allow direct use
 		builder.Services.AddSingleton<IChatClient>(sp =>
