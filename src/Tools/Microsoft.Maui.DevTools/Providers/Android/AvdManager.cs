@@ -48,8 +48,6 @@ public class AvdManager
 		{
 			Name = avd.Name,
 			DeviceProfile = avd.DeviceProfile,
-			SystemImage = avd.SystemImage,
-			Target = avd.Target,
 			Path = avd.Path,
 		};
 	}
@@ -65,7 +63,7 @@ public class AvdManager
 
 		try
 		{
-			await _runner.CreateAvdAsync(name, deviceProfile, systemImage, force, cancellationToken);
+			await _runner.CreateAvdAsync(name, systemImage, deviceProfile, force, cancellationToken);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -78,7 +76,6 @@ public class AvdManager
 		{
 			Name = name,
 			DeviceProfile = deviceProfile,
-			SystemImage = systemImage
 		};
 	}
 
@@ -93,14 +90,7 @@ public class AvdManager
 
 		try
 		{
-			if (wait)
-			{
-				using var process = await _emulatorRunner.StartAvdAndWaitForBootAsync(name, coldBoot, cancellationToken: cancellationToken);
-			}
-			else
-			{
-				_emulatorRunner.StartAvd(name, coldBoot);
-			}
+			_emulatorRunner.StartAvd(name, coldBoot);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
