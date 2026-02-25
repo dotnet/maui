@@ -135,7 +135,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-D8 | Produce machine-readable JSON output with stable schema | P0 |
 | FR-D9 | Provide `--fix` flag to automatically remediate fixable issues | P0 |
 | FR-D10 | Prompt for confirmation before downloads >100MB | P0 |
-| FR-D11 | Support `--platform` filter (android, ios, windows, maccatalyst) — multiple allowed | P1 |
+| FR-D11 | Support `--platform` filter (`android`, `ios`, `maccatalyst`, `windows`) — multiple allowed | P1 |
 | FR-D12 | Verify available disk space before attempting large downloads | P0 |
 | FR-D13 | Support `--fix <issue-id>` for targeted fixes | P1 |
 | FR-D14 | Detect multiple SDK installations and report conflicts | P1 |
@@ -212,7 +212,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-DL1 | `device list` shows all available devices across platforms | P0 |
 | FR-DL2 | Include device type (physical/emulator/simulator), platform, state | P0 |
 | FR-DL3 | Include unique identifier (serial/UDID) for targeting | P0 |
-| FR-DL4 | Support `--platform` filter | P1 |
+| FR-DL4 | Support `--platform` filter (`android`, `ios`, `maccatalyst`, `windows`) | P1 |
 | FR-DL5 | Support `--json` output | P0 |
 
 ### 4.7 Install State Machine
@@ -918,13 +918,13 @@ The tool is invoked as `maui <command>` as a standalone CLI tool. Platform-speci
 maui
 ├── doctor                    # Check environment health
 │   ├── --fix                 # Auto-fix all detected issues
-│   ├── --platform <p>       # Filter: dotnet, android, apple, windows
+│   ├── --platform <p>       # Filter: android, ios, maccatalyst, windows
 │   ├── --json                # Output as JSON
 │   └── --interactive false   # Disable prompts (auto-detected in CI)
 │
 ├── device
 │   ├── list                  # List all devices across platforms
-│   │   ├── --platform        # Filter by platform
+│   │   ├── --platform        # Filter by platform (android, ios, maccatalyst, windows)
 │   │   └── --json            # Output as JSON
 │   ├── screenshot            # Capture screenshot
 │   │   ├── --device <id>     # Target device
@@ -1023,6 +1023,7 @@ maui doctor --fix
 maui device list                              # List all devices (physical + emulators + simulators)
 maui device list --platform android           # Android devices and emulators
 maui device list --platform ios               # iOS simulators and physical devices
+maui device list --platform maccatalyst       # Mac Catalyst devices
 maui device screenshot --device emulator-5554
 
 # Android-specific
@@ -1091,6 +1092,19 @@ When `--interactive` is `false`:
   "approval_reason": "Downloads exceed 100MB"
 }
 ```
+
+#### Platform Filter Values
+
+The `--platform` flag accepts these values, aligned with .NET MAUI target framework monikers:
+
+| Value | Matches | Available On |
+|-------|---------|--------------|
+| `android` | Android physical devices and emulators | All hosts |
+| `ios` | iOS simulators and physical devices | macOS only |
+| `maccatalyst` | Mac Catalyst apps | macOS only |
+| `windows` | Windows devices | Windows only |
+
+Multiple values can be specified: `--platform android --platform ios`
 
 #### Exit Code Standard
 
