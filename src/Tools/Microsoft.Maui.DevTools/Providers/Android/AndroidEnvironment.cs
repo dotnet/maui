@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 internal static class AndroidEnvironment
 {
 	public static Dictionary<string, string>? GetEnvironment(string? sdkPath, string? jdkPath)
-		=> AndroidEnvironmentHelper.GetToolEnvironment(sdkPath, jdkPath);
+		=> AndroidEnvironmentHelper.GetEnvironment(sdkPath, jdkPath);
 
 	public static string? MapAbiToArchitecture(string? abi)
 		=> AndroidEnvironmentHelper.MapAbiToArchitecture(abi);
