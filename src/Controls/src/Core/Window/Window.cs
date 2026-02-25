@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
-		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+		static readonly BindablePropertyKey IsActivatedPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
@@ -328,7 +329,7 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal AlertManager AlertManager { get; }
+		internal IAlertManager AlertManager { get; private set; }
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
 
@@ -698,12 +699,25 @@ namespace Microsoft.Maui.Controls
 		void OnPageHandlerChanged(object? sender, EventArgs e)
 		{
 			ModalNavigationManager.PageAttachedHandler();
+			TryResolveAlertManager();
 			AlertManager.Subscribe();
 		}
 
 		void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
 			AlertManager.Unsubscribe();
+		}
+
+		void TryResolveAlertManager()
+		{
+			if (AlertManager is not Platform.AlertManager)
+				return;
+
+			var customManager = Handler?.MauiContext?.Services?.GetService<IAlertManager>();
+			if (customManager is not null)
+			{
+				AlertManager = customManager;
+			}
 		}
 
 		void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
