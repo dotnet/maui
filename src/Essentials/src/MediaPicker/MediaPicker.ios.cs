@@ -487,15 +487,13 @@ namespace Microsoft.Maui.Media
 			public Action<NSDictionary> CompletedHandler { get; set; }
 
 			public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
-			{
-				picker.DismissViewController(true, null);
-				CompletedHandler?.Invoke(info);
-			}
+            {
+                picker.DismissViewController(true, () => CompletedHandler?.Invoke(info));
+            }
 
 			public override void Canceled(UIImagePickerController picker)
 			{
-				picker.DismissViewController(true, null);
-				CompletedHandler?.Invoke(null);
+				picker.DismissViewController(true, () => CompletedHandler?.Invoke(null));
 			}
 		}
 	}
@@ -506,8 +504,8 @@ namespace Microsoft.Maui.Media
 
 		public override void DidFinishPicking(PHPickerViewController picker, PHPickerResult[] results)
 		{
-			picker.DismissViewController(true, null);
-			CompletedHandler?.Invoke(results?.Length > 0 ? results : []);
+			var captured = results?.Length > 0 ? results : [];
+            picker.DismissViewController(true, () => CompletedHandler?.Invoke(captured));
 		}
 	}
 
