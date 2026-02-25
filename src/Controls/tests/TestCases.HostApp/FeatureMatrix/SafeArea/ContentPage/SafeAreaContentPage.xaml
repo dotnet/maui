@@ -8,123 +8,125 @@
              SafeAreaEdges="{Binding EffectiveSafeAreaEdges}"
              Padding="{Binding Padding}"
              Background="{Binding Background}">
-    <Grid RowDefinitions="Auto,*,Auto" SafeAreaEdges="None"
-          ColumnDefinitions="Auto,*,Auto">
+       <Grid RowDefinitions="Auto,*,Auto"
+             SafeAreaEdges="None"
+             ColumnDefinitions="Auto,*,Auto">
 
-        <!-- Top Edge Indicator -->
-        <Label x:Name="TopEdgeIndicator"
-               AutomationId="TopEdgeIndicator"
-               Text="TOP TEST AREA: This should move in/out of notch/status bar area when safe area is toggled"
-               BackgroundColor="Red"
-               TextColor="Black"
-               FontSize="14"
-               FontAttributes="Bold"
-               HorizontalOptions="Fill"
-               HorizontalTextAlignment="Center"
-               Padding="10"
-               Grid.Row="0"
-               Grid.Column="0"
-               Grid.ColumnSpan="3"/>
+              <!-- Top Edge Indicator -->
+              <Label x:Name="TopEdgeIndicator"
+                     AutomationId="TopEdgeIndicator"
+                     Text="TOP TEST AREA: This should move in/out of notch/status bar area when safe area is toggled"
+                     BackgroundColor="Red"
+                     TextColor="Black"
+                     FontSize="14"
+                     FontAttributes="Bold"
+                     HorizontalOptions="Fill"
+                     HorizontalTextAlignment="Center"
+                     Padding="10"
+                     Grid.Row="0"
+                     Grid.Column="0"
+                     Grid.ColumnSpan="3"/>
 
-        <!-- Left Edge Indicator -->
-        <Label x:Name="LeftEdgeIndicator"
-               AutomationId="LeftEdgeIndicator"
-               Text="L"
-               BackgroundColor="Green"
-               TextColor="White"
-               VerticalOptions="Fill"
-               HorizontalTextAlignment="Center"
-               VerticalTextAlignment="Center"
-               WidthRequest="55"
-               Grid.Row="1"
-               Grid.Column="0"/>
+              <!-- Left Edge Indicator -->
+              <Label x:Name="LeftEdgeIndicator"
+                     AutomationId="LeftEdgeIndicator"
+                     Text="L"
+                     BackgroundColor="Green"
+                     TextColor="White"
+                     VerticalOptions="Fill"
+                     HorizontalTextAlignment="Center"
+                     VerticalTextAlignment="Center"
+                     WidthRequest="55"
+                     Grid.Row="1"
+                     Grid.Column="0"/>
 
-        <!-- Main Content -->
-        <ScrollView Grid.Row="1"
-                             Grid.Column="1">
-        <VerticalStackLayout 
-                             Spacing="10"
-                             Padding="10,60,10,0">
-              <HorizontalStackLayout>
-            <Label Text="SafeAreaEdges: "
-                   FontAttributes="Bold"/>
+              <!-- Main Content -->
+              <ScrollView Grid.Row="1"
+                          Grid.Column="1">
+                     <VerticalStackLayout
+                            Spacing="10"
+                            Padding="10,60,10,0">
+                            <HorizontalStackLayout>
+                                   <Label Text="SafeAreaEdges: "
+                                          FontAttributes="Bold"/>
 
-            <Label AutomationId="SafeAreaEdgesValueLabel"
-                   Text="{Binding DisplayString}"
-                   FontSize="14"/>
-              </HorizontalStackLayout>
+                                   <Label AutomationId="SafeAreaEdgesValueLabel"
+                                          Text="{Binding DisplayString}"
+                                          FontSize="14"/>
+                            </HorizontalStackLayout>
 
-            <Label x:Name="SafeAreaInsetsLabel"
-                   AutomationId="SafeAreaInsetsLabel"
-                   Text="Insets: Loading..."
-                   FontSize="12"/>
+                            <Label x:Name="SafeAreaInsetsLabel"
+                                   AutomationId="SafeAreaInsetsLabel"
+                                   Text="Insets: Loading..."
+                                   FontSize="12"/>
 
-              <Button AutomationId="Options"
-                    Text="Options"
-                    Clicked="NavigateToOptionsPage_Clicked"
-                    HorizontalOptions="Start"/>
+                            <Button AutomationId="Options"
+                                    Text="Options"
+                                    Clicked="NavigateToOptionsPage_Clicked"
+                                    HorizontalOptions="Start"/>
 
-            <!-- SafeArea value buttons -->
-            <HorizontalStackLayout Spacing="5">
-                <Button AutomationId="SafeAreaNoneButton"
-                        Text="None"
-                        FontSize="12"
-                        Clicked="OnSafeAreaNoneClicked"/>
-                <Button AutomationId="SafeAreaAllButton"
-                        Text="All"
-                        FontSize="12"
-                        Clicked="OnSafeAreaAllClicked"/>
-                <Button AutomationId="SafeAreaContainerButton"
-                        Text="Container"
-                        FontSize="12"
-                        Clicked="OnSafeAreaContainerClicked"/>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout Spacing="5">
-                <Button AutomationId="SafeAreaSoftInputButton"
-                        Text="SoftInput"
-                        FontSize="12"
-                        Clicked="OnSafeAreaSoftInputClicked"/>
-                <Button AutomationId="SafeAreaDefaultButton"
-                        Text="Default"
-                        FontSize="12"
-                        Clicked="OnSafeAreaDefaultClicked"/>
-            </HorizontalStackLayout>
+                            <!-- SafeArea value buttons -->
+                            <HorizontalStackLayout Spacing="5">
+                                   <Button AutomationId="SafeAreaNoneButton"
+                                           Text="None"
+                                           FontSize="12"
+                                           Clicked="OnSafeAreaNoneClicked"/>
+                                   <Button AutomationId="SafeAreaAllButton"
+                                           Text="All"
+                                           FontSize="12"
+                                           Clicked="OnSafeAreaAllClicked"/>
+                                   <Button AutomationId="SafeAreaContainerButton"
+                                           Text="Container"
+                                           FontSize="12"
+                                           Clicked="OnSafeAreaContainerClicked"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="5">
+                                   <Button AutomationId="SafeAreaSoftInputButton"
+                                           Text="SoftInput"
+                                           FontSize="12"
+                                           Clicked="OnSafeAreaSoftInputClicked"/>
+                                   <Button AutomationId="SafeAreaDefaultButton"
+                                           Text="Default"
+                                           FontSize="12"
+                                           Clicked="OnSafeAreaDefaultClicked"/>
+                            </HorizontalStackLayout>
 
-            <Label Text="Content below is for testing keyboard interaction:"
-                   FontSize="12"
-                   TextColor="Gray"/>
+                            <Label Text="Content below is for testing keyboard interaction:"
+                                   FontSize="12"
+                                   TextColor="Gray"/>
 
-            <Entry x:Name="SafeAreaTestEntry"
-                   AutomationId="SafeAreaTestEntry"
-                   Placeholder="Tap to raise keyboard"  HorizontalOptions="Start"/>
-        </VerticalStackLayout>
-       </ScrollView>
-        <!-- Right Edge Indicator -->
-        <Label x:Name="RightEdgeIndicator"
-               AutomationId="RightEdgeIndicator"
-               Text="R"
-               BackgroundColor="Orange"
-               TextColor="White"
-               VerticalOptions="Fill"
-               HorizontalTextAlignment="Center"
-               VerticalTextAlignment="Center"
-               WidthRequest="55"
-               Grid.Row="1"
-               Grid.Column="2"/>
+                            <Entry x:Name="SafeAreaTestEntry"
+                                   AutomationId="SafeAreaTestEntry"
+                                   Placeholder="Tap to raise keyboard"
+                                   HorizontalOptions="Start"/>
+                     </VerticalStackLayout>
+              </ScrollView>
+              <!-- Right Edge Indicator -->
+              <Label x:Name="RightEdgeIndicator"
+                     AutomationId="RightEdgeIndicator"
+                     Text="R"
+                     BackgroundColor="Orange"
+                     TextColor="White"
+                     VerticalOptions="Fill"
+                     HorizontalTextAlignment="Center"
+                     VerticalTextAlignment="Center"
+                     WidthRequest="55"
+                     Grid.Row="1"
+                     Grid.Column="2"/>
 
-        <!-- Bottom Edge Indicator -->
-        <Label x:Name="BottomEdgeIndicator"
-               AutomationId="BottomEdgeIndicator"
-               Text="BOTTOM TEST AREA: This should move in/out of home indicator/toolbar area when safe area is toggled"
-               BackgroundColor="Red"
-               TextColor="Black"
-               FontSize="14"
-               FontAttributes="Bold"
-               HorizontalOptions="Fill"
-               HorizontalTextAlignment="Center"
-               Padding="10"
-               Grid.Row="2"
-               Grid.Column="0"
-               Grid.ColumnSpan="3"/>
-    </Grid>
+              <!-- Bottom Edge Indicator -->
+              <Label x:Name="BottomEdgeIndicator"
+                     AutomationId="BottomEdgeIndicator"
+                     Text="BOTTOM TEST AREA: This should move in/out of home indicator/toolbar area when safe area is toggled"
+                     BackgroundColor="Red"
+                     TextColor="Black"
+                     FontSize="14"
+                     FontAttributes="Bold"
+                     HorizontalOptions="Fill"
+                     HorizontalTextAlignment="Center"
+                     Padding="10"
+                     Grid.Row="2"
+                     Grid.Column="0"
+                     Grid.ColumnSpan="3"/>
+       </Grid>
 </ContentPage>
