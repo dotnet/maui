@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _topPage;
 		UIElementCollection? _cachedChildren;
 		bool _modalFocusTrapActive;
+		TypedEventHandler<UIElement, GettingFocusEventArgs>? _gettingFocusHandler;
 
 		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
 		internal UIElementCollection CachedChildren
@@ -116,18 +117,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!_modalFocusTrapActive)
 			{
-				// Use AddHandler with handledEventsToo so we intercept focus changes
-				// even if a child element already handled the event.
-				AddHandler(GettingFocusEvent, new TypedEventHandler<UIElement, GettingFocusEventArgs>(OnContainerGettingFocus), true);
+				_gettingFocusHandler ??= new TypedEventHandler<UIElement, GettingFocusEventArgs>(OnContainerGettingFocus);
+				AddHandler(GettingFocusEvent, _gettingFocusHandler, true);
 				_modalFocusTrapActive = true;
 			}
 		}
 
 		void DisableModalFocusTrap()
 		{
-			if (_modalFocusTrapActive)
+			if (_modalFocusTrapActive && _gettingFocusHandler is not null)
 			{
-				RemoveHandler(GettingFocusEvent, new TypedEventHandler<UIElement, GettingFocusEventArgs>(OnContainerGettingFocus));
+				RemoveHandler(GettingFocusEvent, _gettingFocusHandler);
 				_modalFocusTrapActive = false;
 			}
 		}
@@ -194,7 +194,17 @@ namespace Microsoft.Maui.Platform
 					return;
 			}
 
-			page.Focus(FocusState.Programmatic);
+			if (page.Focus(FocusState.Programmatic))
+				return;
+
+			// If immediate focus failed (visual tree not ready yet), defer until after layout
+			page.DispatcherQueue?.TryEnqueue(() =>
+			{
+				if (FocusManager.FindFirstFocusableElement(page) is UIElement el)
+					el.Focus(FocusState.Programmatic);
+				else
+					page.Focus(FocusState.Programmatic);
+			});
 		}
 
 		internal void AddOverlay(FrameworkElement overlayView)
