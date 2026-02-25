@@ -22,24 +22,39 @@ This skill searches the dotnet/maui and dotnet/docs-maui repositories for open p
 
 ## Priority Categories (in order)
 
-1. **Priority (P/0)** - Critical priority PRs that need immediate attention
-2. **Milestoned** - PRs assigned to current milestone(s), sorted by lowest SR number first (e.g., SR5 before SR6), then Servicing
-3. **Partner** - PRs from Syncfusion and other partners
-4. **Community** - External contributions needing review
-5. **Recent Waiting for Review** - PRs created in last 2 weeks that need review (minimum 5)
-6. **docs-maui Waiting for Review** - Documentation PRs needing review (minimum 5)
+1. **Priority (P/0)** - Critical priority PRs that need immediate attention (always on top)
+2. **Approved (Not Merged)** - PRs with human approval that haven't been merged yet
+3. **Ready To Review (Project Board)** - PRs in "Ready To Review" column of the MAUI SDK Ongoing project board (requires `read:project` scope)
+4. **Milestoned** - PRs assigned to current milestone(s), sorted by lowest SR number first (e.g., SR5 before SR6), then Servicing
+5. **Agent Reviewed** - PRs reviewed by AI agent workflow (detected via labels)
+6. **Partner** - PRs from Syncfusion and other partners
+7. **Community** - External contributions needing review
+8. **Recent Waiting for Review** - PRs created in last 2 weeks that need review (minimum 5)
+9. **docs-maui Waiting for Review** - Documentation PRs needing review (minimum 5)
 
 ## Quick Start
 
 ```bash
-# Find all reviewable PRs (shows top from each category including docs-maui)
+# Find P/0 and milestoned PRs (default behavior, excludes changes-requested)
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
+
+# Find all reviewable PRs across all categories
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category all
 
 # Find only milestoned PRs
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category milestoned
 
 # Find only docs-maui PRs waiting for review
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category docs-maui
+
+# Find approved PRs waiting to be merged
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category approved
+
+# Find PRs in "Ready To Review" on the project board
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category ready-to-review
+
+# Find agent-reviewed PRs with merge summaries
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category agent-reviewed
 
 # Find recent PRs waiting for review
 pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Category recent
@@ -58,9 +73,9 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
-| `-Category` | milestoned, priority, recent, partner, community, docs-maui, all | all | Filter by category |
+| `-Category` | default, milestoned, priority, recent, partner, community, docs-maui, approved, ready-to-review, agent-reviewed, all | default | Filter by category. `default` shows only P/0 + milestoned, excluding changes-requested PRs. |
 | `-Platform` | android, ios, windows, maccatalyst, all | all | Filter by platform |
-| `-Limit` | 1-100 | 10 | Max PRs per category (maui repo) |
+| `-Limit` | 1-100 | 100 | Max PRs per category (maui repo) |
 | `-RecentLimit` | 1-100 | 5 | Max recent PRs waiting for review from maui repo (minimum 5 enforced) |
 | `-DocsLimit` | 1-100 | 5 | Max PRs for docs-maui waiting for review (minimum 5 enforced) |
 | `-ExcludeAuthors` | string[] | (none) | Exclude PRs from specific authors (e.g., `-ExcludeAuthors PureWeen,rmarinho`) |
@@ -71,10 +86,10 @@ pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -DocsLim
 
 ### Step 1: Find PRs to Review
 
-**CRITICAL**: You MUST use the PowerShell script below. Do NOT attempt to query GitHub directly with `gh` commands or `jq` if the script fails. The script contains important prioritization logic (SR3 before SR4, P/0 first, etc.) that cannot be replicated with ad-hoc queries.
+**CRITICAL**: You MUST use the PowerShell script below. Do NOT attempt to query GitHub directly with `gh` commands or `jq` if the script fails. The script contains important prioritization logic (SR5 before SR6, P/0 first, etc.) that cannot be replicated with ad-hoc queries.
 
 ```bash
-pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 -Limit 5
+pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1
 ```
 
 **If the script fails** (e.g., HTTP 502, network error, authentication issue):
@@ -97,44 +112,17 @@ To enable: `gh auth refresh -s read:project`
 
 **CRITICAL**: When presenting PR results, you MUST include PRs from ALL categories returned by the script:
 
-1. 🔴 **Priority (P/0)** - Always include if present
-2. 📅 **Milestoned** - Always include if present  
-3. 🤝 **Partner** - Always include if present
-4. ✨ **Community** - Always include if present
-5. 🕐 **Recent** - Always include if present
-6. 📖 **docs-maui** - Always include if present
+1. 🔴 **Priority (P/0)** - Always include if present (always first)
+2. 🟢 **Approved (Not Merged)** - Always include if present
+3. 📋 **Ready To Review (Board)** - Always include if present
+4. 📅 **Milestoned** - Always include if present  
+5. 🤖 **Agent Reviewed** - Always include if present
+6. 🤝 **Partner** - Always include if present
+7. ✨ **Community** - Always include if present
+8. 🕐 **Recent** - Always include if present
+9. 📖 **docs-maui** - Always include if present
 
-**DO NOT** omit any category. Each category table should include columns for: PR, Title, Author, Platform/Repo, Status, Age, Updated.
-
-### Step 4: Present ONE PR at a Time for Review
-
-When user asks to review, present only ONE PR in this format:
-
-```markdown
-## PR #XXXXX
-
-**[Title]**
-
-🔗 [URL]
-
-| Field | Value |
-|-------|-------|
-| **Author** | username |
-| **Platform** | platform |
-| **Complexity** | Easy/Medium/Complex |
-| **Milestone** | milestone or (none) |
-| **Age** | X days |
-| **Files** | X (+additions/-deletions) |
-| **Labels** | labels |
-| **Category** | priority/milestoned/partner/community/recent |
-
-Would you like me to review this PR?
-```
-
-### Step 5: Invoke PR Reviewer
-
-When user confirms, use the **pr** agent:
-- "Review PR #XXXXX"
+**DO NOT** omit any category. Each category table should include columns for: PR, Title, Author, Assignees, Platform/Repo, Status, Agent Review, Age, Updated.
 
 ## Complexity Levels
 
@@ -146,7 +134,10 @@ When user confirms, use the **pr** agent:
 
 ## Tips
 
-- **P/0 PRs** should be reviewed first - they're blocking releases
+- **P/0 PRs** should always be reviewed first - they're blocking releases
+- **Approved PRs** are ready to merge - verify CI is green and merge
+- **Ready To Review PRs** are in the project board pipeline and need timely review
+- **Agent Reviewed PRs** have been analyzed by the AI agent workflow - check their labels for status
 - **Milestoned PRs** have deadlines and should be prioritized
 - **Partner PRs** often have business priority
 - **Community PRs** may need more guidance and thorough review
