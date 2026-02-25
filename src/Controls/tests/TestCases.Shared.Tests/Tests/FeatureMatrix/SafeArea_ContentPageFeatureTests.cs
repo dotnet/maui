@@ -83,7 +83,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(topLabelRect.Y, Is.EqualTo(0),
 				$"None: top label Y ({topLabelRect.Y}) should be = 0 (edge-to-edge), safe area top inset is ignored");
 
-			var insets = GetSafeAreaInsets();
 			var (_, screenHeight) = GetScreenSize();
 
 			// Portrait: bottom label bottom edge should be ≈ screenHeight (edge-to-edge, no safe area applied)
@@ -164,7 +163,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(5)]
-		[Description("ContentPage defaults to None behavior")]
+		[Description("Default applies safe area insets on all edges (behaves like Container)")]
 		public void ValidateSafeAreaEdges_Default()
 		{
 			ClickContentPageSafeAreaButton();
@@ -252,7 +251,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Portrait: bottom label bottom edge should be ≈ screenHeight (edge-to-edge, no safe area applied)
 			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(screenHeight),
-				$"None: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ screenHeight ({screenHeight})");
+				$"SoftInput: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ screenHeight ({screenHeight})");
 		}
 
 		[Test, Order(8)]
@@ -309,7 +308,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Portrait: top label Y should be ≈ insets.Top (safe area applied)
 			var topLabelRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(topLabelRect.Y), Is.EqualTo(insets.Top),
-				$"All: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
+				$"Container: top label Y ({topLabelRect.Y}) should be equal to insets.Top ({insets.Top})");
 
 			// Portrait: bottom label bottom edge should be ≈ screenBottom - insets.Bottom
 			var bottomLabelRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -324,7 +323,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if TEST_FAILS_ON_IOS // Setting it to All and opening the keyboard, then changing it to Container while the keyboard is open, and then changing it back to All shows white space at the bottom
 
 		[Test, Order(10)]
-		[Description("Validates label positions across None, All, keyboard open, switch to Container, dismiss, then All again")]
+		[Description("None → All → keyboard open → Container → dismiss → All: positions correct at each step")]
 		public void ValidateSafeArea_NoneThenAllKeyboardContainerDismissAll()
 		{
 			ClickContentPageSafeAreaButton();
@@ -608,7 +607,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 #if !ANDROID // On Android, Appium does not find the bottom label when the keyboard is open
-			// Bottom should have not moved up to the keyboard top
+			// Bottom should not have moved up to the keyboard top
 			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelDuringRect.Bottom, Is.EqualTo(screenHeight - insets.Bottom),
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
@@ -742,9 +741,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard (None) - top label Y ({topLabelDuringNoneRect.Y}) should be 0 (edge-to-edge)");
 
 #if !ANDROID // On Android, Appium does not find the bottom label when the keyboard is open
-            var bottomLabelDuringNoneRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
-            Assert.That(Math.Abs(bottomLabelDuringNoneRect.Bottom), Is.EqualTo(screenHeight),
-                $"During keyboard (None) - bottom label Bottom ({bottomLabelDuringNoneRect.Bottom}) should be equal to screenHeight ({screenHeight})");
+			var bottomLabelDuringNoneRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
+			Assert.That(Math.Abs(bottomLabelDuringNoneRect.Bottom), Is.EqualTo(screenHeight),
+ 				$"During keyboard (None) - bottom label Bottom ({bottomLabelDuringNoneRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 #endif
 			// ── Switch to SoftInput while keyboard is open ──
 			App.Tap("SafeAreaSoftInputButton");
@@ -929,7 +928,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if TEST_FAILS_ON_IOS // When the safe area is set to None, and the keyboard is opened, the safe area changes to All or SoftInput, and the bottom label does not move above the keyboard
 
 		[Test, Order(19)]
-		[Description("Cycle through all SafeArea modes while keyboard is open — verify positions without dismissing keyboard")]
+		[Description("Keyboard open: cycle through None → All → Container → SoftInput → Default → None and verify positions")]
 		public void ValidateKeyboardRuntime_CycleThroughAllModes_WhileKeyboardOpen()
 		{
 			ClickContentPageSafeAreaButton();
@@ -1707,7 +1706,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 
 		[Test, Order(33)]
-		[Description("Per-edge B:None + keyboard — bottom stays edge-to-edge when keyboard shows")]
+		[Description("Per-edge B:None + keyboard — bottom stays edge-to-edge when keyboard is shown")]
 		public void ValidatePerEdgeKeyboard_BottomNone_BottomStays()
 		{
 			ClickContentPageSafeAreaButton();
@@ -1750,7 +1749,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(34)]
-		[Description("Per-edge B:Container + keyboard — bottom stays at safe area inset when keyboard shows")]
+		[Description("Per-edge B:Container + keyboard — bottom stays at safe area inset when keyboard is shown")]
 		public void ValidatePerEdgeKeyboard_BottomContainer_BottomStays()
 		{
 			ClickContentPageSafeAreaButton();
@@ -1932,7 +1931,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(38)]
 		[Description("Rotate to landscape and back to portrait — positions restore correctly")]
 		public void ValidateOrientation_Roundtrip_PositionsRestore()
-
 		{
 			ClickContentPageSafeAreaButton();
 			App.DismissKeyboard();
