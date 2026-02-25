@@ -28,7 +28,7 @@ public class Issue33904 : ContentPage
 
         Label inheritedLabel = new Label
         {
-            AutomationId="InheritedCharacterSpacingLabel",
+            AutomationId = "InheritedCharacterSpacingLabel",
             CharacterSpacing = 4,
             TextColor = Colors.Purple,
             FontSize = 16,
@@ -45,7 +45,7 @@ public class Issue33904 : ContentPage
                 }
             }
         };
-        
+
         VerticalStackLayout stackLayout = new VerticalStackLayout
         {
             Spacing = 16,
