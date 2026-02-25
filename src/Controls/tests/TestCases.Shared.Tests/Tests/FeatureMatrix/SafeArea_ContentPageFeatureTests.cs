@@ -359,8 +359,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"All: bottom label Bottom ({bottomLabelRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
 			// ── Step 3: Open keyboard and verify (All adjusts for keyboard) ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -387,7 +389,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 			// ── Step 5: Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// ── Step 6: Click All and verify ──
 			App.Tap("SafeAreaAllButton");
@@ -434,8 +437,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -451,7 +456,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// Top should return to its original position
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -489,8 +495,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -506,7 +514,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// Top should return to its original position
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -541,8 +550,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var topLabelDuringRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topLabelDuringRect.Y, Is.EqualTo(0),
@@ -554,7 +565,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 #endif
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
@@ -590,8 +602,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 #if !ANDROID // On Android, Appium does not find the bottom label when the keyboard is open
 			// Bottom should have not moved up to the keyboard top
@@ -605,7 +619,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
 
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// Top should return to its original position
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -646,8 +661,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 
 			// ── Show keyboard (None) ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			// With None, bottom should NOT move
 			var topLabelDuringNoneRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -676,7 +693,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// After keyboard (All): top at insets.Top, bottom at (screenHeight - insets.Bottom)
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -718,8 +736,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
 			// ── Show keyboard (All) ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -748,7 +768,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// After keyboard (None): top at 0, bottom at screenHeight
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -789,8 +810,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
 			// ── Show keyboard (Container) ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			// With Container, bottom should NOT move
 			var topLabelDuringContainerRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -819,7 +842,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// After keyboard (SoftInput): top at insets.Top, bottom at screenHeight (edge-to-edge without keyboard)
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
@@ -856,8 +880,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"None (before keyboard) - bottom label Bottom ({bottomLabelRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 
 			// ── Open keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -938,7 +964,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 		}
 
 		// ──────────────────────────────────────────────
@@ -1198,8 +1225,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom edge ({bottomBeforeRect.Bottom}) should be = screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -1220,7 +1249,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// All edges should return to original positions
 			var leftAfterRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
@@ -1270,8 +1300,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom edge ({bottomBeforeRect.Bottom}) should be = screenHeight ({screenHeight})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -1292,7 +1324,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			// All edges should return to original positions
 			var leftAfterRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
@@ -1341,8 +1374,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom edge ({bottomBeforeRect.Bottom}) should be = screenHeight ({screenHeight})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			// Bottom should NOT move (None ignores keyboard)
 			var bottomDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1361,7 +1396,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var leftAfterRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
 			Assert.That(leftAfterRect.X, Is.EqualTo(leftBeforeRect.X),
@@ -1410,8 +1446,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom edge ({bottomBeforeRect.Bottom}) should be = screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			// Bottom should NOT move (Container ignores keyboard)
 			var bottomDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1430,7 +1468,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var leftAfterRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
 			Assert.That(leftAfterRect.X, Is.EqualTo(leftBeforeRect.X),
@@ -1479,8 +1518,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"Before keyboard - bottom edge ({bottomBeforeRect.Bottom}) should be = screenHeight - insetsLandscape.Bottom ({screenHeight - insetsLandscape.Bottom})");
 
 			// ── Show keyboard ──
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			// Bottom should NOT move (Default behaves like Container)
 			var bottomDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1499,7 +1540,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// ── Dismiss keyboard ──
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var bottomAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomAfterRect.Bottom, Is.EqualTo(bottomBeforeRect.Bottom),
@@ -1537,8 +1579,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 #if !ANDROID // On Android, Appium does not find the bottom label when the keyboard is open
 			// Bottom should NOT move (Default behaves like Container — ignores keyboard)
@@ -1552,7 +1596,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - top label Y ({topLabelDuringRect.Y}) should remain at ({topLabelBeforeRect.Y})");
 
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var topLabelAfterRect = App.WaitForElement("TopEdgeIndicator").GetRect();
 			Assert.That(topLabelAfterRect.Y, Is.EqualTo(topLabelBeforeRect.Y),
@@ -1591,8 +1636,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 #if !ANDROID // On Android, Appium does not find the bottom label when the keyboard is open
 			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1600,7 +1647,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should stay at screenHeight ({screenHeight})");
 #endif
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
@@ -1632,8 +1680,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 #if !ANDROID // On Android, Appium does not find the bottom label when the keyboard is open
 			var bottomLabelDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1641,7 +1691,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should stay at (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 #endif
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
@@ -1672,8 +1723,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -1682,7 +1735,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
 
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
@@ -1714,8 +1768,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelBeforeRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom),
 				$"Before keyboard - bottom label Bottom ({bottomLabelBeforeRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should not be visible before tapping entry");
 			App.Tap("SafeAreaTestEntry");
-			App.WaitForKeyboardToShow();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.True, "Keyboard should be visible after tapping entry");
 
 			var keyboardY = GetKeyboardY();
 
@@ -1724,7 +1780,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"During keyboard - bottom label Bottom ({bottomLabelDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
 
 			App.DismissKeyboard();
-			App.WaitForKeyboardToHide();
+			Thread.Sleep(2000);
+			Assert.That(App.IsKeyboardShown(), Is.False, "Keyboard should be hidden after dismissal");
 
 			var bottomLabelAfterRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
