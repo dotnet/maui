@@ -105,7 +105,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 
 **DP3: Stateless Architecture** — Each command reads state, acts, and exits. Uses file-system caching (`~/.maui/cache/`) with TTLs for performance.
 
-**DP4: Machine-First Output** — Every command supports `--json` with stable schema. Priority: AI agents > CI/CD > humans. Required flags: `--json`, `--dry-run`, `--ci`.
+**DP4: Machine-First Output** — Every command supports `--json` with stable schema. Priority: AI agents > CI/CD > humans. Required flags: `--json`, `--dry-run`, `--interactive`.
 
 ### Target Personas
 
@@ -113,7 +113,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 |---------|---------|----------|
 | **Windows Developer** | .NET dev, new to Android | One-click install of all Android dependencies |
 | **macOS Developer** | Building iOS apps, has Xcode | Detection of runtime/simulator state, guided fixes |
-| **CI Engineer** | DevOps configuring pipelines | `--non-interactive`, JSON output, deterministic exit codes |
+| **CI Engineer** | DevOps configuring pipelines | `--interactive false`, JSON output, deterministic exit codes |
 | **AI Agent** | GitHub Copilot, IDE assistants | Structured JSON for diagnosis, permission-gated fixes |
 
 
@@ -482,7 +482,7 @@ When the tool detects that the target install path requires elevation (e.g., `Pr
 |---------|-----------|---------|
 | Terminal | `sudo` | Tool re-invokes itself with `sudo` for the specific operation that needs it (e.g., `sudo xcode-select -s <path>`) |
 | IDE (e.g., VS Code) | OS-managed elevation | IDE invokes a privileged helper or re-launches the tool in an elevated context, relying on supported macOS mechanisms and system authentication UI |
-| CI | Pre-authorized | CI agents typically run with required permissions; use `--ci` flag to skip interactive prompts |
+| CI | Pre-authorized | CI agents typically run with required permissions; `--interactive` defaults to `false` when CI env vars are detected |
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -887,8 +887,8 @@ maui doctor
 # Machine-readable: JSON to stdout (errors included in JSON, not stderr)
 maui doctor --json
 
-# CI mode: JSON output, no prompts, warnings become errors
-maui doctor --ci
+# CI mode: JSON output, no prompts
+maui doctor --json --interactive false
 ```
 
 **JSON output envelope:**
@@ -920,7 +920,7 @@ maui
 │   ├── --fix                 # Auto-fix all detected issues
 │   ├── --platform <p>       # Filter: dotnet, android, apple, windows
 │   ├── --json                # Output as JSON
-│   └── --ci                  # CI mode (no prompts, fail-fast)
+│   └── --interactive false   # Disable prompts (auto-detected in CI)
 │
 ├── device
 │   ├── list                  # List all devices across platforms
@@ -1058,18 +1058,25 @@ maui windows developer-mode status
 |--------|-------------|----------|
 | `--json` | Output as JSON (machine-readable) | **Mandatory on all commands** ✅ |
 | `--dry-run` | Show what would be done without executing | **Mandatory on write commands** ✅ |
-| `--ci` | Strict mode: no prompts, warnings become errors, JSON output forced | Recommended ✅ |
+| `--interactive` | Control interactive prompts (default: `true` for terminals, `false` in CI or when output is redirected — see below) | **Mandatory on all commands** ✅ |
 | `--verbose` / `-v` | Enable verbose logging | Optional ✅ |
-| `--non-interactive` | Disable prompts; fail if input needed | Optional (vNext) |
 | `--correlation-id` | Set correlation ID for tracing | Optional (vNext) |
 | `--offline` | Skip network operations; use cached data only | Optional (vNext) |
 
-**`--ci` Mode Behavior**:
-- Forces `--json` output (human-readable disabled)
-- Forces `--non-interactive` (no stdin prompts)
-- Elevates warnings to errors (exit code 1 → 2)
-- Includes full diagnostic context in error output
-- Ideal for CI/CD pipelines and AI agent consumption
+**`--interactive` Detection (aligned with `dotnet` CLI)**:
+
+The `--interactive` flag follows the same pattern as the `dotnet` CLI ([`CommonOptions.CreateInteractiveOption`](https://github.com/dotnet/sdk/blob/main/src/Cli/Microsoft.DotNet.Cli.Definitions/Common/CommonOptions.cs)):
+
+- **Default: `true`** when running in a terminal (stdin/stdout not redirected, no CI env vars detected)
+- **Default: `false`** when CI environment is detected OR `Console.IsOutputRedirected` is `true`
+- **CI detection**: checks well-known environment variables — `TF_BUILD` (Azure Pipelines), `GITHUB_ACTIONS`, `CI` (generic), `TRAVIS`, `CIRCLECI`, `TEAMCITY_VERSION`, AWS CodeBuild (`CODEBUILD_BUILD_ID` + `AWS_REGION`), Jenkins (`BUILD_ID` + `BUILD_URL`), Google Cloud Build (`BUILD_ID` + `PROJECT_ID`), JetBrains Space (`JB_SPACE_API_URL`)
+- **Explicit override**: `--interactive false` to suppress prompts, `--interactive` to force prompts in CI
+- Accepts an optional boolean argument (`--interactive true`, `--interactive false`) or acts as a zero-arity flag (`--interactive` = `true`)
+
+When `--interactive` is `false`:
+- No stdin prompts (fail with error if input is required and not provided via flags)
+- Operations that require confirmation (e.g., downloads >100MB) must use `--accept-licenses` or `--yes` flags
+- All required parameters must be provided via command-line arguments
 
 **`--dry-run` Mode Output**:
 ```json
@@ -1311,10 +1318,10 @@ $ maui android emulator create
 Creating emulator 'My_Pixel_5'... done
 ```
 
-**Non-Interactive Mode**:
+**Non-Interactive Mode** (auto-detected in CI, or explicit `--interactive false`):
 ```
-$ maui android emulator create --non-interactive
-Error: --name is required in non-interactive mode
+$ maui android emulator create --interactive false
+Error: --name is required in non-interactive mode (--interactive is false)
 ```
 
 **Example: Large Download Confirmation**:
@@ -1383,7 +1390,7 @@ All telemetry and logs follow these redaction rules:
 |----------|---------|
 | P1 | Visual Studio extension integration |
 | P1 | iOS runtime installation guidance |
-| P1 | `--non-interactive`, `--correlation-id`, `--offline` global options |
+| P1 | `--correlation-id`, `--offline` global options |
 | P2 | Emulator snapshot management |
 | P2 | Windows SDK management |
 | P2 | Linux host support (Android only) |
