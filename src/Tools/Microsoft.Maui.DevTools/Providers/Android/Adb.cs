@@ -38,7 +38,7 @@ public class Adb
 		}
 	}
 
-	private static Device MapToMauiDevice(AndroidDeviceInfo info)
+	private static Device MapToMauiDevice(AdbDeviceInfo info)
 	{
 		var isEmulator = info.IsEmulator;
 		var state = MapDeviceState(info.State);
@@ -47,7 +47,7 @@ public class Adb
 		return new Device
 		{
 			Id = info.Serial,
-			Name = info.Name ?? info.Serial,
+			Name = info.Model ?? info.Serial,
 			Platforms = new[] { "android" },
 			Type = isEmulator ? DeviceType.Emulator : DeviceType.Physical,
 			State = state,
@@ -59,14 +59,14 @@ public class Adb
 		};
 	}
 
-	private static DeviceState MapDeviceState(AndroidDeviceState state)
+	private static DeviceState MapDeviceState(string? state)
 	{
 		return state switch
 		{
-			AndroidDeviceState.Online => DeviceState.Connected,
-			AndroidDeviceState.Offline => DeviceState.Offline,
-			AndroidDeviceState.Unauthorized => DeviceState.Disconnected,
-			AndroidDeviceState.Bootloader => DeviceState.Booting,
+			"device" => DeviceState.Connected,
+			"offline" => DeviceState.Offline,
+			"unauthorized" => DeviceState.Disconnected,
+			"bootloader" => DeviceState.Booting,
 			_ => DeviceState.Unknown
 		};
 	}
