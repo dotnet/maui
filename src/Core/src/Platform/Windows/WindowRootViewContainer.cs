@@ -89,27 +89,37 @@ namespace Microsoft.Maui.Platform
 			// Clean up any pending Loaded handler to prevent memory leaks
 			pageView.Loaded -= OnPageLoadedForFocus;
 
-			CachedChildren.Remove(pageView);
+			int remainingCount = CachedChildren.Count - 1;
 
-			if (CachedChildren.Count > 0)
+			// Update _topPage and disable focus trap BEFORE removing from the collection.
+			// WinUI3 fires GettingFocus synchronously when a focused element is removed from the tree.
+			// If _topPage still references the removed modal, OnContainerGettingFocus would redirect
+			// focus to a detached element or cancel focus changes, leaving focus in a broken state.
+			if (remainingCount > 0)
 			{
-				_topPage = (FrameworkElement)CachedChildren[CachedChildren.Count - 1];
+				// The new top page is the last element that isn't being removed
+				int removeIndex = CachedChildren.IndexOf(pageView);
+				int newTopIndex = removeIndex == CachedChildren.Count - 1
+					? removeIndex - 1
+					: CachedChildren.Count - 2;
+				_topPage = (FrameworkElement)CachedChildren[newTopIndex >= 0 ? newTopIndex : 0];
 
-				// Re-enable pointer/touch on the revealed page
-				_topPage.IsHitTestVisible = true;
-
-				// If only one page remains, no focus trapping is needed
-				if (CachedChildren.Count <= 1)
-				{
+				if (remainingCount <= 1)
 					DisableModalFocusTrap();
-				}
-
-				TryMoveFocusToPage(_topPage);
 			}
 			else
 			{
 				_topPage = null;
 				DisableModalFocusTrap();
+			}
+
+			CachedChildren.Remove(pageView);
+
+			if (_topPage is not null)
+			{
+				// Re-enable pointer/touch on the revealed page
+				_topPage.IsHitTestVisible = true;
+				TryMoveFocusToPage(_topPage);
 			}
 		}
 

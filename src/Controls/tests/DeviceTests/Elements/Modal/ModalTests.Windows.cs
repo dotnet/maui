@@ -194,5 +194,52 @@ namespace Microsoft.Maui.DeviceTests
 						"Underlying page should have IsHitTestVisible=true after modal is dismissed");
 				});
 		}
+
+		[Fact]
+		public async Task ModalPageFocusTrapsAndRestoresCorrectly()
+		{
+			SetupBuilder();
+
+			var button = new Button() { Text = "Test Button" };
+			var rootPage = new ContentPage() { Content = button };
+			var navPage = new NavigationPage(rootPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+				async (handler) =>
+				{
+					var modalButton = new Button() { Text = "Modal Button" };
+					var modalPage = new ContentPage()
+					{
+						Content = modalButton,
+						BackgroundColor = Colors.Purple.WithAlpha(0.5f)
+					};
+
+					var container = (WindowRootViewContainer)handler.PlatformView.Content;
+
+					// Push modal
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var rootPageRootView = navPage.FindMauiContext().GetNavigationRootManager().RootView;
+					var modalRootView = modalPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					// Underlying page should be non-interactive
+					Assert.False(rootPageRootView.IsHitTestVisible);
+
+					// Pop modal
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+
+					// After pop, the root page should be fully interactive
+					Assert.True(rootPageRootView.IsHitTestVisible,
+						"Root page should be hit-test visible after modal pop");
+
+					// The root page should still be in the visual tree
+					Assert.Contains(rootPageRootView, container.CachedChildren);
+
+					// The modal should be removed
+					Assert.DoesNotContain(modalRootView, container.CachedChildren);
+				});
+		}
 	}
 }
