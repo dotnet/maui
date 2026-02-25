@@ -963,7 +963,8 @@ static class SetPropertyHelpers
 			}
 			else if (member is IFieldSymbol field)
 			{
-				// Fields are writable (unless readonly, but that's a different check)
+				if (field.IsReadOnly)
+					return false;
 				lastProperty = null;
 				currentType = field.Type;
 			}
