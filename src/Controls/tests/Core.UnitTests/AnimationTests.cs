@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.FadeToAsync(0, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.FadeToAsync(0, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.RotateToAsync(360, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.RotateToAsync(360, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.TranslateToAsync(100, 100, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.TranslateToAsync(100, 100, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.ScaleToAsync(5, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.ScaleToAsync(5, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			box.Rotation = 0;
 
 			// Run animation with default (none) cancellation token
-			var wasCanceled = await box.RotateToAsync(90, 100, cancellationToken: default);
+			var wasCanceled = await box.RotateToAsync(90, 100, null, default);
 
 			// Should report not canceled
 			Assert.False(wasCanceled);
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.RotateXToAsync(45, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.RotateXToAsync(45, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.RotateYToAsync(45, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.RotateYToAsync(45, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.ScaleXToAsync(3, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.ScaleXToAsync(3, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.ScaleYToAsync(3, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.ScaleYToAsync(3, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.RelRotateToAsync(90, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.RelRotateToAsync(90, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			cts.Cancel();
 
 			// Animation should return immediately
-			var wasCanceled = await box.RelScaleToAsync(1, 2000, cancellationToken: cts.Token);
+			var wasCanceled = await box.RelScaleToAsync(1, 2000, null, cts.Token);
 
 			// Should report canceled
 			Assert.True(wasCanceled);
