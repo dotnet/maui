@@ -71,20 +71,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					view.BindingContext = templateContext.Item ?? _view.BindingContext;
 					_view.AddLogicalChild(view);
-					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
+
+					// Apply the initial visual state so that VisualState setters (e.g., TextColor,
+					// Background) defined in Normal or Selected states take effect immediately,
+					// before the platform handler is created during the deferred ToPlatform() call.
+					// Without this, items display with default property values instead of the
+					// values defined in VisualState setters. (Fixes #27086)
+					if (view is VisualElement visualElement)
 					{
 						bool isSelected = false;
-						if (selectableItemsView.SelectionMode == SelectionMode.Single)
-							isSelected = selectableItemsView.SelectedItem == templateContext.Item;
-						else
-							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
-
-						if (isSelected && view is VisualElement visualElement)
+						if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
 						{
-							VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
+							if (selectableItemsView.SelectionMode == SelectionMode.Single)
+								isSelected = selectableItemsView.SelectedItem == templateContext.Item;
+							else
+								isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
 						}
-					}
 
+						VisualStateManager.GoToState(visualElement, isSelected
+							? VisualStateManager.CommonStates.Selected
+							: VisualStateManager.CommonStates.Normal);
+					}
 				}
 
 				container ??= new ItemContainer()
