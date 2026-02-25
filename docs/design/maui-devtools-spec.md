@@ -321,7 +321,7 @@ maui android emulator create MyEmulator
 maui android emulator create MyEmulator --package "system-images;android-35;google_apis;arm64-v8a"
 ```
 
-#### Apple Install
+#### Apple Check
 
 | State | Detection | Behavior |
 |-------|-----------|----------|
@@ -329,27 +329,22 @@ maui android emulator create MyEmulator --package "system-images;android-35;goog
 | `CLI_ONLY` | Only Command Line Tools installed | Error: "Full Xcode required for simulators" |
 | `READY` | `xcrun simctl list` succeeds | Delegate all operations to native tools |
 
-**Important**: Apple install is limited because:
-- Xcode cannot be installed fully unattended (App Store or interactive install with Apple ID credentials)
-- Xcode license can be accepted programmatically (`xcodebuild -license accept`) via `apple xcode accept-licenses`
+**Important**: Apple cannot be fully bootstrapped because:
+- Xcode cannot be installed programmatically (App Store or interactive install with Apple ID credentials)
+- Xcode license can be accepted programmatically (`xcodebuild -license accept`) via `apple xcode accept-license`
 
 ```bash
-# Basic setup check
-maui apple install
-
-# Accept licenses automatically
-maui apple install --accept-licenses
-
-# Also install a specific iOS runtime
-maui apple install --runtime 18.5 --accept-licenses
+# Check Xcode, runtimes, and environment status
+maui apple check
 ```
 
 This command:
 1. Verifies Xcode installation
-2. Checks and optionally accepts Xcode license (`--accept-licenses`)
+2. Checks Xcode license status
 3. Lists installed runtimes
-4. Installs a specific iOS runtime if `--runtime <version>` is provided
-5. Reports overall status and next steps
+4. Reports overall status and next steps
+
+Use `maui apple xcode accept-license` and `maui apple runtime install <version>` for remediation.
 
 #### Windows Install
 
@@ -974,9 +969,7 @@ maui
 │           └── --name        # Emulator name
 │
 ├── apple                     # Apple platform commands (macOS only)
-│   ├── install               # Set up Apple development environment
-│   │   ├── --runtime         # iOS runtime version to install
-│   │   └── --accept-licenses # Accept Xcode license automatically
+│   ├── check                 # Check Xcode, runtimes, and environment status
 │   ├── simulator
 │   │   ├── list              # List simulators
 │   │   │   ├── --runtime     # Filter by runtime
@@ -1003,7 +996,7 @@ maui
 │       ├── check             # Check Xcode installation and license
 │       ├── list              # List installed Xcode versions
 │       ├── select <path>     # Switch active Xcode installation
-│       └── accept-licenses   # Accept Xcode license agreement
+│       └── accept-license    # Accept Xcode license agreement
 │
 ├── windows                   # Windows-specific commands (Windows only)
 │   ├── sdk
@@ -1033,9 +1026,7 @@ maui android emulator start --name Pixel_8 --wait
 maui device logs --device emulator-5554
 
 # Apple-specific (macOS only)
-maui apple install                              # Check Xcode + runtimes
-maui apple install --accept-licenses            # Also accept Xcode license
-maui apple install --runtime 18.5 --accept-licenses  # Full bootstrap
+maui apple check                                # Check Xcode, runtimes, environment
 maui apple simulator list
 maui apple simulator start <udid>
 maui apple runtime check
@@ -1045,7 +1036,7 @@ maui apple runtime install 18.5                 # Install specific runtime
 maui apple xcode check
 maui apple xcode list
 maui apple xcode select /Applications/Xcode.app
-maui apple xcode accept-licenses
+maui apple xcode accept-license
 
 # Windows-specific
 maui windows developer-mode status
@@ -1076,7 +1067,7 @@ The `--interactive` flag follows the same pattern as the `dotnet` CLI ([`CommonO
 
 When `--interactive` is `false`:
 - No stdin prompts (fail with error if input is required and not provided via flags)
-- Operations that require confirmation (e.g., downloads >100MB) must use `--accept-licenses` or `--yes` flags
+- Operations that require confirmation (e.g., downloads >100MB) must use `--accept-license` or `--yes` flags
 - All required parameters must be provided via command-line arguments
 
 **`--dry-run` Mode Output**:
@@ -1145,8 +1136,8 @@ All commands follow a consistent exit code scheme:
 | `maui apple xcode check` | Check Xcode status | `--json` | Status report | 0=success, 2=error |
 | `maui apple xcode list` | List Xcode installations | `--json` | Installation list | 0=success, 2=error |
 | `maui apple xcode select` | Switch active Xcode | `<path>` | Confirmation | 0=success, 3=permission denied |
-| `maui apple xcode accept-licenses` | Accept Xcode license | `--json` | Status | 0=success, 3=permission denied |
-| `maui apple install` | Set up Apple environment | `--runtime`, `--accept-licenses` | Progress, result | 0=success, 2=error |
+| `maui apple xcode accept-license` | Accept Xcode license | `--json` | Status | 0=success, 3=permission denied |
+| `maui apple check` | Check Xcode, runtimes, environment | `--json` | Status report | 0=success, 2=error |
 | `maui android sdk accept-licenses` | Accept SDK licenses | `--json` | Status | 0=success, 2=error |
 
 ### 7.2 JSON Output Schemas
@@ -1277,14 +1268,14 @@ The unified device model for all platforms (physical devices, emulators, simulat
 | `maui apple simulator stop` | — | ✓ | No | None |
 | `maui apple simulator create` | — | ✓ | No | `device.create` |
 | `maui apple simulator delete` | — | ✓ | No | `device.create` |
-| `maui apple install` | — | ✓ | Sometimes* | `environment.modify` |
+| `maui apple check` | — | ✓ | No | None |
 | `maui apple runtime check` | — | ✓ | No | None |
 | `maui apple runtime list` | — | ✓ | No | None |
 | `maui apple runtime install` | — | ✓ | Yes (admin) | `environment.modify` |
 | `maui apple xcode check` | — | ✓ | No | None |
 | `maui apple xcode list` | — | ✓ | No | None |
 | `maui apple xcode select` | — | ✓ | Yes (sudo) | `environment.modify` |
-| `maui apple xcode accept-licenses` | — | ✓ | Yes (sudo) | `environment.modify` |
+| `maui apple xcode accept-license` | — | ✓ | Yes (sudo) | `environment.modify` |
 
 *OS Elevation required for: installing Android SDK/JDK to system locations (e.g., `Program Files`), installing Xcode runtimes, switching Xcode, accepting Xcode licenses
 
@@ -1427,6 +1418,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.14-draft | 2026-02-20 | Replaced `apple install` with `apple check` (Xcode can't be installed programmatically); renamed `accept-licenses` → `accept-license` (singular) for Apple/Xcode to match `xcodebuild -license accept`; Android SDK keeps plural `accept-licenses` |
 | 2.13-draft | 2026-02-19 | Expanded §6.8: added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds. JDK install and SDK bootstrap planned for `dotnet/android-tools`. |
 | 2.12-draft | 2026-02-19 | Added §6.8 Shared Libraries & Code Reuse — documents reuse of `Xamarin.Android.Tools.AndroidSdk` for SDK/JDK discovery and plan to contribute JDK installation, sdkmanager wrapper, license acceptance back to `dotnet/android-tools` |
 | 2.10-draft | 2026-02-10 | Added `apple install` bootstrap command (Xcode + license + runtime), `runtime check`, `runtime list --available/--all`, `runtime install <version>`, `xcode check`, `xcode accept-licenses`; changed `doctor --category` → `doctor --platform`; changed `emulator stop <serial>` → `emulator stop <name>` for consistency |
