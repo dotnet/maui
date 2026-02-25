@@ -487,13 +487,11 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 				var argsString = (string)arguments;
 
 				// Log before invocation — matches FunctionInvokingChatClient pattern
-				bool loggedInvoke = false;
 				if (logger.IsEnabled(LogLevel.Trace))
 				{
 					LogInvokingSensitive(logger, function.Name, argsString);
-					loggedInvoke = true;
 				}
-				if (!loggedInvoke && logger.IsEnabled(LogLevel.Debug))
+				else if (logger.IsEnabled(LogLevel.Debug))
 				{
 					LogInvoking(logger, function.Name);
 				}
@@ -509,13 +507,11 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 
 				// Log after invocation
 				var duration = System.Diagnostics.Stopwatch.GetElapsedTime(startingTimestamp);
-				bool loggedResult = false;
 				if (logger.IsEnabled(LogLevel.Trace))
 				{
 					LogInvocationCompletedSensitive(logger, function.Name, duration, resultJson);
-					loggedResult = true;
 				}
-				if (!loggedResult && logger.IsEnabled(LogLevel.Debug))
+				else if (logger.IsEnabled(LogLevel.Debug))
 				{
 					LogInvocationCompleted(logger, function.Name, duration);
 				}
