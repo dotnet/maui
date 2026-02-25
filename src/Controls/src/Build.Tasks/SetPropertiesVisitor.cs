@@ -1989,8 +1989,20 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			if (TryGetObsoleteAttribute(customAttributes, out string message, out bool isError))
 			{
-				var code = isError ? ObsoletePropertyError : ObsoleteProperty;
-				context.LoggingHelper.LogWarningOrError(code, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, memberName, message);
+				if (isError)
+				{
+					// [Obsolete("msg", error: true)] must ALWAYS be an error,
+					// regardless of TreatWarningsAsErrors setting
+					var code = ObsoletePropertyError;
+					var xamlFilePath = context.LoggingHelper.GetXamlFilePath(context.XamlFilePath);
+					context.LoggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), memberName, message);
+					LoggingHelperExtensions.LoggedErrors ??= new();
+					LoggingHelperExtensions.LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineInfo.LineNumber, lineInfo.LinePosition), innerException: null, memberName, message));
+				}
+				else
+				{
+					context.LoggingHelper.LogWarningOrError(ObsoleteProperty, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, memberName, message);
+				}
 			}
 		}
 	}
