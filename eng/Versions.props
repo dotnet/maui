@@ -59,6 +59,8 @@
     <MicrosoftExtensionsHttpVersion>10.0.0</MicrosoftExtensionsHttpVersion>
     <!-- Microsoft Agent Framework -->
     <MicrosoftAgentsAIVersion>1.0.0-rc1</MicrosoftAgentsAIVersion>
+    <MicrosoftAgentsAIWorkflowsVersion>1.0.0-rc1</MicrosoftAgentsAIWorkflowsVersion>
+    <MicrosoftAgentsAIHostingVersion>1.0.0-preview.260219.1</MicrosoftAgentsAIHostingVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>36.1.2</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>
