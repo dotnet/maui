@@ -267,7 +267,11 @@ namespace Microsoft.Maui.Storage
 		public static IPreferences Default =>
 			defaultImplementation ??= new PreferencesImplementation();
 
-		internal static void SetDefault(IPreferences? implementation) =>
+		/// <summary>
+		/// Sets the default implementation of this API that is exposed as the static <see cref="Default"/> property.
+		/// </summary>
+		/// <param name="implementation">An instance that implements the API, or <see langword="null"/> to reset to the platform default.</param>
+		public static void SetDefault(IPreferences? implementation) =>
 			defaultImplementation = implementation;
 
 		internal static Type[] SupportedTypes = new Type[]

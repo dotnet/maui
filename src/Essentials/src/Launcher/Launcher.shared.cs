@@ -130,7 +130,11 @@ namespace Microsoft.Maui.ApplicationModel
 		public static ILauncher Default =>
 			defaultImplementation ??= new LauncherImplementation();
 
-		internal static void SetDefault(ILauncher? implementation) =>
+		/// <summary>
+		/// Sets the default implementation of this API that is exposed as the static <see cref="Default"/> property.
+		/// </summary>
+		/// <param name="implementation">An instance that implements the API, or <see langword="null"/> to reset to the platform default.</param>
+		public static void SetDefault(ILauncher? implementation) =>
 			defaultImplementation = implementation;
 	}
 

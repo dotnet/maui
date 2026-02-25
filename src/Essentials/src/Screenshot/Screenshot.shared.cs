@@ -165,7 +165,11 @@ namespace Microsoft.Maui.Media
 		public static IScreenshot Default =>
 			defaultImplementation ??= new ScreenshotImplementation();
 
-		internal static void SetDefault(IScreenshot? implementation) =>
+		/// <summary>
+		/// Sets the default implementation of this API that is exposed as the static <see cref="Default"/> property.
+		/// </summary>
+		/// <param name="implementation">An instance that implements the API, or <see langword="null"/> to reset to the platform default.</param>
+		public static void SetDefault(IScreenshot? implementation) =>
 			defaultImplementation = implementation;
 	}
 
