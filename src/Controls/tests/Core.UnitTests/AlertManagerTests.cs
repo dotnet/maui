@@ -10,13 +10,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class AlertManagerTests : BaseTestFixture
 	{
-		private static (Window, AlertManager.IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
+		private static (Window, IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
 		{
-			var stub = Substitute.For<AlertManager.IAlertManagerSubscription>();
+			var stub = Substitute.For<IAlertManagerSubscription>();
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription))).Returns(stub);
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription))).Returns(stub);
 				builder?.Invoke(services);
 			});
 
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(window);
 			Assert.NotNull(window.AlertManager);
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -60,8 +60,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Page = new ContentPage();
 
-			Assert.Null(window.AlertManager.Subscription);
-			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
+			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription)));
 		}
 
 		[Fact]
@@ -71,9 +71,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
-			Assert.NotNull(window.AlertManager.Subscription);
-			Assert.Equal(sub, window.AlertManager.Subscription);
-			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+			Assert.Equal(sub, ((AlertManager)window.AlertManager).Subscription);
+			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription)));
 		}
 
 		[Fact]
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { IsBusy = true };
 			window.Page = page;
 
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -203,6 +203,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			continueTask.Wait();
 			sub.Received().OnActionSheetRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
+		}
+
+		[Fact]
+		public void CustomIAlertManagerResolvedFromDI()
+		{
+			var customAlertManager = Substitute.For<IAlertManager>();
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+			});
+
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.Same(customAlertManager, window.AlertManager);
+			customAlertManager.Received().Subscribe();
+		}
+
+		[Fact]
+		public void DefaultAlertManagerUsedWhenNoDIRegistration()
+		{
+			var window = CreateWindow();
+
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.IsType<AlertManager>(window.AlertManager);
 		}
 	}
 }
