@@ -258,7 +258,7 @@ if ($Platform -eq "catalyst") {
             Write-Success "MacCatalyst Sandbox app launched with log capture"
         }
     } else {
-        Write-Warning "MacCatalyst Sandbox app not found at: $appPath"
+        Write-Warn "MacCatalyst Sandbox app not found at: $appPath"
     }
 }
 
@@ -379,7 +379,7 @@ try {
         # Fallback: If we couldn't get PID, dump entire logcat buffer (unfiltered)
         # This ensures we always have logs for the agent to analyze
         Write-Host ""
-        Write-Warning "Could not capture app PID from Appium test output"
+        Write-Warn "Could not capture app PID from Appium test output"
         Write-Info "Dumping entire logcat buffer (unfiltered)..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
         Write-Info "Logcat dumped to: $deviceLogFile (UNFILTERED - contains all apps)"
@@ -469,7 +469,7 @@ try {
                 Write-Info "All logs are from Sandbox app only (Maui.Controls.Sample.Sandbox)"
             }
         } else {
-            Write-Warning "Could not read device log file"
+            Write-Warn "Could not read device log file"
         }
         
         Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan

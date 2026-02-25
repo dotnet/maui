@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    x:Class="Maui.Controls.Sample.Views.Itinerary.DayView"
+    x:Name="DayViewControl"
+    x:DataType="viewModels:DayPlanViewModel">
+
+    <Border Padding="0" StrokeShape="RoundRectangle 16" StrokeThickness="0"
+            BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray900}}"
+            Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.2}">
+        <VerticalStackLayout Spacing="0">
+            <Border HeightRequest="300" StrokeShape="RoundRectangle 12" StrokeThickness="0" Margin="4">
+                <Grid>
+                    <views:LandmarkDetailMapView BindingContext="{Binding Landmark}" />
+                    
+                    <VerticalStackLayout VerticalOptions="End" Padding="15" Spacing="5">
+                        <VerticalStackLayout.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="{AppThemeBinding Light=#00FFFFFF, Dark=#001C1C1E}" Offset="0" />
+                                <GradientStop Color="{AppThemeBinding Light=#DAFFFFFF, Dark=#DA1C1C1E}" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </VerticalStackLayout.Background>
+
+                        <Label Text="{Binding WeatherForecast}" FontSize="14" 
+                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                        <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" 
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                        <Label Text="{Binding Subtitle}" FontSize="14" 
+                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+            
+            <views:ActivityListView />
+        </VerticalStackLayout>
+    </Border>
+
+</ContentView>

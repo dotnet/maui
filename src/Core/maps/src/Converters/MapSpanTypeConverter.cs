@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Maps
 			if (string.IsNullOrEmpty(strValue))
 				throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(MapSpan)}");
 
-			var parts = strValue.Split(',');
+			var parts = strValue!.Split(',');
 
 			if (parts.Length == 4
 				&& double.TryParse(parts[0].Trim(), NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out double latitude)

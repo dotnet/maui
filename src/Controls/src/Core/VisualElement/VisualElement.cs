@@ -1505,7 +1505,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected void InvokeMeasureInvalidated(InvalidationTrigger trigger)
 		{
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			MeasureInvalidated?.Invoke(this, InvalidationEventArgs.GetCached(trigger));
 		}
 
 		/// <summary>

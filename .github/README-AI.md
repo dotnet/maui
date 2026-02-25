@@ -5,7 +5,7 @@ This folder contains instructions and configurations for AI coding assistants wo
 ## Available Agents
 
 ### PR Agent
-The PR agent is a unified 5-phase workflow for investigating issues and reviewing/working on PRs. It handles everything from context gathering through test verification, fix exploration, and creating PRs or review reports.
+The PR agent is a unified 4-phase workflow for investigating issues and reviewing/working on PRs. It handles everything from context gathering through test verification, fix exploration, and creating PRs or review reports.
 
 ### Sandbox Agent
 The sandbox agent is your general-purpose tool for working with the .NET MAUI Sandbox app. Use it for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
@@ -148,13 +148,12 @@ Automated testing specialist for the .NET MAUI test suite:
 
 ### PR Agent
 
-Unified 5-phase workflow for issue investigation and PR work:
+Unified 4-phase workflow for issue investigation and PR work:
 
 1. **Pre-Flight** - Context gathering from issues/PRs
-2. **Tests** - Create or verify reproduction tests exist
-3. **Gate** - Verify tests catch the issue (mandatory checkpoint)
-4. **Fix** - Explore fix alternatives using `try-fix` skill, compare approaches
-5. **Report** - Create PR or write review report
+2. **Gate** - Verify tests exist and catch the issue (mandatory checkpoint)
+3. **Fix** - Explore fix alternatives using `try-fix` skill, compare approaches
+4. **Report** - Create PR or write review report
 
 ### When Agents Pause
 
@@ -201,8 +200,8 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 ## File Structure
 
 ### Agent Definitions
-- **`agents/pr.md`** - PR workflow phases 1-3 (Pre-Flight, Tests, Gate)
-- **`agents/pr/post-gate.md`** - PR workflow phases 4-5 (Fix, Report)
+- **`agents/pr.md`** - PR workflow phases 1-2 (Pre-Flight, Gate)
+- **`agents/pr/post-gate.md`** - PR workflow phases 3-4 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
 - **`agents/write-tests-agent.md`** - Test writing agent (dispatches to skills like write-ui-tests)
 
@@ -210,8 +209,8 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 
 Agent files in the `.github/agents/` directory:
 
-- **`agents/pr.md`** - PR workflow phases 1-3 (Pre-Flight, Tests, Gate)
-- **`agents/pr/post-gate.md`** - PR workflow phases 4-5 (Fix, Report)
+- **`agents/pr.md`** - PR workflow phases 1-2 (Pre-Flight, Gate)
+- **`agents/pr/post-gate.md`** - PR workflow phases 3-4 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
 - **`agents/write-tests-agent.md`** - Test writing (invokes skills like write-ui-tests)
 
@@ -256,7 +255,7 @@ Reusable skills in `.github/skills/` that agents can invoke:
 ### Recent Improvements (January 2026)
 
 **PR Agent Consolidation:**
-1. **Unified PR Agent** - Replaced separate `issue-resolver` and `pr-reviewer` agents with single 5-phase `pr` agent
+1. **Unified PR Agent** - Replaced separate `issue-resolver` and `pr-reviewer` agents with single 4-phase `pr` agent
 2. **try-fix Skill** - New skill for exploring independent fix alternatives with empirical testing
 3. **Skills Integration** - Added `verify-tests-fail-without-fix` and `write-ui-tests` skills for reusable test workflows
 4. **Agent/Skills Guidelines** - New instruction files for authoring agents and skills
@@ -384,4 +383,4 @@ For issues or questions about the AI agent instructions:
 
 **Last Updated**: 2026-01-07
 
-**Note**: These instructions are actively being refined based on real-world usage. PR agent consolidation completed January 2026 (unified 5-phase workflow with try-fix skill). Feedback and improvements are welcome!
+**Note**: These instructions are actively being refined based on real-world usage. PR agent consolidation completed January 2026 (unified 4-phase workflow with try-fix skill). Feedback and improvements are welcome!

@@ -1,8 +1,8 @@
-# PR Agent: Post-Gate Phases (4-5)
+# PR Agent: Post-Gate Phases (3-4)
 
 **⚠️ PREREQUISITE: Only read this file after 🚦 Gate shows `✅ PASSED` in your state file.**
 
-If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3 first.
+If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2 first.
 
 ---
 
@@ -10,8 +10,8 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 | Phase | Name | What Happens |
 |-------|------|--------------|
-| 4 | **Fix** | Invoke `try-fix` skill repeatedly to explore independent alternatives, then compare with PR's fix |
-| 5 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
+| 3 | **Fix** | Invoke `try-fix` skill repeatedly to explore independent alternatives, then compare with PR's fix |
+| 4 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
 
 ---
 
@@ -24,9 +24,19 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-3
 
 If try-fix cannot run due to environment issues, **STOP and ask the user**. Do NOT mark attempts as "BLOCKED" and continue.
 
+### 🚨 CRITICAL: Stop on Environment Blockers (Applies to Phase 3)
+
+The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-fix cannot run due to:
+- Missing Appium drivers
+- Device/emulator not available
+- WinAppDriver not installed
+- Platform tools missing
+
+**STOP and ask the user** before continuing. Do NOT mark try-fix attempts as "BLOCKED" and continue. Either fix the environment issue or get explicit user permission to skip.
+
 ---
 
-## 🔧 FIX: Explore and Select Fix (Phase 4)
+## 🔧 FIX: Explore and Select Fix (Phase 3)
 
 > **SCOPE**: Explore independent fix alternatives using `try-fix` skill, compare with PR's fix, select the best approach.
 
@@ -36,7 +46,7 @@ If try-fix cannot run due to environment issues, **STOP and ask the user**. Do N
 
 **The PR's fix has already been validated by Gate (tests FAIL without it, PASS with it).**
 
-The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
+The purpose of Phase 3 is NOT to re-test the PR's fix, but to:
 1. **Generate independent fix ideas** - What would YOU do to fix this bug?
 2. **Test those ideas empirically** - Actually implement and run tests
 3. **Compare with PR's fix** - Is there a simpler/better alternative?
@@ -46,13 +56,13 @@ The purpose of Phase 4 is NOT to re-test the PR's fix, but to:
 
 ### Step 1: Multi-Model try-fix Exploration
 
-Phase 4 uses a **multi-model approach** to maximize fix diversity. Each AI model brings different perspectives and may find solutions others miss.
+Phase 3 uses a **multi-model approach** to maximize fix diversity. Each AI model brings different perspectives and may find solutions others miss.
 
 **⚠️ SEQUENTIAL ONLY**: try-fix runs MUST execute one at a time. They modify the same files and use the same test device. Never run try-fix attempts in parallel.
 
 #### Round 1: Run try-fix with Each Model
 
-Run the `try-fix` skill **5 times sequentially**, once with each model (see `SHARED-RULES.md` for model list).
+Run the `try-fix` skill **6 times sequentially**, once with each model (see `SHARED-RULES.md` for model list).
 
 **For each model**, invoke the try-fix skill:
 ```
@@ -70,6 +80,23 @@ Generate ONE independent fix idea. Review the PR's fix first to ensure your appr
 
 **Wait for each to complete before starting the next.**
 
+**🧹 MANDATORY: Clean up between attempts.** After each try-fix completes (pass or fail), run these commands before starting the next attempt:
+
+```bash
+# 1. Restore any baseline state from the previous attempt (safe no-op if none exists)
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
+
+# 2. Restore all tracked files to HEAD (the merged PR state)
+# This catches any files the previous attempt modified but didn't restore
+git checkout HEAD -- .
+
+# 3. Remove untracked files added by the previous attempt
+# git checkout restores tracked files but does NOT remove new untracked files
+git clean -fd --exclude=CustomAgentLogsTmp/
+```
+
+**Why this is required:** Each try-fix attempt modifies source files. If an attempt fails mid-way (build error, timeout, model error), it may not run its own cleanup step. Without explicit cleanup, the next attempt starts with a dirty working tree, which can cause missing files, corrupt state, or misleading test results. Use `HEAD` (not just `-- .`) to also restore deleted files.
+
 #### Round 2+: Cross-Pollination Loop (MANDATORY)
 
 After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts allowed.**
@@ -77,7 +104,7 @@ After Round 1, invoke EACH of the 5 models to ask for new ideas. **No shortcuts 
 **❌ WRONG**: Using `explore`/`glob`, declaring exhaustion without invoking each model
 **✅ CORRECT**: Invoke EACH model via task agent and ask explicitly
 
-**Steps (repeat until all 5 say "NO NEW IDEAS", max 3 rounds):**
+**Steps (repeat until all 6 say "NO NEW IDEAS", max 3 rounds):**
 
 1. **Compile bounded summary** (max 3-4 bullets per attempt):
    - Attempt #, approach (1 line), result (✅/❌), key learning (1 line)
@@ -175,10 +202,10 @@ Update the state file:
   ```
   | Model | Round 2 Response |
   |-------|------------------|
-  | claude-sonnet-4.5 | NO NEW IDEAS |
-  | claude-opus-4.5 | NO NEW IDEAS |
+  | claude-sonnet-4.6 | NO NEW IDEAS |
+  | claude-opus-4.6 | NO NEW IDEAS |
   | gpt-5.2 | NO NEW IDEAS |
-  | gpt-5.2-codex | NO NEW IDEAS |
+  | gpt-5.3-codex | NO NEW IDEAS |
   | gemini-3-pro-preview | NO NEW IDEAS |
   ```
 - [ ] Fix Candidates table has numbered rows for each try-fix attempt
@@ -193,11 +220,11 @@ Update the state file:
 
 ---
 
-## 📋 REPORT: Final Report (Phase 5)
+## 📋 REPORT: Final Report (Phase 4)
 
 > **SCOPE**: Deliver the final result - either a PR review or a new PR.
 
-**⚠️ Gate Check:** Verify ALL phases 1-4 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
+**⚠️ Gate Check:** Verify ALL phases 1-3 are `✅ COMPLETE` or `✅ PASSED` before proceeding.
 
 ### Finalize Title and Description
 
@@ -290,7 +317,6 @@ Update all phase statuses to complete.
 - ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
 - ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
 - ❌ **Running try-fix in parallel** - SEQUENTIAL ONLY - they modify same files and use same device
-- ❌ **Stopping before cross-pollination** - Must share results and check for new ideas
 - ❌ **Using explore/glob instead of invoking models** - Cross-pollination requires ACTUAL task agent invocations with each model, not code searches
 - ❌ **Assuming "comprehensive coverage" = exhausted** - Only exhausted when all 5 models explicitly say "NO NEW IDEAS"
 - ❌ **Not recording cross-pollination responses** - State file must have table showing each model's Round 2 response
@@ -299,3 +325,44 @@ Update all phase statuses to complete.
 - ❌ **Forgetting to revert between attempts** - Each try-fix must start from broken baseline, end with PR restored
 - ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas" via actual invocation
 - ❌ **Rushing the report** - Take time to write clear justification
+- ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout HEAD -- .` + `git clean -fd --exclude=CustomAgentLogsTmp/` between try-fix attempts (see Step 1)
+
+---
+
+## Common Errors and Recovery
+
+### skill(try-fix) fails with "ENOENT: no such file or directory"
+
+**Symptom:** `skill(try-fix) Failed to read skill file: Error: ENOENT: no such file or directory, open '.../.github/skills/try-fix/SKILL.md'`
+
+**Root cause:** A previous try-fix attempt failed mid-way and left the working tree in a dirty state. Files may have been modified or deleted by `EstablishBrokenBaseline.ps1` without being restored.
+
+**Fix:** Run cleanup before retrying:
+```bash
+pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
+git checkout HEAD -- .
+git clean -fd --exclude=CustomAgentLogsTmp/
+```
+
+Then retry the try-fix attempt. The skill file should now be accessible.
+
+**Prevention:** Always run the cleanup commands between try-fix attempts (see Step 1).
+
+### try-fix attempt starts with dirty working tree
+
+**Symptom:** `git status` shows modified files before the attempt starts, or the build fails with unexpected errors from files the attempt didn't touch.
+
+**Root cause:** Previous attempt didn't restore its changes (crashed, timed out, or model didn't follow Step 8 restore instructions).
+
+**Fix:** Same as above — run `-Restore` + `git checkout HEAD -- .` + `git clean -fd --exclude=CustomAgentLogsTmp/` to reset to the merged PR state.
+
+### Build errors unrelated to the fix being attempted
+
+**Symptom:** Build fails with errors in files the try-fix attempt didn't modify (e.g., XAML parse errors, unrelated compilation failures).
+
+**Root cause:** Often caused by dirty working tree from a previous attempt. Can also be transient environment issues.
+
+**Fix:**
+1. Run cleanup: `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore && git checkout HEAD -- . && git clean -fd --exclude=CustomAgentLogsTmp/`
+2. Retry the attempt
+3. If it fails again with the same unrelated error, treat this as an environment/worktree blocker: STOP the try-fix workflow, do NOT continue with the next model, and ask the user to investigate (see "Stop on Environment Blockers").
