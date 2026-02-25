@@ -125,6 +125,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (handler is MapHandler mapHandler)
 			{
 				mapHandler._isClusteringEnabled = map.IsClusteringEnabled;
+				if (!map.IsClusteringEnabled)
+				{
+					mapHandler._clusters?.Clear();
+					mapHandler._clusterMarkers?.Clear();
+				}
 				// Re-add pins to apply clustering changes
 				MapPins(handler, map);
 			}
@@ -689,10 +694,10 @@ double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
 				if (bitmap == null)
 					return null;
 					
-				var canvas = new ACanvas(bitmap);
+				using var canvas = new ACanvas(bitmap);
+				using var paint = new APaint();
 				
 				// Draw circle background
-				var paint = new APaint();
 				paint.AntiAlias = true;
 				paint.SetARGB(255, 66, 133, 244); // Google blue
 				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 2, paint);
