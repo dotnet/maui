@@ -554,6 +554,8 @@ if ($CodeReviewStatus -ne "Skipped" -or -not [string]::IsNullOrWhiteSpace($CodeR
 
 <summary><b>Code Review: $codeReviewEmoji $codeReviewStatusDisplay</b></summary>
 
+<br>
+
 "@
 
     if (-not [string]::IsNullOrWhiteSpace($CodeReviewFindings)) {
