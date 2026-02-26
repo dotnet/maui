@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -9,30 +8,17 @@ namespace Maui.Controls.Sample.AI;
 /// <summary>
 /// Agent 1: Travel Planner - Parses natural language to extract intent.
 /// No tools - just NLP to extract destinationName, dayCount, language.
-/// Extends ChatProtocolExecutor to support the chat protocol for workflow-as-agent.
 /// </summary>
-internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
-	: ChatProtocolExecutor("TravelPlannerExecutor")
+internal sealed class TravelPlannerExecutor(AIAgent agent, ILogger logger)
+	: ChatProtocolExecutor("TravelPlannerExecutor", new ChatProtocolExecutorOptions { AutoSendTurnToken = false })
 {
-	public const string Instructions = """
-		You are a simple text parser. 
-		
-		Extract ONLY these 3 values from the user's request:
-		1. destinationName: The place/location name mentioned (extract it exactly as written)
-		2. dayCount: The number of days mentioned (default: 3 if not specified)
-		3. language: The language mentioned for the output (default: English if not specified)
-		
-		Rules:
-		1. ALWAYS extract the raw values.
-		2. NEVER make up values or interpret the user's intent.
-		
-		Examples:
-		- "5-day trip to Maui in French" → destinationName: "Maui", dayCount: 5, language: "French"
-		- "Visit the Great Wall" → destinationName: "Great Wall", dayCount: 3, language: "English"
-		- "Itinerary for Tokyo" → destinationName: "Tokyo", dayCount: 3, language: "English"
-		- "Give me a Maui itinerary" → destinationName: "Maui", dayCount: 3, language: "English"
-		- "Plan a 7 day Japan trip in Spanish" → destinationName: "Japan", dayCount: 7, language: "Spanish"
-		""";
+	/// <summary>
+	/// Declares TravelPlanResult as a sent message type so the edge router can map it to downstream executors.
+	/// Without this, ChatProtocolExecutor only declares List&lt;ChatMessage&gt; and TurnToken, causing
+	/// TravelPlanResult to be silently dropped with DroppedTypeMismatch.
+	/// </summary>
+	protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
+		=> base.ConfigureProtocol(protocolBuilder).SendsMessage<TravelPlanResult>();
 
 	protected override async ValueTask TakeTurnAsync(
 		List<ChatMessage> messages,
@@ -42,18 +28,13 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 	{
 		logger.LogDebug("[TravelPlannerExecutor] Starting - parsing user intent");
 
-		await context.AddEventAsync(new ExecutorStatusEvent("Analyzing your request..."));
+		await context.AddEventAsync(new ExecutorStatusEvent("Analyzing your request..."), cancellationToken);
 
-		var runOptions = new ChatClientAgentRunOptions(new ChatOptions
-		{
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<TravelPlanResult>(jsonOptions)
-		});
-
-		var response = await agent.RunAsync(messages, options: runOptions, cancellationToken: cancellationToken);
+		var response = await agent.RunAsync<TravelPlanResult>(messages, cancellationToken: cancellationToken);
 
 		logger.LogTrace("[TravelPlannerExecutor] Raw response: {Response}", response.Text);
 
-		var result = JsonSerializer.Deserialize<TravelPlanResult>(response.Text, jsonOptions)!;
+		var result = response.Result;
 
 		logger.LogDebug("[TravelPlannerExecutor] Completed - extracted: destination={Destination}, days={Days}, language={Language}",
 			result.DestinationName, result.DayCount, result.Language);
@@ -61,7 +42,7 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 		var summary = result.Language != "English"
 			? $"Planning {result.DayCount}-day trip to {result.DestinationName} in {result.Language}"
 			: $"Planning {result.DayCount}-day trip to {result.DestinationName}";
-		await context.AddEventAsync(new ExecutorStatusEvent(summary));
+		await context.AddEventAsync(new ExecutorStatusEvent(summary), cancellationToken);
 
 		await context.SendMessageAsync(result, cancellationToken);
 	}
