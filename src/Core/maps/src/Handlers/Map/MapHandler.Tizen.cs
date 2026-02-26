@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public void UpdateMapElement(IMapElement element) => throw new NotImplementedException();
 
-		void ShowInfoWindow(IMapPin pin) => throw new NotImplementedException();
+		void ShowInfoWindow(IMapPin pin) { }
 
-		void HideInfoWindow(IMapPin pin) => throw new NotImplementedException();
+		void HideInfoWindow(IMapPin pin) { }
 	}
 }
