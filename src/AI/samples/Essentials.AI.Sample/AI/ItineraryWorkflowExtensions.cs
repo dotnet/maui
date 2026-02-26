@@ -4,6 +4,7 @@ using Maui.Controls.Sample.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -36,11 +37,42 @@ public static class ItineraryWorkflowExtensions
 			instructions: TravelPlannerExecutor.Instructions,
 			chatClientServiceKey: "local-model");
 
-		// Agent 2: Researcher - finds best matching destination
-		builder.AddAIAgent(
-			name: "researcher-agent",
-			instructions: ResearcherExecutor.Instructions,
-			chatClientServiceKey: "local-model");
+		// Agent 2: Researcher - finds best matching destination using RAG via TextSearchProvider
+		builder.AddAIAgent("researcher-agent", (sp, name) =>
+		{
+			var chatClient = sp.GetRequiredKeyedService<IChatClient>("local-model");
+			var dataService = sp.GetRequiredService<DataService>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			var ragLogger = loggerFactory.CreateLogger<TextSearchProvider>();
+
+			// Create a TextSearchProvider that searches landmarks via DataService
+			var searchProvider = new TextSearchProvider(
+				async (query, ct) =>
+				{
+					ragLogger.LogDebug("[RAG] Searching landmarks for query: '{Query}'", query);
+					var results = await dataService.SearchLandmarksAsync(query, maxResults: 5);
+					ragLogger.LogDebug("[RAG] Found {Count} landmarks: {Names}",
+						results.Count, string.Join(", ", results.Select(r => r.Name)));
+
+					return results.Select(r => new TextSearchProvider.TextSearchResult
+					{
+						Text = $"{r.Name}: {r.ShortDescription}",
+						SourceName = r.Name,
+					});
+				},
+				new TextSearchProviderOptions
+				{
+					SearchTime = TextSearchProviderOptions.TextSearchBehavior.BeforeAIInvoke,
+				},
+				loggerFactory);
+
+			return chatClient.AsAIAgent(new ChatClientAgentOptions
+			{
+				Name = name,
+				ChatOptions = new ChatOptions { Instructions = ResearcherExecutor.Instructions },
+				AIContextProviders = [searchProvider],
+			}, loggerFactory);
+		});
 
 		// Agent 3: Itinerary Planner - builds detailed itineraries
 		builder.AddAIAgent(

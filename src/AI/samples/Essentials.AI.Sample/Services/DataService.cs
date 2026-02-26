@@ -119,7 +119,7 @@ public class DataService
 		{
 			foreach (var landmark in _landmarks!)
 			{
-				var text = $"{landmark.Name}";
+				var text = $"{landmark.Name}. {landmark.ShortDescription}";
 				landmark.Embedding = await _generator.GenerateAsync(text);
 			}
 

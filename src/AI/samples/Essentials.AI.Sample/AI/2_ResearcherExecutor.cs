@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Text.Json;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
@@ -10,23 +9,20 @@ using Microsoft.Extensions.Logging;
 namespace Maui.Controls.Sample.AI;
 
 /// <summary>
-/// Agent 2: Researcher - Uses RAG to find candidate destinations, then AI selects the best match.
-/// Uses semantic search (embeddings) to pre-filter destinations, then LLM picks the best one.
+/// Agent 2: Researcher - Uses TextSearchProvider (RAG) to automatically inject matching destinations
+/// into the AI context before each invocation, then the AI selects the best match.
+/// The TextSearchProvider is configured in ItineraryWorkflowExtensions with BeforeAIInvoke mode,
+/// so candidate destinations are automatically searched and injected.
 /// </summary>
 internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService, JsonSerializerOptions jsonOptions, ILogger logger)
 	: Executor<TravelPlanResult, ResearchResult>("ResearcherExecutor")
 {
-	/// <summary>
-	/// Maximum number of RAG candidates to return from semantic search.
-	/// </summary>
-	private const int MaxRagCandidates = 5;
-
 	public const string Instructions = """
 		You are a travel researcher.
-		Your job is to select the best matching destination from a list of candidates.
+		Your job is to select the best matching destination from the additional context provided.
 		
 		Rules:
-		1. You will be given a list of candidate destinations that semantically match the user's request.
+		1. You will be given additional context containing candidate destinations that match the user's request.
 		2. Select the ONE destination that best matches what the user asked for.
 		3. NEVER make up destinations - only choose from the provided candidates.
 		4. If none of the candidates match well, pick the closest one.
@@ -44,41 +40,13 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 
 		await context.AddEventAsync(new ExecutorStatusEvent("Searching destinations..."));
 
-		// Step 1: Use RAG to find semantically similar destinations
-		var candidates = await dataService.SearchLandmarksAsync(input.DestinationName, MaxRagCandidates);
-
-		logger.LogDebug("[ResearcherExecutor] RAG returned {Count} candidates: {Names}",
-			candidates.Count, string.Join(", ", candidates.Select(c => c.Name)));
-
-		if (candidates.Count == 0)
-		{
-			logger.LogDebug("[ResearcherExecutor] No candidates found");
-			await context.AddEventAsync(new ExecutorStatusEvent("No matching destinations found"));
-			return new ResearchResult(null, input.DayCount, input.Language);
-		}
-
-		// If only one candidate, use it directly without LLM call
-		if (candidates.Count == 1)
-		{
-			var singleMatch = candidates[0];
-			logger.LogDebug("[ResearcherExecutor] Single candidate found: {Name}", singleMatch.Name);
-			await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {singleMatch.Name}"));
-			return new ResearchResult(singleMatch, input.DayCount, input.Language);
-		}
-
-		await context.AddEventAsync(new ExecutorStatusEvent($"Evaluating {candidates.Count} candidates..."));
-
-		// Step 2: Ask LLM to pick the best match from RAG candidates
-		var candidateDescriptions = string.Join("\n", candidates.Select(c =>
-			$"- {c.Name}: {c.ShortDescription}"));
-
+		// TextSearchProvider (configured in ItineraryWorkflowExtensions) automatically
+		// searches DataService.SearchLandmarksAsync and injects results as context
+		// before the AI call. We just need to ask the AI to pick the best match.
 		var prompt = $"""
 			The user wants to visit: "{input.DestinationName}"
 			
-			Here are the available destinations that might match:
-			{candidateDescriptions}
-			
-			Which destination best matches what the user is looking for?
+			Which destination from the additional context best matches what the user is looking for?
 			""";
 
 		logger.LogTrace("[ResearcherExecutor] Prompt: {Prompt}", prompt);
@@ -96,11 +64,18 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 		var matchResult = JsonSerializer.Deserialize<DestinationMatchResult>(response.Text, jsonOptions);
 		var matchedName = matchResult?.MatchedDestinationName ?? input.DestinationName;
 
-		logger.LogDebug("[ResearcherExecutor] AI selected '{MatchedName}' from candidates", matchedName);
+		logger.LogDebug("[ResearcherExecutor] AI selected '{MatchedName}'", matchedName);
 
-		// Find the landmark from candidates (prefer exact match from candidates)
-		var landmark = candidates.FirstOrDefault(l => l.Name.Equals(matchedName, StringComparison.OrdinalIgnoreCase))
-			?? candidates[0]; // Fallback to top RAG result if LLM returned unexpected name
+		// Resolve the matched name back to a Landmark object
+		var landmarks = await dataService.SearchLandmarksAsync(matchedName, maxResults: 1);
+		var landmark = landmarks.FirstOrDefault();
+
+		if (landmark is null)
+		{
+			logger.LogDebug("[ResearcherExecutor] Could not resolve landmark for '{MatchedName}'", matchedName);
+			await context.AddEventAsync(new ExecutorStatusEvent("No matching destinations found"));
+			return new ResearchResult(null, input.DayCount, input.Language);
+		}
 
 		var result = new ResearchResult(landmark, input.DayCount, input.Language);
 
