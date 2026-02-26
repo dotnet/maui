@@ -1,6 +1,7 @@
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
@@ -52,11 +53,11 @@ namespace Maui.Controls.Sample.Pages
 			vertical.Add(positionLabel);
 
 			// Basic long press
-			var basicBox = new Frame
+			var basicBox = new Border
 			{
 				BackgroundColor = Colors.LightBlue,
 				Padding = 20,
-				CornerRadius = 10,
+				StrokeShape = new RoundRectangle { CornerRadius = 10 },
 				HeightRequest = 100
 			};
 			var basicLabel = new Label
@@ -79,11 +80,11 @@ namespace Maui.Controls.Sample.Pages
 			vertical.Add(basicBox);
 
 			// Custom duration
-			var customBox = new Frame
+			var customBox = new Border
 			{
 				BackgroundColor = Colors.LightGreen,
 				Padding = 20,
-				CornerRadius = 10,
+				StrokeShape = new RoundRectangle { CornerRadius = 10 },
 				HeightRequest = 100
 			};
 			var customLabel = new Label
@@ -107,11 +108,11 @@ namespace Maui.Controls.Sample.Pages
 			vertical.Add(customBox);
 
 			// Sensitive to movement
-			var sensitiveBox = new Frame
+			var sensitiveBox = new Border
 			{
 				BackgroundColor = Colors.LightCoral,
 				Padding = 20,
-				CornerRadius = 10,
+				StrokeShape = new RoundRectangle { CornerRadius = 10 },
 				HeightRequest = 100
 			};
 			var sensitiveLabel = new Label
@@ -135,11 +136,11 @@ namespace Maui.Controls.Sample.Pages
 			vertical.Add(sensitiveBox);
 
 			// Combined with tap
-			var combinedBox = new Frame
+			var combinedBox = new Border
 			{
 				BackgroundColor = Colors.LightYellow,
 				Padding = 20,
-				CornerRadius = 10,
+				StrokeShape = new RoundRectangle { CornerRadius = 10 },
 				HeightRequest = 100
 			};
 			var combinedLabel = new Label
