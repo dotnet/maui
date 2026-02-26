@@ -14,38 +14,38 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		public void Issue33375Test()
+		public void SwipeGestureRecognizerShouldNotTriggerWhenScrollingCollectionView()
 		{
 			App.WaitForElement("TestCollectionView");
-		var statusLabel = App.WaitForElement("StatusLabel");
-		Assert.That(statusLabel.GetText(), Is.EqualTo("No swipe detected"));
-		var collectionView = App.FindElement("TestCollectionView");
-		
-		// Scroll right in the CollectionView
-		App.DragCoordinates(
-			collectionView.GetRect().CenterX(), 
-			collectionView.GetRect().CenterY(),
-			collectionView.GetRect().X + 50, 
-			collectionView.GetRect().CenterY()
-		);
-		
-		Task.Delay(1000).Wait();
-		statusLabel = App.FindElement("StatusLabel");
-		Assert.That(statusLabel.GetText(), Is.EqualTo("No swipe detected"), 
-			"SwipeGestureRecognizer should not trigger when scrolling CollectionView");
-		
-		// Scroll back left to original position
-		App.DragCoordinates(
-			collectionView.GetRect().X + 50,
-			collectionView.GetRect().CenterY(),
-			collectionView.GetRect().CenterX(),
-			collectionView.GetRect().CenterY()
-		);
-		
-		Task.Delay(1000).Wait();
-		statusLabel = App.FindElement("StatusLabel");
-		Assert.That(statusLabel.GetText(), Is.EqualTo("No swipe detected"), 
-			"SwipeGestureRecognizer should not trigger when scrolling back");
+			var statusLabel = App.WaitForElement("StatusLabel");
+			Assert.That(statusLabel.GetText(), Is.EqualTo("No swipe detected"));
+			var collectionView = App.FindElement("TestCollectionView");
+
+			// Scroll right in the CollectionView
+			App.DragCoordinates(
+				collectionView.GetRect().CenterX(),
+				collectionView.GetRect().CenterY(),
+				collectionView.GetRect().X + 50,
+				collectionView.GetRect().CenterY()
+			);
+
+			App.WaitForElement("StatusLabel");
+			statusLabel = App.FindElement("StatusLabel");
+			Assert.That(statusLabel.GetText(), Is.EqualTo("No swipe detected"),
+				"SwipeGestureRecognizer should not trigger when scrolling CollectionView");
+
+			// Scroll back left to original position
+			App.DragCoordinates(
+				collectionView.GetRect().X + 50,
+				collectionView.GetRect().CenterY(),
+				collectionView.GetRect().CenterX(),
+				collectionView.GetRect().CenterY()
+			);
+
+			App.WaitForElement("StatusLabel");
+			statusLabel = App.FindElement("StatusLabel");
+			Assert.That(statusLabel.GetText(), Is.EqualTo("No swipe detected"),
+				"SwipeGestureRecognizer should not trigger when scrolling back");
 		}
 	}
 }

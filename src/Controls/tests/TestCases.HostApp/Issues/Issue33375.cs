@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 33375, "SwipeGestureRecognizer triggers while scrolling CollectionView horizontally on iOS", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 33375, "SwipeGestureRecognizer triggers while scrolling CollectionView horizontally on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 	public class Issue33375 : TestContentPage
 	{
 		private int swipeCount = 0;
@@ -113,7 +113,7 @@ namespace Maui.Controls.Sample.Issues
 			Content = border;
 		}
 
-		class  Issue33375_ItemData
+		class Issue33375_ItemData
 		{
 			public string Name { get; set; } = string.Empty;
 			public string Description { get; set; } = string.Empty;
