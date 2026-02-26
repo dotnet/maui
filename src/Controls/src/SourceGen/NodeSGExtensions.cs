@@ -483,7 +483,7 @@ static class NodeSGExtensions
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})!";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
 				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";

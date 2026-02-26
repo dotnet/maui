@@ -55,6 +55,48 @@ public class ViewModel
 	}
 
 	[Fact]
+	public void BindingToRelayCommandGeneratedFromOnAsyncMethod_DoesNotReportPropertyNotFound()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<Button Command="{Binding SaveCommand}" />
+</ContentPage>
+""";
+
+		var csharp = @"
+namespace CommunityToolkit.Mvvm.Input
+{
+	[System.AttributeUsage(System.AttributeTargets.Method)]
+	public class RelayCommandAttribute : System.Attribute { }
+}
+
+namespace Test
+{
+	public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+	public class ViewModel
+	{
+		[CommunityToolkit.Mvvm.Input.RelayCommand]
+		private System.Threading.Tasks.Task OnSaveAsync() => System.Threading.Tasks.Task.CompletedTask;
+	}
+}
+";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
+	}
+
+	[Fact]
 	public void BindingIndexerNotClosed_ReportsCorrectDiagnostic()
 	{
 		var xaml =
