@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 using MapKit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -268,7 +270,11 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine($"Failed to load custom pin icon: {ex.Message}");
+				if (_handlerRef.TryGetTarget(out var handler))
+				{
+					var logger = handler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
+					logger?.LogWarning(ex, "Failed to load custom pin icon");
+				}
 			}
 		}
 

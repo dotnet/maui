@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
@@ -47,6 +48,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
+
+		CancellationTokenSource? _addPinsCts;
 
 		public GoogleMap? Map { get; private set; }
 
@@ -602,6 +605,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (Map == null || MauiContext == null)
 				return;
 
+			// Cancel any previously running pin additions to avoid stale markers
+			_addPinsCts?.Cancel();
+			_addPinsCts = new CancellationTokenSource();
+			var ct = _addPinsCts.Token;
+
 			if (_markers == null)
 				_markers = new List<Marker>();
 
@@ -670,7 +678,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			foreach (var p in pins)
 			{
 				IMapPin pin = (IMapPin)p;
-				AddPinAsync(pin).FireAndForget();
+				AddPinAsync(pin, ct).FireAndForget();
 			}
 			_pins = null;
 		}
@@ -719,7 +727,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				return null;
 			}
 
-		async System.Threading.Tasks.Task AddPinAsync(IMapPin pin)
+		async Task AddPinAsync(IMapPin pin, CancellationToken ct)
 		{
 			if (Map == null || MauiContext == null)
 				return;
@@ -736,27 +744,27 @@ namespace Microsoft.Maui.Maps.Handlers
 				try
 				{
 					var result = await pin.ImageSource.GetPlatformImageAsync(MauiContext);
-					if (result?.Value is ADrawable drawable)
+					if (ct.IsCancellationRequested || result?.Value is not ADrawable drawable)
+						return;
+
+					var bitmap = DrawableToBitmap(drawable);
+					if (bitmap != null)
 					{
-						var bitmap = DrawableToBitmap(drawable);
-						if (bitmap != null)
-						{
-							markerOptions.SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap));
-						}
+						markerOptions.SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap));
 					}
 				}
 				catch (System.Exception ex)
 				{
-					// If image loading fails, use default pin icon
-					System.Diagnostics.Debug.WriteLine($"Failed to load custom pin icon: {ex.Message}");
+					var logger = MauiContext?.Services?.GetService<ILogger<MapHandler>>();
+					logger?.LogWarning(ex, "Failed to load custom pin icon");
 				}
 			}
 
 			// Re-check after async operation since handler may have been disconnected
-if (Map == null || MauiContext == null)
-return;
+			if (ct.IsCancellationRequested || Map == null || MauiContext == null)
+				return;
 
-var marker = Map.AddMarker(markerOptions);
+			var marker = Map.AddMarker(markerOptions);
 			if (marker == null)
 			{
 				throw new System.Exception("Map.AddMarker returned null");
@@ -764,8 +772,7 @@ var marker = Map.AddMarker(markerOptions);
 			// associate pin with marker for later lookup in event handlers
 			pin.MarkerId = marker.Id;
 			
-			if (_markers == null)
-				_markers = new List<Marker>();
+			_markers ??= new List<Marker>();
 			_markers.Add(marker);
 		}
 
