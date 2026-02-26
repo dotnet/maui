@@ -20,14 +20,25 @@ public class Issue33613 : _IssuesUITest
 		App.WaitForElement("TitleViewGrid");
 		var titleLabelRect = App.WaitForElement("TitleViewGrid").GetRect();
 		var previousWidth = titleLabelRect.Width;
-#if MACCATALYST || WINDOWS
-		App.EnterFullScreen();
-#elif ANDROID || IOS
-		App.SetOrientationLandscape();
-#endif
-		Thread.Sleep(1000); // Wait for the animation to complete
-		var newTitleLabelRect = App.WaitForElement("TitleViewGrid").GetRect();
-		var newWidth = newTitleLabelRect.Width;
+		App.ResizeOrRotateWindow();
+		
+		// Poll for width change with timeout (wait for animation to complete)
+		var timeout = TimeSpan.FromSeconds(5);
+		var startTime = DateTime.Now;
+		float newWidth;
+		do
+		{
+			Thread.Sleep(100); // Small delay between polls
+			var newTitleLabelRect = App.WaitForElement("TitleViewGrid").GetRect();
+			newWidth = newTitleLabelRect.Width;
+			
+			if (newWidth > previousWidth)
+				break;
+				
+			if (DateTime.Now - startTime > timeout)
+				break;
+		} while (true);
+		
 		Assert.That(newWidth, Is.GreaterThan(previousWidth), 
 			$"TitleView should expand when window is maximized. Previous: {previousWidth}, New: {newWidth}");
 	}

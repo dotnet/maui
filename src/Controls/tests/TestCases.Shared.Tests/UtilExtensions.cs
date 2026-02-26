@@ -94,5 +94,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				searchResults.First().Tap();
 			}
 		}
+
+		public static void ResizeOrRotateWindow(this IApp app)
+		{
+#if MACCATALYST || WINDOWS
+			app.EnterFullScreen();
+#elif ANDROID || IOS
+			app.SetOrientationLandscape();
+#endif
+		}
 	}
 }

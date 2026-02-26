@@ -60,7 +60,7 @@ public class Issue33613 : ContentPage
 		var titleViewGrid = new Grid
 		{
 			BackgroundColor = Colors.LightBlue,
-			HorizontalOptions = LayoutOptions.FillAndExpand,
+			HorizontalOptions = LayoutOptions.Fill,
 			AutomationId = "TitleViewGrid"
 		};
 		
