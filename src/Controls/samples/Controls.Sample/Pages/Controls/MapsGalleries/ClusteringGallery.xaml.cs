@@ -27,32 +27,32 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			UpdateStatus();
 		}
 
-		void OnAdd50PinsClicked(object sender, EventArgs e)
+		void OnAdd50PinsClicked(object? sender, EventArgs e)
 		{
 			AddPins(50);
 			UpdateStatus();
 		}
 
-		void OnAdd100PinsClicked(object sender, EventArgs e)
+		void OnAdd100PinsClicked(object? sender, EventArgs e)
 		{
 			AddPins(100);
 			UpdateStatus();
 		}
 
-		void OnClearPinsClicked(object sender, EventArgs e)
+		void OnClearPinsClicked(object? sender, EventArgs e)
 		{
 			clusterMap.Pins.Clear();
 			_clusterClickCount = 0;
 			UpdateStatus();
 		}
 
-		void OnClusteringToggled(object sender, ToggledEventArgs e)
+		void OnClusteringToggled(object? sender, ToggledEventArgs e)
 		{
 			clusterMap.IsClusteringEnabled = e.Value;
 			UpdateStatus();
 		}
 
-		async void OnClusterClicked(object sender, ClusterClickedEventArgs e)
+		async void OnClusterClicked(object? sender, ClusterClickedEventArgs e)
 		{
 			_clusterClickCount++;
 			
@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			UpdateStatus();
 		}
 
-		void OnMapClicked(object sender, MapClickedEventArgs e)
+		void OnMapClicked(object? sender, MapClickedEventArgs e)
 		{
 			// Add a pin where user clicks
 			var pin = new Pin

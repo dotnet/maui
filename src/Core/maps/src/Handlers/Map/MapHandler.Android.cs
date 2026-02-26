@@ -330,11 +330,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			// At zoom 0 (world view), cluster radius is large
 			// At zoom 21 (street level), cluster radius is tiny
 			// The divisor controls how aggressively pins cluster - smaller = less clustering
-			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+						// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
 			// Base cluster radius in approximate screen pixels at zoom 0.
-// Pins whose projected positions fall within this radius are clustered.
-const double clusterRadiusBasePixels = 50.0;
-double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
+			// Pins whose projected positions fall within this radius are clustered.
+			const double clusterRadiusBasePixels = 50.0;
+			double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
 
 			// Group pins by their clustering identifier
 			var pinsByIdentifier = new Dictionary<string, List<IMapPin>>();
