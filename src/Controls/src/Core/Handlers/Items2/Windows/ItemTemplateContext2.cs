@@ -37,7 +37,7 @@ internal class ItemTemplateContext2
 	/// <summary>Whether this context represents a group footer.</summary>
 	public bool IsFooter { get; }
 
-	ItemTemplateContext2(DataTemplate mauiDataTemplate, object item, BindableObject container,
+	public ItemTemplateContext2(DataTemplate mauiDataTemplate, object item, BindableObject container,
 		double? height = null, double? width = null, Thickness? itemSpacing = null,
 		bool isHeader = false, bool isFooter = false, IMauiContext? mauiContext = null)
 	{
@@ -45,15 +45,9 @@ internal class ItemTemplateContext2
 		Item = item;
 		_container = new(container);
 		MauiContext = mauiContext;
-
-		if (height.HasValue)
-			ItemHeight = height.Value;
-
-		if (width.HasValue)
-			ItemWidth = width.Value;
-
-		if (itemSpacing.HasValue)
-			ItemSpacing = itemSpacing.Value;
+		ItemHeight = height ?? 0;
+		ItemWidth = width ?? 0;
+		ItemSpacing = itemSpacing ?? default;
 
 		IsHeader = isHeader;
 		IsFooter = isFooter;

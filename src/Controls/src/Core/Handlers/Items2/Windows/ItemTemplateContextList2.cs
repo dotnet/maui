@@ -65,6 +65,7 @@ internal class ItemTemplateContextList2 : IReadOnlyList<ItemTemplateContext2>
 		return GetEnumerator();
 	}
 
+#nullable disable
 	internal class ItemTemplateContextListEnumerator2 : IEnumerator<ItemTemplateContext2>
 	{
 		public ItemTemplateContext2 Current { get; private set; }
@@ -100,4 +101,5 @@ internal class ItemTemplateContextList2 : IReadOnlyList<ItemTemplateContext2>
 			_currentIndex = -1;
 		}
 	}
+#nullable enable 
 }

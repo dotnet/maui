@@ -16,7 +16,7 @@ internal class ItemTemplateContextEnumerable2 : IEnumerable
 	readonly double _itemWidth;
 	readonly Thickness _itemSpacing;
 
-	ItemTemplateContextEnumerable2(IEnumerable itemsSource, DataTemplate itemTemplate, BindableObject container,
+	public ItemTemplateContextEnumerable2(IEnumerable itemsSource, DataTemplate itemTemplate, BindableObject container,
 		double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext? mauiContext = null)
 	{
 		_itemsSource = itemsSource;

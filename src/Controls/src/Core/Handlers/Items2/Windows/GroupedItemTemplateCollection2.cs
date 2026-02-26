@@ -295,6 +295,10 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		for (int i = 0; i < e.NewItems.Count; i++)
 		{
 			oldItems.Add(Items[replaceIndex + i]);
+			var item = e.NewItems[i];	
+			if(item is null)
+				continue;
+
 			var newItem = CreateItemContext(e.NewItems[i]!);
 			newItems.Add(newItem);
 			Items[replaceIndex + i] = newItem;

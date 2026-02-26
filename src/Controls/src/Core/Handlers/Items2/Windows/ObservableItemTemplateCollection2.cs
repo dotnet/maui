@@ -18,7 +18,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	readonly double _itemHeight;
 	readonly double _itemWidth;
 	readonly Thickness _itemSpacing;
-	NotifyCollectionChangedEventHandler _innerCollectionChangedHandler;
 	readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
 	bool _innerCollectionChange = false;
@@ -26,7 +25,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 	~ObservableItemTemplateCollection2() => _proxy.Unsubscribe();
 
-	ObservableItemTemplateCollection2(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
+	public ObservableItemTemplateCollection2(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
 		double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext? mauiContext = null)
 	{
 		_itemsSource = itemsSource;
@@ -46,10 +45,9 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// </summary>
 	void SubscribeToSourceChanges(IList itemsSource)
 	{
-		_innerCollectionChangedHandler = InnerCollectionChanged;
 		if (itemsSource is INotifyCollectionChanged notifyCollectionChanged)
 		{
-			_proxy.Subscribe(notifyCollectionChanged, _innerCollectionChangedHandler);
+			_proxy.Subscribe(notifyCollectionChanged, InnerCollectionChanged);
 		}
 
 		CollectionChanged += TemplateCollectionChanged;
