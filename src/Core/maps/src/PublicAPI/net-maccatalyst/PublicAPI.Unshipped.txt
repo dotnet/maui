@@ -1,12 +1,13 @@
-#nullable enable
 
+#nullable enable
+Microsoft.Maui.Maps.IMapElement.Clicked() -> void
 Microsoft.Maui.Maps.IMapElement.IsVisible.get -> bool
 Microsoft.Maui.Maps.IMapElement.ZIndex.get -> int
-static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapIsVisible(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
-static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapZIndex(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
 Microsoft.Maui.Maps.MapSpanTypeConverter
 Microsoft.Maui.Maps.MapSpanTypeConverter.MapSpanTypeConverter() -> void
 override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapIsVisible(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapZIndex(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void

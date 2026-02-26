@@ -1,11 +1,14 @@
-#nullable enable
 
+#nullable enable
+Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
+Microsoft.Maui.Controls.Maps.Map.Region.get -> Microsoft.Maui.Maps.MapSpan?
+Microsoft.Maui.Controls.Maps.Map.Region.set -> void
 Microsoft.Maui.Controls.Maps.MapElement.IsVisible.get -> bool
 Microsoft.Maui.Controls.Maps.MapElement.IsVisible.set -> void
 Microsoft.Maui.Controls.Maps.MapElement.ZIndex.get -> int
 Microsoft.Maui.Controls.Maps.MapElement.ZIndex.set -> void
+Microsoft.Maui.Controls.Maps.Polygon.PolygonClicked -> System.EventHandler?
+Microsoft.Maui.Controls.Maps.Polyline.PolylineClicked -> System.EventHandler?
+static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Maui.Controls.BindableProperty!
-Microsoft.Maui.Controls.Maps.Map.Region.get -> Microsoft.Maui.Maps.MapSpan?
-Microsoft.Maui.Controls.Maps.Map.Region.set -> void

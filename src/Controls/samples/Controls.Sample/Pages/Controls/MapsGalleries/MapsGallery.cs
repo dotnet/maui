@@ -20,6 +20,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 						GalleryBuilder.NavButton("Circle", () => new CircleGallery(), Navigation),
 						GalleryBuilder.NavButton("Polygon", () => new PolygonsGallery(), Navigation),
 						GalleryBuilder.NavButton("Element Visibility & ZIndex", () => new MapElementVisibilityGallery(), Navigation),
+						GalleryBuilder.NavButton("MapElement Click Events", () => new MapElementClickGallery(), Navigation),
 					}
 				}
 			};
