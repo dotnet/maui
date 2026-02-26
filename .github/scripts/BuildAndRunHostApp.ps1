@@ -260,7 +260,9 @@ if ($Platform -eq "catalyst") {
             & chmod +x $executablePath
         }
         
-        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
+        # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
+        $env:MAC_APP_PATH = $appPath
+        Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
     } else {
         Write-Warn "MacCatalyst app not found at: $appPath"
         Write-Warn "Test may use wrong app bundle if another version is registered"

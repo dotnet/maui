@@ -6,7 +6,7 @@
 .DESCRIPTION
     Handles device detection and startup for both Android and iOS platforms.
     - Android: Automatically selects and starts emulator with priority: API 30 Nexus > API 30 > Nexus > First available
-    - iOS: Selects device matching UI test baselines (iPhone Xs for iOS 18.x/17.x, iPhone 11 Pro for iOS 26.x)
+    - iOS: Automatically selects iPhone Xs with iOS 18.x (or iPhone 11 Pro with iOS 26.x) to match CI
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -349,17 +349,17 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred devices per iOS version - must match UI test baseline screenshot devices
-        # iPhone Xs and iPhone 11 Pro have identical resolution (1125×2436 @3x)
-        # iOS 18.x/17.x: iPhone Xs preferred (default in UITest.cs), iPhone 11 Pro as fallback
-        # iOS 26.x: iPhone 11 Pro (required by UITest.cs for ios-26 environment)
-        $preferredDevicesForVersion = @{
-            "iOS-18" = @("iPhone Xs", "iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-17" = @("iPhone Xs", "iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs")
-        }
         # Preferred iOS versions in order (stable preferred, beta fallback)
         $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
+        # Preferred devices per iOS version to match CI configuration:
+        #   iOS 18.x → iPhone Xs (matches CI default in UITest.cs)
+        #   iOS 26.x → iPhone 11 Pro (matches CI visual test requirement)
+        #   iOS 17.x → iPhone Xs (fallback)
+        $preferredDevicesPerVersion = @{
+            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-26" = @("iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro")
+        }
         
         $selectedDevice = $null
         $selectedVersion = $null
@@ -368,14 +368,16 @@ if ($Platform -eq "android") {
         foreach ($version in $preferredVersions) {
             if ($selectedDevice) { break }
             
-            # Get all runtimes matching this version prefix
+            # Get all runtimes matching this version prefix, sorted by version descending
+            # so the latest minor version is preferred (e.g., iOS-18-5 before iOS-18-3)
             $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match $version }
+                Where-Object { $_.Name -match $version } |
+                Sort-Object { $_.Name } -Descending
             
             if ($matchingRuntimes) {
-                # Try each preferred device for this iOS version
-                $preferredDevices = $preferredDevicesForVersion[$version]
-                foreach ($deviceName in $preferredDevices) {
+                # Try each preferred device for this version
+                $devicesForVersion = if ($preferredDevicesPerVersion.ContainsKey($version)) { $preferredDevicesPerVersion[$version] } else { @("iPhone Xs", "iPhone 16 Pro") }
+                foreach ($deviceName in $devicesForVersion) {
                     $device = $null
                     $deviceRuntime = $null
                     foreach ($rt in $matchingRuntimes) {
