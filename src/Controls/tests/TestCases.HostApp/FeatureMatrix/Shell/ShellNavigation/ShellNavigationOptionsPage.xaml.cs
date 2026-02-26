@@ -6,7 +6,6 @@ namespace Maui.Controls.Sample
     {
         readonly ShellViewModel _viewModel;
         readonly List<ContentPage> _insertedPages = new();
-        int _subPageCount;
         int _insertedPageCount;
         public ShellNavigationOptionsPage(ShellViewModel viewModel, List<ContentPage> existingInsertedPages = null, int existingInsertedPageCount = 0)
         {
@@ -69,15 +68,19 @@ namespace Maui.Controls.Sample
         }
         async void OnPushClicked(object sender, System.EventArgs e)
         {
-            _subPageCount++;
-            var pageTitle = $"SubPage{_subPageCount}";
+            var stack = Navigation.NavigationStack;
+            int optionsIndex = -1;
+            for (int i = 0; i < stack.Count; i++)
+                if (ReferenceEquals(stack[i], this)) { optionsIndex = i; break; }
+            var subPageNumber = optionsIndex >= 0 ? stack.Count - optionsIndex : 1;
+            var pageTitle = $"SubPage{subPageNumber}";
             var subPage = new ContentPage
             {
                 Title = pageTitle,
-                AutomationId = $"OptionsSubPage{_subPageCount}",
+                AutomationId = $"OptionsSubPage{subPageNumber}",
             };
-            var subTabStackLabel = new Label { FontSize = 11, AutomationId = $"SubPage{_subPageCount}TabStackLabel" };
-            var subNavStackLabel = new Label { FontSize = 11, AutomationId = $"SubPage{_subPageCount}NavStackLabel" };
+            var subTabStackLabel = new Label { FontSize = 11, AutomationId = $"SubPage{subPageNumber}TabStackLabel" };
+            var subNavStackLabel = new Label { FontSize = 11, AutomationId = $"SubPage{subPageNumber}NavStackLabel" };
             subPage.Content = new ScrollView
             {
                 Content = new VerticalStackLayout
@@ -86,7 +89,7 @@ namespace Maui.Controls.Sample
                     Spacing = 8,
                     Children =
                     {
-                        new Label { Text = $"Sub Page {_subPageCount}", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = $"OptionsSubPage{_subPageCount}IdentityLabel" },
+                        new Label { Text = $"Sub Page {subPageNumber}", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = $"OptionsSubPage{subPageNumber}IdentityLabel" },
                         CreateEventDisplay(),
                         CreateStackDisplay(subTabStackLabel, subNavStackLabel),
                         CreateSubPageButtons()

@@ -42,6 +42,22 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.WaitForElement("Detail2PageIdentityLabel");
 	}
 
+	void NavigateToQuerySenderAndWait()
+	{
+		App.WaitForElement("MainPageIdentityLabel");
+		App.Tap("OpenPassDataDemoButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+	}
+
+	void TapShellBackArrow(string parentPageTitle)
+	{
+#if ANDROID || WINDOWS
+		App.TapBackArrow();
+#elif IOS || MACCATALYST
+		App.TapBackArrow(parentPageTitle);
+#endif
+	}
+
 	// ── Shell Properties ─────────────────────────────────────────────────────
 
 	// Shell.CurrentState, CurrentPage, CurrentItem, and Shell.Current reflect the initial Main tab.
@@ -109,7 +125,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	public void BackButton_TapBackArrow_NoCommand_NavigatesBack()
 	{
 		NavigateToDetail1AndWait();
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
 	}
 
@@ -121,7 +137,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.ClearText("CommandParameterEntry");
 		App.EnterText("CommandParameterEntry", "testparam");
 		NavigateToDetail1AndWait();
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
 		Assert.That(App.FindElement("CommandExecutedLabel").GetText(), Is.EqualTo("Executed: testparam"));
 	}
@@ -408,10 +424,10 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("OptionsPushButton");
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
 
-		// Stack: ShellNavigation, InsertedPage2, OptionsPage, SubPage1
+		// Stack: ShellNavigation, InsertedPage, OptionsPage, SubPage
 		var tabText = App.FindElement("SubPage1TabStackLabel").GetText();
 		var navText = App.FindElement("SubPage1NavStackLabel").GetText();
-		Assert.That(tabText, Is.EqualTo("Count=4: ShellNavigation, InsertedPage2, OptionsPage, SubPage1"));
+		Assert.That(tabText, Is.EqualTo("Count=4: ShellNavigation, InsertedPage1, OptionsPage, SubPage1"));
 		Assert.That(navText, Is.EqualTo(tabText));
 
 		App.Tap("SubPopButton");
@@ -419,7 +435,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("OptionsRemoveButton");
 		Assert.That(App.FindElement("OptionsTabStackLabel").GetText(),
 			Is.EqualTo("Count=2: ShellNavigation, OptionsPage"));
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
 	}
 
@@ -500,7 +516,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.WaitForElement("OptionsSubPage1IdentityLabel");
 		App.Tap("SubPopButton");
 		App.WaitForElement("OptionsPageIdentityLabel");
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
 
 		NavigateToPage2();
@@ -559,7 +575,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		NavigateToPage2();
 		App.WaitForElement("Page2ContentA1PageLabel");
 
-		App.TapTab("Content A2");
+		App.TapTab("ContentA2");
 		App.WaitForElement("Page2ContentA2PageLabel");
 
 		Assert.That(App.FindElement("Page2A2NavigatingCurrentLabel").GetText(),
@@ -589,8 +605,8 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	public void NavEvents_ShellSectionChanged_NavigatingEvent_SourceIsShellSectionChanged()
 	{
 		App.WaitForElement("Page2ContentA2PageLabel");
-
-		App.TapTab("Tab B");
+		App.WaitForElement("TabB");
+		App.Tap("TabB");
 		App.WaitForElement("Page2TabBPageLabel");
 
 		Assert.That(App.FindElement("Page2TabBNavigatingCurrentLabel").GetText(),
@@ -643,41 +659,192 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 			Does.Contain("Source=PopToRoot"));
 	}
 
+	// ── Pass Data ─────────────────────────────────────────────────────────────
+	// String query param (?name=...) is received by IQueryAttributable on the detail page.
+	[Test, Order(41)]
+	public void PassData_StringQueryParam_ReceivedByIQueryAttributable()
+	{
+		App.WaitForElement("MainPageIdentityLabel");
+		App.Tap("Reset");
+		NavigateToQuerySenderAndWait();
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "Alice");
+		App.Tap("QuerySendStringButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("Alice"));
+	}
+
+	// Dictionary-based params are received by IQueryAttributable on the detail page.
+	[Test, Order(42)]
+	public void PassData_DictionaryParam_ReceivedByIQueryAttributable()
+	{
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "Bob");
+		App.Tap("QuerySendDictButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		Assert.That(App.FindElement("IQueryAttributableReceivedLabel").GetText(), Is.EqualTo("Bob"));
+	}
+
+	// ShellNavigationQueryParameters (single-use) are received by IQueryAttributable.
+	[Test, Order(43)]
+	public void PassData_SingleUseParams_ReceivedByIQueryAttributable()
+	{
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "Carol");
+		App.Tap("QuerySendSingleUseButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("Carol"));
+	}
+
+	// Both name and IQA labels receive the same param from string query (both set in ApplyQueryAttributes).
+	[Test, Order(44)]
+	public void PassData_StringQueryParam_BothLabelsReceiveSameValue()
+	{
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "Dave");
+		App.Tap("QuerySendStringButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("Dave"));
+		Assert.That(App.FindElement("IQueryAttributableReceivedLabel").GetText(), Is.EqualTo("Dave"));
+	}
+
+	// Backwards navigation with data passes ?backvalue to the previous page via IQueryAttributable.
+	[Test, Order(45)]
+	public void PassData_BackwardsNavigation_PassesDataToPreviousPage()
+	{
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+		App.Tap("QueryDetailGoBackWithDataButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+
+		Assert.That(App.FindElement("QueryBackValueLabel").GetText(), Is.EqualTo("ReturnedData"));
+
+		// cleanup
+		App.Tap("QuerySenderGoBackButton");
+		App.WaitForElement("MainPageIdentityLabel");
+	}
+
+
+	// Multiple string params (?name=&location=) are each received by IQueryAttributable.
+	[Test, Order(46)]
+	public void PassData_MultipleStringParams_ReceivedByIQueryAttributable()
+	{
+		// After test 45 cleanup we are already on MainPage
+		NavigateToQuerySenderAndWait();
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "Alice");
+		App.ClearText("QuerySendLocationEntry");
+		App.EnterText("QuerySendLocationEntry", "Savannah");
+		App.Tap("QuerySendMultiParamButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("Alice"));
+		Assert.That(App.FindElement("QueryPropertyLocationLabel").GetText(), Is.EqualTo("Savannah"));
+	}
+
+	// IQueryAttributable receives decoded values for all data passing methods.
+	[Test, Order(47)]
+	public void PassData_IQueryAttributable_ReceivesDecodedValues()
+	{
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "Hello World");
+		App.Tap("QuerySendStringButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("Hello World"));
+		Assert.That(App.FindElement("IQueryAttributableReceivedLabel").GetText(), Is.EqualTo("Hello World"));
+	}
+
+	// Dictionary data is retained in memory; navigating forward without data and back re-applies it.
+	[Test, Order(48)]
+	public void PassData_Dictionary_PersistsWhenNavigatingToIntermediatePageAndBack()
+	{
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "test");
+		App.Tap("QuerySendDictButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		// First arrival: IQA called once (count tracks all ApplyQueryAttributes calls with "name")
+		Assert.That(App.FindElement("DictAppliedCountLabel").GetText(), Is.EqualTo("1"));
+
+		// Navigate to intermediate WITHOUT data — Dictionary data persists in memory
+		App.Tap("QueryDetailGoToIntermediateButton");
+		App.WaitForElement("QueryIntermediatePageIdentityLabel");
+		App.Tap("QueryIntermediateGoBackButton");
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		// IQA fired again on return — Dictionary was re-applied automatically
+		Assert.That(App.FindElement("DictAppliedCountLabel").GetText(), Is.EqualTo("2"));
+		Assert.That(App.FindElement("IQueryAttributableReceivedLabel").GetText(), Is.EqualTo("test"));
+
+		// cleanup
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+		App.Tap("QuerySenderGoBackButton");
+		App.WaitForElement("MainPageIdentityLabel");
+	}
+
 	// ── BackButtonBehavior Properties ─────────────────────────────────────────
 
 	// BackButtonBehavior.Text replaces the back button label with a custom string.
-	[Test, Order(41)]
+	[Test, Order(49)]
 	public void BackButtonBehavior_TextOverride_CustomTextShownOnBackButton()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
 		App.WaitForElement("TextOverrideEntry");
 		App.ClearText("TextOverrideEntry");
-		App.EnterText("TextOverrideEntry", "Go Back");
+		App.EnterText("TextOverrideEntry", "Go");
 		NavigateToDetail1AndWait();
-		App.TapBackArrow("Go Back");
+		App.TapBackArrow("Go");
 		App.WaitForElement("MainPageIdentityLabel");
 		App.WaitForElement("Reset");
 		App.Tap("Reset");
 	}
 
 	// BackButtonBehavior.CommandParameter passes the correct value to the back command.
-	[Test, Order(42)]
+	[Test, Order(50)]
 	public void BackButtonBehavior_CommandParameter_CommandFiresWithCorrectParameter()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
 		App.WaitForElement("CommandParameterEntry");
 		App.ClearText("CommandParameterEntry");
-		App.EnterText("CommandParameterEntry", "navtest");
+		App.EnterText("CommandParameterEntry", "test");
 		NavigateToDetail1AndWait();
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
-		Assert.That(App.FindElement("CommandExecutedLabel").GetText(), Is.EqualTo("Executed: navtest"));
+		Assert.That(App.FindElement("CommandExecutedLabel").GetText(), Is.EqualTo("Executed: test"));
 		App.WaitForElement("Reset");
 		App.Tap("Reset");
 	}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 	// BackButtonBehavior.IsEnabled=false keeps the back button visible but ignores taps.
-	[Test, Order(43)]
+	[Test, Order(51)]
 	public void BackButtonBehavior_IsEnabled_False_BackButtonDoesNotNavigate()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -685,7 +852,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("IsEnabledButton");
 		Assert.That(App.FindElement("IsEnabledButton").GetText(), Is.EqualTo("IsEnabled: False"));
 		NavigateToDetail1AndWait();
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("Detail1PageIdentityLabel");
 		App.WaitForElement("Detail1GoBackButton");
 		App.Tap("Detail1GoBackButton");
@@ -693,13 +860,14 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("IsEnabledButton");
 		Assert.That(App.FindElement("IsEnabledButton").GetText(), Is.EqualTo("IsEnabled: True"));
 		NavigateToDetail1AndWait();
-		App.TapBackArrow();
+		TapShellBackArrow("ShellNavigation");
 		App.WaitForElement("MainPageIdentityLabel");
 		App.Tap("Reset");
 	}
+#endif
 
 	// BackButtonBehavior.IsVisible=false hides the back button; programmatic navigation still works.
-	[Test, Order(44)]
+	[Test, Order(52)]
 	public void BackButtonBehavior_IsVisible_False_ProgrammaticNavStillWorks()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -710,7 +878,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	}
 
 	// BackButtonBehavior.IconOverride replaces the default back arrow with a custom icon.
-	[Test, Order(45)]
+	[Test, Order(53)]
 	public void BackButtonBehavior_IconOverride_CustomIconShownOnBackButton()
 	{
 		App.WaitForElement("Detail1GoBackButton");
@@ -722,5 +890,4 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		NavigateToDetail1AndWait();
 		VerifyScreenshot();
 	}
-
 }

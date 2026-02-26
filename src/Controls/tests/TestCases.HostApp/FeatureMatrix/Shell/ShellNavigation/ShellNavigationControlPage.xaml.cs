@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample
@@ -22,6 +23,11 @@ namespace Maui.Controls.Sample
             Routing.RegisterRoute("navtest1", typeof(NavigationTestPage1));
             Routing.RegisterRoute("navtest2", typeof(NavigationTestPage2));
             Routing.RegisterRoute("navtest3", typeof(NavigationTestPage3));
+
+            // Pass data demo routes
+            Routing.RegisterRoute("querysender", typeof(QuerySenderPage));
+            Routing.RegisterRoute("querydetail", typeof(QueryDataDetailPage));
+            Routing.RegisterRoute("queryintermediate", typeof(QueryIntermediatePage));
 
             this.Navigating += OnShellNavigating;
             this.Navigated += OnShellNavigated;
@@ -222,6 +228,10 @@ namespace Maui.Controls.Sample
         void OnToggleEnableDeferral(object sender, EventArgs e)
         {
             _viewModel.EnableDeferral = !_viewModel.EnableDeferral;
+        }
+        async void OnOpenPassDataDemoClicked(object sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync("querysender");
         }
     }
     public class ShellDetailBasePage : ContentPage
@@ -523,6 +533,241 @@ namespace Maui.Controls.Sample
             };
         }
     }
+    // ── Pass Data: QuerySenderPage ────────────────────────────────────────────
+    public class QuerySenderPage : ContentPage, IQueryAttributable
+    {
+        readonly Label _backValueLabel;
+        readonly Entry _nameEntry;
+        readonly Entry _locationEntry;
+        string _backValue;
+
+        public string BackValue
+        {
+            get => _backValue;
+            set
+            {
+                _backValue = value;
+                _backValueLabel.Text = value ?? "(none)";
+            }
+        }
+
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
+            if (query.TryGetValue("backvalue", out var val))
+                BackValue = val?.ToString();
+        }
+
+        public QuerySenderPage()
+        {
+            Title = "QuerySenderPage";
+            AutomationId = "QuerySenderPage";
+
+            _nameEntry = new Entry { Text = "Hello World", FontSize = 12, HeightRequest = 35, AutomationId = "QuerySendNameEntry" };
+            _locationEntry = new Entry { Text = "Savannah", FontSize = 12, HeightRequest = 35, AutomationId = "QuerySendLocationEntry" };
+            _backValueLabel = new Label { FontSize = 12, Text = "(none)", AutomationId = "QueryBackValueLabel" };
+
+            var identityLabel = new Label
+            {
+                Text = "Query Sender",
+                FontSize = 14,
+                FontAttributes = FontAttributes.Bold,
+                Margin = new Thickness(10, 8, 10, 4),
+                AutomationId = "QuerySenderPageIdentityLabel"
+            };
+
+            var sendStringBtn = MakeButton("Send ?name= (string param)", "QuerySendStringButton");
+            sendStringBtn.Clicked += async (s, e) =>
+                await Shell.Current.GoToAsync($"querydetail?name={Uri.EscapeDataString(_nameEntry.Text ?? string.Empty)}");
+
+            var sendMultiBtn = MakeButton("Send ?name=&location= (multi param)", "QuerySendMultiParamButton");
+            sendMultiBtn.Clicked += async (s, e) =>
+                await Shell.Current.GoToAsync($"querydetail?name={Uri.EscapeDataString(_nameEntry.Text ?? string.Empty)}&location={Uri.EscapeDataString(_locationEntry.Text ?? string.Empty)}");
+
+            var sendDictBtn = MakeButton("Send Dictionary", "QuerySendDictButton");
+            sendDictBtn.Clicked += async (s, e) =>
+                await Shell.Current.GoToAsync("querydetail", new Dictionary<string, object> { ["name"] = _nameEntry.Text ?? string.Empty });
+
+            var sendSingleUseBtn = MakeButton("Send SingleUse Params", "QuerySendSingleUseButton");
+            sendSingleUseBtn.Clicked += async (s, e) =>
+                await Shell.Current.GoToAsync("querydetail", new ShellNavigationQueryParameters { ["name"] = _nameEntry.Text ?? string.Empty });
+
+            var goBackBtn = ShellNavHelper.CreateNavButton("Go Back", "..", "QuerySenderGoBackButton");
+
+            var grid = new Grid
+            {
+                Padding = 10,
+                RowSpacing = 4,
+                ColumnSpacing = 10,
+                RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
+                ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) }
+            };
+
+            void AddLabelRow(int row, string labelText, View valueView)
+            {
+                var lbl = new Label { Text = labelText, FontSize = 12, VerticalOptions = LayoutOptions.Center };
+                Grid.SetRow(lbl, row);
+                Grid.SetColumn(lbl, 0);
+                Grid.SetRow(valueView, row);
+                Grid.SetColumn(valueView, 1);
+                grid.Children.Add(lbl);
+                grid.Children.Add(valueView);
+            }
+
+            AddLabelRow(0, "Name to Send:", _nameEntry);
+            AddLabelRow(1, "Location to Send:", _locationEntry);
+            AddLabelRow(2, "Back Value:", _backValueLabel);
+            foreach (var (btn, row) in new (Button, int)[] { (sendStringBtn, 3), (sendMultiBtn, 4), (sendDictBtn, 5), (sendSingleUseBtn, 6), (goBackBtn, 7) })
+            {
+                Grid.SetRow(btn, row);
+                Grid.SetColumn(btn, 0);
+                Grid.SetColumnSpan(btn, 2);
+                grid.Children.Add(btn);
+            }
+
+            Content = new ScrollView { Content = new VerticalStackLayout { Spacing = 4, Children = { identityLabel, grid } } };
+        }
+
+        static Button MakeButton(string text, string automationId) => new Button
+        {
+            Text = text,
+            FontSize = 11,
+            HeightRequest = 35,
+            Padding = new Thickness(8, 0),
+            Margin = new Thickness(10, 4),
+            HorizontalOptions = LayoutOptions.Fill,
+            AutomationId = automationId
+        };
+    }
+
+    // ── Pass Data: QueryDataDetailPage ────────────────────────────────────────
+    public class QueryDataDetailPage : ContentPage, IQueryAttributable
+    {
+        readonly Label _attributeNameLabel;
+        readonly Label _attributeLocationLabel;
+        readonly Label _iqaNameLabel;
+        readonly Label _iqaCallCountLabel;
+        int _iqaCallCount;
+
+        public QueryDataDetailPage()
+        {
+            Title = "QueryDataDetail";
+            AutomationId = "QueryDataDetailPage";
+
+            _attributeNameLabel = new Label { FontSize = 12, Text = "(not set)", AutomationId = "QueryPropertyReceivedLabel" };
+            _attributeLocationLabel = new Label { FontSize = 12, Text = "(not set)", AutomationId = "QueryPropertyLocationLabel" };
+            _iqaNameLabel = new Label { FontSize = 12, Text = "(not set)", AutomationId = "IQueryAttributableReceivedLabel" };
+            _iqaCallCountLabel = new Label { FontSize = 12, Text = "0", AutomationId = "DictAppliedCountLabel" };
+
+            var identityLabel = new Label
+            {
+                Text = "Query Data Detail",
+                FontSize = 14,
+                FontAttributes = FontAttributes.Bold,
+                Margin = new Thickness(10, 8, 10, 4),
+                AutomationId = "QueryDataDetailPageIdentityLabel"
+            };
+
+            var goBackBtn = ShellNavHelper.CreateNavButton("Go Back", "..", "QueryDetailGoBackButton");
+            var goBackWithDataBtn = new Button
+            {
+                Text = "Go Back with Data",
+                FontSize = 11,
+                HeightRequest = 35,
+                Padding = new Thickness(8, 0),
+                Margin = new Thickness(10, 4),
+                HorizontalOptions = LayoutOptions.Fill,
+                AutomationId = "QueryDetailGoBackWithDataButton"
+            };
+            goBackWithDataBtn.Clicked += async (s, e) => await Shell.Current.GoToAsync("..?backvalue=ReturnedData");
+
+            // Navigates forward without passing data — Dictionary data will re-apply on return (persistence demo)
+            var goToIntermediateBtn = new Button
+            {
+                Text = "Go to Intermediate (no data)",
+                FontSize = 11,
+                HeightRequest = 35,
+                Padding = new Thickness(8, 0),
+                Margin = new Thickness(10, 4),
+                HorizontalOptions = LayoutOptions.Fill,
+                AutomationId = "QueryDetailGoToIntermediateButton"
+            };
+            goToIntermediateBtn.Clicked += async (s, e) => await Shell.Current.GoToAsync("queryintermediate");
+
+            var grid = new Grid
+            {
+                Padding = 10,
+                RowSpacing = 4,
+                ColumnSpacing = 10,
+                RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
+                ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) }
+            };
+
+            void AddRow(int row, string labelText, Label valueLabel)
+            {
+                var lbl = new Label { Text = labelText, FontSize = 12 };
+                Grid.SetRow(lbl, row);
+                Grid.SetColumn(lbl, 0);
+                Grid.SetRow(valueLabel, row);
+                Grid.SetColumn(valueLabel, 1);
+                grid.Children.Add(lbl);
+                grid.Children.Add(valueLabel);
+            }
+
+            AddRow(0, "[QueryProp] name:", _attributeNameLabel);
+            AddRow(1, "[QueryProp] location:", _attributeLocationLabel);
+            AddRow(2, "IQA name:", _iqaNameLabel);
+            AddRow(3, "IQA call count:", _iqaCallCountLabel);
+            foreach (var (btn, row) in new (Button, int)[] { (goBackBtn, 4), (goBackWithDataBtn, 5), (goToIntermediateBtn, 6) })
+            {
+                Grid.SetRow(btn, row);
+                Grid.SetColumn(btn, 0);
+                Grid.SetColumnSpan(btn, 2);
+                grid.Children.Add(btn);
+            }
+
+            Content = new ScrollView { Content = new VerticalStackLayout { Spacing = 4, Children = { identityLabel, grid } } };
+        }
+
+        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
+            if (query.TryGetValue("name", out var nameVal))
+            {
+                _iqaCallCount++;
+                _iqaCallCountLabel.Text = _iqaCallCount.ToString();
+                var name = nameVal?.ToString() ?? "(null)";
+                _attributeNameLabel.Text = name;
+                _iqaNameLabel.Text = name;
+            }
+
+            if (query.TryGetValue("location", out var locVal))
+                _attributeLocationLabel.Text = locVal?.ToString() ?? "(null)";
+        }
+    }
+
+    // ── Pass Data: QueryIntermediatePage ─────────────────────────────────────
+    public class QueryIntermediatePage : ContentPage
+    {
+        public QueryIntermediatePage()
+        {
+            Title = "QueryIntermediate";
+            AutomationId = "QueryIntermediatePage";
+            Content = new ScrollView
+            {
+                Content = new VerticalStackLayout
+                {
+                    Padding = 10,
+                    Spacing = 8,
+                    Children =
+                    {
+                        new Label { Text = "Intermediate Page", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = "QueryIntermediatePageIdentityLabel" },
+                        new Label { Text = "No data was passed here.\nGo Back to see Dictionary data re-applied on the detail page.", FontSize = 12, LineBreakMode = LineBreakMode.WordWrap },
+                        ShellNavHelper.CreateNavButton("Go Back", "..", "QueryIntermediateGoBackButton")
+                    }
+                }
+            };
+        }
+    }
+
     static class ShellNavHelper
     {
         public static Button CreateNavButton(string text, string route, string automationId)
