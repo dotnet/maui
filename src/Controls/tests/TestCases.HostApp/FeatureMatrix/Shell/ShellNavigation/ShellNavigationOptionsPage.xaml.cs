@@ -8,9 +8,14 @@ namespace Maui.Controls.Sample
         readonly List<ContentPage> _insertedPages = new();
         int _subPageCount;
         int _insertedPageCount;
-        public ShellNavigationOptionsPage(ShellViewModel viewModel)
+        public ShellNavigationOptionsPage(ShellViewModel viewModel, List<ContentPage> existingInsertedPages = null, int existingInsertedPageCount = 0)
         {
             _viewModel = viewModel;
+            if (existingInsertedPages != null)
+            {
+                _insertedPages.AddRange(existingInsertedPages);
+                _insertedPageCount = existingInsertedPageCount;
+            }
             BindingContext = _viewModel;
             InitializeComponent();
             this.Appearing += OnPageAppearing;
@@ -18,8 +23,7 @@ namespace Maui.Controls.Sample
         void OnPageAppearing(object sender, System.EventArgs e)
         {
             UpdateStateLabels();
-            if (Shell.Current != null)
-                Shell.Current.Navigated += OnShellNavigated;
+            Shell.Current?.Navigated += OnShellNavigated;
         }
         void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
         {
@@ -41,8 +45,7 @@ namespace Maui.Controls.Sample
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            if (Shell.Current != null)
-                Shell.Current.Navigated -= OnShellNavigated;
+            Shell.Current?.Navigated -= OnShellNavigated;
         }
         void UpdateNavigationStackDisplay()
         {
@@ -50,10 +53,13 @@ namespace Maui.Controls.Sample
             var section = shell?.CurrentItem?.CurrentItem;
             if (section != null)
             {
+                // section.Stack[0] is null in Shell (root placeholder).
+                // Resolve it to the root ContentPage title via ShellContent.Content.
+                var rootTitle = (section.CurrentItem?.Content as Page)?.Title ?? "Root";
                 var stack = section.Stack;
-                TabStackLabel.Text = $"Count={stack.Count}: {string.Join(", ", stack.Select(p => p?.Title ?? "null"))}";
+                TabStackLabel.Text = $"Count={stack.Count}: {string.Join(", ", stack.Select(p => p?.Title ?? rootTitle))}";
                 var navStack = Navigation.NavigationStack;
-                GetNavStackLabel.Text = $"Count={navStack.Count}: {string.Join(", ", navStack.Select(p => p?.Title ?? "null"))}";
+                GetNavStackLabel.Text = $"Count={navStack.Count}: {string.Join(", ", navStack.Select(p => p?.Title ?? rootTitle))}";
             }
             else
             {
@@ -80,6 +86,7 @@ namespace Maui.Controls.Sample
                     Spacing = 8,
                     Children =
                     {
+                        new Label { Text = $"Sub Page {_subPageCount}", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = $"OptionsSubPage{_subPageCount}IdentityLabel" },
                         CreateEventDisplay(),
                         CreateStackDisplay(subTabStackLabel, subNavStackLabel),
                         CreateSubPageButtons()
@@ -89,6 +96,9 @@ namespace Maui.Controls.Sample
             subPage.Appearing += (s2, e2) => UpdateStackLabels(subPage, subTabStackLabel, subNavStackLabel);
             subPage.BindingContext = _viewModel;
             await Navigation.PushAsync(subPage);
+            // Update the new SubPage's stack labels immediately after push so they
+            // reflect the correct count before Appearing fires (fixes "not updated on push").
+            UpdateStackLabels(subPage, subTabStackLabel, subNavStackLabel);
             UpdateNavigationStackDisplay();
         }
         async void OnPopClicked(object sender, System.EventArgs e)
@@ -133,6 +143,7 @@ namespace Maui.Controls.Sample
                     Spacing = 10,
                     Children =
                     {
+                        new Label { Text = $"Inserted Page {_insertedPageCount}", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = $"InsertedPage{_insertedPageCount}IdentityLabel" },
                         CreateStackDisplay(insTabStackLabel, insNavStackLabel),
                         goToOptionsBtn,
                         goBackBtn
@@ -140,7 +151,7 @@ namespace Maui.Controls.Sample
                 }
             };
             insertedPage.Appearing += (s2, e2) => UpdateStackLabels(insertedPage, insTabStackLabel, insNavStackLabel);
-            goToOptionsBtn.Clicked += async (s, ev) => await insertedPage.Navigation.PushAsync(new ShellNavigationOptionsPage(_viewModel));
+            goToOptionsBtn.Clicked += async (s, ev) => await insertedPage.Navigation.PushAsync(new ShellNavigationOptionsPage(_viewModel, _insertedPages, _insertedPageCount));
             _insertedPages.Add(insertedPage);
             Navigation.InsertPageBefore(insertedPage, this);
             UpdateNavigationStackDisplay();
@@ -156,6 +167,8 @@ namespace Maui.Controls.Sample
                     break;
                 }
             }
+            if (_insertedPages.Count == 0)
+                _insertedPageCount = 0;
             UpdateNavigationStackDisplay();
         }
         VerticalStackLayout CreateEventDisplay()
@@ -241,10 +254,11 @@ namespace Maui.Controls.Sample
             var section = shell?.CurrentItem?.CurrentItem;
             if (section != null)
             {
+                var rootTitle = (section.CurrentItem?.Content as Page)?.Title ?? "Root";
                 var stack = section.Stack;
-                tabStackLabel.Text = $"Count={stack.Count}: {string.Join(", ", stack.Select(p => p?.Title ?? "null"))}";
+                tabStackLabel.Text = $"Count={stack.Count}: {string.Join(", ", stack.Select(p => p?.Title ?? rootTitle))}";
                 var navStack = page.Navigation.NavigationStack;
-                navStackLabel.Text = $"Count={navStack.Count}: {string.Join(", ", navStack.Select(p => p?.Title ?? "null"))}";
+                navStackLabel.Text = $"Count={navStack.Count}: {string.Join(", ", navStack.Select(p => p?.Title ?? rootTitle))}";
             }
             else
             {

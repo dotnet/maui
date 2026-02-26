@@ -17,10 +17,15 @@
                         CommandParameter="{Binding CommandParameter}"/>
         </Shell.BackButtonBehavior>
         <ScrollView>
-                <VerticalStackLayout Padding="10"
-                                Spacing="5">
-                        <Grid RowSpacing="4"
-                              ColumnSpacing="10"
+                <VerticalStackLayout Padding="6"
+                                Spacing="3">
+                        <Label Text="Options Page"
+                               FontSize="12"
+                               FontAttributes="Bold"
+                               Margin="0,0,0,2"
+                               AutomationId="OptionsPageIdentityLabel"/>
+                        <Grid RowSpacing="2"
+                              ColumnSpacing="8"
                               RowDefinitions="Auto,Auto,Auto,Auto"
                               ColumnDefinitions="*,*">
                                 <Label Grid.Row="0"
@@ -62,15 +67,15 @@
                         </Grid>
                         <BoxView HeightRequest="1"
                                         Color="Gray"
-                                        Margin="0,5"/>
+                                        Margin="0,2"/>
                         <!-- Navigating Event -->
                         <Label Text="NAVIGATING EVENT"
-                                        FontSize="14"
+                                        FontSize="11"
                                         FontAttributes="Bold"
                                         TextColor="DarkBlue"/>
                         <Grid ColumnDefinitions="Auto,*"
                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                                        RowSpacing="2"
+                                        RowSpacing="1"
                                         ColumnSpacing="8">
                                 <Label Grid.Row="0"
                                                 Grid.Column="0"
@@ -120,15 +125,15 @@
                         </Grid>
                         <BoxView HeightRequest="1"
                                         Color="Gray"
-                                        Margin="0,5"/>
+                                        Margin="0,2"/>
                         <!-- Navigated Event -->
                         <Label Text="NAVIGATED EVENT"
-                                        FontSize="14"
+                                        FontSize="11"
                                         FontAttributes="Bold"
                                         TextColor="DarkGreen"/>
                         <Grid ColumnDefinitions="Auto,*"
                                         RowDefinitions="Auto,Auto,Auto"
-                                        RowSpacing="2"
+                                        RowSpacing="1"
                                         ColumnSpacing="8">
                                 <Label Grid.Row="0"
                                                 Grid.Column="0"
@@ -160,15 +165,15 @@
                         </Grid>
                         <BoxView HeightRequest="1"
                                         Color="Gray"
-                                        Margin="0,5"/>
+                                        Margin="0,2"/>
                         <!-- Navigation Stack -->
                         <Label Text="NAVIGATION STACK"
-                                        FontSize="14"
+                                        FontSize="11"
                                         FontAttributes="Bold"
                                         TextColor="DarkOrange"/>
                         <Grid ColumnDefinitions="Auto,*"
                                         RowDefinitions="Auto,Auto"
-                                        RowSpacing="2"
+                                        RowSpacing="1"
                                         ColumnSpacing="8">
                                 <Label Grid.Row="0"
                                                 Grid.Column="0"
@@ -191,42 +196,42 @@
                         </Grid>
                         <BoxView HeightRequest="1"
                                         Color="Gray"
-                                        Margin="0,5"/>
+                                        Margin="0,2"/>
                         <!-- Tab Navigation Methods -->
                         <Label Text="TAB NAVIGATION METHODS"
-                                        FontSize="14"
+                                        FontSize="11"
                                         FontAttributes="Bold"
                                         TextColor="DarkMagenta"/>
                         <Grid ColumnDefinitions="*,*"
                                         RowDefinitions="Auto,Auto,Auto"
-                                        RowSpacing="4"
+                                        RowSpacing="3"
                                         ColumnSpacing="4">
                                 <Button Grid.Row="0"
                                                 Grid.Column="0"
                                                 Text="OnPushAsync"
                                                 FontSize="11"
-                                                HeightRequest="35"
+                                                HeightRequest="30"
                                         Clicked="OnPushClicked"
                                                 AutomationId="OptionsPushButton"/>
                                 <Button Grid.Row="0"
                                                 Grid.Column="1"
                                                 Text="OnPopAsync"
                                                 FontSize="11"
-                                                HeightRequest="35"
+                                                HeightRequest="30"
                                         Clicked="OnPopClicked"
                                                 AutomationId="OptionsPopButton"/>
                                 <Button Grid.Row="1"
                                                 Grid.Column="0"
                                                 Text="OnPopToRootAsync"
                                                 FontSize="11"
-                                                HeightRequest="35"
+                                                HeightRequest="30"
                                         Clicked="OnPopToRootClicked"
                                                 AutomationId="OptionsPopToRootButton"/>
                                 <Button Grid.Row="1"
                                                 Grid.Column="1"
                                                 Text="OnInsertPageBefore"
                                                 FontSize="11"
-                                                HeightRequest="35"
+                                                HeightRequest="30"
                                         Clicked="OnInsertClicked"
                                                 AutomationId="OptionsInsertButton"/>
                                 <Button Grid.Row="2"
@@ -234,7 +239,7 @@
                                                 Grid.ColumnSpan="2"
                                                 Text="OnRemovePage"
                                                 FontSize="11"
-                                                HeightRequest="35"
+                                                HeightRequest="30"
                                         Clicked="OnRemoveClicked"
                                                 AutomationId="OptionsRemoveButton"/>
                         </Grid>
