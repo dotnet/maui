@@ -49,6 +49,13 @@ public partial class ChatOverlayView : ContentView
 
 	public async Task Show()
 	{
+		// Re-subscribe in case Hide() previously unsubscribed
+		if (_viewModel is not null)
+		{
+			_viewModel.Messages.CollectionChanged -= OnMessagesChanged;
+			_viewModel.Messages.CollectionChanged += OnMessagesChanged;
+		}
+
 		// Ensure panel starts offscreen at its actual height
 		ChatPanel.TranslationY = ChatPanel.Height > 0 ? ChatPanel.Height : 1000;
 
