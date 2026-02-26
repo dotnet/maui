@@ -1,7 +1,7 @@
 ---
 description: "Design document for the maui CLI tool"
 date: 2026-01-07
-updated: 2026-02-25
+updated: 2026-02-26
 ---
 
 # `maui` CLI Design Document
@@ -425,6 +425,7 @@ Future app inspection commands:
 
 - `maui logs` for viewing console output
 - `maui tree` for displaying the visual tree
+- `maui screenshot` for capturing screenshots
 
 **Decision**: Environment setup ships first. App inspection commands
 follow in a future release.
@@ -434,7 +435,7 @@ follow in a future release.
 - [vibe-wpf experiment][vibe-wpf]
 - [dotnet run for .NET MAUI specification][dotnet-run-spec]
 - [Workload manifest specification][workload-spec]
-- [AppleDev.Tools][appledev-tools] - Wraps simctl and xcdevice commands
+- [AppleDev.Tools][appledev-tools] - Wraps simctl and devicectl commands
 - [System.CommandLine documentation](https://learn.microsoft.com/dotnet/standard/commandline/)
 - [Android Debug Bridge (ADB)](https://developer.android.com/studio/command-line/adb)
 - [simctl command-line tool](https://nshipster.com/simctl/)
