@@ -47,22 +47,22 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 	{
 		_context = context;
 
-		logger.LogDebug("[ItineraryPlannerExecutor] Starting - building {Days}-day itinerary for '{Landmark}'",
-			input.DayCount, input.Landmark?.Name ?? "unknown");
+		logger.LogDebug("[ItineraryPlannerExecutor] Starting - building {Days}-day itinerary for '{Destination}'",
+			input.DayCount, input.DestinationName ?? "unknown");
 		logger.LogTrace("[ItineraryPlannerExecutor] Input: {@Input}", input);
 
 		await context.AddEventAsync(new ExecutorStatusEvent("Building your itinerary..."));
 
-		if (input.Landmark is null)
+		if (input.DestinationName is null)
 		{
-			logger.LogDebug("[ItineraryPlannerExecutor] No landmark found - returning error");
+			logger.LogDebug("[ItineraryPlannerExecutor] No destination found - returning error");
 			await context.AddEventAsync(new ExecutorStatusEvent("Error: No destination found"));
-			return new ItineraryResult(JsonSerializer.Serialize(new { error = "Landmark not found" }), input.Language);
+			return new ItineraryResult(JsonSerializer.Serialize(new { error = "Destination not found" }), input.Language);
 		}
 
 		var prompt = $"""
-			Generate a {input.DayCount}-day itinerary to {input.Landmark.Name}.
-			Destination description: {input.Landmark.Description}
+			Generate a {input.DayCount}-day itinerary to {input.DestinationName}.
+			Destination description: {input.DestinationDescription}
 			""";
 
 		logger.LogTrace("[ItineraryPlannerExecutor] Prompt: {Prompt}", prompt);
@@ -92,7 +92,7 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 		logger.LogTrace("[ItineraryPlannerExecutor] Raw response: {Response}", responseText);
 		logger.LogDebug("[ItineraryPlannerExecutor] Completed - itinerary generated, language: {Language}", input.Language);
 
-		await context.AddEventAsync(new ExecutorStatusEvent($"Created {input.DayCount}-day itinerary for {input.Landmark.Name}"));
+		await context.AddEventAsync(new ExecutorStatusEvent($"Created {input.DayCount}-day itinerary for {input.DestinationName}"));
 
 		return new ItineraryResult(responseText, input.Language);
 	}

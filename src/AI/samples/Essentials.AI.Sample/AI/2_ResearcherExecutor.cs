@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
@@ -14,7 +13,7 @@ namespace Maui.Controls.Sample.AI;
 /// The TextSearchProvider is configured with BeforeAIInvoke mode via <see cref="CreateAgent"/>,
 /// so candidate destinations are automatically searched and injected.
 /// </summary>
-internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService, JsonSerializerOptions jsonOptions, ILogger logger)
+internal sealed class ResearcherExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
 	: Executor<TravelPlanResult, ResearchResult>("ResearcherExecutor")
 {
 	public const string Instructions = """
@@ -43,7 +42,9 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 			async (query, ct) =>
 			{
 				ragLogger.LogDebug("[RAG] Searching landmarks for query: '{Query}'", query);
+
 				var results = await dataService.SearchLandmarksAsync(query, maxResults: 5);
+
 				ragLogger.LogDebug("[RAG] Found {Count} landmarks: {Names}",
 					results.Count, string.Join(", ", results.Select(r => r.Name)));
 
@@ -84,6 +85,7 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 			The user wants to visit: "{input.DestinationName}"
 			
 			Which destination from the additional context best matches what the user is looking for?
+			Include the destination's description from the context in your response.
 			""";
 
 		logger.LogTrace("[ResearcherExecutor] Prompt: {Prompt}", prompt);
@@ -97,29 +99,28 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 
 		logger.LogTrace("[ResearcherExecutor] Raw response: {Response}", response.Text);
 
-		// Parse the AI's response to get the matched destination name
+		// Parse the AI's response — both name and description come from RAG context
 		var matchResult = JsonSerializer.Deserialize<DestinationMatchResult>(response.Text, jsonOptions);
-		var matchedName = matchResult?.MatchedDestinationName ?? input.DestinationName;
 
-		logger.LogDebug("[ResearcherExecutor] AI selected '{MatchedName}'", matchedName);
-
-		// Resolve the matched name back to a Landmark object
-		var landmarks = await dataService.SearchLandmarksAsync(matchedName, maxResults: 1);
-		var landmark = landmarks.FirstOrDefault();
-
-		if (landmark is null)
+		if (matchResult is null)
 		{
-			logger.LogDebug("[ResearcherExecutor] Could not resolve landmark for '{MatchedName}'", matchedName);
+			logger.LogDebug("[ResearcherExecutor] Could not parse AI response");
 			await context.AddEventAsync(new ExecutorStatusEvent("No matching destinations found"));
-			return new ResearchResult(null, input.DayCount, input.Language);
+			return new ResearchResult(null, null, input.DayCount, input.Language);
 		}
 
-		var result = new ResearchResult(landmark, input.DayCount, input.Language);
+		logger.LogDebug("[ResearcherExecutor] AI selected '{MatchedName}'", matchResult.MatchedDestinationName);
 
-		logger.LogDebug("[ResearcherExecutor] Completed - selected destination: {Name}", landmark.Name);
+		var result = new ResearchResult(
+			matchResult.MatchedDestinationName,
+			matchResult.MatchedDestinationDescription,
+			input.DayCount,
+			input.Language);
+
+		logger.LogDebug("[ResearcherExecutor] Completed - selected destination: {Name}", matchResult.MatchedDestinationName);
 		logger.LogTrace("[ResearcherExecutor] Output: {@Result}", result);
 
-		await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {landmark.Name}"));
+		await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {matchResult.MatchedDestinationName}"));
 
 		return result;
 	}

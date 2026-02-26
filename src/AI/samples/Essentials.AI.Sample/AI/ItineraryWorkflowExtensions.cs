@@ -65,12 +65,11 @@ public static class ItineraryWorkflowExtensions
 			var researcherAgent = sp.GetRequiredKeyedService<AIAgent>("researcher-agent");
 			var itineraryPlannerAgent = sp.GetRequiredKeyedService<AIAgent>("itinerary-planner-agent");
 			var translatorAgent = sp.GetRequiredKeyedService<AIAgent>("translator-agent");
-			var landmarkService = sp.GetRequiredService<DataService>();
 			var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("ItineraryWorkflow");
 
 			// Create executors for each agent with logging
 			var travelPlannerExecutor = new TravelPlannerExecutor(travelPlannerAgent, JsonOptions, logger);
-			var researcherExecutor = new ResearcherExecutor(researcherAgent, landmarkService, JsonOptions, logger);
+			var researcherExecutor = new ResearcherExecutor(researcherAgent, JsonOptions, logger);
 			var itineraryPlannerExecutor = new ItineraryPlannerExecutor(itineraryPlannerAgent, JsonOptions, logger);
 			var translatorExecutor = new TranslatorExecutor(translatorAgent, JsonOptions, logger);
 			var outputExecutor = new OutputExecutor(logger);
