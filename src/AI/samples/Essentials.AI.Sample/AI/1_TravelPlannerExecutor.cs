@@ -12,8 +12,16 @@ namespace Maui.Controls.Sample.AI;
 /// Extends ChatProtocolExecutor to support the chat protocol for workflow-as-agent.
 /// </summary>
 internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
-	: ChatProtocolExecutor("TravelPlannerExecutor", new ChatProtocolExecutorOptions { AutoSendTurnToken = true })
+	: ChatProtocolExecutor("TravelPlannerExecutor", new ChatProtocolExecutorOptions { AutoSendTurnToken = false })
 {
+	/// <summary>
+	/// Declares TravelPlanResult as a sent message type so the edge router can map it to downstream executors.
+	/// Without this, ChatProtocolExecutor only declares List&lt;ChatMessage&gt; and TurnToken, causing
+	/// TravelPlanResult to be silently dropped with DroppedTypeMismatch.
+	/// </summary>
+	protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
+		=> base.ConfigureProtocol(protocolBuilder).SendsMessage<TravelPlanResult>();
+
 	public const string Instructions = """
 		You are a simple text parser. 
 		
