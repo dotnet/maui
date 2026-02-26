@@ -87,6 +87,35 @@
             BackgroundColor="{StaticResource Primary}"
             TextColor="White"
             Shadow="{Shadow Brush=Black, Offset='0,4', Radius=8, Opacity=0.3}" />
+
+        <!-- Loading Overlay — blocks interaction until embeddings are ready -->
+        <Grid
+            IsVisible="{Binding IsGeneratingEmbeddings}"
+            BackgroundColor="{AppThemeBinding Light=#E0FFFFFF, Dark=#E0000000}"
+            InputTransparent="False"
+            CascadeInputTransparent="False">
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="16"
+                Padding="40">
+                <ActivityIndicator
+                    IsRunning="{Binding IsGeneratingEmbeddings}"
+                    Color="{StaticResource Primary}"
+                    HeightRequest="48"
+                    WidthRequest="48" />
+                <Label
+                    Text="{Binding EmbeddingStatusText}"
+                    FontSize="15"
+                    HorizontalTextAlignment="Center"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                <ProgressBar
+                    Progress="{Binding EmbeddingProgress}"
+                    ProgressColor="{StaticResource Primary}"
+                    WidthRequest="220"
+                    HeightRequest="4" />
+            </VerticalStackLayout>
+        </Grid>
     </Grid>
 
 </ContentPage>

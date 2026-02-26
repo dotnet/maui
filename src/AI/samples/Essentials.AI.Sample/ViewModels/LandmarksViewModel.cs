@@ -18,6 +18,15 @@ public partial class LandmarksViewModel(
 	public partial bool IsLoading { get; set; }
 
 	[ObservableProperty]
+	public partial bool IsGeneratingEmbeddings { get; set; }
+
+	[ObservableProperty]
+	public partial double EmbeddingProgress { get; set; }
+
+	[ObservableProperty]
+	public partial string? EmbeddingStatusText { get; set; }
+
+	[ObservableProperty]
 	public partial string SelectedLanguage { get; set; } = "English";
 
 	public string[] AvailableLanguages => languagePreference.SupportedLanguages.Keys.ToArray();
@@ -36,6 +45,7 @@ public partial class LandmarksViewModel(
 
 		SelectedLanguage = languagePreference.SelectedLanguage;
 		await LoadLandmarksAsync();
+		await WaitForEmbeddingsAsync();
 	}
 
 	private async Task LoadLandmarksAsync()
@@ -57,5 +67,32 @@ public partial class LandmarksViewModel(
 		{
 			IsLoading = false;
 		}
+	}
+
+	private async Task WaitForEmbeddingsAsync()
+	{
+		IsGeneratingEmbeddings = true;
+		EmbeddingStatusText = "Generating search embeddings…";
+		EmbeddingProgress = 0;
+
+		dataService.EmbeddingProgressChanged += OnEmbeddingProgress;
+		try
+		{
+			await dataService.WaitUntilReadyAsync();
+		}
+		finally
+		{
+			dataService.EmbeddingProgressChanged -= OnEmbeddingProgress;
+			IsGeneratingEmbeddings = false;
+		}
+	}
+
+	private void OnEmbeddingProgress(int current, int total)
+	{
+		MainThread.BeginInvokeOnMainThread(() =>
+		{
+			EmbeddingProgress = (double)current / total;
+			EmbeddingStatusText = $"Generating search embeddings… {current}/{total}";
+		});
 	}
 }

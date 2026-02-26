@@ -27,9 +27,7 @@ internal sealed partial class ResearcherExecutor(AIAgent agent, ILogger logger)
 		// TextSearchProvider (configured via CreateAgent) automatically searches
 		// DataService.SearchLandmarksAsync and injects results as context before
 		// the AI call. We just need to ask the AI to pick the best match.
-		var prompt = $"""
-			The user wants to visit: "{input.DestinationName}"
-			""";
+		var prompt = input.DestinationName;
 
 		logger.LogTrace("[ResearcherExecutor] Prompt: {Prompt}", prompt);
 
