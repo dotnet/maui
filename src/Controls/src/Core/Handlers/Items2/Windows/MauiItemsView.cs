@@ -198,18 +198,25 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 	}
 
-	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
-	{
-		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+	// NOTE: MeasureOverride and ArrangeOverride are currently commented out.
+	// The EmptyView is hosted in _emptyViewContentControl (a ContentControl), which automatically
+	// handles measure/arrange as part of the WinUI layout system. Manual measure/arrange calls here
+	// can cause layout conflicts, especially when header/footer visibility changes dynamically:
+	// - When footer is removed: EmptyView may extend beyond bounds (measuring with full size)
+	// - When footer is added back: EmptyView may overlap footer (arranging without accounting for footer space)
+	// The ContentControl's built-in layout correctly respects the StackPanel's space allocation for
+	// header, ItemsRepeater, footer, and EmptyView overlay without needing manual intervention.
+	
+	//protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+	//{
+	//	_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+	//	return base.MeasureOverride(availableSize);
+	//}
 
-		return base.MeasureOverride(availableSize);
-	}
-
-	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
-	{
-		_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-
-		return base.ArrangeOverride(finalSize);
-	}
+	//protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+	//{
+	//	_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+	//	return base.ArrangeOverride(finalSize);
+	//}
 
 }
