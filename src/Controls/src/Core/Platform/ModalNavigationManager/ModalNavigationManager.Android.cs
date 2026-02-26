@@ -377,6 +377,18 @@ namespace Microsoft.Maui.Controls.Platform
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
+
+				// Remove the default dim behind the dialog so that underlying content
+				// (e.g., TabbedPage tabs) remains visible behind the modal.
+				// The modal page's own BackgroundColor controls the overlay appearance.
+				dialog.Window.SetDimAmount(0f);
+
+				// Ensure the content frame inside the DecorView is also transparent,
+				// since the theme may assign it an opaque background.
+				if (dialog.Window.DecorView?.FindViewById(global::Android.Resource.Id.Content) is AView contentFrame)
+				{
+					contentFrame.SetBackgroundColor(AColor.Transparent);
+				}
 			}
 
 			public override void OnResume()

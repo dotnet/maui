@@ -23,6 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("OpenModalButton");
 			App.WaitForElement("CloseModalButton");
 
+			// Take screenshot while modal is open to verify tabs visible behind
+			App.Screenshot("ModalOpenWithTabsVisible");
+
 			// Close the modal
 			App.Tap("CloseModalButton");
 
