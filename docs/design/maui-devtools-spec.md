@@ -1,6 +1,6 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.15-draft  
+**Version**: 2.16-draft  
 **Status**: Proposal  
 **Last Updated**: 2026-02-26
 
@@ -668,7 +668,7 @@ User: maui doctor --json
 
 > **See [IDE Integration](./maui-devtools-ide-integration.md)** for detailed VS Code and Visual Studio UI flows, status panels, and menu integrations.
 
-**Summary**: IDEs spawn `maui` as a child process, invoke `maui doctor --json` on workspace open, display issues in their problems/error list panels, and provide commands for environment setup with progress notifications.
+**Summary**: IDEs consume the `maui` CLI (VS Code, AI agents) or the underlying `android-tools` NuGet library directly (Visual Studio). On workspace open, they invoke environment checks (`maui apple check --json`, `maui android jdk check --json`), display issues in problems panels, and provide commands for environment setup with progress notifications.
 
 ### 6.5 Migration from Existing Setups
 
@@ -996,7 +996,6 @@ maui
 │   ├── runtime
 │   │   ├── check             # Check runtime installation status
 │   │   ├── list              # List runtimes
-│   │   │   ├── --available   # Show runtimes available for download
 │   │   │   └── --all         # Show all (installed + available)
 │   │   └── install           # Install iOS runtime
 │   │       └── <version>     # Runtime version
@@ -1042,7 +1041,6 @@ maui apple simulator list
 maui apple simulator start <udid>
 maui apple runtime check
 maui apple runtime list
-maui apple runtime list --available             # Show downloadable runtimes
 maui apple runtime install 18.5                 # Install specific runtime
 maui apple xcode check
 maui apple xcode list
@@ -1141,7 +1139,7 @@ All commands follow a consistent exit code scheme:
 | `maui apple simulator stop` | Stop simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
 | `maui apple simulator create` | Create simulator | `<name> <device-type> <runtime>` | UDID | 0=success, 2=error |
 | `maui apple simulator delete` | Delete simulator | `<udid>` | Status | 0=success, 5=not found, 2=error |
-| `maui apple runtime list` | List iOS runtimes | `--available`, `--all`, `--json` | Runtime list | 0=success, 2=error |
+| `maui apple runtime list` | List iOS runtimes | `--all`, `--json` | Runtime list | 0=success, 2=error |
 | `maui apple runtime check` | Check runtime status | `--json` | Status report | 0=success, 2=error |
 | `maui apple runtime install` | Install iOS runtime | `<version>` | Progress, result | 0=success, 2=error |
 | `maui apple xcode check` | Check Xcode status | `--json` | Status report | 0=success, 2=error |
@@ -1395,17 +1393,17 @@ All telemetry and logs follow these redaction rules:
 | P0 | iOS simulator listing and start/stop/create/delete | ✅ Implemented |
 | P0 | iOS runtime listing | ✅ Implemented |
 | P0 | Xcode installation listing and selection | ✅ Implemented |
-| P0 | Unified `device list` command (emulators, simulators, physical devices) | ✅ Implemented |
-| P0 | `device screenshot` command | ✅ Implemented |
 | P0 | JSON output for all commands | ✅ Implemented |
 | P0 | VS Code extension integration | ✅ In progress |
-| P1 | Device log streaming | ✅ Implemented |
 | P1 | Interactive prompting | Planned |
 
 ### vNext (v1.x / v2.0)
 
 | Priority | Feature |
 |----------|---------|
+| P0 | Unified `device list` command (emulators, simulators, physical devices) |
+| P0 | `device screenshot` command |
+| P1 | Device log streaming |
 | P1 | Visual Studio extension integration |
 | P1 | iOS runtime installation guidance |
 | P1 | `--correlation-id`, `--offline` global options |
@@ -1431,6 +1429,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.16-draft | 2026-02-26 | Synced with merged summary spec (PR #34217): moved `device list`, `device screenshot`, `device logs` to vNext; updated IDE integration to reflect VS consuming `android-tools` NuGet directly; removed `runtime list --available` (no way to enumerate downloadable runtimes); replaced `maui doctor --json` IDE reference with specific check commands |
 | 2.15-draft | 2026-02-26 | Changed default JDK version from 17 to 21 throughout; fixed `adb exec-out screencap` → `adb exec-out screencap -p` |
 | 2.14-draft | 2026-02-25 | Restored `apple install` with `--accept-license` and `--runtime` flags (optionally accepts license, installs runtimes; could prompt for Xcode install in future); added `apple check` as read-only status; singular `accept-license` for Apple/Xcode matching `xcodebuild -license accept`; Android SDK keeps plural `accept-licenses` |
 | 2.13-draft | 2026-02-19 | Expanded §6.8: added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds. JDK install and SDK bootstrap planned for `dotnet/android-tools`. |
