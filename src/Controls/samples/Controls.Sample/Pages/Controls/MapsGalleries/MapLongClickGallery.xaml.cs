@@ -21,7 +21,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 				Distance.FromMiles(5)));
 		}
 
-		void OnMapLongClicked(object sender, MapClickedEventArgs e)
+		void OnMapLongClicked(object? sender, MapClickedEventArgs e)
 		{
 			_pinCount++;
 
