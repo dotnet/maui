@@ -2,11 +2,10 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
-using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
+using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -19,7 +18,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ContentControl? _emptyViewContentControl;
 	FrameworkElement? _emptyView;
 	View? _mauiEmptyView;
-	WVisibility _emptyViewVisibility = WVisibility.Collapsed;
 
 	ContentControl? _headerContentControl;
 	FrameworkElement? _header;
@@ -30,40 +28,19 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	WStackPanel? _containerPanel;
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
-	ScrollViewer? _scrollViewer;
+	WScrollView? _scrollView;
 
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
-
-		// Suppress the native WinUI ItemContainer visual states (PointerOver,
-		// Pressed, Selected, and their combinations) so they don't overlay
-		// on top of MAUI's own VisualStateManager states. Setting these on
-		// the parent ItemsView cascades to all child ItemContainer instances.
-		// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/ItemContainer/ItemContainer_themeresources.xaml
-		// Fixes: https://github.com/dotnet/maui/issues/13197
-		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
-
-		// Background fills (PART_CommonVisual.Fill) — suppress the gray overlay
-		// that WinUI shows on PointerOver/Pressed so it doesn't interfere with
-		// MAUI's own VisualStateManager states. Fixes: #13197
-		Resources["ItemContainerBackground"] = transparent;
-		Resources["ItemContainerPointerOverBackground"] = transparent;
-		Resources["ItemContainerPressedBackground"] = transparent;
-
-		// Border strokes (PART_CommonVisual.Stroke)
-		Resources["ItemContainerBorderBrush"] = transparent;
-		Resources["ItemContainerPointerOverBorderBrush"] = transparent;
-		Resources["ItemContainerPressedBorderBrush"] = transparent;
 	}
 
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
 	public WVisibility EmptyViewVisibility
 	{
-		get => _emptyViewVisibility;
+		get => _emptyViewContentControl?.Visibility ?? WVisibility.Collapsed;
 		set
 		{
-			_emptyViewVisibility = value;
 			if (_emptyViewContentControl is not null)
 			{
 				_emptyViewContentControl.Visibility = value;
@@ -140,15 +117,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
-		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+		_scrollView = GetTemplateChild("PART_ScrollView") as WScrollView;
 
-		if (_emptyViewContentControl is not null)
+		if (_emptyView is not null && _emptyViewContentControl is not null)
 		{
-			if (_emptyView is not null)
-			{
-				_emptyViewContentControl.Content = _emptyView;
-			}
-			_emptyViewContentControl.Visibility = _emptyViewVisibility;
+			_emptyViewContentControl.Content = _emptyView;
 		}
 
 		if (_header is not null && _headerContentControl is not null)
@@ -196,12 +169,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
 			_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 
-			if (_scrollViewer is not null)
+			if (_scrollView is not null)
 			{
-				_scrollViewer.HorizontalScrollMode = UI.Xaml.Controls.ScrollMode.Enabled;
-				_scrollViewer.VerticalScrollMode = UI.Xaml.Controls.ScrollMode.Disabled;
-				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
-				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
+				_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
 			}
 		}
 		else
@@ -221,49 +191,32 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 			_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 
-			if (_scrollViewer is not null)
+			if (_scrollView is not null)
 			{
-				_scrollViewer.HorizontalScrollMode = UI.Xaml.Controls.ScrollMode.Disabled;
-				_scrollViewer.VerticalScrollMode = UI.Xaml.Controls.ScrollMode.Enabled;
-				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
-				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
+				_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
 			}
 		}
 	}
 
-	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
-	{
-		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+	// NOTE: MeasureOverride and ArrangeOverride are currently commented out.
+	// The EmptyView is hosted in _emptyViewContentControl (a ContentControl), which automatically
+	// handles measure/arrange as part of the WinUI layout system. Manual measure/arrange calls here
+	// can cause layout conflicts, especially when header/footer visibility changes dynamically:
+	// - When footer is removed: EmptyView may extend beyond bounds (measuring with full size)
+	// - When footer is added back: EmptyView may overlap footer (arranging without accounting for footer space)
+	// The ContentControl's built-in layout correctly respects the StackPanel's space allocation for
+	// header, ItemsRepeater, footer, and EmptyView overlay without needing manual intervention.
+	
+	//protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+	//{
+	//	_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+	//	return base.MeasureOverride(availableSize);
+	//}
 
-		// For horizontal layouts, the ScrollViewer provides infinite width to its content,
-		// which prevents UniformGridLayout's ItemsStretch=Fill from stretching items to fill
-		// the viewport when there are few items. Setting MinWidth on the ItemsRepeater
-		// ensures items stretch to at least the viewport width.
-		// Using MinWidth (not Width) preserves horizontal scrolling when content exceeds
-		// the viewport — DesiredSize = max(contentWidth, MinWidth), so the ScrollViewer
-		// still sees the full content extent for many-item scenarios.
-		if (_isHorizontalLayout && _itemsRepeater is not null)
-		{
-			if (!double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
-			{
-				_itemsRepeater.MinWidth = availableSize.Width;
-			}
-		}
-		else if (_itemsRepeater is not null)
-		{
-			// Clear MinWidth for vertical layouts - width is naturally constrained
-			// by the ScrollViewer when horizontal scroll is disabled.
-			_itemsRepeater.ClearValue(MinWidthProperty);
-		}
-
-		return base.MeasureOverride(availableSize);
-	}
-
-	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
-	{
-		_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-
-		return base.ArrangeOverride(finalSize);
-	}
+	//protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+	//{
+	//	_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+	//	return base.ArrangeOverride(finalSize);
+	//}
 
 }
