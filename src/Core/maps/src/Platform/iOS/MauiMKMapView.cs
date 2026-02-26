@@ -138,7 +138,9 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 			else if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				// Clear clustering identifier when disabled
+				// Clear clustering identifier on the view when disabled.
+				// The original value is preserved in the IMapPin data and will be
+				// re-applied from GetPinForAnnotation when clustering is re-enabled.
 				mapPin.ClusteringIdentifier = null;
 			}
 			

@@ -921,7 +921,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			// Recalculate clusters when zoom level changes significantly
 			var currentZoom = _googleMap.CameraPosition.Zoom;
-			if (Math.Abs(currentZoom - _lastClusterZoom) > 0.5f)
+			if (Math.Abs(currentZoom - _lastClusterZoom) > 1.0f)
 			{
 				_lastClusterZoom = currentZoom;
 				_handler.ReclusterPins();
