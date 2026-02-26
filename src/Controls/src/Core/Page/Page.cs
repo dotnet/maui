@@ -780,7 +780,7 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-			
+
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);

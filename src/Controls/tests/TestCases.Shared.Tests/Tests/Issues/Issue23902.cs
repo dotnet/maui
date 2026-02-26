@@ -19,7 +19,6 @@ public class Issue23902 : _IssuesUITest
 	{
 		App.WaitForElement("Go to Third Page");
 		App.Tap("ThirdPageButton");
-		await Task.Delay(300); // Wait for navigation animations to complete.
 		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 1 times"));
 	}
 
@@ -29,11 +28,10 @@ public class Issue23902 : _IssuesUITest
 	{
 		App.WaitForElement("Go to Third Page");
 		App.Tap("ThirdPageButton");
-		await Task.Delay(300); // Wait for navigation animations to complete.
+		App.WaitForElement("SecondPageButton");
 		App.Tap("SecondPageButton");
 		App.WaitForElement("Go to Third Page");
 		App.Tap("ThirdPageButton");
-		await Task.Delay(300); // Wait for navigation animations to complete.
 		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 2 times"));
 	}
 
@@ -43,10 +41,8 @@ public class Issue23902 : _IssuesUITest
 	{
 		App.WaitForElement("Go to Third Page");
 		App.Tap("ThirdPageButton");
-		await Task.Delay(300); // Wait for navigation animations to complete.
 		App.WaitForElement("Go to 4th Page");
 		App.Tap("FourthPageButton");
-		await Task.Delay(300); // Wait for navigation animations to complete. 
 		App.WaitForElement("Go Back to 3rd Page");
 		App.Tap("ThirdPageButton");
 		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 2 times"));

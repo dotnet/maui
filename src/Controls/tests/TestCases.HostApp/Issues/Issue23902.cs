@@ -18,7 +18,7 @@ public class Issue23902FlyoutPage : FlyoutPage
 					new Label
 					{
 						Text = "This is Flyout",
-						AutomationId = "Issue31390_FlyoutLabel"
+						AutomationId = "Issue23902_FlyoutLabel"
 					}
 				}
 			}
@@ -119,7 +119,7 @@ public class Issue23902ThirdPage : ContentPage
 
 	private void OnButtonClicked2(object sender, EventArgs e)
 	{
-		Navigation.PushAsync(new Issue23902FourthdPage());
+		Navigation.PushAsync(new Issue23902FourthPage());
 	}
 
 	private void OnButtonClicked(object sender, EventArgs e)
@@ -144,11 +144,11 @@ public class Issue23902ThirdPage : ContentPage
 	}
 }
 
-public class Issue23902FourthdPage : ContentPage
+public class Issue23902FourthPage : ContentPage
 {
 	Button _button;
 	StackLayout stack;
-	public Issue23902FourthdPage()
+	public Issue23902FourthPage()
 	{
 		_button = new Button();
 		_button.Text = "Go Back to 3rd Page";
