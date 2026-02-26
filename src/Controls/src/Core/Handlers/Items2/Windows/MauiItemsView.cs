@@ -4,279 +4,212 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
-using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
-namespace Microsoft.Maui.Controls.Handlers.Items2
+namespace Microsoft.Maui.Controls.Handlers.Items2;
+/// <summary>
+/// Custom <see cref="UI.Xaml.Controls.ItemsView"/> subclass that adds support for
+/// empty views, headers, footers, and layout orientation for the CollectionView Handler 2.
+/// </summary>
+internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 {
-	/// <summary>
-	/// Custom <see cref="UI.Xaml.Controls.ItemsView"/> subclass that adds support for
-	/// empty views, headers, footers, and layout orientation for the CollectionView Handler 2.
-	/// </summary>
-	internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
+	ContentControl? _emptyViewContentControl;
+	FrameworkElement? _emptyView;
+	View? _mauiEmptyView;
+
+	ContentControl? _headerContentControl;
+	FrameworkElement? _header;
+
+	ContentControl? _footerContentControl;
+	FrameworkElement? _footer;
+
+	WStackPanel? _containerPanel;
+	FrameworkElement? _itemsRepeater;
+	bool _isHorizontalLayout;
+	WScrollView? _scrollView;
+
+	MauiItemsView()
 	{
-		ContentControl? _emptyViewContentControl;
-		FrameworkElement? _emptyView;
-		View? _mauiEmptyView;
+		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+	}
 
-		ContentControl? _headerContentControl;
-		FrameworkElement? _header;
-		View? _mauiHeader;
-		
-		ContentControl? _footerContentControl;
-		FrameworkElement? _footer;
-		View? _mauiFooter;
-
-		WStackPanel? _containerPanel;
-		FrameworkElement? _itemsRepeater;
-		bool _isHorizontalLayout;
-		WScrollView? _scrollView;
-
-		public MauiItemsView()
+	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
+	public WVisibility EmptyViewVisibility
+	{
+		get => _emptyViewContentControl?.Visibility ?? WVisibility.Collapsed;
+		set
 		{
-			Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
-		}
-
-		public static readonly DependencyProperty EmptyViewVisibilityProperty =
-			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
-				typeof(MauiItemsView), new PropertyMetadata(WVisibility.Collapsed, EmptyViewVisibilityChanged));
-
-		static void EmptyViewVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is MauiItemsView itemsView)
-			{
-				// Update this manually; normally we'd just bind this, but TemplateBinding doesn't seem to work
-				// for WASDK right now.
-				itemsView.UpdateEmptyViewVisibility((WVisibility)e.NewValue);
-			}
-		}
-
-		/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
-		public WVisibility EmptyViewVisibility
-		{
-			get
-			{
-				return (WVisibility)GetValue(EmptyViewVisibilityProperty);
-			}
-			set
-			{
-				SetValue(EmptyViewVisibilityProperty, value);
-			}
-		}
-		
-		public static readonly DependencyProperty HeaderVisibilityProperty =
-			DependencyProperty.Register(nameof(HeaderVisibility), typeof(Visibility),
-				typeof(MauiItemsView), new PropertyMetadata(WVisibility.Collapsed, HeaderVisibilityChanged));
-
-		static void HeaderVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is MauiItemsView itemsView)
-			{
-				itemsView.UpdateHeaderVisibility((WVisibility)e.NewValue);
-			}
-		}
-
-		/// <summary>Gets or sets the visibility of the header element.</summary>
-		public WVisibility HeaderVisibility
-		{
-			get => (WVisibility)GetValue(HeaderVisibilityProperty);
-			set => SetValue(HeaderVisibilityProperty, value);
-		}
-		
-		public static readonly DependencyProperty FooterVisibilityProperty =
-			DependencyProperty.Register(nameof(FooterVisibility), typeof(Visibility),
-				typeof(MauiItemsView), new PropertyMetadata(WVisibility.Collapsed, FooterVisibilityChanged));
-
-		static void FooterVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is MauiItemsView itemsView)
-			{
-				itemsView.UpdateFooterVisibility((WVisibility)e.NewValue);
-			}
-		}
-
-		/// <summary>Gets or sets the visibility of the footer element.</summary>
-		public WVisibility FooterVisibility
-		{
-			get => (WVisibility)GetValue(FooterVisibilityProperty);
-			set => SetValue(FooterVisibilityProperty, value);
-		}
-
-		/// <summary>Sets the empty view content and its MAUI view counterpart.</summary>
-		public void SetEmptyView(FrameworkElement emptyView, View mauiEmptyView)
-		{
-			_emptyView = emptyView;
-			_mauiEmptyView = mauiEmptyView;
-
 			if (_emptyViewContentControl is not null)
 			{
-				_emptyViewContentControl.Content = emptyView;
-				UpdateEmptyViewVisibility(EmptyViewVisibility);
+				_emptyViewContentControl.Visibility = value;
 			}
-		}
-		
-		/// <summary>Sets the header content and its MAUI view counterpart.</summary>
-		public void SetHeader(FrameworkElement header, View? mauiHeader)
-		{
-			_header = header;
-			_mauiHeader = mauiHeader;
-
-			if (_headerContentControl is not null)
-			{
-				_headerContentControl.Content = header;
-				UpdateHeaderVisibility(HeaderVisibility);
-			}
-		}
-		
-		/// <summary>Sets the footer content and its MAUI view counterpart.</summary>
-		public void SetFooter(FrameworkElement footer, View? mauiFooter)
-		{
-			_footer = footer;
-			_mauiFooter = mauiFooter;
-
-			if (_footerContentControl is not null)
-			{
-				_footerContentControl.Content = footer;
-				UpdateFooterVisibility(FooterVisibility);
-			}
-		}
-
-		protected override void OnApplyTemplate()
-		{
-			base.OnApplyTemplate();
-
-			_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
-			_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
-			_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
-			_containerPanel = GetTemplateChild("PART_ContainerGrid") as WStackPanel;
-			_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
-			_scrollView = GetTemplateChild("PART_ScrollView") as WScrollView;
-
-			if (_emptyView is not null && _emptyViewContentControl is not null)
-			{
-				_emptyViewContentControl.Content = _emptyView;
-				UpdateEmptyViewVisibility(EmptyViewVisibility);
-			}
-			
-			if (_header is not null && _headerContentControl is not null)
-			{
-				_headerContentControl.Content = _header;
-				UpdateHeaderVisibility(HeaderVisibility);
-			}
-			
-			if (_footer is not null && _footerContentControl is not null)
-			{
-				_footerContentControl.Content = _footer;
-				UpdateFooterVisibility(FooterVisibility);
-			}
-			
-			// Apply orientation if it was set before template was applied
-			ApplyLayoutOrientation();
-		}
-		
-		/// <summary>Sets the layout orientation and updates the visual tree accordingly.</summary>
-		public void SetLayoutOrientation(bool isHorizontal)
-		{
-			_isHorizontalLayout = isHorizontal;
-			ApplyLayoutOrientation();
-		}
-
-		void ApplyLayoutOrientation()
-		{
-			if (_containerPanel is null || _headerContentControl is null || _footerContentControl is null || _itemsRepeater is null)
-			{
-				return;
-			}
-
-			if (_isHorizontalLayout)
-			{
-				_containerPanel.Orientation = Orientation.Horizontal;
-				// For horizontal layout, the container panel should stretch vertically
-				_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
-				_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
-				
-				// Items should stretch vertically (cross-axis)
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
-				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
-				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
-				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
-				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
-				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
-				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
-
-				if (_scrollView is not null)
-				{
-					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
-				}
-			}
-			else
-			{
-				_containerPanel.Orientation = Orientation.Vertical;
-				// For vertical layout, the container panel should stretch horizontally
-				_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-
-				// Items should stretch horizontally (cross-axis)
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
-				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
-				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-
-				if (_scrollView is not null)
-				{
-					_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
-				}
-			}
-		}
-
-		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
-		{
-			_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
-
-			return base.MeasureOverride(availableSize);
-		}
-
-		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
-		{
-			_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-
-			return base.ArrangeOverride(finalSize);
-		}
-
-		void UpdateEmptyViewVisibility(WVisibility visibility)
-		{
-			if (_emptyViewContentControl is null)
-			{
-				return;
-			}
-
-			_emptyViewContentControl.Visibility = visibility;
-		}
-		
-		void UpdateHeaderVisibility(WVisibility visibility)
-		{
-			if (_headerContentControl is null)
-			{
-				return;
-			}
-
-			_headerContentControl.Visibility = visibility;
-		}
-		
-		void UpdateFooterVisibility(WVisibility visibility)
-		{
-			if (_footerContentControl is null)
-			{
-				return;
-			}
-
-			_footerContentControl.Visibility = visibility;
 		}
 	}
+
+	/// <summary>Gets or sets the visibility of the header element.</summary>
+	internal WVisibility HeaderVisibility
+	{
+		get => _headerContentControl?.Visibility ?? WVisibility.Collapsed;
+		set
+		{
+			if (_headerContentControl is not null)
+			{
+				_headerContentControl.Visibility = value;
+			}
+		}
+	}
+
+	/// <summary>Gets or sets the visibility of the footer element.</summary>
+	internal WVisibility FooterVisibility
+	{
+		get => _footerContentControl?.Visibility ?? WVisibility.Collapsed;
+		set
+		{
+			if (_footerContentControl is not null)
+			{
+				_footerContentControl.Visibility = value;
+			}
+		}
+	}
+
+	/// <summary>Sets the empty view content and its MAUI view counterpart.</summary>
+	public void SetEmptyView(FrameworkElement emptyView, View mauiEmptyView)
+	{
+		_emptyView = emptyView;
+		_mauiEmptyView = mauiEmptyView;
+
+		if (_emptyViewContentControl is not null)
+		{
+			_emptyViewContentControl.Content = emptyView;
+		}
+	}
+
+	/// <summary>Sets the header content and its MAUI view counterpart.</summary>
+	internal void SetHeader(FrameworkElement header, View? mauiHeader)
+	{
+		_header = header;
+
+		if (_headerContentControl is not null)
+		{
+			_headerContentControl.Content = header;
+		}
+	}
+
+	/// <summary>Sets the footer content and its MAUI view counterpart.</summary>
+	internal void SetFooter(FrameworkElement footer, View? mauiFooter)
+	{
+		_footer = footer;
+
+		if (_footerContentControl is not null)
+		{
+			_footerContentControl.Content = footer;
+		}
+	}
+
+	protected override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+
+		_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
+		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
+		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
+		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
+		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
+		_scrollView = GetTemplateChild("PART_ScrollView") as WScrollView;
+
+		if (_emptyView is not null && _emptyViewContentControl is not null)
+		{
+			_emptyViewContentControl.Content = _emptyView;
+		}
+
+		if (_header is not null && _headerContentControl is not null)
+		{
+			_headerContentControl.Content = _header;
+		}
+
+		if (_footer is not null && _footerContentControl is not null)
+		{
+			_footerContentControl.Content = _footer;
+		}
+
+		// Apply orientation if it was set before template was applied
+		ApplyLayoutOrientation();
+	}
+
+	/// <summary>Sets the layout orientation and updates the visual tree accordingly.</summary>
+	internal void SetLayoutOrientation(bool isHorizontal)
+	{
+		_isHorizontalLayout = isHorizontal;
+		ApplyLayoutOrientation();
+	}
+
+	void ApplyLayoutOrientation()
+	{
+		if (_containerPanel is null || _headerContentControl is null || _footerContentControl is null || _itemsRepeater is null)
+		{
+			return;
+		}
+
+		if (_isHorizontalLayout)
+		{
+			_containerPanel.Orientation = Orientation.Horizontal;
+			// For horizontal layout, the container panel should stretch vertically
+			_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+			_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
+
+			// Items should stretch vertically (cross-axis)
+			_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+			_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
+			_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+			_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
+			_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
+			_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
+			_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
+			_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
+
+			if (_scrollView is not null)
+			{
+				_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
+			}
+		}
+		else
+		{
+			_containerPanel.Orientation = Orientation.Vertical;
+			// For vertical layout, the container panel should stretch horizontally
+			_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+			_containerPanel.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+
+			// Items should stretch horizontally (cross-axis)
+			_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+			_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+			_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+			_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+			_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+			_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+			_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+			_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+
+			if (_scrollView is not null)
+			{
+				_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
+			}
+		}
+	}
+
+	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+	{
+		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+
+		return base.MeasureOverride(availableSize);
+	}
+
+	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+	{
+		_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+
+		return base.ArrangeOverride(finalSize);
+	}
+
 }
