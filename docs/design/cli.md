@@ -265,12 +265,6 @@ Initial implementation targets Android and iOS/Mac Catalyst, with Windows and ma
 - **Windows** (planned): Uses Windows screen capture APIs to capture the active app window or full screen.
 - **macOS** (planned): Uses macOS screen capture APIs or command-line tooling to capture the active app window or full screen.
 
-### Future Commands
-
-- `maui screenshot` for capturing screenshots of running apps
-- `maui logs` for streaming device logs
-- `maui tree` for inspecting the visual tree
-
 ## Integration with `dotnet run` and `dotnet watch`
 
 The CLI is designed to work seamlessly with existing .NET workflows:
@@ -431,7 +425,6 @@ Future app inspection commands:
 
 - `maui logs` for viewing console output
 - `maui tree` for displaying the visual tree
-- `maui screenshot` for capturing screenshots
 
 **Decision**: Environment setup ships first. App inspection commands
 follow in a future release.
