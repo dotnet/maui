@@ -443,8 +443,8 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 			TextContent => Array.Empty<AIContentNative>(),
 
 			// Function call/result content from prior tool-calling turns is converted to native types.
-			// The native Swift layer gracefully skips these when building the Transcript, since Apple's
-			// LanguageModelSession manages tool call state internally.
+			// The native Swift layer then interprets these as tool-related Transcript entries (toolCalls and
+			// toolOutput), while Apple's LanguageModelSession manages tool call state internally.
 			FunctionCallContent functionCall => [new FunctionCallContentNative(
 				functionCall.CallId ?? string.Empty,
 				functionCall.Name,
