@@ -2,16 +2,20 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample;
 
-public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
+public class CheckBoxViewModel : INotifyPropertyChanged
 {
 	private bool _isChecked = true;
 	private Color _color = null;
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
+	private bool _hasShadow = false;
+	private Shadow _shadow = null;
 	private string _checkedChangedStatus = string.Empty;
 	private bool _isEventStatusLabelVisible = false;
 	private string _commandStatus = string.Empty;
@@ -20,10 +24,11 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
-	public CheckBoxFeatureMatrixViewModel()
+	public CheckBoxViewModel()
 	{
 		CheckedChangedCommand = new Command(OnCheckedChanged);
 		CheckBoxCommand = new Command<string>(OnCheckBoxCommand);
+		SetColorCommand = new Command<string>(OnSetColor);
 	}
 
 	public bool IsChecked
@@ -110,6 +115,7 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 
 	public ICommand CheckedChangedCommand { get; }
 	public ICommand CheckBoxCommand { get; }
+	public ICommand SetColorCommand { get; }
 
 	public string CommandParameter
 	{
@@ -169,6 +175,65 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 		{
 			CommandStatus = $"Command Executed: {parameter}";
 		}
+	}
+
+	private void OnSetColor(string colorName)
+	{
+		Color = colorName switch
+		{
+			"Blue" => Colors.Blue,
+			"Green" => Colors.Green,
+			_ => null,
+		};
+	}
+
+	public bool HasShadow
+	{
+		get => _hasShadow;
+		set
+		{
+			if (_hasShadow != value)
+			{
+				_hasShadow = value;
+				Shadow = value
+					? new Shadow
+					{
+						Radius = 10,
+						Opacity = 1.0f,
+						Brush = Colors.Black.AsPaint(),
+						Offset = new Point(5, 5)
+					}
+					: null;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public Shadow Shadow
+	{
+		get => _shadow;
+		set
+		{
+			if (_shadow != value)
+			{
+				_shadow = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public void Reset()
+	{
+		IsChecked = true;
+		Color = null;
+		IsEnabled = true;
+		IsVisible = true;
+		HasShadow = false;
+		CheckedChangedStatus = string.Empty;
+		IsEventStatusLabelVisible = false;
+		CommandStatus = string.Empty;
+		IsCommandStatusLabelVisible = false;
+		CommandParameter = string.Empty;
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

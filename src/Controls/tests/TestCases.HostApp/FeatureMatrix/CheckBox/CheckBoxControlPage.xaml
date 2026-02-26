@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.CheckBoxControlPage"
-             x:DataType="local:CheckBoxFeatureMatrixViewModel"
+             x:DataType="local:CheckBoxViewModel"
              Title="CheckBoxFeature">
 
         <Grid Padding="20"
@@ -19,6 +19,7 @@
                           VerticalOptions="Center"
                           IsEnabled="{Binding IsEnabled}"
                           IsVisible="{Binding IsVisible}"
+                          Shadow="{Binding Shadow}"
                           Command="{Binding CheckBoxCommand}"
                           CommandParameter="{Binding CommandParameter}"
                           CheckedChanged="OnCheckBoxCheckedChanged"
@@ -122,6 +123,16 @@
                                        AutomationId="CommandParameterEntry"/>
                         </StackLayout>
 
+                        <!-- Shadow -->
+                        <StackLayout Orientation="Horizontal">
+                                <Label Text="Shadow"
+                                       FontAttributes="Bold"
+                                       Margin="0,15,0,0"/>
+                                <CheckBox IsChecked="{Binding HasShadow}"
+                                          VerticalOptions="Center"
+                                          AutomationId="HasShadowCheckBox"/>
+                        </StackLayout>
+
                         <!-- Color -->
 
                         <Grid ColumnDefinitions="*,0.3*,0.3*,0.3*"
@@ -147,7 +158,7 @@
                         </Grid>
 
                         <Button Text="Reset Changes"
-                                Clicked="NavigateToOptionsPage_Clicked"
+                                Clicked="ResetButton_Clicked"
                                 AutomationId="ResetButton"/>
                 </StackLayout>
         </Grid>
