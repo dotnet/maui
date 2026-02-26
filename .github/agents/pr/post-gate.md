@@ -10,7 +10,9 @@ If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2
 
 | Phase | Name | What Happens |
 |-------|------|--------------|
+| 2.5 | **Code Review (Triage)** | Invoke `code-review` skill to assess PR's fix quality — may skip Fix phase if fix is excellent |
 | 3 | **Fix** | Invoke `try-fix` skill repeatedly to explore independent alternatives, then compare with PR's fix |
+| 3.5 | **Code Review (Comparison)** | Invoke `code-review` skill to rank passing candidates on quality dimensions beyond pass/fail |
 | 4 | **Report** | Deliver result (approve PR, request changes, or create new PR) |
 
 ---
@@ -33,6 +35,63 @@ The same "Stop on Environment Blockers" rule from `pr.md` applies here. If try-f
 - Platform tools missing
 
 **STOP and ask the user** before continuing. Do NOT mark try-fix attempts as "BLOCKED" and continue. Either fix the environment issue or get explicit user permission to skip.
+
+---
+
+## 🔍 CODE REVIEW TRIAGE: Assess PR Fix Quality (Phase 2.5)
+
+> **SCOPE**: Evaluate whether the PR's fix is good enough to skip the expensive Fix phase.
+
+**⚠️ Gate Check:** Verify 🚦 Gate is `✅ PASSED` in your state file before proceeding.
+
+### When to Use
+
+This phase applies **only when starting from a PR** (not from an issue without a PR). If starting from an issue with no existing fix, skip directly to Phase 3 (Fix).
+
+### Step 1: Invoke Code Review Skill in Triage Mode
+
+**🚨 MUST invoke as a task agent:**
+
+```markdown
+Invoke the `code-review` skill in triage mode:
+- mode: triage
+- pr_number: XXXXX
+- state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
+
+Assess the PR's fix for correctness, safety, and consistency with MAUI patterns.
+Report: verdict (SKIP_FIX_PHASE or NEEDS_REVIEW), confidence, and findings.
+```
+
+### Step 2: Act on Triage Verdict
+
+**If verdict is `SKIP_FIX_PHASE` with `high` confidence:**
+1. Update state file: set 🔧 Fix status to `⏭️ SKIPPED (Code Review: fix is high quality)`
+2. Record the code review findings in the state file
+3. **Skip directly to Phase 4 (Report)**
+
+**If verdict is `NEEDS_REVIEW`:**
+1. Record findings in the state file
+2. **Pass findings as `hints` to try-fix** in Phase 3 — they tell try-fix what to focus on
+3. Proceed to Phase 3 (Fix) as normal
+
+### Update State File
+
+Add a Code Review Triage section to the state file:
+
+```markdown
+<details>
+<summary><strong>🔍 Code Review Triage</strong></summary>
+
+**Verdict:** SKIP_FIX_PHASE / NEEDS_REVIEW
+**Confidence:** high / medium / low
+
+**Findings:**
+- [Summary of findings from code review]
+
+**Recommendation:** [Skip Fix / Proceed to Fix with hints]
+
+</details>
+```
 
 ---
 
@@ -220,6 +279,47 @@ Update the state file:
 
 ---
 
+## 🔍 CODE REVIEW COMPARISON: Rank Fix Candidates (Phase 3.5)
+
+> **SCOPE**: Compare passing fix candidates on quality dimensions beyond "tests pass."
+
+**⚠️ Check:** 🔧 Fix must be `✅ COMPLETE` before starting this phase. Skip if Fix was skipped (Phase 2.5 returned `SKIP_FIX_PHASE`).
+
+### When to Run
+
+- **Multiple passing candidates exist** (PR fix + one or more try-fix passes) → Run comparison
+- **Only PR fix passes** (all try-fix attempts failed) → Skip this phase, proceed to Report
+- **Fix was skipped** (Phase 2.5 returned `SKIP_FIX_PHASE`) → Skip this phase
+
+### Step 1: Invoke Code Review Skill in Compare Mode
+
+**🚨 MUST invoke as a task agent:**
+
+```markdown
+Invoke the `code-review` skill in compare mode:
+- mode: compare
+- pr_number: XXXXX
+- candidates: [List each passing candidate with approach description and diff path]
+  - PR #XXXXX: [approach] (diff: gh pr diff XXXXX)
+  - try-fix #N: [approach] (diff: CustomAgentLogsTmp/PRState/XXXXX/try-fix/attempt-N/fix.diff)
+- state_file: CustomAgentLogsTmp/PRState/pr-XXXXX.md
+
+Rank the passing candidates on root cause, simplicity, robustness, safety, consistency, and maintainability.
+Report: ranked comparison with recommendation.
+```
+
+### Step 2: Use Ranking for Fix Selection
+
+The code review comparison output provides a quality-based ranking. Use this to inform the "Selected Fix" decision in the state file:
+
+- If code review strongly prefers one candidate → Select it
+- If code review ranks them similarly → Prefer the simpler option
+- If code review raises concerns about the top candidate → Note concerns in state file
+
+**Update state file** with comparison results before proceeding to Report.
+
+---
+
 ## 📋 REPORT: Final Report (Phase 4)
 
 > **SCOPE**: Deliver the final result - either a PR review or a new PR.
@@ -313,6 +413,8 @@ Update all phase statuses to complete.
 
 ## Common Mistakes in Post-Gate Phases
 
+- ❌ **Skipping Code Review Triage** - Always run triage before Fix phase (saves compute when PR is already good)
+- ❌ **Skipping Fix because code review said NEEDS_REVIEW** - NEEDS_REVIEW means proceed TO Fix, not skip it
 - ❌ **Looking at PR's fix before generating ideas** - Generate fix ideas independently first
 - ❌ **Re-testing the PR's fix in try-fix** - Gate already validated it; try-fix tests YOUR ideas
 - ❌ **Skipping models in Round 1** - All 5 models must run try-fix before cross-pollination
@@ -326,6 +428,7 @@ Update all phase statuses to complete.
 - ❌ **Declaring exhaustion prematurely** - All 5 models must confirm "no new ideas" via actual invocation
 - ❌ **Rushing the report** - Take time to write clear justification
 - ❌ **Skipping cleanup between attempts** - ALWAYS run `-Restore` + `git checkout HEAD -- .` + `git clean -fd --exclude=CustomAgentLogsTmp/` between try-fix attempts (see Step 1)
+- ❌ **Skipping Code Review Comparison when multiple candidates pass** - Quality ranking prevents selecting a fragile fix
 
 ---
 

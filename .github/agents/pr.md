@@ -30,13 +30,15 @@ This file covers **Phases 1-2** (Pre-Flight → Gate).
 After Gate passes, read `.github/agents/pr/post-gate.md` for **Phases 3-4**.
 
 ```
-┌─────────────────────────────────────────┐     ┌─────────────────────────────────────────────┐
-│  THIS FILE: pr.md                       │     │  pr/post-gate.md                            │
-│                                         │     │                                             │
-│  1. Pre-Flight  →  2. Gate              │ ──► │  3. Fix  →  4. Report                       │
-│                       ⛔                 │     │                                             │
-│                  MUST PASS              │     │  (Only read after Gate ✅ PASSED)           │
-└─────────────────────────────────────────┘     └─────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐     ┌───────────────────────────────────────────────────────────────┐
+│  THIS FILE: pr.md                       │     │  pr/post-gate.md                                            │
+│                                         │     │                                                             │
+│  1. Pre-Flight  →  2. Gate              │ ──► │  2.5 Code Review  →  3. Fix  →  3.5 Code Review  → 4. Report│
+│                       ⛔                 │     │      (Triage)          │         (Comparison)               │
+│                  MUST PASS              │     │         │              │                                    │
+│                                         │     │    SKIP_FIX_PHASE ────────────────────────► 4. Report       │
+│                                         │     │  (Only read after Gate ✅ PASSED)                          │
+└─────────────────────────────────────────┘     └───────────────────────────────────────────────────────────────┘
 ```
 
 ---
