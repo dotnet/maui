@@ -24,12 +24,13 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 	private const string DefaultModelId = "apple-intelligence";
 
 	private readonly ILogger _logger;
+	private readonly IServiceProvider? _functionInvocationServices;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AppleIntelligenceChatClient"/> class.
 	/// </summary>
 	public AppleIntelligenceChatClient()
-		: this(null)
+		: this(null, null)
 	{
 	}
 
@@ -37,9 +38,11 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 	/// Initializes a new instance of the <see cref="AppleIntelligenceChatClient"/> class.
 	/// </summary>
 	/// <param name="loggerFactory">Optional logger factory for logging tool invocations.</param>
-	public AppleIntelligenceChatClient(ILoggerFactory? loggerFactory)
+	/// <param name="functionInvocationServices">Optional service provider for dependency injection in tool functions.</param>
+	public AppleIntelligenceChatClient(ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
 	{
 		_logger = (ILogger?)loggerFactory?.CreateLogger<AppleIntelligenceChatClient>() ?? NullLogger.Instance;
+		_functionInvocationServices = functionInvocationServices;
 	}
 
 	// static AppleIntelligenceChatClient()
@@ -392,11 +395,11 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 			Temperature = ToNative(options.Temperature),
 			MaxOutputTokens = ToNative(options.MaxOutputTokens),
 			ResponseJsonSchema = ToNative(options.ResponseFormat),
-			Tools = ToNative(options.Tools, cancellationToken)
+			Tools = ToNative(options.Tools, cancellationToken, _functionInvocationServices)
 		};
 	}
 
-	private AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools, CancellationToken cancellationToken)
+	private AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools, CancellationToken cancellationToken, IServiceProvider? services)
 	{
 		AIFunctionToolAdapter[]? adapters = null;
 
@@ -413,7 +416,7 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 
 			adapters = tools
 				.OfType<AIFunction>()
-				.Select(function => new AIFunctionToolAdapter(function, _logger, cancellationToken))
+				.Select(function => new AIFunctionToolAdapter(function, _logger, cancellationToken, services))
 				.ToArray();
 		}
 
@@ -476,7 +479,7 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 	private static NSNumber? ToNative(long? value) =>
 		value.HasValue ? NSNumber.FromInt64(value.Value) : null;
 
-	private sealed partial class AIFunctionToolAdapter(AIFunction function, ILogger logger, CancellationToken cancellationToken) : AIToolNative
+	private sealed partial class AIFunctionToolAdapter(AIFunction function, ILogger logger, CancellationToken cancellationToken, IServiceProvider? services) : AIToolNative
 	{
 		public override string Name => function.Name;
 
@@ -506,7 +509,9 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 				}
 
 				var startingTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
-				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>(argsString, AIJsonUtilities.DefaultOptions);
+
+				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>(argsString, AIJsonUtilities.DefaultOptions) ?? new();
+				aiArgs.Services = services;
 
 				var result = await function.InvokeAsync(aiArgs, cancellationToken: cancellationToken);
 

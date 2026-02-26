@@ -7,10 +7,11 @@ namespace Maui.Controls.Sample.AI;
 /// Final executor that marks the workflow as complete.
 /// The itinerary JSON has already been streamed by ItineraryPlannerExecutor or TranslatorExecutor.
 /// </summary>
-internal sealed class OutputExecutor(ILogger logger)
-	: Executor<ItineraryResult>("OutputExecutor")
+internal sealed partial class OutputExecutor(ILogger logger)
+	: Executor("OutputExecutor")
 {
-	public override async ValueTask HandleAsync(
+	[MessageHandler]
+	private async ValueTask HandleAsync(
 		ItineraryResult input,
 		IWorkflowContext context,
 		CancellationToken cancellationToken = default)
@@ -19,7 +20,7 @@ internal sealed class OutputExecutor(ILogger logger)
 		logger.LogTrace("[OutputExecutor] Final JSON: {Json}", input.ItineraryJson);
 
 		// Don't re-emit the JSON - it was already streamed by ItineraryPlannerExecutor or TranslatorExecutor
-		await context.AddEventAsync(new ExecutorStatusEvent("Your itinerary is ready!"));
+		await context.AddEventAsync(new ExecutorStatusEvent("Your itinerary is ready!"), cancellationToken);
 
 		logger.LogDebug("[OutputExecutor] Completed - workflow finished");
 	}

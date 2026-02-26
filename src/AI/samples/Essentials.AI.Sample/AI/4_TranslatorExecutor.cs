@@ -1,5 +1,4 @@
 using System.Text;
-using Maui.Controls.Sample.Models;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -9,22 +8,14 @@ namespace Maui.Controls.Sample.AI;
 
 /// <summary>
 /// Agent 4: Translator - Translates the itinerary to target language (conditional) with streaming.
-/// No tools - just translation. Uses RunStreamingAsync to emit partial translated JSON.
+/// No tools - just translation.
+/// Uses RunStreamingAsync to emit partial translated JSON.
 /// </summary>
-internal sealed class TranslatorExecutor(AIAgent agent, ILogger logger)
-	: Executor<ItineraryResult, ItineraryResult>("TranslatorExecutor")
+internal sealed partial class TranslatorExecutor(AIAgent agent, ILogger logger)
+	: Executor("TranslatorExecutor")
 {
-	public const string Instructions = """
-		You are a professional translator.
-		Translate the provided JSON content to the target language.
-
-		Rules:
-		1. ALWAYS preserve the JSON format exactly.
-		2. ONLY translate the text values within the JSON.
-		3. NEVER add explanations or commentary.
-		""";
-
-	public override async ValueTask<ItineraryResult> HandleAsync(
+	[MessageHandler]
+	private async ValueTask<ItineraryResult> HandleAsync(
 		ItineraryResult input,
 		IWorkflowContext context,
 		CancellationToken cancellationToken = default)

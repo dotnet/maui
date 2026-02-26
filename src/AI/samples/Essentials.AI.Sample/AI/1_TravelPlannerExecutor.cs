@@ -8,7 +8,6 @@ namespace Maui.Controls.Sample.AI;
 /// <summary>
 /// Agent 1: Travel Planner - Parses natural language to extract intent.
 /// No tools - just NLP to extract destinationName, dayCount, language.
-/// Extends ChatProtocolExecutor to support the chat protocol for workflow-as-agent.
 /// </summary>
 internal sealed class TravelPlannerExecutor(AIAgent agent, ILogger logger)
 	: ChatProtocolExecutor("TravelPlannerExecutor", new ChatProtocolExecutorOptions { AutoSendTurnToken = false })
@@ -20,26 +19,6 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, ILogger logger)
 	/// </summary>
 	protected override ProtocolBuilder ConfigureProtocol(ProtocolBuilder protocolBuilder)
 		=> base.ConfigureProtocol(protocolBuilder).SendsMessage<TravelPlanResult>();
-
-	public const string Instructions = """
-		You are a simple text parser. 
-		
-		Extract ONLY these 3 values from the user's request:
-		1. destinationName: The place/location name mentioned (extract it exactly as written)
-		2. dayCount: The number of days mentioned (default: 3 if not specified)
-		3. language: The language mentioned for the output (default: English if not specified)
-		
-		Rules:
-		1. ALWAYS extract the raw values.
-		2. NEVER make up values or interpret the user's intent.
-		
-		Examples:
-		- "5-day trip to Maui in French" → destinationName: "Maui", dayCount: 5, language: "French"
-		- "Visit the Great Wall" → destinationName: "Great Wall", dayCount: 3, language: "English"
-		- "Itinerary for Tokyo" → destinationName: "Tokyo", dayCount: 3, language: "English"
-		- "Give me a Maui itinerary" → destinationName: "Maui", dayCount: 3, language: "English"
-		- "Plan a 7 day Japan trip in Spanish" → destinationName: "Japan", dayCount: 7, language: "Spanish"
-		""";
 
 	protected override async ValueTask TakeTurnAsync(
 		List<ChatMessage> messages,
@@ -63,7 +42,6 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, ILogger logger)
 		var summary = result.Language != "English"
 			? $"Planning {result.DayCount}-day trip to {result.DestinationName} in {result.Language}"
 			: $"Planning {result.DayCount}-day trip to {result.DestinationName}";
-
 		await context.AddEventAsync(new ExecutorStatusEvent(summary), cancellationToken);
 
 		await context.SendMessageAsync(result, cancellationToken);
