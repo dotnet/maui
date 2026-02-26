@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
@@ -9,7 +10,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class CameraZoomGallery
 	{
-		readonly Location[] _cities =
+		readonly Microsoft.Maui.Devices.Sensors.Location[] _cities =
 		{
 			new(47.6062, -122.3321),  // Seattle
 			new(37.7749, -122.4194),  // San Francisco
@@ -43,7 +44,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		void OnMoveAnimated(object? sender, EventArgs e)
 		{
 			// Move to Seattle with animation
-			var seattle = new MapSpan(new Location(47.6062, -122.3321), 0.1, 0.1);
+			var seattle = new MapSpan(new Microsoft.Maui.Devices.Sensors.Location(47.6062, -122.3321), 0.1, 0.1);
 			map.MoveToRegion(seattle, true);
 			InfoLabel.Text = "Animated move to Seattle";
 		}
@@ -51,7 +52,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 		void OnMoveInstant(object? sender, EventArgs e)
 		{
 			// Move to New York instantly
-			var newYork = new MapSpan(new Location(40.7128, -74.0060), 0.1, 0.1);
+			var newYork = new MapSpan(new Microsoft.Maui.Devices.Sensors.Location(40.7128, -74.0060), 0.1, 0.1);
 			map.MoveToRegion(newYork, false);
 			InfoLabel.Text = "Instant move to New York";
 		}
