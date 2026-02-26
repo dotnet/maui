@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return -1;
 			}
-    
+
 			var diffToStart = (currentCarouselPosition - newPosition + itemSourceCount) % itemSourceCount;
 			var diffToEnd = (newPosition - currentCarouselPosition + itemSourceCount) % itemSourceCount;
 

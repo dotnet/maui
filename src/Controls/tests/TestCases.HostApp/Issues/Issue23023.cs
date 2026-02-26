@@ -42,7 +42,7 @@ public class Issue23023 : ContentPage
 		{
 			AutomationId = "Issue23023_ScrollToLastItem",
 			Text = "ScrollTo Last Item",
-			Command = new Command(() => SelectItem(10))
+			Command = new Command(() => SelectItem(_items.Length - 1))
 		};
 
 		Button reloadItems = new Button

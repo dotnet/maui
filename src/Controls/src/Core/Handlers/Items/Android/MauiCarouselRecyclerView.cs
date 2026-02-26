@@ -391,7 +391,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var currentPosition = Carousel.Position;
-			
+
 			// Calculate the proper looped index for centering
 			var index = LoopedPosition(itemCount) + currentPosition;
 			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
