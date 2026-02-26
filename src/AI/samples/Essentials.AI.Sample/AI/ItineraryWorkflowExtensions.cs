@@ -102,8 +102,8 @@ public static class ItineraryWorkflowExtensions
 				.AddEdge(travelPlannerExecutor, researcherExecutor)
 				.AddEdge(researcherExecutor, itineraryPlannerExecutor)
 				.AddSwitch(itineraryPlannerExecutor, switch_ => switch_
-					.AddCase<ItineraryResult>(IsEnglish, outputExecutor)
-					.AddCase<ItineraryResult>(NeedsTranslation, translatorExecutor))
+					.AddCase<ItineraryResult>(r => r is not null && !string.Equals(r.TargetLanguage, "English", StringComparison.OrdinalIgnoreCase), translatorExecutor)
+					.WithDefault(outputExecutor))
 				.AddEdge(translatorExecutor, outputExecutor)
 				.WithOutputFrom(outputExecutor)
 				.Build();
@@ -116,10 +116,4 @@ public static class ItineraryWorkflowExtensions
 
 		return builder;
 	}
-
-	private static bool IsEnglish(ItineraryResult? result) =>
-		result is not null && string.Equals(result.TargetLanguage, "English", StringComparison.OrdinalIgnoreCase);
-
-	private static bool NeedsTranslation(ItineraryResult? result) =>
-		result is not null && !string.Equals(result.TargetLanguage, "English", StringComparison.OrdinalIgnoreCase);
 }
