@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using PlatformView = UIKit.UIView;
@@ -155,6 +156,34 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapSafeAreaEdges(IViewHandler handler, IView view)
 		{
 			view.InvalidateMeasure();
+
+			// Only propagate to descendants on runtime changes, not initial connect.
+			// On initial connect, children aren't in the tree yet and are born with
+			// _safeAreaInvalidated = true, so they'll self-evaluate on first layout.
+			if (handler.IsConnectingHandler())
+				return;
+
+			// When SafeAreaEdges changes on a view, its descendants may be repositioned on the
+			// next layout pass. Since SafeAreaInsetsDidChange is filtered at the Window level
+			// (to block animation noise), we must explicitly propagate the invalidation so
+			// descendants re-evaluate their safe area padding.
+			InvalidateDescendantSafeAreas(handler.ToPlatform());
+		}
+
+		// Walks the native subview tree and marks every descendant MauiView/MauiScrollView as
+		// needing safe-area re-validation, bypassing the Window-level noise guard.
+		static void InvalidateDescendantSafeAreas(UIView? view)
+		{
+			if (view is null)
+				return;
+			foreach (var subview in view.Subviews)
+			{
+				if (subview is MauiView mauiView)
+					mauiView.InvalidateSafeArea();
+				else if (subview is MauiScrollView mauiScrollView)
+					mauiScrollView.InvalidateSafeArea();
+				InvalidateDescendantSafeAreas(subview);
+			}
 		}
 	}
 }

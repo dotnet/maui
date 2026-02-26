@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _safeAreaInvalidated = true;
 
+		// Cached Window.SafeAreaInsets used to distinguish genuine safe area changes
+		// (rotation, status bar, keyboard) from animation-induced noise.
+		// See SafeAreaInsetsDidChange and InvalidateSafeArea.
+		UIEdgeInsets _lastWindowSafeAreaInsets;
+
 		/// <summary>
 		/// Flag indicating whether this scroll view should apply safe area adjustments to its content.
 		/// Only true when not nested in another scroll view and safe area is not empty.
@@ -149,7 +154,27 @@ namespace Microsoft.Maui.Platform
 			// Note: UIKit invokes LayoutSubviews right after this method
 			base.SafeAreaInsetsDidChange();
 
+			// Window.SafeAreaInsets are stable during animations; filter noise (#33934).
+			if (Window is not null)
+			{
+				var windowInsets = Window.SafeAreaInsets;
+				if (windowInsets == _lastWindowSafeAreaInsets)
+					return;
+				_lastWindowSafeAreaInsets = windowInsets;
+			}
+
 			_safeAreaInvalidated = true;
+		}
+
+		/// <summary>
+		/// Directly invalidates this view's safe area, bypassing the Window.SafeAreaInsets guard.
+		/// Called when a parent's SafeAreaEdges changes and repositions descendants without
+		/// changing Window.SafeAreaInsets.
+		/// </summary>
+		internal void InvalidateSafeArea()
+		{
+			_safeAreaInvalidated = true;
+			SetNeedsLayout();
 		}
 
 		/// <summary>
@@ -169,7 +194,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return safeAreaPage.GetSafeAreaRegionsForEdge(edge);
 			}
-			
+
 			return SafeAreaRegions.None; // Default: edge-to-edge content
 		}
 
@@ -215,7 +240,7 @@ namespace Microsoft.Maui.Platform
 				// All edges have the same value, use built-in iOS behavior
 				// Cache the region value to avoid redundant comparisons
 				var region = leftRegion;
-				
+
 				ContentInsetAdjustmentBehavior = region switch
 				{
 					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
@@ -340,7 +365,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = true;
+			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
 
@@ -370,9 +395,11 @@ namespace Microsoft.Maui.Platform
 				InvalidateConstraintsCache();
 			}
 
-			// Return whether the way safe area interacts with our view has changed
+			// Return whether the way safe area interacts with our view has changed.
+			// Compare at device-pixel resolution to filter sub-pixel noise from animations
+			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
 		}
 
 		UIEdgeInsets SystemAdjustedContentInset
@@ -488,7 +515,7 @@ namespace Microsoft.Maui.Platform
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
 					var horizontalOffset = contentSize.Width - bounds.Width;
-					
+
 					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 					{
 						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
@@ -497,11 +524,11 @@ namespace Microsoft.Maui.Platform
 					{
 						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
 					}
-					
+
 					ContentOffset = new CGPoint(horizontalOffset, 0);
 
 				}
-				else if(_previousEffectiveUserInterfaceLayoutDirection is not null)
+				else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
 				{
 					ContentOffset = new CGPoint(0, ContentOffset.Y);
 				}
@@ -548,7 +575,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="size">The available size constraints.</param>
 		/// <returns>The size that fits within the constraints.</returns>
-		
+
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformLayout is null)
@@ -671,6 +698,9 @@ namespace Microsoft.Maui.Platform
 
 			// Clear cached scroll view descendant status since the view hierarchy may have changed
 			_scrollViewDescendant = null;
+
+			// Reset cached insets so the new window's safe area is processed.
+			_lastWindowSafeAreaInsets = Window?.SafeAreaInsets ?? UIEdgeInsets.Zero;
 
 			// Mark safe area as invalidated since moving to a new window may change safe area
 			_safeAreaInvalidated = true;
