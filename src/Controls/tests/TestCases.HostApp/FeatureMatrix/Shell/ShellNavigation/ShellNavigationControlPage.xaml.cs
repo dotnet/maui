@@ -15,13 +15,14 @@ namespace Maui.Controls.Sample
             InitializeComponent();
             Routing.RegisterRoute("detail1", typeof(DetailPage1));
             Routing.RegisterRoute("detail2", typeof(DetailPage2));
-            Routing.RegisterRoute("detail1/subdetail", typeof(SubDetailPage));
-            Routing.RegisterRoute("detail2/subdetail", typeof(SubDetailPage));
+            Routing.RegisterRoute("detail1/subdetail", typeof(SubDetailPage)); // Contextual route from Detail1
+            Routing.RegisterRoute("detail2/subdetail", typeof(SubDetailPage)); // Contextual route from Detail2
 
             // Register navigation test pages
             Routing.RegisterRoute("navtest1", typeof(NavigationTestPage1));
             Routing.RegisterRoute("navtest2", typeof(NavigationTestPage2));
             Routing.RegisterRoute("navtest3", typeof(NavigationTestPage3));
+
             this.Navigating += OnShellNavigating;
             this.Navigated += OnShellNavigated;
 
@@ -97,6 +98,10 @@ namespace Maui.Controls.Sample
         {
             await Shell.Current.GoToAsync("detail2");
         }
+        async void OnGoToMainClicked(object sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync("//main/MainContent");
+        }
         async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
         {
             await Navigation.PushAsync(new ShellNavigationOptionsPage(_viewModel));
@@ -114,7 +119,6 @@ namespace Maui.Controls.Sample
             {
                 e.Cancel();
                 _viewModel.NavigatingCancelled = e.Cancelled.ToString();
-                _viewModel.DeferralStatus = "Navigation cancelled";
                 return;
             }
 
@@ -122,11 +126,11 @@ namespace Maui.Controls.Sample
             {
                 var deferral = e.GetDeferral();
                 _viewModel.DeferralStatus = "Deferring...";
-                HandleDeferralAsync(deferral);
+                _ = HandleDeferralAsync(deferral);
             }
         }
 
-        async void HandleDeferralAsync(ShellNavigatingDeferral deferral)
+        async Task HandleDeferralAsync(ShellNavigatingDeferral deferral)
         {
             try
             {
@@ -251,6 +255,14 @@ namespace Maui.Controls.Sample
             _currentItemLabel = new Label { FontSize = 12, AutomationId = $"{_prefix}CurrentItemLabel" };
             _shellCurrentLabel = new Label { FontSize = 12, AutomationId = $"{_prefix}ShellCurrentLabel" };
             _commandExecutedLabel = new Label { FontSize = 12, AutomationId = $"{_prefix}CommandExecutedLabel" };
+            var identityLabel = new Label
+            {
+                Text = Title,
+                FontSize = 14,
+                FontAttributes = FontAttributes.Bold,
+                Margin = new Thickness(10, 8, 10, 4),
+                AutomationId = $"{_prefix}PageIdentityLabel"
+            };
             var goBackButton = ShellNavHelper.CreateNavButton("Go Back", "..", $"{_prefix}GoBackButton");
             var contextualNavButton = ShellNavHelper.CreateNavButton("Navigate SubDetail", "subdetail", $"{_prefix}ContextualNavButton");
             var grid = new Grid
@@ -274,7 +286,14 @@ namespace Maui.Controls.Sample
             Grid.SetColumn(contextualNavButton, 0);
             Grid.SetColumnSpan(contextualNavButton, 2);
             grid.Children.Add(contextualNavButton);
-            Content = new ScrollView { Content = grid };
+            Content = new ScrollView
+            {
+                Content = new VerticalStackLayout
+                {
+                    Spacing = 4,
+                    Children = { identityLabel, grid }
+                }
+            };
         }
         static void AddRow(Grid grid, int row, string labelText, Label valueLabel)
         {
@@ -289,8 +308,7 @@ namespace Maui.Controls.Sample
         void OnPageAppearing(object sender, EventArgs e)
         {
             UpdateState();
-            if (Shell.Current != null)
-                Shell.Current.Navigated += OnShellNavigatedUpdateState;
+            Shell.Current?.Navigated += OnShellNavigatedUpdateState;
         }
 
         void OnShellNavigatedUpdateState(object sender, ShellNavigatedEventArgs e)
@@ -320,27 +338,20 @@ namespace Maui.Controls.Sample
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            if (Shell.Current != null)
-                Shell.Current.Navigated -= OnShellNavigatedUpdateState;
+            Shell.Current?.Navigated -= OnShellNavigatedUpdateState;
         }
     }
     public class DetailPage1 : ShellDetailBasePage
     {
         public DetailPage1() : base("DetailPage1", "Detail1")
         {
-            var grid = (Content as ScrollView)?.Content as Grid;
-            if (grid == null)
+            var stackLayout = (Content as ScrollView)?.Content as VerticalStackLayout;
+            if (stackLayout == null)
                 return;
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var absBtn = ShellNavHelper.CreateNavButton("Absolute to Page2", "//page2", "Detail1AbsoluteButton");
-            Grid.SetRow(absBtn, 7);
-            Grid.SetColumnSpan(absBtn, 2);
-            grid.Children.Add(absBtn);
             var relBtn = ShellNavHelper.CreateNavButton("Relative to NavTest1", "navtest1", "Detail1RelativeButton");
-            Grid.SetRow(relBtn, 8);
-            Grid.SetColumnSpan(relBtn, 2);
-            grid.Children.Add(relBtn);
+            stackLayout.Children.Add(absBtn);
+            stackLayout.Children.Add(relBtn);
         }
     }
 
@@ -348,19 +359,13 @@ namespace Maui.Controls.Sample
     {
         public DetailPage2() : base("DetailPage2", "Detail2")
         {
-            var grid = (Content as ScrollView)?.Content as Grid;
-            if (grid == null)
+            var stackLayout = (Content as ScrollView)?.Content as VerticalStackLayout;
+            if (stackLayout == null)
                 return;
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var absToPage2Btn = ShellNavHelper.CreateNavButton("Absolute to Page2", "//page2", "Detail2AbsoluteButton");
-            Grid.SetRow(absToPage2Btn, 7);
-            Grid.SetColumnSpan(absToPage2Btn, 2);
-            grid.Children.Add(absToPage2Btn);
             var backBtn = ShellNavHelper.CreateNavButton("Go Back", "..", "Detail2BackButton");
-            Grid.SetRow(backBtn, 8);
-            Grid.SetColumnSpan(backBtn, 2);
-            grid.Children.Add(backBtn);
+            stackLayout.Children.Add(absToPage2Btn);
+            stackLayout.Children.Add(backBtn);
         }
     }
     public class SubDetailPage : ContentPage
@@ -371,17 +376,23 @@ namespace Maui.Controls.Sample
             AutomationId = "SubDetailPage";
             var currentRouteLabel = new Label { FontSize = 12, AutomationId = "SubDetailCurrentRouteLabel" };
             var sourceContextLabel = new Label { FontSize = 12, AutomationId = "SubDetailSourceContextLabel" };
+            var identityLabel = new Label
+            {
+                Text = "SubDetail Page",
+                FontSize = 14,
+                FontAttributes = FontAttributes.Bold,
+                Margin = new Thickness(10, 8, 10, 4),
+                AutomationId = "SubDetailPageIdentityLabel"
+            };
             var goBackButton = ShellNavHelper.CreateNavButton("Go Back", "..", "SubDetailGoBackButton");
             this.Appearing += (s, e) =>
             {
                 UpdateLabels(currentRouteLabel, sourceContextLabel);
-                if (Shell.Current != null)
-                    Shell.Current.Navigated += OnNavigated;
+                Shell.Current?.Navigated += OnNavigated;
             };
             this.Disappearing += (s, e) =>
             {
-                if (Shell.Current != null)
-                    Shell.Current.Navigated -= OnNavigated;
+                Shell.Current?.Navigated -= OnNavigated;
             };
 
             void OnNavigated(object sender, ShellNavigatedEventArgs e)
@@ -401,20 +412,28 @@ namespace Maui.Controls.Sample
             }
             Content = new ScrollView
             {
-                Content = new Grid
+                Content = new VerticalStackLayout
                 {
-                    Padding = 10,
-                    RowSpacing = 4,
-                    ColumnSpacing = 10,
-                    RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
-                    ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) },
+                    Spacing = 0,
                     Children =
                     {
-                        CreateLabel("Current Route:", 0, 0),
-                        SetGrid(currentRouteLabel, 0, 1),
-                        CreateLabel("Source Context:", 1, 0),
-                        SetGrid(sourceContextLabel, 1, 1),
-                        SetGrid(goBackButton, 2, 0, 2)
+                        identityLabel,
+                        new Grid
+                        {
+                            Padding = 10,
+                            RowSpacing = 4,
+                            ColumnSpacing = 10,
+                            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) },
+                            ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Star) },
+                            Children =
+                            {
+                                CreateLabel("Current Route:", 0, 0),
+                                SetGrid(currentRouteLabel, 0, 1),
+                                CreateLabel("Source Context:", 1, 0),
+                                SetGrid(sourceContextLabel, 1, 1),
+                                SetGrid(goBackButton, 2, 0, 2)
+                            }
+                        }
                     }
                 }
             };
@@ -453,6 +472,7 @@ namespace Maui.Controls.Sample
                     Spacing = 10,
                     Children =
                     {
+                        new Label { Text = "NavTest 1", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = "NavTest1PageIdentityLabel" },
                         ShellNavHelper.CreateNavButton("Go Back", "..", "NavTest1BackButton"),
                         ShellNavHelper.CreateNavButton("Navigate to NavTest2", "navtest2", "NavTest1ToNavTest2Button")
                     }
@@ -474,6 +494,7 @@ namespace Maui.Controls.Sample
                     Spacing = 10,
                     Children =
                     {
+                        new Label { Text = "NavTest 2", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = "NavTest2PageIdentityLabel" },
                         ShellNavHelper.CreateNavButton("Back and Forward", "../navtest3", "NavTest2BackForwardButton"),
                         ShellNavHelper.CreateNavButton("Simple Back", "..", "NavTest2BackButton")
                     }
@@ -495,6 +516,7 @@ namespace Maui.Controls.Sample
                     Spacing = 10,
                     Children =
                     {
+                        new Label { Text = "NavTest 3", FontSize = 14, FontAttributes = FontAttributes.Bold, AutomationId = "NavTest3PageIdentityLabel" },
                         ShellNavHelper.CreateNavButton("Back 2 Levels", "../..", "NavTest3MultiBackButton")
                     }
                 }
@@ -505,7 +527,16 @@ namespace Maui.Controls.Sample
     {
         public static Button CreateNavButton(string text, string route, string automationId)
         {
-            var btn = new Button { Text = text, FontSize = 12, HeightRequest = 35, AutomationId = automationId };
+            var btn = new Button
+            {
+                Text = text,
+                FontSize = 12,
+                HeightRequest = 35,
+                Padding = new Thickness(8, 0),
+                Margin = new Thickness(10, 4),
+                HorizontalOptions = LayoutOptions.Fill,
+                AutomationId = automationId
+            };
             btn.Clicked += async (s, e) =>
             {
                 try
