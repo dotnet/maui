@@ -344,6 +344,8 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 					JsonSerializer.Deserialize<AIFunctionArguments>(
 						functionCall.Arguments,
 						AIJsonUtilities.DefaultOptions))
+				// InformationalOnly: the native Apple Intelligence layer invokes tools directly via
+				// AIFunctionToolAdapter, so these are historical records, not actionable by FICC middleware.
 				{ InformationalOnly = true },
 #pragma warning restore IL3050, IL2026
 
@@ -490,6 +492,8 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 		public override string OutputSchema => function.ReturnJsonSchema?.GetRawText() ?? "{\"type\":\"string\"}";
 
 #pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
+		// WARNING: async void is required by the ObjC callback pattern (AIToolCompletionHandler).
+		// The try/catch below MUST remain exhaustive — any unhandled exception will crash the process.
 		public override async void CallWithArguments(NSString arguments, AIToolCompletionHandler completionHandler)
 		{
 			try
