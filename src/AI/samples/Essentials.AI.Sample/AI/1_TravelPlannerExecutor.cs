@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
@@ -11,7 +10,7 @@ namespace Maui.Controls.Sample.AI;
 /// No tools - just NLP to extract destinationName, dayCount, language.
 /// Extends ChatProtocolExecutor to support the chat protocol for workflow-as-agent.
 /// </summary>
-internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
+internal sealed class TravelPlannerExecutor(AIAgent agent, ILogger logger)
 	: ChatProtocolExecutor("TravelPlannerExecutor", new ChatProtocolExecutorOptions { AutoSendTurnToken = false })
 {
 	/// <summary>
@@ -50,18 +49,13 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 	{
 		logger.LogDebug("[TravelPlannerExecutor] Starting - parsing user intent");
 
-		await context.AddEventAsync(new ExecutorStatusEvent("Analyzing your request..."));
+		await context.AddEventAsync(new ExecutorStatusEvent("Analyzing your request..."), cancellationToken);
 
-		var runOptions = new ChatClientAgentRunOptions(new ChatOptions
-		{
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<TravelPlanResult>(jsonOptions)
-		});
-
-		var response = await agent.RunAsync(messages, options: runOptions, cancellationToken: cancellationToken);
+		var response = await agent.RunAsync<TravelPlanResult>(messages, cancellationToken: cancellationToken);
 
 		logger.LogTrace("[TravelPlannerExecutor] Raw response: {Response}", response.Text);
 
-		var result = JsonSerializer.Deserialize<TravelPlanResult>(response.Text, jsonOptions)!;
+		var result = response.Result;
 
 		logger.LogDebug("[TravelPlannerExecutor] Completed - extracted: destination={Destination}, days={Days}, language={Language}",
 			result.DestinationName, result.DayCount, result.Language);
@@ -69,7 +63,8 @@ internal sealed class TravelPlannerExecutor(AIAgent agent, JsonSerializerOptions
 		var summary = result.Language != "English"
 			? $"Planning {result.DayCount}-day trip to {result.DestinationName} in {result.Language}"
 			: $"Planning {result.DayCount}-day trip to {result.DestinationName}";
-		await context.AddEventAsync(new ExecutorStatusEvent(summary));
+
+		await context.AddEventAsync(new ExecutorStatusEvent(summary), cancellationToken);
 
 		await context.SendMessageAsync(result, cancellationToken);
 	}

@@ -68,8 +68,8 @@ public static class ItineraryWorkflowExtensions
 			var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("ItineraryWorkflow");
 
 			// Create executors for each agent with logging
-			var travelPlannerExecutor = new TravelPlannerExecutor(travelPlannerAgent, JsonOptions, logger);
-			var researcherExecutor = new ResearcherExecutor(researcherAgent, JsonOptions, logger);
+			var travelPlannerExecutor = new TravelPlannerExecutor(travelPlannerAgent, logger);
+			var researcherExecutor = new ResearcherExecutor(researcherAgent, logger);
 			var itineraryPlannerExecutor = new ItineraryPlannerExecutor(itineraryPlannerAgent, JsonOptions, logger);
 			var translatorExecutor = new TranslatorExecutor(translatorAgent, JsonOptions, logger);
 			var outputExecutor = new OutputExecutor(logger);

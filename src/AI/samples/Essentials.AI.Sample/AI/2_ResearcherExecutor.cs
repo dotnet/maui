@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Maui.Controls.Sample.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
@@ -13,7 +12,7 @@ namespace Maui.Controls.Sample.AI;
 /// The TextSearchProvider is configured with BeforeAIInvoke mode via <see cref="CreateAgent"/>,
 /// so candidate destinations are automatically searched and injected.
 /// </summary>
-internal sealed class ResearcherExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
+internal sealed class ResearcherExecutor(AIAgent agent, ILogger logger)
 	: Executor<TravelPlanResult, ResearchResult>("ResearcherExecutor")
 {
 	public const string Instructions = """
@@ -76,7 +75,7 @@ internal sealed class ResearcherExecutor(AIAgent agent, JsonSerializerOptions js
 		logger.LogDebug("[ResearcherExecutor] Starting - finding best matching destination for '{DestinationName}'", input.DestinationName);
 		logger.LogTrace("[ResearcherExecutor] Input: {@Input}", input);
 
-		await context.AddEventAsync(new ExecutorStatusEvent("Searching destinations..."));
+		await context.AddEventAsync(new ExecutorStatusEvent("Searching destinations..."), cancellationToken);
 
 		// TextSearchProvider (configured via CreateAgent) automatically searches
 		// DataService.SearchLandmarksAsync and injects results as context before
@@ -90,24 +89,12 @@ internal sealed class ResearcherExecutor(AIAgent agent, JsonSerializerOptions js
 
 		logger.LogTrace("[ResearcherExecutor] Prompt: {Prompt}", prompt);
 
-		var runOptions = new ChatClientAgentRunOptions(new ChatOptions
-		{
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<DestinationMatchResult>(jsonOptions)
-		});
-
-		var response = await agent.RunAsync(prompt, options: runOptions, cancellationToken: cancellationToken);
+		var response = await agent.RunAsync<DestinationMatchResult>(prompt, cancellationToken: cancellationToken);
 
 		logger.LogTrace("[ResearcherExecutor] Raw response: {Response}", response.Text);
 
 		// Parse the AI's response — both name and description come from RAG context
-		var matchResult = JsonSerializer.Deserialize<DestinationMatchResult>(response.Text, jsonOptions);
-
-		if (matchResult is null)
-		{
-			logger.LogDebug("[ResearcherExecutor] Could not parse AI response");
-			await context.AddEventAsync(new ExecutorStatusEvent("No matching destinations found"));
-			return new ResearchResult(null, null, input.DayCount, input.Language);
-		}
+		var matchResult = response.Result;
 
 		logger.LogDebug("[ResearcherExecutor] AI selected '{MatchedName}'", matchResult.MatchedDestinationName);
 
@@ -120,7 +107,7 @@ internal sealed class ResearcherExecutor(AIAgent agent, JsonSerializerOptions js
 		logger.LogDebug("[ResearcherExecutor] Completed - selected destination: {Name}", matchResult.MatchedDestinationName);
 		logger.LogTrace("[ResearcherExecutor] Output: {@Result}", result);
 
-		await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {matchResult.MatchedDestinationName}"));
+		await context.AddEventAsync(new ExecutorStatusEvent($"Found destination: {matchResult.MatchedDestinationName}"), cancellationToken);
 
 		return result;
 	}
