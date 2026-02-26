@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 	public abstract class UITest : UITestBase
 	{
-		string _defaultiOSVersion = "18.5";
+		string _defaultiOSVersion = "18.4";
 
 		protected const int SetupMaxRetries = 1;
 		protected const int InstrumentationCrashMaxRetries = 1;
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.iOS:
-					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "";
+					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "45BDDE26-330D-4F5E-8CFF-D46D347CE931";
 					if (!string.IsNullOrEmpty(udid))
 					{
 						config.SetProperty("Udid", udid);
