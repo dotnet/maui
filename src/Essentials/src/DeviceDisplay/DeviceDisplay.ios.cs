@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Devices
 		}
 #else
 #if MACCATALYST
-		const string NSApplicationDidChangeScreenParametersNotification = "NSApplicationDidChangeScreenParametersNotification";
+		static readonly NSString ScreenParametersChangedNotification =
+			new NSString("NSApplicationDidChangeScreenParametersNotification");
 #endif
 
 #if MACCATALYST
@@ -91,6 +92,8 @@ namespace Microsoft.Maui.Devices
 #if MACCATALYST
 			// On Mac Catalyst, bypass UIScreen entirely and use Core Graphics APIs
 			// This gets fresh, non-cached screen information directly from the system
+			// Note: CGMainDisplayID returns the primary display (with menu bar).
+			// In multi-monitor setups, this may not be the display the app window is on.
 			var displayId = CGMainDisplayID();
 			var mode = CGDisplayCopyDisplayMode(displayId);
 			
@@ -99,27 +102,34 @@ namespace Microsoft.Maui.Devices
 				return GetFallbackDisplayInfo();
 			}
 
-			var width = (double)CGDisplayModeGetWidth(mode);
-			var height = (double)CGDisplayModeGetHeight(mode);
-			var refreshRate = CGDisplayModeGetRefreshRate(mode);
+			try
+			{
+				var width = (double)CGDisplayModeGetWidth(mode);
+				var height = (double)CGDisplayModeGetHeight(mode);
+				var refreshRate = CGDisplayModeGetRefreshRate(mode);
 
-			// Release the display mode to avoid memory leaks
-			CGDisplayModeRelease(mode);
+				// Get rotation from Core Graphics
+				var rotationDegrees = CGDisplayRotation(displayId);
+				var rotation = ConvertRotationDegreesToDisplayRotation(rotationDegrees);
 
-			// Get rotation from Core Graphics
-			var rotationDegrees = CGDisplayRotation(displayId);
-			var rotation = ConvertRotationDegreesToDisplayRotation(rotationDegrees);
+				// Get scale factor from UIScreen as a fallback (this is usually stable)
+				var scale = UIScreen.MainScreen.Scale;
 
-			// Get scale factor from UIScreen as a fallback (this is usually stable)
-			var scale = UIScreen.MainScreen.Scale;
-
-			return new DisplayInfo(
-				width: width,
-				height: height,
-				density: scale,
-				orientation: DisplayOrientation.Portrait,
-				rotation: rotation,
-				rate: (float)refreshRate);
+				return new DisplayInfo(
+					width: width,
+					height: height,
+					density: scale,
+					// Orientation is intentionally hardcoded to Portrait to match Xamarin's Mac Catalyst
+					// behavior. Deriving orientation from dimensions/rotation breaks existing tests and
+					// Mac desktop apps don't have a meaningful orientation concept.
+					orientation: DisplayOrientation.Portrait,
+					rotation: rotation,
+					rate: (float)refreshRate);
+			}
+			finally
+			{
+				CGDisplayModeRelease(mode);
+			}
 #else
 			// iOS implementation
 			return GetFallbackDisplayInfo();
@@ -162,7 +172,7 @@ namespace Microsoft.Maui.Devices
 #if MACCATALYST
 			// On Mac Catalyst, use multiple notifications to cover all display changes
 			// NSApplicationDidChangeScreenParametersNotification - for resolution/refresh rate changes
-			observer = notificationCenter.AddObserver(new NSString(NSApplicationDidChangeScreenParametersNotification), OnMainDisplayInfoChanged);
+			observer = notificationCenter.AddObserver(ScreenParametersChangedNotification, OnMainDisplayInfoChanged);
 #else
 			// On iOS, use status bar orientation changes (deprecated but still works)
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;

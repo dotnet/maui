@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Devices
 		/// </summary>
 		/// <param name="other"><see cref="DisplayInfo"/> object to compare with.</param>
 		/// <returns><see langword="true"/> if they are equal, otherwise <see langword="false"/>.</returns>
-		/// <remarks>Equality is established by comparing if <see cref="Height"/>, <see cref="Width"/>, <see cref="Density"/>, <see cref="Orientation"/> and <see cref="Rotation"/> are all equal.</remarks>
+		/// <remarks>Equality is established by comparing if <see cref="Height"/>, <see cref="Width"/>, <see cref="Density"/>, <see cref="Orientation"/>, <see cref="Rotation"/> and <see cref="RefreshRate"/> are all equal.</remarks>
 		public bool Equals(DisplayInfo other) =>
 			Width.Equals(other.Width) &&
 			Height.Equals(other.Height) &&
@@ -120,9 +120,9 @@ namespace Microsoft.Maui.Devices
 		/// Gets the hash code for this display info instance.
 		/// </summary>
 		/// <returns>The computed hash code for this device idiom or <c>0</c> when the device platform is <see langword="null"/>.</returns>
-		/// <remarks>The hash code is computed from <see cref="Height"/>, <see cref="Width"/>, <see cref="Density"/>, <see cref="Orientation"/> and <see cref="Rotation"/>.</remarks>
+		/// <remarks>The hash code is computed from <see cref="Height"/>, <see cref="Width"/>, <see cref="Density"/>, <see cref="Orientation"/>, <see cref="Rotation"/> and <see cref="RefreshRate"/>.</remarks>
 		public override int GetHashCode() =>
-			(Height, Width, Density, Orientation, Rotation).GetHashCode();
+			(Height, Width, Density, Orientation, Rotation, RefreshRate).GetHashCode();
 
 		/// <summary>
 		/// Returns a string representation of the current values of this display info instance.
