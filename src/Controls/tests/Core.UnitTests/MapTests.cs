@@ -619,6 +619,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IMapElement)polyline).Clicked();
 
 			Assert.Same(polyline, sender);
+		}
+
+		[Fact]
 		public void ShowInfoWindowDoesNotThrowWhenPinHasNoParent()
 		{
 			var pin = new Pin

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
@@ -18,14 +19,14 @@ public partial class InfoWindowGallery : ContentPage
 		{
 			Label = "Seattle",
 			Address = "Washington, USA",
-			Location = new Location(47.6062, -122.3321)
+			Location = new Microsoft.Maui.Devices.Sensors.Location(47.6062, -122.3321)
 		};
 
 		_nycPin = new Pin
 		{
 			Label = "New York City",
 			Address = "New York, USA",
-			Location = new Location(40.7128, -74.0060)
+			Location = new Microsoft.Maui.Devices.Sensors.Location(40.7128, -74.0060)
 		};
 
 		map.Pins.Add(_seattlePin);
@@ -34,11 +35,11 @@ public partial class InfoWindowGallery : ContentPage
 		{
 			Label = "Los Angeles",
 			Address = "California, USA",
-			Location = new Location(34.0522, -118.2437)
+			Location = new Microsoft.Maui.Devices.Sensors.Location(34.0522, -118.2437)
 		});
 
 		map.MoveToRegion(MapSpan.FromCenterAndRadius(
-			new Location(39.8, -98.5), Distance.FromMiles(1500)));
+			new Microsoft.Maui.Devices.Sensors.Location(39.8, -98.5), Distance.FromMiles(1500)));
 	}
 
 	void OnShowSeattle(object? sender, EventArgs e)
