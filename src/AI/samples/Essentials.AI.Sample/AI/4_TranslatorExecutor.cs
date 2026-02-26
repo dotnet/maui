@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using Maui.Controls.Sample.Models;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
@@ -12,7 +11,7 @@ namespace Maui.Controls.Sample.AI;
 /// Agent 4: Translator - Translates the itinerary to target language (conditional) with streaming.
 /// No tools - just translation. Uses RunStreamingAsync to emit partial translated JSON.
 /// </summary>
-internal sealed class TranslatorExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
+internal sealed class TranslatorExecutor(AIAgent agent, ILogger logger)
 	: Executor<ItineraryResult, ItineraryResult>("TranslatorExecutor")
 {
 	public const string Instructions = """
@@ -33,12 +32,7 @@ internal sealed class TranslatorExecutor(AIAgent agent, JsonSerializerOptions js
 		logger.LogDebug("[TranslatorExecutor] Starting - translating to '{Language}'", input.TargetLanguage);
 		logger.LogTrace("[TranslatorExecutor] Input JSON: {Json}", input.ItineraryJson);
 
-		await context.AddEventAsync(new ExecutorStatusEvent($"Translating to {input.TargetLanguage}..."));
-
-		var runOptions = new ChatClientAgentRunOptions(new ChatOptions
-		{
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(jsonOptions)
-		});
+		await context.AddEventAsync(new ExecutorStatusEvent($"Translating to {input.TargetLanguage}..."), cancellationToken);
 
 		var prompt = $"""
 			Translate to {input.TargetLanguage}:
@@ -49,8 +43,9 @@ internal sealed class TranslatorExecutor(AIAgent agent, JsonSerializerOptions js
 		logger.LogTrace("[TranslatorExecutor] Prompt: {Prompt}", prompt);
 
 		// Use streaming to emit partial JSON as it's generated
+		// ResponseFormat is set at agent creation time in ItineraryWorkflowExtensions
 		var fullResponse = new StringBuilder();
-		await foreach (var update in agent.RunStreamingAsync(prompt, options: runOptions, cancellationToken: cancellationToken))
+		await foreach (var update in agent.RunStreamingAsync(prompt, cancellationToken: cancellationToken))
 		{
 			foreach (var content in update.Contents)
 			{
@@ -67,7 +62,7 @@ internal sealed class TranslatorExecutor(AIAgent agent, JsonSerializerOptions js
 		logger.LogTrace("[TranslatorExecutor] Raw response: {Response}", responseText);
 		logger.LogDebug("[TranslatorExecutor] Completed - translation to '{Language}' finished", input.TargetLanguage);
 
-		await context.AddEventAsync(new ExecutorStatusEvent($"Translated to {input.TargetLanguage}"));
+		await context.AddEventAsync(new ExecutorStatusEvent($"Translated to {input.TargetLanguage}"), cancellationToken);
 
 		return new ItineraryResult(responseText, input.TargetLanguage);
 	}

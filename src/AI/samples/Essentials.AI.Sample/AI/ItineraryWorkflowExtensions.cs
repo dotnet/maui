@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -46,17 +47,37 @@ public static class ItineraryWorkflowExtensions
 			return ResearcherExecutor.CreateAgent(name, chatClient, dataService, loggerFactory);
 		});
 
-		// Agent 3: Itinerary Planner - builds detailed itineraries
-		builder.AddAIAgent(
-			name: "itinerary-planner-agent",
-			instructions: ItineraryPlannerExecutor.Instructions,
-			chatClientServiceKey: "local-model");
+		// Agent 3: Itinerary Planner - builds detailed itineraries (ResponseFormat set at agent level)
+		builder.AddAIAgent("itinerary-planner-agent", (sp, name) =>
+		{
+			var chatClient = sp.GetRequiredKeyedService<IChatClient>("local-model");
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return chatClient.AsAIAgent(new ChatClientAgentOptions
+			{
+				Name = name,
+				ChatOptions = new ChatOptions
+				{
+					Instructions = ItineraryPlannerExecutor.Instructions,
+					ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(JsonOptions),
+				},
+			}, loggerFactory);
+		});
 
-		// Agent 4: Translator - translates content
-		builder.AddAIAgent(
-			name: "translator-agent",
-			instructions: TranslatorExecutor.Instructions,
-			chatClientServiceKey: "cloud-model");
+		// Agent 4: Translator - translates content (ResponseFormat set at agent level)
+		builder.AddAIAgent("translator-agent", (sp, name) =>
+		{
+			var chatClient = sp.GetRequiredKeyedService<IChatClient>("cloud-model");
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return chatClient.AsAIAgent(new ChatClientAgentOptions
+			{
+				Name = name,
+				ChatOptions = new ChatOptions
+				{
+					Instructions = TranslatorExecutor.Instructions,
+					ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(JsonOptions),
+				},
+			}, loggerFactory);
+		});
 
 		// Register the workflow
 		var workflow = builder.AddWorkflow("itinerary-workflow", (sp, key) =>
@@ -70,8 +91,8 @@ public static class ItineraryWorkflowExtensions
 			// Create executors for each agent with logging
 			var travelPlannerExecutor = new TravelPlannerExecutor(travelPlannerAgent, logger);
 			var researcherExecutor = new ResearcherExecutor(researcherAgent, logger);
-			var itineraryPlannerExecutor = new ItineraryPlannerExecutor(itineraryPlannerAgent, JsonOptions, logger);
-			var translatorExecutor = new TranslatorExecutor(translatorAgent, JsonOptions, logger);
+			var itineraryPlannerExecutor = new ItineraryPlannerExecutor(itineraryPlannerAgent, logger);
+			var translatorExecutor = new TranslatorExecutor(translatorAgent, logger);
 			var outputExecutor = new OutputExecutor(logger);
 
 			// Build the 4-agent workflow with conditional translation:

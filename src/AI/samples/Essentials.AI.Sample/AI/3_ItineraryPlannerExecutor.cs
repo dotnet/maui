@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.AI;
 /// Tools: findPointsOfInterest(destinationName, category, query)
 /// Uses RunStreamingAsync to emit partial JSON as it's generated.
 /// </summary>
-internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOptions jsonOptions, ILogger logger)
+internal sealed class ItineraryPlannerExecutor(AIAgent agent, ILogger logger)
 	: Executor<ResearchResult, ItineraryResult>("ItineraryPlannerExecutor")
 {
 	private IWorkflowContext? _context;
@@ -51,12 +51,12 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 			input.DayCount, input.DestinationName ?? "unknown");
 		logger.LogTrace("[ItineraryPlannerExecutor] Input: {@Input}", input);
 
-		await context.AddEventAsync(new ExecutorStatusEvent("Building your itinerary..."));
+		await context.AddEventAsync(new ExecutorStatusEvent("Building your itinerary..."), cancellationToken);
 
 		if (input.DestinationName is null)
 		{
 			logger.LogDebug("[ItineraryPlannerExecutor] No destination found - returning error");
-			await context.AddEventAsync(new ExecutorStatusEvent("Error: No destination found"));
+			await context.AddEventAsync(new ExecutorStatusEvent("Error: No destination found"), cancellationToken);
 			return new ItineraryResult(JsonSerializer.Serialize(new { error = "Destination not found" }), input.Language);
 		}
 
@@ -70,7 +70,6 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 		var runOptions = new ChatClientAgentRunOptions(new ChatOptions
 		{
 			Tools = [AIFunctionFactory.Create(FindPointsOfInterestAsync, name: FindPointsOfInterestToolName)],
-			ResponseFormat = ChatResponseFormat.ForJsonSchema<Itinerary>(jsonOptions)
 		});
 
 		// Use streaming to emit partial JSON as it's generated
@@ -92,7 +91,7 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 		logger.LogTrace("[ItineraryPlannerExecutor] Raw response: {Response}", responseText);
 		logger.LogDebug("[ItineraryPlannerExecutor] Completed - itinerary generated, language: {Language}", input.Language);
 
-		await context.AddEventAsync(new ExecutorStatusEvent($"Created {input.DayCount}-day itinerary for {input.DestinationName}"));
+		await context.AddEventAsync(new ExecutorStatusEvent($"Created {input.DayCount}-day itinerary for {input.DestinationName}"), cancellationToken);
 
 		return new ItineraryResult(responseText, input.Language);
 	}
@@ -104,11 +103,12 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 		[Description("The category of place to find (Hotel, Restaurant, Cafe, Museum, etc.).")]
 		PointOfInterestCategory category,
 		[Description("A natural language query to refine the search.")]
-		string additionalSearchQuery)
+		string additionalSearchQuery,
+		CancellationToken cancellationToken)
 	{
 		if (_context is not null)
 		{
-			await _context.AddEventAsync(new ExecutorStatusEvent($"Finding {category}s near {destinationName}..."));
+			await _context.AddEventAsync(new ExecutorStatusEvent($"Finding {category}s near {destinationName}..."), cancellationToken);
 		}
 
 		var suggestions = GetSuggestions(category);
@@ -123,7 +123,7 @@ internal sealed class ItineraryPlannerExecutor(AIAgent agent, JsonSerializerOpti
 
 		if (_context is not null)
 		{
-			await _context.AddEventAsync(new ExecutorStatusEvent($"Found {suggestions.Length} {category} options"));
+			await _context.AddEventAsync(new ExecutorStatusEvent($"Found {suggestions.Length} {category} options"), cancellationToken);
 		}
 
 		return result;

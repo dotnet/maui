@@ -24,6 +24,7 @@ internal sealed class ResearcherExecutor(AIAgent agent, ILogger logger)
 		2. Select the ONE destination that best matches what the user asked for.
 		3. NEVER make up destinations - only choose from the provided candidates.
 		4. If none of the candidates match well, pick the closest one.
+		5. Include the destination's description from the context in your response.
 		
 		Return the exact name of the best matching destination from the candidates.
 		""";
@@ -80,12 +81,7 @@ internal sealed class ResearcherExecutor(AIAgent agent, ILogger logger)
 		// TextSearchProvider (configured via CreateAgent) automatically searches
 		// DataService.SearchLandmarksAsync and injects results as context before
 		// the AI call. We just need to ask the AI to pick the best match.
-		var prompt = $"""
-			The user wants to visit: "{input.DestinationName}"
-			
-			Which destination from the additional context best matches what the user is looking for?
-			Include the destination's description from the context in your response.
-			""";
+		var prompt = $"""The user wants to visit: "{input.DestinationName}" """;
 
 		logger.LogTrace("[ResearcherExecutor] Prompt: {Prompt}", prompt);
 
