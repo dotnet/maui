@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.Maui.Controls.Platform"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:items="using:Microsoft.Maui.Controls.Handlers.Items2">
+    xmlns:items2="using:Microsoft.Maui.Controls.Handlers.Items2">
 
     <local:ViewToHandlerConverter x:Key="ViewToRenderer"/>
     <local:ViewToHandlerConverter x:Key="ViewToHandler"/>
@@ -289,7 +289,7 @@
     </Style>
 
     <!-- Custom version of the style which removes the horizontal rule below the header -->
-    <Style TargetType="GridViewHeaderItem">
+    <Style TargetType="GridViewHeaderItem"> 
         <Setter Property="FontFamily"
                 Value="{ThemeResource ContentControlThemeFontFamily}"/>
         <Setter Property="FontSize"

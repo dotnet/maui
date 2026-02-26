@@ -30,7 +30,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _isHorizontalLayout;
 	WScrollView? _scrollView;
 
-	MauiItemsView()
+	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
 	}
