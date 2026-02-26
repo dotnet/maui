@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		UIElementCollection? _cachedChildren;
 		bool _modalFocusTrapActive;
 		TypedEventHandler<UIElement, GettingFocusEventArgs>? _gettingFocusHandler;
+		readonly Dictionary<FrameworkElement, KeyboardNavigationMode> _originalTabNavigation = new();
 
 		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
 		internal UIElementCollection CachedChildren
@@ -79,7 +81,10 @@ namespace Microsoft.Maui.Platform
 				{
 					// Cycle Tab within the modal so it never escapes to underlying pages
 					if (pageView is Control modalControl)
+					{
+						_originalTabNavigation[pageView] = modalControl.TabFocusNavigation;
 						modalControl.TabFocusNavigation = KeyboardNavigationMode.Cycle;
+					}
 
 					EnableModalFocusTrap();
 				}
@@ -92,6 +97,12 @@ namespace Microsoft.Maui.Platform
 		{
 			// Clean up any pending Loaded handler to prevent memory leaks
 			pageView.Loaded -= OnPageLoadedForFocus;
+
+			// Restore the original TabFocusNavigation value that was overridden in AddPage
+			if (_originalTabNavigation.Remove(pageView, out var originalMode) && pageView is Control control)
+			{
+				control.TabFocusNavigation = originalMode;
+			}
 
 			// Find the new top page by scanning backwards through children.
 			// CachedChildren may contain non-page elements (e.g., W2DGraphicsView for visual diagnostics),
