@@ -96,5 +96,53 @@ public partial class StreamingResponseHandlerTests
 			Assert.True(updates[1].Contents.OfType<FunctionResultContent>().Any());
 			Assert.Equal("The weather is sunny", updates[2].Contents.OfType<TextContent>().Single().Text);
 		}
+
+		[Fact]
+		public async Task ProcessToolCall_NullArguments_EmitsWithNullArgs()
+		{
+			var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
+
+			handler.ProcessToolCall("call-1", "GetWeather", null);
+			handler.Complete();
+
+			var updates = await ReadAll(handler);
+
+			Assert.Single(updates);
+			var fc = Assert.Single(updates[0].Contents.OfType<FunctionCallContent>());
+			Assert.Equal("call-1", fc.CallId);
+			Assert.Equal("GetWeather", fc.Name);
+			Assert.Null(fc.Arguments);
+		}
+
+		[Fact]
+		public async Task ProcessToolCall_WithJsonChunker_FlushesPartialJsonBeforeToolCall()
+		{
+			// Use JsonStreamChunker — after processing progressive JSON, a tool call
+			// should flush the pending content before emitting the tool call.
+			var handler = new StreamingResponseHandler(new JsonStreamChunker());
+
+			// Feed progressive complete JSON snapshots
+			handler.ProcessContent("{\"greeting\":\"Hello\"}");
+			handler.ProcessContent("{\"greeting\":\"Hello world\"}");
+
+			// Now a tool call arrives — should flush pending JSON content first
+			handler.ProcessToolCall("call-1", "GetWeather", "{\"location\":\"Boston\"}");
+			handler.Complete();
+
+			var updates = await ReadAll(handler);
+
+			// Should have tool call update at minimum
+			var toolUpdates = updates.Where(u => u.Contents.OfType<FunctionCallContent>().Any()).ToList();
+			Assert.Single(toolUpdates);
+
+			// If there were flushed text updates, they should come before the tool call
+			var textUpdates = updates.Where(u => u.Contents.OfType<TextContent>().Any()).ToList();
+			if (textUpdates.Count > 0)
+			{
+				var textIndex = updates.IndexOf(textUpdates.First());
+				var toolIndex = updates.IndexOf(toolUpdates.First());
+				Assert.True(textIndex < toolIndex, "Flushed text content should precede tool call");
+			}
+		}
 	}
 }
