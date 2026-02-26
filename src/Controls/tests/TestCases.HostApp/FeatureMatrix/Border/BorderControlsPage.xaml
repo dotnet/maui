@@ -22,7 +22,7 @@
             StrokeMiterLimit="{Binding StrokeMiterLimit}"
             Padding="{Binding Padding}"
             Shadow="{Binding Shadow}"
-            Background="LightGray"
+            Background="{Binding Background}"
             MaximumHeightRequest="200"
             MaximumWidthRequest="300"
             Content="{Binding ContentView}"

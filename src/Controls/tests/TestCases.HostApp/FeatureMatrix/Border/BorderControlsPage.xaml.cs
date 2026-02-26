@@ -2,12 +2,10 @@ namespace Maui.Controls.Sample;
 
 public class BorderControlPage : NavigationPage
 {
-	private BorderViewModel _viewModel;
-
 	public BorderControlPage()
 	{
-		_viewModel = new BorderViewModel();
-		PushAsync(new BorderControlMainPage(_viewModel));
+		var viewModel = new BorderViewModel();
+		PushAsync(new BorderControlMainPage(viewModel));
 	}
 }
 

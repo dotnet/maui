@@ -139,6 +139,8 @@ public partial class OptionsPage : ContentPage
 			}
 		}
 	}
+	private Color _shadowColor = Colors.Black;
+
 	private void OnShadowEntryChanged(object sender, TextChangedEventArgs e)
 	{
 		if (BindingContext is BorderViewModel viewModel)
@@ -150,13 +152,34 @@ public partial class OptionsPage : ContentPage
 				double radius = double.Parse(RadiusEntry.Text);
 				float opacity = float.Parse(OpacityEntry.Text, System.Globalization.CultureInfo.InvariantCulture);
 
-				viewModel.UpdateShadow(offsetX, offsetY, radius, opacity);
+				viewModel.UpdateShadow(offsetX, offsetY, radius, opacity, _shadowColor);
 			}
 			catch
 			{
 				// Optional: Show validation error
 			}
 		}
+	}
+
+	private void OnShadowColorClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
+		{
+			_shadowColor = button.BackgroundColor;
+		}
+	}
+
+	private void OnBackgroundColorClicked(object sender, EventArgs e)
+	{
+		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
+		{
+			_viewModel.Background = button.BackgroundColor;
+		}
+	}
+
+	private void OnGradientStrokeClicked(object sender, EventArgs e)
+	{
+		_viewModel.SetGradientStroke();
 	}
 	private void OnContentOptionChanged(object sender, CheckedChangedEventArgs e)
 	{

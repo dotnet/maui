@@ -33,6 +33,11 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                      </Grid.RowDefinitions>
 
                      <Label Grid.Row="0"
@@ -90,32 +95,36 @@
                             Text="Stroke Shape"/>
                      <VerticalStackLayout Grid.Row="6"
                                           Grid.ColumnSpan="2">
-                            <RadioButton x:Name="RectangleShapeRadio"
-                                         Content="Rectangle"
-                                         IsChecked="True"
-                                         GroupName="Shape"
-                                         AutomationId="RectangleShapeRadio"
-                                         CheckedChanged="ShapeChanged"/>
+                            <HorizontalStackLayout>
+                                   <RadioButton x:Name="RectangleShapeRadio"
+                                                Content="Rectangle"
+                                                IsChecked="True"
+                                                GroupName="Shape"
+                                                AutomationId="RectangleShapeRadio"
+                                                CheckedChanged="ShapeChanged"/>
+                                   <RadioButton x:Name="EllipseShapeRadio"
+                                                Content="Ellipse"
+                                                GroupName="Shape"
+                                                AutomationId="EllipseShapeRadio"
+                                                CheckedChanged="ShapeChanged"/>
+                            </HorizontalStackLayout>
                             <RadioButton x:Name="RoundRectangleShapeRadio"
                                          Content="RoundRectangle"
                                          GroupName="Shape"
                                          AutomationId="RoundRectangleShapeRadio"
                                          CheckedChanged="ShapeChanged"/>
-                            <RadioButton x:Name="EllipseShapeRadio"
-                                         Content="Ellipse"
-                                         GroupName="Shape"
-                                         AutomationId="EllipseShapeRadio"
-                                         CheckedChanged="ShapeChanged"/>
-                            <RadioButton x:Name="PathShapeRadio"
-                                         Content="Path"
-                                         GroupName="Shape"
-                                         AutomationId="PathShapeRadio"
-                                         CheckedChanged="ShapeChanged"/>
-                            <RadioButton x:Name="PolygonShapeRadio"
-                                         Content="Polygon"
-                                         GroupName="Shape"
-                                         AutomationId="PolygonShapeRadio"
-                                         CheckedChanged="ShapeChanged"/>
+                            <HorizontalStackLayout>
+                                   <RadioButton x:Name="PathShapeRadio"
+                                                Content="Path"
+                                                GroupName="Shape"
+                                                AutomationId="PathShapeRadio"
+                                                CheckedChanged="ShapeChanged"/>
+                                   <RadioButton x:Name="PolygonShapeRadio"
+                                                Content="Polygon"
+                                                GroupName="Shape"
+                                                AutomationId="PolygonShapeRadio"
+                                                CheckedChanged="ShapeChanged"/>
+                            </HorizontalStackLayout>
                      </VerticalStackLayout>
 
                      <Label Grid.Row="9"
@@ -124,26 +133,61 @@
                             Text="Stroke Line Join"/>
                      <VerticalStackLayout Grid.Row="10"
                                           Grid.ColumnSpan="2">
-                            <RadioButton Content="Miter"
-                                         IsChecked="True"
-                                         GroupName="LineJoinGroup"
-                                         AutomationId="MiterLineJoinRadio"
-                                         CheckedChanged="OnLineJoinChanged"/>
-                            <RadioButton Content="Bevel"
-                                         AutomationId="BevelLineJoinRadio"
-                                         GroupName="LineJoinGroup"
-                                         CheckedChanged="OnLineJoinChanged"/>
+                            <HorizontalStackLayout>
+                                   <RadioButton Content="Miter"
+                                                IsChecked="True"
+                                                GroupName="LineJoinGroup"
+                                                AutomationId="MiterLineJoinRadio"
+                                                CheckedChanged="OnLineJoinChanged"/>
+                                   <RadioButton Content="Bevel"
+                                                AutomationId="BevelLineJoinRadio"
+                                                GroupName="LineJoinGroup"
+                                                CheckedChanged="OnLineJoinChanged"/>
+                            </HorizontalStackLayout>
                             <RadioButton Content="Round"
                                          AutomationId="RoundLineJoinRadio"
                                          GroupName="LineJoinGroup"
                                          CheckedChanged="OnLineJoinChanged"/>
                      </VerticalStackLayout>
-              </Grid>
 
-              <!-- Right column: Controls -->
+                     <!-- Background Color Section -->
+                     <Label Grid.Row="11"
+                            Grid.ColumnSpan="2"
+                            FontAttributes="Bold"
+                            Text="Background Color"/>
+                     <HorizontalStackLayout Grid.Row="12"
+                                            Grid.ColumnSpan="2"
+                                            Spacing="10"
+                                            Padding="10">
+                            <Button Text="LightGray"
+                                    BackgroundColor="LightGray"
+                                    Clicked="OnBackgroundColorClicked"
+                                    AutomationId="BackgroundLightGrayButton"
+                                    CommandParameter="LightGray"/>
+                            <Button Text="Yellow"
+                                    BackgroundColor="Yellow"
+                                    Clicked="OnBackgroundColorClicked"
+                                    AutomationId="BackgroundYellowButton"
+                                    CommandParameter="Yellow"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Gradient Stroke -->
+                     <Label Grid.Row="13"
+                            Grid.ColumnSpan="2"
+                            FontAttributes="Bold"
+                            Text="Stroke Brush Type"/>
+                     <HorizontalStackLayout Grid.Row="14"
+                                            Grid.ColumnSpan="2"
+                                            Spacing="5"
+                                            Padding="5">
+                            <Button Text="Gradient"
+                                    Clicked="OnGradientStrokeClicked"
+                                    AutomationId="GradientStrokeButton"/>
+                     </HorizontalStackLayout>
+              </Grid>
               <Grid Grid.Row="1"
                     Grid.Column="1"
-                    RowDefinitions="Auto,Auto,Auto,Auto"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                     ColumnSpacing="5"
                     RowSpacing="5">
 
@@ -245,15 +289,17 @@
                             <Label FontAttributes="Bold"
                                    Text="Choose Border Content:"/>
                             <Grid RowDefinitions="Auto,Auto,Auto">
-                                   <RadioButton Grid.Row="0"
-                                                Content="Label"
-                                                IsChecked="True"
-                                                AutomationId="LabelRadioButton"
-                                                CheckedChanged="OnContentOptionChanged"/>
-                                   <RadioButton Grid.Row="1"
-                                                Content="Button"
-                                                AutomationId="ButtonRadioButton"
-                                                CheckedChanged="OnContentOptionChanged"/>
+                                   <HorizontalStackLayout>
+                                          <RadioButton Grid.Row="0"
+                                                       Content="Label"
+                                                       IsChecked="True"
+                                                       AutomationId="LabelRadioButton"
+                                                       CheckedChanged="OnContentOptionChanged"/>
+                                          <RadioButton Grid.Row="1"
+                                                       Content="Button"
+                                                       AutomationId="ButtonRadioButton"
+                                                       CheckedChanged="OnContentOptionChanged"/>
+                                   </HorizontalStackLayout>
                                    <RadioButton Grid.Row="2"
                                                 Content="Image"
                                                 AutomationId="ImageRadioButton"
@@ -265,22 +311,45 @@
                             <Label
                                    FontAttributes="Bold"
                                    Text="Stroke Line Cap"/>
-                            <RadioButton x:Name="FlatLineCapRadio"
-                                         Content="Flat"
-                                         GroupName="LineCap"
-                                         IsChecked="True"
-                                         AutomationId="FlatLineCapRadio"
-                                         CheckedChanged="LineCapChanged"/>
-                            <RadioButton x:Name="RoundLineCapRadio"
-                                         Content="Round"
-                                         AutomationId="RoundLineCapRadio"
-                                         GroupName="LineCap"
-                                         CheckedChanged="LineCapChanged"/>
+                            <HorizontalStackLayout>
+                                   <RadioButton x:Name="FlatLineCapRadio"
+                                                Content="Flat"
+                                                GroupName="LineCap"
+                                                IsChecked="True"
+                                                AutomationId="FlatLineCapRadio"
+                                                CheckedChanged="LineCapChanged"/>
+                                   <RadioButton x:Name="RoundLineCapRadio"
+                                                Content="Round"
+                                                AutomationId="RoundLineCapRadio"
+                                                GroupName="LineCap"
+                                                CheckedChanged="LineCapChanged"/>
+                            </HorizontalStackLayout>
                             <RadioButton x:Name="SquareLineCapRadio"
                                          Content="Square"
                                          AutomationId="SquareLineCapRadio"
                                          GroupName="LineCap"
                                          CheckedChanged="LineCapChanged"/>
+                     </VerticalStackLayout>
+
+                     <!-- Shadow Color Section -->
+                     <VerticalStackLayout Grid.Row="4">
+                            <Label FontAttributes="Bold"
+                                   Text="Shadow Color"/>
+                            <HorizontalStackLayout Spacing="10"
+                                                   Padding="10">
+                                   <Button Text="Black"
+                                           TextColor="White"
+                                           BackgroundColor="Black"
+                                           Clicked="OnShadowColorClicked"
+                                           AutomationId="ShadowBlackColorButton"
+                                           CommandParameter="Black"/>
+                                   <Button Text="Red"
+                                           TextColor="White"
+                                           BackgroundColor="Red"
+                                           Clicked="OnShadowColorClicked"
+                                           AutomationId="ShadowRedColorButton"
+                                           CommandParameter="Red"/>
+                            </HorizontalStackLayout>
                      </VerticalStackLayout>
               </Grid>
        </Grid>
