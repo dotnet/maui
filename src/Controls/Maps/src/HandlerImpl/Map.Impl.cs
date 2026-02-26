@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Maps
 			var args = new ClusterClickedEventArgs(controlPins, location);
 			ClusterClicked?.Invoke(this, args);
 			return args.Handled;
+		}
 
 		void IMap.UserLocationUpdated(Location location)
 		{

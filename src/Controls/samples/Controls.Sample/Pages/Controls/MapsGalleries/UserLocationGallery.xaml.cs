@@ -17,11 +17,11 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			InitializeComponent();
 			
 			// Set initial map region to somewhere visible
-			var initialLocation = new Location(37.7749, -122.4194); // San Francisco
+			var initialLocation = new Microsoft.Maui.Devices.Sensors.Location(37.7749, -122.4194); // San Francisco
 			userLocationMap.MoveToRegion(MapSpan.FromCenterAndRadius(initialLocation, Distance.FromMiles(10)));
 		}
 
-		private void OnUserLocationChanged(object sender, UserLocationChangedEventArgs e)
+		private void OnUserLocationChanged(object? sender, UserLocationChangedEventArgs e)
 		{
 			_updateCount++;
 			
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		private void OnMapClicked(object sender, MapClickedEventArgs e)
+		private void OnMapClicked(object? sender, MapClickedEventArgs e)
 		{
 			// Just for additional verification - show where user clicked
 			System.Diagnostics.Debug.WriteLine($"Map clicked at: ({e.Location.Latitude:F6}, {e.Location.Longitude:F6})");
