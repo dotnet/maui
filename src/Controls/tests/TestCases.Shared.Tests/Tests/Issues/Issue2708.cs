@@ -10,14 +10,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Android] Prevent tabs from being removed during modal navigation";
+		public override string Issue => "Prevent tabs from being removed during modal navigation";
 
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
 		public void TabsShouldRemainVisibleDuringModalNavigation()
 		{
-			// Verify we're on the TabbedPage and can see Tab 1
-			App.WaitForElement("Tab1");
+			// Verify we're on the TabbedPage and can see Tab 1 content
 			App.WaitForElement("OpenModalButton");
 
 			// Open modal page
@@ -31,9 +30,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// If tabs were destroyed (RemoveTabs) during modal navigation, they won't
 			// be properly restored, and tab switching will fail.
 			App.WaitForElement("StatusLabel");
-			App.Tap("Tab2");
-			App.WaitForElement("Tab2");
-			App.Tap("Tab1");
+			App.TapTab("Tab 2");
+			App.WaitForElement("Tab2Label");
+			App.TapTab("Tab 1");
 			App.WaitForElement("OpenModalButton");
 		}
 	}

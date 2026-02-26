@@ -23,7 +23,7 @@
 
   <ContentPage Title="Tab 2" AutomationId="Tab2">
     <StackLayout Padding="20">
-      <Label Text="This is Tab 2" FontSize="18" HorizontalOptions="Center" />
+      <Label Text="This is Tab 2" FontSize="18" HorizontalOptions="Center" AutomationId="Tab2Label" />
       <Label Text="Switch to this tab to verify tab functionality" FontSize="14" />
     </StackLayout>
   </ContentPage>
