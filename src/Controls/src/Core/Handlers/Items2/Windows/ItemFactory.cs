@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						// Update cached size with actual loaded size
 						var currentCache = handler.GetCachedFirstItemSize();
-						if (!currentCache.IsEmpty && (e.NewSize.Width > currentCache.Width || e.NewSize.Height > currentCache.Height))
+						if (!currentCache.IsEmpty && (e.NewSize.Width != currentCache.Width || e.NewSize.Height != currentCache.Height))
 						{
 							handler.SetCachedFirstItemSize(e.NewSize);
 							// Force layout update

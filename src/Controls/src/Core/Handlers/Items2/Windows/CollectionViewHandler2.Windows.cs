@@ -47,7 +47,16 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
 	{
-		handler.UpdateItemsSource();
+		// When IsGrouped changes with GridItemsLayout, we need to recreate the layout
+		// because grouped grids use GroupableUniformGridLayout while ungrouped use UniformGridLayout
+		if (handler.Layout is GridItemsLayout)
+		{
+			handler.UpdateItemsLayout();
+		}
+		else
+		{
+			handler.UpdateItemsSource();
+		}
 	}
 
 	public static void MapGroupHeaderTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)

@@ -9,9 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	/// Custom UniformGridLayout that handles group headers and footers spanning full width/height.
 	/// This mimics the behavior of CV1's GridView with GroupStyle support.
 	/// </summary>
-#pragma warning disable CsWinRT1028 // Class is not marked partial
-	internal class GroupableUniformGridLayout : UniformGridLayout
-#pragma warning restore CsWinRT1028 // Class is not marked partial
+	internal partial class GroupableUniformGridLayout : UniformGridLayout
 	{
 		protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
 		{
