@@ -225,14 +225,18 @@ interface FunctionResultContentNative
 	[Export("callId", ArgumentSemantic.Copy)]
 	string CallId { get; set; }
 
+	// @property (nonatomic, copy) NSString * _Nonnull name;
+	[Export("name", ArgumentSemantic.Copy)]
+	string Name { get; set; }
+
 	// @property (nonatomic, copy) NSString * _Nonnull result;
 	[Export("result", ArgumentSemantic.Copy)]
 	string Result { get; set; }
 
-	// - (nonnull instancetype)initWithCallId:(NSString * _Nonnull)callId result:(NSString * _Nonnull)result OBJC_DESIGNATED_INITIALIZER;
-	[Export("initWithCallId:result:")]
+	// - (nonnull instancetype)initWithCallId:(NSString * _Nonnull)callId name:(NSString * _Nonnull)name result:(NSString * _Nonnull)result OBJC_DESIGNATED_INITIALIZER;
+	[Export("initWithCallId:name:result:")]
 	[DesignatedInitializer]
-	NativeHandle Constructor(string callId, string result);
+	NativeHandle Constructor(string callId, string name, string result);
 }
 
 // @interface TextContentNative : AIContentNative

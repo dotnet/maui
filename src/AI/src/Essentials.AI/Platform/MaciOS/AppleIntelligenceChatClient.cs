@@ -2,8 +2,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading.Channels;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Maui.Essentials.AI;
 
@@ -14,13 +15,35 @@ namespace Microsoft.Maui.Essentials.AI;
 [SupportedOSPlatform("maccatalyst26.0")]
 [SupportedOSPlatform("macos26.0")]
 [SupportedOSPlatform("tvos26.0")]
-public sealed class AppleIntelligenceChatClient : IChatClient
+public sealed partial class AppleIntelligenceChatClient : IChatClient
 {
 	/// <summary>The provider name for this chat client.</summary>
 	private const string ProviderName = "apple";
 
 	/// <summary>The default model identifier.</summary>
 	private const string DefaultModelId = "apple-intelligence";
+
+	private readonly ILogger _logger;
+	private readonly IServiceProvider? _functionInvocationServices;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AppleIntelligenceChatClient"/> class.
+	/// </summary>
+	public AppleIntelligenceChatClient()
+		: this(null, null)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AppleIntelligenceChatClient"/> class.
+	/// </summary>
+	/// <param name="loggerFactory">Optional logger factory for logging tool invocations.</param>
+	/// <param name="functionInvocationServices">Optional service provider for dependency injection in tool functions.</param>
+	public AppleIntelligenceChatClient(ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
+	{
+		_logger = (ILogger?)loggerFactory?.CreateLogger<AppleIntelligenceChatClient>() ?? NullLogger.Instance;
+		_functionInvocationServices = functionInvocationServices;
+	}
 
 	// static AppleIntelligenceChatClient()
 	// {
@@ -65,42 +88,46 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		var nativeMessages = ToNative(messages, options);
 		var nativeOptions = ToNative(options, cancellationToken);
 		var native = new ChatClientNative();
+		var handler = new NonStreamingResponseHandler();
 
-		var tcs = new TaskCompletionSource<ChatResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+		// Set up cancellation registration before invoking native to avoid race
+		CancellationTokenNative? nativeToken = null;
+		var registration = cancellationToken.Register(() => nativeToken?.Cancel());
 
-		CancellationTokenRegistration registration = default;
-
-		var nativeToken = native.GetResponse(
+		nativeToken = native.GetResponse(
 			nativeMessages,
 			nativeOptions,
-			onUpdate: (update) =>
-			{
-				// Updates are not used in non-streaming mode
-			},
+			onUpdate: (_) => { },
 			onComplete: (response, error) =>
 			{
 				registration.Dispose();
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
-					{
-						tcs.TrySetCanceled();
-					}
+						handler.CompleteCancelled(cancellationToken);
 					else
-					{
-						tcs.TrySetException(new NSErrorException(error));
-					}
+						handler.CompleteWithError(new NSErrorException(error));
 				}
 				else
 				{
-					var chatResponse = FromNativeChatResponse(response);
-					tcs.TrySetResult(chatResponse);
+					try
+					{
+						handler.Complete(FromNativeChatResponse(response));
+					}
+					catch (Exception ex)
+					{
+						handler.CompleteWithError(ex);
+					}
 				}
 			});
 
-		registration = cancellationToken.Register(() => nativeToken?.Cancel());
+		// If cancellation was already requested before native call started
+		if (cancellationToken.IsCancellationRequested)
+		{
+			nativeToken?.Cancel();
+		}
 
-		return tcs.Task;
+		return handler.Task;
 	}
 
 	/// <inheritdoc />
@@ -111,68 +138,42 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	{
 		var nativeMessages = ToNative(messages, options);
 		var nativeOptions = ToNative(options, cancellationToken);
-
 		var native = new ChatClientNative();
-
-		var channel = Channel.CreateUnbounded<ChatResponseUpdate>();
-
-		// Use appropriate stream chunker based on response format
 		StreamChunkerBase chunker = nativeOptions?.ResponseJsonSchema is not null
 			? new JsonStreamChunker()
 			: new PlainTextStreamChunker();
+		var handler = new StreamingResponseHandler(chunker);
 
-		CancellationTokenRegistration registration = default;
+		// Set up cancellation registration before invoking native to avoid race
+		CancellationTokenNative? nativeToken = null;
+		var registration = cancellationToken.Register(() => nativeToken?.Cancel());
 
-		var nativeToken = native.StreamResponse(
+		nativeToken = native.StreamResponse(
 			nativeMessages,
 			nativeOptions,
 			onUpdate: (update) =>
 			{
-				switch (update.UpdateType)
+				try
 				{
-					case ResponseUpdateTypeNative.Content:
-						// Handle text updates
-						if (update.Text is not null)
-						{
-							// Use stream chunker to compute delta - handles both JSON and plain text
-							var delta = chunker.Process(update.Text);
-
-							if (!string.IsNullOrEmpty(delta))
-							{
-								var chatUpdate = new ChatResponseUpdate
-								{
-									Role = ChatRole.Assistant,
-									Contents = { new TextContent(delta) }
-								};
-
-								channel.Writer.TryWrite(chatUpdate);
-							}
-						}
-						break;
-
-					case ResponseUpdateTypeNative.ToolCall:
-						var args = update.ToolCallArguments is null
-							? null
-#pragma warning disable IL3050, IL2026 // DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled
-							: JsonSerializer.Deserialize<AIFunctionArguments>(update.ToolCallArguments, AIJsonUtilities.DefaultOptions);
-#pragma warning restore IL3050, IL2026
-
-						var toolCallUpdate = new ChatResponseUpdate
-						{
-							Role = ChatRole.Assistant,
-							Contents = { new FunctionCallContent(update.ToolCallId!, update.ToolCallName!, args) }
-						};
-						channel.Writer.TryWrite(toolCallUpdate);
-						break;
-
-					case ResponseUpdateTypeNative.ToolResult:
-						var toolResultUpdate = new ChatResponseUpdate
-						{
-							Role = ChatRole.Assistant,
-							Contents = { new FunctionResultContent(update.ToolCallId!, update.ToolCallResult!) }
-						};
-						channel.Writer.TryWrite(toolResultUpdate);
-						break;
+					switch (update.UpdateType)
+					{
+						case ResponseUpdateTypeNative.Content:
+							handler.ProcessContent(update.Text);
+							break;
+						case ResponseUpdateTypeNative.ToolCall:
+							handler.ProcessToolCall(update.ToolCallId, update.ToolCallName, update.ToolCallArguments);
+							break;
+						case ResponseUpdateTypeNative.ToolResult:
+							handler.ProcessToolResult(update.ToolCallId, update.ToolCallResult);
+							break;
+						default:
+							throw new NotSupportedException($"Unsupported update type: {update.UpdateType}");
+					}
+				}
+				catch (Exception ex)
+				{
+					nativeToken?.Cancel();
+					handler.CompleteWithError(ex);
 				}
 			},
 			onComplete: (finalResult, error) =>
@@ -181,38 +182,41 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 				if (error is not null)
 				{
 					if (error.Domain == nameof(ChatClientNative) && error.Code == (int)ChatClientError.Cancelled)
-					{
-						channel.Writer.Complete(new OperationCanceledException());
-					}
+						handler.CompleteWithError(new OperationCanceledException(cancellationToken));
 					else
-					{
-						channel.Writer.Complete(new NSErrorException(error));
-					}
+						handler.CompleteWithError(new NSErrorException(error));
 				}
 				else
 				{
-					// Flush any remaining content from the chunker
-					var finalChunk = chunker.Flush();
-					if (!string.IsNullOrEmpty(finalChunk))
+					try
 					{
-						var finalUpdate = new ChatResponseUpdate
-						{
-							Role = ChatRole.Assistant,
-							Contents = { new TextContent(finalChunk) }
-						};
-
-						channel.Writer.TryWrite(finalUpdate);
+						handler.Complete();
 					}
-
-					channel.Writer.Complete();
+					catch (Exception ex)
+					{
+						handler.CompleteWithError(ex);
+					}
 				}
 			});
 
-		registration = cancellationToken.Register(() => nativeToken?.Cancel());
-
-		await foreach (var update in channel.Reader.ReadAllAsync(cancellationToken))
+		// If cancellation was already requested before native call started
+		if (cancellationToken.IsCancellationRequested)
 		{
-			yield return update;
+			nativeToken?.Cancel();
+		}
+
+		try
+		{
+			await foreach (var update in handler.ReadAllAsync(cancellationToken))
+			{
+				yield return update;
+			}
+		}
+		finally
+		{
+			// Cancel native operation if consumer stopped iterating early (break, Take, etc.)
+			nativeToken?.Cancel();
+			registration.Dispose();
 		}
 	}
 
@@ -251,15 +255,31 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	{
 		ArgumentNullException.ThrowIfNull(messages);
 
-		var toConvert = options?.Instructions is not null
-			? messages.Prepend(new(ChatRole.System, options.Instructions))
-			: messages;
+		var messagesList = messages.ToList();
 
-		ChatMessageNative[] nativeMessages = [.. toConvert.Select(ToNative)];
+		// Build a callId → name lookup from FunctionCallContent so FunctionResultContent can reference the tool name
+		var callIdToName = new Dictionary<string, string>();
+		foreach (var msg in messagesList)
+		{
+			foreach (var content in msg.Contents.OfType<FunctionCallContent>())
+			{
+				if (content.CallId is not null && content.Name is not null)
+					callIdToName[content.CallId] = content.Name;
+			}
+		}
+
+		var toConvert = options?.Instructions is not null
+			? messagesList.Prepend(new(ChatRole.System, options.Instructions))
+			: messagesList;
+
+		// Filter out any messages that produce empty native content as a safety net.
+		ChatMessageNative[] nativeMessages = [.. toConvert
+			.Select(m => ToNative(m, callIdToName))
+			.Where(m => m.Contents.Length > 0)];
 
 		if (nativeMessages.Length == 0)
 		{
-			throw new ArgumentException("The messages collection must contain at least one message.", nameof(messages));
+			throw new ArgumentException("No messages with convertible content found. Ensure at least one message contains TextContent, FunctionCallContent, or FunctionResultContent.", nameof(messages));
 		}
 
 		return nativeMessages;
@@ -323,7 +343,8 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 					functionCall.Name,
 					JsonSerializer.Deserialize<AIFunctionArguments>(
 						functionCall.Arguments,
-						AIJsonUtilities.DefaultOptions)),
+						AIJsonUtilities.DefaultOptions))
+				{ InformationalOnly = true },
 #pragma warning restore IL3050, IL2026
 
 			FunctionResultContentNative functionResult =>
@@ -334,11 +355,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			_ => throw new ArgumentException($"Unsupported content type: {content.GetType().Name}", nameof(content))
 		};
 
-	private static ChatMessageNative ToNative(ChatMessage message) =>
+	private static ChatMessageNative ToNative(ChatMessage message, Dictionary<string, string>? callIdToName = null) =>
 		new()
 		{
 			Role = ToNative(message.Role),
-			Contents = [.. message.Contents.SelectMany(ToNative)]
+			Contents = [.. message.Contents.SelectMany(c => ToNative(c, callIdToName))]
 		};
 
 	private static ChatRoleNative ToNative(ChatRole role)
@@ -355,7 +376,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			throw new ArgumentOutOfRangeException(nameof(role), $"The role '{role}' is not supported by Apple Intelligence chat APIs.");
 	}
 
-	private static ChatOptionsNative? ToNative(ChatOptions? options, CancellationToken cancellationToken)
+	private ChatOptionsNative? ToNative(ChatOptions? options, CancellationToken cancellationToken)
 	{
 		if (options is null)
 		{
@@ -374,11 +395,11 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			Temperature = ToNative(options.Temperature),
 			MaxOutputTokens = ToNative(options.MaxOutputTokens),
 			ResponseJsonSchema = ToNative(options.ResponseFormat),
-			Tools = ToNative(options.Tools, cancellationToken)
+			Tools = ToNative(options.Tools, cancellationToken, _functionInvocationServices)
 		};
 	}
 
-	private static AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools, CancellationToken cancellationToken)
+	private AIFunctionToolAdapter[]? ToNative(IList<AITool>? tools, CancellationToken cancellationToken, IServiceProvider? services)
 	{
 		AIFunctionToolAdapter[]? adapters = null;
 
@@ -395,7 +416,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 
 			adapters = tools
 				.OfType<AIFunction>()
-				.Select(function => new AIFunctionToolAdapter(function, cancellationToken))
+				.Select(function => new AIFunctionToolAdapter(function, _logger, cancellationToken, services))
 				.ToArray();
 		}
 
@@ -406,7 +427,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 		format switch
 		{
 			ChatResponseFormatJson jsonFormat when StrictSchemaTransformCache.GetOrCreateTransformedSchema(jsonFormat) is { } jsonSchema =>
-				(NSString?)ChatResponseFormat.ForJsonSchema(jsonSchema, jsonFormat.SchemaName ?? "json_schema", jsonFormat.SchemaDescription).Schema.ToString(),
+				(NSString?)jsonSchema.GetRawText(),
 			ChatResponseFormatJson jsonFormat when jsonFormat.Schema is not null =>
 				throw new InvalidOperationException("Failed to transform JSON schema for Apple Intelligence chat API."),
 			ChatResponseFormatJson =>
@@ -414,12 +435,36 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			_ => null
 		};
 
-	private static IEnumerable<AIContentNative> ToNative(AIContent content) =>
+	private static IEnumerable<AIContentNative> ToNative(AIContent content, Dictionary<string, string>? callIdToName = null) =>
 		content switch
 		{
 			// Apple Intelligence performs better when each text content chunk is separated
 			TextContent textContent when textContent.Text is not null => [new TextContentNative(textContent.Text)],
 			TextContent => Array.Empty<AIContentNative>(),
+
+			// Function call/result content from prior tool-calling turns is converted to native types.
+			// The native Swift layer gracefully skips these when building the Transcript, since Apple's
+			// LanguageModelSession manages tool call state internally.
+			FunctionCallContent functionCall => [new FunctionCallContentNative(
+				functionCall.CallId ?? string.Empty,
+				functionCall.Name,
+#pragma warning disable IL3050, IL2026
+				functionCall.Arguments is not null ? JsonSerializer.Serialize(functionCall.Arguments, AIJsonUtilities.DefaultOptions) : "{}")],
+#pragma warning restore IL3050, IL2026
+
+			FunctionResultContent functionResult => [new FunctionResultContentNative(
+				functionResult.CallId ?? string.Empty,
+				// Look up the tool name from the corresponding FunctionCallContent via callId
+				(functionResult.CallId is not null && callIdToName?.TryGetValue(functionResult.CallId, out var name) == true) ? name : string.Empty,
+#pragma warning disable IL3050, IL2026
+				// If Result is already a string (common when replaying history), pass through to avoid double-serialization
+				functionResult.Result switch
+				{
+					string s => s,
+					not null => JsonSerializer.Serialize(functionResult.Result, AIJsonUtilities.DefaultOptions),
+					_ => "{}"
+				})],
+#pragma warning restore IL3050, IL2026
 
 			// Throw for unsupported content types
 			_ => throw new ArgumentException($"The content type '{content.GetType().FullName}' is not supported by Apple Intelligence chat APIs.", nameof(content))
@@ -434,7 +479,7 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 	private static NSNumber? ToNative(long? value) =>
 		value.HasValue ? NSNumber.FromInt64(value.Value) : null;
 
-	private sealed class AIFunctionToolAdapter(AIFunction function, CancellationToken cancellationToken) : AIToolNative
+	private sealed partial class AIFunctionToolAdapter(AIFunction function, ILogger logger, CancellationToken cancellationToken, IServiceProvider? services) : AIToolNative
 	{
 		public override string Name => function.Name;
 
@@ -451,24 +496,54 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			{
 				ArgumentNullException.ThrowIfNull(arguments);
 
-				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>((string)arguments, AIJsonUtilities.DefaultOptions);
+				var argsString = (string)arguments;
+
+				// Log before invocation — matches FunctionInvokingChatClient pattern
+				if (logger.IsEnabled(LogLevel.Trace))
+				{
+					LogInvokingSensitive(logger, function.Name, argsString);
+				}
+				else if (logger.IsEnabled(LogLevel.Debug))
+				{
+					LogInvoking(logger, function.Name);
+				}
+
+				var startingTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+
+				var aiArgs = JsonSerializer.Deserialize<AIFunctionArguments>(argsString, AIJsonUtilities.DefaultOptions) ?? new();
+				aiArgs.Services = services;
 
 				var result = await function.InvokeAsync(aiArgs, cancellationToken: cancellationToken);
 
 				var resultJson = result is not null
-					? JsonSerializer.Serialize(result)
+					? JsonSerializer.Serialize(result, AIJsonUtilities.DefaultOptions)
 					: "{}";
+
+				// Log after invocation
+				var duration = System.Diagnostics.Stopwatch.GetElapsedTime(startingTimestamp);
+				if (logger.IsEnabled(LogLevel.Trace))
+				{
+					LogInvocationCompletedSensitive(logger, function.Name, duration, resultJson);
+				}
+				else if (logger.IsEnabled(LogLevel.Debug))
+				{
+					LogInvocationCompleted(logger, function.Name, duration);
+				}
 
 				completionHandler(new NSString(resultJson), null);
 			}
 			catch (OperationCanceledException)
 			{
+				LogInvocationCanceled(logger, function.Name);
+
 				var error = new NSError(new NSString(nameof(ChatClientNative)), (int)ChatClientError.Cancelled);
 
 				completionHandler(null, error);
 			}
 			catch (Exception ex)
 			{
+				LogInvocationFailed(logger, function.Name, ex);
+
 				var userInfo = NSDictionary<NSString, NSObject>.FromObjectsAndKeys(
 					[new NSString(ex.Message)],
 					[NSError.LocalizedDescriptionKey]);
@@ -479,5 +554,24 @@ public sealed class AppleIntelligenceChatClient : IChatClient
 			}
 		}
 #pragma warning restore IL3050, IL2026
+
+		[LoggerMessage(LogLevel.Debug, "Invoking {MethodName}.", SkipEnabledCheck = true)]
+		private static partial void LogInvoking(ILogger logger, string methodName);
+
+		[LoggerMessage(LogLevel.Trace, "Invoking {MethodName}({Arguments}).", SkipEnabledCheck = true)]
+		private static partial void LogInvokingSensitive(ILogger logger, string methodName, string arguments);
+
+		[LoggerMessage(LogLevel.Debug, "{MethodName} invocation completed. Duration: {Duration}")]
+		private static partial void LogInvocationCompleted(ILogger logger, string methodName, TimeSpan duration);
+
+		[LoggerMessage(LogLevel.Trace, "{MethodName} invocation completed. Duration: {Duration}. Result: {Result}")]
+		private static partial void LogInvocationCompletedSensitive(ILogger logger, string methodName, TimeSpan duration, string result);
+
+		[LoggerMessage(LogLevel.Debug, "{MethodName} invocation canceled.")]
+		private static partial void LogInvocationCanceled(ILogger logger, string methodName);
+
+		[LoggerMessage(LogLevel.Error, "{MethodName} invocation failed.")]
+		private static partial void LogInvocationFailed(ILogger logger, string methodName, Exception error);
 	}
+
 }

@@ -226,6 +226,18 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
 		return sb.ToString();
 	}
 
+	/// <inheritdoc />
+	public override void Reset()
+	{
+		_prevState = null;
+		_openStringPath = null;
+		_emittedStrings.Clear();
+		_pendingStrings.Clear();
+		_pendingContainers.Clear();
+		_emittedPaths.Clear();
+		_openStructures.Clear();
+	}
+
 	// ═══════════════════════════════════════════════════════════════════════════════════════════
 	// FIRST CHUNK PROCESSING
 	// ═══════════════════════════════════════════════════════════════════════════════════════════
