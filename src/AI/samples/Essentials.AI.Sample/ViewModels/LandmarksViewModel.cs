@@ -46,13 +46,11 @@ public partial class LandmarksViewModel(
 			FeaturedLandmark = await dataService.GetFeaturedLandmarkAsync();
 
 			ContinentGroups.Clear();
+
 			var landmarksByContinent = await dataService.GetLandmarksByContinentAsync();
-			foreach (var continent in landmarksByContinent.Keys.OrderBy(c => c))
+			foreach (var (continent, landmarks) in landmarksByContinent.OrderBy(kvp => kvp.Key))
 			{
-				if (landmarksByContinent.TryGetValue(continent, out var landmarks))
-				{
-					ContinentGroups.Add(new ContinentGroup(continent, landmarks));
-				}
+				ContinentGroups.Add(new ContinentGroup(continent, [.. landmarks.OrderBy(l => l.Name)]));
 			}
 		}
 		finally
