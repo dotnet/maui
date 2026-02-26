@@ -1,8 +1,8 @@
 # MAUI Dev Tools Client — Product Specification
 
-**Version**: 2.13-draft  
+**Version**: 2.15-draft  
 **Status**: Proposal  
-**Last Updated**: 2026-02-16
+**Last Updated**: 2026-02-26
 
 ---
 
@@ -159,7 +159,7 @@ This tool eliminates that friction by providing a single, authoritative source f
 | FR-A13 | Capture screenshot from device/emulator | P0 |
 | FR-A14 | Install full Android environment (JDK + SDK) from scratch | P0 |
 | FR-A15 | Detect JDK installation and version | P0 |
-| FR-A16 | Install OpenJDK if missing (version 17 default, 21 supported) | P0 |
+| FR-A16 | Install OpenJDK if missing (default: version 21) | P0 |
 | FR-A17 | Use platform-appropriate default paths when env vars not set | P0 |
 
 ### 4.3 Apple (Xcode) Management
@@ -245,7 +245,7 @@ The tool can fully install an Android development environment from scratch, incl
 └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
        │                   │                   │                   │
    Missing?            Download            Download           Operational
-                      OpenJDK 17         cmdline-tools        (delegate)
+                      OpenJDK 21         cmdline-tools        (delegate)
 ```
 
 **Default Installation Paths** (when env vars not set):
@@ -259,7 +259,7 @@ The tool can fully install an Android development environment from scratch, incl
 
 | State | Detection | Behavior |
 |-------|-----------|----------|
-| `JDK_MISSING` | No `java` in PATH, no JDK at default paths | Install OpenJDK 17 to default path |
+| `JDK_MISSING` | No `java` in PATH, no JDK at default paths | Install OpenJDK 21 to default path |
 | `SDK_MISSING` | `ANDROID_HOME` not set, no SDK at standard paths | Install command-line tools to default path |
 | `PARTIAL` | SDK exists but `sdkmanager` missing/broken | Repair SDK or reinstall cmdline-tools |
 | `READY` | `java -version` succeeds AND `sdkmanager --list` succeeds | Delegate all operations to native tools |
@@ -277,7 +277,7 @@ maui android install --packages "platform-tools,build-tools;35.0.0,platforms;and
 ```
 
 This command:
-1. Checks for JDK; if missing, downloads and installs OpenJDK 17
+1. Checks for JDK; if missing, downloads and installs OpenJDK 21
 2. Sets `JAVA_HOME` for the session (prints guidance for permanent setup)
 3. Downloads Android command-line tools (if missing)
 4. Accepts SDK licenses non-interactively (if `--accept-licenses`)
@@ -289,7 +289,7 @@ This command:
 # Check JDK status
 maui android jdk check
 
-# Install OpenJDK (default: version 17)
+# Install OpenJDK (default: version 21)
 maui android jdk install
 maui android jdk install --version 21
 
@@ -388,7 +388,7 @@ Long-running operations (install, SDK install, JDK install) emit step-by-step pr
 Console output:
 ```
 [1/4] Checking JDK installation...
-[2/4] Installing JDK 17...
+[2/4] Installing JDK 21...
 [3/4] Checking SDK installation...
 [4/4] Installing SDK packages: platform-tools, build-tools;35.0.0
 ✓ Bootstrap completed successfully
@@ -400,7 +400,7 @@ JSON output (`--json`):
   "type": "progress",
   "step": 2,
   "total_steps": 4,
-  "message": "Installing JDK 17...",
+  "message": "Installing JDK 21...",
   "percentage": 50
 }
 ```
@@ -752,7 +752,7 @@ The manifest feed parsing infrastructure already exists in `android-platform-sup
 | **ADB device communication** | DevTools shells out to the `adb` CLI for device listing, logcat streaming, and screenshot capture. |
 | **CLI command routing** | `System.CommandLine`-based CLI layer, output formatting, `--json`/`--verbose` modes. |
 | **`avdmanager` / `emulator` lifecycle** | AVD create/start/stop/delete and emulator lifecycle management. |
-| **`device screenshot`** | DevTools uses `adb exec-out screencap` for Android screenshots. |
+| **`device screenshot`** | DevTools uses `adb exec-out screencap -p` for Android screenshots. |
 | **OS elevation model** | UAC/sudo handling for SDK installs into protected paths (see §5.4). |
 | **Apple & Windows providers** | Entirely DevTools-specific; shared Android libraries are Android-only. |
 
@@ -942,12 +942,12 @@ maui
 │   │   ├── --accept-licenses # Non-interactively accept licenses
 │   │   ├── --packages <list> # Comma-separated packages to install
 │   │   ├── --jdk-path <dir>  # JDK installation directory
-│   │   ├── --jdk-version     # JDK version (default: 17)
+│   │   ├── --jdk-version     # JDK version (default: 21)
 │   │   └── --sdk-path <dir>  # SDK installation directory
 │   ├── jdk                   # JDK management
 │   │   ├── check             # Check JDK installation status
 │   │   ├── install           # Install OpenJDK
-│   │   │   ├── --version     # JDK version (default: 17)
+│   │   │   ├── --version     # JDK version (default: 21)
 │   │   │   └── --path <dir>  # Installation directory
 │   │   └── list              # List installed JDK versions
 │   ├── sdk
@@ -1431,6 +1431,7 @@ All telemetry and logs follow these redaction rules:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.15-draft | 2026-02-26 | Changed default JDK version from 17 to 21 throughout; fixed `adb exec-out screencap` → `adb exec-out screencap -p` |
 | 2.14-draft | 2026-02-25 | Restored `apple install` with `--accept-license` and `--runtime` flags (optionally accepts license, installs runtimes; could prompt for Xcode install in future); added `apple check` as read-only status; singular `accept-license` for Apple/Xcode matching `xcodebuild -license accept`; Android SDK keeps plural `accept-licenses` |
 | 2.13-draft | 2026-02-19 | Expanded §6.8: added §6.8.1 Manifest-Driven Downloads & Checksum Verification — no hardcoded URLs, SHA-1 verification from Xamarin/Google manifest feeds. JDK install and SDK bootstrap planned for `dotnet/android-tools`. |
 | 2.12-draft | 2026-02-19 | Added §6.8 Shared Libraries & Code Reuse — documents reuse of `Xamarin.Android.Tools.AndroidSdk` for SDK/JDK discovery and plan to contribute JDK installation, sdkmanager wrapper, license acceptance back to `dotnet/android-tools` |
