@@ -1,7 +1,7 @@
 parameters:
   # Xcode
   skipXcode: false
-  skipSimulatorSetup: true
+  skipSimulatorSetup: false
   # .NET NuGet caches
   clearCaches: true
   # Android - JDK
@@ -11,9 +11,9 @@ parameters:
   onlyAndroidPlatformDefaultApis: false
   skipAndroidPlatformApis: false
   # Android - Emulators
-  androidEmulatorApiLevel: '34'
-  skipAndroidEmulatorImages: false # For most builds we won't need these
-  skipAndroidCreateAvds: false # For most builds we won't need these
+  androidEmulatorApiLevel: ''
+  skipAndroidEmulatorImages: true # For most builds we won't need these
+  skipAndroidCreateAvds: true # For most builds we won't need these
   # Provisionator / Xcode
   skipProvisionator: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
