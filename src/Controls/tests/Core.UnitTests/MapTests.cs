@@ -1066,5 +1066,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		#endregion
+
+		[Fact]
+		public void FromLocationsHandlesAntimeridianCrossing()
+		{
+			// Points near the antimeridian (179° and -179° should result in a small span, not 358°)
+			var locations = new[]
+			{
+				new Location(0, 179),
+				new Location(0, -179)
+			};
+
+			var span = MapSpan.FromLocations(locations);
+
+			// The span should be small (around 2-3 degrees), not 358 degrees
+			Assert.True(span.LongitudeDegrees < 10, $"Expected small longitude span for antimeridian crossing, got {span.LongitudeDegrees}");
+		}
 	}
 }

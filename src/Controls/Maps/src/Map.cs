@@ -259,16 +259,7 @@ namespace Microsoft.Maui.Controls.Maps
 		/// </summary>
 		/// <param name="mapSpan">A <see cref="MapSpan"/> object containing details on what region should be shown.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
-		public void MoveToRegion(MapSpan mapSpan)
-		{
-			if (mapSpan is null)
-			{
-				throw new ArgumentNullException(nameof(mapSpan));
-			}
-
-			_lastMoveToRegion = mapSpan;
-			Handler?.Invoke(nameof(IMap.MoveToRegion), new MoveToRegionRequest(_lastMoveToRegion, true));
-		}
+		public void MoveToRegion(MapSpan mapSpan) => MoveToRegion(mapSpan, true);
 
 		/// <summary>
 		/// Adjusts the viewport of the map control to view the specified region, with control over animation.
