@@ -460,6 +460,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(polygon.IsVisible);
 			Assert.False(polyline.IsVisible);
 			Assert.False(circle.IsVisible);
+		}
+
+		[Fact]
 		public void MapStyleDefaultIsNull()
 		{
 			var map = new Map();
