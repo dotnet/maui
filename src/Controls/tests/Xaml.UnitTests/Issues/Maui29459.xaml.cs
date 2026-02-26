@@ -133,7 +133,7 @@ public partial class Maui29459 : ContentPage
 	public Maui29459() => InitializeComponent();
 
 	[Collection("Issue")]
-	class Tests : IDisposable
+	public class Tests : IDisposable
 	{
 		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
