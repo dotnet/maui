@@ -43,9 +43,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (node.IsOnPlatformDefaultValue)
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = default;");
+			// Reference-type defaults are null; use default! so generated code does not emit nullable warnings.
+			var defaultValue = type.IsReferenceType ? "default!" : "default";
+			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {defaultValue};");
 			variables[node] = new LocalVariable(type, variableName);
-			node.RegisterSourceInfo(Context, writer);
 			return;
 		}
 
