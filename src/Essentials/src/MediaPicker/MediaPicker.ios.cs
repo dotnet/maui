@@ -140,7 +140,6 @@ namespace Microsoft.Maui.Media
 					CompletedHandler = async info =>
 					{
 						GetFileResult(info, tcs, options);
-						await picker.DismissViewControllerAsync(true);
 					}
 				};
 			}
@@ -485,10 +484,9 @@ namespace Microsoft.Maui.Media
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }
-
 			public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
             {
-                picker.DismissViewController(true, () => CompletedHandler?.Invoke(info));
+				picker.DismissViewController(true, () => CompletedHandler?.Invoke(info));
             }
 
 			public override void Canceled(UIImagePickerController picker)
