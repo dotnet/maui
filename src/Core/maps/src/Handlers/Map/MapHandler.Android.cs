@@ -745,7 +745,7 @@ namespace Microsoft.Maui.Maps.Handlers
 						}
 					}
 				}
-				catch (Exception ex)
+				catch (System.Exception ex)
 				{
 					// If image loading fails, use default pin icon
 					System.Diagnostics.Debug.WriteLine($"Failed to load custom pin icon: {ex.Message}");

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
@@ -13,18 +14,18 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			
 			// Center on Seattle
 			CustomPinMap.MoveToRegion(MapSpan.FromCenterAndRadius(
-				new Location(47.6062, -122.3321),
+				new Microsoft.Maui.Devices.Sensors.Location(47.6062, -122.3321),
 				Distance.FromMiles(5)));
 		}
 
-		void OnAddCustomPinsClicked(object sender, EventArgs e)
+		void OnAddCustomPinsClicked(object? sender, EventArgs e)
 		{
 			// Add pin with custom icon from an image file in the app bundle
 			var customPin1 = new Pin
 			{
 				Label = "Custom Icon Pin",
 				Address = "Using app bundle image",
-				Location = new Location(47.6062, -122.3321),
+				Location = new Microsoft.Maui.Devices.Sensors.Location(47.6062, -122.3321),
 				ImageSource = ImageSource.FromFile("dotnet_bot.png")
 			};
 			CustomPinMap.Pins.Add(customPin1);
@@ -34,26 +35,26 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			{
 				Label = "Another Custom Pin",
 				Address = "Also using custom image",
-				Location = new Location(47.62, -122.35),
+				Location = new Microsoft.Maui.Devices.Sensors.Location(47.62, -122.35),
 				ImageSource = ImageSource.FromFile("dotnet_bot.png")
 			};
 			CustomPinMap.Pins.Add(customPin2);
 		}
 
-		void OnAddDefaultPinClicked(object sender, EventArgs e)
+		void OnAddDefaultPinClicked(object? sender, EventArgs e)
 		{
 			// Add a regular pin without custom icon for comparison
 			var defaultPin = new Pin
 			{
 				Label = "Default Pin",
 				Address = "Standard marker icon",
-				Location = new Location(47.59, -122.31),
+				Location = new Microsoft.Maui.Devices.Sensors.Location(47.59, -122.31),
 				Type = PinType.Place
 			};
 			CustomPinMap.Pins.Add(defaultPin);
 		}
 
-		void OnClearClicked(object sender, EventArgs e)
+		void OnClearClicked(object? sender, EventArgs e)
 		{
 			CustomPinMap.Pins.Clear();
 		}
