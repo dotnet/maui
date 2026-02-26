@@ -128,6 +128,13 @@ parameters:
     demands:
       - ImageOverride -equals 1ESPT-Ubuntu22.04
 
+- name: AndroidPoolLinux
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
