@@ -21,6 +21,10 @@ public partial class ChatOverlayView : ContentView
 
 	public void Initialize(ChatViewModel viewModel)
 	{
+		// Unsubscribe from previous VM to avoid leaking this view via the singleton VM's event
+		if (_viewModel is not null)
+			_viewModel.Messages.CollectionChanged -= OnMessagesChanged;
+
 		_viewModel = viewModel;
 		BindingContext = viewModel;
 		viewModel.Messages.CollectionChanged += OnMessagesChanged;
@@ -57,6 +61,10 @@ public partial class ChatOverlayView : ContentView
 
 	public async Task Hide()
 	{
+		// Unsubscribe to prevent leaking this view via the singleton VM's event
+		if (_viewModel is not null)
+			_viewModel.Messages.CollectionChanged -= OnMessagesChanged;
+
 		MessageEntry.Unfocus();
 
 		var targetY = ChatPanel.Height > 0 ? ChatPanel.Height : 700;

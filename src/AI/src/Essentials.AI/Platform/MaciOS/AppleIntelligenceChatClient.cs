@@ -202,9 +202,18 @@ public sealed partial class AppleIntelligenceChatClient : IChatClient
 			nativeToken?.Cancel();
 		}
 
-		await foreach (var update in handler.ReadAllAsync(cancellationToken))
+		try
 		{
-			yield return update;
+			await foreach (var update in handler.ReadAllAsync(cancellationToken))
+			{
+				yield return update;
+			}
+		}
+		finally
+		{
+			// Cancel native operation if consumer stopped iterating early (break, Take, etc.)
+			nativeToken?.Cancel();
+			registration.Dispose();
 		}
 	}
 
