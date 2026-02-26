@@ -32,8 +32,8 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <!-- Microsoft Agent Framework -->
     <PackageReference Include="Microsoft.Agents.AI" Version="$(MicrosoftAgentsAIVersion)" />
-    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="$(MicrosoftAgentsAIVersion)" />
-    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="$(MicrosoftAgentsAIVersion)" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="$(MicrosoftAgentsAIHostingVersion)" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="$(MicrosoftAgentsAIWorkflowsVersion)" />
     <!-- Microsoft Extensions -->
     <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
