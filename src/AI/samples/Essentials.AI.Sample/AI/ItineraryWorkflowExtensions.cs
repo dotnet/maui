@@ -43,35 +43,7 @@ public static class ItineraryWorkflowExtensions
 			var chatClient = sp.GetRequiredKeyedService<IChatClient>("local-model");
 			var dataService = sp.GetRequiredService<DataService>();
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-			var ragLogger = loggerFactory.CreateLogger<TextSearchProvider>();
-
-			// Create a TextSearchProvider that searches landmarks via DataService
-			var searchProvider = new TextSearchProvider(
-				async (query, ct) =>
-				{
-					ragLogger.LogDebug("[RAG] Searching landmarks for query: '{Query}'", query);
-					var results = await dataService.SearchLandmarksAsync(query, maxResults: 5);
-					ragLogger.LogDebug("[RAG] Found {Count} landmarks: {Names}",
-						results.Count, string.Join(", ", results.Select(r => r.Name)));
-
-					return results.Select(r => new TextSearchProvider.TextSearchResult
-					{
-						Text = $"{r.Name}: {r.ShortDescription}",
-						SourceName = r.Name,
-					});
-				},
-				new TextSearchProviderOptions
-				{
-					SearchTime = TextSearchProviderOptions.TextSearchBehavior.BeforeAIInvoke,
-				},
-				loggerFactory);
-
-			return chatClient.AsAIAgent(new ChatClientAgentOptions
-			{
-				Name = name,
-				ChatOptions = new ChatOptions { Instructions = ResearcherExecutor.Instructions },
-				AIContextProviders = [searchProvider],
-			}, loggerFactory);
+			return ResearcherExecutor.CreateAgent(name, chatClient, dataService, loggerFactory);
 		});
 
 		// Agent 3: Itinerary Planner - builds detailed itineraries

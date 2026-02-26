@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.AI;
 /// <summary>
 /// Agent 2: Researcher - Uses TextSearchProvider (RAG) to automatically inject matching destinations
 /// into the AI context before each invocation, then the AI selects the best match.
-/// The TextSearchProvider is configured in ItineraryWorkflowExtensions with BeforeAIInvoke mode,
+/// The TextSearchProvider is configured with BeforeAIInvoke mode via <see cref="CreateAgent"/>,
 /// so candidate destinations are automatically searched and injected.
 /// </summary>
 internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService, JsonSerializerOptions jsonOptions, ILogger logger)
@@ -30,6 +30,43 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 		Return the exact name of the best matching destination from the candidates.
 		""";
 
+	/// <summary>
+	/// Creates an AIAgent with a TextSearchProvider that performs RAG via DataService.SearchLandmarksAsync.
+	/// The provider runs in BeforeAIInvoke mode, automatically searching for matching landmarks
+	/// and injecting them as context before each AI call.
+	/// </summary>
+	public static AIAgent CreateAgent(string name, IChatClient chatClient, DataService dataService, ILoggerFactory loggerFactory)
+	{
+		var ragLogger = loggerFactory.CreateLogger<TextSearchProvider>();
+
+		var searchProvider = new TextSearchProvider(
+			async (query, ct) =>
+			{
+				ragLogger.LogDebug("[RAG] Searching landmarks for query: '{Query}'", query);
+				var results = await dataService.SearchLandmarksAsync(query, maxResults: 5);
+				ragLogger.LogDebug("[RAG] Found {Count} landmarks: {Names}",
+					results.Count, string.Join(", ", results.Select(r => r.Name)));
+
+				return results.Select(r => new TextSearchProvider.TextSearchResult
+				{
+					Text = $"{r.Name}: {r.ShortDescription}",
+					SourceName = r.Name,
+				});
+			},
+			new TextSearchProviderOptions
+			{
+				SearchTime = TextSearchProviderOptions.TextSearchBehavior.BeforeAIInvoke,
+			},
+			loggerFactory);
+
+		return chatClient.AsAIAgent(new ChatClientAgentOptions
+		{
+			Name = name,
+			ChatOptions = new ChatOptions { Instructions = Instructions },
+			AIContextProviders = [searchProvider],
+		}, loggerFactory);
+	}
+
 	public override async ValueTask<ResearchResult> HandleAsync(
 		TravelPlanResult input,
 		IWorkflowContext context,
@@ -40,9 +77,9 @@ internal sealed class ResearcherExecutor(AIAgent agent, DataService dataService,
 
 		await context.AddEventAsync(new ExecutorStatusEvent("Searching destinations..."));
 
-		// TextSearchProvider (configured in ItineraryWorkflowExtensions) automatically
-		// searches DataService.SearchLandmarksAsync and injects results as context
-		// before the AI call. We just need to ask the AI to pick the best match.
+		// TextSearchProvider (configured via CreateAgent) automatically searches
+		// DataService.SearchLandmarksAsync and injects results as context before
+		// the AI call. We just need to ask the AI to pick the best match.
 		var prompt = $"""
 			The user wants to visit: "{input.DestinationName}"
 			
