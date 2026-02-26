@@ -135,7 +135,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 	{
-		handler.UpdateItemsSource();
+		// Only invalidate cache if:
+		// 1. ItemSizingStrategy is MeasureFirstItem
+		// 2. Control is already loaded (runtime template change, not initial load)
+		if (handler is CollectionViewHandler2 cvHandler && itemsView is CollectionView cv && 
+		cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && itemsView.IsLoadedOnPlatform())
+		{
+			cvHandler.InvalidateFirstItemSize();
+		}
+			
+			handler.UpdateItemsSource();
 	}
 
 	public static void MapEmptyView(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -259,16 +268,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// (CollectionChanged, group change notifications) without touching WinUI state.
 		if (_collectionViewSource?.Source is ObservableItemTemplateCollection2 observableCollection)
 		{
-			// Only invalidate cache if:
-			// 1. ItemSizingStrategy is MeasureFirstItem
-			// 2. Control is already loaded (runtime template change, not initial load)
-			if (handler is CollectionViewHandler2 cvHandler && itemsView is CollectionView cv && 
-			cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && itemsView.IsLoadedOnPlatform())
-			{
-				cvHandler.InvalidateFirstItemSize();
-			}
+			observableCollection.CleanUp();
+		}
+		else if (_collectionViewSource?.Source is GroupedItemTemplateCollection2 groupedCollection)
+		{
+			groupedCollection.CleanUp();
 			
-			handler.UpdateItemsSource();
 		}
 
 		_itemFactory?.CleanUp();
@@ -695,18 +700,29 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		};
 	}
 
-	static UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
+	UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
 	{
-		return new UniformGridLayout()
-		{
-			Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Vertical : Orientation.Horizontal,
-			MaximumRowsOrColumns = gridItemsLayout.Span,
-			MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
-			MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
-			ItemsStretch = UniformGridLayoutItemsStretch.Fill,
-			ItemsJustification = UniformGridLayoutItemsJustification.Start,
-		};
+		// Use custom layout for grouped items to handle headers/footers spanning full width
+		bool isGrouped = ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped;
+		
+		UniformGridLayout layout = isGrouped 
+			? new GroupableUniformGridLayout()
+			: new UniformGridLayout();
+
+		layout.Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+			? Orientation.Vertical : Orientation.Horizontal;
+		layout.MaximumRowsOrColumns = gridItemsLayout.Span;
+		layout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
+		layout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+		bool noTemplate = ItemsView.ItemTemplate is null;
+		bool isMeasureAllItems = ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems;
+	
+		layout.ItemsStretch = (noTemplate && isMeasureAllItems) 
+			? UniformGridLayoutItemsStretch.Uniform 
+			: UniformGridLayoutItemsStretch.Fill;
+		layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+
+		return layout;
 	}
 
 	void FindScrollViewer()
@@ -769,30 +785,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			UpdateItemsLayoutItemSpacing();
 		}
-
-		UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
+		else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
 		{
-			// Use custom layout for grouped items to handle headers/footers spanning full width
-			bool isGrouped = ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped;
-			
-			UniformGridLayout layout = isGrouped 
-				? new GroupableUniformGridLayout()
-				: new UniformGridLayout();
-
-			layout.Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-				? Orientation.Vertical : Orientation.Horizontal;
-			layout.MaximumRowsOrColumns = gridItemsLayout.Span;
-			layout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
-			layout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
-			bool noTemplate = ItemsView.ItemTemplate is null;
-			bool isMeasureAllItems = ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems;
-		
-			layout.ItemsStretch = (noTemplate && isMeasureAllItems) 
-				? UniformGridLayoutItemsStretch.Uniform 
-				: UniformGridLayoutItemsStretch.Fill;
-			layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
-
-			return layout;
+			UpdateItemsLayoutItemSpacing();
 		}
 		else if (e.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
 				 e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment))

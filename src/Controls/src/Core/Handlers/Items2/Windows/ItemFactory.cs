@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -29,94 +28,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			DataTemplate? template = templateContext.MauiDataTemplate;
 			if (template is DataTemplateSelector selector)
 			{
-				DataTemplate? template = templateContext.MauiDataTemplate;
-				if (template is DataTemplateSelector selector)
-				{
-					template = selector.SelectTemplate(templateContext.Item, _view);
-				}
-
-				if (template is null)
-				{
-					template = _view.EmptyViewTemplate;
-				}
-
-				ItemContainer? container = null;
-				ElementWrapper? wrapper = null;
-
-				if (_recyclePool.TryGetValue(template, out var itemContainers))
-				{
-					if (itemContainers.Count > 0)
-					{
-						container = itemContainers[0];
-						if (container is not null)
-						{
-							wrapper = container.Child as ElementWrapper;
-						}
-
-						itemContainers.RemoveAt(0);
-					}
-				}
-
-				if (wrapper is null)
-				{
-					var viewContent = template.CreateContent() as View;
-					if (_view.Handler?.MauiContext is not null && viewContent is not null)
-					{
-						wrapper = new ElementWrapper(_view.Handler.MauiContext);
-						wrapper.HorizontalAlignment = viewContent.HorizontalOptions.Alignment switch
-						{
-							LayoutAlignment.Start => HorizontalAlignment.Left,
-							LayoutAlignment.Center => HorizontalAlignment.Center,
-							LayoutAlignment.End => HorizontalAlignment.Right,
-							_ => HorizontalAlignment.Stretch
-						};
-						wrapper.VerticalAlignment = viewContent.VerticalOptions.Alignment switch
-						{
-							LayoutAlignment.Start => VerticalAlignment.Top,
-							LayoutAlignment.Center => VerticalAlignment.Center,
-							LayoutAlignment.End => VerticalAlignment.Bottom,
-							_ => VerticalAlignment.Stretch
-						};
-						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-						wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
-						wrapper.SetContent(viewContent);
-						wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
-
-						if (wrapper.VirtualView is View virtualView)
-						{
-							virtualView.SetValue(OriginTemplateProperty, template);
-						}
-					}
-				}
-
-				if (wrapper?.VirtualView is View view)
-				{
-					view.BindingContext = templateContext.Item ?? _view.BindingContext;
-					_view.AddLogicalChild(view);
-					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
-					{
-						bool isSelected = false;
-						if (selectableItemsView.SelectionMode == SelectionMode.Single)
-							isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
-						else
-							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
-
-						if (isSelected && view is VisualElement visualElement)
-						{
-							VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
-						}
-					}
-
-				}
-
-				container ??= new ItemContainer()
-				{
-					Child = wrapper,
-					VerticalAlignment = VerticalAlignment.Stretch,
-					HorizontalAlignment = HorizontalAlignment.Stretch
-				};
-
-				return container;
+				template = selector.SelectTemplate(templateContext.Item, _view);
 			}
 
 			if (template is null)
@@ -147,9 +59,21 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				if (_view.Handler?.MauiContext is not null && viewContent is not null)
 				{
 					wrapper = new ElementWrapper(_view.Handler.MauiContext);
-					wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
+					wrapper.HorizontalAlignment = viewContent.HorizontalOptions.Alignment switch
+						{
+							LayoutAlignment.Start => HorizontalAlignment.Left,
+							LayoutAlignment.Center => HorizontalAlignment.Center,
+							LayoutAlignment.End => HorizontalAlignment.Right,
+							_ => HorizontalAlignment.Stretch
+						};
+						wrapper.VerticalAlignment = viewContent.VerticalOptions.Alignment switch
+						{
+							LayoutAlignment.Start => VerticalAlignment.Top,
+							LayoutAlignment.Center => VerticalAlignment.Center,
+							LayoutAlignment.End => VerticalAlignment.Bottom,
+							_ => VerticalAlignment.Stretch
+						};
 					wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-					wrapper.VerticalAlignment = VerticalAlignment.Stretch;
 					wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 					wrapper.SetContent(viewContent);
 					wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
@@ -169,7 +93,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				{
 					bool isSelected = false;
 					if (selectableItemsView.SelectionMode == SelectionMode.Single)
-						isSelected = selectableItemsView.SelectedItem == templateContext.Item;
+						isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
 					else
 						isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
 
@@ -229,45 +153,12 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		{
 			foreach (var container in kvp.Value)
 			{
-				handler = cvHandler;
-			}
-
-			// Check if we should use cached first item size
-			var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
-
-			// Always measure to allow content to load and render
-			var measuredSize = base.MeasureOverride(availableSize);
-
-			if (!cachedSize.IsEmpty)
-			{
-				// For MeasureFirstItem: Return cached size for uniform layout
-				return cachedSize;
-			}
-
-			// Cache the first item's size for MeasureFirstItem optimization
-			if (handler != null && !IsHeaderOrFooter)
-			{
-				// For first item with images: Hook into content's SizeChanged to update cache when images load
-				if (VirtualView is View firstView && Content is FrameworkElement content)
+				var wrapper = container?.Child as ElementWrapper;
+				var wrapperView = wrapper?.VirtualView as View;
+				if (wrapperView is not null)
 				{
-					void OnContentSizeChanged(object? sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
-					{
-						// Update cached size with actual loaded size
-						var currentCache = handler.GetCachedFirstItemSize();
-						if (!currentCache.IsEmpty && (e.NewSize.Width != currentCache.Width || e.NewSize.Height != currentCache.Height))
-						{
-							handler.SetCachedFirstItemSize(e.NewSize);
-							// Force layout update
-							InvalidateMeasure();
-						}
-					}
-
-					// Subscribe once
-					content.SizeChanged -= OnContentSizeChanged;
-					content.SizeChanged += OnContentSizeChanged;
+					_view.RemoveLogicalChild(wrapperView);
 				}
-
-				handler.SetCachedFirstItemSize(measuredSize);
 			}
 		}
 
