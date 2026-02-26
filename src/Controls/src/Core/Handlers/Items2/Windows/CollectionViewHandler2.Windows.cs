@@ -129,7 +129,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					{
 						Source = ItemsView,
 						Path = new UI.Xaml.PropertyPath("SelectionMode"),
-						Converter = new SelectionModeConvert(),
+						Converter = new SelectionModeConverter(),
 						Mode = UI.Xaml.Data.BindingMode.TwoWay
 					});
 
@@ -392,13 +392,13 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 /// <summary>
 /// Converts between MAUI <see cref="SelectionMode"/> and WinUI <see cref="ItemsViewSelectionMode"/> values.
 /// </summary>
-partial class SelectionModeConvert : UI.Xaml.Data.IValueConverter
+partial class SelectionModeConverter : UI.Xaml.Data.IValueConverter
 {
 	/// <inheritdoc />
 	public object Convert(object value, Type targetType, object parameter, string language)
 	{
-		var formSelectionMode = (SelectionMode)value;
-		switch (formSelectionMode)
+		var selectionMode = (SelectionMode)value;
+		switch (selectionMode)
 		{
 			case SelectionMode.Single:
 				return ItemsViewSelectionMode.Single;
@@ -412,8 +412,8 @@ partial class SelectionModeConvert : UI.Xaml.Data.IValueConverter
 	/// <inheritdoc />
 	public object ConvertBack(object value, Type targetType, object parameter, string language)
 	{
-		var uwpListViewSelectionMode = (ItemsViewSelectionMode)value;
-		switch (uwpListViewSelectionMode)
+		var winUISelectionMode = (ItemsViewSelectionMode)value;
+		switch (winUISelectionMode)
 		{
 			case ItemsViewSelectionMode.None:
 				return SelectionMode.None;
