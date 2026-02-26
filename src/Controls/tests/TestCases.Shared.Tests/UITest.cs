@@ -103,6 +103,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
+				case TestDevice.Mac:
+					var macAppPath = Environment.GetEnvironmentVariable("MAC_APP_PATH") ?? "";
+					if (!string.IsNullOrEmpty(macAppPath))
+					{
+						config.SetProperty("AppPath", macAppPath);
+					}
+					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
