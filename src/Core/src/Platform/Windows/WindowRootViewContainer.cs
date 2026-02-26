@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 		bool _modalFocusTrapActive;
 		TypedEventHandler<UIElement, GettingFocusEventArgs>? _gettingFocusHandler;
 		readonly Dictionary<FrameworkElement, KeyboardNavigationMode> _originalTabNavigation = new();
+		readonly Dictionary<FrameworkElement, bool> _originalIsHitTestVisible = new();
 
 		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
 		internal UIElementCollection CachedChildren
@@ -65,6 +66,7 @@ namespace Microsoft.Maui.Platform
 				if (_topPage is not null)
 				{
 					// Block pointer/touch input on the page being covered
+					_originalIsHitTestVisible[_topPage] = _topPage.IsHitTestVisible;
 					_topPage.IsHitTestVisible = false;
 				}
 
@@ -138,8 +140,10 @@ namespace Microsoft.Maui.Platform
 
 			if (_topPage is not null)
 			{
-				// Re-enable pointer/touch on the revealed page
-				_topPage.IsHitTestVisible = true;
+				// Re-enable pointer/touch on the revealed page, restoring its original value
+				_topPage.IsHitTestVisible = _originalIsHitTestVisible.Remove(_topPage, out var originalHitTest)
+					? originalHitTest
+					: true;
 				TryMoveFocusToPage(_topPage);
 			}
 		}
