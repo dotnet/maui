@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -320,9 +319,18 @@ namespace Microsoft.Maui.Controls
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 
-		private bool DismissScroll()
+		bool DismissScroll()
 		{
-			return ItemsSource is null || (ItemsSource is IEnumerable<object> items && !items.Any());
+			if (ItemsSource is null)
+				return true;
+
+			if (ItemsSource is ICollection collection)
+				return collection.Count == 0;
+
+			if (ItemsSource is ICollection<object> genericCollection)
+				return genericCollection.Count == 0;
+
+			return false;
 		}
 	}
 }
