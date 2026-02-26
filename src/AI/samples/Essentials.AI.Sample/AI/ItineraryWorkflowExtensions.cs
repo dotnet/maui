@@ -101,10 +101,9 @@ public static class ItineraryWorkflowExtensions
 				.WithName(key)
 				.AddEdge(travelPlannerExecutor, researcherExecutor)
 				.AddEdge(researcherExecutor, itineraryPlannerExecutor)
-				// English path: skip translation
-				.AddEdge<ItineraryResult>(itineraryPlannerExecutor, outputExecutor, condition: IsEnglish)
-				// Non-English path: translate first
-				.AddEdge<ItineraryResult>(itineraryPlannerExecutor, translatorExecutor, condition: NeedsTranslation)
+				.AddSwitch(itineraryPlannerExecutor, switch_ => switch_
+					.AddCase<ItineraryResult>(IsEnglish, outputExecutor)
+					.AddCase<ItineraryResult>(NeedsTranslation, translatorExecutor))
 				.AddEdge(translatorExecutor, outputExecutor)
 				.WithOutputFrom(outputExecutor)
 				.Build();
