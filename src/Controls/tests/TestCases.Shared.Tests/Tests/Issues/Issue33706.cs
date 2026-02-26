@@ -21,11 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var initialStatus = App.FindElement("StatusLabel").GetText();
 			Assert.That(initialStatus, Is.EqualTo("Ready"), "Initial status should be 'Ready'");
 			App.Tap("PickMediaButton");
-			Task.Delay(500).Wait();
 			App.BackgroundApp();
-			// Wait for app to background and resume
-			Task.Delay(500).Wait();
 			App.ForegroundApp();
+			App.WaitForElement("ResumedLabel");
 			App.WaitForElement("StatusLabel");
 			App.WaitForElement("PickMediaButton");
 			var finalStatus = App.FindElement("StatusLabel").GetText();

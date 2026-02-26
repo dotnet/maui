@@ -7,6 +7,7 @@ public class Issue33706 : ContentPage
 {
 	private readonly ActivityIndicator _activityIndicator;
 	private readonly Label _statusLabel;
+	private readonly Label _resumedLabel;
 
 	public Issue33706()
 	{
@@ -31,6 +32,12 @@ public class Issue33706 : ContentPage
 			HorizontalOptions = LayoutOptions.Center
 		};
 
+		_resumedLabel = new Label
+		{
+    		Text = "",
+    		AutomationId = "ResumedLabel"
+		};
+
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
@@ -45,8 +52,13 @@ public class Issue33706 : ContentPage
 				},
 				pickButton,
 				_activityIndicator,
-				_statusLabel
+				_statusLabel,
+				_resumedLabel
 			}
+		};
+		this.Loaded += (s, e) =>
+		{
+    		this.Window.Resumed += (s, e) => _resumedLabel.Text = "Resumed";
 		};
 	}
 
