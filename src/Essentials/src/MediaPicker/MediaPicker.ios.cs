@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Media
 
 				picker.Delegate = new PhotoPickerDelegate
 				{
-					CompletedHandler = async info =>
+					CompletedHandler = info =>
 					{
 						GetFileResult(info, tcs, options);
 					}
