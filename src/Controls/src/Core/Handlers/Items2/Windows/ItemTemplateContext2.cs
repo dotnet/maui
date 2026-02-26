@@ -45,15 +45,9 @@ internal class ItemTemplateContext2
 		Item = item;
 		_container = new(container);
 		MauiContext = mauiContext;
-
-		if (height.HasValue)
-			ItemHeight = height.Value;
-
-		if (width.HasValue)
-			ItemWidth = width.Value;
-
-		if (itemSpacing.HasValue)
-			ItemSpacing = itemSpacing.Value;
+		ItemHeight = height ?? 0;
+		ItemWidth = width ?? 0;
+		ItemSpacing = itemSpacing ?? default;
 
 		IsHeader = isHeader;
 		IsFooter = isFooter;
