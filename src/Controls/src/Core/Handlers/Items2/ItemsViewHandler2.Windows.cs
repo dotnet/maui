@@ -315,20 +315,32 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		var itemsSource = Element.ItemsSource;
 		var itemTemplate = Element.ItemTemplate;
 
-		if (itemTemplate is not null && itemsSource is not null)
-		{
-			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+// Handle grouped items first (with or without ItemTemplate)
+			if (itemsSource is not null && ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
 			{
+				// When there's no ItemTemplate, use the raw ItemsSource directly (no wrapping)
+				// This allows default ToString() rendering without ItemTemplateContext2 wrapper
+				if (itemTemplate is null)
+				{
+					return new CollectionViewSource
+					{
+						Source = itemsSource,
+						IsSourceGrouped = true
+
+
+					};
+				}
+				
 				return new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 						groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
 						Element, mauiContext: MauiContext)
-						,
-					IsSourceGrouped = false
+						, IsSourceGrouped = false
 				};
 			}
-			else
+
+			if (itemTemplate is not null && itemsSource is not null)
 			{
 				var flattenedSource = itemsSource;
 				if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
@@ -341,7 +353,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 					IsSourceGrouped = false
 				};
 			}
-		}
 
 		return new CollectionViewSource
 		{
@@ -437,44 +448,13 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// Remove all children inside the ItemsSource
 		if (VirtualView is not null && PlatformView is not null)
 		{
-			var itemsSource = Element.ItemsSource;
-			var itemTemplate = Element.ItemTemplate;
-
-			// Handle grouped items first (with or without ItemTemplate)
-			if (itemsSource is not null && ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+			foreach (var item in PlatformView.GetChildren<ItemContentControl>())
 			{
-				// When there's no ItemTemplate, use the raw ItemsSource directly (no wrapping)
-				// This allows default ToString() rendering without ItemTemplateContext2 wrapper
-				if (itemTemplate is null)
+				if (item is not null)
 				{
-					return new CollectionViewSource
-					{
-						Source = itemsSource,
-						IsSourceGrouped = true
-					};
+					var element = item.GetVisualElement();
+					VirtualView.RemoveLogicalChild(element);
 				}
-				
-				return new CollectionViewSource
-				{
-					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
-						groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-						Element, mauiContext: MauiContext)
-						, IsSourceGrouped = false
-				};
-			}
-
-			if (itemTemplate is not null && itemsSource is not null)
-			{
-				var flattenedSource = itemsSource;
-				if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
-				{
-					flattenedSource = FlattenGroupedItemsSource(itemsSource);
-				}
-				return new CollectionViewSource
-				{
-					Source = TemplatedItemSourceFactory2.Create(flattenedSource, itemTemplate, Element, mauiContext: MauiContext),
-					IsSourceGrouped = false
-				};
 			}
 		}
 
