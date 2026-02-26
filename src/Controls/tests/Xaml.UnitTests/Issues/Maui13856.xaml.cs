@@ -31,6 +31,10 @@ internal void DictionaryWithEnumKeyBinding(XamlInflator inflator)
 {
 // https://github.com/dotnet/maui/issues/13856
 // Binding to Dictionary<CustomEnum, object> with x:DataType should compile and work
+// SourceGen does not process .rt.xaml files
+if (inflator == XamlInflator.SourceGen)
+return;
+
 var page = new Maui13856(inflator);
 page.BindingContext = page;
 
