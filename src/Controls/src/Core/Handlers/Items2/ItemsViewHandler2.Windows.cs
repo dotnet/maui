@@ -1419,11 +1419,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					break;
 			}
 
-			platformView.StartBringItemIntoView(index, new BringIntoViewOptions()
+			// Store the scroll request and dispatch it to ensure it executes after
+			// the layout has been updated. This prevents unstable scrolling when items
+			// are being rapidly added and ScrollTo is called before layout completes.
+			var scrollIndex = index;
+			var scrollOffset = offset;
+			var isAnimated = args.IsAnimated;
+
+			VirtualView.Dispatcher.Dispatch(() =>
 			{
-				AnimationDesired = args.IsAnimated,
-				VerticalAlignmentRatio = offset,
-				HorizontalAlignmentRatio = offset
+				if (base.PlatformView is not WItemsView pv)
+				{
+					return;
+				}
+
+				// Re-validate index bounds in case collection changed between dispatch
+				var currentItemCount = _collectionViewSource?.View?.Count ?? 0;
+				if (scrollIndex < 0 || scrollIndex >= currentItemCount)
+				{
+					return;
+				}
+
+				pv.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
+				{
+					AnimationDesired = isAnimated,
+					VerticalAlignmentRatio = scrollOffset,
+					HorizontalAlignmentRatio = scrollOffset
+				});
 			});
 		}
 
