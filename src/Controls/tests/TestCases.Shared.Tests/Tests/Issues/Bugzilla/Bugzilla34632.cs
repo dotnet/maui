@@ -28,6 +28,7 @@ public class Bugzilla34632 : _IssuesUITest
 		App.WaitForElement("btnModal");
 		App.Tap("btnModal");
 		App.SetOrientationPortrait();
+		Thread.Sleep(1000);
 		App.WaitForElement("btnDismissModal");
 		App.Tap("btnDismissModal");
 		App.TapFlyoutPageIcon("Main Page");

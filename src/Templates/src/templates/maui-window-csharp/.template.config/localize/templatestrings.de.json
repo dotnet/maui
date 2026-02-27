@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (C#)",
-  "description": "Ein Fenster zum Anzeigen einer Seite mithilfe von C#.",
+  "description": "Ein Fenster zum Anzeigen einer Seite mit C#.",
   "postActions/openInEditor/description": "Öffnet „NewWindow1.cs“ im Editor.",
   "symbols/namespace/description": "Namespace für den generierten Code."
 }

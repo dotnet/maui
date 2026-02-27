@@ -7,11 +7,11 @@
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Docelowa wartość DOTNET_TFM_VALUE",
   "symbols/android/displayName": "Android",
-  "symbols/android/description": "Uwzględnij projekt nagłówka aplikacji systemu Android",
+  "symbols/android/description": "Uwzględnij główny projekt aplikacji systemu Android",
   "symbols/ios/displayName": "iOS",
-  "symbols/ios/description": "Uwzględnij projekt nagłówka aplikacji systemu iOS",
-  "symbols/maccatalyst/displayName": "system macOS używający komputerów Mac Host",
-  "symbols/maccatalyst/description": "Uwzględnij projekt nagłówka aplikacji dla systemu macOS (przy użyciu mac- ie)",
-  "symbols/winui/displayName": "System Windows używający interfejsu WinUI 3",
-  "symbols/winui/description": "Uwzględnij projekt nagłówka aplikacji systemu Windows (przy użyciu interfejsu WinUI 3)"
+  "symbols/ios/description": "Uwzględnij główny projekt aplikacji systemu iOS",
+  "symbols/maccatalyst/displayName": "System macOS korzystający ze struktury Mac Catalyst",
+  "symbols/maccatalyst/description": "Uwzględnij główny projekt aplikacji systemu macOS (przy wykorzystaniu struktury Mac Catalyst)",
+  "symbols/winui/displayName": "System Windows korzystający z interfejsu WinUI 3",
+  "symbols/winui/description": "Uwzględnij główny projekt aplikacji systemu Windows (przy wykorzystaniu interfejsu WinUI 3)"
 }

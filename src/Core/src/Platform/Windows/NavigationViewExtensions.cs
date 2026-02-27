@@ -275,6 +275,42 @@ namespace Microsoft.Maui.Platform
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
 
+		internal static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
+		{
+			if (provider is null || imageSource is null)
+			{
+				return;
+			}
+			var paneContentGrid = navigationView.PaneContentGrid;
+			if (paneContentGrid is null)
+			{
+				return;
+			}
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+
+			if (nativeImageSource is null)
+			{
+				paneContentGrid.Background = null;
+				return;
+			}
+
+			var BackgroundImage = new ImageBrush
+			{
+				ImageSource = nativeImageSource?.Value,
+				Stretch = aspect switch
+				{
+					Aspect.AspectFit => Stretch.Uniform,
+					Aspect.AspectFill => Stretch.UniformToFill,
+					Aspect.Fill => Stretch.Fill,
+					_ => Stretch.None
+				}
+			};
+
+			paneContentGrid.Background = BackgroundImage;
+		}
+
 		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			var togglePaneButton = navigationView.TogglePaneButton;

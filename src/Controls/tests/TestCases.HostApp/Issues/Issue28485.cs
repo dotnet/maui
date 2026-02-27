@@ -1,4 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 28485, "Back-navigation with swipe-back navigates back twice", PlatformAffected.iOS)]
 public class Issue28485 : Shell
 {

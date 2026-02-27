@@ -1,4 +1,4 @@
-﻿#if WINDOWS // Issue can be repro on windows only
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Secondary ToolBar still not supported for Shell page of iOS and Catalyst Issue Link: https://github.com/dotnet/maui/issues/30674
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +14,8 @@ internal class Issue20177 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void ToolBarSecondayItemsShouldNotUseBarTextColor()
 	{
-		App.ToggleSecondaryToolbarItems();
+		App.WaitForMoreButton();
+		App.TapMoreButton();
 		VerifyScreenshot();
 	}
 }

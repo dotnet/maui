@@ -1,0 +1,8 @@
+schemaVersion: 0.0.1
+isProduction: true
+accountableOwners:
+  service: 9d770e15-6208-4284-b347-b2762803623b
+routing:
+  defaultAreaPath:
+    org: devdiv
+    path: DevDiv\.NET MAUI

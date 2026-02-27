@@ -11,23 +11,21 @@
             BackgroundColor="Black"
             TextColor="White"
             Text="Swipe the CarouselView to select the item numbered 2. Then, tap the Hide Button to hide the Carousel and the Show Button to show the Carousel again. If the position of the Carousel is the same as before hiding, the test has passed."/>
-        <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29308 -->  
-        <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->
-        <local:CarouselView1
+        <CarouselView
             AutomationId="TestCarouselView"
             x:Name="carousel"
             HorizontalOptions="Center"
             HeightRequest="500"
             ItemsSource="{Binding}">
-            <local:CarouselView1.ItemTemplate>
+            <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <Label
-                      Text="{Binding}"
-                      FontSize="96"
-                      HorizontalTextAlignment="Center"/>
+                        Text="{Binding}"
+                        FontSize="96"
+                        HorizontalTextAlignment="Center"/>
                 </DataTemplate>
-            </local:CarouselView1.ItemTemplate>
-        </local:CarouselView1>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
         <Label
             AutomationId="CarouselPosition"
             Text="{Binding Source={x:Reference carousel}, Path=Position}"

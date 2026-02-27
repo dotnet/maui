@@ -1,4 +1,9 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -28,6 +33,102 @@ namespace Microsoft.Maui.Hosting
 
 			return builder;
 		}
+
+		public static MauiAppBuilder ConfigureEnvironmentVariables(this MauiAppBuilder builder)
+		{
+			if (!RuntimeFeature.EnableMauiAspire)
+			{
+				return builder;
+			}
+
+			IDictionary environmentVariables = Environment.GetEnvironmentVariables();
+
+			string devTunnelId = environmentVariables["DEVTUNNEL_ID"]?.ToString() ?? string.Empty;
+
+			var variablesToInclude = new HashSet<string>
+			{
+				"ASPNETCORE_ENVIRONMENT",
+				"ASPNETCORE_URLS",
+				"DOTNET_ENVIRONMENT",
+				"DOTNET_LAUNCH_PROFILE",
+				"DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION"
+			};
+
+			var prefixesToRemove = new List<string>
+			{
+				"ASPNETCORE_",
+				"DOTNET_",
+			};
+
+			List<KeyValuePair<string, string?>> settings = [];
+			foreach (object variableNameObject in environmentVariables.Keys)
+			{
+				string variableName = (string)variableNameObject;
+				if (variablesToInclude.Contains(variableName)
+					|| variableName.StartsWith("OTEL_", StringComparison.OrdinalIgnoreCase)
+					|| variableName.StartsWith("LOGGING__CONSOLE", StringComparison.OrdinalIgnoreCase)
+					|| variableName.StartsWith("services__", StringComparison.OrdinalIgnoreCase))
+				{
+					string value = (string)environmentVariables[variableName]!;
+
+					// Normalize the key, matching the logic here:
+					// https://github.dev/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Configuration.EnvironmentVariables/src/EnvironmentVariablesConfigurationProvider.cs
+#if NETSTANDARD2_0
+					variableName = variableName.Replace("__", ":");
+#else
+					variableName = variableName.Replace("__", ":", StringComparison.OrdinalIgnoreCase);
+#endif
+
+					// For defined prefixes, add the variable with the prefix removed, matching the logic
+					// in EnvironmentVariablesConfigurationProvider.cs. Also add the variable with the
+					// prefix intact, which matches the normal HostApplicationBuilder behavior, where
+					// there's an EnvironmentVariablesConfigurationProvider added with and another one
+					// without the prefix set.
+					foreach (var prefix in prefixesToRemove)
+					{
+						if (variableName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+						{
+							settings.Add(new KeyValuePair<string, string?>(variableName, value));
+							variableName = variableName.Substring(prefix.Length);
+							break;
+						}
+					}
+
+					if (!string.IsNullOrEmpty(devTunnelId))
+					{
+						value = ReplaceLocalhost(value, devTunnelId);
+					}
+					settings.Add(new KeyValuePair<string, string?>(variableName, value));
+				}
+			}
+
+			builder.Configuration.AddInMemoryCollection(settings);
+
+			return builder;
+		}
+
+		static string ReplaceLocalhost(string uri, string devTunnelId)
+		{
+			// source format is `http[s]://localhost:[port]`
+			// tunnel format is `http[s]://exciting-tunnel-[port].devtunnels.ms`
+
+			var tunnel = $"://{devTunnelId}-$1.devtunnels.ms$2";
+
+#if NET7_0_OR_GREATER
+			var replacement = LocalhostRegex().Replace(uri, tunnel);
+#else
+			var replacement = Regex.Replace(uri, LocalhostPattern, tunnel, RegexOptions.Compiled);
+#endif
+
+			return replacement;
+		}
+
+		const string LocalhostPattern = @"://localhost\:(\d+)(.*)";
+
+#if NET7_0_OR_GREATER
+		[GeneratedRegex(LocalhostPattern, RegexOptions.IgnoreCase)]
+		private static partial Regex LocalhostRegex();
+#endif
 
 		internal static IDispatcher GetRequiredApplicationDispatcher(this IServiceProvider provider)
 		{

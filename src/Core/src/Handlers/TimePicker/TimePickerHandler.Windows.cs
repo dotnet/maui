@@ -1,4 +1,3 @@
-#nullable enable
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
@@ -45,15 +44,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateTextColor(timePicker);
 		}
 
-		// TODO NET8 make public
-		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView?.UpdateIsOpen(timePicker);
+		}
+
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
 		{
-			if (VirtualView != null)
+			if (VirtualView is not null)
 			{
 				VirtualView.Time = e.NewTime;
 				VirtualView.InvalidateMeasure();

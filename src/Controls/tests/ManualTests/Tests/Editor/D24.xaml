@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D24"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D24">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. The test fails if you are able to interact with the editor below." />
+            <Editor IsEnabled="False" />
+
+            <Label Text="2. The test fails if the editor below is visible." />
+            <Editor IsVisible="False" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

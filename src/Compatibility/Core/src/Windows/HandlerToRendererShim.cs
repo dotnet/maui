@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					// Unfortunately, the layout and its children will have cached their previous measurement results
 					// So we need to iterate over the children and force them to clear their caches so they'll call
 					// the native measurement methods again now that measurement is a valid thing to do.
-					foreach (var child in layout.Children)
+					foreach (var child in layout.InternalChildren)
 					{
 						if (child is VisualElement ve)
 						{

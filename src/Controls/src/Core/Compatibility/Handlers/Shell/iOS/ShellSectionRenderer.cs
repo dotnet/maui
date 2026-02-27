@@ -70,8 +70,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
-		bool _popRequested;
-
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
 		// iOS will return the previous array until the new array has been processed
@@ -109,7 +107,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Export("navigationBar:didPopItem:")]
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
-			=> _popRequested || SendPop();
+		{
+			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
+				return true;
+
+			// If stacks are in sync, nothing to do
+			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
+				return true;
+
+			// Stacks out of sync = user-initiated navigation
+			return SendPop();
+		}
 
 		internal bool SendPop()
 		{
@@ -121,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (tracker.Value.ViewController == TopViewController)
 				{
-					var behavior = Shell.GetBackButtonBehavior(tracker.Value.Page);
+					var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Value.Page);
 					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 					var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
 
@@ -296,6 +304,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.Dispose(disposing);
 		}
 
+		/// <summary>
+		/// Override this method to provide a custom image for the secondary toolbar menu button.
+		/// The default implementation uses the "ellipsis.circle" system image.
+		/// This image is used for the menu button that appears when there are secondary toolbar items
+		/// </summary>
+		/// <returns>The image to use for the secondary toolbar menu button.</returns>
+		public virtual UIImage GetSecondaryToolbarMenuButtonImage()
+		{
+			// Use the ellipsis.circle system image for the menu button by default
+			// as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
+			return UIImage.GetSystemImage("ellipsis.circle");
+		}
+
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
@@ -343,7 +364,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-				UpdateNavigationBarHidden();
 				UpdateNavigationBarHasShadow();
 			}
 		}
@@ -394,7 +414,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
-			_popRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -435,7 +454,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
-			_popRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -509,7 +527,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
+				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}
@@ -528,12 +547,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_trackers.Remove(page);
 			}
 
-
-			var renderer = page.Handler;
-			if (renderer != null)
-			{
-				renderer.DisconnectHandler();
-			}
+			page?.DisconnectHandlers();
 		}
 
 		Element ElementForViewController(UIViewController viewController)
@@ -543,10 +557,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			foreach (var child in ShellSection.Stack)
 			{
-				if (child == null)
-					continue;
-				var renderer = (IPlatformViewHandler)child.Handler;
-				if (viewController == renderer.ViewController)
+				if (child?.Handler is IPlatformViewHandler handler && viewController == handler.ViewController)
 					return child;
 			}
 
@@ -597,7 +608,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			_popRequested = false;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
@@ -610,7 +620,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override UIViewController PopViewController(bool animated)
 		{
-			_popRequested = true;
 			_pendingViewControllers = null;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
@@ -692,7 +701,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateNavigationBarHidden()
 		{
-			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), true);
+			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
 		}
 
 		void UpdateNavigationBarHasShadow()
@@ -755,9 +764,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					source.TrySetResult(true);
 					tasks.Remove(viewController);
 				}
-				else if (popTask != null)
+				else
 				{
-					popTask.TrySetResult(true);
+					popTask?.TrySetResult(true);
 				}
 			}
 
@@ -773,9 +782,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						navBarVisible = _self._renderer.ShowNavBar;
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
-				}
 
-				navigationController.SetNavigationBarHidden(!navBarVisible, true);
+					// Update navigation bar visibility during the transition
+					// This ensures the correct nav bar state is applied as part of the navigation animation
+					bool animateVisibilityChange = animated && Shell.GetNavBarVisibilityAnimationEnabled(element);
+					navigationController.SetNavigationBarHidden(!navBarVisible, animateVisibilityChange);
+				}
 
 				var coordinator = viewController.GetTransitionCoordinator();
 				if (coordinator != null && coordinator.IsInteractive)
@@ -794,6 +806,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tracker is ShellPageRendererTracker shellRendererTracker)
 				{
 					shellRendererTracker.UpdateToolbarItemsInternal(false);
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+						// we cannot set the TitleView yet as it would not layout correctly.
+						// So we update it later when the ViewController is added to the NavigationController
+						shellRendererTracker.UpdateTitleViewInternal();
+					}
 				}
 			}
 

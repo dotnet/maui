@@ -38,6 +38,8 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    <!-- Microphone device capability for Essentials.DeviceTests -->
+    <DeviceCapability Name="microphone" />
   </Capabilities>
 
 </Package>

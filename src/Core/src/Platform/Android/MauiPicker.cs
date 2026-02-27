@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Runtime;
+using Android.Text.Method;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Graphics.Drawable;
@@ -9,23 +10,10 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiPicker : MauiPickerBase
 	{
-		public bool ShowPopupOnFocus { get; set; }
 
 		public MauiPicker(Context context) : base(context)
 		{
 			PickerManager.Init(this);
-		}
-
-		public override bool OnTouchEvent(MotionEvent? e)
-		{
-			PickerManager.OnTouchEvent(this, e);
-			return base.OnTouchEvent(e); // Raises the OnClick event if focus is already received
-		}
-
-		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, ARect? previouslyFocusedRect)
-		{
-			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-			PickerManager.OnFocusChanged(gainFocus, this);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -44,5 +32,9 @@ namespace Microsoft.Maui.Platform
 			if (Background != null)
 				DrawableCompat.Wrap(Background);
 		}
+
+		// MovementMethod handles cursor positioning, scrolling, and text selection (per Android docs).
+		// Since text is readonly, we disable it to avoid unnecessary cursor navigation during keyboard input.
+		protected override IMovementMethod? DefaultMovementMethod => null;
 	}
 }

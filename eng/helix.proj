@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <PropertyGroup>
+    <HelixType>test/product/</HelixType>
+    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild Condition="'$(HelixBuild)' == ''">default</HelixBuild>
+    <HelixTargetQueues>Windows.10.Amd64.Open;osx.15.arm64.maui.open</HelixTargetQueues>
+    <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
+    <IncludeDotNetCli>true</IncludeDotNetCli>
+    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnTestFailure>true</FailOnTestFailure>
+    <DotNetCliVersion>$(MicrosoftNETSdkPackageVersion)</DotNetCliVersion> 
+    <!-- Staging directory for MSBuild test payloads -->
+    <MauiHelixPayloadDir>$(RepoRoot)artifacts/helix-payload/</MauiHelixPayloadDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+     <HelixTargetQueues Condition="'$(HelixInternal)' == 'True'">Windows.10.Amd64;osx.15.arm64</HelixTargetQueues>
+  </PropertyGroup>
+
+  <!-- Local build outside of Azure Pipeline -->
+  <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
+    <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">
+      Windows.10.Amd64.Open;OSX.1200.Amd64.Open;OSX.1200.ARM64.Open;Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-sqlserver-amd64</HelixTargetQueues>
+    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
+    <HelixSource>maui/localbuild/</HelixSource>
+    <HelixBuild>t001</HelixBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Core/tests/UnitTests/Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj" />
+  </ItemGroup>
+
+  <!-- Prepare the staging directory for MSBuild test payloads - runs early during Restore -->
+  <Target Name="PrepareMauiHelixPayload" BeforeTargets="Restore;Build;Test">
+    <MakeDir Directories="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" />
+    <MakeDir Directories="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" />
+    
+    <!-- Copy Maui.InTree.props and targets -->
+    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.props" DestinationFolder="$(MauiHelixPayloadDir)src" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)src/Maui.InTree.targets" DestinationFolder="$(MauiHelixPayloadDir)src" SkipUnchangedFiles="true" />
+    
+    <!-- Copy Workload SDK files -->
+    <ItemGroup>
+      <WorkloadSdkFiles Include="$(RepoRoot)src/Workload/Microsoft.Maui.Sdk/Sdk/*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WorkloadSdkFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Workload/Microsoft.Maui.Sdk/Sdk" SkipUnchangedFiles="true" />
+    
+    <!-- Copy Build.Tasks nuget files needed by MSBuild tests -->
+    <ItemGroup>
+      <BuildTasksNugetFiles Include="$(RepoRoot)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildTasksNugetFiles)" DestinationFolder="$(MauiHelixPayloadDir)src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0" SkipUnchangedFiles="true" />
+    
+    <Message Text="Prepared MSBuild test payload at $(MauiHelixPayloadDir)" Importance="high" />
+  </Target>
+
+  <!-- Include payloads for XAML tests -->
+  <ItemGroup>
+    <!-- SourceGen DLL for SourceGen tests -->
+    <HelixCorrelationPayload Include="$(RepoRoot)artifacts/bin/Controls.SourceGen/$(Configuration)/netstandard2.0">
+      <Destination>sourcegen</Destination>
+    </HelixCorrelationPayload>
+    
+    <!-- MSBuild tests payloads -->
+    <!-- .buildtasks folder with all MSBuild targets/props and build task DLLs -->
+    <HelixCorrelationPayload Include="$(RepoRoot).buildtasks">
+      <Destination>buildtasks</Destination>
+    </HelixCorrelationPayload>
+    
+    <!-- MSBuild test support files (Maui.InTree.props/targets and Workload SDK) -->
+    <HelixCorrelationPayload Include="$(MauiHelixPayloadDir)src">
+      <Destination>src</Destination>
+    </HelixCorrelationPayload>
+  </ItemGroup>
+
+</Project>

@@ -398,7 +398,8 @@ public class PlatformInterop {
     }
 
     public static ColorStateList getColorStateListForToolbarStyleableAttribute(Context context, int resId, int index) {
-        TintTypedArray styledAttributes = TintTypedArray.obtainStyledAttributes(context, null, R.styleable.Toolbar, resId, 0);
+        // Use the appcompat styleable resource ID instead
+        TintTypedArray styledAttributes = TintTypedArray.obtainStyledAttributes(context, null, androidx.appcompat.R.styleable.Toolbar, resId, 0);
         try {
             return styledAttributes.getColorStateList(index);
         } finally {
@@ -687,5 +688,20 @@ public class PlatformInterop {
             return (Animatable) drawable;
         }
         return null;
+    }
+
+    /*
+     * Checks if the ScaleType of the ImageView is CENTER_CROP.
+     * Avoids returning an object to C#.
+     */
+    public static boolean isImageViewCenterCrop(@NonNull ImageView imageView) {
+        return imageView.getScaleType() == ImageView.ScaleType.CENTER_CROP;
+    }
+
+    /*
+     * Sets View.ClipBounds without creating a Rect object in C#
+     */
+    public static void setClipBounds(@NonNull View view, int left, int top, int right, int bottom) {
+        view.setClipBounds(new Rect(left, top, right, bottom));
     }
 }

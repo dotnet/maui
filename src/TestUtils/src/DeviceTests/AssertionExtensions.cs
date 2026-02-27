@@ -15,35 +15,68 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		public static async Task Collect()
+		{
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2, GCCollectionMode.Forced, true);
+			await Task.Yield();
+		}
+
+
+		public static async Task<bool> WaitForCollect(this WeakReference reference)
+		{
+			for (int i = 0; i < 40 && reference.IsAlive; i++)
+			{
+				await Collect();
+			}
+
+			return reference.IsAlive;
+		}
+
+		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
+		{
+			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
+			{
+				await Collect();
+			}
+
+			return reference.TryGetTarget(out _);
+		}
+
+		public static async Task<bool> WaitForCollect(params WeakReference[] references)
+		{
+			bool allCollected = true;
+			foreach (var reference in references)
+			{
+				Assert.NotNull(reference);
+				var taskCollect = reference.WaitForCollect();
+				try
+				{
+					await AssertEventuallyAsync(async () => await taskCollect);
+				}
+				catch (XunitException)
+				{
+					var isAlive = await taskCollect;
+					if (isAlive)
+					{
+						allCollected = false;
+					}
+				}
+			}
+			return allCollected; // Only true if all references are collected
+		}
+
 		public static async Task WaitForGC(params WeakReference[] references)
 		{
 			Assert.NotEmpty(references);
 
-			bool referencesCollected()
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
+			var collectResult = await WaitForCollect(references);
 
-				foreach (var reference in references)
-				{
-					Assert.NotNull(reference);
-					if (reference.IsAlive)
-					{
-						return false;
-					}
-				}
-
-				return true;
-			}
-
-			try
-			{
-				await AssertEventually(referencesCollected, timeout: 10000);
-			}
-			catch (XunitException ex)
-			{
-				throw new XunitException(ListLivingReferences(references), ex);
-			}
+			Assert.True(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
 		}
 
 		static string ListLivingReferences(WeakReference[] references)
@@ -263,6 +296,27 @@ namespace Microsoft.Maui.DeviceTests
 			while (timeout >= 0);
 
 			if (!assertion())
+			{
+				throw new XunitException(message);
+			}
+		}
+
+		public static async Task AssertEventuallyAsync(this Func<Task<bool>> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		{
+			do
+			{
+				if (await assertion())
+				{
+					return;
+				}
+
+				await Task.Delay(interval);
+				timeout -= interval;
+
+			}
+			while (timeout >= 0);
+
+			if (!await assertion())
 			{
 				throw new XunitException(message);
 			}

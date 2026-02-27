@@ -152,5 +152,21 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assert.Equal((page.Content as Label).TextColor, Colors.Yellow);
 		}
 
+		[Fact]
+		public void CSSStyleAppliedAfterReEnablingInitiallyDisabledButton_Issue12550()
+		{
+			// https://github.com/dotnet/maui/issues/12550
+			var app = new MockApplication();
+			app.Resources.Add(StyleSheet.FromString("button{ background-color: green; }"));
+
+			var button = new Button { IsEnabled = false };
+			var page = new ContentPage { Content = button };
+			app.LoadPage(page);
+
+			button.IsEnabled = true;
+
+			Assert.Equal(Colors.Green, button.BackgroundColor);
+		}
+
 	}
 }

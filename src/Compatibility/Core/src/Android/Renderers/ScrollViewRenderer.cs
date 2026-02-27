@@ -504,8 +504,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_container.Parent != this)
 				{
 					_container.RemoveFromParent();
-					if (_hScrollView != null)
-						_hScrollView.RemoveFromParent();
+					_hScrollView?.RemoveFromParent();
 					AddView(_container);
 				}
 			}

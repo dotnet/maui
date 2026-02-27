@@ -6,6 +6,9 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
+#if NET11_0_OR_GREATER
+	public
+#endif
 	class AppThemeBinding : BindingBase
 	{
 		public const string AppThemeResource = "__MAUI_ApplicationTheme__";

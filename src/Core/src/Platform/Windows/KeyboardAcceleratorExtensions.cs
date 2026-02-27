@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 	/// <summary>
 	/// Group of helper extension methods related to KeyboardAccelerators.
 	/// </summary>
-	public static class KeyboardAcceleratorExtensions
+	public static partial class KeyboardAcceleratorExtensions
 	{
 		/// <summary>
 		/// Updates the collection of KeyboardAccelerators used by a MenuFlyoutItemBase.

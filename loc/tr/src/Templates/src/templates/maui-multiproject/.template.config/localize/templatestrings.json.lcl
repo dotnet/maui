@@ -28,7 +28,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Multi-Project App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Android app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Android uygulama başı projesini dahil et]]></Val>
+            <Val><![CDATA[Android uygulama ana projesini dahil edin]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -95,7 +95,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the iOS app head project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[iOS uygulama başı projesini dahil et]]></Val>
+            <Val><![CDATA[iOS uygulama ana projesini dahil edin]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -113,7 +113,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the macOS app head project (using Mac Catalyst)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[macOS uygulama başı projesini dahil et (Mac Yerkörü kullanarak)]]></Val>
+            <Val><![CDATA[macOS uygulama ana projesini dahil edin (Mac Catalyst kullanarak)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -122,7 +122,7 @@
         <Str Cat="Text">
           <Val><![CDATA[macOS using Mac Catalyst]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mac Mac'i kullanarak macOS]]></Val>
+            <Val><![CDATA[Mac Catalyst kullanan macOS]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -131,7 +131,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Include the Windows app head project (using WinUI 3)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Windows uygulama kafası projesini dahil et (WinUI 3 kullanarak)]]></Val>
+            <Val><![CDATA[Windows uygulaması ana projesini dahil edin (WinUI 3 kullanarak)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

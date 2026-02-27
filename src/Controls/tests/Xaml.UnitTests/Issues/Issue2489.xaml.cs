@@ -1,45 +1,37 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue2489 : ContentPage
 {
-	public partial class Issue2489 : ContentPage
+	public Issue2489() => InitializeComponent();
+
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Issue2489()
+		[Theory]
+		[XamlInflatorData]
+		internal void DataTriggerTargetType(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Issue2489(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void DataTriggerTargetType(bool useCompiledXaml)
+			if (inflator == XamlInflator.SourceGen)
 			{
-				var layout = new Issue2489(useCompiledXaml);
-				Assert.NotNull(layout.wimage);
-				Assert.NotNull(layout.wimage.Triggers);
-				Assert.True(layout.wimage.Triggers.Any());
-				Assert.That(layout.wimage.Triggers[0], Is.TypeOf<DataTrigger>());
-				var trigger = (DataTrigger)layout.wimage.Triggers[0];
-				Assert.AreEqual(typeof(WImage), trigger.TargetType);
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Issue2489));
 			}
+			var layout = new Issue2489(inflator);
+			Assert.NotNull(layout.wimage);
+			Assert.NotNull(layout.wimage.Triggers);
+			Assert.True(layout.wimage.Triggers.Any());
+			Assert.IsType<DataTrigger>(layout.wimage.Triggers[0]);
+			var trigger = (DataTrigger)layout.wimage.Triggers[0];
+			Assert.Equal(typeof(WImage), trigger.TargetType);
 		}
 	}
+}
 
-	public class WImage : View
-	{
-		public ImageSource Source { get; set; }
-		public Aspect Aspect { get; set; }
-	}
+public class WImage : View
+{
+	public ImageSource Source { get; set; }
+	public Aspect Aspect { get; set; }
 }

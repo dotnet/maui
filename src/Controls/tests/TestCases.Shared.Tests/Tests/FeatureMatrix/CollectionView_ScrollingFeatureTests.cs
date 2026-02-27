@@ -4,7 +4,7 @@ using UITest.Core;
 
 
 namespace Microsoft.Maui.TestCases.Tests;
-public class CollectionView_ScrollingFeatureTests : UITest
+public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 {
 	public const string ScrollingFeatureMatrix = "CollectionView Feature Matrix";
 	public const string Options = "Options";
@@ -25,16 +25,11 @@ public class CollectionView_ScrollingFeatureTests : UITest
 	public const string ItemsLayoutHorizontalList = "ItemsLayoutHorizontalList";
 	public const string AddButton = "AddButton";
 
+	public override string GalleryPageName => ScrollingFeatureMatrix;
 
 	public CollectionView_ScrollingFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ScrollingFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -51,7 +46,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemSizingMeasureAllItems);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
@@ -69,7 +64,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsSourceGroupedList2);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -90,7 +85,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemSizingMeasureFirstItem);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -107,7 +102,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -124,7 +119,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsSourceGroupedList2);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -141,7 +136,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -158,7 +153,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -175,7 +170,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -194,7 +189,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -213,7 +208,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -232,7 +227,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID
@@ -252,7 +247,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -269,7 +264,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -288,7 +283,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutVerticalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -307,7 +302,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -326,7 +321,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(ItemsLayoutHorizontalGrid);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif

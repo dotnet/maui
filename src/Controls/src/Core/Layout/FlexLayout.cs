@@ -9,7 +9,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlexLayout']/Docs/*" />
+	/// <summary>A Flexbox-like layout that lays out child elements in optionally wrappable rows or columns of child elements.</summary>
 	[ContentProperty(nameof(Children))]
 	public class FlexLayout : Layout, IFlexLayout
 	{
@@ -70,85 +70,109 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Direction']/Docs/*" />
+		/// <summary>Gets or sets the flex direction for child elements within this layout.</summary>
+		/// <remarks>The following image shows the options for</remarks>
 		public FlexDirection Direction
 		{
 			get => (FlexDirection)GetValue(DirectionProperty);
 			set => SetValue(DirectionProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='JustifyContent']/Docs/*" />
+		/// <summary>Gets or sets a value that that describes how child elements are justified when there is extra space around them.</summary>
+		/// <remarks>The following image shows options for</remarks>
 		public FlexJustify JustifyContent
 		{
 			get => (FlexJustify)GetValue(JustifyContentProperty);
 			set => SetValue(JustifyContentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignContent']/Docs/*" />
+		/// <summary>Gets or sets a value that controls how multiple rows or columns of child elements are aligned.</summary>
+		/// <remarks>This property behaves similarly to</remarks>
 		public FlexAlignContent AlignContent
 		{
 			get => (FlexAlignContent)GetValue(AlignContentProperty);
 			set => SetValue(AlignContentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignItems']/Docs/*" />
+		/// <summary>Gets or sets a value that controls how child elements are arranged within their row or column.</summary>
+		/// <remarks>The following image shows the options for</remarks>
 		public FlexAlignItems AlignItems
 		{
 			get => (FlexAlignItems)GetValue(AlignItemsProperty);
 			set => SetValue(AlignItemsProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Position']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether the coordinates of child elements are specified in absolute or relative terms. This is a bindable property.</summary>
 		public FlexPosition Position
 		{
 			get => (FlexPosition)GetValue(PositionProperty);
 			set => SetValue(PositionProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='Wrap']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether and how child elements within this layout wrap. This is a bindable property.</summary>
 		public FlexWrap Wrap
 		{
 			get => (FlexWrap)GetValue(WrapProperty);
 			set => SetValue(WrapProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetOrder'][1]/Docs/*" />
+		/// <summary>Gets the order that this element appears in the flex layout.</summary>
+		/// <param name="bindable">The element to get the order for.</param>
+		/// <returns>The order value for the element.</returns>
 		public static int GetOrder(BindableObject bindable)
 			=> (int)bindable.GetValue(OrderProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetOrder'][1]/Docs/*" />
+		/// <summary>Sets the order that this element appears in the flex layout.</summary>
+		/// <param name="bindable">The element to set the order for.</param>
+		/// <param name="value">The order value to set.</param>
 		public static void SetOrder(BindableObject bindable, int value)
 			=> bindable.SetValue(OrderProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetGrow'][1]/Docs/*" />
+		/// <summary>Gets the flex grow factor for the element.</summary>
+		/// <param name="bindable">The element to get the grow factor for.</param>
+		/// <returns>The grow factor value.</returns>
 		public static float GetGrow(BindableObject bindable)
 			=> (float)bindable.GetValue(GrowProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetGrow'][1]/Docs/*" />
+		/// <summary>Sets the flex grow factor for the element.</summary>
+		/// <param name="bindable">The element to set the grow factor for.</param>
+		/// <param name="value">The grow factor value to set.</param>
 		public static void SetGrow(BindableObject bindable, float value)
 			=> bindable.SetValue(GrowProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetShrink'][1]/Docs/*" />
+		/// <summary>Gets the flex shrink factor for the element.</summary>
+		/// <param name="bindable">The element to get the shrink factor for.</param>
+		/// <returns>The shrink factor value.</returns>
 		public static float GetShrink(BindableObject bindable)
 			=> (float)bindable.GetValue(ShrinkProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetShrink'][1]/Docs/*" />
+		/// <summary>Sets the flex shrink factor for the element.</summary>
+		/// <param name="bindable">The element to set the shrink factor for.</param>
+		/// <param name="value">The shrink factor value to set.</param>
 		public static void SetShrink(BindableObject bindable, float value)
 			=> bindable.SetValue(ShrinkProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetAlignSelf'][1]/Docs/*" />
+		/// <summary>Gets the self-alignment override for the element within the flex layout.</summary>
+		/// <param name="bindable">The element to get the alignment for.</param>
+		/// <returns>The self-alignment value.</returns>
 		public static FlexAlignSelf GetAlignSelf(BindableObject bindable)
 			=> (FlexAlignSelf)bindable.GetValue(AlignSelfProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetAlignSelf'][1]/Docs/*" />
+		/// <summary>Sets the self-alignment override for the element within the flex layout.</summary>
+		/// <param name="bindable">The element to set the alignment for.</param>
+		/// <param name="value">The self-alignment value to set.</param>
 		public static void SetAlignSelf(BindableObject bindable, FlexAlignSelf value)
 			=> bindable.SetValue(AlignSelfProperty, value);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GetBasis'][1]/Docs/*" />
+		/// <summary>Gets the flex basis (initial size) for the element along the main axis.</summary>
+		/// <param name="bindable">The element to get the basis for.</param>
+		/// <returns>The flex basis value.</returns>
 		public static FlexBasis GetBasis(BindableObject bindable)
 			=> (FlexBasis)bindable.GetValue(BasisProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='SetBasis'][1]/Docs/*" />
+		/// <summary>Sets the flex basis (initial size) for the element along the main axis.</summary>
+		/// <param name="bindable">The element to set the basis for.</param>
+		/// <param name="value">The flex basis value to set.</param>
 		public static void SetBasis(BindableObject bindable, FlexBasis value)
 			=> bindable.SetValue(BasisProperty, value);
 
@@ -464,9 +488,7 @@ namespace Microsoft.Maui.Controls
 		// Until we can rewrite the FlexLayout engine to handle measurement properly (without the "in measure mode" hacks)
 		// we need to replace the default implementation of CrossPlatformMeasure.
 		// And we need to disable the public API analyzer briefly, because it doesn't understand hiding.
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		new public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			var layoutManager = _layoutManager ??= CreateLayoutManager();
 

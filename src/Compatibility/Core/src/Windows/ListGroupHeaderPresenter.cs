@@ -27,10 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					zoom.ToggleActiveView();
 
 					var grid = zoom.ZoomedOutView as GridView;
-					if (grid != null)
-					{
-						grid.MakeVisible(new SemanticZoomLocation { Item = DataContext });
-					}
+					grid?.MakeVisible(new SemanticZoomLocation { Item = DataContext });
 
 					return;
 				}

@@ -21,9 +21,9 @@
     <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
 
     <ItemGroup>
-      <ItemsToPush Include="$(RootManifestOutputPath)**\*.nupkg" />
+      <ItemsToPush Include="$(RootManifestOutputPath)**\*.nupkg" Kind="Package"/>
       <WorkloadArtifacts Include="$(RootManifestOutputPath)**\*.zip" />
-      <ItemsToPush Include="@(WorkloadArtifacts)" PublishFlatContainer="true" RelativeBlobPath="maui/$(PackageReferenceVersion)/%(Filename)%(Extension)" />
+      <ItemsToPush Include="@(WorkloadArtifacts)" Kind="Blob" RelativeBlobPath="maui/$(PackageReferenceVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
 
     <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />

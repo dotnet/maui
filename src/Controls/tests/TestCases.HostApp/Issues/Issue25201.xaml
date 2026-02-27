@@ -14,7 +14,7 @@
                  HeightRequest="100"
                  Padding="20"
                  Source="dotnet_bot"
-                 IsVisible="{Binding Source={x:Reference Switch1}, Path=IsToggled}"
+                 IsVisible="{Binding IsToggled, Source={x:Reference Switch1}, x:DataType=Switch}"
                  />
 
     <!-- https://github.com/dotnet/maui/issues/16713 -->
@@ -35,7 +35,7 @@
             AbsoluteLayout.LayoutFlags="SizeProportional"
             AbsoluteLayout.LayoutBounds="0,0,1.0,1.0"
             BackgroundColor="#80FFFFFF"
-            IsVisible="{Binding Source={x:Reference Switch2}, Path=IsToggled}"
+            IsVisible="{Binding IsToggled, Source={x:Reference Switch2}, x:DataType=Switch}"
             />
     </AbsoluteLayout>
   </VerticalStackLayout>

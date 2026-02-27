@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue25943"
-             xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues" 
+             SafeAreaEdges="Container"
+             xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
              x:DataType="controls:_25943MainPageViewModel">
   <VerticalStackLayout Padding="30,0" Spacing="25">
     <DatePicker HorizontalOptions="Center" VerticalOptions="Center"  AutomationId="DatePicker" Date="{Binding Date}" MaximumDate="{Binding MaxDate}" MinimumDate="{Binding MinDate}"></DatePicker>

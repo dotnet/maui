@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -27,22 +27,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public AcceptEmptyServiceProvider(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		public IServiceProvider ServiceProvider { get; set; }
 
-		[TestFixture]
-		class Tests
+		[Collection("Xaml Inflation")]
+		public class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ServiceProviderIsNullOnAttributedExtensions(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void ServiceProviderIsNullOnAttributedExtensions(XamlInflator inflator)
 			{
-				var p = new AcceptEmptyServiceProvider(useCompiledXaml);
-				Assert.IsNull(p.ServiceProvider);
+				var p = new AcceptEmptyServiceProvider(inflator);
+				Assert.Null(p.ServiceProvider);
 			}
 		}
 	}

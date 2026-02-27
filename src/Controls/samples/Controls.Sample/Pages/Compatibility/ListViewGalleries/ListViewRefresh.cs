@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
@@ -8,6 +9,7 @@ namespace Maui.Controls.Sample.Pages.ListViewGalleries
 {
 	public class ListViewRefresh : ContentPage
 	{
+		[RequiresUnreferencedCode("ListViewRefresh may require unreferenced code for data binding")]
 		public ListViewRefresh()
 		{
 			var refreshingCount = 0;

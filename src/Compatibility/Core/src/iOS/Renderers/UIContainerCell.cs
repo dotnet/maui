@@ -34,8 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;
-			if (shell != null)
-				shell.AddLogicalChild(View);
+			shell?.AddLogicalChild(View);
 		}
 
 
@@ -68,8 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!keepRenderer)
 				Platform.SetRenderer(View, null);
 
-			if (shell != null)
-				shell.RemoveLogicalChild(shell);
+			shell?.RemoveLogicalChild(shell);
 
 			View = null;
 			TableView = null;
@@ -102,8 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			if (View != null)
-				View.Layout(Bounds.ToRectangle());
+			View?.Layout(Bounds.ToRectangle());
 		}
 
 		void UpdateVisualState()

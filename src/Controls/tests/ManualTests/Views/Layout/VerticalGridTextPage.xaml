@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             x:Class="Microsoft.Maui.ManualTests.Views.VerticalGridTextPage"
+             Title="Vertical grid (text)">
+    <Grid Margin="20" RowDefinitions="Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1. The test passes if the Monkey names are displayed in a two-column grid." />
+        </StackLayout>
+        <CollectionView Grid.Row="1"
+                        ItemsLayout="VerticalGrid, 2">
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Baboon</x:String>
+                    <x:String>Capuchin Monkey</x:String>
+                    <x:String>Blue Monkey</x:String>
+                    <x:String>Squirrel Monkey</x:String>
+                    <x:String>Golden Lion Tamarin</x:String>
+                    <x:String>Howler Monkey</x:String>
+                    <x:String>Japanese Macaque</x:String>
+                    <x:String>Mandrill</x:String>
+                    <x:String>Proboscis Monkey</x:String>
+                    <x:String>Red-shanked Douc</x:String>
+                    <x:String>Gray-shanked Douc</x:String>
+                    <x:String>Golden Snub-nosed Monkey</x:String>
+                    <x:String>Black Snub-nosed Monkey</x:String>
+                    <x:String>Tonkin Snub-nosed Monkey</x:String>
+                    <x:String>Thomas's Langur</x:String>
+                    <x:String>Purple-faced Langur</x:String>
+                    <x:String>Gelada</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+        </CollectionView>
+    </Grid>
+</ContentPage>

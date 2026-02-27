@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			if (DatePickerDialog is UIDatePicker picker)
 			{
 				var date = VirtualView?.Date;
-				if (date is DateTime dt)
+				if (date is not null && date is DateTime dt)
 				{
 					picker.Date = dt.ToNSDate();
 				}
@@ -86,6 +86,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextAlignment(datePicker);
 		}
 
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView?.UpdateIsOpen(datePicker);
+		}
+
 		static void OnValueChanged(object? sender)
 		{
 			if (sender is DatePickerHandler datePickerHandler)
@@ -101,13 +106,26 @@ namespace Microsoft.Maui.Handlers
 		static void OnStarted(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
-				datePickerHandler.VirtualView.IsFocused = true;
+			{
+				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = true;
+
+				// Notify VoiceOver that the date picker popup has appeared
+				if (datePickerHandler.PlatformView?.InputView is not null)
+				{
+					datePickerHandler.PlatformView.PostAccessibilityFocusNotification(datePickerHandler.PlatformView.InputView);
+				}
+			}
 		}
 
 		static void OnEnded(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
-				datePickerHandler.VirtualView.IsFocused = false;
+			{
+				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = false;
+
+				// Restore VoiceOver focus to the date picker field when the popup closes
+				datePickerHandler.PlatformView?.PostAccessibilityFocusNotification();
+			}
 		}
 
 		static void OnDoneClicked(object? sender)
@@ -121,10 +139,12 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewDate()
 		{
-			if (VirtualView == null || DatePickerDialog == null)
+			if (VirtualView is null || DatePickerDialog is null)
+			{
 				return;
+			}
 
-			VirtualView.Date = DatePickerDialog.Date.ToDateTime().Date;
+			VirtualView.Date = DatePickerDialog.Date.ToDateTime();
 		}
 
 		class DatePickerDelegate : MauiDatePickerDelegate

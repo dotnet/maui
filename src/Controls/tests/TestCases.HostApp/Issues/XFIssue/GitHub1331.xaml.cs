@@ -33,14 +33,14 @@ public partial class GitHub1331 : TestContentPage
 					Text = "item 2",
 					ActionText = "Action 2",
 					ActionTappedCommand =
-						new Command(() => DisplayAlert("Action tapped", "item 2", "Cancel"))
+						new Command(() => DisplayAlertAsync("Action tapped", "item 2", "Cancel"))
 				},
 				new GH1331ItemViewModel
 				{
 					Text = "item 3",
 					ActionText = "Action 3",
 					ActionTappedCommand =
-						new Command(() => DisplayAlert("Action tapped", "item 3", "Cancel"))
+						new Command(() => DisplayAlertAsync("Action tapped", "item 3", "Cancel"))
 				}
 			})
 		};

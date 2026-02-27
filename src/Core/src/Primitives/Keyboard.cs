@@ -36,57 +36,57 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Returns a new <see cref="CustomKeyboard"/> with <see cref="KeyboardFlags.None"/>.
+		/// Returns a new keyboard with no special flags.
 		/// </summary>
 		public static Keyboard Plain => s_plain ??= new CustomKeyboard(KeyboardFlags.None);
 
 		/// <summary>
-		/// Gets an instance of type <see cref="ChatKeyboard"/>.
+		/// Gets a keyboard optimized for chat input.
 		/// </summary>
 		public static Keyboard Chat => s_chat ??= new ChatKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="Keyboard"/>.
+		/// Gets the default keyboard.
 		/// </summary>
 		public static Keyboard Default => s_def ??= new Keyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="EmailKeyboard"/>.
+		/// Gets a keyboard optimized for email input.
 		/// </summary>
 		public static Keyboard Email => s_email ??= new EmailKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="NumericKeyboard"/>. 
+		/// Gets a keyboard optimized for numeric input.
 		/// </summary>
 		public static Keyboard Numeric => s_numeric ??= new NumericKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="TelephoneKeyboard"/>. 
+		/// Gets a keyboard optimized for telephone number input.
 		/// </summary>
 		public static Keyboard Telephone => s_telephone ??= new TelephoneKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="TextKeyboard"/>. 
+		/// Gets a keyboard optimized for text input.
 		/// </summary>
 		public static Keyboard Text => s_text ??= new TextKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="UrlKeyboard"/>. 
+		/// Gets a keyboard optimized for URL input.
 		/// </summary>
 		public static Keyboard Url => s_url ??= new UrlKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="DateKeyboard"/>. 
+		/// Gets a keyboard optimized for date input.
 		/// </summary>
 		public static Keyboard Date => s_date ??= new DateKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="PasswordKeyboard"/>. 
+		/// Gets a keyboard optimized for password input.
 		/// </summary>
 		public static Keyboard Password => s_password ??= new PasswordKeyboard();
 
 		/// <summary>
-		/// Gets an instance of type <see cref="TimeKeyboard"/>. 
+		/// Gets a keyboard optimized for time input.
 		/// </summary>
 		public static Keyboard Time => s_time ??= new TimeKeyboard();
 

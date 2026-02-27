@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _disposed;
 		UILongPressGestureRecognizer _longPressGestureRecognizer;
 
+#if MACCATALYST
+		const double defaultMacCatalystPressDuration = 0.1;
+#endif
+
 		public ReorderableItemsViewController2(TItemsView reorderableItemsView, UICollectionViewLayout layout)
 			: base(reorderableItemsView, layout)
 		{
@@ -40,14 +44,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
-			if (ItemsSource != null)
-			{
-				// There's a bug in the current Maui Controls library.
-				// It will call "CreateItemsViewSource" 2x in a row when opening a page.
-				// It's invoked from both ViewDidLoad & UpdateItemsSource
-				// For the time being, until the issue is fixed, we need to dispose of the current source if one already exist.
-				ItemsSource.Dispose();
-			}
+			// There's a bug in the current Maui Controls library.
+			// It will call "CreateItemsViewSource" 2x in a row when opening a page.
+			// It's invoked from both ViewDidLoad & UpdateItemsSource
+			// For the time being, until the issue is fixed, we need to dispose of the current source if one already exist.
+			ItemsSource?.Dispose();
 			return base.CreateItemsViewSource();
 		}
 
@@ -162,6 +163,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (_longPressGestureRecognizer == null)
 				{
 					_longPressGestureRecognizer = new UILongPressGestureRecognizer(HandleLongPress);
+#if MACCATALYST
+					// On Mac Catalyst, we disable the default drag interaction and instead handle dragging using a long press gesture recognizer.
+					// Since a long press typically takes more time to trigger than the system's default drag interaction, 
+					// we reduce the minimum press duration to 0.1 seconds to better match the previous behavior.
+					_longPressGestureRecognizer.MinimumPressDuration = defaultMacCatalystPressDuration;
+#endif
 					CollectionView.AddGestureRecognizer(_longPressGestureRecognizer);
 				}
 			}

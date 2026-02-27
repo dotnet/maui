@@ -254,7 +254,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			return cache.GetOrAddTypeDefinition(module, type, x =>
 			{
-				var asm = module.Assembly.Name.Name == type.assemblyName
+				var assemblyName = module.Assembly.Name;
+				var asm = (assemblyName.Name == type.assemblyName || assemblyName.FullName == type.assemblyName)
 								? module.Assembly
 								: module.AssemblyResolver.Resolve(AssemblyNameReference.Parse(type.assemblyName));
 				var typeDef = asm.MainModule.GetType($"{type.clrNamespace}.{type.typeName}");

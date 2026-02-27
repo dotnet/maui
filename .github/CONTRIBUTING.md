@@ -6,7 +6,7 @@ First and foremost: if you are thinking about contributing a bigger change or fe
 
 ## Code of Conduct
 
-Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
+Please see our [Code of Conduct](/.github/CODE_OF_CONDUCT.md).
 
 ## Prerequisite
 
@@ -16,22 +16,22 @@ You will need to complete a Contribution License Agreement before any pull reque
 
 Currently, we are in the beginning phases of building up MAUI. Yet, we are still very excited for you to join us during this exciting time :)
 
-Have a look at our [Development Guide](DEVELOPMENT.md) to learn about setting up your development environment.
+Have a look at our [Development Guide](/.github/DEVELOPMENT.md) to learn about setting up your development environment.
 
 ### What to work on
 
 If you're looking for something to work on, please browse our [backlog](https://github.com/dotnet/maui/issues?q=is%3Aopen+is%3Aissue+milestone%3ABacklog). Any issue that is not already assigned is up for grabs. 
 
-Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md), with two primary exceptions:
+Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/main/docs/coding-guidelines/coding-style.md), with two primary exceptions:
 
 - We do not use the `private` keyword, as it is the default accessibility level in C#.
 - We use hard tabs over spaces.
 
-Read and follow our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
+Read and follow our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 
 ### Pull Request Requirements
 
-Please refer to our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
+Please refer to our [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md).
 
 Please check the "Allow edits from maintainers" checkbox on your pull request. This allows us to quickly make minor fixes and resolve conflicts for you.
 
@@ -45,7 +45,7 @@ See [our profiling wiki](https://aka.ms/profile-maui) for instructions on how to
 
 2. **Benchmark your change**: If you're making a performance-related change, please include benchmarks in your pull request. This will help us understand the impact of your change, and will help us avoid performance regressions in the future.
 
-Provide before & after numbers using BenchmarkDotNet where possible. See our existing [BenchmarkDotNet project](../src/Core/tests/Benchmarks/) for examples.
+Provide before & after numbers using BenchmarkDotNet where possible. See our existing [BenchmarkDotNet project](/src/Core/tests/Benchmarks/) for examples.
 
 If a BenchmarkDotNet test case is not possible, share before & after profiling information from Visual Studio, `dotnet-trace`, etc. Keep in mind that sampling profilers can be inaccurate, so someone from the .NET MAUI team may need to reproduce your results before merging your change.
 
@@ -55,7 +55,7 @@ If a BenchmarkDotNet test case is not possible, share before & after profiling i
 
 ## Proposals/Enhancements/Suggestions
 
-To propose a change or new feature, open an issue using the [Feature request template](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+➕&template=feature_request.md&title=[Enhancement]+YOUR+IDEA!). You may also use the [Spec template](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+➕&template=spec.md&title=[Spec]++) if you have an idea of what the API should look like. Be sure to also browse current issues and [discussions](https://github.com/dotnet/maui/discussions) that may be related to what you have in mind.
+To propose a change or new feature, open an issue using the [Feature request template](https://github.com/dotnet/maui/issues/new?template=feature-request.yml). You may also use the [Spec template](https://github.com/dotnet/maui/issues/new?template=spec.yml) if you have an idea of what the API should look like. Be sure to also browse current issues and [discussions](https://github.com/dotnet/maui/discussions) that may be related to what you have in mind.
 
 ## Review Process
 All pull requests need to be reviewed and tested by at least two members of the .NET MAUI team. We do our best to review pull requests in a timely manner, but please be patient! Two reviewers will be assigned and will start the review process as soon as possible. If there are any changes requested, the contributor should make them at their earliest convenience or let the reviewers know that they are unable to make further contributions. If the pull request requires only minor changes, then someone else may pick it up and finish it. We will do our best to make sure that all credit is retained for contributors. 

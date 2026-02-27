@@ -4,10 +4,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs/*" />
+	/// <summary>
+	/// A shape that draws a straight line between two points.
+	/// </summary>
 	public sealed partial class Line : Shape, IShape
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Line"/> class.
+		/// </summary>
 		public Line() : base()
 		{
 		}
@@ -36,28 +40,36 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty Y2Property =
 			BindableProperty.Create(nameof(Y2), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='X1']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-coordinate of the line's start point. This is a bindable property.
+		/// </summary>
 		public double X1
 		{
 			set { SetValue(X1Property, value); }
 			get { return (double)GetValue(X1Property); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='Y1']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-coordinate of the line's start point. This is a bindable property.
+		/// </summary>
 		public double Y1
 		{
 			set { SetValue(Y1Property, value); }
 			get { return (double)GetValue(Y1Property); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='X2']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-coordinate of the line's end point. This is a bindable property.
+		/// </summary>
 		public double X2
 		{
 			set { SetValue(X2Property, value); }
 			get { return (double)GetValue(X2Property); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='Y2']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-coordinate of the line's end point. This is a bindable property.
+		/// </summary>
 		public double Y2
 		{
 			set { SetValue(Y2Property, value); }

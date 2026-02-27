@@ -92,8 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			// Because the layer was hidden we need to layout the cell by hand
-			if (cellWithContent != null)
-				cellWithContent.LayoutSubviews();
+			cellWithContent?.LayoutSubviews();
 
 			return nativeCell;
 		}

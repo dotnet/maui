@@ -27,8 +27,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var newSource = (ImageSource)newValue;
 			var image = (IImageElement)bindable;
-			if (newSource != null && image != null)
+
+			if (newSource is not null && image is not null)
+			{
 				newSource.SourceChanged += image.OnImageSourceSourceChanged;
+			}
+
 			ImageSourceChanged(bindable, newSource);
 		}
 
@@ -37,8 +41,16 @@ namespace Microsoft.Maui.Controls
 			var oldSource = (ImageSource)oldValue;
 			var image = (IImageElement)bindable;
 
-			if (oldSource != null && image != null)
-				oldSource.SourceChanged -= image.OnImageSourceSourceChanged;
+			if (oldSource is not null)
+			{
+				if (image is not null)
+				{
+					oldSource.SourceChanged -= image.OnImageSourceSourceChanged;
+				}
+
+				oldSource.Parent = null;
+			}
+
 			ImageSourceChanging(oldSource);
 		}
 

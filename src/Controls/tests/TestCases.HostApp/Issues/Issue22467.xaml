@@ -19,7 +19,7 @@
                     SelectionMode="Single">
 
       <CollectionView.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="x:String">
           <VerticalStackLayout>
 
             <VisualStateManager.VisualStateGroups>

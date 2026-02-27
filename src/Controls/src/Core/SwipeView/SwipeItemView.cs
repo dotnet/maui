@@ -5,7 +5,9 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeItemView']/Docs/*" />
+	/// <summary>
+	/// Represents a swipe item that displays custom content in a <see cref="SwipeView"/>.
+	/// </summary>
 	[ContentProperty(nameof(Content))]
 	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{
@@ -18,14 +20,18 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeItemView), null,
 			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandParameterChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the command invoked when this swipe item is activated. This is a bindable property.
+		/// </summary>
 		public ICommand Command
 		{
 			get => (ICommand)GetValue(CommandProperty);
 			set => SetValue(CommandProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter passed to the <see cref="Command"/>. This is a bindable property.
+		/// </summary>
 		public object CommandParameter
 		{
 			get => GetValue(CommandParameterProperty);
@@ -34,7 +40,9 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Invoked;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='OnInvoked']/Docs/*" />
+		/// <summary>
+		/// Invokes the swipe item, executing the command and raising the <see cref="Invoked"/> event.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void OnInvoked()
 		{

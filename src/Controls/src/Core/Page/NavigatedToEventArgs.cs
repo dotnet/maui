@@ -5,11 +5,13 @@ namespace Microsoft.Maui.Controls
 {
 	public sealed class NavigatedToEventArgs : EventArgs
 	{
-		internal NavigatedToEventArgs(Page previousPage)
+		internal NavigatedToEventArgs(Page previousPage, NavigationType navigationType)
 		{
 			PreviousPage = previousPage;
+			NavigationType = navigationType;
 		}
 
-		internal Page PreviousPage { get; }
+		public Page PreviousPage { get; }
+		public NavigationType NavigationType { get; }
 	}
 }

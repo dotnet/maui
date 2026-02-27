@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectionProviders>
+      <DataCollectionProvider friendlyName="Code Coverage">
+        <Configuration>
+          <Module>
+            <Exclude>
+              <Module name="*" />
+            </Exclude>
+            <Include>
+              <Module name="Microsoft.Maui*.dll" />
+            </Include>
+          </Module>
+        </Configuration>
+      </DataCollectionProvider>
+    </DataCollectionProviders>
+  </DataCollectionRunSettings>
+</RunSettings>

@@ -23,8 +23,8 @@ namespace Microsoft.Maui
 			{
 				using var cgImageSource = imageSource.GetPlatformImageSource(out var loadedScale);
 
-				// If the user doesn't specify the extention, then we fall back to just letting iOS load the file
-				// This means, if users try to load a animated gif and don't specify an extention it won't animate
+				// If the user doesn't specify the extension, then we fall back to just letting iOS load the file
+				// This means, if users try to load a animated gif and don't specify an extension it won't animate
 				// We could do a search with various extensions but that's a lot of excess churn for a scenario
 				// that's easily fixed by the user. Plus, the extension is required on other platforms so it's actually
 				// more consistent to not load the gif on iOS without the extension.			

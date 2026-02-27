@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 7144, "IndicatorView using templated icons not working", PlatformAffected.UWP)]
 public class Issue7144 : ContentPage
@@ -33,7 +33,7 @@ public class Issue7144 : ContentPage
 			return image;
 		});
 
-		CarouselView carouselView = new CarouselView
+		CarouselView2 carouselView = new CarouselView2
 		{
 			ItemsSource = Items,
 			Loop = false,

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ModalEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ModalEventArgs']/Docs/*" />
+	/// <summary>Base class for <see cref="Microsoft.Maui.Controls.ModalPushedEventArgs"/>, <see cref="Microsoft.Maui.Controls.ModalPushingEventArgs"/>, <see cref="Microsoft.Maui.Controls.ModalPoppedEventArgs"/>, and <see cref="Microsoft.Maui.Controls.ModalPoppingEventArgs"/>.</summary>
 	public abstract class ModalEventArgs : EventArgs
 	{
 		protected ModalEventArgs(Page modal)
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 			Modal = modal;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ModalEventArgs.xml" path="//Member[@MemberName='Modal']/Docs/*" />
+		/// <summary>Gets or sets the page whose navigation triggered the event.</summary>
 		public Page Modal { get; private set; }
 	}
 }

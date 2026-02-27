@@ -9,7 +9,9 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer instead")]
+#pragma warning disable CS0618 // Type or member is obsolete
 	public partial class TableViewRenderer : ViewRenderer<TableView, Microsoft.UI.Xaml.Controls.ListView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		bool _ignoreSelectionEvent;
 		bool _disposed;
@@ -21,7 +23,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return result;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (e.OldElement != null)
 			{

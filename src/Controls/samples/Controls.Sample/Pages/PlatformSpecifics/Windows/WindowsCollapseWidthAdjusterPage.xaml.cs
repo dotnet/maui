@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (newValue != null)
 			{
-				var instance = element as WindowsCollapseWidthAdjusterPage;
+				var instance = (WindowsCollapseWidthAdjusterPage)element;
 				instance!.entry.Text = instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().CollapsedPaneWidth().ToString();
 			}
 		}

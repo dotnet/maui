@@ -1,10 +1,13 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
+
+#pragma warning disable RS1032 // The diagnostic message should not contain any line return character nor any leading or trailing whitespaces and should either be a single sentence without a trailing period or a multi-sentences with a trailing period
 
 namespace Microsoft.Maui.Controls.SourceGen
 {
 	public static class Descriptors
 	{
+		//XamlParsing, general
 		public static DiagnosticDescriptor XamlParserError = new DiagnosticDescriptor(
 			id: "MAUIG1001",
 			title: new LocalizableResourceString(nameof(MauiGResources.XamlParsingFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
@@ -12,6 +15,373 @@ namespace Microsoft.Maui.Controls.SourceGen
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AmbiguousType = new DiagnosticDescriptor(
+			id: "MAUIG1002",
+			title: new LocalizableResourceString(nameof(MauiGResources.AmbiguousTypeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.AmbiguousTypeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExpressionNotClosed = new DiagnosticDescriptor(
+			id: "MAUIG1003",
+			title: new LocalizableResourceString(nameof(MauiGResources.XamlParsingFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ExpressionNotClosed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		//conversion
+		public static DiagnosticDescriptor ConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor RectConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.RectConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor PointConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.PointConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ThicknessConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ThicknessConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor CornerRadiusConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.CornerRadiusConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor EasingConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.EasingConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor FlexBasisConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.FlexBasisConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor FlowDirectionConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.FlowDirectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor GridLengthConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.GridLengthConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ListStringConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ListStringConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor StrokeShapeConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.StrokeShapeConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ColumnDefinitionCollectionConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ColumnDefinitionCollectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor RowDefinitionCollectionConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.RowDefinitionCollectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor LayoutOptionsConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.LayoutOptionsConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		//Symbol resolution
+		public static DiagnosticDescriptor TypeResolution = new DiagnosticDescriptor(
+			id: "MAUIX2000",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.TypeResolutionMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor DuplicateTypeError = new DiagnosticDescriptor(
+			id: "MAUIX2001",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicateTypeError), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MemberResolution = new DiagnosticDescriptor(
+			id: "MAUIX2002",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MemberResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MethodResolution = new DiagnosticDescriptor(
+			id: "MAUIX2003",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MethodResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor DuplicateKeyInRD = new DiagnosticDescriptor(
+			id: "MAUIX2004",
+			title: new LocalizableResourceString(nameof(MauiGResources.DuplicateKeyInRD), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicateKeyInRD), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor RequiredProperty = new DiagnosticDescriptor(
+			id: "MAUIX2005",
+			title: new LocalizableResourceString(nameof(MauiGResources.RequiredPropertyTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.RequiredPropertyMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		// Binding-related diagnostics (MAUIG2041-MAUIG2045 matching XC0041-XC0045)
+		public static DiagnosticDescriptor BindingIndexerNotClosed = new DiagnosticDescriptor(
+			id: "MAUIG2041",
+			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerNotClosed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor BindingIndexerEmpty = new DiagnosticDescriptor(
+			id: "MAUIG2042",
+			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerEmpty), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor BindingIndexerTypeUnsupported = new DiagnosticDescriptor(
+			id: "MAUIG2043",
+			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingIndexerTypeUnsupported), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		// MAUIG2045: BindingPropertyNotFound
+		// This is a WARNING (not Error) because the MAUI source generator cannot always see properties
+		// that are generated by other source generators (e.g., CommunityToolkit.Mvvm's [ObservableProperty]).
+		// While this might indicate a typo, it could also be a valid property that will exist at runtime.
+		// The binding will fall back to slower reflection-based binding, which will work if the property exists.
+		// See: https://github.com/dotnet/maui/issues/[issue-number] for the source generator visibility limitation.
+		public static DiagnosticDescriptor BindingPropertyNotFound = new DiagnosticDescriptor(
+			id: "MAUIG2045",
+			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationWarning), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingPropertyNotFound), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		// Binding warnings (MAUIG2024 matching XC0024)
+		public static DiagnosticDescriptor BindingWithXDataTypeFromOuterScope = new DiagnosticDescriptor(
+			id: "MAUIG2024",
+			title: new LocalizableResourceString(nameof(MauiGResources.BindingCompilationWarning), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.BindingWithXDataTypeFromOuterScope), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true,
+			helpLinkUri: "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings");
+
+		// XAML issues (MAUIG2064 matching XC0064)
+		public static DiagnosticDescriptor NamescopeDuplicate = new DiagnosticDescriptor(
+			id: "MAUIG2064",
+			title: new LocalizableResourceString(nameof(MauiGResources.NamescopeError), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.NamescopeDuplicate), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor PropertyElementWithAttribute = new DiagnosticDescriptor(
+			id: "MAUIX2006",
+			title: "Property element has attributes",
+			messageFormat: "{0}",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		// C# Expressions
+		public static DiagnosticDescriptor AmbiguousExpressionOrMarkup = new DiagnosticDescriptor(
+			id: "MAUIX2007",
+			title: "Ambiguous expression or markup extension",
+			messageFormat: "'{0}' is ambiguous - both a property '{0}' and markup extension '{0}Extension' exist. Use '{{= {0}}}' for the property or '{{local:{0}}}' for the markup extension.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AmbiguousMemberExpression = new DiagnosticDescriptor(
+			id: "MAUIX2008",
+			title: "Ambiguous member reference in expression",
+			messageFormat: "'{0}' exists on both '{1}' and '{2}'. Use 'this.{0}' for the local member or '.{0}' for the binding.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MemberNotFound = new DiagnosticDescriptor(
+			id: "MAUIX2009",
+			title: "Member not found in expression",
+			messageFormat: "'{0}' not found on '{1}' or '{2}'.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AmbiguousMemberWithStaticType = new DiagnosticDescriptor(
+			id: "MAUIX2011",
+			title: "Member name conflicts with static type",
+			messageFormat: "'{0}' exists on '{1}' but is also a well-known static type. Use '.{0}' for the binding or fully qualify the static type (e.g., 'System.{0}').",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor ExpressionNotSettable = new DiagnosticDescriptor(
+			id: "MAUIX2010",
+			title: "Expression cannot be used for two-way binding",
+			messageFormat: "Expression '{0}' cannot generate a setter. Two-way binding to '{1}' will be one-way.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Info,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor CSharpExpressionsRequirePreviewFeatures = new DiagnosticDescriptor(
+			id: "MAUIX2012",
+			title: "C# Expressions require EnablePreviewFeatures",
+			messageFormat: "XAML C# Expressions are an experimental feature. Add '<EnablePreviewFeatures>true</EnablePreviewFeatures>' to your project file to enable them.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AsyncLambdaNotSupported = new DiagnosticDescriptor(
+			id: "MAUIX2013",
+			title: "Async lambda event handlers are not supported",
+			messageFormat: "Async lambda event handlers are not supported. Use a regular method for async event handling.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MissingEventHandler = new DiagnosticDescriptor(
+			id: "MAUIX2014",
+			title: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandlerTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandler), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
+		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
+		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");
+		// public static BuildExceptionCode PropertyMissing = new BuildExceptionCode("XC", 0003, nameof(PropertyMissing), "");
+		// public static BuildExceptionCode ConstructorDefaultMissing = new BuildExceptionCode("XC", 0004, nameof(ConstructorDefaultMissing), "");
+		// public static BuildExceptionCode ConstructorXArgsMissing = new BuildExceptionCode("XC", 0005, nameof(ConstructorXArgsMissing), "");
+		// public static BuildExceptionCode MethodStaticMissing = new BuildExceptionCode("XC", 0006, nameof(MethodStaticMissing), "");
+		// public static BuildExceptionCode EnumValueMissing = new BuildExceptionCode("XC", 0007, nameof(EnumValueMissing), "");
+		// public static BuildExceptionCode AdderMissing = new BuildExceptionCode("XC", 0008, nameof(AdderMissing), "");
+		// public static BuildExceptionCode MemberResolution = new BuildExceptionCode("XC", 0009, nameof(MemberResolution), "");
+
+		// //BP,BO
+		// public static BuildExceptionCode BPName = new BuildExceptionCode("XC", 0020, nameof(BPName), "");
+		// public static BuildExceptionCode BPMissingGetter = new BuildExceptionCode("XC", 0021, nameof(BPMissingGetter), "");
+		// public static BuildExceptionCode BindingWithoutDataType = new BuildExceptionCode("XC", 0022, nameof(BindingWithoutDataType), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
+		// public static BuildExceptionCode BindingWithNullDataType = new BuildExceptionCode("XC", 0023, nameof(BindingWithNullDataType), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
+		// public static BuildExceptionCode BindingWithXDataTypeFromOuterScope = new BuildExceptionCode("XC", 0024, nameof(BindingWithXDataTypeFromOuterScope), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings");
+		// public static BuildExceptionCode BindingWithSourceCompilationSkipped = new BuildExceptionCode("XC", 0025, nameof(BindingWithSourceCompilationSkipped), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
+
+		// //Bindings, conversions
+		// public static BuildExceptionCode Conversion = new BuildExceptionCode("XC", 0040, nameof(Conversion), "");
+		// public static BuildExceptionCode BindingIndexerNotClosed = new BuildExceptionCode("XC", 0041, nameof(BindingIndexerNotClosed), "");
+		// public static BuildExceptionCode BindingIndexerEmpty = new BuildExceptionCode("XC", 0042, nameof(BindingIndexerEmpty), "");
+		// public static BuildExceptionCode BindingIndexerTypeUnsupported = new BuildExceptionCode("XC", 0043, nameof(BindingIndexerTypeUnsupported), "");
+		// public static BuildExceptionCode BindingIndexerParse = new BuildExceptionCode("XC", 0044, nameof(BindingIndexerParse), "");
+		// public static BuildExceptionCode BindingPropertyNotFound = new BuildExceptionCode("XC", 0045, nameof(BindingPropertyNotFound), "");
+
+		// //XAML issues
+		// public static BuildExceptionCode MarkupNotClosed = new BuildExceptionCode("XC", 0060, nameof(MarkupNotClosed), "");
+		// public static BuildExceptionCode MarkupParsingFailed = new BuildExceptionCode("XC", 0061, nameof(MarkupParsingFailed), "");
+		// public static BuildExceptionCode XmlnsUndeclared = new BuildExceptionCode("XC", 0062, nameof(XmlnsUndeclared), "");
+		// public static BuildExceptionCode SByteEnums = new BuildExceptionCode("XC", 0063, nameof(SByteEnums), "");
+		// public static BuildExceptionCode NamescopeDuplicate = new BuildExceptionCode("XC", 0064, nameof(NamescopeDuplicate), "");
+		// public static BuildExceptionCode ContentPropertyAttributeMissing = new BuildExceptionCode("XC", 0065, nameof(ContentPropertyAttributeMissing), "");
+		// public static BuildExceptionCode InvalidXaml = new BuildExceptionCode("XC", 0066, nameof(InvalidXaml), "");
+
+
+		// //Extensions
+		// public static BuildExceptionCode XStaticSyntax = new BuildExceptionCode("XC", 0100, nameof(XStaticSyntax), "");
+		// public static BuildExceptionCode XStaticResolution = new BuildExceptionCode("XC", 0101, nameof(XStaticResolution), "");
+		// public static BuildExceptionCode XDataTypeSyntax = new BuildExceptionCode("XC", 0102, nameof(XDataTypeSyntax), "");
+		// public static BuildExceptionCode UnattributedMarkupType = new BuildExceptionCode("XC", 0103, nameof(UnattributedMarkupType), ""); //warning
+
+		// //Style, StyleSheets, Resources
+		// public static BuildExceptionCode StyleSheetSourceOrContent = new BuildExceptionCode("XC", 0120, nameof(StyleSheetSourceOrContent), "");
+		// public static BuildExceptionCode StyleSheetNoSourceOrContent = new BuildExceptionCode("XC", 0121, nameof(StyleSheetNoSourceOrContent), "");
+		// public static BuildExceptionCode StyleSheetStyleNotALiteral = new BuildExceptionCode("XC", 0122, nameof(StyleSheetStyleNotALiteral), "");
+		// public static BuildExceptionCode StyleSheetSourceNotALiteral = new BuildExceptionCode("XC", 0123, nameof(StyleSheetSourceNotALiteral), "");
+		// public static BuildExceptionCode ResourceMissing = new BuildExceptionCode("XC", 0124, nameof(ResourceMissing), "");
+		// public static BuildExceptionCode ResourceDictDuplicateKey = new BuildExceptionCode("XC", 0125, nameof(ResourceDictDuplicateKey), "");
+		// public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XC", 0126, nameof(ResourceDictMissingKey), "");
+		// public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XC", 0127, nameof(XKeyNotLiteral), "");
+		// public static BuildExceptionCode StaticResourceSyntax = new BuildExceptionCode("XC", 0128, nameof(StaticResourceSyntax), "");
+
+		// //CSC equivalents
+		// public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning
+
 	}
 }
 

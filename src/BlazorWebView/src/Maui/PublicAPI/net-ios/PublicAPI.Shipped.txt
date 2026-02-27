@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.RootComponents.get ->
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StartPath.get -> string!
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.StartPath.set -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.UrlLoading -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>?
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.WebResourceRequested -> System.EventHandler<Microsoft.Maui.Controls.WebViewWebResourceRequestedEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewHandler() -> void
 Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.BlazorWebViewHandler(Microsoft.Maui.PropertyMapper? mapper) -> void

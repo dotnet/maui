@@ -16,8 +16,7 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper : IPropertyMapper
 	{
-		// TODO: Make this private in .NET10
-		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
+		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 		IPropertyMapper[]? _chained;
 
 		List<string>? _updatePropertiesKeys;
@@ -41,7 +40,7 @@ namespace Microsoft.Maui
 		{
 			_mapper[key] = action;
 
-			ClearKeyCache();
+			ClearMergedMappers();
 		}
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
@@ -69,7 +68,7 @@ namespace Microsoft.Maui
 			}
 
 			// CachedMappers initially contains only the UpdateProperties keys which may not contain the key we are looking for.
-			// See AndroidBatchPropertyMapper for an example.
+			// This should never happen, but there's a chance someone may have customized `GetKeys` to return a subset of the actual registered mapper keys.
 			var mapper = GetProperty(key);
 			cachedMappers[key] = mapper;
 
@@ -134,20 +133,16 @@ namespace Microsoft.Maui
 			set
 			{
 				_chained = value;
-				ClearKeyCache();
+				ClearMergedMappers();
 			}
 		}
 
-		// TODO: Make private in .NET10 with a new name: ClearMergedMappers
-		protected virtual void ClearKeyCache()
+		void ClearMergedMappers()
 		{
 			_updatePropertiesMappers = null;
 			_updatePropertiesKeys = null;
 			_cachedMappers = null;
 		}
-
-		// TODO: Remove in .NET10
-		public virtual IReadOnlyCollection<string> UpdateKeys => UpdatePropertiesKeys;
 
 		public virtual IEnumerable<string> GetKeys()
 		{
@@ -178,12 +173,7 @@ namespace Microsoft.Maui
 		{
 			var updatePropertiesKeys = GetKeys().Distinct().ToList();
 			var updatePropertiesMappers = new List<Action<IElementHandler, IElement>>(updatePropertiesKeys.Count);
-#if ANDROID
-			var cacheSize = updatePropertiesKeys.Count + AndroidBatchPropertyMapper.SkipList.Count;
-#else
-			var cacheSize = updatePropertiesKeys.Count;
-#endif
-			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(cacheSize);
+			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(updatePropertiesKeys.Count);
 
 			foreach (var key in updatePropertiesKeys)
 			{

@@ -58,6 +58,58 @@ $ adb logcat -d | grep Displayed
 
 You can also use [profile-android.ps1][1] in this repo, or [profile.ps1][2].
 
+### Troubleshooting
+
+If the resulting `*.aotprofile.txt` file is empty, review the `.binlog`
+file to see if there is a message like:
+
+```log
+Task Exec 85ms
+CommandLineArguments = "D:\.nuget\packages\mono.aotprofiler.android\9.0.0-preview1\tools\aprofutil"  -s -v -p 9999 -o "custom.aprof"
+Reading from '127.0.0.1:9999'...
+Read 19 bytes...
+Read total 19 bytes...
+Summary:
+	Modules:          0
+	Types:            0
+	Methods:          0
+Going to write the profile to 'custom.aprof'
+```
+
+Mono will print out more information to `adb logcat` if you set:
+
+```bash
+adb shell setprop debug.mono.log default,assembly,mono_log_level=debug,mono_log_mask=all
+```
+
+Be sure to comment out the line in
+`src\ProfiledAot\src\Directory.Build.targets` that sets
+`debug.mono.log` to empty.
+
+A *working* example of Mono's logging would say:
+
+```log
+05-21 11:38:30.032 28555 28555 W monodroid: Initializing profiler with options: aot:port=9999,output=/data/user/0/com.companyname.maui/files/.__override__/arm64-v8a/profile.aotprofile
+05-21 11:38:30.032 28555 28555 I monodroid-assembly: Trying to load shared library '/data/app/~~aLsIB6f0cwe4kpqTjGW6KA==/com.companyname.maui-8LChNbDvTnxGHnFnUt1vBw==/lib/arm64/libmono-profiler-aot.so'
+05-21 11:38:30.033 28555 28555 W monodroid: Looking for profiler init symbol 'mono_profiler_init_aot'? 0x7826470468
+...
+05-21 11:38:35.531 28555 28586 I mono-prof: AOT profiler data written to 'socket'
+05-21 11:38:35.534 28555 28586 E mono-prof: aot profiler data saved to the socket
+```
+
+Which could fail when loading the `libmono-profiler-aot.so` library,
+finding the `mono_profiler_init_aot` symbol, or just not return any
+data...
+
+To fix this, you will need a new build of `libmono-profiler-aot.so`.
+We usually have to ship a new version of `Mono.Profiler.Android` with
+each major .NET version.
+
+See some past examples at:
+
+* https://github.com/jonathanpeppers/Mono.Profiler.Android/pull/17
+* https://github.com/jonathanpeppers/Mono.Profiler.Android/pull/23
+
 ### Notes about NuGet caches
 
 To get a clear picture of before & after, you can copy over top of the

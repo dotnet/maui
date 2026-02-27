@@ -242,6 +242,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateFlyoutAccessibility();
 		}
 
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+
+			coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
+			{
+				if (IsOpen && TapoffView != null)
+				{
+					TapoffView.Frame = View.Bounds;
+				}
+			}, null);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
@@ -450,10 +463,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					FlyoutTransition.LayoutViews(View.Bounds, IsOpen ? 1 : 0, Flyout.ViewController.View, Detail.View, _flyoutBehavior);
 
-					if (TapoffView != null)
-					{
-						TapoffView.Layer.AddAnimation(tapOffViewAnimation, "opacity");
-					}
+					TapoffView?.Layer.AddAnimation(tapOffViewAnimation, "opacity");
 				});
 
 				_flyoutAnimation.AddCompletion((p) =>

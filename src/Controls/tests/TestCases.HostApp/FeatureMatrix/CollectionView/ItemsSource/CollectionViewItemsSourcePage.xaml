@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:CollectionViewViewModel"
+             x:Class="Maui.Controls.Sample.CollectionViewItemsSourcePage"
+             Title="CollectionViewItemsSourcePage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+       <Grid Padding="10"
+             RowSpacing="5"
+             ColumnSpacing="5"
+             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto"
+             ColumnDefinitions="*, *">
+              <local:CollectionView2
+                     x:Name="collectionView"
+                     Grid.Row="0"
+                     Grid.ColumnSpan="2"
+                     ItemsSource="{Binding ItemsSource}"
+                     ItemTemplate="{Binding ItemTemplate}"
+                     IsGrouped="{Binding IsGrouped}"
+                     SelectionMode="{Binding SelectionMode}"
+                     SelectedItem="{Binding SelectedItem}"
+                     SelectedItems="{Binding SelectedItems}"
+                     SelectionChanged="OnCollectionViewSelectionChanged"
+                     GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
+                     AutomationId="CollectionViewItemsSource">
+              </local:CollectionView2>
+              <!--Add or Remove item based on Index-->
+              <Label Text="Enter Item Index:"
+                     FontAttributes="Bold"
+                     FontSize="11"
+                     Grid.Row="1"
+                     Grid.Column="0"/>
+              <local:UITestEntry  x:Name="IndexEntry"
+                                  Placeholder="Enter item index"
+                                  Grid.Row="1"
+                                  Grid.Column="1"
+                                  AutomationId="IndexEntry"
+                                  IsCursorVisible="false"/>
+              <!--Add or Remove Buttons -->
+              <Button Text="Add Item"
+                      Clicked="AddItems_Clicked"
+                      Grid.Row="2"
+                      Grid.Column="0"
+                      AutomationId="AddItems"/>
+              <Button Text="Remove Item"
+                      Clicked="RemoveItems_Clicked"
+                      Grid.Row="2"
+                      Grid.Column="1"
+                      AutomationId="RemoveItems"/>
+              <!--Display Previous Selection Text-->
+              <Label Text="Previous Selection:"
+                     FontAttributes="Bold"
+                     Grid.Row="3"
+                     Grid.Column="0"/>
+              <Label Text="{Binding PreviousSelectionText}"
+                     TextColor="Blue"
+                     Grid.Row="3"
+                     Grid.Column="1"
+                     AutomationId="PreviousSelectionTextLabel"/>
+              <!--Display Current Selection Text-->
+              <Label Text="Current Selection:"
+                     FontAttributes="Bold"
+                     Grid.Row="4"
+                     Grid.Column="0"/>
+              <Label Text="{Binding CurrentSelectionText}"
+                     TextColor="Blue"
+                     Grid.Row="4"
+                     Grid.Column="1"
+                     AutomationId="CurrentSelectionTextLabel"/>
+              <!--Update the Selection Item-->
+              <Button
+                     Text="Multiple Selection"
+                     Grid.Row="5"
+                     Grid.Column="0"
+                     Clicked="OnPreSelectionButtonClicked"
+                     AutomationId="MultipleModePreselection">
+              </Button>
+              <Button Text="Single Selection"
+                      Grid.Row="5"
+                      Grid.Column="1"
+                      Clicked="OnPreSelectionButtonClicked"
+                      AutomationId="SingleModePreselection">
+              </Button>
+       </Grid>
+</ContentPage>

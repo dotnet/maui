@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -170,6 +172,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var radioButton2 = new RadioButton() { GroupName = "foo" };
 			var radioButton3 = new RadioButton() { GroupName = "foo" };
 
+			var layout = new Grid();
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
 			radioButton1.IsChecked = true;
 			radioButton2.IsChecked = true;
 
@@ -235,6 +242,172 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			radioButton1.Value = "updated";
 
 			Assert.Equal("updated", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+		}
+
+		[Fact]
+		public async Task RadioButtonGroupLayoutShouldNotLeak()
+		{
+			WeakReference CreateReference()
+			{
+				var layout = new StackLayout();
+				var rb1 = new RadioButton { Content = "RB1", Value = "RB1" };
+				var rb2 = new RadioButton { Content = "RB2", Value = "RB2" };
+				layout.Add(rb1);
+				layout.Add(rb2);
+				layout.SetValue(RadioButtonGroup.GroupNameProperty, "GroupA");
+				layout.SetValue(RadioButtonGroup.SelectedValueProperty, "RB1");
+
+				return new(layout);
+			}
+
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(reference.IsAlive, "RadioButtonGroup should not be alive");
+		}
+
+		[Fact]
+		public async Task RadioButtonShouldNotLeak()
+		{
+			WeakReference CreateReference()
+			{
+				var radioButton = new RadioButton { Content = "RB1", Value = "RB1", GroupName = "GroupA" };
+				return new(radioButton);
+			}
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(reference.IsAlive, "RadioButton should not be alive");
+
+		}
+		
+		[Fact]
+		public void GroupNullSelectionClearsAnySelection()
+		{
+			var layout = new Grid();
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, "foo");
+
+			var radioButton1 = new RadioButton() { Value = 1, IsChecked = true };
+			var radioButton2 = new RadioButton() { Value = 2 };
+			var radioButton3 = new RadioButton() { Value = 3 };
+
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
+			Assert.Equal(1, layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, null);
+
+			Assert.False(radioButton1.IsChecked);
+		}
+
+		[Fact]
+		public void ValuePropertyCanBeSetToNull()
+		{
+			var radioButton = new RadioButton();
+
+			Assert.Null(radioButton.Value);
+
+			radioButton.Value = 1;
+
+			Assert.Equal(1, radioButton.Value);
+
+			radioButton.Value = null;
+
+			Assert.Null(radioButton.Value);
+		}
+
+		[Fact]
+		public void RadioButtonGroupWorksWithDynamicallyAddedDescendants()
+		{
+			// Simulates CollectionView scenario where RadioButtons are added as descendants
+			// rather than direct children (they're inside ItemTemplate)
+			var layout = new StackLayout();
+			var groupName = "choices";
+
+			// Set up RadioButtonGroup on parent layout
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, null);
+
+			// Create a container that simulates CollectionView item container
+			var itemContainer = new StackLayout();
+			layout.Children.Add(itemContainer);
+
+			// Create RadioButtons and add them to the nested container
+			// This triggers DescendantAdded events (like CollectionView does)
+			var radioButton1 = new RadioButton() { Value = "Choice 1" };
+			var radioButton2 = new RadioButton() { Value = "Choice 2" };
+			var radioButton3 = new RadioButton() { Value = "Choice 3" };
+
+			itemContainer.Children.Add(radioButton1);
+			itemContainer.Children.Add(radioButton2);
+			itemContainer.Children.Add(radioButton3);
+
+			// Verify RadioButtons received the group name from ancestor
+			Assert.Equal(groupName, radioButton1.GroupName);
+			Assert.Equal(groupName, radioButton2.GroupName);
+			Assert.Equal(groupName, radioButton3.GroupName);
+
+			// Verify SelectedValue is initially null
+			Assert.Null(layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			// Check a RadioButton
+			radioButton2.IsChecked = true;
+
+			// Verify SelectedValue binding is updated
+			Assert.Equal("Choice 2", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			// Check another RadioButton
+			radioButton3.IsChecked = true;
+
+			// Verify SelectedValue binding updates again
+			Assert.Equal("Choice 3", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			// Verify only one RadioButton is checked
+			Assert.False(radioButton1.IsChecked);
+			Assert.False(radioButton2.IsChecked);
+			Assert.True(radioButton3.IsChecked);
+		}
+
+		[Fact]
+		public void RadioButtonGroupSelectedValueBindingWorksWithNestedDescendants()
+		{
+			// Tests that setting SelectedValue on the group selects the correct descendant RadioButton
+			var layout = new StackLayout();
+			var groupName = "choices";
+
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
+
+			// Nested container simulating CollectionView
+			var itemContainer = new StackLayout();
+			layout.Children.Add(itemContainer);
+
+			var radioButton1 = new RadioButton() { Value = "Choice 1" };
+			var radioButton2 = new RadioButton() { Value = "Choice 2" };
+			var radioButton3 = new RadioButton() { Value = "Choice 3" };
+
+			itemContainer.Children.Add(radioButton1);
+			itemContainer.Children.Add(radioButton2);
+			itemContainer.Children.Add(radioButton3);
+
+			// Set SelectedValue from the group (simulates binding update)
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, "Choice 2");
+
+			// Verify the correct RadioButton is checked
+			Assert.False(radioButton1.IsChecked);
+			Assert.True(radioButton2.IsChecked);
+			Assert.False(radioButton3.IsChecked);
+
+			// Change SelectedValue
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, "Choice 3");
+
+			// Verify selection updates
+			Assert.False(radioButton1.IsChecked);
+			Assert.False(radioButton2.IsChecked);
+			Assert.True(radioButton3.IsChecked);
 		}
 	}
 }

@@ -28,7 +28,7 @@ if (Test-Path $cgManifestPath) {
 }
 else {
     Write-Host "Creating a new cgmanifest.json file"
-    $cgManifest = @{
+    $cgManifest = [ordered]@{
         '$schema' = 'https://json.schemastore.org/component-detection-manifest.json'
         version = 1
         registrations = @()
@@ -71,10 +71,11 @@ function New-PackageEntry {
         [string]$PackageVersion
     )
     
-    return @{
-        component = @{
+    # Use ordered hashtables to ensure consistent JSON property ordering
+    return [ordered]@{
+        component = [ordered]@{
             type = 'nuget'
-            nuget = @{
+            nuget = [ordered]@{
                 name = $PackageName
                 version = $PackageVersion
             }
@@ -134,12 +135,31 @@ foreach ($package in $packageVersionMappings.GetEnumerator()) {
     }
 }
 
-# Update the manifest
-$cgManifest.registrations = $newRegistrations
+# Sort registrations by package name for consistent ordering
+$sortedRegistrations = $newRegistrations | Sort-Object { $_.component.nuget.name }
 
-# Save the updated manifest
-$cgManifest | ConvertTo-Json -Depth 10 | Out-File $cgManifestPath -Encoding utf8
-Write-Host "Updated cgmanifest.json saved to: $cgManifestPath"
+# Update the manifest
+$cgManifest.registrations = $sortedRegistrations
+
+# Convert to JSON with consistent formatting
+$newContent = $cgManifest | ConvertTo-Json -Depth 10
+
+# Only write if content has changed to avoid unnecessary file modifications
+$shouldWrite = $true
+if (Test-Path $cgManifestPath) {
+    $currentContent = Get-Content $cgManifestPath -Raw
+    # Normalize line endings and trim whitespace for comparison
+    $currentContentNormalized = $currentContent.Trim() -replace "`r`n", "`n" -replace "`r", "`n"
+    $newContentNormalized = $newContent.Trim() -replace "`r`n", "`n" -replace "`r", "`n"
+    $shouldWrite = $currentContentNormalized -ne $newContentNormalized
+}
+
+if ($shouldWrite) {
+    $newContent | Out-File $cgManifestPath -Encoding utf8
+    Write-Host "Updated cgmanifest.json saved to: $cgManifestPath"
+} else {
+    Write-Host "No changes detected - cgmanifest.json is already up to date"
+}
 
 # Print summary
 Write-Host "Successfully added $($newRegistrations.Count) package registrations to cgmanifest.json"

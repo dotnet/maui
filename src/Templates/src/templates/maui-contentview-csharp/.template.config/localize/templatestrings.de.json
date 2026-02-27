@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentView (C#)",
-  "description": "Eine Ansicht für die Anzeige von Inhalten mit C#. Diese eignet sich sehr zum Erstellen Ihrer eigenen benutzerdefinierten und wiederverwendbaren Steuerelemente.",
+  "description": "Eine Ansicht für die Anzeige von Inhalten mit C#. Dies eignet sich sehr zum Erstellen eigener benutzerdefinierter und wiederverwendbarer Steuerelemente.",
   "postActions/openInEditor/description": "Öffnet \"NewContent1.cs\" im Editor.",
   "symbols/namespace/description": "Namespace für den generierten Code."
 }

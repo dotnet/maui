@@ -8,7 +8,7 @@ using AndroidX.Window.Layout;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using AView = Android.Views.View;
+using AView = global::Android.Views.View;
 
 namespace Microsoft.Maui.Foldable
 {
@@ -401,8 +401,7 @@ namespace Microsoft.Maui.Foldable
 				_gettingHingeAngle = null;
 			}
 
-			if (toSet != null)
-				toSet.SetResult(hingeAngle);
+			toSet?.SetResult(hingeAngle);
 		}
 	}
 

@@ -163,9 +163,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
-			if (Element.Parent is CarouselPage)
-				return;
-
 			Page.SendAppearing();
 		}
 
@@ -177,9 +174,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			_appeared = false;
-
-			if (Element.Parent is CarouselPage)
-				return;
 
 			Page.SendDisappearing();
 		}

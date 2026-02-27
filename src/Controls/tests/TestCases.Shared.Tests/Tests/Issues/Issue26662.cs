@@ -1,6 +1,3 @@
-// FontImageSource color is not applied to the Tab Icon on Windows for the Tabbedpage 
-// Issue: https://github.com/dotnet/maui/issues/26752
-#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,8 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Button");
 			App.Tap("Button");
-			VerifyScreenshot();
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }
-#endif

@@ -22,7 +22,7 @@ internal static class ItemsSourceFactory2
 			IList _ when itemsSource is INotifyCollectionChanged => new LoopObservableItemsSource2(itemsSource as IList, collectionViewController, loop),
 			IEnumerable _ when itemsSource is INotifyCollectionChanged => new LoopObservableItemsSource2(itemsSource as IEnumerable, collectionViewController, loop),
 			IEnumerable<object> generic => new LoopListSource2(generic, loop),
-			_ => new LoopListSource(itemsSource, loop),
+			_ => new LoopListSource2(itemsSource, loop),
 		};
 	}
 

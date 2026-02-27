@@ -164,11 +164,8 @@ namespace Microsoft.Maui.Graphics.Platform
 					_context.SetFillColor(1, 1, 1, 1); // White
 				}
 
-				if (_gradient != null)
-				{
-					_gradient.Dispose();
-					_gradient = null;
-				}
+				_gradient?.Dispose();
+				_gradient = null;
 
 				_fillPattern = null;
 				_fillImage = null;
@@ -314,11 +311,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				paint = Colors.White.AsPaint();
 			}
 
-			if (_gradient != null)
-			{
-				_gradient.Dispose();
-				_gradient = null;
-			}
+			_gradient?.Dispose();
+			_gradient = null;
 
 			_fillPattern = null;
 			_fillImage = null;
@@ -718,8 +712,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void FillWithPattern(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
-			var baseColorspace = _getColorspace?.Invoke();
-			var colorspace = CGColorSpace.CreatePattern(baseColorspace);
+			var colorspace = CGColorSpace.CreatePattern(null);
 			_context.SetFillColorSpace(colorspace);
 
 			_fillPatternRect.X = 0;
@@ -1342,11 +1335,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var success = base.RestoreState();
 
-			if (_gradient != null)
-			{
-				_gradient.Dispose();
-				_gradient = null;
-			}
+			_gradient?.Dispose();
+			_gradient = null;
 
 			_fillPattern = null;
 			_fillImage = null;

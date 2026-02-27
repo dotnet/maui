@@ -1,9 +1,14 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#if ANDROID
+using Android.Webkit;
+using AView = Android.Views.View;
+#endif
+
+namespace Microsoft.Maui.Controls
 {
 	public class PlatformWebViewProcessTerminatedEventArgs
 	{
 #if ANDROID
-		internal PlatformWebViewProcessTerminatedEventArgs(Android.Views.View? sender, Android.Webkit.RenderProcessGoneDetail? renderProcessGoneDetail)
+		internal PlatformWebViewProcessTerminatedEventArgs(AView? sender, RenderProcessGoneDetail? renderProcessGoneDetail)
 		{
 			Sender = sender;
 			RenderProcessGoneDetail = renderProcessGoneDetail;
@@ -12,12 +17,12 @@
 		/// <summary>
 		/// Gets the native view attached to the event.
 		/// </summary>
-		public Android.Views.View? Sender { get; }
+		public AView? Sender { get; }
 
 		/// <summary>
 		/// Gets the native event or handler attached to the view.
 		/// </summary>
-		public Android.Webkit.RenderProcessGoneDetail? RenderProcessGoneDetail { get; }
+		public RenderProcessGoneDetail? RenderProcessGoneDetail { get; }
 #elif IOS || MACCATALYST
 		internal PlatformWebViewProcessTerminatedEventArgs(WebKit.WKWebView sender)
 		{

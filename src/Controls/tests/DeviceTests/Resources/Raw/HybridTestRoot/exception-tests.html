@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="icon" href="data:,">
+    <script src="_framework/hybridwebview.js"></script>
+    <script>
+        window.addEventListener(
+            "HybridWebViewMessageReceived",
+            async function (e) {
+                var methodToInvoke = e.detail.message;
+                var result = null;
+                var error = null;
+                var hasError = false;
+
+                try {
+                    // Invoke the requested method
+                    result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
+                } catch (ex) {
+                    hasError = true;
+                    error = {
+                        message: ex.message,
+                        type: ex.dotNetErrorType || ex.name,
+                        stackTrace: ex.dotNetStackTrace || ex.stack
+                    };
+                    console.error('Caught exception from .NET method:', ex);
+                }
+
+                // Store the results so they can be checked in the test
+                lastResult = result;
+                lastError = error;
+                lastHasError = hasError;
+                SetStatusDone();
+            });
+
+        var lastResult = null;
+        var lastError = null;
+        var lastHasError = false;
+
+        function GetLastResult() {
+            return lastResult === null ? null : JSON.stringify(lastResult);
+        }
+
+        function GetLastError() {
+            return lastError ? lastError.message : null;
+        }
+
+        function GetLastErrorType() {
+            return lastError ? lastError.type : null;
+        }
+
+        function GetLastErrorMessage() {
+            return lastError ? lastError.message : null;
+        }
+
+        function HasError() {
+            return lastHasError.toString();
+        }
+
+        function SetStatusDone() {
+            document.getElementById('status').innerHTML = "Done!";
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        Hybrid exception test!
+    </div>
+    <div id="htmlLoaded"></div>
+    <div id="status"></div>
+</body>
+</html>

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			try
 			{
-				((IElementNode)parentNode).NameScopeRef.NameScope.RegisterName((string)node.Value, Values[parentNode]);
+				((ElementNode)parentNode).NameScopeRef.NameScope.RegisterName((string)node.Value, Values[parentNode]);
 			}
 			catch (ArgumentException ae)
 			{
@@ -73,6 +73,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		static bool IsXNameProperty(ValueNode node, INode parentNode)
-			=> parentNode is IElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
+			=> parentNode is ElementNode parentElement && parentElement.Properties.TryGetValue(XmlName.xName, out INode xNameNode) && xNameNode == node;
 	}
 }

@@ -24,6 +24,24 @@ namespace Microsoft.Maui.ApplicationModel
 			return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.OrdinalIgnoreCase)) ?? false;
 		}
 
+		private static bool HasFlagInManifest(string permission, RequestedPermission flag)
+		{
+			var context = Application.Context;
+#pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 33: https://developer.android.com/reference/android/content/pm/PackageManager#getPackageInfo(java.lang.String,%20int)
+			var packageInfo = context.PackageManager.GetPackageInfo(context.PackageName, PackageInfoFlags.Permissions);
+#pragma warning restore CS0618, CA1416, CA1422
+			var requestedPermissions = packageInfo?.RequestedPermissions;
+			var requestedPermissionsFlags = packageInfo?.RequestedPermissionsFlags;
+
+			for (int i = 0; i < requestedPermissions.Count; i++)
+			{
+				if (requestedPermissions[i].Equals(permission, StringComparison.OrdinalIgnoreCase))
+					return (requestedPermissionsFlags[i] & (int)flag) != 0;
+			}
+
+			return false;
+		}
+
 		internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 			=> BasePlatformPermission.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -84,7 +102,9 @@ namespace Microsoft.Maui.ApplicationModel
 					return PermissionStatus.Granted;
 
 				var permissionResult = await DoRequest(runtimePermissions);
-				if (permissionResult.GrantResults.Any(g => g == Permission.Denied))
+				// OnRequestPermissionsResult can be called with an empty grantResults array if the user interaction was interrupted. 
+				// Ignoring this could lead to incorrect assumptions that permissions were granted.
+				if (permissionResult.GrantResults.Length == 0 || permissionResult.GrantResults.Any(g => g == Permission.Denied))
 					return PermissionStatus.Denied;
 
 				return PermissionStatus.Granted;
@@ -204,8 +224,7 @@ namespace Microsoft.Maui.ApplicationModel
 					var permissions = new List<(string, bool)>();
 
 					// When targeting Android 11 or lower, AccessFineLocation is required for Bluetooth.
-					// For Android 12 and above, it is optional.
-					if (Application.Context.ApplicationInfo.TargetSdkVersion <= BuildVersionCodes.R || IsDeclaredInManifest(Manifest.Permission.AccessFineLocation))
+					if (Application.Context.ApplicationInfo.TargetSdkVersion <= BuildVersionCodes.R)
 						permissions.Add((Manifest.Permission.AccessFineLocation, true));
 
 #if __ANDROID_31__
@@ -218,6 +237,9 @@ namespace Microsoft.Maui.ApplicationModel
 							permissions.Add((Manifest.Permission.BluetoothConnect, true));
 						if (IsDeclaredInManifest(Manifest.Permission.BluetoothAdvertise))
 							permissions.Add((Manifest.Permission.BluetoothAdvertise, true));
+						// for Android 12 and above, AccessFineLocation is optional
+						if (IsDeclaredInManifest(Manifest.Permission.AccessFineLocation) && !HasFlagInManifest(Manifest.Permission.BluetoothScan, RequestedPermission.NeverForLocation))
+							permissions.Add((Manifest.Permission.AccessFineLocation, true));
 					}
 #endif
 
@@ -365,8 +387,7 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					var permissions = new List<(string, bool)>();
 					// When targeting Android 12 or lower, AccessFineLocation is required for several WiFi APIs.
-					// For Android 13 and above, it is optional.
-					if (Application.Context.ApplicationInfo.TargetSdkVersion < BuildVersionCodes.Tiramisu || IsDeclaredInManifest(Manifest.Permission.AccessFineLocation))
+					if (Application.Context.ApplicationInfo.TargetSdkVersion < BuildVersionCodes.Tiramisu)
 						permissions.Add((Manifest.Permission.AccessFineLocation, true));
 
 #if __ANDROID_33__
@@ -375,6 +396,9 @@ namespace Microsoft.Maui.ApplicationModel
 						// new runtime permission on Android 13
 						if (IsDeclaredInManifest(Manifest.Permission.NearbyWifiDevices))
 							permissions.Add((Manifest.Permission.NearbyWifiDevices, true));
+						// for Android 13 and above, AccessFineLocation is optional
+						if (IsDeclaredInManifest(Manifest.Permission.AccessFineLocation) && !HasFlagInManifest(Manifest.Permission.NearbyWifiDevices, RequestedPermission.NeverForLocation))
+							permissions.Add((Manifest.Permission.AccessFineLocation, true));
 					}
 #endif
 

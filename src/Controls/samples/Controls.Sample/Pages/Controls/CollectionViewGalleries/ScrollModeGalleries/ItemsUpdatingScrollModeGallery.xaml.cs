@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 
 		void OnItemsUpdatingScrollModeChanged(object sender, EventArgs e)
 		{
-			CollectionView.ItemsUpdatingScrollMode = (ItemsUpdatingScrollMode)(sender! as EnumPicker)!.SelectedItem;
+			CollectionView.ItemsUpdatingScrollMode = (ItemsUpdatingScrollMode)((EnumPicker)sender!).SelectedItem;
 		}
 	}
 }

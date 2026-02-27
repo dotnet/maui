@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -33,21 +33,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz24485(bool useCompiledXaml)
+		[Collection("Issue")]
+		public class Tests
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BindingContextWithConverter(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void BindingContextWithConverter(XamlInflator inflator)
 			{
-				var layout = new Bz24485(useCompiledXaml);
+				var layout = new Bz24485(inflator);
 				layout.BindingContext = new { Data1 = new object() };
-				Assert.Pass();
+				// Test passes if no exception is thrown
 			}
 		}
 	}

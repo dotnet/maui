@@ -17,9 +17,9 @@ namespace Microsoft.Maui.Graphics.Platform
 	/// A Windows platform view that can be used to host drawings.
 	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	public sealed class W2DGraphicsView
+	public sealed partial class W2DGraphicsView
 #else
-	public class PlatformGraphicsView
+	public partial class PlatformGraphicsView
 #endif
 		: UserControl
 	{
@@ -85,10 +85,17 @@ namespace Microsoft.Maui.Graphics.Platform
 			_dirty.Height = (float)sender.ActualHeight;
 
 			PlatformGraphicsService.ThreadLocalCreator = sender;
-			_canvas.Session = args.DrawingSession;
-			_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
-			_drawable.Draw(_canvas, _dirty);
-			PlatformGraphicsService.ThreadLocalCreator = null;
+			try
+			{
+				_canvas.Session = args.DrawingSession;
+				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
+				_drawable.Draw(_canvas, _dirty);
+			}
+			finally
+			{
+				_canvas.ResetState();
+				PlatformGraphicsService.ThreadLocalCreator = null;
+			}
 		}
 	}
 }

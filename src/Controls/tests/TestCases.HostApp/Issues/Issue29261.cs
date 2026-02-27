@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29261, "CarouselViewHandler2 for iOS does not properly bounce back when reaching the end with Loop=false", PlatformAffected.iOS)]
 public class Issue29261 : ContentPage
 {

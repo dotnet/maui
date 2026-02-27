@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.Issues.Issue26754"
+            xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+            xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+            android:TabbedPage.ToolbarPlacement="Bottom"
+            BarBackground="Blue"
+            BarBackgroundColor="Pink"
+            BarTextColor="White"
+            SelectedTabColor="DeepPink"
+            UnselectedTabColor="Yellow">
+
+  <ContentPage Title="Test Page 1">
+    <Label Text="Maui Test Page 1!"
+           AutomationId="TestLabel"
+           HorizontalOptions="Center"
+           VerticalOptions="Center"/>
+  </ContentPage>
+  <ContentPage Title="Test Page 2"/>
+  <ContentPage Title="Test Page 3"/>
+  <ContentPage Title="Test Page 4"/>
+  <ContentPage Title="Test Page 5"/>
+  <ContentPage Title="Test Page 6"/>
+  <ContentPage Title="Test Page 7"/>
+  <ContentPage Title="Test Page 8"/>
+  <ContentPage Title="Test Page 9"/>
+  <ContentPage Title="Test Page 10"/>
+  <ContentPage Title="Test Page 11"/>
+  <ContentPage Title="Test Page 12"/>
+  <ContentPage Title="Test Page 13"/>
+  <ContentPage Title="Test Page 14"/>
+
+</TabbedPage>

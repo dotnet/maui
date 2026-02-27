@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Xunit;
@@ -71,14 +72,26 @@ namespace Microsoft.Maui
 		/// Initializes a new instance of the <see cref="ClassDataAttribute"/> class.
 		/// </summary>
 		/// <param name="class">The class that provides the data.</param>
-		public ClassDataAttribute(Type @class)
+#if !NETSTANDARD
+
+		public ClassDataAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type @class)
 		{
 			Class = @class;
 		}
 
+#else
+		public ClassDataAttribute(Type @class)
+		{
+			Class = @class;
+		}
+#endif
+
 		/// <summary>
 		/// Gets the type of the class that provides the data.
 		/// </summary>
+#if !NETSTANDARD
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
 		public Type Class { get; private set; }
 
 		/// <inheritdoc/>

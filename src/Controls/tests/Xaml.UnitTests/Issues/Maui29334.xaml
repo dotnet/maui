@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui29334"
+             Title="Maui29334">
+    <Grid x:Name="grid">
+        <Grid.RowDefinitions>
+            <RowDefinition>
+                <RowDefinition.Height>
+                    <OnIdiom x:TypeArguments="GridLength" Default="50" Desktop="100"/>
+                </RowDefinition.Height>
+            </RowDefinition>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+    
+        <Label Text="Hello, World!" />
+    </Grid>
+
+</ContentPage>

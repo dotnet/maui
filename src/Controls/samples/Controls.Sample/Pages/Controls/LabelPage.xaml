@@ -117,7 +117,7 @@
                         <Span Text=" " />
                         <Span x:Name="GestureSpan" Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
                             <Span.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
+                                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
                             </Span.GestureRecognizers>
                         </Span>
                         <Span Text=" " />

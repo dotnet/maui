@@ -5,18 +5,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    <ResourcePreloader />
     @*#if (SampleContent)
-    <link rel="stylesheet" href="_content/MauiApp.1.Shared/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/MauiApp.1.Shared/lib/bootstrap/dist/css/bootstrap.min.css" />
     ##endif*@
     <link rel="stylesheet" href="_content/MauiApp.1.Shared/app.css" />
     <link rel="stylesheet" href="MauiApp.1.Web.styles.css" />
+    <ImportMap />
     @*#if (SampleContent)
     <link rel="icon" type="image/png" href="_content/MauiApp.1.Shared/favicon.png" />
     ##endif*@
     @*#if (!InteractiveAtRoot)
     <HeadOutlet />
     ##elseif (IndividualLocalAuth)
-    <HeadOutlet @rendermode="RenderModeForPage" />
+    <HeadOutlet @rendermode="PageRenderMode" />
     ##elseif (UseServer && UseWebAssembly)
     <HeadOutlet @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
@@ -30,7 +32,7 @@
     @*#if (!InteractiveAtRoot)
     <Routes />
     ##elseif (IndividualLocalAuth)
-    <Routes @rendermode="RenderModeForPage" />
+    <Routes @rendermode="PageRenderMode" />
     ##elseif (UseServer && UseWebAssembly)
     <Routes @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
@@ -38,7 +40,13 @@
     ##else
     <Routes @rendermode="InteractiveWebAssembly" />
     ##endif*@
-    <script src="_framework/blazor.web.js"></script>
+    @*#if (UseServer)  -->
+    <ReconnectModal />
+    ##endif*@
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    @*#if (IndividualLocalAuth)
+    <script src="@Assets["Components/Account/Shared/PasskeySubmit.razor.js"]" type="module"></script>
+    ##endif*@
 </body>
 
 </html>
@@ -49,9 +57,8 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
-        ? null
-        : InteractiveAuto;
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : null;
 }
 #elseif (UseServer)
 
@@ -59,9 +66,8 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
-        ? null
-        : InteractiveServer;
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveServer : null;
 }
 #else
 
@@ -69,8 +75,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
-        ? null
-        : InteractiveWebAssembly;
+    private IComponentRenderMode? PageRenderMode =>
+        HttpContext.AcceptsInteractiveRouting() ? InteractiveWebAssembly : null;
 }
 #endif*@

@@ -37,8 +37,15 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.ThumbColor != null)
+			if (slider.ThumbImageSource is not null && slider.Handler is not null)
+			{
+				var provider = slider.Handler.GetRequiredService<IImageSourceServiceProvider>();
+				uiSlider.UpdateThumbImageSourceAsync(slider, provider).FireAndForget();
+			}
+			else if (slider.ThumbColor is not null)
+			{
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
+			}
 		}
 
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
@@ -47,10 +54,17 @@ namespace Microsoft.Maui.Platform
 
 			if (thumbImageSource != null)
 			{
+				// Clear the thumb color if we have a thumb image, so that slider doesn't clear image when sliding
+				uiSlider.ThumbTintColor = null;
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImage = result?.Value;
+
+				if (thumbImage is not null && slider.ThumbColor is not null)
+				{
+					thumbImage = thumbImage.ApplyTintColor(slider.ThumbColor.ToPlatform());
+				}
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
 			}

@@ -4,28 +4,82 @@
              AutomationId="KeyboardScrollingEntriesPage"
              x:Class="Maui.Controls.Sample.KeyboardScrollingEntriesPage"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls">
-    <Grid RowDefinitions="*,*">
-        <Grid Grid.Row="0">
-            <VerticalStackLayout>
-                <Entry Placeholder="Entry1" AutomationId="Entry1" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry2" AutomationId="Entry2" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry3" AutomationId="Entry3" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry4" AutomationId="Entry4" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry5" AutomationId="Entry5" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry6" AutomationId="Entry6" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry7" AutomationId="Entry7" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry8" AutomationId="Entry8" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry9" AutomationId="Entry9" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry10" AutomationId="Entry10" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry11" AutomationId="Entry11" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry12" AutomationId="Entry12" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry13" AutomationId="Entry13" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry14" AutomationId="Entry14" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry15" AutomationId="Entry15" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry16" AutomationId="Entry16" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry17" AutomationId="Entry17" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry18" AutomationId="Entry18" Background="lightgray" HeightRequest="50"/>
-            </VerticalStackLayout>
-        </Grid>
-    </Grid>
+       <Grid RowDefinitions="*,*">
+              <Grid Grid.Row="0">
+                     <VerticalStackLayout>
+                            <Entry Placeholder="Entry1"
+                                          AutomationId="Entry1"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry2"
+                                          AutomationId="Entry2"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry3"
+                                          AutomationId="Entry3"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry4"
+                                          AutomationId="Entry4"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry5"
+                                          AutomationId="Entry5"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry6"
+                                          AutomationId="Entry6"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry7"
+                                          AutomationId="Entry7"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry8"
+                                          AutomationId="Entry8"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry9"
+                                          AutomationId="Entry9"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry10"
+                                          AutomationId="Entry10"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry11"
+                                          AutomationId="Entry11"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry12"
+                                          AutomationId="Entry12"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry13"
+                                          AutomationId="Entry13"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry14"
+                                          AutomationId="Entry14"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry15"
+                                          AutomationId="Entry15"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry16"
+                                          AutomationId="Entry16"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry17"
+                                          AutomationId="Entry17"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                            <Entry Placeholder="Entry18"
+                                          AutomationId="Entry18"
+                                          Background="lightgray"
+                                          HeightRequest="50"/>
+                     </VerticalStackLayout>
+              </Grid>
+       </Grid>
 </ContentView>

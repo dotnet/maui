@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D4"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D4">
+    <VerticalStackLayout>
+        <Label Text="1. Input the string 'aBcDeFg' into the editor below." />
+        <Label Text="2. The test fails if the editor below does not display the string 'aBcDeFg' exactly (case-sensitive)." />
+        <Editor Text=""
+                TextTransform="None" />
+
+        <Label Text="3. Input the string 'aBcDeFg' into the editor below." />
+        <Label Text="4. The test fails if the editor below does not display the string 'abcdefg' exactly (case-sensitive)." />
+        <Editor Text=""
+                TextTransform="Lowercase" />
+
+        <Label Text="5. Input the string 'aBcDeFg' into the editor below." />
+        <Label Text="6. The test fails if the editor below does not display the string 'ABCDEFG' exactly (case-sensitive)." />
+        <Editor Text=""
+                TextTransform="Uppercase" />
+
+        <Label Text="7. The test fails if the editor below does not display the string 'abcdefg' exactly (case-sensitive)." />
+        <Editor Text="aBcDeFg"
+                TextTransform="Lowercase" />
+
+        <Label Text="8. The test fails if the editor below does not display the string 'ABCDEFG' exactly (case-sensitive)." />
+        <Editor Text="aBcDeFg"
+                TextTransform="Uppercase" />
+    </VerticalStackLayout>
+</ContentPage>

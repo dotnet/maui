@@ -48,8 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_tracker == value)
 					return;
 
-				if (_tracker != null)
-					_tracker.Dispose();
+				_tracker?.Dispose();
 
 				_tracker = value;
 			}
