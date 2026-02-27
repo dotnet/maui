@@ -284,6 +284,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			ItemsView?.RemoveLogicalChild(_mauiEmptyView);
 		}
+		_mauiEmptyView?.Handler?.DisconnectHandler();
 		_mauiEmptyView = null;
 		_emptyView = null;
 		_emptyViewDisplayed = false;
