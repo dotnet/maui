@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -22,9 +23,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		class CacheTestItemsViewController : ItemsViewController<CacheTestCollectionView>
-		{
-			protected override bool IsHorizontal { get; }
+			class CacheTestItemsViewController : ItemsViewController<CacheTestCollectionView>
+			{
+				protected override bool IsHorizontal { get; }
 
 			public UICollectionViewDelegateFlowLayout DelegateFlowLayout { get; private set; }
 
@@ -32,12 +33,22 @@ namespace Microsoft.Maui.DeviceTests
 			{
 			}
 
-			protected override UICollectionViewDelegateFlowLayout CreateDelegator()
-			{
-				DelegateFlowLayout = new CacheMissCountingDelegate(ItemsViewLayout, this);
-				return DelegateFlowLayout;
+				protected override UICollectionViewDelegateFlowLayout CreateDelegator()
+				{
+					DelegateFlowLayout = new CacheMissCountingDelegate(ItemsViewLayout, this);
+					return DelegateFlowLayout;
+				}
+
+				internal void UpdateTemplatedCellForTests(TemplatedCell cell, NSIndexPath indexPath)
+				{
+					UpdateTemplatedCell(cell, indexPath);
+				}
+
+				internal UICollectionViewCell CreateMeasurementCellForTests(NSIndexPath indexPath)
+				{
+					return CreateMeasurementCell(indexPath);
+				}
 			}
-		}
 
 		internal class CacheMissCountingDelegate : ItemsViewDelegator<CacheTestCollectionView, ItemsViewController<CacheTestCollectionView>>
 		{
@@ -84,9 +95,9 @@ namespace Microsoft.Maui.DeviceTests
 			public double HeightRequest => 40 * (Index + 1);
 		}
 
-		[Fact]
-		public async Task EnsureCellSizesAreCached()
-		{
+			[Fact]
+			public async Task EnsureCellSizesAreCached()
+			{
 			SetupBuilder();
 
 			var collectionView = new CacheTestCollectionView()
@@ -152,8 +163,84 @@ namespace Microsoft.Maui.DeviceTests
 					// Something went wrong with this test
 					Assert.Fail("Wrong controller type in the test; is the handler registration broken?");
 				}
-			});
+				});
+			}
+
+			[Fact]
+			public async Task UpdateTemplatedCellWithStaleIndexPathDoesNotCrash()
+			{
+				SetupBuilder();
+
+				var collectionView = new CacheTestCollectionView
+				{
+					ItemTemplate = new DataTemplate(() => new Label()),
+					ItemsSource = new ObservableCollection<string> { "item-0" }
+				};
+
+				await CreateHandlerAndAddToWindow<CacheTestCollectionViewHandler>(collectionView, async handler =>
+				{
+					await WaitForUIUpdate(collectionView.Frame, collectionView);
+
+					var controller = Assert.IsType<CacheTestItemsViewController>(handler.Controller);
+					var staleIndexPath = NSIndexPath.FromItemSection(99, 0);
+					var cell = new VerticalCell(CGRect.Empty);
+
+					var exception = Record.Exception(() => controller.UpdateTemplatedCellForTests(cell, staleIndexPath));
+					Assert.Null(exception);
+				});
+			}
+
+			[Fact]
+			public async Task UpdateTemplatedCellWithNullItemDoesNotCrash()
+			{
+				SetupBuilder();
+
+				var collectionView = new CacheTestCollectionView
+				{
+					ItemTemplate = new DataTemplate(() => new Label()),
+					ItemsSource = new ObservableCollection<object> { null }
+				};
+
+				await CreateHandlerAndAddToWindow<CacheTestCollectionViewHandler>(collectionView, async handler =>
+				{
+					await WaitForUIUpdate(collectionView.Frame, collectionView);
+
+					var controller = Assert.IsType<CacheTestItemsViewController>(handler.Controller);
+					var cell = new VerticalCell(CGRect.Empty);
+					var indexPath = NSIndexPath.FromItemSection(0, 0);
+
+					var exception = Record.Exception(() => controller.UpdateTemplatedCellForTests(cell, indexPath));
+					Assert.Null(exception);
+				});
+			}
+
+			[Fact]
+			public async Task UpdateTemplatedCellStillBindsForValidItem()
+			{
+				SetupBuilder();
+
+				var expectedItem = "item-0";
+
+				var collectionView = new CacheTestCollectionView
+				{
+					ItemTemplate = new DataTemplate(() => new Label()),
+					ItemsSource = new ObservableCollection<string> { expectedItem }
+				};
+
+				await CreateHandlerAndAddToWindow<CacheTestCollectionViewHandler>(collectionView, async handler =>
+				{
+					await WaitForUIUpdate(collectionView.Frame, collectionView);
+
+					var controller = Assert.IsType<CacheTestItemsViewController>(handler.Controller);
+					var cell = new VerticalCell(CGRect.Empty);
+					var indexPath = NSIndexPath.FromItemSection(0, 0);
+
+					controller.UpdateTemplatedCellForTests(cell, indexPath);
+
+					var boundView = Assert.IsType<Label>((View)cell.PlatformHandler?.VirtualView);
+					Assert.Equal(expectedItem, boundView.BindingContext);
+				});
+			}
 		}
-	}
-#endif
+	#endif
 }
