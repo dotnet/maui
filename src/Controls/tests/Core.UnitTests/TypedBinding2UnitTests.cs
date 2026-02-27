@@ -2017,6 +2017,97 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		//https://github.com/dotnet/maui/pull/32382#issuecomment-3953258371
+		public void TypedBinding_NestedProperty_ResubscribesAfterNullIntermediateBecomesNonNull()
+		{
+			// Regression: when an intermediate object in the path starts as null and later becomes
+			// non-null, the binding must re-establish subscriptions to nested properties.
+			// Previously, the _isSubscribed flag prevented re-subscribing after the first Apply.
+
+			var vm = new ComplexMockViewModel
+			{
+				Model = null  // Start with null intermediate
+			};
+
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), null);
+
+			var binding = new TypedBinding<ComplexMockViewModel, string>(
+				getter: cvm => cvm.Model is { } m ? (m.Text, true) : (null, false),
+				setter: (cvm, t) => { if (cvm.Model is { } m) m.Text = t; },
+				handlersCount: 2,
+				handlers: GetHandlers)
+			{ Mode = BindingMode.OneWay };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, nameof(source.Model));
+				// When Model is null, yielding (null, ...) causes Subscribe to stop — correct behavior.
+				// When Model is non-null, Subscribe must re-subscribe to Model.Text.
+				yield return (source.Model, nameof(ComplexMockViewModel.Text));
+			}
+
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, binding);
+			bindable.BindingContext = vm;
+
+			// Initially null model → binding returns null/default
+			Assert.Null(bindable.GetValue(property));
+
+			// Set Model to non-null → binding should pick up the value
+			vm.Model = new ComplexMockViewModel { Text = "Initial" };
+			Assert.Equal("Initial", (string)bindable.GetValue(property));
+
+			// Change nested property → binding MUST update (this was the regression)
+			vm.Model.Text = "Updated";
+			Assert.Equal("Updated", (string)bindable.GetValue(property));
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/pull/32382#issuecomment-3953258371
+		public void TypedBinding_NestedProperty_ResubscribesAfterIntermediateReplaced()
+		{
+			// When the intermediate object is replaced (non-null → different non-null object),
+			// the binding must switch subscriptions to the new object.
+
+			var child1 = new ComplexMockViewModel { Text = "Child1" };
+			var child2 = new ComplexMockViewModel { Text = "Child2" };
+			var vm = new ComplexMockViewModel { Model = child1 };
+
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), null);
+
+			var binding = new TypedBinding<ComplexMockViewModel, string>(
+				getter: cvm => cvm.Model is { } m ? (m.Text, true) : (null, false),
+				setter: (cvm, t) => { if (cvm.Model is { } m) m.Text = t; },
+				handlersCount: 2,
+				handlers: GetHandlers)
+			{ Mode = BindingMode.OneWay };
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(ComplexMockViewModel source)
+			{
+				yield return (source, nameof(source.Model));
+				yield return (source.Model, nameof(ComplexMockViewModel.Text));
+			}
+
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, binding);
+			bindable.BindingContext = vm;
+
+			Assert.Equal("Child1", (string)bindable.GetValue(property));
+
+			// Replace intermediate with a different object
+			vm.Model = child2;
+			Assert.Equal("Child2", (string)bindable.GetValue(property));
+
+			// Changing the OLD intermediate should NOT fire the binding
+			child1.Text = "OldChildChanged";
+			Assert.Equal("Child2", (string)bindable.GetValue(property));
+
+			// Changing the NEW intermediate SHOULD fire the binding
+			child2.Text = "Child2Updated";
+			Assert.Equal("Child2Updated", (string)bindable.GetValue(property));
+		}
+
+		[Fact]
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3650
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/3613
 		public void TypedBindingsShouldNotHang()

@@ -108,7 +108,6 @@ namespace Microsoft.Maui.Controls.Internals
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
 		BindingMode _cachedMode;
-		bool _isSubscribed;
 		bool _isTSource; // cached type check result
 		object _cachedDefaultValue; // cached default value
 		bool _hasDefaultValue;
@@ -231,7 +230,6 @@ namespace Microsoft.Maui.Controls.Internals
 #endif
 			_propertyChangeHandler.Unsubscribe();
 
-			_isSubscribed = false;
 			_cachedMode = BindingMode.Default;
 			_hasDefaultValue = false;
 			_cachedDefaultValue = null;
@@ -274,11 +272,12 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 
-			// Only subscribe once per binding lifetime
-			if (!_isSubscribed && isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay))
+			// Subscribe on every Apply so that intermediate objects that changed are re-subscribed.
+			// Both IPropertyChangeHandler implementations are idempotent: they diff old vs new
+			// subscription targets and only update what changed, so calling this repeatedly is safe.
+			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay))
 			{
 				_propertyChangeHandler.Subscribe((TSource)sourceObject);
-				_isSubscribed = true;
 			}
 
 			if (needsGetter)
