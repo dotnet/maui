@@ -11,21 +11,27 @@ public partial class CheckBoxControlPage : ContentPage
 	{
 		InitializeComponent();
 		_viewModel = new CheckBoxViewModel();
-		_viewModel.PropertyChanged += OnViewModelPropertyChanged;
 		BindingContext = _viewModel;
 	}
 
-	private void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+	private void OnColorChanged(object sender, TextChangedEventArgs e)
 	{
-		if (e.PropertyName == nameof(CheckBoxViewModel.Color) && _viewModel.Color == null)
+		if (string.IsNullOrWhiteSpace(ColorEntry.Text))
 		{
-			MyCheckBox.ClearValue(CheckBox.ColorProperty);
+			_viewModel.Color = null;
+			return;
+		}
+
+		if (Color.TryParse(ColorEntry.Text, out Color color))
+		{
+			_viewModel.Color = color;
 		}
 	}
 
 	private void ResetButton_Clicked(object sender, EventArgs e)
 	{
 		_viewModel.Reset();
+		ColorEntry.Text = string.Empty;
 	}
 
 	private void OnCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)

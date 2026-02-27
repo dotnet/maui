@@ -28,7 +28,6 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 	{
 		CheckedChangedCommand = new Command(OnCheckedChanged);
 		CheckBoxCommand = new Command<string>(OnCheckBoxCommand);
-		SetColorCommand = new Command<string>(OnSetColor);
 	}
 
 	public bool IsChecked
@@ -90,11 +89,8 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 		{
 			if (_checkedChangedStatus != value)
 			{
-				if (!string.IsNullOrEmpty(value))
-				{
-					IsEventStatusLabelVisible = true;
-				}
 				_checkedChangedStatus = value;
+				IsEventStatusLabelVisible = !string.IsNullOrEmpty(value);
 				OnPropertyChanged();
 			}
 		}
@@ -115,7 +111,6 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 
 	public ICommand CheckedChangedCommand { get; }
 	public ICommand CheckBoxCommand { get; }
-	public ICommand SetColorCommand { get; }
 
 	public string CommandParameter
 	{
@@ -137,11 +132,8 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 		{
 			if (_commandStatus != value)
 			{
-				if (!string.IsNullOrEmpty(value))
-				{
-					IsCommandStatusLabelVisible = true;
-				}
 				_commandStatus = value;
+				IsCommandStatusLabelVisible = !string.IsNullOrEmpty(value);
 				OnPropertyChanged();
 			}
 		}
@@ -175,16 +167,6 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 		{
 			CommandStatus = $"Command Executed: {parameter}";
 		}
-	}
-
-	private void OnSetColor(string colorName)
-	{
-		Color = colorName switch
-		{
-			"Blue" => Colors.Blue,
-			"Green" => Colors.Green,
-			_ => null,
-		};
 	}
 
 	public bool HasShadow
@@ -230,9 +212,7 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 		IsVisible = true;
 		HasShadow = false;
 		CheckedChangedStatus = string.Empty;
-		IsEventStatusLabelVisible = false;
 		CommandStatus = string.Empty;
-		IsCommandStatusLabelVisible = false;
 		CommandParameter = string.Empty;
 	}
 
@@ -241,3 +221,4 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
+

@@ -88,7 +88,7 @@
                             FontAttributes="Bold"
                             FontSize="14"
                             Margin="0,0,0,10"/>
-
+                     <!-- This change is intentional. When IsEnabled is set to false, the CheckBox should not update IsChecked if the user taps it. To maintain consistent behavior, I also disabled the IsChecked Switch -->
                      <StackLayout Orientation="Vertical">
                             <StackLayout Orientation="Horizontal">
                                    <Label Text="IsChecked"
@@ -128,6 +128,8 @@
                      <!-- Shadow -->
                      <StackLayout Orientation="Horizontal">
                             <Label Text="Shadow"
+                                   VerticalOptions="Center"
+                                   VerticalTextAlignment="Center"
                                    FontAttributes="Bold"
                                    Margin="0,15,0,0"/>
                             <CheckBox IsChecked="{Binding HasShadow}"
@@ -136,37 +138,24 @@
                      </StackLayout>
 
                      <!-- Color -->
-
-                     <Grid ColumnDefinitions="*,1*,1*,1*"
-                           ColumnSpacing="15"
-                           HorizontalOptions="Start">
+                     <StackLayout Orientation="Horizontal">
                             <Label Text="Color"
                                    FontAttributes="Bold"
-                                   VerticalOptions="Center"/>
-                            <Button BackgroundColor="Blue"
-                                    Grid.Column="1"
-                                    Text="Blue"
-                                    TextColor="White"
-                                    WidthRequest="70"
-                                    Command="{Binding SetColorCommand}"
-                                    CommandParameter="Blue"
-                                    AutomationId="BlueColorButton"/>
-                            <Button BackgroundColor="Green"
-                                    Grid.Column="2"
-                                    Text="Green"
-                                    TextColor="White"
-                                    WidthRequest="70"
-                                    Command="{Binding SetColorCommand}"
-                                    CommandParameter="Green"
-                                    AutomationId="GreenColorButton"/>
-                            <Button BackgroundColor="Gray"
-                                    Grid.Column="3"
-                                    Text="Default"
-                                    TextColor="White"
-                                    WidthRequest="85"
-                                    Command="{Binding SetColorCommand}"
-                                    AutomationId="DefaultColorButton"/>
-                     </Grid>
+                                   VerticalOptions="Center"
+                                   Margin="0,0,10,0"/>
+                            <local:UITestEntry x:Name="ColorEntry"
+                                               AutomationId="ColorEntry"
+                                               IsCursorVisible="False"
+                                               TextChanged="OnColorChanged"
+                                               HorizontalOptions="Start"
+                                               WidthRequest="150"
+                                               Placeholder="Enter Color (e.g. Red, #FF0000)"/>
+                     </StackLayout>
+                     <Label x:Name="ColorValueLabel"
+                            AutomationId="ColorValue"
+                            Text="{Binding Color, StringFormat='Color: {0}', TargetNullValue='Color: Default'}"
+                            FontSize="10"
+                            HorizontalOptions="Start"/>
 
                      <Button Text="Reset Changes"
                              Clicked="ResetButton_Clicked"
@@ -174,3 +163,4 @@
               </StackLayout>
        </Grid>
 </ContentPage>
+
