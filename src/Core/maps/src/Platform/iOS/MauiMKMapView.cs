@@ -243,6 +243,7 @@ namespace Microsoft.Maui.Maps.Platform
 				rect.Height * 1.2);
 
 			SetVisibleMapRect(paddedRect, true);
+		}
 
 		async System.Threading.Tasks.Task ApplyCustomImageAsync(MKAnnotationView annotationView, IMapPin pin)
 		{
@@ -270,9 +271,9 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 			catch (Exception ex)
 			{
-				if (_handlerRef.TryGetTarget(out var handler))
+				if (_handlerRef.TryGetTarget(out var currentHandler))
 				{
-					var logger = handler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
+					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
 					logger?.LogWarning(ex, "Failed to load custom pin icon");
 				}
 			}

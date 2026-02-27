@@ -25,8 +25,6 @@ using ARect = Android.Graphics.Rect;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
-using ABitmap = Android.Graphics.Bitmap;
-using ACanvas = Android.Graphics.Canvas;
 using ADrawable = Android.Graphics.Drawables.Drawable;
 using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using Math = System.Math;
@@ -726,6 +724,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				return null;
 			}
+		}
 
 		async Task AddPinAsync(IMapPin pin, CancellationToken ct)
 		{
