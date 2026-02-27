@@ -68,6 +68,10 @@ Assert.NotNull(page);
 }
 
 // Test classes for obsolete attribute handling
+[Obsolete("[Test Message]: Maui23961ObsoleteClass2 is deprecated", error: false)]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public class Maui23961ObsoleteClass2 : Grid { }
+
 public class Maui23961Class1 : Grid
 {
 [Obsolete("[Test Message]: BP1Property is deprecated", error: false)]

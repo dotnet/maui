@@ -44,7 +44,8 @@ return;
 }
 else
 {
-var page = new Maui23961Error(inflator);
+// .rt.xaml files only support runtime inflation (no XamlInflator ctor generated)
+var page = new Maui23961Error();
 Assert.NotNull(page);
 }
 }
