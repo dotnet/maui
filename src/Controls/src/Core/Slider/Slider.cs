@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// and the <see cref="Value"/> property to get or set the current selection.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(SliderHandler))]
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
 		// Stores the value that was requested by the user, before clamping

@@ -4,11 +4,13 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>A control that can edit multiple lines of text.</summary>
+	[ElementHandler(typeof(EditorHandler))]
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
 		/// <summary>Identifies the Text bindable property.</summary>
@@ -207,6 +209,12 @@ namespace Microsoft.Maui.Controls
 				return width == otherWidth ||
 					(width - otherWidth) < double.Epsilon;
 			}
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
 		}
 	}
 }
