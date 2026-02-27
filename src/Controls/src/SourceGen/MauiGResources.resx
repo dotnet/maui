@@ -240,4 +240,11 @@
     <value>Event handler '{0}' with correct signature not found in type '{1}'.</value>
     <comment>0 is handler name, 1 is type name</comment>
   </data>
+  <data name="EventTriggerEventNotFoundTitle" xml:space="preserve">
+    <value>Event not found</value>
+  </data>
+  <data name="EventTriggerEventNotFoundMessage" xml:space="preserve">
+    <value>Event '{0}' not found on type '{1}'. The EventTrigger will not fire.</value>
+    <comment>0 is event name, 1 is type name</comment>
+  </data>
 </root>
