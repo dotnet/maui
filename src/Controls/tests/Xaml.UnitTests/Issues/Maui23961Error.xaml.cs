@@ -35,7 +35,9 @@ if (inflator == XamlInflator.XamlC)
 {
 // [Obsolete("msg", error: true)] must always produce a compilation error,
 // even without TreatWarningsAsErrors
-Assert.Throws<Exception>(() => MockCompiler.Compile(typeof(Maui23961Error), treatWarningsAsErrors: false));
+// Multiple [Obsolete(error:true)] members produce multiple LoggedErrors wrapped in AggregateException,
+// so use ThrowsAny rather than Throws (which requires an exact type match).
+Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Maui23961Error), treatWarningsAsErrors: false));
 }
 else if (inflator == XamlInflator.SourceGen)
 {
