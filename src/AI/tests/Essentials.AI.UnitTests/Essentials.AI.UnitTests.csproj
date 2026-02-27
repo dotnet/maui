@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.Maui.Essentials.AI.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
+    <NoWarn>$(NoWarn);MAUIAI0001</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

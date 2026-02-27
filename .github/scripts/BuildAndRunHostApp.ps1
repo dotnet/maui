@@ -260,10 +260,12 @@ if ($Platform -eq "catalyst") {
             & chmod +x $executablePath
         }
         
-        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
+        # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
+        $env:MAC_APP_PATH = $appPath
+        Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
     } else {
-        Write-Warning "MacCatalyst app not found at: $appPath"
-        Write-Warning "Test may use wrong app bundle if another version is registered"
+        Write-Warn "MacCatalyst app not found at: $appPath"
+        Write-Warn "Test may use wrong app bundle if another version is registered"
     }
     
     # Set log file path directly - app will write ILogger output here
@@ -323,7 +325,7 @@ if ($Platform -eq "android") {
     & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests|DOTNET" > $deviceLogFile
     
     if ((Get-Item $deviceLogFile).Length -eq 0) {
-        Write-Warning "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
+        Write-Warn "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
     }
     
@@ -397,7 +399,7 @@ if (Test-Path $deviceLogFile) {
         Write-Host ""
         Write-Info "Full device log: $deviceLogFile"
     } else {
-        Write-Warning "Could not read device log file"
+        Write-Warn "Could not read device log file"
     }
     
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan

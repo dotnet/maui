@@ -483,7 +483,7 @@ static class NodeSGExtensions
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})!";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
 				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";
@@ -637,7 +637,7 @@ static class NodeSGExtensions
 		return null;
 	}
 
-	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
+	public static IFieldSymbol? GetBindableProperty(this ValueNode node, SourceGenContext context)
 	{
 		var parts = ((string)node.Value).Split('.');
 		if (parts.Length == 1)
@@ -655,18 +655,17 @@ static class NodeSGExtensions
 				typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
 
 			var propertyName = parts[0];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else if (parts.Length == 2)
 		{
 			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context, node);
 			string propertyName = parts[1];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else
 		{
-			throw new Exception();
-			// FIXME context.ReportDiagnostic
+			return null;
 		}
 	}
 

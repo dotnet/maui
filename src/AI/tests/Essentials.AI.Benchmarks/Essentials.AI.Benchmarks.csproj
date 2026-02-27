@@ -7,6 +7,7 @@
     <AssemblyName>Essentials.AI.Benchmarks</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials.AI.Benchmarks</RootNamespace>
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);MAUIAI0001</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
