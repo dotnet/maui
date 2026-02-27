@@ -16,7 +16,9 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	const string CommandStatusLabel = "CommandStatusLabel";
 	const string CheckedChangedStatusLabel = "CheckedChangedStatusLabel";
 	const string HasShadowCheckBox = "HasShadowCheckBox";
-	const string ColorEntry = "ColorEntry";
+	const string GreenColorButton = "GreenColorButton";
+	const string BlueColorButton = "BlueColorButton";
+	const string DefaultColorButton = "DefaultColorButton";
 	const string CommandParameterEntry = "CommandParameterEntry";
 
 	public const string CheckBoxFeatureMatrix = "CheckBox Feature Matrix";
@@ -83,9 +85,8 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		App.WaitForElement(ColorEntry);
-		App.EnterText(ColorEntry, "Green");
-		App.DismissKeyboard();
+		App.WaitForElement(GreenColorButton);
+		App.Tap(GreenColorButton);
 		App.WaitForElement(IsEnabledSwitch);
 		App.Tap(IsEnabledSwitch);
 		App.WaitForElement(CheckBoxControl);
@@ -252,9 +253,8 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		App.WaitForElement(ColorEntry);
-		App.EnterText(ColorEntry, "Green");
-		App.DismissKeyboard();
+		App.WaitForElement(GreenColorButton);
+		App.Tap(GreenColorButton);
 		App.WaitForElement(CheckBoxControl);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -266,9 +266,8 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		App.Tap(ResetButton);
 		App.WaitForElement(IsCheckedSwitch);
 		App.Tap(IsCheckedSwitch);
-		App.WaitForElement(ColorEntry);
-		App.EnterText(ColorEntry, "Blue");
-		App.DismissKeyboard();
+		App.WaitForElement(BlueColorButton);
+		App.Tap(BlueColorButton);
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -278,14 +277,12 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		App.WaitForElement(ColorEntry);
-		App.EnterText(ColorEntry, "Red");
-		App.DismissKeyboard();
+		App.WaitForElement(GreenColorButton);
+		App.Tap(GreenColorButton);
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
 		App.WaitForElement(CheckBoxControl);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-
 }
 

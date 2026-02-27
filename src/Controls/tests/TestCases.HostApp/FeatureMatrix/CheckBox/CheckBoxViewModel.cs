@@ -28,6 +28,7 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 	{
 		CheckedChangedCommand = new Command(OnCheckedChanged);
 		CheckBoxCommand = new Command<string>(OnCheckBoxCommand);
+		SetColorCommand = new Command<string>(OnSetColor);
 	}
 
 	public bool IsChecked
@@ -111,6 +112,7 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 
 	public ICommand CheckedChangedCommand { get; }
 	public ICommand CheckBoxCommand { get; }
+	public ICommand SetColorCommand { get; }
 
 	public string CommandParameter
 	{
@@ -150,6 +152,16 @@ public class CheckBoxViewModel : INotifyPropertyChanged
 				OnPropertyChanged();
 			}
 		}
+	}
+
+	private void OnSetColor(string colorName)
+	{
+		Color = colorName switch
+		{
+			"Blue" => Colors.Blue,
+			"Green" => Colors.Green,
+			_ => null,
+		};
 	}
 
 	private void OnCheckedChanged()
