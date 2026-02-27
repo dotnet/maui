@@ -66,11 +66,11 @@ namespace Microsoft.Maui.Platform
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
-				var thumbImageSize = result?.Value.Size ?? CGSize.Empty;
+				var thumbImageSize = result?.Value?.Size ?? CGSize.Empty;
 				var defaultThumbSize = CalculateDefaultThumbSize(uiSlider);
 
 				UIImage? thumbImage;
-				if (thumbImageSize.IsEmpty)
+				if (thumbImageSize.IsEmpty || defaultThumbSize.IsEmpty)
 				{
 					thumbImage = result?.Value;
 				}
