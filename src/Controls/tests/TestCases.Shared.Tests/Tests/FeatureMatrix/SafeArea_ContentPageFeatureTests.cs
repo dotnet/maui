@@ -19,12 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// <summary>
 		/// Reads and parses safe area inset values from the SafeAreaInsetsLabel.
 		/// Reuses the same platform-specific approach as Issue28986_SafeAreaBorderOrientation.
-		/// Format: "L:{left},T:{top},R:{right},B:{bottom},KeyboardHeight:{keyboardHeight}"
+		/// Format: "L:{left},T:{top},R:{right},B:{bottom},KH:{keyboardHeight},CoL:{cutoutLeft},CoR:{cutoutRight}"
 		/// </summary>
-		private (int Left, int Top, int Right, int Bottom, int KeyboardHeight) GetSafeAreaInsets()
+		private (int Left, int Top, int Right, int Bottom, int KeyboardHeight, int CutoutL, int CutoutR) GetSafeAreaInsets()
 		{
 			var text = App.WaitForElement("SafeAreaInsetsLabel").GetText() ?? string.Empty;
-			var match = System.Text.RegularExpressions.Regex.Match(text, @"L:(\d+),T:(\d+),R:(\d+),B:(\d+),KeyboardHeight:(\d+)");
+			var match = System.Text.RegularExpressions.Regex.Match(text, @"L:(\d+),T:(\d+),R:(\d+),B:(\d+),KH:(\d+),CoL:(\d+),CoR:(\d+)");
 			if (!match.Success)
 				throw new InvalidOperationException($"Failed to parse safe area insets from: '{text}'");
 			return (
@@ -32,7 +32,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				int.Parse(match.Groups[2].Value),
 				int.Parse(match.Groups[3].Value),
 				int.Parse(match.Groups[4].Value),
-				int.Parse(match.Groups[5].Value)
+				int.Parse(match.Groups[5].Value),
+				int.Parse(match.Groups[6].Value),
+				int.Parse(match.Groups[7].Value)
 			);
 		}
 

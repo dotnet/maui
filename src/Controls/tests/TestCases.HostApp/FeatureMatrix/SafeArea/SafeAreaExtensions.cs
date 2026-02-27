@@ -9,7 +9,7 @@ static class SafeAreaExtensions
 {
     /// <summary>
     /// Gets the raw safe area insets (system bars + display cutout) as a formatted string.
-    /// Format: "L:{left},T:{top},R:{right},B:{bottom}, KeyboardHeight:{keyboardHeight}" (in pixels).
+    /// Format: "L:{left},T:{top},R:{right},B:{bottom},KH:{keyboardHeight},CoL:{cutoutLeft},CoR:{cutoutRight}".
     /// </summary>
     public static string GetSafeAreaInfo(Page page)
     {
@@ -23,7 +23,8 @@ static class SafeAreaExtensions
                 {
                     var systemBars = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars());
                     var ime = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.Ime());
-                    return $"L:{systemBars.Left},T:{systemBars.Top},R:{systemBars.Right},B:{systemBars.Bottom},KeyboardHeight:{ime.Bottom}";
+                    var displayCutout = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.DisplayCutout());
+                    return $"L:{systemBars.Left},T:{systemBars.Top},R:{systemBars.Right},B:{systemBars.Bottom},KH:{ime.Bottom},CoL:{displayCutout.Left},CoR:{displayCutout.Right}";
                 }
             }
         }
@@ -34,11 +35,11 @@ static class SafeAreaExtensions
             if (page.Handler?.PlatformView is UIKit.UIView platformView && platformView.Window != null)
             {
                 var safeAreaInsets = platformView.Window.SafeAreaInsets;
-                return $"L:{(int)safeAreaInsets.Left},T:{(int)safeAreaInsets.Top},R:{(int)safeAreaInsets.Right},B:{(int)safeAreaInsets.Bottom},KeyboardHeight:0";
+                return $"L:{(int)safeAreaInsets.Left},T:{(int)safeAreaInsets.Top},R:{(int)safeAreaInsets.Right},B:{(int)safeAreaInsets.Bottom},KH:0,CoL:0,CoR:0";
             }
         }
         catch { }
 #endif
-        return "L:0,T:0,R:0,B:0,KeyboardHeight:0";
+        return "L:0,T:0,R:0,B:0,KH:0,CoL:0,CoR:0";
     }
 }
