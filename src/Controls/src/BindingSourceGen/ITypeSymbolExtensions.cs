@@ -5,6 +5,11 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public static class ITypeSymbolExtensions
 {
+	static readonly SymbolDisplayFormat FullyQualifiedNullableFormat =
+		SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+			SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions
+			| SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
 	public static bool IsTypeNullable(this ITypeSymbol typeInfo, bool enabledNullable)
 	{
 		if (!enabledNullable && typeInfo.IsReferenceType)
@@ -39,10 +44,16 @@ public static class ITypeSymbolExtensions
 		if (isNullable && isValueType)
 		{
 			// Strips the "?" from the type name
-			return ((INamedTypeSymbol)typeSymbol).TypeArguments[0].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+			return ((INamedTypeSymbol)typeSymbol).TypeArguments[0].ToDisplayString(FullyQualifiedNullableFormat);
 		}
 
-		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+		var globalName = typeSymbol.ToDisplayString(FullyQualifiedNullableFormat);
+
+		// Keep nullable annotations in generic arguments but avoid nullable top-level type syntax (e.g. typeof(Foo?)).
+		if (globalName.EndsWith("?", StringComparison.Ordinal))
+			globalName = globalName.Substring(0, globalName.Length - 1);
+
+		return globalName;
 	}
 
 	/// <summary>
@@ -68,29 +79,57 @@ public static class ITypeSymbolExtensions
 		// Extract the method name (property name without "Command" suffix)
 		var methodName = propertyName.Substring(0, propertyName.Length - "Command".Length);
 
-		// Look for a method with the base name - search in the type and base types
-		var methods = GetAllMethods(symbol, methodName);
-
-		foreach (var method in methods)
+		// CommunityToolkit.Mvvm command naming supports these patterns:
+		// - Save => SaveCommand
+		// - SaveAsync => SaveCommand
+		// - OnSave => SaveCommand
+		// - OnSaveAsync => SaveCommand
+		foreach (var candidateMethodName in GetRelayCommandMethodNameCandidates(methodName))
 		{
-			// Check if the method has the RelayCommand attribute
-			var hasRelayCommand = method.GetAttributes().Any(attr =>
-				attr.AttributeClass?.Name == "RelayCommandAttribute" ||
-				attr.AttributeClass?.ToDisplayString() == "CommunityToolkit.Mvvm.Input.RelayCommandAttribute");
-
-			if (hasRelayCommand)
+			var methods = GetAllMethods(symbol, candidateMethodName);
+			foreach (var method in methods)
 			{
-				// Try to find the ICommand interface type
-				var icommandType = compilation.GetTypeByMetadataName("System.Windows.Input.ICommand");
-				if (icommandType != null)
+				// Check if the method has the RelayCommand attribute
+				var hasRelayCommand = method.GetAttributes().Any(attr =>
+					attr.AttributeClass?.Name == "RelayCommandAttribute" ||
+					attr.AttributeClass?.ToDisplayString() == "CommunityToolkit.Mvvm.Input.RelayCommandAttribute");
+
+				if (hasRelayCommand)
 				{
-					commandType = icommandType;
-					return true;
+					// Try to find the ICommand interface type
+					var icommandType = compilation.GetTypeByMetadataName("System.Windows.Input.ICommand");
+					if (icommandType != null)
+					{
+						commandType = icommandType;
+						return true;
+					}
 				}
 			}
 		}
 
 		return false;
+	}
+
+	private static System.Collections.Generic.IEnumerable<string> GetRelayCommandMethodNameCandidates(string methodName)
+	{
+		// CommunityToolkit strips "On" prefix: OnSave() → SaveCommand, not OnSaveCommand.
+		// So if methodName starts with "On", the base name would only match methods that generate
+		// a *different* command property (e.g., "OnLoad" method → "LoadCommand", not "OnLoadCommand").
+		// We skip these candidates to avoid false-positive diagnostic suppression.
+		if (!methodName.StartsWith("On", System.StringComparison.Ordinal))
+		{
+			yield return methodName;
+			yield return methodName + "Async";
+		}
+
+		if (methodName.Length > 0
+			&& char.IsUpper(methodName[0])
+			&& !methodName.StartsWith("On", System.StringComparison.Ordinal))
+		{
+			var onMethodName = "On" + methodName;
+			yield return onMethodName;
+			yield return onMethodName + "Async";
+		}
 	}
 
 	/// <summary>
