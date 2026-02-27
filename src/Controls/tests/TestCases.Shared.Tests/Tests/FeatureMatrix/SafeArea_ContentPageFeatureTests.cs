@@ -79,6 +79,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			return (size.Width, size.Height);
 		}
 
+		private int GetLandscapeRightInset(int right, int cutoutR)
+		{
+#if ANDROID
+			return cutoutR;
+#else
+			return right;
+#endif
+		}
+
 		// ──────────────────────────────────────────────
 		// Uniform SafeAreaRegions via Buttons
 		// ──────────────────────────────────────────────
@@ -1163,11 +1172,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(leftRect.X), Is.EqualTo(insetsLandscape.Left),
 				$"All: left X ({leftRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
 
-			// Right: inset by safe area
+			// Right: inset by safe area (Android uses display cutout for right inset)
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightEdge = rightRect.X + rightRect.Width;
-			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - insetsLandscape.Right),
-				$"All: right edge ({rightEdge}) should be = screenWidth - insetsLandscape.Right ({screenWidth - insetsLandscape.Right})");
+			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
+			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - expectedRight),
+				$"All: right edge ({rightEdge}) should be = screenWidth - expectedRight ({screenWidth - expectedRight})");
 
 			// Bottom: inset by safe area
 			var bottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1199,11 +1209,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(leftRect.X), Is.EqualTo(insetsLandscape.Left),
 				$"Container: left X ({leftRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
 
-			// Right: inset by safe area
+			// Right: inset by safe area (Android uses display cutout for right inset)
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightEdge = rightRect.X + rightRect.Width;
-			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - insetsLandscape.Right),
-				$"Container: right edge ({rightEdge}) should be = screenWidth - insetsLandscape.Right ({screenWidth - insetsLandscape.Right})");
+			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
+			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - expectedRight),
+				$"Container: right edge ({rightEdge}) should be = screenWidth - expectedRight ({screenWidth - expectedRight})");
 
 			// Bottom: inset by safe area
 			var bottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1235,11 +1246,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(leftRect.X), Is.EqualTo(insetsLandscape.Left),
 				$"SoftInput: left X ({leftRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
 
-			// Right: inset by safe area
+			// Right: inset by safe area (Android uses display cutout for right inset)
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightEdge = rightRect.X + rightRect.Width;
-			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - insetsLandscape.Right),
-				$"SoftInput: right edge ({rightEdge}) should be = screenWidth - insetsLandscape.Right ({screenWidth - insetsLandscape.Right})");
+			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
+			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - expectedRight),
+				$"SoftInput: right edge ({rightEdge}) should be = screenWidth - expectedRight ({screenWidth - expectedRight})");
 
 			// Bottom: edge-to-edge (SoftInput doesn't avoid bottom without keyboard)
 			var bottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1271,11 +1283,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(leftRect.X), Is.EqualTo(insetsLandscape.Left),
 				$"Default: left X ({leftRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
 
-			// Right: inset by safe area
+			// Right: inset by safe area (Android uses display cutout for right inset)
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightEdge = rightRect.X + rightRect.Width;
-			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - insetsLandscape.Right),
-				$"Default: right edge ({rightEdge}) should be = screenWidth - insetsLandscape.Right ({screenWidth - insetsLandscape.Right})");
+			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
+			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - expectedRight),
+				$"Default: right edge ({rightEdge}) should be = screenWidth - expectedRight ({screenWidth - expectedRight})");
 
 			// Bottom: inset by safe area
 			var bottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1983,8 +1996,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var rightLandscapeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightLandscapeEdge = rightLandscapeRect.X + rightLandscapeRect.Width;
-			Assert.That(Math.Abs(rightLandscapeEdge), Is.EqualTo(screenWidthLandscape - insetsLandscape.Right),
-				$"Landscape: right edge ({rightLandscapeEdge}) should be equal to screenWidth - insetsLandscape.Right ({screenWidthLandscape - insetsLandscape.Right})");
+			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
+			Assert.That(Math.Abs(rightLandscapeEdge), Is.EqualTo(screenWidthLandscape - expectedRight),
+				$"Landscape: right edge ({rightLandscapeEdge}) should be equal to screenWidth - expectedRight ({screenWidthLandscape - expectedRight})");
 
 			// ── Rotate back to portrait ──
 			App.SetOrientationPortrait();
