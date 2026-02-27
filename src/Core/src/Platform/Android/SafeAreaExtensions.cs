@@ -153,7 +153,7 @@ internal static class SafeAreaExtensions
 					// This ensures margins and safe area insets are additive rather than overlapping.
 					// For example: 20px margin + 30px safe area = 50px total offset
 					// We only take the margins into account if the Width and Height are set
-					// If the Width and Height aren't set it means the layout pass hasn't happen yet
+					// If the Width and Height aren't set it means the layout pass hasn't happened yet
 					if (view.Width > 0 && view.Height > 0)
 					{
 						viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
