@@ -132,5 +132,13 @@ namespace Microsoft.Maui.Controls
 	}
 
 	// Internal label type used by ContentPresenter to avoid interference from global Label styles.
-	class ContentLabel : Label { }
+	// A self-hosted empty style blocks inherited Label styles (including ApplyToDerivedTypes) from being applied.
+	internal class ContentLabel : Label
+	{
+		static readonly Style s_style = new Style(typeof(ContentLabel));
+		public ContentLabel()
+		{
+			Resources = new ResourceDictionary { { typeof(ContentLabel).FullName, s_style } };
+		}
+	}
 }
