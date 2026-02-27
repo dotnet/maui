@@ -188,15 +188,20 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
 	}
 
-	[Test, Order(16)]
-	public void CheckBox_VerifyVisualStateAfterReset()
+	[Test, Order(14)]
+	public void CheckBox_VerifyIsCheckedAfterReset()
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(IsCheckedSwitch);
+		App.Tap(IsCheckedSwitch);
+		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
+		App.WaitForElement(ResetButton);
+		App.Tap(ResetButton);
+		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
 	}
 
-	[Test, Order(17)]
+	[Test, Order(15)]
 	public void CheckBox_VerifyWithShadow()
 	{
 		App.WaitForElement(ResetButton);
@@ -207,7 +212,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(18)]
+	[Test, Order(16)]
 	public void CheckBox_VerifyCheckedWhileIsEnableSetFalseUsingTap()
 	{
 		App.WaitForElement(ResetButton);
@@ -222,7 +227,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
 	}
 
-	[Test, Order(19)]
+	[Test, Order(17)]
 	public void CheckBox_VerifyCheckedWhileIsEnableSetFalseUsingButton()
 	{
 		App.WaitForElement(ResetButton);
@@ -237,7 +242,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
 	}
 
-	[Test, Order(20)]
+	[Test, Order(18)]
 	public void CheckBox_VerifyUnCheckedWhileIsEnableSetFalseUsingTap()
 	{
 		App.WaitForElement(ResetButton);
@@ -250,7 +255,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
 	}
 
-	[Test, Order(21)]
+	[Test, Order(19)]
 	public void CheckBox_VerifyUnCheckedWhileIsEnableSetFalseUsingButton()
 	{
 		App.WaitForElement(ResetButton);

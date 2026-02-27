@@ -11,7 +11,16 @@ public partial class CheckBoxControlPage : ContentPage
 	{
 		InitializeComponent();
 		_viewModel = new CheckBoxViewModel();
+		_viewModel.PropertyChanged += OnViewModelPropertyChanged;
 		BindingContext = _viewModel;
+	}
+
+	private void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(CheckBoxViewModel.Color) && _viewModel.Color == null)
+		{
+			MyCheckBox.ClearValue(CheckBox.ColorProperty);
+		}
 	}
 
 	private void ResetButton_Clicked(object sender, EventArgs e)
@@ -24,3 +33,4 @@ public partial class CheckBoxControlPage : ContentPage
 		_viewModel.CheckedChangedCommand.Execute(null);
 	}
 }
+
