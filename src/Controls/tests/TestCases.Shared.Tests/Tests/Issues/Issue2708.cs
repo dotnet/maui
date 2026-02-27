@@ -29,9 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Close the modal
 			App.Tap("CloseModalButton");
 
-			// Verify tabs still work after modal dismiss - this is the key assertion.
-			// If tabs were destroyed (RemoveTabs) during modal navigation, they won't
-			// be properly restored, and tab switching will fail.
+			// Verify tabs still work after modal dismiss
 			App.WaitForElement("StatusLabel");
 			App.TapTab("Tab 2");
 			App.WaitForElement("Tab2Label");
