@@ -73,6 +73,18 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+		}
+#else
+		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
 		}
 		else
@@ -119,7 +131,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Window, WindowHandler>();
 		handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 		handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
-		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
