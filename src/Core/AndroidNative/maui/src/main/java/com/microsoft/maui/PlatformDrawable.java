@@ -39,12 +39,13 @@ public abstract class PlatformDrawable extends PaintDrawable implements Platform
     // State flags
     private boolean invalidatePath = true;
 
+    // Constructor (note: we're keeping Context here in case we need it for future style computations)
     public PlatformDrawable(Context context) {
         super();
         this.clipPath = new Path();
         this.fullClipPath = new Path();
-        this.backgroundStyle = new PlatformDrawableStyle(context);
-        this.borderStyle = new PlatformDrawableStyle(null);
+        this.backgroundStyle = new PlatformDrawableStyle();
+        this.borderStyle = new PlatformDrawableStyle();
         setShape(new RectShape());
     }
 

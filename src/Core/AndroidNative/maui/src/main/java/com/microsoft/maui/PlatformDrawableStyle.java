@@ -1,6 +1,5 @@
 package com.microsoft.maui;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Shader;
 import android.graphics.Paint;
@@ -22,13 +21,6 @@ public class PlatformDrawableStyle {
     private Shader shader;
     private int shaderWidth;
     private int shaderHeight;
-    private int noneColor = 0;
-    private int hasNoneColor = -1;
-    private Context context;
-
-    public PlatformDrawableStyle(Context context) {
-        this.context = context;
-    }
 
     // Getters and setters
     public boolean getIsSolid() {
@@ -52,14 +44,6 @@ public class PlatformDrawableStyle {
         }
 
         if (this.paintType == PlatformPaintType.NONE) {
-            if (this.hasNoneColor < 0) {
-                applyTheme();
-            }
-
-            if (this.hasNoneColor == 1) {
-                return Color.alpha(this.noneColor) == 255;
-            }
-
             // None means no background, so that's = to transparent
             return false;
         }
@@ -128,39 +112,8 @@ public class PlatformDrawableStyle {
         } else if (fallbackStyle != null) {
             fallbackStyle.applyStyle(paint, width, height, null);
         } else {
-            if (this.hasNoneColor < 0) {
-                applyTheme();
-            }
-
             paint.setShader(null);
-
-            if (this.hasNoneColor > 0) {
-                paint.setColor(this.noneColor);
-            } else {
-                paint.setColor(Color.TRANSPARENT);
-            }
-        }
-    }
-
-    private void applyTheme() {
-        TypedValue value = new TypedValue();
-        if (this.context != null && this.context.getTheme().resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
-            this.hasNoneColor = 1;
-            this.noneColor = value.data;
-            return;
-        }
-
-        this.hasNoneColor = 0;
-        this.noneColor = 0;
-    }
-
-    private static boolean isColorType(TypedValue value)
-    {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return value.isColorType();
-        } else {
-            // Implementation from AOSP
-            return (value.type >= TypedValue.TYPE_FIRST_COLOR_INT && value.type <= TypedValue.TYPE_LAST_COLOR_INT);
+            paint.setColor(Color.TRANSPARENT);
         }
     }
 }

@@ -53,7 +53,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     private float offsetY = 0;
     private float radius = 0;
 
-    private PlatformDrawableStyle shadowStyle = new PlatformDrawableStyle(null);
+    private PlatformDrawableStyle shadowStyle = new PlatformDrawableStyle();
 
     @Override
     protected void setHasClip(boolean hasClip) {
