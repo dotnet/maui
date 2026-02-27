@@ -64,8 +64,12 @@ internal static class SourceGenHelpers
 			syntaxTrees,
 			[
 				MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.BindableObject).GetTypeInfo().Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Controls.View).GetTypeInfo().Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Microsoft.Maui.IView).GetTypeInfo().Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Microsoft.Maui.HotReload.IHotReloadableView).GetTypeInfo().Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
 				MetadataReference.CreateFromFile(AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("System.Runtime")).Location),
+				MetadataReference.CreateFromFile(AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("System.ObjectModel")).Location),
 			],
 			new CSharpCompilationOptions(OutputKind.ConsoleApplication)
 			.WithNullableContextOptions(NullableContextOptions.Enable));

@@ -5,3 +5,4 @@ P:Microsoft.Maui.MauiWinUIApplication.Services;Use the IPlatformApplication.Curr
 P:Microsoft.Maui.MauiWinUIApplication.Application;Use the IPlatformApplication.Current.Application instead
 P:Microsoft.UI.Xaml.Window.AppWindow;This API doesn't have null safety. Use GetAppWindow() and make sure to account for the possibility that GetAppWindow() might be null.
 P:Microsoft.UI.Xaml.Controls.Panel.Children;Use MauiPanel.CachedChildren instead to avoid performance hit
+M:Microsoft.Maui.Controls.Internals.TypedBinding`2.#ctor(System.Func{`0,System.ValueTuple{`1,System.Boolean}},System.Action{`0,`1},System.Tuple{System.Func{`0,System.Object},System.String}[]);Use the constructor with handlersCount and handlers Func instead to avoid allocations
