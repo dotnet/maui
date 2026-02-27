@@ -216,3 +216,15 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
           catalyst: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
           windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
+        - name: essentialsai
+          desc: Essentials.AI
+          androidApiLevelsExclude: [ 25, 27 ]
+          androidApiLevelsCoreClrExclude: [ 27, 25, 23]
+          androidConfiguration: 'Release'
+          iOSConfiguration: 'Debug'
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'com.microsoft.maui.ai.devicetests'
+          android: $(System.DefaultWorkingDirectory)/src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj
+          catalyst: $(System.DefaultWorkingDirectory)/src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj

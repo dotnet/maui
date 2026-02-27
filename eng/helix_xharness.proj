@@ -119,6 +119,15 @@
             <WindowsPackageId>Microsoft.Maui.MauiBlazorWebView.DeviceTests</WindowsPackageId>
             <WindowsProjectPath>src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
+
+        <MAUIScenario Include="EssentialsAI">
+            <ScenarioDirectoryName>Essentials.AI.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)Essentials.AI.DeviceTests</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Essentials.AI.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.ai.devicetests</PackageName>
+            <WindowsPackageId>com.microsoft.maui.ai.devicetests</WindowsPackageId>
+            <WindowsProjectPath>src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj</WindowsProjectPath>
+        </MAUIScenario>
     </ItemGroup>
 
     <!-- Process each test scenario individually using direct path construction -->
@@ -169,6 +178,11 @@
                 <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)MauiBlazorWebView.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+            </XHarnessAppBundleToTest>
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.AI.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>ios-simulator-64</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
