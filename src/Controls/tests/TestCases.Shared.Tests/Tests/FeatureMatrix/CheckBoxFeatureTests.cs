@@ -81,17 +81,14 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(5)]
-	public void CheckBox_SetAllProperties_VerifyVisualState()
+	public void CheckBox_VerifyWithShadow()
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		App.WaitForElement(GreenColorButton);
-		App.Tap(GreenColorButton);
-		App.WaitForElement(IsEnabledSwitch);
-		App.Tap(IsEnabledSwitch);
+		App.WaitForElement(HasShadowCheckBox);
+		App.Tap(HasShadowCheckBox);
 		App.WaitForElement(CheckBoxControl);
-		App.Tap(CheckBoxControl);
-		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(6)]
@@ -111,6 +108,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		App.Tap(ResetButton);
 		App.WaitForElement(CommandParameterEntry);
 		App.EnterText(CommandParameterEntry, "TestParameter");
+		App.DismissKeyboard();
 		App.WaitForElement(CheckBoxControl);
 		App.Tap(CheckBoxControl);
 		Assert.That(App.FindElement(CommandStatusLabel).GetText(), Is.EqualTo("Command Executed: TestParameter"));
@@ -123,6 +121,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		App.Tap(ResetButton);
 		App.WaitForElement(CommandParameterEntry);
 		App.EnterText(CommandParameterEntry, "TestParameter");
+		App.DismissKeyboard();
 		App.WaitForElement(IsCheckedSwitch);
 		App.Tap(IsCheckedSwitch);
 		Assert.That(App.FindElement(CommandStatusLabel).GetText(), Is.EqualTo("Command Executed: TestParameter"));
@@ -182,14 +181,18 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
-	public void CheckBox_VerifyWithShadow()
+	public void CheckBox_VerifyCheckedWhileIsEnableSetFalseUsingButton()
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		App.WaitForElement(HasShadowCheckBox);
-		App.Tap(HasShadowCheckBox);
-		App.WaitForElement(CheckBoxControl);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement(IsCheckedSwitch);
+		App.Tap(IsCheckedSwitch);
+		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
+		App.WaitForElement(IsEnabledSwitch);
+		App.Tap(IsEnabledSwitch);
+		App.WaitForElement(IsCheckedSwitch);
+		App.Tap(IsCheckedSwitch);
+		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
 	}
 
 	[Test, Order(14)]
@@ -208,18 +211,16 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(15)]
-	public void CheckBox_VerifyCheckedWhileIsEnableSetFalseUsingButton()
+	public void CheckBox_VerifyUnCheckedWhileIsEnableSetFalseUsingButton()
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		App.WaitForElement(IsCheckedSwitch);
-		App.Tap(IsCheckedSwitch);
-		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
+		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
 		App.WaitForElement(IsEnabledSwitch);
 		App.Tap(IsEnabledSwitch);
 		App.WaitForElement(IsCheckedSwitch);
 		App.Tap(IsCheckedSwitch);
-		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("False"));
+		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
 	}
 
 	[Test, Order(16)]
@@ -236,15 +237,16 @@ public class CheckBoxFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(17)]
-	public void CheckBox_VerifyUnCheckedWhileIsEnableSetFalseUsingButton()
+	public void CheckBox_SetAllProperties_VerifyVisualState()
 	{
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
+		App.WaitForElement(GreenColorButton);
+		App.Tap(GreenColorButton);
 		App.WaitForElement(IsEnabledSwitch);
 		App.Tap(IsEnabledSwitch);
-		App.WaitForElement(IsCheckedSwitch);
-		App.Tap(IsCheckedSwitch);
+		App.WaitForElement(CheckBoxControl);
+		App.Tap(CheckBoxControl);
 		Assert.That(App.FindElement(IsCheckedLabel).GetText(), Is.EqualTo("True"));
 	}
 
@@ -272,6 +274,7 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Related Issue: https://github.com/dotnet/maui/issues/34278
 	[Test, Order(20)]
 	public void CheckBox_VerifyColorAfterReset()
 	{
@@ -284,5 +287,6 @@ public class CheckBoxFeatureTests : _GalleryUITest
 		App.WaitForElement(CheckBoxControl);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 }
 
