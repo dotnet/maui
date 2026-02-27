@@ -113,24 +113,17 @@ namespace Microsoft.Maui.Graphics
 			return $"[Color: Red={r}, Green={g}, Blue={b}, Alpha={a}]";
 		}
 
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hashcode = Red.GetHashCode();
-				hashcode = (hashcode * 397) ^ Green.GetHashCode();
-				hashcode = (hashcode * 397) ^ Blue.GetHashCode();
-				hashcode = (hashcode * 397) ^ Alpha.GetHashCode();
-				return hashcode;
-			}
-		}
+		public override int GetHashCode() => ToInt();
 
 		/// <summary>
 		/// Determines whether the specified <see cref="Color"/> is equal to the current color using byte-precision comparison.
 		/// </summary>
-		public virtual bool Equals(Color other)
+		public virtual bool Equals(Color? other)
 		{
 			if (other is null)
+				return false;
+
+			if (EqualityContract != other.EqualityContract)
 				return false;
 
 			return ToInt() == other.ToInt();
