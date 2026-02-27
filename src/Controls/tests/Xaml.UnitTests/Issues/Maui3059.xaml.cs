@@ -19,10 +19,21 @@ public partial class Maui3059 : ContentPage
 		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Fact]
-		internal void BorderWithMultipleChildren_CompileSucceeds()
+		[Theory]
+		[XamlInflatorData]
+		internal void BorderWithMultipleChildren_OnlyLastChildIsUsed(XamlInflator inflator)
 		{
-			MockCompiler.Compile(typeof(Maui3059));
+			var page = new Maui3059(inflator);
+
+			Assert.NotNull(page.Content);
+			Assert.IsType<Microsoft.Maui.Controls.Border>(page.Content);
+
+			var border = (Microsoft.Maui.Controls.Border)page.Content;
+			Assert.NotNull(border.Content);
+			Assert.IsType<Label>(border.Content);
+
+			var label = (Label)border.Content;
+			Assert.Equal("Second", label.Text);
 		}
 	}
 }
