@@ -12,6 +12,8 @@ steps:
   fetchDepth: 1
   clean: true
 
+- template: /eng/pipelines/common/enable-kvm.yml@self
+
 - template: /eng/pipelines/common/provision.yml@self
   parameters:
     checkoutDirectory: '$(System.DefaultWorkingDirectory)'
