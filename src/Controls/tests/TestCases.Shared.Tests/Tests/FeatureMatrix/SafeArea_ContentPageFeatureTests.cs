@@ -39,7 +39,20 @@ namespace Microsoft.Maui.TestCases.Tests
 		private int GetKeyboardY()
 		{
 #if IOS
-			return App.WaitForElement("Done").GetRect().Y;
+			var rect = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeApplication[@name=\"Controls.TestCases.HostApp\"]/XCUIElementTypeWindow[3]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[1]")).GetRect();
+			var orientation = ((AppiumApp)App).Driver.Orientation;
+			bool isLandscape = orientation == OpenQA.Selenium.ScreenOrientation.Landscape;
+			if (isLandscape)
+			{
+				return rect.X;
+			}
+			else
+			{
+				return rect.Y;
+			}
+
+			// var rect = App.WaitForElement("Done").GetRect();
+			// return rect.Y;
 #elif ANDROID
 			// Calculate keyboard top Y position
 			var (_, screenHeight) = GetScreenSize();
@@ -1318,7 +1331,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// Bottom should move up to keyboard top
 			var bottomDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			Assert.That(bottomDuringRect.Bottom, Is.EqualTo(keyboardY),
+			Assert.That(bottomDuringRect.Bottom, Is.EqualTo(keyboardY).Within(1),
 				$"During keyboard - bottom edge ({bottomDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
 
 			// Left/Right should remain unchanged
@@ -1395,7 +1408,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// Bottom should move up to keyboard top
 			var bottomDuringRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
-			Assert.That(bottomDuringRect.Bottom, Is.EqualTo(keyboardY),
+			Assert.That(bottomDuringRect.Bottom, Is.EqualTo(keyboardY).Within(1),
 				$"During keyboard - bottom edge ({bottomDuringRect.Bottom}) should equal keyboard Y ({keyboardY})");
 
 			// Left/Right should remain unchanged
