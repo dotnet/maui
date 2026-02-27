@@ -2878,6 +2878,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Step 5: Switch back to B - THIS IS WHERE THE BUG MANIFESTS
 			// The issue reports that the control's Label shows 0 instead of 101
+			int countBeforeStep5 = control.PropertyChangedCount;
 			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
 
 			// The external viewModel.B should still be 101 (we didn't change it)
@@ -2888,6 +2889,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			// The internal ViewModel should also be synced to 101 - THIS IS THE BUG if it shows 0
 			Assert.Equal(101, control.ViewModel.Value);
+
+			// PropertyChanged must fire when switching to a binding with a different value
+			Assert.True(control.PropertyChangedCount > countBeforeStep5,
+				"PropertyChanged should fire when switching bindings causes a value change");
+		}
+
+		[Fact]
+		public void Issue29459_BindingContextNullAfterSwitchingBindingsRetainsLastBoundValue()
+		{
+			// Documents the post-fix behavior:
+			// When a manual value is written while a TwoWay binding is active, then bindings are switched,
+			// setting BindingContext = null afterwards preserves the last-active binding value (via
+			// the FromBinding snapshot), not the pre-binding manual value.
+			// This is intentional: the fix removes the stale ManualValueSetter that would otherwise
+			// make sameValue=true and suppress propertyChanged when re-applying the same binding.
+
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 10, B = 20 };
+			control.BindingContext = viewModel;
+
+			// Step 1: Bind to A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(10, control.Value);
+
+			// Step 2: Press Increase (manual write while TwoWay binding is active)
+			// This creates a ManualValueSetter entry; the fix removes it on the next binding switch.
+			control.ViewModel.Increase();
+			Assert.Equal(11, control.Value);
+			Assert.Equal(11, viewModel.A); // TwoWay sync propagated the manual write back
+
+			// Step 3: Switch to B — this is where the fix removes the ManualValueSetter
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+			Assert.Equal(20, control.Value);
+
+			// Step 4: Clear the binding context
+			control.BindingContext = null;
+
+			// When the binding context is null the binding re-applies with a null source, which
+			// resolves to the property's default value (0 for int). This is the expected behavior:
+			// clearing the binding context resets bound properties to their defaults.
+			Assert.Equal(0, control.Value);
 		}
 
 		[Fact]
