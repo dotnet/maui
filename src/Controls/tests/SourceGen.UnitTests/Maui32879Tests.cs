@@ -48,6 +48,7 @@ public partial class TestPage : ContentPage
 }
 """;
 
+
 		var testXamlFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
 		var expected =
 $$"""
@@ -94,8 +95,8 @@ public partial class TestPage
 			return;
 		}
 
-		var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Image));
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
+		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Image, Microsoft.Maui.Controls");
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 5);
 		var resourceDictionary = new global::Microsoft.Maui.Controls.ResourceDictionary();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(resourceDictionary!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;
@@ -106,19 +107,26 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
-#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
-#endif
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
 #line default
-		var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.AbsoluteLayout.LayoutBoundsProperty, Value = (global::Microsoft.Maui.Graphics.Rect)new global::Microsoft.Maui.Controls.BoundsTypeConverter().ConvertFromInvariantString("10,10,20,20")!};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 6);
+		style.LazyInitialization = (__style, __target) =>
+		{
+			if (__target is not global::Microsoft.Maui.Controls.Image) return;
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+			var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.AbsoluteLayout.LayoutBoundsProperty, Value = (global::Microsoft.Maui.Graphics.Rect)new global::Microsoft.Maui.Controls.BoundsTypeConverter().ConvertFromInvariantString("10,10,20,20")!};
+			if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
+				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 6);
 #line 9 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
+			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)__style.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
-		resourceDictionary["NetworkIndicator"] = style1;
+		};
+		resourceDictionary["NetworkIndicator"] = style;
 #line 7 "{{testXamlFilePath}}"
 		__root.Resources = (global::Microsoft.Maui.Controls.ResourceDictionary)resourceDictionary;
 #line default

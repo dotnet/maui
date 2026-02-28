@@ -137,6 +137,14 @@ static class NodeSGExtensions
 	public static bool IsResourceDictionary(this ElementNode node, SourceGenContext context)
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
+	public static bool IsStyle(this ElementNode node, SourceGenContext context)
+	{
+		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var type) || type is null)
+			return false;
+		var styleType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Style");
+		return styleType != null && type.InheritsFrom(styleType, context);
+	}
+
 	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, out ITypeSymbol? converter)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
