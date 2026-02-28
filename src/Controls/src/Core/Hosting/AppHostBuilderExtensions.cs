@@ -73,6 +73,18 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
+			handlersCollection.AddHandler<Picker, PickerHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Picker, PickerHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Picker, PickerHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
 		}
 		else
@@ -104,7 +116,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
-		handlersCollection.AddHandler<Picker, PickerHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
