@@ -4,6 +4,8 @@
 
 If Gate is not passed, go back to `.github/agents/pr.md` and complete phases 1-2 first.
 
+**🚨 IMPORTANT: Special handling for truly test-only PRs.** If (and only if) the PR contains no non-test file changes, skip Phase 3 entirely; run Phase 4 in simplified mode (pr-finalize + code review only, no try-fix comparison).
+
 ---
 
 ## Workflow Overview
