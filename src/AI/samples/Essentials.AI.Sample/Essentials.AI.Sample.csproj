@@ -25,7 +25,7 @@
     <ApplicationId>com.microsoft.maui.essentials.ai</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
-    <WindowsPackageType>None</WindowsPackageType>
+    <!-- <WindowsPackageType>None</WindowsPackageType> -->
   </PropertyGroup>
 
   <ItemGroup>
