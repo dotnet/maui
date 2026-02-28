@@ -73,6 +73,18 @@ public static partial class AppHostBuilderExtensions
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
+			handlersCollection.AddHandler<Editor, EditorHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Editor, EditorHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
 			handlersCollection.AddHandler<Picker, PickerHandler2>();
 		}
 		else
@@ -111,7 +123,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
