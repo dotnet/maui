@@ -32,13 +32,15 @@ public class ShellViewModel : INotifyPropertyChanged
     private string _tabStackInfo = string.Empty;
     public ShellViewModel()
     {
-        Command = new Command<object>(param =>
-        {
-            CommandExecuted = param is string s && !string.IsNullOrEmpty(s)
-    ? $"Executed: {s}"
-    : "Executed";
-            Shell.Current?.GoToAsync("..");
-        });
+        Command = new Command<object>(
+            execute: param =>
+            {
+                CommandExecuted = param is string s && !string.IsNullOrEmpty(s)
+                    ? $"Executed: {s}"
+                    : "Executed";
+                Shell.Current?.GoToAsync("..");
+            },
+            canExecute: _ => _isEnabled);
     }
     public event PropertyChangedEventHandler PropertyChanged;
     public ICommand Command { get; }
@@ -55,7 +57,16 @@ public class ShellViewModel : INotifyPropertyChanged
     public bool IsEnabled
     {
         get => _isEnabled;
-        set { if (_isEnabled != value) { _isEnabled = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsEnabledText)); } }
+        set
+        {
+            if (_isEnabled != value)
+            {
+                _isEnabled = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsEnabledText));
+                ((Command)Command).ChangeCanExecute();
+            }
+        }
     }
     public string IsEnabledText => $"IsEnabled: {_isEnabled}";
     public bool IsVisible

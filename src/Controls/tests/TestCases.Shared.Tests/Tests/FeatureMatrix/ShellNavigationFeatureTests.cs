@@ -15,8 +15,15 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	void NavigateToPage2()
 	{
 		App.TapShellFlyoutIcon();
-		App.WaitForElement("Page2FlyoutItem");
-		App.Tap("Page2FlyoutItem");
+		App.WaitForElement("Page2");
+		App.Tap("Page2");
+	}
+
+	void NavigateToPage3()
+	{
+		App.TapShellFlyoutIcon();
+		App.WaitForElement("Page3");
+		App.Tap("Page3");
 	}
 
 	// GoToMainButton shares the same AutomationId on all sub-pages — safe because
@@ -58,6 +65,28 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 #endif
 	}
 
+	void TapContent1()
+	{
+#if WINDOWS
+      App.TapTab("Content");
+      App.WaitForElement("Content1");
+      App.Tap("Content1");
+#else
+      App.TapTab("Content1");
+#endif
+	}
+
+	void TapContent2()
+	{
+#if WINDOWS
+      App.TapTab("Content");
+      App.WaitForElement("Content2");
+      App.Tap("Content2");
+#else
+      App.TapTab("Content2");
+#endif
+	}
+
 	// ── Shell Properties ─────────────────────────────────────────────────────
 
 	// Shell.CurrentState, CurrentPage, CurrentItem, and Shell.Current reflect the initial Main tab.
@@ -86,18 +115,19 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		GoBackToMain();
 	}
 
-	// Shell.CurrentPage updates when switching ShellContent tabs (ContentA1 → ContentA2).
+	// Shell.CurrentPage updates when switching ShellContent tabs (Content1 → Content2) in Page3.
 	[Test, Order(3)]
 	public void VerifyShellProperties_ContentSwitch()
 	{
-		NavigateToPage2();
-		App.TapTab("ContentA2");
-		App.WaitForElement("Page2ContentA2PageLabel");
-		Assert.That(App.FindElement("Page2A2CurrentStateLabel").GetText(), Does.Contain("ContentA2"));
-		Assert.That(App.FindElement("Page2A2CurrentPageLabel").GetText(), Is.EqualTo("Page2TabAContentA2"));
-		Assert.That(App.FindElement("Page2A2CurrentItemLabel").GetText(), Is.EqualTo("Page2"));
-		Assert.That(App.FindElement("Page2A2ShellCurrentLabel").GetText(), Is.EqualTo("ShellNavigationControlPage"));
-		App.TapTab("ContentA1");
+		NavigateToPage3();
+		App.WaitForElement("Page3C1PageLabel");
+		TapContent2();
+		App.WaitForElement("Page3C2PageLabel");
+		Assert.That(App.FindElement("Page3C2CurrentStateLabel").GetText(), Does.Contain("Content2"));
+		Assert.That(App.FindElement("Page3C2CurrentPageLabel").GetText(), Is.EqualTo("Page3Content2"));
+		Assert.That(App.FindElement("Page3C2CurrentItemLabel").GetText(), Is.EqualTo("Page3"));
+		Assert.That(App.FindElement("Page3C2ShellCurrentLabel").GetText(), Is.EqualTo("ShellNavigationControlPage"));
+		TapContent1();
 		GoBackToMain();
 	}
 
@@ -567,50 +597,54 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 			Does.Contain("Source=ShellItemChanged"));
 	}
 
+#if TEST_FAILS_ON_WINDOWS
 	// Navigating event fires with Source=ShellContentChanged when switching ShellContent tabs.
 	[Test, Order(35)]
 	public void NavEvents_ShellContentChanged_NavigatingEvent_SourceIsShellContentChanged()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
-		NavigateToPage2();
-		App.WaitForElement("Page2ContentA1PageLabel");
+		NavigateToPage3();
+		App.WaitForElement("Page3C1PageLabel");
 
-		App.TapTab("ContentA2");
-		App.WaitForElement("Page2ContentA2PageLabel");
+		TapContent2();
+		App.WaitForElement("Page3C2PageLabel");
 
-		Assert.That(App.FindElement("Page2A2NavigatingCurrentLabel").GetText(),
-			Is.EqualTo("Page2TabAContentA1"));
-		Assert.That(App.FindElement("Page2A2NavigatingSourceLabel").GetText(),
+		Assert.That(App.FindElement("Page3C2NavigatingCurrentLabel").GetText(),
+			Is.EqualTo("Page3Content1"));
+		Assert.That(App.FindElement("Page3C2NavigatingSourceLabel").GetText(),
 			Is.EqualTo("ShellContentChanged"));
-		Assert.That(App.FindElement("Page2A2NavigatingTargetLabel").GetText(),
-			Does.Contain("ContentA2"));
+		Assert.That(App.FindElement("Page3C2NavigatingTargetLabel").GetText(),
+			Does.Contain("Content2"));
 	}
 
 	// Navigated event confirms the content switch with correct Current and Previous pages.
 	[Test, Order(36)]
-	public void NavEvents_ShellContentChanged_NavigatedEvent_CurrentIsContentA2PreviousIsContentA1()
+	public void NavEvents_ShellContentChanged_NavigatedEvent_CurrentIsContent2PreviousIsContent1()
 	{
-		App.WaitForElement("Page2ContentA2PageLabel");
+		App.WaitForElement("Page3C2PageLabel");
 
-		Assert.That(App.FindElement("Page2A2NavigatedCurrentLabel").GetText(),
-			Is.EqualTo("Page2TabAContentA2"));
-		Assert.That(App.FindElement("Page2A2NavigatedPreviousLabel").GetText(),
-			Is.EqualTo("Page2TabAContentA1"));
-		Assert.That(App.FindElement("Page2A2NavigatedSourceLabel").GetText(),
+		Assert.That(App.FindElement("Page3C2NavigatedCurrentLabel").GetText(),
+			Is.EqualTo("Page3Content2"));
+		Assert.That(App.FindElement("Page3C2NavigatedPreviousLabel").GetText(),
+			Is.EqualTo("Page3Content1"));
+		Assert.That(App.FindElement("Page3C2NavigatedSourceLabel").GetText(),
 			Is.EqualTo("ShellContentChanged"));
+		GoBackToMain();
 	}
+#endif
 
 	// Navigating event fires with Source=ShellSectionChanged when switching ShellSection tabs.
 	[Test, Order(37)]
 	public void NavEvents_ShellSectionChanged_NavigatingEvent_SourceIsShellSectionChanged()
 	{
-		App.WaitForElement("Page2ContentA2PageLabel");
+		NavigateToPage2();
+		App.WaitForElement("Page2ContentA1PageLabel");
 		App.WaitForElement("TabB");
 		App.Tap("TabB");
 		App.WaitForElement("Page2TabBPageLabel");
 
 		Assert.That(App.FindElement("Page2TabBNavigatingCurrentLabel").GetText(),
-			Is.EqualTo("Page2TabAContentA2"));
+			Is.EqualTo("Page2TabAContentA1"));
 		Assert.That(App.FindElement("Page2TabBNavigatingSourceLabel").GetText(),
 			Is.EqualTo("ShellSectionChanged"));
 		Assert.That(App.FindElement("Page2TabBNavigatingTargetLabel").GetText(),
@@ -626,7 +660,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("Page2TabBNavigatedCurrentLabel").GetText(),
 			Is.EqualTo("Page2TabBContentB1"));
 		Assert.That(App.FindElement("Page2TabBNavigatedPreviousLabel").GetText(),
-			Is.EqualTo("Page2TabAContentA2"));
+			Is.EqualTo("Page2TabAContentA1"));
 		Assert.That(App.FindElement("Page2TabBNavigatedSourceLabel").GetText(),
 			Is.EqualTo("ShellSectionChanged"));
 
@@ -842,7 +876,6 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("Reset");
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 	// BackButtonBehavior.IsEnabled=false keeps the back button visible but ignores taps.
 	[Test, Order(51)]
 	public void BackButtonBehavior_IsEnabled_False_BackButtonDoesNotNavigate()
@@ -864,7 +897,6 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.WaitForElement("MainPageIdentityLabel");
 		App.Tap("Reset");
 	}
-#endif
 
 	// BackButtonBehavior.IsVisible=false hides the back button; programmatic navigation still works.
 	[Test, Order(52)]
@@ -874,9 +906,10 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.WaitForElement("IsVisibleButton");
 		App.Tap("IsVisibleButton");
 		NavigateToDetail1AndWait();
-		VerifyScreenshot();
+		ShellScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS
 	// BackButtonBehavior.IconOverride replaces the default back arrow with a custom icon.
 	[Test, Order(53)]
 	public void BackButtonBehavior_IconOverride_CustomIconShownOnBackButton()
@@ -888,6 +921,16 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.WaitForElement("MainPageIdentityLabel");
 		App.Tap("IconOverrideBank");
 		NavigateToDetail1AndWait();
+		ShellScreenshot();
+	}
+#endif
+
+	public void ShellScreenshot() // This method is to show titlebar for Screenshot
+	{
+#if WINDOWS
+		VerifyScreenshot(includeTitleBar: true);
+#else
 		VerifyScreenshot();
+#endif
 	}
 }

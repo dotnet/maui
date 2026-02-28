@@ -58,9 +58,13 @@ namespace Maui.Controls.Sample
                 _viewModel.TabStackInfo = $"Count={stack.Count}: {string.Join(", ", stack.Select(p => p?.Title ?? "null"))}";
             }
         }
-        void UpdatePage2A2State()
+        void UpdatePage3C1State()
         {
-            UpdatePageLabels(Page2A2CurrentStateLabel, Page2A2CurrentPageLabel, Page2A2CurrentItemLabel, Page2A2ShellCurrentLabel, Page2ContentA2Page);
+            UpdatePageLabels(Page3C1CurrentStateLabel, Page3C1CurrentPageLabel, Page3C1CurrentItemLabel, Page3C1ShellCurrentLabel, Page3C1ContentPage);
+        }
+        void UpdatePage3C2State()
+        {
+            UpdatePageLabels(Page3C2CurrentStateLabel, Page3C2CurrentPageLabel, Page3C2CurrentItemLabel, Page3C2ShellCurrentLabel, Page3C2ContentPage);
         }
         void UpdatePage2TabBState()
         {
@@ -157,8 +161,9 @@ namespace Maui.Controls.Sample
             _viewModel.NavigatedSource = e.Source.ToString();
             UpdateCurrentState();
             UpdatePage2State();
-            UpdatePage2A2State();
             UpdatePage2TabBState();
+            UpdatePage3C1State();
+            UpdatePage3C2State();
         }
         protected override void OnNavigating(ShellNavigatingEventArgs args)
         {
