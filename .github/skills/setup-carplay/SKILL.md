@@ -83,8 +83,6 @@ Add a CarPlay scene configuration to `Platforms/iOS/Info.plist` inside the exist
             <dict>
                 <key>UISceneConfigurationName</key>
                 <string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
-                <key>UISceneDelegateClassName</key>
-                <string>MauiUISceneDelegate</string>
             </dict>
         </array>
         <key>CPTemplateApplicationSceneSessionRoleApplication</key>
@@ -92,15 +90,13 @@ Add a CarPlay scene configuration to `Platforms/iOS/Info.plist` inside the exist
             <dict>
                 <key>UISceneConfigurationName</key>
                 <string>__MAUI_CARPLAY_SCENE_CONFIGURATION__</string>
-                <key>UISceneDelegateClassName</key>
-                <string>MauiCarPlaySceneDelegate</string>
             </dict>
         </array>
     </dict>
 </dict>
 ```
 
-**Critical**: `UIApplicationSupportsMultipleScenes` MUST be `true`. The `UISceneDelegateClassName` MUST match the `[Register]` name of your scene delegate class.
+**Critical**: `UIApplicationSupportsMultipleScenes` MUST be `true`. Do NOT add `UISceneDelegateClassName` keys — MAUI's `MauiUIApplicationDelegate.GetConfiguration()` assigns delegate types programmatically at runtime.
 
 ### Step 3: Implement CarPlay UI
 
@@ -202,13 +198,7 @@ public class MyCarPlaySceneDelegate : CPTemplateApplicationSceneDelegate
 #endif
 ```
 
-Update `Info.plist` to use your custom delegate name:
-```xml
-<key>UISceneDelegateClassName</key>
-<string>MyCarPlaySceneDelegate</string>
-```
-
-If using `MauiUIApplicationDelegate.GetConfiguration()` routing, override it in your AppDelegate:
+When using a custom delegate, override `GetConfiguration` in your AppDelegate to route the CarPlay scene to your class:
 ```csharp
 [Export("application:configurationForConnectingSceneSession:options:")]
 public override UISceneConfiguration GetConfiguration(
@@ -612,8 +602,6 @@ Add inside the root `<dict>`:
             <dict>
                 <key>UISceneConfigurationName</key>
                 <string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
-                <key>UISceneDelegateClassName</key>
-                <string>MauiUISceneDelegate</string>
             </dict>
         </array>
         <key>CPTemplateApplicationSceneSessionRoleApplication</key>
@@ -621,8 +609,6 @@ Add inside the root `<dict>`:
             <dict>
                 <key>UISceneConfigurationName</key>
                 <string>__MAUI_CARPLAY_SCENE_CONFIGURATION__</string>
-                <key>UISceneDelegateClassName</key>
-                <string>MauiCarPlaySceneDelegate</string>
             </dict>
         </array>
     </dict>

@@ -22,3 +22,7 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidCo
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidDisconnect(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidDisconnect! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidSelectManeuver(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectManeuver! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidSelectNavigationAlert(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.CarPlayDidSelectNavigationAlert! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+Microsoft.Maui.MauiWidgetCenter
+static Microsoft.Maui.MauiWidgetCenter.ReloadTimelines(string! kind) -> void
+static Microsoft.Maui.MauiWidgetCenter.ReloadAllTimelines() -> void
+static Microsoft.Maui.MauiWidgetCenter.GetSharedDefaults(string! appGroupId) -> Foundation.NSUserDefaults?
