@@ -116,7 +116,7 @@ public static MauiApp CreateMauiApp() =>
     MauiApp
         .CreateBuilder()
         .UseMauiApp<App>()
-#if IOS
+#if IOS && !MACCATALYST
 #pragma warning disable CA1416
         .ConfigureLifecycleEvents(events =>
         {
@@ -126,6 +126,13 @@ public static MauiApp CreateMauiApp() =>
                     // Create your CarPlay UI using CPTemplate APIs
                     var item1 = new CarPlay.CPListItem("Now Playing", "Artist - Song Title");
                     var item2 = new CarPlay.CPListItem("Browse", "Explore your library");
+
+                    // Handle item taps via the Handler property
+                    item1.Handler = (item, completion) =>
+                    {
+                        // Handle tap, then call completion() to dismiss the spinner
+                        completion();
+                    };
 
                     var section = new CarPlay.CPListSection(
                         new CarPlay.ICPListTemplateItem[] { item1, item2 }, "Music", "");
@@ -150,7 +157,7 @@ For more complex CarPlay apps, subclass `MauiCarPlaySceneDelegate` or `CPTemplat
 
 ```csharp
 // Platforms/iOS/MyCarPlaySceneDelegate.cs
-#if IOS
+#if IOS && !MACCATALYST
 using CarPlay;
 using Foundation;
 using UIKit;
@@ -166,19 +173,20 @@ public class MyCarPlaySceneDelegate : CPTemplateApplicationSceneDelegate
         CPInterfaceController interfaceController)
     {
         // Build your template UI
-        var items = new[]
+        var item1 = new CPListItem("Item 1", "Detail 1");
+        var item2 = new CPListItem("Item 2", "Detail 2");
+
+        // Handle taps via the Handler property (modern pattern)
+        item1.Handler = (item, completion) =>
         {
-            new CPListItem("Item 1", "Detail 1"),
-            new CPListItem("Item 2", "Detail 2"),
+            // Do something when tapped, then dismiss spinner
+            completion();
         };
 
         var section = new CPListSection(
-            items.Cast<ICPListTemplateItem>().ToArray(), "Section", "");
+            new ICPListTemplateItem[] { item1, item2 }, "Section", "");
         var template = new CPListTemplate(
             "My App", new[] { section });
-
-        // Handle item selection
-        template.Delegate = new MyListDelegate();
 
         interfaceController.SetRootTemplate(template, true, null);
     }
@@ -229,7 +237,7 @@ Navigation apps receive a `CPWindow` — a `UIWindow` subclass you can use to re
 
 ```csharp
 // Platforms/iOS/NavCarPlaySceneDelegate.cs
-#if IOS
+#if IOS && !MACCATALYST
 using System.Runtime.InteropServices;
 using CarPlay;
 using Foundation;
@@ -499,6 +507,15 @@ xcrun simctl spawn $UDID log show --last 30s \
   --predicate 'eventMessage contains "CarPlay"'
 ```
 
+## Common Pitfalls
+
+| Pitfall | Details |
+|---------|---------|
+| Using `#if IOS` instead of `#if IOS && !MACCATALYST` | CarPlay APIs don't exist on MacCatalyst. Using `#if IOS` alone will cause build failures on MacCatalyst since that condition is true for both iOS and MacCatalyst. |
+| Forgetting to call `completion()` in `CPListItem.Handler` | The CarPlay UI shows a spinner when an item is tapped. You **must** call `completion()` to dismiss it, or the spinner stays visible indefinitely. |
+| Using `Console.WriteLine` for CarPlay logging | `Console.WriteLine` doesn't appear in os_log for CarPlay scenes. Use the NSLog P/Invoke helper shown in the Debugging section above. |
+| Setting `CPInformationTemplate` as root template | Crashes with `NSInvalidArgumentException` on iOS 18+. Only templates listed in the Root Template Restrictions table are allowed. |
+
 ## Complete Working Example (Audio App)
 
 ### Entitlements.plist
@@ -525,23 +542,21 @@ public static class MauiProgram
         MauiApp
             .CreateBuilder()
             .UseMauiApp<App>()
-#if IOS
+#if IOS && !MACCATALYST
 #pragma warning disable CA1416
             .ConfigureLifecycleEvents(events =>
             {
                 events.AddiOS(ios => ios
                     .CarPlayDidConnect((scene, interfaceController) =>
                     {
-                        var songs = new[]
+                        var songs = new CarPlay.ICPListTemplateItem[]
                         {
-                            new CarPlay.CPListItem("Bohemian Rhapsody", "Queen"),
-                            new CarPlay.CPListItem("Hotel California", "Eagles"),
-                            new CarPlay.CPListItem("Stairway to Heaven", "Led Zeppelin"),
+                            CreateSong("Bohemian Rhapsody", "Queen"),
+                            CreateSong("Hotel California", "Eagles"),
+                            CreateSong("Stairway to Heaven", "Led Zeppelin"),
                         };
 
-                        var section = new CarPlay.CPListSection(
-                            songs.Cast<CarPlay.ICPListTemplateItem>().ToArray(),
-                            "Favorites", "");
+                        var section = new CarPlay.CPListSection(songs, "Favorites", "");
 
                         var template = new CarPlay.CPListTemplate(
                             "My Music", new[] { section });
@@ -550,7 +565,7 @@ public static class MauiProgram
                     })
                     .CarPlayDidDisconnect((scene, controller) =>
                     {
-                        System.Diagnostics.Debug.WriteLine("CarPlay disconnected");
+                        // Clean up CarPlay resources
                     }));
             })
 #pragma warning restore CA1416
@@ -560,6 +575,21 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             })
             .Build();
+
+#if IOS && !MACCATALYST
+#pragma warning disable CA1416
+    static CarPlay.CPListItem CreateSong(string title, string artist)
+    {
+        var item = new CarPlay.CPListItem(title, artist);
+        item.Handler = (listItem, completion) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"[CarPlay] Now playing: {title} by {artist}");
+            completion(); // Must call to dismiss the spinner
+        };
+        return item;
+    }
+#pragma warning restore CA1416
+#endif
 }
 ```
 
