@@ -290,7 +290,7 @@ public class ShellViewModel : INotifyPropertyChanged
             return label;
         });
 
-        _command = new Command<object>(
+       _command = new Command<object>(
             execute: param =>
             {
                 CommandExecuted = param is string s && !string.IsNullOrEmpty(s)
