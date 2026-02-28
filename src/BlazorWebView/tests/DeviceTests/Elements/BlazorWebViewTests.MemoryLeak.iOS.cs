@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Foundation;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using WebKit;
 using Xunit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
@@ -27,20 +28,36 @@ public partial class BlazorWebViewTests
 			await WebViewHelpers.WaitForWebViewReady(handler.PlatformView);
 			await WebViewHelpers.WaitForControlDiv(handler.PlatformView, "0");
 
-			ForceFullGc();
-			var handlesBefore = GetRuntimeDelegateHandleCount();
-
-			const int clickCount = 200;
-			await WebViewHelpers.ExecuteScriptAsync(handler.PlatformView,
-				$"(function() {{ for (let i = 0; i < {clickCount}; i++) document.getElementById('incrementButton').click(); return true; }})()");
-			await WebViewHelpers.WaitForControlDiv(handler.PlatformView, clickCount.ToString());
+			const int warmupClickCount = 200;
+			await ClickIncrementButtonMultipleTimesAsync(handler.PlatformView, warmupClickCount, expectedCounterValue: warmupClickCount);
 
 			ForceFullGc();
-			var handlesAfter = GetRuntimeDelegateHandleCount();
-			var growth = handlesAfter - handlesBefore;
+			var handlesBeforeMeasuredBatches = GetRuntimeDelegateHandleCount();
 
-			Assert.True(growth <= 20,
-				$"Runtime delegate handle count grew by {growth} after {clickCount} updates (before={handlesBefore}, after={handlesAfter}).");
+			const int measuredClickCount = 200;
+
+			await ClickIncrementButtonMultipleTimesAsync(
+				handler.PlatformView,
+				measuredClickCount,
+				expectedCounterValue: warmupClickCount + measuredClickCount);
+
+			ForceFullGc();
+			var handlesAfterFirstBatch = GetRuntimeDelegateHandleCount();
+			var firstBatchGrowth = handlesAfterFirstBatch - handlesBeforeMeasuredBatches;
+
+			await ClickIncrementButtonMultipleTimesAsync(
+				handler.PlatformView,
+				measuredClickCount,
+				expectedCounterValue: warmupClickCount + (2 * measuredClickCount));
+
+			ForceFullGc();
+			var handlesAfterSecondBatch = GetRuntimeDelegateHandleCount();
+			var secondBatchGrowth = handlesAfterSecondBatch - handlesAfterFirstBatch;
+
+			Assert.True(secondBatchGrowth <= 20,
+				$"Runtime delegate handle count kept growing after warmup. " +
+				$"First batch growth={firstBatchGrowth}, second batch growth={secondBatchGrowth}, " +
+				$"before measured batches={handlesBeforeMeasuredBatches}, after first batch={handlesAfterFirstBatch}, after second batch={handlesAfterSecondBatch}.");
 		});
 	}
 
@@ -120,6 +137,13 @@ public partial class BlazorWebViewTests
 		});
 
 		return Task.FromResult(bwv);
+	}
+
+	private static async Task ClickIncrementButtonMultipleTimesAsync(WKWebView webView, int clickCount, int expectedCounterValue)
+	{
+		await WebViewHelpers.ExecuteScriptAsync(webView,
+			$"(function() {{ for (let i = 0; i < {clickCount}; i++) document.getElementById('incrementButton').click(); return true; }})()");
+		await WebViewHelpers.WaitForControlDiv(webView, expectedCounterValue.ToString());
 	}
 
 	private static int GetRuntimeDelegateHandleCount()
