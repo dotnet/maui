@@ -236,6 +236,8 @@ struct ConfigurationAppIntent: WidgetConfigurationIntent {
 
 ### Intents/IncrementCounterIntent.swift
 
+**⚠️ CRITICAL:** AppIntents must write to **BOTH** `fromAppFile` (so the widget Provider reads the updated value for display) AND `fromWidgetFile` (so the app picks up the change via `ReadDataFromWidget()` when it resumes). They should read from `fromAppFile` since that has the latest state from the app.
+
 ```swift
 import AppIntents
 import WidgetKit
@@ -244,10 +246,35 @@ struct IncrementCounterIntent: AppIntent {
     static var title: LocalizedStringResource { "Increment Counter" }
 
     func perform() async throws -> some IntentResult {
-        var data = SharedStorage.read(filename: Settings.fromWidgetFile) ?? WidgetData()
+        var data = SharedStorage.read(filename: Settings.fromAppFile) ?? WidgetData()
         data.counter += 1
         data.updatedAt = ISO8601DateFormatter().string(from: Date())
-        data.message = "Incremented by widget"
+        data.message = "Counter: \(data.counter)"
+        // Write to BOTH files: fromAppFile for widget display, fromWidgetFile for app pickup
+        SharedStorage.write(data, filename: Settings.fromAppFile)
+        SharedStorage.write(data, filename: Settings.fromWidgetFile)
+        WidgetCenter.shared.reloadTimelines(ofKind: Settings.widgetKind)
+        return .result()
+    }
+}
+```
+
+### Intents/DecrementCounterIntent.swift (Optional)
+
+```swift
+import AppIntents
+import WidgetKit
+
+struct DecrementCounterIntent: AppIntent {
+    static var title: LocalizedStringResource { "Decrement Counter" }
+
+    func perform() async throws -> some IntentResult {
+        var data = SharedStorage.read(filename: Settings.fromAppFile) ?? WidgetData()
+        data.counter -= 1
+        data.updatedAt = ISO8601DateFormatter().string(from: Date())
+        data.message = "Counter: \(data.counter)"
+        // Write to BOTH files: fromAppFile for widget display, fromWidgetFile for app pickup
+        SharedStorage.write(data, filename: Settings.fromAppFile)
         SharedStorage.write(data, filename: Settings.fromWidgetFile)
         WidgetCenter.shared.reloadTimelines(ofKind: Settings.widgetKind)
         return .result()
