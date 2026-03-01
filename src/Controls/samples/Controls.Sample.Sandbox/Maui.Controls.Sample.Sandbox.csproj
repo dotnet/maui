@@ -30,14 +30,7 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
-    <CodesignEntitlements Condition="$(TargetFramework.Contains('-ios'))">Platforms/iOS/Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Redth.MauiDevFlow.Agent" Version="0.11.0">
-      <ExcludeAssets>build;buildTransitive</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

@@ -1,34 +1,5 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
-    <ScrollView>
-        <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
-            <Label Text="🟣 MAUI Sandbox Demo"
-                   FontSize="28" FontAttributes="Bold"
-                   HorizontalOptions="Center" />
-
-            <Border Stroke="Gray" StrokeShape="RoundRectangle 10" Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="📱 Home Screen Widget" FontSize="20" FontAttributes="Bold" />
-                    <Button Text="🔄 Update Widget" Clicked="OnUpdateWidgetClicked"
-                            BackgroundColor="#512BD4" TextColor="White" FontAttributes="Bold" />
-                    <Label x:Name="WidgetStatus" Text="" FontSize="12" TextColor="Green"
-                           HorizontalTextAlignment="Center" />
-                    <Entry x:Name="WidgetTitle" Placeholder="Widget title" Text="MAUI Sandbox" />
-                    <Entry x:Name="WidgetMessage" Placeholder="Widget message" Text="Hello from .NET MAUI!" />
-                    <Label Text="Long-press Home Screen → + → MAUI Sandbox"
-                           FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Border Stroke="Gray" StrokeShape="RoundRectangle 10" Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="🚗 CarPlay Audio" FontSize="20" FontAttributes="Bold" />
-                    <Label Text="I/O → External Displays → CarPlay"
-                           FontSize="14" HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-            </Border>
-        </VerticalStackLayout>
-    </ScrollView>
 </ContentPage>
