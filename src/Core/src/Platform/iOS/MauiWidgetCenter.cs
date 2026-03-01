@@ -81,9 +81,31 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// Gets the shared <see cref="NSUserDefaults"/> for the specified App Group,
-		/// used to share data between the main app and widget extensions.
+		/// Gets the URL for the App Group shared container directory.
+		/// Use this to read/write JSON files shared between the app and widget extension.
 		/// </summary>
+		/// <remarks>
+		/// File-based I/O via the shared container is more reliable than <see cref="GetSharedDefaults"/>
+		/// for cross-process communication, especially on the iOS Simulator with ad-hoc signing.
+		/// </remarks>
+		/// <param name="appGroupId">The App Group identifier (e.g., "group.com.mycompany.myapp").</param>
+		/// <returns>An <see cref="NSUrl"/> for the container directory, or <c>null</c> if unavailable.</returns>
+		public static NSUrl? GetSharedContainerUrl(string appGroupId)
+		{
+			return NSFileManager.DefaultManager.GetContainerUrl(appGroupId);
+		}
+
+		/// <summary>
+		/// Gets the shared <see cref="NSUserDefaults"/> for the specified App Group.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// <c>NSUserDefaults(suiteName:)</c> can resolve to different backing plist files for the
+		/// app vs. the widget extension process, especially on the iOS Simulator or with ad-hoc signing.
+		/// For reliable cross-process data sharing, prefer <see cref="GetSharedContainerUrl"/> with
+		/// file-based JSON I/O instead.
+		/// </para>
+		/// </remarks>
 		/// <param name="appGroupId">The App Group identifier (e.g., "group.com.mycompany.myapp").</param>
 		/// <returns>An <see cref="NSUserDefaults"/> instance for the App Group, or <c>null</c> if the group is invalid.</returns>
 		public static NSUserDefaults? GetSharedDefaults(string appGroupId)
