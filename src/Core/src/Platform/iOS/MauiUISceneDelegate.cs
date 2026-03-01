@@ -19,7 +19,8 @@ namespace Microsoft.Maui
 		{
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
-			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && IPlatformApplication.Current?.Application != null)
+			var configName = session.Configuration.Name;
+			if ((configName == MauiUIApplicationDelegate.MauiSceneConfigurationKey || string.IsNullOrEmpty(configName)) && IPlatformApplication.Current?.Application != null)
 			{
 				this.CreatePlatformWindow(IPlatformApplication.Current.Application, scene, session, connectionOptions);
 
