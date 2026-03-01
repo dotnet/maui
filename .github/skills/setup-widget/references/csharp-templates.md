@@ -176,8 +176,11 @@ public class AppDelegate : MauiUIApplicationDelegate
 
 ### App.xaml.cs
 
+**⚠️ CRITICAL DI note:** `Handler?.MauiContext?.Services` is null during `CreateWindow`. Use `activationState?.Context?.Services` or `IPlatformApplication.Current?.Services` to resolve services.
+
 ```csharp
 using {Namespace}.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace {Namespace};
 
@@ -187,11 +190,26 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var window = new Window(new AppShell());
+        // Resolve services — Handler.MauiContext is null here, use activationState
+        var services = activationState?.Context?.Services
+            ?? IPlatformApplication.Current?.Services;
+
+        MainPage mainPage;
+        if (services is not null)
+        {
+            var widgetService = services.GetService<IWidgetDataService>() ?? new StubWidgetDataService();
+            mainPage = new MainPage(widgetService);
+        }
+        else
+        {
+            mainPage = new MainPage();
+        }
+
+        var window = new Window(new NavigationPage(mainPage));
         window.Resumed += (s, e) =>
         {
-            if (window.Page is AppShell { CurrentPage: MainPage mainPage })
-                mainPage.OnResumed();
+            if (window.Page is NavigationPage { CurrentPage: MainPage mp })
+                mp.OnResumed();
         };
         return window;
     }
@@ -207,7 +225,7 @@ public partial class App : Application
             Current?.Dispatcher.Dispatch(() =>
             {
                 if (Current?.Windows?.Count > 0 &&
-                    Current.Windows[0].Page is AppShell { CurrentPage: MainPage page })
+                    Current.Windows[0].Page is NavigationPage { CurrentPage: MainPage page })
                     page.OnResumedByUrl(count);
             });
         }
@@ -233,7 +251,7 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-#if IOS
+#if IOS || __IOS__
         builder.Services.AddSingleton<IWidgetDataService, Platforms.iOS.WidgetDataService>();
 #else
         builder.Services.AddSingleton<IWidgetDataService, StubWidgetDataService>();

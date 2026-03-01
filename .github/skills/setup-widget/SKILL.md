@@ -45,7 +45,7 @@ Adds an iOS Widget Extension to a .NET MAUI app with robust bidirectional commun
 |-----------|-----------|-------------|
 | **App → Widget** | JSON file + WidgetKit reload | App writes JSON, calls `ReloadTimelines` |
 | **Widget → App (tap)** | Deep link via `widgetURL()` | Opens app with custom URL scheme |
-| **Widget → App (interactive)** | AppIntents + file I/O | Widget buttons modify shared JSON |
+| **Widget → App (interactive)** | AppIntents + dual file I/O | Widget buttons write to BOTH `fromAppFile` + `fromWidgetFile`, app reads `fromWidgetFile` on resume |
 
 ### ⚠️ Critical: Do NOT use UserDefaults for cross-process data
 
@@ -394,6 +394,8 @@ Built into MAUI Core — no NuGet needed. Requires `MauiWidgetHelper.framework` 
 | **`GetContainerUrl` returns null** | App missing App Group entitlement — re-sign after build |
 | **Widget shows stale data** | Call `ReloadTimelines` after writing JSON. WidgetKit throttles ~40-70/day |
 | **AppIntents buttons override app data** | Use timestamp-based priority — compare `updatedAt` to pick most recent |
+| **Widget→App sync not working** | AppIntents must write to **BOTH** `fromAppFile` (widget display) AND `fromWidgetFile` (app pickup). Writing only one breaks bidirectional sync |
+| **DI null in CreateWindow** | `Handler?.MauiContext?.Services` is null during `CreateWindow`. Use `activationState?.Context?.Services ?? IPlatformApplication.Current?.Services` |
 | **Xcode build fails** | Use `-target` not `-scheme` for xcodebuild. Ensure widget Info.plist has full CFBundle keys |
 
 ## Debugging
