@@ -188,7 +188,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			VirtualView.ScrollToRequested += ScrollToRequested;
-			platformView.SizeChanged += OnPlatformViewSizeChanged;
 			FindScrollViewer();
 		}
 
@@ -223,8 +222,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_layoutPropertyChangedProxy?.Unsubscribe();
 			_layoutPropertyChangedProxy = null;
-
-			platformView.SizeChanged -= OnPlatformViewSizeChanged;
 
 			if (VirtualView is not null)
 			{
@@ -650,66 +647,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			};
 		}
 
-		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateGridLayoutItemSize();
-		}
-
-		/// <summary>
-		/// Updates the MinItemWidth or MinItemHeight of the UniformGridLayout to ensure
-		/// that exactly Span items fit per row/column, matching the behavior of CV1's
-		/// FormsGridView.UpdateItemSize().
-		/// </summary>
-		void UpdateGridLayoutItemSize()
-		{
-			if (PlatformView?.Layout is not UniformGridLayout gridLayout ||
-				Layout is not GridItemsLayout gridItemsLayout)
-			{
-				return;
-			}
-
-			var span = gridItemsLayout.Span;
-			if (span <= 0)
-			{
-				return;
-			}
-
-			if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
-			{
-				// Vertical orientation: items flow top-to-bottom, span controls columns
-				var availableWidth = PlatformView.ActualWidth;
-				if (availableWidth <= 0)
-				{
-					return;
-				}
-
-				// Calculate the item width accounting for spacing between items
-				var totalSpacing = gridItemsLayout.HorizontalItemSpacing * (span - 1);
-				var itemWidth = Math.Floor((availableWidth - totalSpacing) / span);
-				if (itemWidth > 0)
-				{
-					gridLayout.MinItemWidth = itemWidth;
-				}
-			}
-			else
-			{
-				// Horizontal orientation: items flow left-to-right, span controls rows
-				var availableHeight = PlatformView.ActualHeight;
-				if (availableHeight <= 0)
-				{
-					return;
-				}
-
-				// Calculate the item height accounting for spacing between items
-				var totalSpacing = gridItemsLayout.VerticalItemSpacing * (span - 1);
-				var itemHeight = Math.Floor((availableHeight - totalSpacing) / span);
-				if (itemHeight > 0)
-				{
-					gridLayout.MinItemHeight = itemHeight;
-				}
-			}
-		}
-
 		void FindScrollViewer()
 		{
 			if (PlatformView is null)
@@ -787,7 +724,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Layout is GridItemsLayout gridItemsLayout)
 			{
 				listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
-				UpdateGridLayoutItemSize();
 			}
 		}
 
@@ -798,7 +734,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 				listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
-				UpdateGridLayoutItemSize();
 			}
 
 			else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
