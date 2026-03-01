@@ -101,7 +101,9 @@ namespace Microsoft.Maui
 			}
 #endif
 
-			return new(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
+			var defaultConfig = new UISceneConfiguration(MauiUIApplicationDelegate.MauiSceneConfigurationKey, connectingSceneSession.Role);
+			defaultConfig.DelegateType = typeof(MauiUISceneDelegate);
+			return defaultConfig;
 		}
 
 #if IOS && !MACCATALYST
