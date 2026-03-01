@@ -1,112 +1,91 @@
 ---
 name: setup-widget
-description: Sets up an iOS Home Screen Widget for a .NET MAUI application. Configures App Groups, entitlements, a SwiftUI WidgetKit extension, and MAUI-side data sharing via MauiWidgetCenter.
+description: Sets up an iOS Home Screen Widget for a .NET MAUI application. Configures App Groups, entitlements, a SwiftUI WidgetKit extension with xcodegen, MSBuild auto-build integration, JSON file data sharing, deep links, and optional interactive AppIntents.
 metadata:
   author: dotnet-maui
-  version: "2.0"
-compatibility: Requires .NET MAUI with iOS/MacCatalyst target, Xcode with iOS SDK 17+, WidgetKit.
+  version: "3.0"
+compatibility: Requires .NET MAUI with iOS target, Xcode 16+ with iOS SDK 17+, WidgetKit.
 ---
 
 # Setup iOS Home Screen Widget Skill
 
-Configures a .NET MAUI iOS app to include a Home Screen Widget using Apple's WidgetKit. Guides the user through App Group setup, entitlements, creating a SwiftUI widget extension, building and embedding it, and sharing data from the MAUI app.
+Adds an iOS Widget Extension to a .NET MAUI app with robust bidirectional communication. The widget auto-builds during `dotnet build` via MSBuild integration — no separate build step needed.
 
-## Overview
+## Architecture
 
-iOS Widgets use Apple's **WidgetKit** framework with **SwiftUI** for rendering. They run as a separate extension process — not inside the MAUI app. Communication between the MAUI app and widget happens through **App Groups** (shared `NSUserDefaults` + JSON file fallback).
-
-**Architecture:**
 ```
-┌─────────────────────────┐      App Group       ┌─────────────────────────┐
-│     .NET MAUI App       │  ← NSUserDefaults →  │   Widget Extension      │
-│                         │  ← JSON file →        │   (Swift/SwiftUI)       │
-│  MauiWidgetCenter       │                       │   TimelineProvider      │
-│   .GetSharedDefaults()  │  ── ReloadTimelines → │   reads shared data     │
-│   .ReloadTimelines()    │                       │   renders SwiftUI view  │
-└─────────────────────────┘                       └─────────────────────────┘
-        │                                                    │
-        └──── MauiWidgetHelper.framework ────────────────────┘
-              (Swift bridge for WidgetKit API)
-```
-
-**Key components:**
-- **`MauiWidgetCenter`** — C# helper in MAUI Core for writing shared data and triggering reloads
-- **`MauiWidgetHelper.framework`** — Small Swift framework that bridges `WidgetCenter.shared.reloadTimelines()` to ObjC (since WidgetKit is Swift-only and has no stable ObjC class names)
-- **Widget extension (.appex)** — SwiftUI-based WidgetKit extension
-
-## Critical Build Requirements
-
-### ⚠️ Extension binary MUST use `_NSExtensionMain` entry point
-
-Widget extensions are XPC services, **not** standalone executables. Building with `swiftc -emit-executable` produces a binary with `_main` entry point that will **crash silently** when chronod tries to communicate with it.
-
-**Correct approach: 2-step compile + link**
-```bash
-# Step 1: Compile to object file
-xcrun swiftc -sdk "$SDK_PATH" -target "$TARGET" -O \
-    -module-name MyWidgetExtension -parse-as-library \
-    -application-extension -c \
-    -o obj/MyWidget.o MyWidget.swift
-
-# Step 2: Link with _NSExtensionMain entry point
-xcrun clang -target "$TARGET" -isysroot "$SDK_PATH" \
-    -fapplication-extension -e _NSExtensionMain \
-    -dead_strip -fobjc-link-runtime \
-    -Xlinker -rpath -Xlinker @executable_path/../../Frameworks \
-    obj/MyWidget.o -o MyWidgetExtension.appex/MyWidgetExtension
+┌──────────────────────────────────────────────────────────────────┐
+│                    .NET MAUI App (C#)                             │
+│                                                                  │
+│  Page ──► IWidgetDataService ──► JSON file (App Group container) │
+│    ▲            │                        │                       │
+│    │            ▼                        │                       │
+│    │   WidgetKit.ReloadTimelines ────────┼──► iOS refreshes      │
+│    │                                     │      widget           │
+│    │   AppDelegate.OpenUrl ◄─────────────┤                       │
+│    └── HandleWidgetUrl (deep link) ◄─────┘                       │
+└──────────────────────────────────────────────────────────────────┘
+                    │  JSON files in App Group container  │
+┌──────────────────────────────────────────────────────────────────┐
+│                iOS Widget Extension (Swift/SwiftUI)               │
+│                                                                  │
+│  SharedStorage ──► File I/O (App Group) ──► Provider             │
+│       ▲                                          │               │
+│       │                                          ▼               │
+│  AppIntents (buttons) ◄──── WidgetView ◄──── TimelineEntry       │
+│       │                          │                               │
+│       ▼                          ▼                               │
+│  WidgetCenter.reloadTimelines   widgetURL (deep link to app)     │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-**❌ WRONG** (produces broken binary):
-```bash
-xcrun swiftc ... -emit-executable -o MyWidgetExtension
-```
+### Communication Channels
 
-### ⚠️ WidgetKit has NO stable ObjC class names
+| Direction | Mechanism | Description |
+|-----------|-----------|-------------|
+| **App → Widget** | JSON file + WidgetKit reload | App writes JSON, calls `ReloadTimelines` |
+| **Widget → App (tap)** | Deep link via `widgetURL()` | Opens app with custom URL scheme |
+| **Widget → App (interactive)** | AppIntents + file I/O | Widget buttons modify shared JSON |
 
-`WidgetCenter` is a Swift-only class. `Class.GetHandle("WGWidgetCenter")` returns null. You **cannot** call `WidgetCenter.shared.reloadTimelines()` via `objc_msgSend`.
+### ⚠️ Critical: Do NOT use UserDefaults for cross-process data
 
-**Solution: MauiWidgetHelper.framework** — a tiny Swift framework bundled in the app:
-
-```swift
-// WidgetHelper.swift
-import Foundation
-import WidgetKit
-
-@objc(MauiWidgetHelper)
-public class MauiWidgetHelper: NSObject {
-    @objc public static func reloadTimelines(_ kind: String) {
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadTimelines(ofKind: kind)
-        }
-    }
-    @objc public static func reloadAllTimelines() {
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
-    }
-}
-```
-
-Build as a dynamic framework and embed in `YourApp.app/Frameworks/`.
-
-### ⚠️ Info.plist must NOT use `$(PRODUCT_MODULE_NAME)`
-
-Xcode resolves `$(PRODUCT_MODULE_NAME)` during builds, but manual `swiftc`/`clang` does not. Always use hardcoded values in widget Info.plist. Also, `NSExtensionPrincipalClass` is **not required** for WidgetKit extensions.
+`UserDefaults(suiteName:)` can resolve to **different backing plist files** for the app vs. widget extension process, especially on the iOS Simulator or with ad-hoc signing. Use **file-based JSON I/O** via `NSFileManager.GetContainerUrl()` (C#) / `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)` (Swift).
 
 ## When to Use This Skill
 
-- User wants to add a Home Screen Widget to their MAUI iOS/MacCatalyst app
+- User wants to add a Home Screen Widget to their MAUI iOS app
 - User asks about widgets, WidgetKit, or Home Screen extensions
-- User wants to display app data on the Home Screen
+- User wants to share data between MAUI app and an iOS extension
+- User wants interactive widget buttons (AppIntents)
+
+## Prerequisites
+
+- macOS with **Xcode 16+**
+- .NET 10+ SDK with MAUI workload
+- iOS 17+ simulator or device
+- [xcodegen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
+
+## Identifier Convention
+
+Derive all identifiers from the app's bundle ID. For `com.example.myapp`:
+
+| Identifier | Value | Where Used |
+|-----------|-------|------------|
+| App Bundle ID | `com.example.myapp` | `.csproj`, Xcode project |
+| Widget Bundle ID | `com.example.myapp.widgetextension` | Xcode project (**must** be child of app ID) |
+| App Group ID | `group.com.example.myapp` | Entitlements (×2), C# constants, Swift constants |
+| URL Scheme | `myapp` | Info.plist, C# constants, Swift `widgetURL` |
+| Widget Kind | `MyWidget` | Swift Widget struct, C# `RefreshWidget` call |
+
+These must match **exactly** across all files — mismatches cause silent failures.
 
 ## Step-by-Step Setup
 
-### Step 1: Configure App Groups
+### Step 1: Configure Entitlements
 
-App Groups enable data sharing between the main app and the widget extension.
+Create **two** entitlements files — one for the app, one for the widget extension.
 
-**Create or update `Platforms/iOS/Entitlements.plist`:**
-
+**`Platforms/iOS/Entitlements.plist`** (MAUI app):
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -114,510 +93,337 @@ App Groups enable data sharing between the main app and the widget extension.
 <dict>
     <key>com.apple.security.application-groups</key>
     <array>
-        <string>group.com.yourcompany.yourapp</string>
+        <string>group.com.example.myapp</string>
     </array>
 </dict>
 </plist>
 ```
 
-**Add to your `.csproj`:**
+**`Platforms/iOS/Entitlements.WidgetExtension.plist`** (widget):
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.example.myapp</string>
+    </array>
+</dict>
+</plist>
+```
+
+**⚠️ CRITICAL: Entitlements files MUST use LF line endings (Unix-style), NOT CRLF.** CRLF causes cryptic build failures. After creating:
+```bash
+sed -i '' 's/\r$//' Platforms/iOS/Entitlements.plist Platforms/iOS/Entitlements.WidgetExtension.plist
+```
+
+Add URL scheme to **`Platforms/iOS/Info.plist`** for deep linking:
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLName</key>
+        <string>com.example.myapp</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+    </dict>
+</array>
+```
+
+### Step 2: Create the C# Service Layer
+
+See `references/csharp-templates.md` for complete code. Create these files:
+
+| File | Purpose |
+|------|---------|
+| `Services/WidgetData.cs` | Shared JSON data model (mirrors Swift side) |
+| `Services/WidgetConstants.cs` | All identifiers in one place |
+| `Services/IWidgetDataService.cs` | Platform-agnostic interface |
+| `Services/StubWidgetDataService.cs` | No-op for non-iOS platforms |
+| `Platforms/iOS/WidgetDataService.cs` | iOS implementation (file I/O + WidgetKit) |
+
+The `WidgetDataService` writes JSON to the App Group container via `MauiWidgetCenter.GetSharedContainerUrl()` and triggers refreshes via `WidgetKit.WidgetCenterProxy` NuGet or `MauiWidgetCenter.ReloadTimelines()`.
+
+**Two options for WidgetKit API access:**
+
+| Option | Pros | Cons |
+|--------|------|------|
+| `WidgetKit.WidgetCenterProxy` NuGet | Clean API, no framework to embed | External dependency |
+| `MauiWidgetCenter` (built into MAUI) | Zero dependencies, uses bundled `MauiWidgetHelper.framework` | Must embed framework in app |
+
+Both work. The NuGet is simpler for new projects. `MauiWidgetCenter` is already part of MAUI Core.
+
+### Step 3: Wire Up App Integration
+
+See `references/csharp-templates.md` — "App Integration" section.
+
+1. **`Platforms/iOS/AppDelegate.cs`** — Override `OpenUrl` to intercept deep links
+2. **`App.xaml.cs`** — Add `HandleWidgetUrl` + resume handler
+3. **`MauiProgram.cs`** — Register `IWidgetDataService` via DI
+
+### Step 4: Update the .csproj
+
+Add iOS-specific configuration for widget embedding and auto-build:
 
 ```xml
-<PropertyGroup>
-    <CodesignEntitlements Condition="$(TargetFramework.Contains('-ios'))">Platforms/iOS/Entitlements.plist</CodesignEntitlements>
+<!-- iOS Widget Extension embedding -->
+<PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
 </PropertyGroup>
+
+<ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <!-- Option A: WidgetKit NuGet (check NuGet.org for latest version) -->
+    <PackageReference Include="WidgetKit.WidgetCenterProxy" Version="10.0.0" />
+
+    <!-- Copy widget .appex to output based on platform -->
+    <Content Remove="Platforms\iOS\WidgetExtensions\**" />
+    <Content Condition="'$(ComputedPlatform)' == 'iPhone'"
+             Include=".\Platforms\iOS\WidgetExtensions\Release-iphoneos\MyWidgetExtension.appex\**"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Condition="'$(ComputedPlatform)' == 'iPhoneSimulator'"
+             Include=".\Platforms\iOS\WidgetExtensions\Release-iphonesimulator\MyWidgetExtension.appex\**"
+             CopyToOutputDirectory="PreserveNewest" />
+
+    <Content Include=".\Platforms\iOS\Entitlements.WidgetExtension.plist"
+             CopyToOutputDirectory="PreserveNewest" />
+
+    <!-- Embed widget in app bundle with correct entitlements -->
+    <AdditionalAppExtensions Include="$(MSBuildProjectDirectory)/Platforms/iOS/WidgetExtensions">
+        <Name>MyWidgetExtension</Name>
+        <BuildOutput Condition="'$(ComputedPlatform)' == 'iPhone'">Release-iphoneos</BuildOutput>
+        <BuildOutput Condition="'$(ComputedPlatform)' == 'iPhoneSimulator'">Release-iphonesimulator</BuildOutput>
+        <CodesignEntitlements>Platforms/iOS/Entitlements.WidgetExtension.plist</CodesignEntitlements>
+    </AdditionalAppExtensions>
+</ItemGroup>
+
+<!-- Auto-build widget during dotnet build. Skip with: -p:SkipWidgetBuild=true -->
+<Target Name="BuildWidgetExtension"
+        AfterTargets="ResolveReferences"
+        Condition="$(TargetFramework.Contains('-ios')) AND '$(SkipWidgetBuild)' != 'true'">
+    <PropertyGroup>
+        <_WidgetIsSimulator>$(RuntimeIdentifier.Contains('simulator'))</_WidgetIsSimulator>
+        <_WidgetSdk Condition="'$(_WidgetIsSimulator)' == 'true'">iphonesimulator</_WidgetSdk>
+        <_WidgetSdk Condition="'$(_WidgetIsSimulator)' != 'true'">iphoneos</_WidgetSdk>
+        <_WidgetArch Condition="$(RuntimeIdentifier.Contains('arm64'))">arm64</_WidgetArch>
+        <_WidgetArch Condition="$(RuntimeIdentifier.Contains('x64'))">x86_64</_WidgetArch>
+        <_WidgetArch Condition="'$(_WidgetArch)' == ''">arm64</_WidgetArch>
+        <_WidgetOutputSubdir>Release-$(_WidgetSdk)</_WidgetOutputSubdir>
+        <_XcodeProjectDir>$(MSBuildProjectDirectory)/XCodeWidget</_XcodeProjectDir>
+        <_XcodeProjectPath>$(_XcodeProjectDir)/XCodeWidget.xcodeproj</_XcodeProjectPath>
+        <_WidgetBuildDir>$(_XcodeProjectDir)/build</_WidgetBuildDir>
+        <_WidgetAppexSource>$(_WidgetBuildDir)/$(_WidgetOutputSubdir)/MyWidgetExtension.appex</_WidgetAppexSource>
+        <_WidgetDestDir>$(MSBuildProjectDirectory)/Platforms/iOS/WidgetExtensions/$(_WidgetOutputSubdir)</_WidgetDestDir>
+    </PropertyGroup>
+
+    <Exec Command="xcodegen generate"
+          WorkingDirectory="$(_XcodeProjectDir)"
+          Condition="!Exists('$(_XcodeProjectPath)') AND Exists('$(_XcodeProjectDir)/project.yml')" />
+
+    <Message Text="Building widget extension for $(_WidgetSdk) $(_WidgetArch)..." Importance="high" />
+    <Exec Command="xcodebuild -quiet -project XCodeWidget.xcodeproj -target MyWidgetExtension -configuration Release -sdk $(_WidgetSdk) -arch $(_WidgetArch) CODE_SIGN_IDENTITY=&quot;-&quot; CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO BUILD_DIR=build build"
+          WorkingDirectory="$(_XcodeProjectDir)" />
+
+    <MakeDir Directories="$(_WidgetDestDir)" />
+    <Exec Command="rm -rf &quot;$(_WidgetDestDir)/MyWidgetExtension.appex&quot; &amp;&amp; cp -R &quot;$(_WidgetAppexSource)&quot; &quot;$(_WidgetDestDir)/&quot;" />
+</Target>
 ```
 
-**⚠️ Simulator signing note**: When re-signing the app to embed the widget, you **must** pass `--entitlements` to preserve app-groups:
-```bash
-codesign --force --sign - --entitlements Platforms/iOS/Entitlements.plist YourApp.app
-```
-Signing without `--entitlements` strips all entitlements, breaking App Group data sharing.
+**What this does:** A single `dotnet build -f net10.0-ios` automatically:
+1. Generates `.xcodeproj` from `project.yml` if needed
+2. Builds the widget with `xcodebuild`
+3. Embeds the `.appex` in the app bundle with correct entitlements
 
-### Step 2: Share Data from MAUI App
+### Step 5: Create the Swift Widget Extension
 
-Use `MauiWidgetCenter` to write shared data and trigger widget refreshes. Write data via **both** UserDefaults and a JSON file for reliable simulator support:
-
-```csharp
-#if IOS || MACCATALYST
-#pragma warning disable CA1416
-using Microsoft.Maui;
-
-const string AppGroup = "group.com.yourcompany.yourapp";
-const string WidgetKind = "MyWidgetKind";
-
-void UpdateWidget(string title, string message)
-{
-    // UserDefaults (works on device with provisioning)
-    var defaults = MauiWidgetCenter.GetSharedDefaults(AppGroup);
-    if (defaults is not null)
-    {
-        defaults.SetString(title, "widget_title");
-        defaults.SetString(message, "widget_message");
-        defaults.Synchronize();
-    }
-    
-    // JSON file fallback (reliable on simulator)
-    var containerUrl = Foundation.NSFileManager.DefaultManager.GetContainerUrl(AppGroup);
-    if (containerUrl is not null)
-    {
-        var json = $"{{\"title\":\"{title}\",\"message\":\"{message}\"}}";
-        var filePath = System.IO.Path.Combine(containerUrl.Path!, "widget_data.json");
-        System.IO.File.WriteAllText(filePath, json);
-    }
-    
-    MauiWidgetCenter.ReloadTimelines(WidgetKind);
-}
-#pragma warning restore CA1416
-#endif
-```
-
-**Common pattern — update widgets on app launch:**
-
-```csharp
-// MauiProgram.cs
-.ConfigureLifecycleEvents(events =>
-{
-#if IOS || MACCATALYST
-#pragma warning disable CA1416
-    events.AddiOS(ios => ios
-        .FinishedLaunching((app, options) =>
-        {
-            UpdateWidget("My App", "Updated at " + DateTime.Now.ToString("t"));
-            return true;
-        }));
-#pragma warning restore CA1416
-#endif
-})
-```
-
-### Step 3: Create the MauiWidgetHelper Framework
-
-This small Swift framework bridges WidgetKit's Swift-only API to ObjC for `MauiWidgetCenter` to call.
-
-**`Platforms/iOS/Extensions/MyWidgetExtension/WidgetHelper.swift`:**
-
-```swift
-import Foundation
-import WidgetKit
-
-@objc(MauiWidgetHelper)
-public class MauiWidgetHelper: NSObject {
-    @objc public static func reloadTimelines(_ kind: String) {
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadTimelines(ofKind: kind)
-        }
-    }
-    @objc public static func reloadAllTimelines() {
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
-    }
-}
-```
-
-### Step 4: Create the Widget Extension (Swift)
-
-Widget extensions **must** be written in Swift/SwiftUI — this is a WidgetKit requirement. Create the following files:
+Create `XCodeWidget/` at the project root with these files. See `references/swift-templates.md` for complete code.
 
 **Directory structure:**
 ```
-Platforms/iOS/Extensions/MyWidgetExtension/
-├── MyWidget.swift
-├── WidgetHelper.swift
-├── Info.plist
-└── MyWidgetExtension.entitlements
+XCodeWidget/
+├── project.yml                          # xcodegen spec
+├── XCodeWidget/                         # Thin host app (required by Xcode, not shipped)
+│   ├── XCodeWidgetApp.swift
+│   └── ContentView.swift
+├── MyWidgetExtension/
+│   ├── Info.plist                       # Full CFBundle keys required
+│   ├── Settings.swift                   # Mirrors WidgetConstants.cs
+│   ├── WidgetData.swift                 # Mirrors WidgetData.cs (Codable)
+│   ├── SharedStorage.swift              # JSON file I/O via App Group container
+│   ├── SimpleEntry.swift                # TimelineEntry
+│   ├── Provider.swift                   # AppIntentTimelineProvider
+│   ├── SimpleWidgetView.swift           # SwiftUI view with deep links
+│   ├── SimpleWidget.swift               # Widget configuration
+│   ├── SimpleWidgetBundle.swift         # @main entry point
+│   └── Intents/                         # Optional: interactive buttons
+│       ├── ConfigurationAppIntent.swift
+│       └── IncrementCounterIntent.swift
+├── MyWidgetExtension.entitlements       # App Group
+└── build-release.sh                     # Manual build script (fallback)
 ```
 
-**`MyWidget.swift`:**
+**Key Swift files:**
 
+**`Settings.swift`** — mirrors `WidgetConstants.cs` exactly:
 ```swift
-import WidgetKit
-import SwiftUI
-
-struct MyWidgetEntry: TimelineEntry {
-    let date: Date
-    let title: String
-    let message: String
+enum Settings {
+    static let groupId = "group.com.example.myapp"
+    static let fromAppFile = "widget_data_fromapp.json"
+    static let fromWidgetFile = "widget_data_fromwidget.json"
+    static let urlScheme = "myapp"
+    static let urlHost = "widget"
+    static let widgetKind = "MyWidget"
 }
+```
 
-struct MyWidgetProvider: TimelineProvider {
-    let appGroupId = "group.com.yourcompany.yourapp"
+**`SharedStorage.swift`** — JSON file I/O (NOT UserDefaults):
+```swift
+import Foundation
 
-    func placeholder(in context: Context) -> MyWidgetEntry {
-        MyWidgetEntry(date: Date(), title: "My App", message: "Loading...")
+struct SharedStorage {
+    static func read(filename: String) -> WidgetData? {
+        guard let url = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: Settings.groupId)?
+            .appendingPathComponent(filename),
+              let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode(WidgetData.self, from: data)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (MyWidgetEntry) -> Void) {
-        completion(loadEntry())
-    }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<MyWidgetEntry>) -> Void) {
-        let entry = loadEntry()
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-        completion(timeline)
-    }
-
-    private func loadEntry() -> MyWidgetEntry {
-        // Try App Group UserDefaults first
-        if let defaults = UserDefaults(suiteName: appGroupId),
-           let title = defaults.string(forKey: "widget_title") {
-            let message = defaults.string(forKey: "widget_message") ?? "Tap to open"
-            return MyWidgetEntry(date: Date(), title: title, message: message)
-        }
-
-        // Fallback: shared JSON file (reliable on simulator)
-        if let containerURL = FileManager.default.containerURL(
-               forSecurityApplicationGroupIdentifier: appGroupId),
-           let data = try? Data(contentsOf: containerURL.appendingPathComponent("widget_data.json")),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
-            return MyWidgetEntry(
-                date: Date(),
-                title: json["title"] ?? "My App",
-                message: json["message"] ?? "Tap to open")
-        }
-
-        return MyWidgetEntry(date: Date(), title: "My App", message: "Open app to see data")
-    }
-}
-
-struct MyWidgetEntryView: View {
-    var entry: MyWidgetProvider.Entry
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(entry.title)
-                .font(.headline)
-            Text(entry.message)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Text(entry.date, style: .time)
-                .font(.caption2)
-                .foregroundColor(.gray)
-        }
-        .padding()
-        .containerBackground(.fill.tertiary, for: .widget)
-    }
-}
-
-@main
-struct MyAppWidget: Widget {
-    let kind: String = "MyWidgetKind"
-
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: MyWidgetProvider()) { entry in
-            MyWidgetEntryView(entry: entry)
-        }
-        .configurationDisplayName("My App Widget")
-        .description("Shows data from the app.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+    static func write(_ widgetData: WidgetData, filename: String) {
+        guard let url = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: Settings.groupId)?
+            .appendingPathComponent(filename),
+              let data = try? JSONEncoder().encode(widgetData) else { return }
+        try? data.write(to: url)
     }
 }
 ```
 
-**Important**: The `kind` string in the Widget struct must match the `kind` you pass to `MauiWidgetCenter.ReloadTimelines()`.
+### Step 6: Create xcodegen project.yml
 
-**`Info.plist`:**
+```yaml
+name: XCodeWidget
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "17.0"
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>en</string>
-    <key>CFBundleDisplayName</key>
-    <string>My Widget</string>
-    <key>CFBundleExecutable</key>
-    <string>MyWidgetExtension</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.yourcompany.yourapp.MyWidgetExtension</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>MyWidgetExtension</string>
-    <key>CFBundlePackageType</key>
-    <string>XPC!</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>MinimumOSVersion</key>
-    <string>17.0</string>
-    <key>NSExtension</key>
-    <dict>
-        <key>NSExtensionPointIdentifier</key>
-        <string>com.apple.widgetkit-extension</string>
-    </dict>
-</dict>
-</plist>
+targets:
+  XCodeWidget:
+    type: application
+    platform: iOS
+    sources:
+      - XCodeWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.myapp
+
+  MyWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - MyWidgetExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.myapp.widgetextension
+        INFOPLIST_FILE: MyWidgetExtension/Info.plist
+        GENERATE_INFOPLIST_FILE: "NO"
+        CODE_SIGN_ENTITLEMENTS: MyWidgetExtension.entitlements
+    entitlements:
+      path: MyWidgetExtension.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - "group.com.example.myapp"
 ```
 
-**⚠️ Critical Info.plist rules:**
-- `CFBundleIdentifier` must be a child of main app bundle ID (e.g., `com.yourcompany.yourapp.MyWidgetExtension`)
-- Do NOT use `$(PRODUCT_MODULE_NAME)` or `$(MAIN_BUNDLE_ID)` — these are Xcode variables not resolved by swiftc/clang
-- `NSExtensionPrincipalClass` is NOT needed for WidgetKit extensions
-- `MinimumOSVersion` should be set to `17.0` or your minimum supported version
+Then: `cd XCodeWidget && xcodegen generate`
 
-**`MyWidgetExtension.entitlements`:**
+### Step 7: Build and Test
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>com.apple.security.application-groups</key>
-    <array>
-        <string>group.com.yourcompany.yourapp</string>
-    </array>
-</dict>
-</plist>
-```
-
-### Step 5: Build Script
-
-Create a build script at the root of your project:
-
-**`build-widget-extension.sh`:**
-
+**Simulator build (one command!):**
 ```bash
-#!/bin/bash
-# Builds WidgetKit extension + helper framework for iOS.
-# Usage: ./build-widget-extension.sh [iossimulator-arm64|iossimulator-x64|ios-arm64]
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-EXTENSION_DIR="$SCRIPT_DIR/Platforms/iOS/Extensions/MyWidgetExtension"
-ARCH="${1:-iossimulator-arm64}"
-
-case "$ARCH" in
-    iossimulator-arm64) TARGET="arm64-apple-ios17.0-simulator" ;;
-    iossimulator-x64)   TARGET="x86_64-apple-ios17.0-simulator" ;;
-    ios-arm64)          TARGET="arm64-apple-ios17.0" ;;
-    *)                  echo "Unknown arch: $ARCH"; exit 1 ;;
-esac
-
-SDK_NAME="iphonesimulator"
-[[ "$ARCH" == "ios-arm64" ]] && SDK_NAME="iphoneos"
-SDK_PATH="$(xcrun --sdk "$SDK_NAME" --show-sdk-path)"
-
-OUTPUT_DIR="$SCRIPT_DIR/bin/widget/$ARCH"
-APPEX_DIR="$OUTPUT_DIR/MyWidgetExtension.appex"
-FRAMEWORK_DIR="$OUTPUT_DIR/MauiWidgetHelper.framework"
-OBJ_DIR="$OUTPUT_DIR/obj"
-
-echo "Building widget extension for $ARCH..."
-rm -rf "$APPEX_DIR" "$FRAMEWORK_DIR" "$OBJ_DIR"
-mkdir -p "$APPEX_DIR" "$FRAMEWORK_DIR" "$OBJ_DIR"
-
-# --- Build MauiWidgetHelper.framework ---
-xcrun swiftc \
-    -sdk "$SDK_PATH" -target "$TARGET" -O \
-    -module-name MauiWidgetHelper \
-    -emit-library \
-    -Xlinker -install_name -Xlinker @rpath/MauiWidgetHelper.framework/MauiWidgetHelper \
-    -o "$FRAMEWORK_DIR/MauiWidgetHelper" \
-    "$EXTENSION_DIR/WidgetHelper.swift"
-
-cat > "$FRAMEWORK_DIR/Info.plist" << FWPLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleExecutable</key><string>MauiWidgetHelper</string>
-    <key>CFBundleIdentifier</key><string>com.yourcompany.yourapp.MauiWidgetHelper</string>
-    <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-    <key>CFBundleName</key><string>MauiWidgetHelper</string>
-    <key>CFBundlePackageType</key><string>FMWK</string>
-    <key>CFBundleShortVersionString</key><string>1.0</string>
-    <key>CFBundleVersion</key><string>1</string>
-    <key>MinimumOSVersion</key><string>17.0</string>
-</dict>
-</plist>
-FWPLIST
-
-# --- Build Widget Extension (.appex) ---
-# Step 1: Compile to object file
-xcrun swiftc \
-    -sdk "$SDK_PATH" -target "$TARGET" -O \
-    -module-name MyWidgetExtension \
-    -parse-as-library -application-extension \
-    -c -o "$OBJ_DIR/MyWidget.o" \
-    "$EXTENSION_DIR/MyWidget.swift"
-
-# Step 2: Link with _NSExtensionMain entry point (critical for XPC)
-xcrun clang \
-    -target "$TARGET" -isysroot "$SDK_PATH" \
-    -fapplication-extension -e _NSExtensionMain \
-    -dead_strip -fobjc-link-runtime \
-    -Xlinker -rpath -Xlinker @executable_path/../../Frameworks \
-    "$OBJ_DIR/MyWidget.o" \
-    -o "$APPEX_DIR/MyWidgetExtension"
-
-cp "$EXTENSION_DIR/Info.plist" "$APPEX_DIR/Info.plist"
-
-# Sign with entitlements
-ENTITLEMENTS="$EXTENSION_DIR/MyWidgetExtension.entitlements"
-if [[ -f "$ENTITLEMENTS" ]]; then
-    codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APPEX_DIR"
-else
-    codesign --force --sign - "$APPEX_DIR"
-fi
-
-codesign --force --sign - "$FRAMEWORK_DIR"
-
-rm -rf "$OBJ_DIR"
-echo "✅ Built: $APPEX_DIR"
-echo "✅ Built: $FRAMEWORK_DIR"
+dotnet build MyApp.csproj -f net10.0-ios -r iossimulator-arm64 \
+  -p:CodesignRequireProvisioningProfile=false
 ```
 
-### Step 6: Embed in MAUI App Bundle
-
-After building both the MAUI app and widget extension, embed the `.appex` and helper framework:
-
+**⚠️ CRITICAL post-build step for simulator:** The MAUI build generates an empty `.xcent` when `CodesignRequireProvisioningProfile=false`, stripping the App Group entitlement. You MUST re-sign:
 ```bash
-APP_BUNDLE="path/to/YourApp.app"
-WIDGET="bin/widget/iossimulator-arm64/MyWidgetExtension.appex"
-HELPER="bin/widget/iossimulator-arm64/MauiWidgetHelper.framework"
-
-# Embed widget extension
-mkdir -p "$APP_BUNDLE/PlugIns"
-cp -R "$WIDGET" "$APP_BUNDLE/PlugIns/"
-
-# Embed helper framework
-mkdir -p "$APP_BUNDLE/Frameworks"
-cp -R "$HELPER" "$APP_BUNDLE/Frameworks/"
-
-# Sign everything (MUST include --entitlements to preserve app-groups)
-codesign --force --sign - "$APP_BUNDLE/Frameworks/MauiWidgetHelper.framework"
-codesign --force --sign - --entitlements Platforms/iOS/Entitlements.plist "$APP_BUNDLE"
+APP_PATH=$(find bin/Debug/net10.0-ios/iossimulator-arm64 -name "*.app" -maxdepth 1)
+/usr/bin/codesign -v --force --timestamp=none --sign - \
+  --entitlements Platforms/iOS/Entitlements.plist "$APP_PATH"
 ```
 
-### Step 7: Test on Simulator
+Without this, `NSFileManager.GetContainerUrl()` returns null and data sharing fails silently.
 
-1. Build the MAUI app: `dotnet build -f net11.0-ios -c Debug`
-2. Build the widget extension: `bash build-widget-extension.sh`
-3. Embed and install (see Step 6)
-4. In the Simulator, **long-press the Home Screen → tap +** → search for your widget
-5. Add the widget to the Home Screen
-6. Tap the "Update Widget" button in the app — widget should refresh
+**Install and test:**
+```bash
+xcrun simctl install booted "$APP_PATH"
+xcrun simctl launch booted com.example.myapp
+# Long-press Home Screen → + → search for your widget → add it
+```
+
+**Device build (no re-signing needed):**
+```bash
+dotnet build -f net10.0-ios -t:Run
+```
+
+**Skip widget build** (C#-only changes): add `-p:SkipWidgetBuild=true`
 
 ## MauiWidgetCenter API Reference
 
+Built into MAUI Core — no NuGet needed. Requires `MauiWidgetHelper.framework` in app bundle for reload methods.
+
 | Method | Description |
 |--------|-------------|
-| `ReloadTimelines(string kind)` | Reloads timelines for widgets matching the specified kind |
-| `ReloadAllTimelines()` | Reloads timelines for all widgets in the app |
-| `GetSharedDefaults(string appGroupId)` | Gets `NSUserDefaults` for the App Group (shared with widget extension) |
-
-**Platform support**: iOS 14.0+, MacCatalyst 14.0+
-
-**Note**: `MauiWidgetCenter` uses a bundled `MauiWidgetHelper.framework` (Swift) to call WidgetKit APIs, because WidgetKit is a Swift-only framework with no stable ObjC class names accessible via `objc_msgSend`.
-
-## Widget Families
-
-| Family | Size | Best For |
-|--------|------|----------|
-| `.systemSmall` | 2×2 grid | Quick glance, single tap target |
-| `.systemMedium` | 4×2 grid | More detail, multiple data points |
-| `.systemLarge` | 4×4 grid | Rich content, lists |
-| `.systemExtraLarge` | iPad only | Dashboard-style |
-| `.accessoryCircular` | Lock Screen | Small circular widget |
-| `.accessoryRectangular` | Lock Screen | Compact rectangular widget |
-| `.accessoryInline` | Lock Screen | Single line of text |
-
-## Data Sharing Patterns
-
-### Dual-Write Pattern (Recommended)
-
-Write data via both UserDefaults and a JSON file for maximum compatibility:
-
-```csharp
-// MAUI app writes (both methods)
-var defaults = MauiWidgetCenter.GetSharedDefaults("group.com.myapp");
-defaults?.SetString("Hello", "greeting");
-defaults?.Synchronize();
-
-var containerUrl = NSFileManager.DefaultManager.GetContainerUrl("group.com.myapp");
-if (containerUrl is not null)
-{
-    var json = JsonSerializer.Serialize(new { greeting = "Hello" });
-    File.WriteAllText(Path.Combine(containerUrl.Path!, "widget_data.json"), json);
-}
-```
-
-```swift
-// Widget reads (tries UserDefaults first, then JSON file)
-if let defaults = UserDefaults(suiteName: "group.com.myapp"),
-   let greeting = defaults.string(forKey: "greeting") {
-    // Use UserDefaults value
-} else if let url = FileManager.default.containerURL(
-               forSecurityApplicationGroupIdentifier: "group.com.myapp"),
-          let data = try? Data(contentsOf: url.appendingPathComponent("widget_data.json")),
-          let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
-    // Use JSON file value
-}
-```
-
-**Why dual-write?** On the iOS Simulator with ad-hoc signing, UserDefaults App Group sharing may not work reliably. The JSON file approach uses `containerURL(forSecurityApplicationGroupIdentifier:)` which is more reliable.
+| `GetSharedContainerUrl(appGroupId)` | Returns `NSUrl?` for the App Group container directory (use for JSON file I/O) |
+| `ReloadTimelines(kind)` | Reloads timelines for widgets of the specified kind |
+| `ReloadAllTimelines()` | Reloads all widget timelines |
+| `GetSharedDefaults(appGroupId)` | Returns `NSUserDefaults` for App Group (**⚠️ unreliable cross-process — prefer file I/O**) |
 
 ## Common Pitfalls
 
-| Pitfall | Details |
-|---------|---------|
-| Using `swiftc -emit-executable` for extension | MUST use 2-step compile+link with `-e _NSExtensionMain`. See "Critical Build Requirements" |
-| `$(PRODUCT_MODULE_NAME)` in Info.plist | Xcode resolves this, but manual builds don't. Hardcode all values |
-| Signing without `--entitlements` | Strips app-groups entitlement, breaking data sharing |
-| Widget extension bundle ID | Must be a child of the main app bundle ID |
-| Missing `MauiWidgetHelper.framework` | `MauiWidgetCenter.ReloadTimelines()` silently no-ops without it |
-| `kind` string mismatch | The `kind` in Swift `Widget` struct must match `MauiWidgetCenter.ReloadTimelines(kind)` |
-| Only using UserDefaults on simulator | Add JSON file fallback for reliable simulator testing |
-| Timeline refresh limits | WidgetKit budgets ~40-70 refreshes/day. Don't call `ReloadTimelines` excessively |
+| Pitfall | Solution |
+|---------|----------|
+| **UserDefaults unreliable cross-process** | Use JSON files via `GetSharedContainerUrl()` / `containerURL(forSecurityApplicationGroupIdentifier:)` |
+| **Empty `.xcent` strips entitlements** | Re-sign after simulator builds (see Step 7) |
+| **CRLF in entitlements** | Always ensure LF line endings: `sed -i '' 's/\r$//'` |
+| **Widget bundle ID mismatch** | Must be a child of app bundle ID (e.g., `com.myapp.widgetextension`) |
+| **Widget not appearing** | Check `NSExtensionPointIdentifier` is `com.apple.widgetkit-extension`, check full CFBundle keys in Info.plist |
+| **`GetContainerUrl` returns null** | App missing App Group entitlement — re-sign after build |
+| **Widget shows stale data** | Call `ReloadTimelines` after writing JSON. WidgetKit throttles ~40-70/day |
+| **AppIntents buttons override app data** | Use timestamp-based priority — compare `updatedAt` to pick most recent |
+| **Xcode build fails** | Use `-target` not `-scheme` for xcodebuild. Ensure widget Info.plist has full CFBundle keys |
 
 ## Debugging
 
-### Widget Not Appearing in Picker
-
 ```bash
-# Check if extension is registered
-xcrun simctl spawn $UDID pluginkit -m -p com.apple.widgetkit-extension | grep yourapp
+UDID="<simulator-udid>"
 
-# Check chronod logs for errors
-xcrun simctl spawn $UDID log show \
-  --predicate 'process == "chronod" AND message CONTAINS "yourwidget"' --last 5m
-```
+# Check if widget extension is embedded
+ls path/to/YourApp.app/PlugIns/
 
-Common causes:
-- Binary has `_main` instead of `_NSExtensionMain` entry point (rebuild with 2-step approach)
-- Missing `MinimumOSVersion` in Info.plist
-- Missing `MauiWidgetHelper.framework/Info.plist` (causes install failure)
-
-### Widget Shows Default Data
-
-```bash
-# Check App Group plist contents
+# Check shared container for JSON files
 find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/ \
-  -name "group.com.yourcompany.yourapp.plist" -exec plutil -p {} \;
+  -path "*group.com.example.myapp*" -name "*.json" -exec cat {} \;
 
-# Check JSON file
-find ~/Library/Developer/CoreSimulator/Devices/$UDID/data/ \
-  -name "widget_data.json" -exec cat {} \;
+# Stream widget extension logs
+xcrun simctl spawn $UDID log stream \
+  --predicate 'processImagePath contains "WidgetExtension"' --timeout 30
+
+# Stream WidgetKit logs
+xcrun simctl spawn $UDID log stream \
+  --predicate 'subsystem == "com.apple.WidgetKit"' --timeout 30
 ```
 
-### Force Widget Refresh
+## Reference Files
 
-From the MAUI app:
-```csharp
-MauiWidgetCenter.ReloadAllTimelines();
-```
+Complete code templates are in `references/`:
+- **`references/csharp-templates.md`** — WidgetData, IWidgetDataService, WidgetConstants, WidgetDataService (iOS), AppDelegate, App.xaml.cs, MauiProgram.cs, MainPage
+- **`references/swift-templates.md`** — Settings, WidgetData, SharedStorage, Provider, WidgetView, Widget config, AppIntents
+- **`references/project-config.md`** — .csproj MSBuild targets, entitlements, Info.plist, xcodegen project.yml, build script
 
-Or in the Simulator, remove and re-add the widget.
+## Credits
 
-## Complete Working Example
-
-See the Sandbox app for a working demo:
-- **MAUI side**: `src/Controls/samples/Controls.Sample.Sandbox/MauiProgram.cs` — seeds widget data on launch, provides `UpdateWidgetData()` method
-- **Widget extension**: `src/Controls/samples/Controls.Sample.Sandbox/Platforms/iOS/Extensions/MauiWidgetExtension/` — SwiftUI widget that reads from App Group
-- **Helper framework**: `WidgetHelper.swift` in the same directory
-- **Build script**: `src/Controls/samples/Controls.Sample.Sandbox/build-widget-extension.sh`
+Architecture based on [Maui.Apple.PlatformFeature.Samples](https://github.com/Redth/Maui.Apple.PlatformFeature.Samples) by Jon Dick (Redth), combined with MAUI Core `MauiWidgetCenter` and discoveries from end-to-end testing.
