@@ -18,12 +18,6 @@ public partial class StepperControlMainPage : ContentPage
 	public StepperControlMainPage()
 	{
 		InitializeComponent();
-
-		if (OperatingSystem.IsIOSVersionAtLeast(26))
-		{
-			StepperControl.HorizontalOptions = LayoutOptions.Center;
-		}
-
 		BindingContext = _viewModel = new StepperViewModel();
 	}
 

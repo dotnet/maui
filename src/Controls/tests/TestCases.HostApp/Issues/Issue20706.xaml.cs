@@ -8,10 +8,6 @@ namespace Maui.Controls.Sample.Issues
 		public Issue20706()
 		{
 			InitializeComponent();
-			if (OperatingSystem.IsIOSVersionAtLeast(26))
-			{
-				stepperValue.HorizontalOptions = LayoutOptions.Center;
-			}
 		}
 
 		private void button_Clicked(object sender, EventArgs e)

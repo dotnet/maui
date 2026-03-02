@@ -21,13 +21,6 @@ public class Issue7856 : _IssuesUITest
 		App.WaitForElement("Navigate again");
 		App.Tap("Navigate again");
 		App.WaitForElementTillPageNavigationSettled("Hello");
-		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow("Test");
-		}
+		App.TapBackArrow("Test");
 	}
 }

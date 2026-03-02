@@ -8,12 +8,7 @@
               <Label Text="Editor Control"
                      FontSize="20"
                      Margin="0,0,0,50"
-                     HorizontalOptions="Center"
-                     AutomationId="EditorControlTitleLabel">
-                     <Label.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnLabelTapped"/>
-                     </Label.GestureRecognizers>
-              </Label>
+                     HorizontalOptions="Center"/>
 
               <local:UITestEditor x:Name="EditorControl"
                                   IsCursorVisible="False"
