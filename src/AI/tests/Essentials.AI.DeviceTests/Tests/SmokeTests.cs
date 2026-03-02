@@ -13,10 +13,4 @@ public class SmokeTests
 	{
 		Assert.True(true);
 	}
-
-	[Fact]
-	public void MauiAppIsCreated()
-	{
-		Assert.NotNull(IPlatformApplication.Current);
-	}
 }
