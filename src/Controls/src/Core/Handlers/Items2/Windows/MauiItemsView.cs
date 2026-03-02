@@ -270,6 +270,52 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return base.ArrangeOverride(finalSize);
 		}
 
+		/// <summary>
+		/// Updates MinItemWidth/MinItemHeight on the UniformGridLayout so that exactly
+		/// MaximumRowsOrColumns (Span) items fit per row/column.
+		/// Called from the handler's PlatformArrange with the arranged size, and
+		/// from span/spacing change handlers with the current ActualWidth/ActualHeight.
+		/// Does NOT use Math.Floor — fractional pixels are handled correctly by
+		/// ItemsStretch=Fill, avoiding right-side gaps from rounding.
+		/// </summary>
+		internal void UpdateGridLayoutItemSize(double arrangedWidth, double arrangedHeight)
+		{
+			if (Layout is not UniformGridLayout gridLayout)
+				return;
+
+			var span = gridLayout.MaximumRowsOrColumns;
+			if (span <= 0)
+				return;
+
+			// UniformGridLayout.Orientation is flipped from MAUI's:
+			// WinUI Horizontal = items wrap left-to-right (MAUI Vertical) → constrain width
+			// WinUI Vertical = items wrap top-to-bottom (MAUI Horizontal) → constrain height
+			if (gridLayout.Orientation == Orientation.Horizontal)
+			{
+				if (arrangedWidth <= 0)
+					return;
+
+				var totalSpacing = gridLayout.MinColumnSpacing * (span - 1);
+				var itemWidth = (arrangedWidth - totalSpacing) / span;
+				if (itemWidth > 0)
+				{
+					gridLayout.MinItemWidth = itemWidth;
+				}
+			}
+			else
+			{
+				if (arrangedHeight <= 0)
+					return;
+
+				var totalSpacing = gridLayout.MinRowSpacing * (span - 1);
+				var itemHeight = (arrangedHeight - totalSpacing) / span;
+				if (itemHeight > 0)
+				{
+					gridLayout.MinItemHeight = itemHeight;
+				}
+			}
+		}
+
 		void UpdateEmptyViewVisibility(WVisibility visibility)
 		{
 			if (_emptyViewContentControl is null)

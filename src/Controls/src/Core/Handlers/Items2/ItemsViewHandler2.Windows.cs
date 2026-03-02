@@ -172,6 +172,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return itemsView;
 		}
 
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			// After the platform view has been arranged, update the grid layout
+			// item size so that exactly Span items fit per row/column.
+			if (PlatformView is MauiItemsView mauiItemsView)
+			{
+				mauiItemsView.UpdateGridLayoutItemSize(rect.Width, rect.Height);
+			}
+		}
+
 		protected override void ConnectHandler(WItemsView platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -724,6 +736,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				Layout is GridItemsLayout gridItemsLayout)
 			{
 				listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
+				// Recalculate MinItemWidth/MinItemHeight for the new span
+				if (PlatformView is MauiItemsView mauiItemsView)
+				{
+					mauiItemsView.UpdateGridLayoutItemSize(PlatformView.ActualWidth, PlatformView.ActualHeight);
+				}
 			}
 		}
 
@@ -734,6 +751,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 				listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+				// Recalculate MinItemWidth/MinItemHeight for the new spacing
+				if (PlatformView is MauiItemsView mauiItemsView)
+				{
+					mauiItemsView.UpdateGridLayoutItemSize(PlatformView.ActualWidth, PlatformView.ActualHeight);
+				}
 			}
 
 			else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
