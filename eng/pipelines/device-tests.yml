@@ -27,6 +27,7 @@ pr:
     - main
     - release/*
     - net*.0
+    - darc*
   paths:
     include:
     - '*'
