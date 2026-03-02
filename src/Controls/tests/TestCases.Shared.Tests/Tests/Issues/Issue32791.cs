@@ -26,4 +26,15 @@ public class Issue32791 : _IssuesUITest
 		var statusText = App.WaitForElement("Issue32791StatusLabel").GetText();
 		Assert.That(statusText, Is.EqualTo("Success"));
 	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyCollectionViewPreventsScrollingWhenDisabled()
+	{
+		App.WaitForElement("DisabledCollectionView");
+		App.ScrollDown("DisabledCollectionView");
+
+		var statusText = App.WaitForElement("Issue32791CollectionViewStatusLabel").GetText();
+		Assert.That(statusText, Is.EqualTo("Success"));
+	}
 }
