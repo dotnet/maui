@@ -7,3 +7,8 @@ virtual Microsoft.Maui.Graphics.Color.<Clone>$() -> Microsoft.Maui.Graphics.Colo
 virtual Microsoft.Maui.Graphics.Color.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color? other) -> bool
 virtual Microsoft.Maui.Graphics.Color.PrintMembers(System.Text.StringBuilder! builder) -> bool
+Microsoft.Maui.Graphics.Color.AsPaint() -> Microsoft.Maui.Graphics.Paint!
+Microsoft.Maui.Graphics.Color.MultiplyAlpha(float multiplyBy) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.Color!
+override Microsoft.Maui.Graphics.Color.ToString() -> string!
+static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsoft.Maui.Graphics.Color!
