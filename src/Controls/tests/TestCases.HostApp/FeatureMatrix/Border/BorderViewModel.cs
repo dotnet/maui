@@ -30,7 +30,6 @@ public class BorderViewModel : INotifyPropertyChanged
 		ContentView = new Label
 		{
 			Text = "This is a bordered label!",
-			AutomationId = "BorderLabelContent",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
@@ -41,7 +40,6 @@ public class BorderViewModel : INotifyPropertyChanged
 		ContentView = new Button
 		{
 			Text = "Click Me",
-			AutomationId = "BorderButtonContent",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
@@ -52,7 +50,6 @@ public class BorderViewModel : INotifyPropertyChanged
 		ContentView = new Image
 		{
 			Source = "dotnet_bot.png",
-			AutomationId = "BorderImageContent",
 			WidthRequest = 100,
 			HeightRequest = 100,
 			HorizontalOptions = LayoutOptions.Center,

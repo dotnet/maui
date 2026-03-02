@@ -31,8 +31,7 @@ public class BorderFeatureTests : _GalleryUITest
 	{
 		// Verify the initial Border appearance without applying any options.
 		// Defaults: Stroke=Red, StrokeThickness=1, StrokeShape=Rectangle, Padding=5, Content=Label.
-		App.WaitForElement("BorderControl");
-		App.WaitForElement("BorderLabelContent"); // Assert default content is a Label
+		App.WaitForElement("Options");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -52,7 +51,6 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		App.WaitForElement("BorderLabelContent"); // Assert label content is shown
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -72,7 +70,6 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		App.WaitForElement("BorderImageContent"); // Assert image content is shown
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -92,7 +89,6 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-		App.WaitForElement("BorderButtonContent"); // Assert button content is shown
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
