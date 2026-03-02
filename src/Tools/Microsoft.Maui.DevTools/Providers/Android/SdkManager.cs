@@ -19,15 +19,16 @@ public class SdkManager : IDisposable
 	private readonly Func<string?> _getJdkPath;
 	private readonly XatSdkManager _sdkManager;
 
+	// Suppress all console output from android-tools logger.
+	// Warnings/verbose messages about invalid JDK paths, missing java_home, etc. are
+	// expected on many dev machines and should not pollute CLI output.
+	static readonly Action<TraceLevel, string> s_quietLogger = (level, msg) => { };
+
 	public SdkManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
 	{
 		_getSdkPath = getSdkPath;
 		_getJdkPath = getJdkPath;
-		_sdkManager = new XatSdkManager(logger: (level, msg) => 
-		{
-			if (level >= TraceLevel.Info)
-				Console.WriteLine($"[SdkManager] {msg}");
-		});
+		_sdkManager = new XatSdkManager(logger: s_quietLogger);
 	}
 
 	private void SyncPaths()
@@ -114,6 +115,12 @@ public class SdkManager : IDisposable
 	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false,
 		CancellationToken cancellationToken = default)
 	{
+		await InstallPackagesAsync(packages, acceptLicenses, onProgress: null, cancellationToken);
+	}
+
+	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses,
+		Action<string, int, int>? onProgress, CancellationToken cancellationToken = default)
+	{
 		SyncPaths();
 		EnsureAvailable();
 
@@ -131,6 +138,11 @@ public class SdkManager : IDisposable
 	}
 
 	public async Task AcceptLicensesAsync(CancellationToken cancellationToken = default)
+	{
+		await AcceptLicensesAsync(onProgress: null, cancellationToken);
+	}
+
+	public async Task AcceptLicensesAsync(Action<string>? onProgress, CancellationToken cancellationToken = default)
 	{
 		SyncPaths();
 		EnsureAvailable();
@@ -167,6 +179,19 @@ public class SdkManager : IDisposable
 		_sdkManager.AndroidSdkPath = targetPath;
 		var bootstrapProgress = new Progress<Xamarin.Android.Tools.SdkBootstrapProgress>(p =>
 			progress?.Report($"{p.Phase}: {p.Message}"));
+		await _sdkManager.BootstrapAsync(targetPath, bootstrapProgress, cancellationToken);
+	}
+
+	/// <summary>
+	/// Installs SDK with structured progress reporting for rich UI rendering.
+	/// </summary>
+	public async Task InstallSdkAsync(string targetPath, 
+		Action<Xamarin.Android.Tools.SdkBootstrapPhase, int, string>? onProgress = null, 
+		CancellationToken cancellationToken = default)
+	{
+		_sdkManager.AndroidSdkPath = targetPath;
+		var bootstrapProgress = new Progress<Xamarin.Android.Tools.SdkBootstrapProgress>(p =>
+			onProgress?.Invoke(p.Phase, p.PercentComplete, p.Message));
 		await _sdkManager.BootstrapAsync(targetPath, bootstrapProgress, cancellationToken);
 	}
 

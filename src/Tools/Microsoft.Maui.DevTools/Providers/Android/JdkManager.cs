@@ -40,7 +40,7 @@ public class JdkManager : IJdkManager
 		// Searches Program Files, registry, known vendor paths, etc.
 		try
 		{
-			var knownJdk = Xamarin.Android.Tools.JdkInfo.GetKnownSystemJdkInfos()
+			var knownJdk = Xamarin.Android.Tools.JdkInfo.GetKnownSystemJdkInfos(logger: (_, _) => { })
 				.Where(j => j.Version != null && j.Version.Major >= MinJdkVersion && j.Version.Major <= MaxJdkVersion)
 				.OrderByDescending(j => j.Version)
 				.FirstOrDefault();
@@ -158,6 +158,15 @@ public class JdkManager : IJdkManager
 	public async Task InstallAsync(int version = DefaultJdkVersion, string? installPath = null,
 		CancellationToken cancellationToken = default)
 	{
+		await InstallAsync(version, installPath, onProgress: null, cancellationToken);
+	}
+
+	/// <summary>
+	/// Installs JDK with structured progress reporting for rich UI rendering.
+	/// </summary>
+	public async Task InstallAsync(int version, string? installPath,
+		Action<double, string>? onProgress, CancellationToken cancellationToken = default)
+	{
 		if (version < MinJdkVersion || version > MaxJdkVersion)
 		{
 			throw new MauiToolException(
@@ -173,17 +182,36 @@ public class JdkManager : IJdkManager
 
 		try
 		{
-			// Download
+			// Download with progress
 			using var httpClient = new HttpClient();
 			httpClient.Timeout = TimeSpan.FromMinutes(10);
 
-			var response = await httpClient.GetAsync(downloadUrl, cancellationToken);
+			using var response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
+			var totalBytes = response.Content.Headers.ContentLength ?? 0;
+
+			await using (var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken))
 			await using (var fs = File.Create(tempArchivePath))
 			{
-				await response.Content.CopyToAsync(fs, cancellationToken);
+				var buffer = new byte[81920];
+				long totalRead = 0;
+				int bytesRead;
+
+				while ((bytesRead = await contentStream.ReadAsync(buffer, cancellationToken)) > 0)
+				{
+					await fs.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+					totalRead += bytesRead;
+
+					if (totalBytes > 0)
+					{
+						var pct = (double)totalRead / totalBytes * 100;
+						onProgress?.Invoke(pct, $"Downloaded {totalRead / (1024 * 1024)} MB / {totalBytes / (1024 * 1024)} MB");
+					}
+				}
 			}
+
+			onProgress?.Invoke(100, "Extracting...");
 
 			// Extract
 			await ExtractArchiveAsync(tempArchivePath, targetPath, cancellationToken);

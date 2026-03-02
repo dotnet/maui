@@ -87,6 +87,11 @@ public interface IAndroidProvider
 	Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Installs SDK packages with per-package progress reporting.
+	/// </summary>
+	Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses, Action<string, int, int>? onProgress, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Uninstalls SDK packages.
 	/// </summary>
 	Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default);
@@ -95,6 +100,11 @@ public interface IAndroidProvider
 	/// Accepts all SDK licenses.
 	/// </summary>
 	Task AcceptLicensesAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Accepts all SDK licenses with progress reporting.
+	/// </summary>
+	Task AcceptLicensesAsync(Action<string>? onProgress, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Checks if SDK licenses have been accepted.
@@ -116,6 +126,11 @@ public interface IAndroidProvider
 	/// Installs the Android development environment.
 	/// </summary>
 	Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Installs Android SDK command-line tools with structured progress reporting.
+	/// </summary>
+	Task InstallSdkToolsAsync(string targetPath, Action<string, int, string>? onProgress = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Takes a screenshot from a device.

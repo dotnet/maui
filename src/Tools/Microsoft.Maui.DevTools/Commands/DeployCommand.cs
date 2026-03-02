@@ -41,30 +41,24 @@ public static class DeployCommand
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine("[dry-run] Would deploy:");
-					Console.WriteLine($"  Project: {project}");
-					Console.WriteLine($"  Configuration: {configuration}");
-					Console.WriteLine($"  Device: {device ?? "(auto-select)"}");
-					Console.WriteLine($"  Framework: {framework ?? "(auto-detect)"}");
-					Console.WriteLine($"  Skip build: {noBuild}");
+					formatter.WriteInfo("[dry-run] Would deploy:");
+					formatter.WriteProgress($"Project: {project}");
+					formatter.WriteProgress($"Configuration: {configuration}");
+					formatter.WriteProgress($"Device: {device ?? "(auto-select)"}");
+					formatter.WriteProgress($"Framework: {framework ?? "(auto-detect)"}");
+					formatter.WriteProgress($"Skip build: {noBuild}");
 					return;
 				}
 
 				// TODO: Implement actual deployment
-				// This would:
-				// 1. Detect project type and target platform
-				// 2. Build if needed (using dotnet build)
-				// 3. Deploy to the target device
-				// For now, this is a placeholder
-				
-				Console.WriteLine("Deploy command not yet fully implemented.");
-				Console.WriteLine($"Would deploy {project} to {device ?? "default device"}");
+				formatter.WriteWarning("Deploy command not yet fully implemented.");
+				formatter.WriteInfo($"Would deploy {project} to {device ?? "default device"}");
 				
 				context.ExitCode = 0;
 			}

@@ -5,6 +5,8 @@ using System.Text;
 using Microsoft.Maui.DevTools.Errors;
 using Microsoft.Maui.DevTools.Models;
 using Microsoft.Maui.DevTools.Output;
+using Spectre.Console;
+using Spectre.Console.Testing;
 using Xunit;
 
 namespace Microsoft.Maui.DevTools.Tests;
@@ -69,53 +71,53 @@ public class OutputFormatterTests
 		Assert.Contains("Android SDK not found", output);
 	}
 
-	[Fact]
-	public void ConsoleOutputFormatter_WriteSuccess_OutputsMessage()
+	private static (SpectreOutputFormatter formatter, TestConsole console) CreateTestFormatter(bool verbose = false)
 	{
-		var sb = new StringBuilder();
-		using var writer = new StringWriter(sb);
-		var formatter = new ConsoleOutputFormatter(writer, verbose: false);
+		var console = new TestConsole();
+		var formatter = new SpectreOutputFormatter(console, verbose);
+		return (formatter, console);
+	}
+
+	[Fact]
+	public void SpectreOutputFormatter_WriteSuccess_OutputsMessage()
+	{
+		var (formatter, console) = CreateTestFormatter();
 
 		formatter.WriteSuccess("Operation completed");
-		var output = sb.ToString();
+		var output = console.Output;
 
 		Assert.Contains("Operation completed", output);
+		Assert.Contains("✓", output);
 	}
 
 	[Fact]
-	public void ConsoleOutputFormatter_WriteWarning_OutputsMessage()
+	public void SpectreOutputFormatter_WriteWarning_OutputsMessage()
 	{
-		var sb = new StringBuilder();
-		using var writer = new StringWriter(sb);
-		var formatter = new ConsoleOutputFormatter(writer, verbose: false);
+		var (formatter, console) = CreateTestFormatter();
 
 		formatter.WriteWarning("This is a warning");
-		var output = sb.ToString();
+		var output = console.Output;
 
 		Assert.Contains("This is a warning", output);
+		Assert.Contains("⚠", output);
 	}
 
 	[Fact]
-	public void ConsoleOutputFormatter_WriteInfo_OutputsMessage()
+	public void SpectreOutputFormatter_WriteInfo_OutputsMessage()
 	{
-		var sb = new StringBuilder();
-		using var writer = new StringWriter(sb);
-		var formatter = new ConsoleOutputFormatter(writer, verbose: false);
+		var (formatter, console) = CreateTestFormatter();
 
 		formatter.WriteInfo("Information message");
-		var output = sb.ToString();
+		var output = console.Output;
 
 		Assert.Contains("Information message", output);
+		Assert.Contains("ℹ", output);
 	}
 
 	[Fact]
-	public void ConsoleOutputFormatter_WriteError_IncludesErrorCode()
+	public void SpectreOutputFormatter_WriteError_IncludesErrorCode()
 	{
-		var sb = new StringBuilder();
-		var errorSb = new StringBuilder();
-		using var writer = new StringWriter(sb);
-		using var errorWriter = new StringWriter(errorSb);
-		var formatter = new ConsoleOutputFormatter(writer, errorWriter, useColor: false, verbose: false);
+		var (formatter, console) = CreateTestFormatter();
 
 		var error = new ErrorResult
 		{
@@ -125,18 +127,16 @@ public class OutputFormatterTests
 		};
 
 		formatter.WriteError(error);
-		var output = errorSb.ToString();
+		var output = console.Output;
 
 		Assert.Contains("E1006", output);
 		Assert.Contains("Device not found", output);
 	}
 
 	[Fact]
-	public void ConsoleOutputFormatter_WriteDoctorReport_FormatsCorrectly()
+	public void SpectreOutputFormatter_WriteDoctorReport_FormatsCorrectly()
 	{
-		var sb = new StringBuilder();
-		using var writer = new StringWriter(sb);
-		var formatter = new ConsoleOutputFormatter(writer, verbose: false);
+		var (formatter, console) = CreateTestFormatter();
 
 		var report = new DoctorReport
 		{
@@ -164,9 +164,57 @@ public class OutputFormatterTests
 		};
 
 		formatter.WriteResult(report);
-		var output = sb.ToString();
+		var output = console.Output;
 
 		Assert.Contains(".NET SDK", output);
 		Assert.Contains("JDK", output);
+	}
+
+	[Fact]
+	public void SpectreOutputFormatter_WriteDeviceList_FormatsTable()
+	{
+		var (formatter, console) = CreateTestFormatter();
+
+		var result = new DeviceListResult
+		{
+			Devices = new List<Device>
+			{
+				new Device
+				{
+					Name = "Pixel 6",
+					Id = "emulator-5554",
+					Platforms = new[] { "android" },
+					Type = DeviceType.Emulator,
+					State = DeviceState.Booted,
+					IsEmulator = true,
+					IsRunning = true
+				}
+			}
+		};
+
+		formatter.WriteResult(result);
+		var output = console.Output;
+
+		Assert.Contains("Pixel 6", output);
+		Assert.Contains("emulator-5554", output);
+		Assert.Contains("android", output);
+	}
+
+	[Fact]
+	public void SpectreOutputFormatter_WriteTable_FormatsColumns()
+	{
+		var (formatter, console) = CreateTestFormatter();
+
+		var items = new[] { ("Apple", "Fruit"), ("Carrot", "Vegetable") };
+		formatter.WriteTable(items,
+			("Name", i => i.Item1),
+			("Category", i => i.Item2));
+
+		var output = console.Output;
+
+		Assert.Contains("Name", output);
+		Assert.Contains("Category", output);
+		Assert.Contains("Apple", output);
+		Assert.Contains("Carrot", output);
 	}
 }

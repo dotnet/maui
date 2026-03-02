@@ -46,24 +46,21 @@ public static class AppleCommands
 
 			var progress = new Progress<string>(message =>
 			{
-				if (formatter is JsonOutputFormatter)
-					formatter.WriteProgress(message);
-				else
-					Console.WriteLine(message);
+				formatter.WriteProgress(message);
 			});
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine("[dry-run] Would set up Apple development environment:");
-					Console.WriteLine("  • Check Xcode installation");
-					Console.WriteLine("  • Check Xcode license");
+					formatter.WriteInfo("[dry-run] Would set up Apple development environment:");
+					formatter.WriteProgress("Check Xcode installation");
+					formatter.WriteProgress("Check Xcode license");
 					if (acceptLicenses)
-						Console.WriteLine("  • Accept Xcode license if needed");
-					Console.WriteLine("  • Check installed runtimes");
+						formatter.WriteProgress("Accept Xcode license if needed");
+					formatter.WriteProgress("Check installed runtimes");
 					if (!string.IsNullOrEmpty(runtimeVersion))
-						Console.WriteLine($"  • Install iOS {runtimeVersion} runtime if needed");
+						formatter.WriteProgress($"Install iOS {runtimeVersion} runtime if needed");
 					return;
 				}
 
@@ -83,7 +80,7 @@ public static class AppleCommands
 
 				if (formatter is not JsonOutputFormatter)
 				{
-					Console.WriteLine($"✓ Xcode {(xcodeCheck.Details?.TryGetValue("version", out var ver) == true ? ver : "installed")}");
+					formatter.WriteSuccess($"Xcode {(xcodeCheck.Details?.TryGetValue("version", out var ver) == true ? ver : "installed")}");
 				}
 				results.Add(new { step = "xcode", status = "ok", message = xcodeCheck.Message });
 
@@ -98,20 +95,20 @@ public static class AppleCommands
 						((IProgress<string>)progress).Report("Accepting Xcode license...");
 						await provider.AcceptXcodeLicenseAsync(context.GetCancellationToken());
 						if (formatter is not JsonOutputFormatter)
-							Console.WriteLine("✓ Xcode license accepted");
+							formatter.WriteSuccess("Xcode license accepted");
 						results.Add(new { step = "license", status = "ok", message = "Xcode license accepted" });
 					}
 					else
 					{
 						if (formatter is not JsonOutputFormatter)
-							Console.WriteLine("⚠ Xcode license not accepted (use --accept-licenses or run: maui apple xcode accept-licenses)");
+							formatter.WriteWarning("Xcode license not accepted (use --accept-licenses or run: maui apple xcode accept-licenses)");
 						results.Add(new { step = "license", status = "warning", message = "Xcode license not accepted" });
 					}
 				}
 				else
 				{
 					if (formatter is not JsonOutputFormatter)
-						Console.WriteLine("✓ Xcode license accepted");
+						formatter.WriteSuccess("Xcode license accepted");
 					results.Add(new { step = "license", status = "ok", message = "Xcode license already accepted" });
 				}
 
@@ -122,9 +119,9 @@ public static class AppleCommands
 				if (formatter is not JsonOutputFormatter)
 				{
 					if (runtimes.Count > 0)
-						Console.WriteLine($"✓ {runtimes.Count} runtime(s) installed: {string.Join(", ", runtimes.Select(r => r.Name))}");
+						formatter.WriteSuccess($"{runtimes.Count} runtime(s) installed: {string.Join(", ", runtimes.Select(r => r.Name))}");
 					else
-						Console.WriteLine("⚠ No iOS runtimes installed");
+						formatter.WriteWarning("No iOS runtimes installed");
 				}
 				results.Add(new { step = "runtimes", status = runtimes.Count > 0 ? "ok" : "warning", installed = runtimes.Select(r => r.Name) });
 
@@ -138,7 +135,7 @@ public static class AppleCommands
 					if (alreadyInstalled)
 					{
 						if (formatter is not JsonOutputFormatter)
-							Console.WriteLine($"✓ iOS {runtimeVersion} runtime already installed");
+							formatter.WriteSuccess($"iOS {runtimeVersion} runtime already installed");
 						results.Add(new { step = "runtime_install", status = "ok", message = $"iOS {runtimeVersion} already installed" });
 					}
 					else
@@ -146,7 +143,7 @@ public static class AppleCommands
 						((IProgress<string>)progress).Report($"Installing iOS {runtimeVersion} runtime...");
 						await provider.InstallRuntimeAsync(runtimeVersion, progress, context.GetCancellationToken());
 						if (formatter is not JsonOutputFormatter)
-							Console.WriteLine($"✓ iOS {runtimeVersion} runtime installed");
+							formatter.WriteSuccess($"iOS {runtimeVersion} runtime installed");
 						results.Add(new { step = "runtime_install", status = "ok", message = $"iOS {runtimeVersion} installed" });
 					}
 				}
@@ -157,8 +154,7 @@ public static class AppleCommands
 				}
 				else
 				{
-					Console.WriteLine();
-					Console.WriteLine("✓ Apple development environment is ready");
+					formatter.WriteSuccess("Apple development environment is ready");
 				}
 			}
 			catch (Exception ex)
@@ -229,20 +225,15 @@ public static class AppleCommands
 				{
 					if (devices.Count == 0)
 					{
-						Console.WriteLine("No simulators found.");
+						formatter.WriteInfo("No simulators found.");
 						return;
 					}
 
-					Console.WriteLine();
-					Console.WriteLine("  STATE     | UDID                                 | NAME");
-					Console.WriteLine("  ----------|--------------------------------------|---------------------------");
-					foreach (var device in devices.OrderBy(d => d.Name))
-					{
-						var state = device.State.ToString().ToLowerInvariant().PadRight(8);
-						var udid = device.Id.Length > 36 ? device.Id[..36] : device.Id.PadRight(36);
-						Console.WriteLine($"  {state} | {udid} | {device.Name}");
-					}
-					Console.WriteLine();
+					formatter.WriteTable(
+						devices.OrderBy(d => d.Name),
+						("State", d => d.State.ToString().ToLowerInvariant()),
+						("UDID", d => d.Id),
+						("Name", d => d.Name));
 				}
 			}
 			catch (Exception ex)
@@ -410,9 +401,12 @@ public static class AppleCommands
 					}
 					else
 					{
-						var statusIcon = runtimeCheck.Status == Models.CheckStatus.Ok ? "✓" :
-										 runtimeCheck.Status == Models.CheckStatus.Warning ? "⚠" : "✗";
-						Console.WriteLine($"{statusIcon} {runtimeCheck.Message}");
+						if (runtimeCheck.Status == Models.CheckStatus.Ok)
+							formatter.WriteSuccess(runtimeCheck.Message ?? "OK");
+						else if (runtimeCheck.Status == Models.CheckStatus.Warning)
+							formatter.WriteWarning(runtimeCheck.Message ?? "Warning");
+						else
+							formatter.WriteInfo($"✗ {runtimeCheck.Message}");
 					}
 				}
 				else
@@ -424,9 +418,10 @@ public static class AppleCommands
 					}
 					else
 					{
-						Console.WriteLine(runtimes.Count > 0
-							? $"✓ {runtimes.Count} runtime(s) installed"
-							: "⚠ No runtimes found");
+						if (runtimes.Count > 0)
+							formatter.WriteSuccess($"{runtimes.Count} runtime(s) installed");
+						else
+							formatter.WriteWarning("No runtimes found");
 					}
 				}
 			}
@@ -489,35 +484,27 @@ public static class AppleCommands
 				{
 					if (runtimes.Count == 0)
 					{
-						Console.WriteLine(showAvailable ? "No runtimes available for download." : "No runtimes found.");
+						formatter.WriteInfo(showAvailable ? "No runtimes available for download." : "No runtimes found.");
 						return;
 					}
 
 					if (showAll)
 					{
-						Console.WriteLine();
-						Console.WriteLine("  INSTALLED | VERSION | NAME");
-						Console.WriteLine("  ----------|---------|--------------------------------");
-						foreach (var runtime in runtimes.OrderByDescending(r => r.Version))
-						{
-							var installed = runtime.IsInstalled ? "✓" : " ";
-							Console.WriteLine($"  {installed,-9} | {runtime.Version,-7} | {runtime.Name}");
-						}
+						formatter.WriteTable(
+							runtimes.OrderByDescending(r => r.Version),
+							("Installed", r => r.IsInstalled ? "✓" : " "),
+							("Version", r => r.Version),
+							("Name", r => r.Name));
 					}
 					else
 					{
-						Console.WriteLine();
-						Console.WriteLine("  AVAILABLE | VERSION | NAME");
-						Console.WriteLine("  ----------|---------|--------------------------------");
-						foreach (var runtime in runtimes.OrderByDescending(r => r.Version))
-						{
-							var available = runtime.IsAvailable ? "✓" : " ";
-							Console.WriteLine($"  {available,-9} | {runtime.Version,-7} | {runtime.Name}");
-						}
+						formatter.WriteTable(
+							runtimes.OrderByDescending(r => r.Version),
+							("Available", r => r.IsAvailable ? "✓" : " "),
+							("Version", r => r.Version),
+							("Name", r => r.Name));
 					}
-					Console.WriteLine();
-					Console.WriteLine($"  Identifier format: com.apple.CoreSimulator.SimRuntime.iOS-17-0");
-					Console.WriteLine();
+					formatter.WriteInfo("Identifier format: com.apple.CoreSimulator.SimRuntime.iOS-17-0");
 				}
 			}
 			catch (Exception ex)
@@ -542,16 +529,13 @@ public static class AppleCommands
 			{
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would install iOS {version} runtime");
+					formatter.WriteInfo($"[dry-run] Would install iOS {version} runtime");
 					return;
 				}
 
 				var progress = new Progress<string>(message =>
 				{
-					if (formatter is JsonOutputFormatter)
-						formatter.WriteProgress(message);
-					else
-						Console.WriteLine(message);
+					formatter.WriteProgress(message);
 				});
 
 				await provider.InstallRuntimeAsync(version, progress, context.GetCancellationToken());
@@ -599,18 +583,22 @@ public static class AppleCommands
 					}
 					else
 					{
-						var statusIcon = xcodeCheck.Status == Models.CheckStatus.Ok ? "✓" :
-										 xcodeCheck.Status == Models.CheckStatus.Warning ? "⚠" : "✗";
-						Console.WriteLine($"{statusIcon} {xcodeCheck.Message}");
+						if (xcodeCheck.Status == Models.CheckStatus.Ok)
+							formatter.WriteSuccess(xcodeCheck.Message ?? "OK");
+						else if (xcodeCheck.Status == Models.CheckStatus.Warning)
+							formatter.WriteWarning(xcodeCheck.Message ?? "Warning");
+						else
+							formatter.WriteInfo($"✗ {xcodeCheck.Message}");
 
 						if (xcodeCheck.Details?.TryGetValue("path", out var path) == true)
-							Console.WriteLine($"  Path: {path}");
+							formatter.WriteProgress($"Path: {path}");
 
 						// Also check license
 						var licenseAccepted = await provider.IsXcodeLicenseAcceptedAsync(context.GetCancellationToken());
-						Console.WriteLine(licenseAccepted
-							? "✓ Xcode license accepted"
-							: "⚠ Xcode license not accepted (run: maui apple xcode accept-licenses)");
+						if (licenseAccepted)
+							formatter.WriteSuccess("Xcode license accepted");
+						else
+							formatter.WriteWarning("Xcode license not accepted (run: maui apple xcode accept-licenses)");
 					}
 				}
 			}
@@ -650,21 +638,16 @@ public static class AppleCommands
 				{
 					if (installations.Count == 0)
 					{
-						Console.WriteLine("No Xcode installations found.");
+						formatter.WriteInfo("No Xcode installations found.");
 						return;
 					}
 
-					Console.WriteLine();
-					Console.WriteLine("  SELECTED | VERSION    | BUILD     | PATH");
-					Console.WriteLine("  ---------|------------|-----------|------------------------------------");
-					foreach (var xcode in installations)
-					{
-						var selected = xcode.IsSelected ? "  ►" : "   ";
-						var version = (xcode.Version ?? "unknown").PadRight(10);
-						var build = (xcode.Build ?? "unknown").PadRight(9);
-						Console.WriteLine($"{selected}      | {version} | {build} | {xcode.Path}");
-					}
-					Console.WriteLine();
+					formatter.WriteTable(
+						installations,
+						("Selected", x => x.IsSelected ? "►" : " "),
+						("Version", x => x.Version ?? "unknown"),
+						("Build", x => x.Build ?? "unknown"),
+						("Path", x => x.Path));
 				}
 			}
 			catch (Exception ex)
@@ -737,14 +720,14 @@ public static class AppleCommands
 					}
 					else
 					{
-						Console.WriteLine("✓ Xcode license is already accepted");
+						formatter.WriteSuccess("Xcode license is already accepted");
 					}
 					return;
 				}
 
 				if (dryRun)
 				{
-					Console.WriteLine("[dry-run] Would accept Xcode license agreement");
+					formatter.WriteInfo("[dry-run] Would accept Xcode license agreement");
 					return;
 				}
 

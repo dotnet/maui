@@ -36,6 +36,11 @@ public interface IJdkManager
 	Task InstallAsync(int version = 17, string? installPath = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Installs JDK with structured progress reporting.
+	/// </summary>
+	Task InstallAsync(int version, string? installPath, Action<double, string>? onProgress, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Gets available JDK versions for installation.
 	/// </summary>
 	IEnumerable<int> GetAvailableVersions();
