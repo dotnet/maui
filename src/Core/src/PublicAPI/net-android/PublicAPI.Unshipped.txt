@@ -9,5 +9,66 @@ override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Platform.MauiDrawerLayout.Dispose(bool disposing) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 Microsoft.Maui.Handlers.PickerHandler._dialog -> AndroidX.AppCompat.App.AlertDialog?
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
+Microsoft.Maui.ITabbedView.BarBackground.get -> object!
+Microsoft.Maui.ITabbedView.BarBackgroundColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ITabbedView.BarTextColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ITabbedView.CurrentTab.get -> Microsoft.Maui.ITab?
+Microsoft.Maui.ITabbedView.CurrentTab.set -> void
+Microsoft.Maui.ITabbedView.IsSmoothScrollEnabled.get -> bool
+Microsoft.Maui.ITabbedView.IsSwipePagingEnabled.get -> bool
+Microsoft.Maui.ITabbedView.OffscreenPageLimit.get -> int
+Microsoft.Maui.ITabbedView.SelectedTabColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ITabbedView.TabBarPlacement.get -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.ITabbedView.Tabs.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.ITab!>!
+Microsoft.Maui.ITabbedView.TabsChanged -> System.Collections.Specialized.NotifyCollectionChangedEventHandler?
+Microsoft.Maui.ITabbedView.UnselectedTabColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.Platform.MauiDrawerLayout
+Microsoft.Maui.Platform.MauiDrawerLayout.CloseFlyout(bool animate = true) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.ContentView.get -> Android.Views.View?
+Microsoft.Maui.Platform.MauiDrawerLayout.CurrentBehavior.get -> Microsoft.Maui.FlyoutBehavior
+Microsoft.Maui.Platform.MauiDrawerLayout.DefaultFlyoutWidth.get -> double
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.Flyout = 0 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.Padding = 2 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode.SideBySide = 1 -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutModeValue.get -> Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutMode
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutLayoutModeValue.set -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutView.get -> Android.Views.View?
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutWidth.get -> double
+Microsoft.Maui.Platform.MauiDrawerLayout.FlyoutWidth.set -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.GetLockedContentPadding() -> int
+Microsoft.Maui.Platform.MauiDrawerLayout.IsFlyoutOpen.get -> bool
+Microsoft.Maui.Platform.MauiDrawerLayout.IsGestureEnabled.get -> bool
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.MauiDrawerLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.OnPresentedChanged -> System.Action<bool>?
+Microsoft.Maui.Platform.MauiDrawerLayout.OnSlide -> System.Action<float>?
+Microsoft.Maui.Platform.MauiDrawerLayout.OpenFlyout(bool animate = true) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetBehavior(Microsoft.Maui.FlyoutBehavior behavior) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetContentView(Android.Views.View! contentView) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetFlyoutView(Android.Views.View! flyoutView) -> void
+Microsoft.Maui.Platform.MauiDrawerLayout.SetGestureEnabled(bool enabled) -> void
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Android.Views.View! platformView) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Android.Views.View!
+override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDrawerLayout!
+*REMOVED*override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Android.Views.View! platformView) -> void
+override Microsoft.Maui.Handlers.FlyoutViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDrawerLayout! platformView) -> void
+override Microsoft.Maui.Platform.MauiDrawerLayout.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.MauiDrawerLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
+virtual Microsoft.Maui.Platform.MauiDrawerLayout.Disconnect() -> void
+virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutAsFlyout() -> void
+virtual Microsoft.Maui.Platform.MauiDrawerLayout.LayoutSideBySide() -> void
+*REMOVED*virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IView! navigationView) -> void
