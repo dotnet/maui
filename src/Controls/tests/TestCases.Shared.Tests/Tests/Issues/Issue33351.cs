@@ -29,7 +29,7 @@ public class Issue33351 : _IssuesUITest
         App.Tap("PopToRootButton");
 
         App.WaitForElement("TabBarVisibleLabel");
-
+        
         VerifyScreenshot();
     }
 }
