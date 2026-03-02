@@ -1,3 +1,5 @@
+using Xunit;
+
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
 /// <summary>
