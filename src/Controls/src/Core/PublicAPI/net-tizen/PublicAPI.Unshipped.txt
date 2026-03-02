@@ -2,6 +2,35 @@
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
+Microsoft.Maui.Controls.LongPressGestureRecognizer
+Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
+Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.Command.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameter.get -> object?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameter.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.LongPressGestureRecognizer() -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.LongPressed -> System.EventHandler<Microsoft.Maui.Controls.LongPressedEventArgs!>?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.LongPressing -> System.EventHandler<Microsoft.Maui.Controls.LongPressingEventArgs!>?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.get -> int
+Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.get -> int
+Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.State.get -> Microsoft.Maui.GestureStatus
+Microsoft.Maui.Controls.LongPressedEventArgs
+Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter) -> void
+Microsoft.Maui.Controls.LongPressedEventArgs.Parameter.get -> object?
+virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+Microsoft.Maui.Controls.LongPressingEventArgs
+Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
+virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDurationProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequiredProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object
 ~Microsoft.Maui.Controls.AppThemeBinding.Dark.set -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Default.get -> object

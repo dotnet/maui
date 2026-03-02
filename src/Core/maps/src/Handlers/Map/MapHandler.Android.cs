@@ -17,6 +17,10 @@ using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
 using Microsoft.Maui.Platform;
+using ABitmap = Android.Graphics.Bitmap;
+using ACanvas = Android.Graphics.Canvas;
+using APaint = Android.Graphics.Paint;
+using ARect = Android.Graphics.Rect;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
@@ -36,6 +40,9 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<APolyline>? _polylines;
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
+		bool _isClusteringEnabled;
+		List<MapCluster>? _clusters;
+		Dictionary<string, MapCluster>? _clusterMarkers;
 
 		public GoogleMap? Map { get; private set; }
 
@@ -70,6 +77,8 @@ namespace Microsoft.Maui.Maps.Handlers
 				Map.MapClick -= OnMapClick;
 			}
 
+			_clusters?.Clear();
+			_clusterMarkers?.Clear();
 			_mapReady = null;
 		}
 
@@ -109,6 +118,21 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			GoogleMap? googleMap = handler?.Map;
 			googleMap?.UpdateIsZoomEnabled(map);
+		}
+
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
+			if (handler is MapHandler mapHandler)
+			{
+				mapHandler._isClusteringEnabled = map.IsClusteringEnabled;
+				if (!map.IsClusteringEnabled)
+				{
+					mapHandler._clusters?.Clear();
+					mapHandler._clusterMarkers?.Clear();
+				}
+				// Re-add pins to apply clustering changes
+				MapPins(handler, map);
+			}
 		}
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
@@ -293,6 +317,84 @@ namespace Microsoft.Maui.Maps.Handlers
 			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
 		}
 
+		/// <summary>
+		/// Clusters pins based on their proximity using a simple grid-based algorithm.
+		/// </summary>
+		List<MapCluster> CreateClusters(IList<IMapPin> pins, float zoom)
+		{
+			var clusters = new List<MapCluster>();
+			if (pins == null || pins.Count == 0)
+				return clusters;
+
+			// Cluster radius in degrees, adjusted based on zoom level
+			// At zoom 0 (world view), cluster radius is large
+			// At zoom 21 (street level), cluster radius is tiny
+			// The divisor controls how aggressively pins cluster - smaller = less clustering
+						// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+			// Base cluster radius in approximate screen pixels at zoom 0.
+			// Pins whose projected positions fall within this radius are clustered.
+			const double clusterRadiusBasePixels = 50.0;
+			double clusterRadius = clusterRadiusBasePixels / Math.Pow(2, zoom);
+
+			// Group pins by their clustering identifier
+			var pinsByIdentifier = new Dictionary<string, List<IMapPin>>();
+			foreach (var pin in pins)
+			{
+				var identifier = pin.ClusteringIdentifier ?? "maui_default_cluster";
+				if (!pinsByIdentifier.ContainsKey(identifier))
+					pinsByIdentifier[identifier] = new List<IMapPin>();
+				pinsByIdentifier[identifier].Add(pin);
+			}
+
+			// Create clusters for each group
+			foreach (var group in pinsByIdentifier.Values)
+			{
+				var remaining = new List<IMapPin>(group);
+				
+				while (remaining.Count > 0)
+				{
+					var seed = remaining[0];
+					remaining.RemoveAt(0);
+					
+					var cluster = new MapCluster(seed.Location.Latitude, seed.Location.Longitude);
+					cluster.Pins.Add(seed);
+					
+					// Find all pins within radius
+					for (int i = remaining.Count - 1; i >= 0; i--)
+					{
+						var pin = remaining[i];
+						var deltaLat = pin.Location.Latitude - cluster.CenterLatitude;
+						var deltaLng = pin.Location.Longitude - cluster.CenterLongitude;
+						var centerLatRad = cluster.CenterLatitude * (Math.PI / 180.0);
+						var adjustedDeltaLng = deltaLng * Math.Cos(centerLatRad);
+						var distance = Math.Sqrt(
+							deltaLat * deltaLat +
+							adjustedDeltaLng * adjustedDeltaLng);
+						
+						if (distance <= clusterRadius)
+						{
+							cluster.Pins.Add(pin);
+							remaining.RemoveAt(i);
+							
+							// Update cluster center to be the centroid
+							double sumLat = 0, sumLng = 0;
+							foreach (var p in cluster.Pins)
+							{
+								sumLat += p.Location.Latitude;
+								sumLng += p.Location.Longitude;
+							}
+							cluster.CenterLatitude = sumLat / cluster.Pins.Count;
+							cluster.CenterLongitude = sumLng / cluster.Pins.Count;
+						}
+					}
+					
+					clusters.Add(cluster);
+				}
+			}
+
+			return clusters;
+		}
+
 		internal void OnMapReady(GoogleMap map)
 		{
 			if (map == null)
@@ -306,6 +408,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			map.SetOnPolygonClickListener(_mapReady);
 			map.SetOnCircleClickListener(_mapReady);
 			map.SetOnPolylineClickListener(_mapReady);
+			map.SetOnCameraIdleListener(_mapReady);
 
 			map.MarkerClick += OnMarkerClick;
 			map.InfoWindowClick += OnInfoWindowClick;
@@ -321,6 +424,28 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			InitialUpdate();
+		}
+
+		/// <summary>
+		/// Recalculates clusters based on current zoom level.
+		/// Called when camera becomes idle after zooming.
+		/// </summary>
+		internal void ReclusterPins()
+		{
+			if (!_isClusteringEnabled || Map == null || VirtualView == null)
+				return;
+
+			// Clear existing markers
+			if (_markers != null)
+			{
+				for (int i = 0; i < _markers.Count; i++)
+					_markers[i].Remove();
+				_markers = null;
+			}
+			_clusterMarkers?.Clear();
+
+			// Re-add pins to trigger reclustering at new zoom level
+			AddPins((IList)VirtualView.Pins);
 		}
 
 		internal void UpdateVisibleRegion(LatLng pos)
@@ -394,6 +519,37 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMarkerClick(object? sender, GoogleMap.MarkerClickEventArgs e)
 		{
+			// Check if this is a cluster marker
+			if (_clusterMarkers != null && _clusterMarkers.TryGetValue(e.Marker.Id, out var cluster))
+			{
+				var location = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+				bool handled = VirtualView?.ClusterClicked(cluster.Pins, location) ?? false;
+				
+				if (!handled && Map != null)
+				{
+					// Default behavior: zoom in to show cluster pins
+					var builder = new LatLngBounds.Builder();
+					foreach (var clusterPin in cluster.Pins)
+					{
+						builder.Include(new LatLng(clusterPin.Location.Latitude, clusterPin.Location.Longitude));
+					}
+					
+					try
+					{
+						var bounds = builder.Build();
+						var update = CameraUpdateFactory.NewLatLngBounds(bounds, 100);
+						Map.AnimateCamera(update);
+					}
+					catch (IllegalStateException)
+					{
+						// Bounds couldn't be built
+					}
+				}
+				
+				e.Handled = true;
+				return;
+			}
+
 			var pin = GetPinForMarker(e.Marker);
 
 			if (pin == null)
@@ -403,13 +559,18 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			// Setting e.Handled = true will prevent the info window from being presented
 			// SendMarkerClick() returns the value of PinClickedEventArgs.HideInfoWindow
-			bool handled = pin.SendMarkerClick();
-			e.Handled = handled;
+			bool markerHandled = pin.SendMarkerClick();
+			e.Handled = markerHandled;
 		}
 
 		void OnInfoWindowClick(object? sender, GoogleMap.InfoWindowClickEventArgs e)
 		{
 			var marker = e.Marker;
+			
+			// Cluster markers don't have info windows
+			if (_clusterMarkers != null && _clusterMarkers.ContainsKey(marker.Id))
+				return;
+			
 			var pin = GetPinForMarker(marker);
 
 			if (pin == null)
@@ -440,6 +601,68 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_markers == null)
 				_markers = new List<Marker>();
 
+			if (_clusterMarkers == null)
+				_clusterMarkers = new Dictionary<string, MapCluster>();
+			else
+				_clusterMarkers.Clear();
+
+			// Convert to IMapPin list
+			var mapPins = new List<IMapPin>();
+			foreach (var p in pins)
+			{
+				mapPins.Add((IMapPin)p);
+			}
+
+			// When clustering is enabled, create clusters
+			if (_isClusteringEnabled && mapPins.Count > 0)
+			{
+				float zoom = Map.CameraPosition?.Zoom ?? 10f;
+				_clusters = CreateClusters(mapPins, zoom);
+
+				foreach (var cluster in _clusters)
+				{
+					if (cluster.Pins.Count == 1)
+					{
+						// Single pin - add as regular marker
+						var pin = cluster.Pins[0];
+						var pinHandler = pin.ToHandler(MauiContext);
+						if (pinHandler is IMapPinHandler iMapPinHandler)
+						{
+							var marker = Map.AddMarker(iMapPinHandler.PlatformView);
+							if (marker != null)
+							{
+								pin.MarkerId = marker.Id;
+								_markers.Add(marker);
+							}
+						}
+					}
+					else
+					{
+						// Multiple pins - create cluster marker
+						var options = new MarkerOptions();
+						options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
+						options.SetTitle($"{cluster.Pins.Count} items");
+						options.Anchor(0.5f, 0.5f);
+						
+						// Create a circular cluster icon with count
+						var icon = CreateClusterIcon(cluster.Pins.Count);
+						if (icon != null)
+							options.SetIcon(icon);
+						
+						var marker = Map.AddMarker(options);
+						if (marker != null)
+						{
+							_markers.Add(marker);
+							_clusterMarkers[marker.Id] = cluster;
+						}
+					}
+				}
+				
+				_pins = null;
+				return;
+			}
+
+			// Normal non-clustered pins
 			foreach (var p in pins)
 			{
 				IMapPin pin = (IMapPin)p;
@@ -460,6 +683,51 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			}
 			_pins = null;
+		}
+
+		BitmapDescriptor? CreateClusterIcon(int count)
+		{
+			try
+			{
+				int size = 100; // pixels
+				var bitmap = ABitmap.CreateBitmap(size, size, ABitmap.Config.Argb8888!);
+				if (bitmap == null)
+					return null;
+					
+				using var canvas = new ACanvas(bitmap);
+				using var paint = new APaint();
+				
+				// Draw circle background
+				paint.AntiAlias = true;
+				paint.SetARGB(255, 66, 133, 244); // Google blue
+				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 2, paint);
+				
+				// Draw border
+				paint.SetStyle(APaint.Style.Stroke);
+				paint.StrokeWidth = 4;
+				paint.SetARGB(255, 255, 255, 255); // White border
+				canvas.DrawCircle(size / 2f, size / 2f, size / 2f - 4, paint);
+				
+				// Draw text
+				paint.SetStyle(APaint.Style.Fill);
+				paint.SetARGB(255, 255, 255, 255); // White text
+				paint.TextSize = count > 99 ? 28 : 36;
+				paint.TextAlign = APaint.Align.Center;
+				
+				var text = count > 99 ? "99+" : count.ToString();
+				var textBounds = new ARect();
+				paint.GetTextBounds(text, 0, text.Length, textBounds);
+				
+				float x = size / 2f;
+				float y = size / 2f + textBounds.Height() / 2f;
+				canvas.DrawText(text, x, y, paint);
+				
+				return BitmapDescriptorFactory.FromBitmap(bitmap);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 		protected IMapPin? GetPinForMarker(Marker marker)
@@ -621,10 +889,11 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 	}
 
-	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback, GoogleMap.IOnPolygonClickListener, GoogleMap.IOnCircleClickListener, GoogleMap.IOnPolylineClickListener
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, GoogleMap.IOnCameraIdleListener, IOnMapReadyCallback, GoogleMap.IOnPolygonClickListener, GoogleMap.IOnCircleClickListener, GoogleMap.IOnPolylineClickListener
 	{
 		MapHandler? _handler;
 		GoogleMap? _googleMap;
+		float _lastClusterZoom = -1;
 
 		public MapCallbackHandler(MapHandler mapHandler)
 		{
@@ -643,6 +912,20 @@ namespace Microsoft.Maui.Maps.Handlers
 				return;
 
 			_handler?.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
+		}
+
+		void GoogleMap.IOnCameraIdleListener.OnCameraIdle()
+		{
+			if (_googleMap == null || _handler == null)
+				return;
+
+			// Recalculate clusters when zoom level changes significantly
+			var currentZoom = _googleMap.CameraPosition.Zoom;
+			if (Math.Abs(currentZoom - _lastClusterZoom) > 1.0f)
+			{
+				_lastClusterZoom = currentZoom;
+				_handler.ReclusterPins();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -667,6 +950,23 @@ namespace Microsoft.Maui.Maps.Handlers
 			var element = _handler?.VirtualView.Elements.FirstOrDefault(x => x.MapElementId?.ToString() == elementId);
 			element?.Clicked();
 		}
+	}
+
+	/// <summary>
+	/// Represents a cluster of map pins.
+	/// </summary>
+	class MapCluster
+	{
+		public MapCluster(double lat, double lng)
+		{
+			CenterLatitude = lat;
+			CenterLongitude = lng;
+			Pins = new List<IMapPin>();
+		}
+
+		public double CenterLatitude { get; set; }
+		public double CenterLongitude { get; set; }
+		public List<IMapPin> Pins { get; }
 	}
 
 }
