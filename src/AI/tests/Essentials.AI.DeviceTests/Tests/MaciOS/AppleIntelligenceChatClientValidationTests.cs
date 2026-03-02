@@ -35,19 +35,19 @@ public class AppleIntelligenceChatClientValidationTests
 	}
 
 	/// <summary>
-	/// Verifies that messages where all content is filtered out (e.g., TextContent with null Text)
-	/// throws ArgumentException rather than sending empty content to the native API.
+	/// Verifies that messages with TextContent(null) are handled gracefully.
+	/// In M.E.AI 10.3.0+, TextContent(null) defaults to empty text which
+	/// passes through content filtering to the native API without throwing.
 	/// </summary>
 	[Fact]
-	public async Task GetResponseAsync_WithOnlyNullTextContent_ThrowsArgumentException()
+	public async Task GetResponseAsync_WithOnlyNullTextContent_DoesNotThrow()
 	{
 		var client = new AppleIntelligenceChatClient();
 		var msg = new ChatMessage(ChatRole.User, [new TextContent(null)]);
 		var messages = new List<ChatMessage> { msg };
 
-		var ex = await Assert.ThrowsAsync<ArgumentException>(
-			() => client.GetResponseAsync(messages));
-		Assert.Contains("convertible content", ex.Message, StringComparison.OrdinalIgnoreCase);
+		var response = await client.GetResponseAsync(messages);
+		Assert.NotNull(response);
 	}
 
 	/// <summary>
@@ -116,22 +116,24 @@ public class AppleIntelligenceChatClientValidationTests
 	}
 
 	/// <summary>
-	/// Verifies that FunctionCallContent with null Name does not populate the callIdToName
-	/// dictionary, and subsequent FunctionResultContent for that CallId gets empty name.
+	/// Verifies that FunctionCallContent with empty Name populates callIdToName
+	/// with an empty string, and subsequent FunctionResultContent for that CallId
+	/// gets the empty name. This is the closest we can test to null since
+	/// FunctionCallContent validates name is not null in its constructor.
 	/// </summary>
 	[Fact]
-	public async Task GetResponseAsync_WithFunctionCallNullName_DoesNotThrow()
+	public async Task GetResponseAsync_WithFunctionCallEmptyName_DoesNotThrow()
 	{
 		var client = new AppleIntelligenceChatClient();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "What's the weather?"),
-			new(ChatRole.Assistant, [new FunctionCallContent("call-1", null!)]),
+			new(ChatRole.Assistant, [new FunctionCallContent("call-1", "")]),
 			new(ChatRole.Tool, [new FunctionResultContent("call-1", "Sunny")]),
 			new(ChatRole.User, "Tell me more")
 		};
 
-		// Should not throw — null Name means callIdToName lookup misses, result gets empty name
+		// Should not throw — empty Name means callIdToName has empty value for "call-1"
 		var response = await client.GetResponseAsync(messages);
 		Assert.NotNull(response);
 	}
