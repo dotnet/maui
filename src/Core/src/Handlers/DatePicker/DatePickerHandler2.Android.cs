@@ -227,7 +227,7 @@ internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePic
         }
 
         var fragmentManager = fragmentActivity.SupportFragmentManager;
-        if (fragmentManager is null)
+        if (fragmentManager is null || fragmentManager.IsStateSaved)
         {
             return;
         }
