@@ -32,7 +32,26 @@ public class JdkManager : IJdkManager
 		if (DetectedJdkPath != null)
 		{
 			DetectedJdkVersion = GetJdkVersion(DetectedJdkPath);
+			if (DetectedJdkVersion.HasValue)
+				return;
 		}
+
+		// Fallback: use android-tools comprehensive JDK discovery
+		// Searches Program Files, registry, known vendor paths, etc.
+		try
+		{
+			var knownJdk = Xamarin.Android.Tools.JdkInfo.GetKnownSystemJdkInfos()
+				.Where(j => j.Version != null && j.Version.Major >= MinJdkVersion && j.Version.Major <= MaxJdkVersion)
+				.OrderByDescending(j => j.Version)
+				.FirstOrDefault();
+
+			if (knownJdk != null)
+			{
+				DetectedJdkPath = knownJdk.HomePath;
+				DetectedJdkVersion = knownJdk.Version?.Major;
+			}
+		}
+		catch { }
 	}
 
 	private static int? GetJdkVersion(string jdkPath)
