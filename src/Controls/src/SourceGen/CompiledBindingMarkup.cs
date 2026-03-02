@@ -437,6 +437,29 @@ internal struct CompiledBindingMarkup
 						.OrderByDescending(p => p.Type.SpecialType != SpecialType.System_Object)
 						.FirstOrDefault();
 
+					// Try enum indexer before object: Dictionary<TEnum,TValue> also implements the non-generic
+					// IDictionary (object indexer), which would otherwise match first and generate incorrect code.
+					indexer ??= previousPartType
+						.GetAllProperties(indexerName, _context)
+						.FirstOrDefault(property =>
+							property.GetMethod != null
+							&& !property.GetMethod.IsStatic
+							&& property.Parameters.Length == 1
+							&& property.Parameters[0].Type.TypeKind == TypeKind.Enum);
+
+					// Fallback: try to find any indexer with enum parameter.
+					// Uses broad GetAllProperties (no name filter) to handle source-defined types
+					// where GetMembers(name) misses indexers (source IPropertySymbol.Name is "this[]",
+					// not the indexer metadata name). Consistent with int/string/object second fallbacks.
+					indexer ??= previousPartType
+						.GetAllProperties(_context)
+						.FirstOrDefault(property =>
+							property.IsIndexer
+							&& property.GetMethod != null
+							&& !property.GetMethod.IsStatic
+							&& property.Parameters.Length == 1
+							&& property.Parameters[0].Type.TypeKind == TypeKind.Enum);
+
 					indexer ??= previousPartType
 						.GetAllProperties(indexerName, _context)
 						.FirstOrDefault(property =>
@@ -454,25 +477,6 @@ internal struct CompiledBindingMarkup
 							&& !property.GetMethod.IsStatic
 							&& property.Parameters.Length == 1
 							&& property.Parameters[0].Type.SpecialType == SpecialType.System_Object);
-
-					// Try to find an indexer with an enum parameter type
-					indexer ??= previousPartType
-						.GetAllProperties(indexerName, _context)
-						.FirstOrDefault(property =>
-							property.GetMethod != null
-							&& !property.GetMethod.IsStatic
-							&& property.Parameters.Length == 1
-							&& property.Parameters[0].Type.TypeKind == TypeKind.Enum);
-
-					// Fallback: try to find any indexer with enum parameter
-					indexer ??= previousPartType
-						.GetAllProperties(_context)
-						.FirstOrDefault(property =>
-							property.IsIndexer
-							&& property.GetMethod != null
-							&& !property.GetMethod.IsStatic
-							&& property.Parameters.Length == 1
-							&& property.Parameters[0].Type.TypeKind == TypeKind.Enum);
 
 					if (indexer is not null)
 					{

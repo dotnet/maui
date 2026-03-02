@@ -799,9 +799,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								var enumField = indexTypeDef.Fields.FirstOrDefault(f => f.IsStatic && f.Name == indexArg);
 								if (enumField != null)
 								{
-									// Load the enum value as an integer constant
-									var enumValue = Convert.ToInt32(enumField.Constant);
-									yield return Create(Ldc_I4, enumValue);
+									// Emit the appropriate IL instruction based on the enum's underlying type.
+									// long/ulong enums require Ldc_I8; all narrower types fit in Ldc_I4.
+									var underlyingType = indexTypeDef.GetEnumUnderlyingType();
+									if (underlyingType.FullName == "System.Int64" || underlyingType.FullName == "System.UInt64")
+									{
+										var longValue = Convert.ToInt64(enumField.Constant);
+										yield return Create(Ldc_I8, longValue);
+									}
+									else
+									{
+										var enumValue = Convert.ToInt32(enumField.Constant);
+										yield return Create(Ldc_I4, enumValue);
+									}
 								}
 								else
 									throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
