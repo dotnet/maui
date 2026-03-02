@@ -115,6 +115,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.ProgressBar)]
 		public void ProgressBar_ChangeFlowDirection_RTL_VerifyLabel()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33969
+			}
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 			App.WaitForElement("FlowDirectionRTL");
