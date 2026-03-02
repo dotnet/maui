@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -38,7 +39,7 @@ public class Issue12008 : ContentPage
 			ItemsSource = Groups,
 			IsGrouped = true,
 			CanReorderItems = true,
-            CanMixGroups = true,
+			CanMixGroups = true,
 			SelectionMode = SelectionMode.None
 		};
 
@@ -59,7 +60,7 @@ public class Issue12008 : ContentPage
 				TextColor = Colors.Gray,
 				HorizontalTextAlignment = TextAlignment.End
 			};
-			countLabel.SetBinding(Label.TextProperty, new Binding("Items.Count", stringFormat: "({0} items)"));
+			countLabel.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "({0} items)"));
 
 			var headerGrid = new Grid
 			{
@@ -73,7 +74,7 @@ public class Issue12008 : ContentPage
 				}
 			};
 			headerGrid.SetColumn(countLabel, 1);
-			
+
 			// Set AutomationId based on group name
 			headerGrid.SetBinding(AutomationProperties.NameProperty, new Binding("Name"));
 
@@ -90,16 +91,16 @@ public class Issue12008 : ContentPage
 			};
 			itemLabel.SetBinding(Label.TextProperty, "Name");
 
-			var itemContainer = new Frame
+			var itemContainer = new Border
 			{
 				Padding = 0,
 				Margin = new Thickness(12, 4, 12, 4),
 				Content = itemLabel,
 				BackgroundColor = Colors.White,
-				CornerRadius = 5,
-				HasShadow = true
+				StrokeShape = new RoundRectangle { CornerRadius = 5 },
+				Shadow = new Shadow { Opacity = 0.3f, Radius = 2 }
 			};
-			
+
 			// Set AutomationId based on item name for testability
 			itemContainer.SetBinding(AutomationProperties.NameProperty, new Binding("Name"));
 
@@ -134,31 +135,22 @@ public class Issue12008 : ContentPage
 
 	void OnReorderCompleted(object sender, EventArgs e)
 	{
-		// Update status label when reorder completes
+		// Update status label with per-group counts so tests can verify actual data model changes
 		if (Content is VerticalStackLayout layout && layout.Children[0] is Label statusLabel)
 		{
-			statusLabel.Text = "Reorder completed!";
+			var groupCounts = string.Join(", ", Groups.Select(g => $"{g.Name}:{g.Count}"));
+			statusLabel.Text = $"Reorder completed! {groupCounts}";
 			statusLabel.BackgroundColor = Color.FromArgb("#C8E6C9");
-
-			// Reset status after 2 seconds
-			MainThread.BeginInvokeOnMainThread(async () =>
-			{
-				await Task.Delay(2000);
-				statusLabel.Text = "Ready to reorder items";
-				statusLabel.BackgroundColor = Color.FromArgb("#E8F5E9");
-			});
 		}
 	}
 
 	public class Issue12008Group : ObservableCollection<Item>
 	{
 		public string Name { get; set; }
-		public new ObservableCollection<Item> Items { get; }
 
 		public Issue12008Group(string name, ObservableCollection<Item> items)
 		{
 			Name = name;
-			Items = items;
 
 			foreach (var item in items)
 				Add(item);
