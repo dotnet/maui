@@ -804,12 +804,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									var underlyingType = indexTypeDef.GetEnumUnderlyingType();
 									if (underlyingType.FullName == "System.Int64" || underlyingType.FullName == "System.UInt64")
 									{
-										var longValue = Convert.ToInt64(enumField.Constant);
+										var longValue = underlyingType.FullName == "System.UInt64"
+											? unchecked((long)Convert.ToUInt64(enumField.Constant))
+											: Convert.ToInt64(enumField.Constant);
 										yield return Create(Ldc_I8, longValue);
 									}
 									else
 									{
-										var enumValue = Convert.ToInt32(enumField.Constant);
+										var enumValue = underlyingType.FullName == "System.UInt32"
+											? unchecked((int)Convert.ToUInt32(enumField.Constant))
+											: Convert.ToInt32(enumField.Constant);
 										yield return Create(Ldc_I4, enumValue);
 									}
 								}
