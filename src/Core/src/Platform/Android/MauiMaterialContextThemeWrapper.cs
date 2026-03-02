@@ -19,13 +19,8 @@ internal class MauiMaterialContextThemeWrapper : ContextThemeWrapper
 
     }
 
-    public static MauiMaterialContextThemeWrapper Create(Context? context)
+    public static MauiMaterialContextThemeWrapper Create(Context context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
         if (context is MauiMaterialContextThemeWrapper materialContext)
         {
             return materialContext;
