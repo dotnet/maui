@@ -42,10 +42,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
-			{
-				_autosizeToSuperLayerBehavior.Detach();
-			}
+			_autosizeToSuperLayerBehavior.Detach();
 			base.Dispose(disposing);
 		}
 

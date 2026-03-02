@@ -23,7 +23,6 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	const string Item1MenuItem = "Item 1";
 	const string Item2MenuItem = "Item 2";
 	const string Item3MenuItem = "Item 3";
-	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
 
 	public Issue21814FlyoutPage(TestDevice device) : base(device)
 	{
@@ -37,7 +36,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	{
 		// Verify Item 1 is initially loaded and shows correct navigation info
 		App.WaitForElement("FlyoutContent1");
-
+		
 		var onNavigatedToText = App.FindElement(FlyoutItem1OnNavigatedToLabel).GetText();
 		Assert.That(onNavigatedToText, Does.Contain("PreviousPage: Null"));
 		Assert.That(onNavigatedToText, Does.Contain("NavigationType: Replace"));
@@ -45,7 +44,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		// Initially, OnNavigatingFrom and OnNavigatedFrom should show "-"
 		var onNavigatingFromText = App.FindElement(FlyoutItem1OnNavigatingFromLabel).GetText();
 		Assert.That(onNavigatingFromText, Does.Contain("-"));
-
+		
 		var onNavigatedFromText = App.FindElement(FlyoutItem1OnNavigatedFromLabel).GetText();
 		Assert.That(onNavigatedFromText, Is.EqualTo("-"));
 	}
@@ -76,14 +75,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 #if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow("Item 1");
-		}
+		App.TapBackArrow("Item 1");
 #endif
 
 		// Navigate to Item 3
@@ -96,7 +88,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		Assert.That(item3OnNavigatedToText, Does.Contain("PreviousPage: Issue21814FlyoutItem1"));
 		Assert.That(item3OnNavigatedToText, Does.Contain("NavigationType: Replace"));
 	}
-
+	
 	[Test, Order(4)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void PopNavigationPageAfterPush()
@@ -104,16 +96,9 @@ public class Issue21814FlyoutPage : _IssuesUITest
 #if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow("Item 1");
-		}
+		App.TapBackArrow("Item 1");
 #endif
-
+		
 		// Navigating to Item 2
 		OpenFlyoutMenu();
 		App.Tap(Item2MenuItem);
@@ -123,14 +108,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 #if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow("Item 1");
-		}
+		App.TapBackArrow("Item 1");
 #endif
 
 		// Verifying navigation events for pop from Item 2 to Item 1
@@ -141,7 +119,7 @@ public class Issue21814FlyoutPage : _IssuesUITest
 		Assert.That(onNavigatedFromText, Does.Contain("DestinationPage: Issue21814FlyoutItem2"));
 		Assert.That(onNavigatedFromText, Does.Contain("NavigationType: Replace"));
 	}
-
+	
 	void OpenFlyoutMenu()
 	{
 		App.TapFlyoutPageIcon("Flyout Menu");

@@ -13,7 +13,7 @@ public class Bugzilla45926 : _IssuesUITest
 	const string BackButtonIdentifier1 = "Back";
 	const string BackButtonIdentifier2 = "Test";
 #endif
-	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
+
 	public Bugzilla45926(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -33,23 +33,10 @@ public class Bugzilla45926 : _IssuesUITest
 #if IOS
 		App.WaitForElement("Back");
 #endif
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow(BackButtonIdentifier1);
-		}
+
+		App.TapBackArrow(BackButtonIdentifier1);
 		App.WaitForElementTillPageNavigationSettled("Intermediate Page");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow(BackButtonIdentifier2);
-		}
+		App.TapBackArrow(BackButtonIdentifier2);
 		App.WaitForElement("Do GC");
 		App.Tap("Do GC");
 		App.Tap("Do GC");

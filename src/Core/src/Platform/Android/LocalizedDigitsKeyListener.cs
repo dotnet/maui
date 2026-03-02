@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using Android.Text;
 using Android.Text.Method;
 using Java.Lang;
@@ -18,6 +17,17 @@ namespace Microsoft.Maui.Platform
 		static Dictionary<char, LocalizedDigitsKeyListener>? UnsignedCache;
 		static Dictionary<char, LocalizedDigitsKeyListener>? SignedCache;
 
+		static char GetDecimalSeparator()
+		{
+			if (!(NumberFormat.Instance is DecimalFormat format))
+				return '.';
+
+
+			DecimalFormatSymbols? sym = format.DecimalFormatSymbols;
+
+			return sym == null ? '.' : sym.DecimalSeparator;
+		}
+
 		public static NumberKeyListener Create(InputTypes inputTypes)
 		{
 			if ((inputTypes & InputTypes.NumberFlagDecimal) == 0)
@@ -29,8 +39,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Figure out what the decimal separator is for the current locale
-			var symbol = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-			var decimalSeparator = string.IsNullOrEmpty(symbol) ? '.' : symbol[0];
+			char decimalSeparator = GetDecimalSeparator();
 
 			if (decimalSeparator == '.')
 			{
