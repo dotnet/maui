@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.FlyoutTestPage"
+             Title="Flyout Test">
+    <ScrollView>
+        <VerticalStackLayout Spacing="15"
+                             Padding="20">
+            <Label Text="Flyout Tests"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+
+            <!-- Flyout Control -->
+            <Label Text="Flyout Control"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Open Flyout"
+                    Clicked="OnOpenFlyoutClicked"/>
+            <Button Text="Close Flyout"
+                    Clicked="OnCloseFlyoutClicked"/>
+            <Button Text="Toggle Flyout"
+                    Clicked="OnToggleFlyoutClicked"/>
+
+            <!-- Flyout Behavior -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Behavior"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Set Behavior: Flyout"
+                    Clicked="OnSetBehaviorFlyout"/>
+            <Button Text="Set Behavior: Locked"
+                    Clicked="OnSetBehaviorLocked"/>
+            <Button Text="Set Behavior: Disabled"
+                    Clicked="OnSetBehaviorDisabled"/>
+
+            <!-- Flyout Styling -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Styling"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Change Flyout Background (Red)"
+                    Clicked="OnChangeFlyoutBackgroundRed"/>
+            <Button Text="Change Flyout Background (Blue)"
+                    Clicked="OnChangeFlyoutBackgroundBlue"/>
+            <Button Text="Reset Flyout Background"
+                    Clicked="OnResetFlyoutBackground"/>
+
+            <!-- Flyout Width -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Width"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Set Width: 200"
+                    Clicked="OnSetWidth200"/>
+            <Button Text="Set Width: 300"
+                    Clicked="OnSetWidth300"/>
+            <Button Text="Reset Width (Default)"
+                    Clicked="OnResetWidth"/>
+
+            <!-- Flyout Header/Footer -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Header/Footer"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Add Header (Label)"
+                    Clicked="OnAddHeaderClicked"/>
+            <Button Text="Change Header (Button)"
+                    Clicked="OnChangeHeaderClicked"/>
+            <Button Text="Remove Header"
+                    Clicked="OnRemoveHeaderClicked"/>
+            <Button Text="Add Footer (Label)"
+                    Clicked="OnAddFooterClicked"/>
+            <Button Text="Remove Footer"
+                    Clicked="OnRemoveFooterClicked"/>
+
+            <!-- Flyout Header Behavior -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Header Behavior"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Behavior: Default"
+                    Clicked="OnHeaderBehaviorDefault"/>
+            <Button Text="Behavior: Scroll"
+                    Clicked="OnHeaderBehaviorScroll"/>
+            <Button Text="Behavior: CollapseOnScroll"
+                    Clicked="OnHeaderBehaviorCollapse"/>
+
+            <!-- Flyout Content -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Content"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Set Custom Content (ListView)"
+                    Clicked="OnSetCustomContentClicked"/>
+            <Button Text="Reset Content (Default)"
+                    Clicked="OnResetContentClicked"/>
+
+            <!-- Flyout Backdrop -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flyout Backdrop (Scrim)"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Red Backdrop"
+                    Clicked="OnRedBackdropClicked"/>
+            <Button Text="Black Semi-Transparent"
+                    Clicked="OnBlackBackdropClicked"/>
+            <Button Text="Remove Backdrop (Transparent)"
+                    Clicked="OnRemoveBackdropClicked"/>
+
+            <!-- Flow Direction -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Flow Direction"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Left to Right (LTR)"
+                    Clicked="OnFlowDirectionLTRClicked"/>
+            <Button Text="Right to Left (RTL)"
+                    Clicked="OnFlowDirectionRTLClicked"/>
+
+            <!-- Status -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label x:Name="StatusLabel"
+                   Text="Status: Ready"
+                   FontSize="12"/>
+            <Label x:Name="FlyoutStateLabel"
+                   Text="Flyout State: Unknown"
+                   FontSize="12"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
