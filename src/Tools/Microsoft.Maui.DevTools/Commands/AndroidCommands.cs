@@ -6,6 +6,7 @@ using System.CommandLine.Invocation;
 using Microsoft.Maui.DevTools.Output;
 using Microsoft.Maui.DevTools.Providers.Android;
 using Microsoft.Maui.DevTools.Utils;
+using Spectre.Console;
 
 namespace Microsoft.Maui.DevTools.Commands;
 
@@ -66,67 +67,124 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
-
-			// Create progress reporter
-			var progress = new Progress<string>(message =>
-			{
-				if (useJson)
-				{
-					formatter.WriteProgress(message);
-				}
-				else
-				{
-					Console.WriteLine(message);
-				}
-			});
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine("[dry-run] Would install Android environment:");
-					Console.WriteLine($"  JDK version: {jdkVersion}");
-					Console.WriteLine($"  JDK path: {jdkPath ?? "(default)"}");
-					Console.WriteLine($"  SDK path: {sdkPath ?? "(default)"}");
-					Console.WriteLine($"  Accept licenses: {acceptLicenses}");
+					formatter.WriteInfo("[dry-run] Would install Android environment:");
+					formatter.WriteProgress($"JDK version: {jdkVersion}");
+					formatter.WriteProgress($"JDK path: {jdkPath ?? "(default)"}");
+					formatter.WriteProgress($"SDK path: {sdkPath ?? "(default)"}");
+					formatter.WriteProgress($"Accept licenses: {acceptLicenses}");
 					if (packages?.Any() == true)
-						Console.WriteLine($"  Extra packages: {string.Join(", ", packages)}");
+						formatter.WriteProgress($"Extra packages: {string.Join(", ", packages)}");
 					return;
 				}
 
-				await androidProvider.InstallAsync(
-					sdkPath: sdkPath,
-					jdkPath: jdkPath,
-					jdkVersion: jdkVersion,
-					additionalPackages: packages,
-					progress: progress,
-					cancellationToken: context.GetCancellationToken());
-
-				if (useJson)
+				if (!useJson && formatter is SpectreOutputFormatter spectre)
 				{
-					formatter.Write(new { success = true, message = "Android environment installed successfully" });
+					await spectre.LiveProgressAsync(async (ctx) =>
+					{
+						// Step 1: JDK
+						var jdkTask = ctx.AddTask("Installing JDK");
+						if (!androidProvider.IsJdkInstalled)
+						{
+							var jdkManager = Program.JdkManager;
+							await jdkManager.InstallAsync(jdkVersion, jdkPath,
+								onProgress: (pct, msg) => jdkTask.Update(pct, $"JDK: {msg}"),
+								context.GetCancellationToken());
+							jdkTask.Complete($"OpenJDK {jdkVersion} installed");
+						}
+						else
+						{
+							jdkTask.Complete("JDK already installed");
+						}
+
+						// Step 2: SDK command-line tools
+						var sdkTask = ctx.AddTask("Installing SDK Tools");
+						if (!androidProvider.IsSdkInstalled)
+						{
+							var targetSdkPath = sdkPath ?? PlatformDetector.Paths.DefaultAndroidSdkPath;
+							await androidProvider.InstallSdkToolsAsync(targetSdkPath,
+								onProgress: (phase, pct, msg) =>
+								{
+									var label = phase switch
+									{
+										"ReadingManifest" => "Reading manifest...",
+										"Downloading" => $"Downloading: {msg}",
+										"Verifying" => "Verifying checksum...",
+										"Extracting" => "Extracting...",
+										"Complete" => "SDK Tools installed",
+										_ => msg
+									};
+									sdkTask.Update(Math.Max(0, pct), label);
+								},
+								context.GetCancellationToken());
+							sdkTask.Complete("SDK Tools installed");
+						}
+						else
+						{
+							sdkTask.Complete("SDK Tools already installed");
+						}
+
+						// Step 3: Accept licenses
+						var licenseTask = ctx.AddTask("Accepting licenses");
+						licenseTask.SetIndeterminate("Checking licenses...");
+						await androidProvider.AcceptLicensesAsync(
+							onProgress: msg => licenseTask.SetIndeterminate(msg),
+							context.GetCancellationToken());
+						licenseTask.Complete("Licenses accepted");
+
+						// Step 4: Install packages
+						var pkgList = packages is { Length: > 0 } ? packages.ToList() : new List<string>
+						{
+							"platform-tools",
+							"emulator",
+							"platforms;android-35",
+							"build-tools;35.0.0",
+							$"system-images;android-35;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
+						};
+
+						var pkgTask = ctx.AddTask($"Installing packages (0/{pkgList.Count})");
+						pkgTask.Update(0, $"Installing packages (0/{pkgList.Count})...");
+						await androidProvider.InstallPackagesAsync(pkgList, true,
+							onProgress: (pkg, idx, total) =>
+							{
+								var pct = (double)idx / total * 100;
+								pkgTask.Update(pct, $"Installing {pkg} ({idx + 1}/{total})");
+							},
+							context.GetCancellationToken());
+						pkgTask.Complete($"{pkgList.Count} packages installed");
+					});
 				}
 				else
 				{
-					Console.WriteLine("✓ Android environment installed successfully");
+					var progress = new Progress<string>(message =>
+					{
+						formatter.WriteProgress(message);
+					});
+
+					await androidProvider.InstallAsync(
+						sdkPath: sdkPath,
+						jdkPath: jdkPath,
+						jdkVersion: jdkVersion,
+						additionalPackages: packages is { Length: > 0 } ? packages : null,
+						progress: progress,
+						cancellationToken: context.GetCancellationToken());
 				}
+
+				formatter.WriteSuccess("Android environment installed successfully");
 			}
 			catch (UnauthorizedAccessException) when (PlatformDetector.IsWindows)
 			{
 				if (!useJson)
-					Console.WriteLine("Administrator access required. Requesting elevation...");
+					formatter.WriteWarning("Administrator access required. Requesting elevation...");
 
 				if (ProcessRunner.RelaunchElevated())
 				{
-					if (useJson)
-					{
-						formatter.Write(new { success = true, message = "Android environment installed successfully (elevated)" });
-					}
-					else
-					{
-						Console.WriteLine("✓ Android environment installed successfully (elevated)");
-					}
+					formatter.WriteSuccess("Android environment installed successfully (elevated)");
 				}
 				else
 				{
@@ -158,7 +216,7 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			var healthCheck = await jdkManager.CheckHealthAsync(context.GetCancellationToken());
 
@@ -170,10 +228,10 @@ public static class AndroidCommands
 			{
 				var statusIcon = healthCheck.Status == Models.CheckStatus.Ok ? "✓" : 
 								 healthCheck.Status == Models.CheckStatus.Warning ? "⚠" : "✗";
-				Console.WriteLine($"{statusIcon} {healthCheck.Message}");
+				formatter.WriteInfo($"{statusIcon} {healthCheck.Message}");
 				
 				if (healthCheck.Details?.TryGetValue("path", out var path) == true)
-					Console.WriteLine($"  Path: {path}");
+					formatter.WriteProgress($"Path: {path}");
 			}
 		});
 
@@ -196,17 +254,17 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would install OpenJDK {version}");
+					formatter.WriteInfo($"[dry-run] Would install OpenJDK {version}");
 					return;
 				}
 
-				Console.WriteLine($"Installing OpenJDK {version}...");
+				formatter.WriteProgress($"Installing OpenJDK {version}...");
 				await jdkManager.InstallAsync(version, path, context.GetCancellationToken());
 
 				if (useJson)
@@ -215,7 +273,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ OpenJDK {version} installed to {jdkManager.DetectedJdkPath}");
+					formatter.WriteSuccess($"OpenJDK {version} installed to {jdkManager.DetectedJdkPath}");
 				}
 			}
 			catch (Exception ex)
@@ -241,12 +299,11 @@ public static class AndroidCommands
 			}
 			else
 			{
-				Console.WriteLine("Available JDK versions:");
-				foreach (var v in versions)
-				{
-					var current = jdkManager.DetectedJdkVersion == v ? " (current)" : "";
-					Console.WriteLine($"  {v}{current}");
-				}
+				var formatter = new SpectreOutputFormatter();
+				formatter.WriteTable(
+					versions,
+					("Version", v => v.ToString()),
+					("Status", v => jdkManager.DetectedJdkVersion == v ? "✓ current" : ""));
 			}
 		});
 
@@ -270,7 +327,7 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			var checks = await androidProvider.CheckHealthAsync(context.GetCancellationToken());
 			var sdkCheck = checks.FirstOrDefault(c => c.Name == "Android SDK");
@@ -285,10 +342,10 @@ public static class AndroidCommands
 				{
 					var statusIcon = sdkCheck.Status == Models.CheckStatus.Ok ? "✓" : 
 									 sdkCheck.Status == Models.CheckStatus.Warning ? "⚠" : "✗";
-					Console.WriteLine($"{statusIcon} {sdkCheck.Message ?? "Android SDK"}");
+					formatter.WriteInfo($"{statusIcon} {sdkCheck.Message ?? "Android SDK"}");
 					
 					if (sdkCheck.Details?.TryGetValue("path", out var path) == true)
-						Console.WriteLine($"  Path: {path}");
+						formatter.WriteProgress($"Path: {path}");
 				}
 			}
 		});
@@ -309,13 +366,13 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would install: {string.Join(", ", packages)}");
+					formatter.WriteInfo($"[dry-run] Would install: {string.Join(", ", packages)}");
 					return;
 				}
 
@@ -327,7 +384,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ Installed: {string.Join(", ", packages)}");
+					formatter.WriteSuccess($"Installed: {string.Join(", ", packages)}");
 				}
 			}
 			catch (Exception ex)
@@ -355,7 +412,7 @@ public static class AndroidCommands
 			
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -386,31 +443,67 @@ public static class AndroidCommands
 				{
 					if (!packages.Any())
 					{
-						Console.WriteLine(showAvailable ? "No packages available." : "No packages installed.");
+						formatter.WriteWarning(showAvailable ? "No packages available." : "No packages installed.");
 						return;
+					}
+
+					void WriteGroupedPackages(IEnumerable<SdkPackage> pkgs, string title)
+					{
+						if (!pkgs.Any())
+						{
+							formatter.WriteWarning($"No {title.ToLowerInvariant()}.");
+							return;
+						}
+
+						formatter.WriteInfo($"{title}:");
+
+						// Group by category (part before first ';')
+						var groups = pkgs
+							.GroupBy(p => p.Path.Contains(';', StringComparison.Ordinal) ? p.Path.Substring(0, p.Path.IndexOf(';', StringComparison.Ordinal)) : p.Path)
+							.OrderBy(g => g.Key);
+
+						foreach (var group in groups)
+						{
+							var items = group.OrderByDescending(p => p.Version).ToList();
+							if (items.Count == 1)
+							{
+								var p = items[0];
+								formatter.WriteProgress($"  {Markup.Escape(p.Path)}  [dim]{Markup.Escape(p.Version ?? "")}[/]  [dim italic]{Markup.Escape(p.Description ?? "")}[/]");
+							}
+							else
+							{
+								// Sub-group by major version and show only latest per major
+								var byMajor = items
+									.GroupBy(p =>
+									{
+										var ver = p.Path.Contains(';', StringComparison.Ordinal) ? p.Path.Substring(p.Path.LastIndexOf(';') + 1) : p.Version ?? "";
+										var dot = ver.IndexOf('.', StringComparison.Ordinal);
+										return dot > 0 ? ver.Substring(0, dot) : ver;
+									})
+									.OrderByDescending(g => int.TryParse(g.Key, out var n) ? n : 0)
+									.ToList();
+
+								formatter.WriteProgress($"  [bold]{Markup.Escape(group.Key)}[/]  [dim]({byMajor.Count} major versions, {items.Count} total)[/]");
+								foreach (var major in byMajor)
+								{
+									var latest = major.First();
+									var latestVer = latest.Path.Contains(';', StringComparison.Ordinal) ? latest.Path.Substring(latest.Path.LastIndexOf(';') + 1) : latest.Version ?? "";
+									var others = major.Count() - 1;
+									var suffix = others > 0 ? $" [dim](+{others} older)[/]" : "";
+									formatter.WriteProgress($"    {Markup.Escape(latestVer),-20} [dim]{Markup.Escape(latest.Description ?? "")}[/]{suffix}");
+								}
+							}
+						}
 					}
 
 					if (showAll)
 					{
-						Console.WriteLine("Installed packages:");
-						foreach (var pkg in packages.Where(p => p.IsInstalled))
-						{
-							Console.WriteLine($"  {pkg.Path,-50} {pkg.Version}");
-						}
-						Console.WriteLine();
-						Console.WriteLine("Available packages:");
-						foreach (var pkg in packages.Where(p => !p.IsInstalled))
-						{
-							Console.WriteLine($"  {pkg.Path,-50} {pkg.Version}");
-						}
+						WriteGroupedPackages(packages.Where(p => p.IsInstalled), "Installed packages");
+						WriteGroupedPackages(packages.Where(p => !p.IsInstalled), "Available packages");
 					}
 					else
 					{
-						Console.WriteLine(showAvailable ? "Available packages:" : "Installed packages:");
-						foreach (var pkg in packages)
-						{
-							Console.WriteLine($"  {pkg.Path,-50} {pkg.Version}");
-						}
+						WriteGroupedPackages(packages, showAvailable ? "Available packages" : "Installed packages");
 					}
 				}
 			}
@@ -430,7 +523,7 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -448,7 +541,7 @@ public static class AndroidCommands
 					}
 					else
 					{
-						Console.WriteLine("✓ SDK licenses are already accepted");
+						formatter.WriteSuccess("SDK licenses are already accepted");
 					}
 					return;
 				}
@@ -467,7 +560,7 @@ public static class AndroidCommands
 					}
 					else
 					{
-						Console.WriteLine("✗ Android SDK not found. Run 'maui android install' first.");
+						formatter.WriteError(new Exception("Android SDK not found. Run 'maui android install' first."));
 					}
 					context.ExitCode = 1;
 					return;
@@ -488,8 +581,8 @@ public static class AndroidCommands
 				else
 				{
 					// For CLI: run interactively
-					Console.WriteLine("Starting interactive license acceptance...");
-					Console.WriteLine("Review each license and type 'y' to accept.\n");
+					formatter.WriteInfo("Starting interactive license acceptance...");
+					formatter.WriteInfo("Review each license and type 'y' to accept.\n");
 					
 					// Run sdkmanager --licenses interactively (inherits stdin/stdout)
 					var processInfo = new System.Diagnostics.ProcessStartInfo
@@ -518,11 +611,11 @@ public static class AndroidCommands
 						
 						if (process.ExitCode == 0)
 						{
-							Console.WriteLine("\n✓ License acceptance completed");
+							formatter.WriteSuccess("License acceptance completed");
 						}
 						else
 						{
-							Console.WriteLine($"\n⚠ License acceptance exited with code {process.ExitCode}");
+							formatter.WriteWarning($"License acceptance exited with code {process.ExitCode}");
 						}
 					}
 				}
@@ -561,13 +654,13 @@ public static class AndroidCommands
 
 			var formatter = useJson
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out)
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would uninstall: {string.Join(", ", packages)}");
+					formatter.WriteInfo($"[dry-run] Would uninstall: {string.Join(", ", packages)}");
 					return;
 				}
 
@@ -579,7 +672,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ Uninstalled: {string.Join(", ", packages)}");
+					formatter.WriteSuccess($"Uninstalled: {string.Join(", ", packages)}");
 				}
 			}
 			catch (Exception ex)
@@ -605,7 +698,7 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -619,15 +712,14 @@ public static class AndroidCommands
 				{
 					if (!avds.Any())
 					{
-						Console.WriteLine("No emulators found.");
+						formatter.WriteWarning("No emulators found.");
 						return;
 					}
 
-					Console.WriteLine("Available emulators:");
-					foreach (var avd in avds)
-					{
-						Console.WriteLine($"  {avd.Name} ({avd.Target ?? avd.SystemImage ?? "unknown"})");
-					}
+					formatter.WriteTable(
+						avds,
+						("Name", a => a.Name),
+						("Target", a => a.Target ?? a.SystemImage ?? "unknown"));
 				}
 			}
 			catch (Exception ex)
@@ -662,7 +754,7 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -678,15 +770,15 @@ public static class AndroidCommands
 					
 					if (!useJson)
 					{
-						Console.WriteLine($"Auto-detected system image: {package}");
+						formatter.WriteInfo($"Auto-detected system image: {package}");
 					}
 				}
 
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would create AVD: {name}");
-					Console.WriteLine($"  Package: {package}");
-					Console.WriteLine($"  Device: {device ?? "(default: pixel_6)"}");
+					formatter.WriteInfo($"[dry-run] Would create AVD: {name}");
+					formatter.WriteProgress($"Package: {package}");
+					formatter.WriteProgress($"Device: {device ?? "(default: pixel_6)"}");
 					return;
 				}
 
@@ -698,7 +790,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ Created AVD: {name}");
+					formatter.WriteSuccess($"Created AVD: {name}");
 				}
 			}
 			catch (Exception ex)
@@ -730,17 +822,17 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would start AVD: {name}");
+					formatter.WriteInfo($"[dry-run] Would start AVD: {name}");
 					return;
 				}
 
-				Console.WriteLine($"Starting {name}...");
+				formatter.WriteProgress($"Starting {name}...");
 				await androidProvider.StartAvdAsync(name, coldBoot, wait, context.GetCancellationToken());
 
 				if (useJson)
@@ -749,7 +841,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ Started AVD: {name}");
+					formatter.WriteSuccess($"Started AVD: {name}");
 				}
 			}
 			catch (Exception ex)
@@ -779,7 +871,7 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -802,7 +894,7 @@ public static class AndroidCommands
 
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would stop emulator: {name} ({serial})");
+					formatter.WriteInfo($"[dry-run] Would stop emulator: {name} ({serial})");
 					return;
 				}
 
@@ -814,7 +906,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ Stopped emulator: {name} ({serial})");
+					formatter.WriteSuccess($"Stopped emulator: {name} ({serial})");
 				}
 			}
 			catch (Exception ex)
@@ -841,13 +933,13 @@ public static class AndroidCommands
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
 				if (dryRun)
 				{
-					Console.WriteLine($"[dry-run] Would delete AVD: {name}");
+					formatter.WriteInfo($"[dry-run] Would delete AVD: {name}");
 					return;
 				}
 
@@ -859,7 +951,7 @@ public static class AndroidCommands
 				}
 				else
 				{
-					Console.WriteLine($"✓ Deleted AVD: {name}");
+					formatter.WriteSuccess($"Deleted AVD: {name}");
 				}
 			}
 			catch (Exception ex)

@@ -38,9 +38,8 @@ public static class VersionCommand
 			}
 			else
 			{
-				Console.WriteLine($"MAUI DevTools v{version}");
-				Console.WriteLine($"Runtime: .NET {Environment.Version}");
-				Console.WriteLine($"OS: {Environment.OSVersion}");
+				var formatter = new SpectreOutputFormatter();
+				formatter.WriteVersion(version, $".NET {Environment.Version}", Environment.OSVersion.ToString());
 			}
 		});
 

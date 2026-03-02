@@ -50,7 +50,7 @@ public class Program
 				
 				var formatter = useJson 
 					? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-					: new ConsoleOutputFormatter(Console.Out);
+					: new SpectreOutputFormatter();
 				
 				formatter.WriteError(exception);
 				context.ExitCode = 1;
@@ -105,7 +105,7 @@ public class Program
 		
 		return useJson 
 			? new JsonOutputFormatter(Console.Out) 
-			: new ConsoleOutputFormatter(Console.Out, verbose);
+			: new SpectreOutputFormatter(verbose: verbose);
 	}
 
 	internal static bool IsVerbose(InvocationContext context) =>

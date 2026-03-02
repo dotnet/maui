@@ -7,7 +7,9 @@ namespace Microsoft.Maui.DevTools.Output;
 
 /// <summary>
 /// Console output formatter for human-readable output.
+/// Superseded by <see cref="SpectreOutputFormatter"/> — kept as a fallback for non-interactive environments.
 /// </summary>
+[Obsolete("Use SpectreOutputFormatter instead for rich console output.")]
 public class ConsoleOutputFormatter : IOutputFormatter
 {
 	private readonly TextWriter _output;

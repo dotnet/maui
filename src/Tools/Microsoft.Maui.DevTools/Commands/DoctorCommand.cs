@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.Maui.DevTools.Models;
 using Microsoft.Maui.DevTools.Output;
 using Microsoft.Maui.DevTools.Services;
 
@@ -34,13 +35,25 @@ public static class DoctorCommand
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
-				var report = string.IsNullOrEmpty(platform)
-					? await doctorService.RunAllChecksAsync(context.GetCancellationToken())
-					: await doctorService.RunCategoryChecksAsync(platform, context.GetCancellationToken());
+				DoctorReport report;
+
+				if (!useJson && formatter is SpectreOutputFormatter spectre)
+				{
+					report = await spectre.StatusAsync("Running health checks...", async () =>
+						string.IsNullOrEmpty(platform)
+							? await doctorService.RunAllChecksAsync(context.GetCancellationToken())
+							: await doctorService.RunCategoryChecksAsync(platform, context.GetCancellationToken()));
+				}
+				else
+				{
+					report = string.IsNullOrEmpty(platform)
+						? await doctorService.RunAllChecksAsync(context.GetCancellationToken())
+						: await doctorService.RunCategoryChecksAsync(platform, context.GetCancellationToken());
+				}
 
 				// Output the report
 				formatter.Write(report);
@@ -54,11 +67,10 @@ public static class DoctorCommand
 
 					if (fixableIssues.Any())
 					{
-						Console.WriteLine();
-						Console.WriteLine("Attempting automatic fixes...");
+						formatter.WriteInfo("Attempting automatic fixes...");
 						foreach (var issue in fixableIssues)
 						{
-							Console.WriteLine($"  Fixing: {issue.Name}");
+							formatter.WriteProgress($"Fixing: {issue.Name}");
 							await doctorService.TryFixAsync(issue.Fix!, context.GetCancellationToken());
 						}
 					}

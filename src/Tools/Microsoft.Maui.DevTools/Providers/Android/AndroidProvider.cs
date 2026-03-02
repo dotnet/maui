@@ -274,6 +274,12 @@ public class AndroidProvider : IAndroidProvider
 		await _sdkManager.InstallPackagesAsync(packages, acceptLicenses, cancellationToken);
 	}
 
+	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses,
+		Action<string, int, int>? onProgress, CancellationToken cancellationToken = default)
+	{
+		await _sdkManager.InstallPackagesAsync(packages, acceptLicenses, onProgress, cancellationToken);
+	}
+
 	public async Task UninstallPackagesAsync(IEnumerable<string> packages, CancellationToken cancellationToken = default)
 	{
 		await _sdkManager.UninstallPackagesAsync(packages, cancellationToken);
@@ -282,6 +288,11 @@ public class AndroidProvider : IAndroidProvider
 	public async Task AcceptLicensesAsync(CancellationToken cancellationToken = default)
 	{
 		await _sdkManager.AcceptLicensesAsync(cancellationToken);
+	}
+
+	public async Task AcceptLicensesAsync(Action<string>? onProgress, CancellationToken cancellationToken = default)
+	{
+		await _sdkManager.AcceptLicensesAsync(onProgress, cancellationToken);
 	}
 
 	public async Task<bool> AreLicensesAcceptedAsync(CancellationToken cancellationToken = default)
@@ -368,6 +379,15 @@ public class AndroidProvider : IAndroidProvider
 		}
 		await InstallPackagesAsync(packages, true, cancellationToken);
 		progress?.Report("All packages installed ✓");
+	}
+
+	public async Task InstallSdkToolsAsync(string targetPath, 
+		Action<string, int, string>? onProgress = null, CancellationToken cancellationToken = default)
+	{
+		await _sdkManager.InstallSdkAsync(targetPath,
+			onProgress: (phase, pct, msg) => onProgress?.Invoke(phase.ToString(), pct, msg),
+			cancellationToken);
+		_sdkPath = targetPath;
 	}
 
 	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath, 

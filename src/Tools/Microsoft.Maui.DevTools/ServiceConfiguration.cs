@@ -43,7 +43,7 @@ public static class ServiceConfiguration
 
 		// Output formatters (transient - created per request with specific config)
 		services.AddTransient<JsonOutputFormatter>();
-		services.AddTransient<ConsoleOutputFormatter>();
+		services.AddTransient<SpectreOutputFormatter>();
 	}
 
 	/// <summary>

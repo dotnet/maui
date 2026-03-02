@@ -43,7 +43,7 @@ public static class DeviceCommand
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -59,21 +59,11 @@ public static class DeviceCommand
 				{
 					if (!devices.Any())
 					{
-						Console.WriteLine("No devices found.");
+						formatter.WriteWarning("No devices found.");
 						return;
 					}
 
-					Console.WriteLine();
-					Console.WriteLine("  PLATFORM   | TYPE      | STATE       | ID                    | NAME");
-					Console.WriteLine("  -----------|-----------|-------------|-----------------------|------------------");
-					foreach (var device in devices)
-					{
-						var type = device.Type.ToString().ToLowerInvariant().PadRight(9);
-						var state = device.State.ToString().ToLowerInvariant().PadRight(11);
-						var id = device.Id.Length > 21 ? device.Id[..21] : device.Id.PadRight(21);
-						Console.WriteLine($"  {device.Platform,-10} | {type} | {state} | {id} | {device.Name}");
-					}
-					Console.WriteLine();
+					formatter.WriteResult(new DeviceListResult { Devices = devices.ToList() });
 				}
 			}
 			catch (Exception ex)
@@ -106,7 +96,7 @@ public static class DeviceCommand
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new ConsoleOutputFormatter(Console.Out);
+				: new SpectreOutputFormatter();
 
 			try
 			{
@@ -118,7 +108,7 @@ public static class DeviceCommand
 				}
 				else
 				{
-					Console.WriteLine($"Screenshot saved to: {result}");
+					formatter.WriteSuccess($"Screenshot saved to: {result}");
 				}
 			}
 			catch (Exception ex)
