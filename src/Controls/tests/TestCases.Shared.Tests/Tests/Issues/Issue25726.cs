@@ -29,8 +29,14 @@ internal class Issue25726 : _IssuesUITest
 		// Ensure the label on Page 3 is present to verify navigation completed successfully
 		// If the app crashes during navigation, the test will fail before reaching this line.
 		App.WaitForElement("Page3Label");
-
-		App.TapBackArrow(BackButtonIdentifier);
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+		}
+		else
+		{
+			App.TapBackArrow(BackButtonIdentifier);
+		}
 
 		// Ensure we navigate back to Page 1 successfully
 		App.WaitForElement("NavigateToPage2Button");
