@@ -2953,6 +2953,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(50, control.ViewModel.Value);
 		}
 
+		[Fact]
+		public void Issue29459_SwitchingBindingWithActiveTriggerAlsoRemovesManualValueSetter()
+		{
+			// Documents intentional behavior: when a higher-priority setter (e.g. Trigger) is
+			// the active specificity AND a ManualValueSetter entry also exists, switching bindings
+			// removes BOTH entries so the new binding's value applies correctly.
+			//
+			// Trade-off: the manually-set fallback value ("manual") is discarded. This is acceptable
+			// because retaining it would suppress propertyChanged notifications on subsequent binding
+			// switches (the original bug). See BindableObject.SetBinding comments for full context.
+
+			var bindable = new MockBindable();
+			var vmA = new NullViewModel { Foo = "alpha" };
+			var vmB = new NullViewModel { Foo = "beta" };
+
+			bindable.BindingContext = vmA;
+			bindable.SetBinding(MockBindable.TextProperty, new Binding(nameof(NullViewModel.Foo)));
+			Assert.Equal("alpha", bindable.Text);
+
+			// Manually set a value — creates a ManualValueSetter entry (clears the TwoWay binding)
+			bindable.Text = "manual";
+			Assert.Equal("manual", bindable.Text);
+
+			// Simulate a Trigger overriding the manual value with higher specificity
+			bindable.SetValueCore(MockBindable.TextProperty, "trigger-value",
+				SetValueFlags.None, SetValuePrivateFlags.Default, SetterSpecificity.Trigger);
+			Assert.Equal("trigger-value", bindable.Text);
+
+			// Switch bindings: both the Trigger entry and the ManualValueSetter entry are removed,
+			// then the new binding from vmB is applied correctly.
+			bindable.BindingContext = vmB;
+			bindable.SetBinding(MockBindable.TextProperty, new Binding(nameof(NullViewModel.Foo)));
+
+			// The binding to vmB.Foo should apply; "manual" is intentionally discarded.
+			Assert.Equal("beta", bindable.Text);
+		}
+
 		#endregion
 
 	}
