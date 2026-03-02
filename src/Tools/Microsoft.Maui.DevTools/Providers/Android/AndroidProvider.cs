@@ -21,7 +21,7 @@ public class AndroidProvider : IAndroidProvider
 	private string? _jdkPath;
 
 	public string? SdkPath => _sdkPath ??= PlatformDetector.Paths.GetAndroidSdkPath();
-	public string? JdkPath => _jdkPath ??= PlatformDetector.Paths.GetJdkPath();
+	public string? JdkPath => _jdkPath ??= _jdkManager.DetectedJdkPath ?? PlatformDetector.Paths.GetJdkPath();
 
 	public bool IsSdkInstalled => !string.IsNullOrEmpty(SdkPath) && Directory.Exists(SdkPath);
 	public bool IsJdkInstalled => !string.IsNullOrEmpty(JdkPath) && Directory.Exists(JdkPath);
