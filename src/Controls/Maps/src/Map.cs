@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
@@ -53,6 +54,7 @@ namespace Microsoft.Maui.Controls.Maps
 		readonly ObservableCollection<MapElement> _mapElements = new();
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
+		Location? _lastUserLocation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Map"/> class with a region.
@@ -214,6 +216,26 @@ namespace Microsoft.Maui.Controls.Maps
 		/// Occurs when the user long-presses/holds on the map control.
 		/// </summary>
 		public event EventHandler<MapClickedEventArgs>? MapLongClicked;
+
+		/// <summary>
+		/// Occurs when the user's location is updated on the map.
+		/// </summary>
+		/// <remarks>
+		/// This event fires when the platform map handler reports a location update.
+		/// The handler only sends updates when <see cref="IsShowingUser"/> is set to true
+		/// and location permissions have been granted.
+		/// </remarks>
+		public event EventHandler<UserLocationChangedEventArgs>? UserLocationChanged;
+
+		/// <summary>
+		/// Gets the last known user location from the map, or null if not available.
+		/// </summary>
+		/// <remarks>
+		/// This property requires <see cref="IsShowingUser"/> to be set to true
+		/// and location permissions to be granted. The location is updated as the
+		/// user moves and the map receives location updates.
+		/// </remarks>
+		public Location? LastUserLocation => _lastUserLocation;
 
 		/// <summary>
 		/// Gets the currently visible region of the map.

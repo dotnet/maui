@@ -26,6 +26,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 						GalleryBuilder.NavButton("MapElement Click Events", () => new MapElementClickGallery(), Navigation),
 						GalleryBuilder.NavButton("Map Long Click", () => new MapLongClickGallery(), Navigation),
 						GalleryBuilder.NavButton("Info Window", () => new InfoWindowGallery(), Navigation),
+						GalleryBuilder.NavButton("User Location", () => new UserLocationGallery(), Navigation),
 					}
 				}
 			};
