@@ -27,6 +27,30 @@ static class Traits
 		{
 			yield return $"Category={AppleIntelligenceChatClient}";
 		}
+
+		// Read TestFilter from environment (set by Helix/XHarness via --set-env)
+		// Supports TestFilter=SkipCategories=X,Y,Z format
+		string? testFilter = null;
+		foreach (var en in Foundation.NSProcessInfo.ProcessInfo.Environment)
+		{
+			if ($"{en.Key}" == "TestFilter")
+			{
+				testFilter = $"{en.Value}";
+				break;
+			}
+		}
+
+		if (!string.IsNullOrEmpty(testFilter) && testFilter.StartsWith("SkipCategories=", StringComparison.Ordinal))
+		{
+			var parts = testFilter.Substring("SkipCategories=".Length)
+				.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+			foreach (var part in parts)
+			{
+				var cat = part.Trim();
+				if (!string.IsNullOrWhiteSpace(cat))
+					yield return $"Category={cat}";
+			}
+		}
 #endif
 
 		if (additionalFilters != null)
