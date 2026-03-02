@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-[Category("AppleIntelligenceChatClient")]
+[Category(Traits.AppleIntelligenceChatClient)]
 public class AppleIntelligenceChatClientToolCallLoggingTests
 {
 	// ====================================================================

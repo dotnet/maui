@@ -5,7 +5,10 @@ namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
 static class Traits
 {
-	public const string AppleIntelligence = "AppleIntelligence";
+	public const string AppleIntelligenceChatClient = "AppleIntelligenceChatClient";
+	public const string NLEmbeddingGenerator = "NLEmbeddingGenerator";
+	public const string OpenAIChatClient = "OpenAIChatClient";
+	public const string OpenAIEmbeddingGenerator = "OpenAIEmbeddingGenerator";
 
 	internal static class FeatureSupport
 	{
@@ -22,7 +25,7 @@ static class Traits
 		// Apple Intelligence (FoundationModels) requires iOS/MacCatalyst 26+
 		if (!OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalystVersionAtLeast(26))
 		{
-			yield return "Category=AppleIntelligenceChatClient";
+			yield return $"Category={AppleIntelligenceChatClient}";
 		}
 #endif
 
