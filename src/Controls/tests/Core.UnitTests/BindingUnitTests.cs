@@ -2978,7 +2978,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Simulate a Trigger overriding the manual value with higher specificity
 			bindable.SetValueCore(MockBindable.TextProperty, "trigger-value",
-				SetValueFlags.None, SetValuePrivateFlags.Default, SetterSpecificity.Trigger);
+				Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.Default, SetterSpecificity.Trigger);
 			Assert.Equal("trigger-value", bindable.Text);
 
 			// Switch bindings: both the Trigger entry and the ManualValueSetter entry are removed,
