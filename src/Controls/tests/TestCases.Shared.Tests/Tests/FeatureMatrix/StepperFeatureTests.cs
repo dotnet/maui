@@ -281,6 +281,10 @@ public class StepperFeatureTests : _GalleryUITest
 	[Test]
 	public void Stepper_IncrementDoesNotExceedMaximum()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to Stepper Increment issue in iOS 26."); // Issue Link: https://github.com/dotnet/maui/issues/33769
+		}
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
