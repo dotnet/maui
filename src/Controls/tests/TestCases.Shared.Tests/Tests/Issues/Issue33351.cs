@@ -16,21 +16,23 @@ public class Issue33351 : _IssuesUITest
     [Category(UITestCategories.Shell)]
     public void TabBarVisibilityAfterMultiLevelPopToRoot()
     {
-        App.WaitForElement("RootPage");
-        App.WaitForElement("TabBarVisibleLabel");
-
+        App.WaitForElement("Tab 1");
+        App.Tap("Tab 1");
+        
+        App.WaitForElement("PushPage1Button");
         App.Tap("PushPage1Button");
-        App.WaitForElement("TabBarHiddenLabel");
-
+        
+        App.WaitForElement("PushPage2Button");
         App.Tap("PushPage2Button");
-        App.WaitForElement("Page2");
-        App.WaitForElement("TabBarHiddenLabel2");
-
+        
+        App.WaitForElement("PopToRootButton");
         App.Tap("PopToRootButton");
-
-        App.WaitForElement("RootPage");
+        
+        App.WaitForElement("Tab 1");
+        App.Tap("Tab 1");
+        
         App.WaitForElement("TabBarVisibleLabel");
-
+        
         VerifyScreenshot();
     }
 }
