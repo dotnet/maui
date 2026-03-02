@@ -40,8 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
-			if (base.OnTouchEvent(ev))
-				return true;
+			var handled = base.OnTouchEvent(ev);
 
 			if (_pointerGestureHandler != null && ev?.Action is
 				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Cancel)
@@ -49,10 +48,13 @@ namespace Microsoft.Maui.Controls.Platform
 				_pointerGestureHandler.OnTouch(ev);
 			}
 
+			// Always call EndScrolling on ACTION_UP to ensure swipe gestures are completed,
+			// regardless of whether the base gesture detector consumed the event.
+			// This fixes SwipeGestureRecognizer not working on scrollable views like CollectionView.
 			if (_listener != null && ev?.Action == MotionEventActions.Up)
 				_listener.EndScrolling();
 
-			return false;
+			return handled;
 		}
 
 		protected override void Dispose(bool disposing)
