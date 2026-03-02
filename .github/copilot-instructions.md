@@ -90,6 +90,18 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
+### CI Pipelines (Azure DevOps)
+
+When referencing or triggering CI pipelines, use these current pipeline names:
+
+| Pipeline | Name | Purpose |
+|----------|------|---------|
+| Overall CI | `maui-pr` | Full PR validation build |
+| Device Tests | `maui-pr-devicetests` | Helix-based device tests |
+| UI Tests | `maui-pr-uitests` | Appium-based UI tests |
+
+**⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
+
 ### Code Formatting
 
 Always format code before committing:

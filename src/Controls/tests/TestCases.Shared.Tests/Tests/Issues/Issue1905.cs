@@ -16,8 +16,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		public void TestIssue1905RefreshShows()
 		{
-			App.WaitForElement("Refresh");
-			App.WaitForElement("data refreshed");
+			// Self-verifying: tap Run Test, the app calls BeginRefresh() on a ListView
+			// and verifies the RefreshCommand executes. Original bug: refresh doesn't
+			// trigger when large titles are enabled.
+			App.WaitForElement("RunTest");
+			App.Tap("RunTest");
+
+			// Wait for the refresh cycle to complete, then check the result
+			Task.Delay(5000).Wait();
+			var result = App.FindElement("TestResult").GetText();
+			Assert.That(result, Is.EqualTo("SUCCESS"), $"Test reported: {result}");
 		}
 	}
 }
