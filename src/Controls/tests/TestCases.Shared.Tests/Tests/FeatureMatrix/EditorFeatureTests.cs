@@ -26,7 +26,7 @@ public class EditorFeatureTests : _GalleryUITest
 	{
 	}
 
-	[Test, Order(0)]
+	[Test, Order(1)]
 	public void VerifyEditorInitialEventStates()
 	{
 		App.WaitForElement("TestEditor");
@@ -35,8 +35,8 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='Test Editor'"));
 	}
 
-	[Test, Order(4)]
-	public void VerifyEditorCompletedEvent()
+	[Test, Order(2)]
+	public async Task VerifyEditorFocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
@@ -51,7 +51,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //when using App.EnterText() in a multiline field like an Editor, it types the text and then presses the Return key — which adds a new line.
-	[Test, Order(2)]
+	[Test, Order(3)]
 	public void VerifyEditorTextChangedEvent()
 	{
 
@@ -67,22 +67,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(1)]
-	public async Task VerifyEditorFocusedEvent()
-	{
-		App.WaitForElement("TestEditor");
-		App.Tap("TestEditor");
-		await Task.Delay(100);
-#if ANDROID || IOS
-		if (App.IsKeyboardShown())
-		{
-			App.DismissKeyboard();
-		}
-#endif
-		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
-	}
-
-	[Test, Order(3)]
+	[Test, Order(4)]
 	public async Task VerifyEditorUnfocusedEvent()
 	{
 		App.WaitForElement("TestEditor");
@@ -98,8 +83,18 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
 
-	[Test]
-	public void VerifyEditorTextWhenAlingnedHorizontally()
+	[Test, Order(5)]
+	public void VerifyEditorCompletedEvent()
+	{
+		App.WaitForElement("TestEditor");
+		App.Tap("TestEditor");
+		App.PressEnter();
+		App.DismissKeyboard();
+		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
+	}
+
+	[Test, Order(6)]
+	public void VerifyEditorTextWhenAlignedHorizontally()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -111,8 +106,8 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
-	public void VerifyEditorTextWhenAlingnedVertically()
+	[Test, Order(7)]
+	public void VerifyEditorTextWhenAlignedVertically()
 	{
 		App.Tap("Options");
 		App.WaitForElement("VEnd");
@@ -124,7 +119,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Editor control even if its IsReadOnly property is set to true.
-	[Test]
+	[Test, Order(8)]
 	public void VerifyTextEditorWhenSetAsReadOnly()
 	{
 		App.WaitForElement("Options");
@@ -139,7 +134,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(9)]
 	public void VerifyEditorTextWhenFontFamilySetValue()
 	{
 		App.WaitForElement("Options");
@@ -152,7 +147,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(10)]
 	public void VerifyEditorTextWhenCharacterSpacingSetValues()
 	{
 		App.WaitForElement("Options");
@@ -166,7 +161,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(11)]
 	public void VerifyEditorHorizontalTextAlignmentBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -182,7 +177,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(12)]
 	public void VerifyEditorVerticalTextAlignmentBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -198,7 +193,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(13)]
 	public void VerifyEditorCharacterSpacingWhenFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -214,7 +209,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(14)]
 	public void VerifyEditorCharacterSpacingWhenMaxLengthSet()
 	{
 		App.WaitForElement("Options");
@@ -224,7 +219,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("CharacterSpacing", "5");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -234,14 +229,14 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(15)]
 	public void VerifyEditorTextWhenMaxLengthSetValue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -252,14 +247,14 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Editor control even if its IsReadOnly property is set to true.
-	[Test]
+	[Test, Order(16)]
 	public void VerifyEditorMaxLengthWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("ReadOnlyTrue");
 		App.Tap("ReadOnlyTrue");
 		App.WaitForElement("MaxLength");
@@ -274,7 +269,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(17)]
 	public void VerifyEditorHorizontalTextAlignmentWhenVerticalTextAlignmentSet()
 	{
 		App.WaitForElement("Options");
@@ -289,7 +284,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(18)]
 	public void VerifyEditorTextWhenTextColorSetCorrectly()
 	{
 		App.WaitForElement("Options");
@@ -303,7 +298,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(19)]
 	public void VerifyEditorTextWhenFontSizeSetCorrectly()
 	{
 		App.WaitForElement("Options");
@@ -318,7 +313,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29833
-		[Test]
+		[Test, Order(20)]
 		public void VerifyEditorTextWhenIsTextPredictionEnabledTrueOrFalse()
 		{
 			App.WaitForElement("Options");
@@ -334,7 +329,7 @@ public class EditorFeatureTests : _GalleryUITest
 			Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("Testing "));
 		}
 
-		[Test]
+		[Test, Order(21)]
 		public void VerifyEditorTextWhenIsSpellCheckEnabledTrueOrFalse()
 		{
 			App.WaitForElement("Options");
@@ -371,7 +366,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
 
-	[Test]
+	[Test, Order(22)]
 	public void VerifyEditorTextWhenCursorPositionValueSet()
 	{
 		App.WaitForElement("Options");
@@ -390,7 +385,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("11"));
 	}
 
-	[Test]
+	[Test, Order(23)]
 	public void VerifyEditorCursorPositionWhenSelectionLengthSetValue()
 	{
 		App.WaitForElement("Options");
@@ -415,7 +410,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS // On Windows, cursor position and selection length still work when the Entry is set to read-only.
-	[Test]
+	[Test, Order(24)]
 	public void VerifyEditorCursorPositionWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
@@ -429,8 +424,8 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("0"));
 	}
 
-	[Test]
-	public void VerifyEditorSelectionLenghtWhenIsReadOnlyTrue()
+	[Test, Order(25)]
+	public void VerifyEditorSelectionLengthWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -450,7 +445,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //keybord type is not supported on Windows and Maccatalyst platforms & On Android & IOS related issue:https://github.com/dotnet/maui/issues/26968
-	[Test]
+	[Test, Order(26)]
 	public void VerifyEditorTextWhenKeyboardTypeSet()
 	{
 		App.WaitForElement("Options");
@@ -464,7 +459,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(27)]
 	public void VerifyEditorTextWhenReturnTypeSet()
 	{
 		App.WaitForElement("Options");
@@ -481,7 +476,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
-	[Test]
+	[Test, Order(28)]
 	public void VerifyEditorControlWhenIsEnabledTrueOrFalse()
 	{
 		App.WaitForElement("Options");
@@ -496,7 +491,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(29)]
 	public void VerifyEditorControlWhenIsVisibleTrueOrFalse()
 	{
 		App.WaitForElement("Options");
@@ -513,7 +508,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForNoElement("TestEditor");
 	}
 
-	[Test]
+	[Test, Order(30)]
 	public void VerifyEditorControlWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -527,7 +522,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //On Windows, the placeholder is not visible because its text alignment is reset to default values when navigating to the page. This issue occurs only in the Host App.
-	[Test]
+	[Test, Order(31)]
 	public void VerifyEditorPlaceholderWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -546,7 +541,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 
-	[Test]
+	[Test, Order(32)]
 	public void VerifyEditorControlWhenPlaceholderTextSet()
 	{
 		App.WaitForElement("Options");
@@ -561,7 +556,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(33)]
 	public void VerifyEditorControlWhenPlaceholderColorSet()
 	{
 		App.WaitForElement("Options");
@@ -580,7 +575,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(34)]
 	public void VerifyEditorWhenTextChanged()
 	{
 		App.WaitForElement("Options");
@@ -593,7 +588,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("New Text Changed"));
 	}
 
-	[Test]
+	[Test, Order(35)]
 	public void VerifyEditorTextWhenFontAttributesSet()
 	{
 		App.WaitForElement("Options");
@@ -606,7 +601,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(36)]
 	public void VerifyEditorTextWhenTextTransFormSet()
 	{
 		App.WaitForElement("Options");
@@ -619,38 +614,8 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("TEST EDITOR"));
 	}
 
-	[Test]
-	public void VerifyzEditorTextWhenAutoSizeTextChangesSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("AutoSizeTextChanges");
-		App.Tap("AutoSizeTextChanges");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshotWithKeyboardHandling();
-	}
-
-	[Test]
-	public void VerifyzEditorTextWhenAutoSizeDisabled()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshotWithKeyboardHandling();
-	}
-
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
-	[Test]
+	[Test, Order(37)]
 	public void VerifyEditor_WithShadow()
 	{
 		App.WaitForElement("Options");
@@ -665,7 +630,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(38)]
 	public void VerifyEditorPlaceholderWithShadow()
 	{
 		App.WaitForElement("Options");
@@ -685,7 +650,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS //On Windows, the placeholder is not visible because its text alignment is reset to default values when navigating to the page. This issue occurs only in the Host App.
-	[Test]
+	[Test, Order(39)]
 	public void VerifyEditorPlaceholderWithHorizontalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -703,7 +668,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(40)]
 	public void VerifyEditorPlaceholderWithVerticalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -722,7 +687,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
-	[Test]
+	[Test, Order(41)]
 	public void VerifyEditorPlaceholderWithCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -742,7 +707,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(42)]
 	public void VerifyEditorPlaceholderWithFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -760,7 +725,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(43)]
 	public void VerifyEditorPlaceholderWithFontSize()
 	{
 		App.WaitForElement("Options");
@@ -779,7 +744,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(44)]
 	public void VerifyEditorPlaceholderWithFontAttributes()
 	{
 		App.WaitForElement("Options");
@@ -798,8 +763,8 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/30571
-	[Test]
-	public void VerifyzEditorPlaceholderWithAutoSizeDiabled()
+	public void VerifyEditorPlaceholderWithAutoSizeDisabled()
+	[Test, Order(45)]
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -814,8 +779,8 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
-	public void VerifyzEditorPlaceholderWithAutoSizeTextChanges()
+	public void VerifyEditorPlaceholderWithAutoSizeTextChanges()
+	[Test, Order(46)]
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -833,6 +798,36 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 #endif
+
+	[Test, Order(47)]
+	public void VerifyEditorTextWhenAutoSizeDisabled()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshotWithKeyboardHandling();
+	}
+
+	[Test, Order(48)]
+	public void VerifyEditorTextWhenAutoSizeTextChangesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("AutoSizeTextChanges");
+		App.Tap("AutoSizeTextChanges");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshotWithKeyboardHandling();
+	}
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping

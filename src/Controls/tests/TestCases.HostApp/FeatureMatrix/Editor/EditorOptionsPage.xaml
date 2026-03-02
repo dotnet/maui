@@ -36,7 +36,7 @@
                                    VerticalTextAlignment="Center"/>
                             <Entry x:Name="FontSizeEntry"
                                    Text="{Binding FontSize}"
-                                   TextChanged="FontFamilyEditor_TextChanged"
+                                   TextChanged="FontSizeEditor_TextChanged"
                                    AutomationId="FontSizeEntry"
                                    WidthRequest="100"/>
                      </HorizontalStackLayout>
@@ -285,36 +285,6 @@
                                    TextChanged="CharacterSpacing_TextChanged"
                                    WidthRequest="100"/>
                      </HorizontalStackLayout>
-                     <!-- ReturnType -->
-                     <Label Text="ReturnType"
-                            FontSize="11"/>
-                     <VerticalStackLayout
-                            Spacing="1">
-                            <HorizontalStackLayout
-                                   Spacing="1">
-                                   <Button Text="Default"
-                                           AutomationId="Default"
-                                           Clicked="ReturnTypeButton_Clicked"/>
-                                   <Button Text="Next"
-                                           AutomationId="Next"
-                                           Clicked="ReturnTypeButton_Clicked"/>
-                                   <Button Text="Send"
-                                           AutomationId="Send"
-                                           Clicked="ReturnTypeButton_Clicked"/>
-                            </HorizontalStackLayout>
-                            <HorizontalStackLayout
-                                   Spacing="1">
-                                   <Button Text="Go"
-                                           AutomationId="Go"
-                                           Clicked="ReturnTypeButton_Clicked"/>
-                                   <Button Text="Search"
-                                           AutomationId="Search"
-                                           Clicked="ReturnTypeButton_Clicked"/>
-                                   <Button Text="Done"
-                                           AutomationId="Done"
-                                           Clicked="ReturnTypeButton_Clicked"/>
-                            </HorizontalStackLayout>
-                     </VerticalStackLayout>
                      <!-- Max Length -->
                      <HorizontalStackLayout>
                             <Label Text="Max Length:"

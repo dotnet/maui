@@ -79,23 +79,6 @@ public partial class EditorOptionsPage : ContentPage
 		}
 	}
 
-	private void ReturnTypeButton_Clicked(object sender, EventArgs e)
-	{
-		if (sender is Button button)
-		{
-			_viewModel.ReturnType = button.AutomationId switch
-			{
-				"Done" => ReturnType.Done,
-				"Next" => ReturnType.Next,
-				"Go" => ReturnType.Go,
-				"Search" => ReturnType.Search,
-				"Send" => ReturnType.Send,
-				"Default" => ReturnType.Default,
-				_ => _viewModel.ReturnType
-			};
-		}
-	}
-
 	private void MaxLengthButton_Clicked(object sender, EventArgs e)
 	{
 		if (int.TryParse(MaxLengthEntry.Text, out int maxLength))

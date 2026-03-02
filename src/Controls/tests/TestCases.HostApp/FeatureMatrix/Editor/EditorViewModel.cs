@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 public class EditorViewModel : INotifyPropertyChanged
@@ -14,7 +13,6 @@ public class EditorViewModel : INotifyPropertyChanged
 	private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
 	private TextAlignment _verticalTextAlignment = TextAlignment.End;
 	private double _characterSpacing = 0;
-	private ReturnType _returnType = ReturnType.Default;
 	private int _maxLength = -1;
 	private int _cursorPosition = 0;
 	private int _selectionLength = 0;
@@ -23,7 +21,7 @@ public class EditorViewModel : INotifyPropertyChanged
 	private bool _isSpellCheckEnabled = false;
 	private Keyboard _keyboard = Keyboard.Default;
 	private string _fontFamily = null;
-	private bool isVisible = true;
+	private bool _isVisible = true;
 	private bool _isEnabled = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private bool _hasShadow = false;
@@ -38,19 +36,6 @@ public class EditorViewModel : INotifyPropertyChanged
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
-	public ICommand ReturnCommand { get; set; }
-	public EditorViewModel()
-	{
-		ReturnCommand = new Command<string>(
-			execute: (entryText) =>
-			{
-				if (entryText == "Test")
-				{
-					Text = "Command Executed with Parameter";
-				}
-			}
-		);
-	}
 	public string Text
 	{
 		get => _text;
@@ -104,12 +89,6 @@ public class EditorViewModel : INotifyPropertyChanged
 		set { _characterSpacing = value; OnPropertyChanged(); }
 	}
 
-	public ReturnType ReturnType
-	{
-		get => _returnType;
-		set { _returnType = value; OnPropertyChanged(); }
-	}
-
 	public int MaxLength
 	{
 		get => _maxLength;
@@ -143,8 +122,8 @@ public class EditorViewModel : INotifyPropertyChanged
 
 	public bool IsVisible
 	{
-		get => isVisible;
-		set { isVisible = value; OnPropertyChanged(); }
+		get => _isVisible;
+		set { _isVisible = value; OnPropertyChanged(); }
 	}
 
 	public bool IsEnabled

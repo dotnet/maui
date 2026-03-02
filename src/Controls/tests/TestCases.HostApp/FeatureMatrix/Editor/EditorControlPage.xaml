@@ -84,6 +84,7 @@
                                         Grid.Column="0"/>
                      <local:UITestEntry x:Name="CursorPositionEntry"
                                         Text="{Binding CursorPosition}"
+                                        TextChanged="CursorPositionButton_Clicked"
                                         AutomationId="CursorPositionEntry"
                                         IsCursorVisible="False"
                                         Grid.Row="1"
