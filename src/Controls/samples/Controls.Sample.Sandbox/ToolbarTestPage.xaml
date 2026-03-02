@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ToolbarTestPage"
+             Title="Toolbar Test">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add"
+                IconImageSource="groceries.png"
+                Order="Primary"
+                Priority="0"
+                Clicked="OnAddClicked"/>
+        <ToolbarItem Text="Edit"
+                IconImageSource="dotnet_bot.png"
+                Order="Primary"
+                Priority="1"
+                Clicked="OnEditClicked"/>
+        <ToolbarItem Text="Delete"
+                Order="Secondary"
+                Clicked="OnDeleteClicked"/>
+        <ToolbarItem Text="Share"
+                Order="Secondary"
+                Clicked="OnShareClicked"/>
+        <ToolbarItem Text="More"
+                Order="Secondary"
+                Clicked="OnMoreClicked"/>
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="15"
+                Padding="20">
+            <Label Text="Toolbar Tests"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+
+            <!-- Toolbar Item Tests -->
+            <Label Text="Toolbar Item Tests"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Label Text="✓ This page has 5 toolbar items (2 primary, 3 secondary)"
+                    TextColor="Green"/>
+            <Label Text="✓ Primary items should show as icons in toolbar"
+                    TextColor="Green"/>
+            <Label Text="✓ Secondary items should be in overflow menu (⋮)"
+                    TextColor="Green"/>
+
+            <!-- Dynamic Toolbar Changes -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label Text="Dynamic Toolbar Changes"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Button Text="Add New Toolbar Item"
+                    Clicked="OnAddToolbarItemClicked"/>
+            <Button Text="Remove Last Toolbar Item"
+                    Clicked="OnRemoveToolbarItemClicked"/>
+            <Button Text="Toggle Toolbar Item Enabled"
+                    Clicked="OnToggleEnabledClicked"/>
+
+            <!-- Title Changes -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label Text="Title Tests"
+                    FontSize="18"
+                    FontAttributes="Bold"/>
+            <Button Text="Change Title"
+                    Clicked="OnChangeTitleClicked"/>
+            <Button Text="Long Title Test"
+                    Clicked="OnLongTitleClicked"/>
+            <Button Text="Reset Title"
+                    Clicked="OnResetTitleClicked"/>
+
+            <!-- Status -->
+            <BoxView HeightRequest="1"
+                    Color="Gray"
+                    Margin="0,10"/>
+            <Label x:Name="StatusLabel"
+                   Text="Status: Ready"
+                   FontSize="12"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,5 +1,85 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
+             Title="Main Page"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
-</ContentPage>
+
+        <ScrollView>
+                <VerticalStackLayout Spacing="15"
+                                     Padding="30,20"
+                                     VerticalOptions="Start">
+                        <Label Text="Home Tab (Single Content Mode)"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+
+                        <Label Text="This tab has only 1 ShellContent"
+                               FontSize="12"
+                               TextColor="Gray"
+                               HorizontalOptions="Center"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="Navigation Tests"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="Push Page (Navigation.PushAsync)"
+                                AutomationId="NavigateButton"
+                                Clicked="Button_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="GoToAsync Tests (Single Content → Other Tabs)"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="GoToAsync → Settings Tab"
+                                AutomationId="GoToSettingsButton"
+                                Clicked="GoToSettings_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="GoToAsync → Multi-Tab/Content1"
+                                AutomationId="GoToMultiTab1Button"
+                                Clicked="GoToMultiTab1_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="GoToAsync → Multi-Tab/Content2"
+                                AutomationId="GoToMultiTab2Button"
+                                Clicked="GoToMultiTab2_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="GoToAsync → Tests/NavigationTest"
+                                AutomationId="GoToTestsButton"
+                                Clicked="GoToTests_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+
+                        <Label Text="Flyout Tests"
+                               FontSize="16"
+                               FontAttributes="Bold"/>
+
+                        <Button Text="Toggle Flyout"
+                                AutomationId="ToggleFlyoutButton"
+                                Clicked="ToggleFlyoutButton_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <Button Text="Change Flyout Background"
+                                AutomationId="ChangeFlyoutBackgroundButton"
+                                Clicked="ChangeFlyoutBackgroundButton_Clicked"
+                                HorizontalOptions="Fill"/>
+
+                        <BoxView HeightRequest="1"
+                                 Color="LightGray"
+                                 Margin="0,10"/>
+                </VerticalStackLayout>
+        </ScrollView>
+</ContentPage> 
