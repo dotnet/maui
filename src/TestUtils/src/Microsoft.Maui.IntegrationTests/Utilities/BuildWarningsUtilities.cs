@@ -193,6 +193,7 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
+				File = "ILC",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
 					new WarningsPerCode
