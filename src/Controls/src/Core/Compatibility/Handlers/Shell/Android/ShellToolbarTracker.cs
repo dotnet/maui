@@ -31,6 +31,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 
+#pragma warning disable IDE0031 // Use null propagation
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellToolbarTracker : Java.Lang.Object, AView.IOnClickListener, IShellToolbarTracker, IFlyoutBehaviorObserver
@@ -102,7 +103,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			get
 			{
-				if (_page?.Navigation?.NavigationStack?.Count > 1)
+				var navStackCount = _page?.Navigation?.NavigationStack?.Count ?? 0;
+				var canNavFromStack = navStackCount > 1;
+
+				if (canNavFromStack)
 					return true;
 
 				return _canNavigateBack;
@@ -478,7 +482,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				defaultDrawerArrowDrawable = true;
 			}
 
-			icon?.Progress = (CanNavigateBack) ? 1 : 0;
+			var canNav = CanNavigateBack;
+			var progress = canNav ? 1 : 0;
+			icon?.Progress = progress;
 
 			if (command != null || CanNavigateBack)
 			{
@@ -507,6 +513,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_drawerToggle.SyncState();
 
+			// Re-apply icon Progress AFTER SyncState since SyncState resets it to 0
+			if (icon is not null)
+			{
+				icon.Progress = progress;
+			}
 
 			//this needs to be set after SyncState
 			UpdateToolbarIconAccessibilityText(toolbar, _shell);
@@ -691,6 +702,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
+				// BUG FIX: Remove the collapsible search menu item when navigating to a page without SearchHandler
+				// Previously, only _searchView was cleaned up, but the menu item remained visible
+				if (menu.FindItem(_placeholderMenuItemId) is not null)
+				{
+					menu.RemoveItem(_placeholderMenuItemId);
+				}
+
 				if (_searchView != null)
 				{
 					_searchView.View.RemoveFromParent();
