@@ -12,8 +12,7 @@
              RowSpacing="10">
               <!-- CheckBox Control -->
 
-              <CheckBox x:Name="MyCheckBox"
-                        IsChecked="{Binding IsChecked}"
+              <CheckBox IsChecked="{Binding IsChecked}"
                         Color="{Binding Color}"
                         Grid.ColumnSpan="2"
                         HorizontalOptions="Center"
@@ -120,9 +119,10 @@
                             <Label Text="Command Parameter"
                                    FontAttributes="Bold"
                                    Margin="0,15,0,0"/>
-                            <Entry Text="{Binding CommandParameter}"
+                            <local:UITestEntry Text="{Binding CommandParameter}"
                                    Placeholder="Enter command parameter"
-                                   AutomationId="CommandParameterEntry"/>
+                                   AutomationId="CommandParameterEntry"
+                                   IsCursorVisible="False"/>
                      </StackLayout>
 
                      <!-- Shadow -->
