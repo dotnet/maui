@@ -49,20 +49,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (!props.Add(propertyName))
 		{
-			// Property is being set multiple times - check if this warning should be suppressed via NoWarn
-			var noWarn = Context.ProjectItem.NoWarn;
-			bool shouldSuppress = !string.IsNullOrEmpty(noWarn) &&
-				noWarn.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-					.Select(code => code.Trim())
-					.Where(code => !string.IsNullOrWhiteSpace(code))
-					.Any(code => code == "2015" || code == "MAUIX2015");
-
-			if (!shouldSuppress)
-			{
-				var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
-				var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
-			}
+			var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
+			var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
 		}
 	}
 
