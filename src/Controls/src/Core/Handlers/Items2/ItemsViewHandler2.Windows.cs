@@ -1456,9 +1456,29 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				break;
 		}
 
+		if (platformView.IsLoaded)
+		{
+			PerformScrollTo(platformView, index, offset, args.IsAnimated);
+		}
+		else
+		{
+			platformView.Loaded -= OnPlatformViewLoaded;
+
+			void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
+			{
+				platformView.Loaded -= OnPlatformViewLoaded;
+				PerformScrollTo(platformView, index, offset, args.IsAnimated);
+			}
+			platformView.Loaded += OnPlatformViewLoaded;
+		}
+
+	}
+
+	void PerformScrollTo(WItemsView platformView, int index, double offset, bool animated)
+	{
 		platformView.StartBringItemIntoView(index, new BringIntoViewOptions()
 		{
-			AnimationDesired = args.IsAnimated,
+			AnimationDesired = animated,
 			VerticalAlignmentRatio = offset,
 			HorizontalAlignmentRatio = offset
 		});
