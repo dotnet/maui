@@ -96,17 +96,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					break;
 				case UIGestureRecognizerState.Ended:
 					collectionView.EndInteractiveMovement();
-					// UICollectionView doesn't refresh supplementary views after interactive movement.
-					// Reload sections so group headers reflect updated data (e.g. item counts).
-					if (ItemsView?.IsGrouped == true)
-					{
-						var sectionCount = collectionView.NumberOfSections();
-						if (sectionCount > 0)
-						{
-							UIView.PerformWithoutAnimation(() =>
-								collectionView.ReloadSections(NSIndexSet.FromNSRange(new NSRange(0, sectionCount))));
-						}
-					}
 					break;
 				default:
 					collectionView.CancelInteractiveMovement();
@@ -126,12 +115,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (itemsView.IsGrouped)
 			{
-				// Validate that the destination section exists
-				if (destinationIndexPath.Section >= itemsSource.GroupCount)
-				{
-					return;
-				}
-
 				var fromList = itemsSource.Group(sourceIndexPath) as IList;
 				var fromItemsSource = fromList is INotifyCollectionChanged ? itemsSource.GroupItemsViewSource(sourceIndexPath) : null;
 				var fromItemIndex = sourceIndexPath.Row;
@@ -140,39 +123,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var toItemsSource = toList is INotifyCollectionChanged ? itemsSource.GroupItemsViewSource(destinationIndexPath) : null;
 				var toItemIndex = destinationIndexPath.Row;
 
-				// Validate source indices
-				if (fromList == null || fromItemIndex < 0 || fromItemIndex >= fromList.Count)
+				if (fromList != null && toList != null)
 				{
-					return;
+					var fromItem = fromList[fromItemIndex];
+					SetObserveChanges(fromItemsSource, false);
+					SetObserveChanges(toItemsSource, false);
+					fromList.RemoveAt(fromItemIndex);
+					toList.Insert(toItemIndex, fromItem);
+					SetObserveChanges(fromItemsSource, true);
+					SetObserveChanges(toItemsSource, true);
+					itemsView.SendReorderCompleted();
 				}
-
-				if (toList == null)
-				{
-					return;
-				}
-
-				// For empty groups, ensure we insert at index 0
-				if (toList.Count == 0)
-				{
-					toItemIndex = 0;
-				}
-				else if (toItemIndex > toList.Count)
-				{
-					toItemIndex = toList.Count;
-				}
-				else if (toItemIndex < 0)
-				{
-					toItemIndex = 0;
-				}
-
-				var fromItem = fromList[fromItemIndex];
-				SetObserveChanges(fromItemsSource, false);
-				SetObserveChanges(toItemsSource, false);
-				fromList.RemoveAt(fromItemIndex);
-				toList.Insert(toItemIndex, fromItem);
-				SetObserveChanges(fromItemsSource, true);
-				SetObserveChanges(toItemsSource, true);
-				itemsView.SendReorderCompleted();
 			}
 			else if (itemsView.ItemsSource is IList list)
 			{
