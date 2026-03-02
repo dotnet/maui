@@ -31,7 +31,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_carouselView.SetIsDragging(false);
 			}
 
-			// Detect programmatic scrolling
+			// Detect programmatic scrolling.
+			// Note: this also covers the case where a user drag transitions to settling
+			// (IsDragging becomes false before ScrollStateSettling fires). This intentionally
+			// aligns Android behavior with iOS: CurrentItem is only updated once scrolling
+			// fully completes, not during the settling phase.
 			if (state == RecyclerView.ScrollStateSettling && !_carouselView.IsDragging)
 			{
 				_isProgrammaticScrolling = true;
@@ -56,7 +60,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (_isProgrammaticScrolling)
 			{
-				// Cache scroll data for programmatic scrolls - will be processed when ScrollStateIdle is reached
+				// Cache scroll data for programmatic scrolls - will be processed when ScrollStateIdle is reached.
+				// Note: Only the most recent delta is retained. If CurrentItem is changed
+				// programmatically multiple times during a single animation, earlier intermediate
+				// positions are not separately finalized. This is an accepted limitation.
 				_lastDx = dx;
 				_lastDy = dy;
 			}
