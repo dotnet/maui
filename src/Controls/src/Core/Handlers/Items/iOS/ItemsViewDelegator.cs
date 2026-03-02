@@ -55,6 +55,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			PreviousHorizontalOffset = (float)contentOffsetX;
 			PreviousVerticalOffset = (float)contentOffsetY;
 
+			if (!visibleItems)
+				return;
+
 			switch (itemsView.RemainingItemsThreshold)
 			{
 				case -1:
