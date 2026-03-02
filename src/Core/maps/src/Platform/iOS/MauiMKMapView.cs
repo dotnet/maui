@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 using MapKit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -102,21 +104,34 @@ namespace Microsoft.Maui.Maps.Platform
 
 			const string defaultPinId = "defaultPin";
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
+
+			// Find the IMapPin associated with this annotation
+			IMapPin? pin = GetPinForAnnotation(annotation);
+
+			// Determine if we need a custom image view or the default marker view
+			bool hasCustomImage = pin?.ImageSource != null;
+			string reuseId = hasCustomImage ? "customPin" : "defaultPin";
+
+			mapPin = mapView.DequeueReusableAnnotation(reuseId);
 			if (mapPin == null)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(11))
+				if (hasCustomImage)
 				{
-					mapPin = new MKMarkerAnnotationView(annotation, defaultPinId);
+					// Use MKAnnotationView for custom images
+					mapPin = new MKAnnotationView(annotation, reuseId);
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11))
+				{
+					mapPin = new MKMarkerAnnotationView(annotation, reuseId);
 				}
 				else
 				{
-					mapPin = new MKPinAnnotationView(annotation, defaultPinId);
-
+					mapPin = new MKPinAnnotationView(annotation, reuseId);
 				}
 
 				mapPin.CanShowCallout = true;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11))
+				if (!hasCustomImage && OperatingSystem.IsIOSVersionAtLeast(11))
 				{
 					// Need to set this to get the callout bubble to show up
 					// Without this no callout is shown, it's displayed differently
@@ -129,8 +144,6 @@ namespace Microsoft.Maui.Maps.Platform
 			// Set clustering identifier if clustering is enabled
 			if (_isClusteringEnabled && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				// Get the clustering identifier from the pin
-				var pin = GetPinForAnnotation(annotation);
 				if (pin != null)
 				{
 					mapPin.ClusteringIdentifier = pin.ClusteringIdentifier;
@@ -143,7 +156,15 @@ namespace Microsoft.Maui.Maps.Platform
 				// re-applied from GetPinForAnnotation when clustering is re-enabled.
 				mapPin.ClusteringIdentifier = null;
 			}
-			
+
+			// Apply custom image if present
+			if (hasCustomImage && pin?.ImageSource != null)
+			{
+				// Clear any existing image on a reused annotation view before loading the new one
+				mapPin.Image = null;
+				ApplyCustomImageAsync(mapPin, pin).FireAndForget();
+			}
+
 			AttachGestureToPin(mapPin, annotation);
 
 			return mapPin;
@@ -222,6 +243,57 @@ namespace Microsoft.Maui.Maps.Platform
 				rect.Height * 1.2);
 
 			SetVisibleMapRect(paddedRect, true);
+		}
+
+		async System.Threading.Tasks.Task ApplyCustomImageAsync(MKAnnotationView annotationView, IMapPin pin)
+		{
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			if (handler?.MauiContext == null || pin.ImageSource == null)
+				return;
+
+			// Capture the annotation before the async operation to detect reuse
+			var targetAnnotation = annotationView.Annotation;
+
+			try
+			{
+				var result = await pin.ImageSource.GetPlatformImageAsync(handler.MauiContext);
+
+				// Verify the annotation view hasn't been reused for a different pin
+				if (annotationView.Annotation != targetAnnotation)
+					return;
+
+				if (result?.Value is UIImage image)
+				{
+					// Scale image to appropriate pin size (32x32 points)
+					var scaledImage = ScaleImage(image, new CoreGraphics.CGSize(32, 32));
+					annotationView.Image = scaledImage;
+				}
+			}
+			catch (Exception ex)
+			{
+				if (_handlerRef.TryGetTarget(out var currentHandler))
+				{
+					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
+					logger?.LogWarning(ex, "Failed to load custom pin icon");
+				}
+			}
+		}
+
+		static UIImage ScaleImage(UIImage image, CoreGraphics.CGSize targetSize)
+		{
+			var size = image.Size;
+			var widthRatio = targetSize.Width / size.Width;
+			var heightRatio = targetSize.Height / size.Height;
+			var ratio = (nfloat)Math.Min(widthRatio, heightRatio);
+
+			var newSize = new CoreGraphics.CGSize(size.Width * ratio, size.Height * ratio);
+
+			UIGraphics.BeginImageContextWithOptions(newSize, false, image.CurrentScale);
+			image.Draw(new CoreGraphics.CGRect(0, 0, newSize.Width, newSize.Height));
+			var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return scaledImage ?? image;
 		}
 
 		internal void AddPins(IList pins)
