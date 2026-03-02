@@ -410,6 +410,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
+		[Fact]
+		public void MapElementIsVisibleDefaultIsTrue()
+		{
+			var polygon = new Polygon();
+			Assert.True(polygon.IsVisible);
+		}
+
+		[Fact]
+		public void MapElementIsVisibleCanBeSet()
+		{
+			var polygon = new Polygon();
+			polygon.IsVisible = false;
+			Assert.False(polygon.IsVisible);
+		}
+
+		[Fact]
+		public void MapElementZIndexDefaultIsZero()
+		{
+			var polyline = new Polyline();
+			Assert.Equal(0, polyline.ZIndex);
+		}
+
+		[Fact]
+		public void MapElementZIndexCanBeSet()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(0, 0),
+				Radius = new Distance(100)
+			};
+			circle.ZIndex = 5;
+			Assert.Equal(5, circle.ZIndex);
+		}
+
+		[Fact]
+		public void MapElementIsVisibleWorksOnAllTypes()
+		{
+			var polygon = new Polygon { IsVisible = false };
+			var polyline = new Polyline { IsVisible = false };
+			var circle = new Circle
+			{
+				Center = new Location(0, 0),
+				Radius = new Distance(100),
+				IsVisible = false
+			};
+
+			Assert.False(polygon.IsVisible);
+			Assert.False(polyline.IsVisible);
+			Assert.False(circle.IsVisible);
+		}
+
 		// Checks if for every item in the items source there's a corresponding pin
 		static bool IsMapWithItemsSource(IEnumerable itemsSource, Map map)
 		{
@@ -476,6 +527,97 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Items = itemsSource;
 			}
+		}
+
+		[Fact]
+		public void CircleClickedEventFires()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(37.79752, -122.40183),
+				Radius = new Distance(200),
+			};
+
+			bool eventFired = false;
+			circle.CircleClicked += (s, e) => eventFired = true;
+
+			((IMapElement)circle).Clicked();
+
+			Assert.True(eventFired);
+		}
+
+		[Fact]
+		public void PolygonClickedEventFires()
+		{
+			var polygon = new Polygon();
+			polygon.Geopath.Add(new Location(37.7997, -122.4050));
+			polygon.Geopath.Add(new Location(37.7997, -122.3980));
+			polygon.Geopath.Add(new Location(37.7950, -122.4015));
+
+			bool eventFired = false;
+			polygon.PolygonClicked += (s, e) => eventFired = true;
+
+			((IMapElement)polygon).Clicked();
+
+			Assert.True(eventFired);
+		}
+
+		[Fact]
+		public void PolylineClickedEventFires()
+		{
+			var polyline = new Polyline();
+			polyline.Geopath.Add(new Location(37.7930, -122.4100));
+			polyline.Geopath.Add(new Location(37.7940, -122.4050));
+
+			bool eventFired = false;
+			polyline.PolylineClicked += (s, e) => eventFired = true;
+
+			((IMapElement)polyline).Clicked();
+
+			Assert.True(eventFired);
+		}
+
+		[Fact]
+		public void CircleClickedEventSenderIsCircle()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(37.79752, -122.40183),
+				Radius = new Distance(200),
+			};
+
+			object sender = null;
+			circle.CircleClicked += (s, e) => sender = s;
+
+			((IMapElement)circle).Clicked();
+
+			Assert.Same(circle, sender);
+		}
+
+		[Fact]
+		public void PolygonClickedEventSenderIsPolygon()
+		{
+			var polygon = new Polygon();
+
+			object sender = null;
+			polygon.PolygonClicked += (s, e) => sender = s;
+
+			((IMapElement)polygon).Clicked();
+
+			Assert.Same(polygon, sender);
+		}
+
+		[Fact]
+		public void PolylineClickedEventSenderIsPolyline()
+		{
+			var polyline = new Polyline();
+
+			object sender = null;
+			polyline.PolylineClicked += (s, e) => sender = s;
+
+			((IMapElement)polyline).Clicked();
+
+			Assert.Same(polyline, sender);
 		}
 	}
 }
