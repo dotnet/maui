@@ -78,7 +78,7 @@
                      AutomationId="CommandStatusLabel"
                      Margin="0,0,10,10"/>
 
-              <StackLayout Spacing="10"
+              <VerticalStackLayout Spacing="10"
                            Padding="10"
                            Grid.Row="4"
                            Grid.ColumnSpan="2">
@@ -88,8 +88,8 @@
                             FontSize="14"
                             Margin="0,0,0,10"/>
                      <!-- This change is intentional. When IsEnabled is set to false, the CheckBox should not update IsChecked if the user taps it. To maintain consistent behavior, I also disabled the IsChecked Switch -->
-                     <StackLayout Orientation="Vertical">
-                            <StackLayout Orientation="Horizontal">
+                     <VerticalStackLayout>
+                            <HorizontalStackLayout >
                                    <Label Text="IsChecked"
                                           FontAttributes="Bold"
                                           Margin="0,15,0,0"/>
@@ -97,25 +97,25 @@
                                            IsEnabled="{Binding IsEnabled}"
                                            AutomationId="IsCheckedSwitch"/>
 
-                            </StackLayout>
-                            <StackLayout Orientation="Horizontal">
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout>
                                    <Label Text="IsEnabled"
                                           FontAttributes="Bold"
                                           Margin="0,15,0,0"/>
                                    <Switch IsToggled="{Binding IsEnabled}"
                                            AutomationId="IsEnabledSwitch"/>
-                            </StackLayout>
-                            <StackLayout Orientation="Horizontal">
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout>
                                    <Label Text="IsVisible"
                                           FontAttributes="Bold"
                                           Margin="0,15,0,0"/>
                                    <Switch IsToggled="{Binding IsVisible}"
                                            AutomationId="IsVisibleSwitch"/>
-                            </StackLayout>
-                     </StackLayout>
+                            </HorizontalStackLayout>
+                     </VerticalStackLayout>
 
                      <!-- Command Parameter -->
-                     <StackLayout Orientation="Horizontal">
+                     <HorizontalStackLayout>
                             <Label Text="Command Parameter"
                                    FontAttributes="Bold"
                                    Margin="0,15,0,0"/>
@@ -123,10 +123,10 @@
                                    Placeholder="Enter command parameter"
                                    AutomationId="CommandParameterEntry"
                                    IsCursorVisible="False"/>
-                     </StackLayout>
+                     </HorizontalStackLayout>
 
                      <!-- Shadow -->
-                     <StackLayout Orientation="Horizontal" Spacing="5">
+                     <HorizontalStackLayout Spacing="5">
                             <Label Text="Shadow"
                                    VerticalOptions="Center"
                                    VerticalTextAlignment="Center"
@@ -135,7 +135,7 @@
                             <CheckBox IsChecked="{Binding HasShadow}"
                                       VerticalOptions="End"
                                       AutomationId="HasShadowCheckBox"/>
-                     </StackLayout>
+                     </HorizontalStackLayout>
 
                      <!-- Color -->
                      <Grid ColumnDefinitions="*,1*,1*,1*"
@@ -172,7 +172,7 @@
                      <Button Text="Reset Changes"
                              Clicked="ResetButton_Clicked"
                              AutomationId="ResetButton"/>
-              </StackLayout>
+              </VerticalStackLayout>
        </Grid>
 </ContentPage>
 
