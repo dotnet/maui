@@ -87,6 +87,8 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBar
             }
         }
 
+        platformView.SetEndIconOnClickListener(null);
+
         base.DisconnectHandler(platformView);
     }
 
@@ -240,20 +242,56 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBar
 
     void OnEditorAction(object? sender, TextView.EditorActionEventArgs e)
     {
-        if (e.ActionId == ImeAction.Search || e.ActionId == ImeAction.Done)
+        var returnType = VirtualView?.ReturnType;
+
+        // Inside android implementations that map events to listeners, the default return value for "Handled" is always true.
+        // Setting handled to false here maintains default behavior.
+        bool handled = false;
+
+        if (returnType is not null && PlatformView?.EditText is not null)
         {
-            VirtualView?.SearchButtonPressed();
-            e.Handled = true;
+            var actionId = e.ActionId;
+            var evt = e.Event;
+            ImeAction currentInputImeFlag = PlatformView.EditText.ImeOptions;
+
+            // On API 34 the issue where actionId is ImeAction.ImeNull when using a hardware keyboard was fixed.
+            // Normalize it here so the rest of the logic is consistent across API levels.
+            if (actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter)
+            {
+                actionId = currentInputImeFlag;
+            }
+
+            // Hardware keyboard path: consume Down event, fire on Up event.
+            if (evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Down)
+            {
+                handled = true;
+            }
+            else if (evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Up)
+            {
+                VirtualView?.SearchButtonPressed();
+            }
+            // Input pane path: fire when the action matches either the default Search action
+            // or the ImeAction configured via ReturnType (Go, Send, Done, etc.).
+            else if (evt?.KeyCode is null && (actionId == ImeAction.Search || actionId == currentInputImeFlag))
+            {
+                VirtualView?.SearchButtonPressed();
+                // For Search, Go, Send the EditorAction is also invoked for KeyEventActions,
+                // which would cause SearchButtonPressed to fire twice — so consume the event.
+                if (actionId == ImeAction.Search ||
+                    actionId == ImeAction.Go ||
+                    actionId == ImeAction.Send)
+                {
+                    handled = true;
+                }
+            }
         }
-        else
-        {
-            e.Handled = false;
-        }
+
+        e.Handled = handled;
     }
 
     void OnSelectionChanged(object? sender, EventArgs e)
     {
-        if (PlatformView.EditText is null)
+        if (PlatformView.EditText is null || VirtualView is null)
         {
             return;
         }
