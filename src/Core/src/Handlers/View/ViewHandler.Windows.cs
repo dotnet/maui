@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -223,6 +224,15 @@ public partial class ViewHandler
 	private protected void UpdateIsFocused(bool isFocused)
 	{
 		if (VirtualView is not { } virtualView)
+		{
+			return;
+		}
+
+		// Skip the focus update if the window is being torn down to avoid accessing disposed services.
+		// Window.Destroying() calls Handler?.DisconnectHandler() before DisposeWindowScope(),
+		// so a null window handler indicates we are in the teardown phase.
+		var window = MauiContext?.GetOptionalPlatformWindow()?.GetWindow();
+		if (window?.Handler == null)
 		{
 			return;
 		}
