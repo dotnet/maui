@@ -275,8 +275,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		/// MaximumRowsOrColumns (Span) items fit per row/column.
 		/// Called from the handler's PlatformArrange with the arranged size, and
 		/// from span/spacing change handlers with the current ActualWidth/ActualHeight.
-		/// Does NOT use Math.Floor — fractional pixels are handled correctly by
-		/// ItemsStretch=Fill, avoiding right-side gaps from rounding.
+		/// Uses Math.Floor to ensure that floating-point rounding never causes
+		/// the layout to fit only (Span − 1) items. ItemsStretch=Fill recovers
+		/// the remaining sub-pixel gap so there are no visible right-side gaps.
 		/// </summary>
 		internal void UpdateGridLayoutItemSize(double arrangedWidth, double arrangedHeight)
 		{
@@ -296,7 +297,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 
 				var totalSpacing = gridLayout.MinColumnSpacing * (span - 1);
-				var itemWidth = (arrangedWidth - totalSpacing) / span;
+				var itemWidth = Math.Floor((arrangedWidth - totalSpacing) / span);
 				if (itemWidth > 0)
 				{
 					gridLayout.MinItemWidth = itemWidth;
@@ -308,7 +309,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 
 				var totalSpacing = gridLayout.MinRowSpacing * (span - 1);
-				var itemHeight = (arrangedHeight - totalSpacing) / span;
+				var itemHeight = Math.Floor((arrangedHeight - totalSpacing) / span);
 				if (itemHeight > 0)
 				{
 					gridLayout.MinItemHeight = itemHeight;
