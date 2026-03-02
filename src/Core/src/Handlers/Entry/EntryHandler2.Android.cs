@@ -37,6 +37,7 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		  [nameof(IEntry.CursorPosition)] = MapCursorPosition,
 		  [nameof(IEntry.SelectionLength)] = MapSelectionLength,
 		  [nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
+		  [nameof(IView.FlowDirection)] = MapFlowDirection,
 	  };
 
 	public static CommandMapper<IEntry, EntryHandler2> CommandMapper =
@@ -135,8 +136,19 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		}
 		else
 		{
+			// Save cursor position before EndIconMode change, which resets it
+			var cursorPosition = handler.PlatformView.EditText?.SelectionStart ?? 0;
+
 			// Re-evaluate clear button visibility
 			MapClearButtonVisibility(handler, entry);
+
+			// Material's EndIconPasswordToggle overrides the EditText's TransformationMethod.
+			// When IsPassword is turned off, explicitly reset it so text becomes visible.
+			if (handler.PlatformView.EditText is { } editText)
+			{
+				editText.TransformationMethod = null;
+				editText.SetSelection(Math.Min(cursorPosition, editText.Length()));
+			}
 		}
 	}
 
@@ -174,8 +186,15 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		}
 	}
 
-	public static void MapFont(EntryHandler2 handler, IEntry entry) =>
-		handler.PlatformView.EditText?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
+	public static void MapFont(EntryHandler2 handler, IEntry entry)
+	{
+		var fontManager = handler.GetRequiredService<IFontManager>();
+		handler.PlatformView.EditText?.UpdateFont(entry, fontManager);
+
+		// TextInputLayout has its own Typeface for the hint/placeholder text,
+		// separate from the EditText's Typeface which only affects input text.
+		handler.PlatformView.Typeface = fontManager.GetTypeface(entry.Font);
+	}
 
 	public static void MapIsReadOnly(EntryHandler2 handler, IEntry entry)
 	{
@@ -196,6 +215,12 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 
 	public static void MapCharacterSpacing(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateCharacterSpacing(entry);
+
+	public static void MapFlowDirection(EntryHandler2 handler, IEntry entry)
+	{
+		handler.PlatformView.UpdateFlowDirection(entry);
+		handler.PlatformView.EditText?.UpdateFlowDirection(entry);
+	}
 
 	public static void MapCursorPosition(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateCursorPosition(entry);
@@ -312,8 +337,13 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		e.Handled = handled;
 	}
 
-	private void OnSelectionChanged(object? sender, EventArgs e)
+	void OnSelectionChanged(object? sender, EventArgs e)
 	{
+		if (VirtualView is null)
+		{
+			return;
+		}
+
 		var cursorPosition = PlatformView.EditText?.GetCursorPosition() ?? 0;
 		var selectedTextLength = PlatformView.EditText?.GetSelectedTextLength() ?? 0;
 
@@ -343,9 +373,9 @@ internal class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 				handler.VirtualView is not null &&
 				handler.PlatformView.EditText is not null)
 			{
-				// Clear the text
+				// Clear the text — setting EditText.Text fires OnTextChanged,
+				// which propagates the value to VirtualView via UpdateText.
 				handler.PlatformView.EditText.Text = string.Empty;
-				handler.VirtualView.Text = string.Empty;
 			}
 		}
 	}
