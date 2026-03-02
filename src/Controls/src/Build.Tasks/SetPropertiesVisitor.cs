@@ -1697,10 +1697,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out TypeReference declaringTypeReference);
+			// Check the property itself for [Obsolete], then check the setter separately.
+			// In the rare case both carry [Obsolete], two diagnostics are emitted — matching
+			// C# compiler behavior, which also checks property declarations and accessors independently.
 			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, property.CustomAttributes);
 
 			var propertySetter = property.SetMethod;
-			LogObsoleteWarningOrError(context, iXmlLineInfo, localName, propertySetter.CustomAttributes);
+			if (propertySetter != null)
+				LogObsoleteWarningOrError(context, iXmlLineInfo, localName, propertySetter.CustomAttributes);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"
@@ -2088,7 +2092,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (isError)
 				{
 					// [Obsolete("msg", error: true)] must ALWAYS be an error,
-					// regardless of TreatWarningsAsErrors setting
+					// regardless of TreatWarningsAsErrors setting.
+					// XC0619 intentionally bypasses NoWarn, matching C# CS0619 behavior.
+					// Obsolete-as-error cannot be suppressed; users must remove the usage.
 					var code = ObsoletePropertyError;
 					var xamlFilePath = context.LoggingHelper.GetXamlFilePath(context.XamlFilePath);
 					context.LoggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), memberName, message);
