@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,8 +17,6 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
-using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -60,8 +59,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	View? _mauiHeader;
 	bool _headerDisplayed;
 
-	ScrollingScrollBarVisibility? _defaultHorizontalScrollVisibility;
-	ScrollingScrollBarVisibility? _defaultVerticalScrollVisibility;
+	ScrollViewer? _scrollViewer;
 
 	int _lastRemainingItemsThresholdIndex = -1;
 
@@ -218,11 +216,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			incc.CollectionChanged -= ItemsChanged;
 		}
 
-		if (platformView.ScrollView is not null)
+		if (_scrollViewer is not null)
 		{
-			platformView.ScrollView.ViewChanged -= ScrollViewChanged;
-			platformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
-			platformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
+			_scrollViewer.ViewChanged -= ScrollViewChanged;
+			_scrollViewer = null;
 		}
 
 		// Unsubscribe pending Loaded handler if ScrollView wasn't found yet
@@ -293,9 +290,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		_mauiFooter = null;
 		_footer = null;
 		_footerDisplayed = false;
-
-		_cachedSnapPointOffsets = null;
-		_lastSnapPointExtent = 0;
 
 		base.DisconnectHandler(platformView);
 	}
@@ -597,9 +591,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	{
 		FindScrollViewer();
 
-		_defaultHorizontalScrollVisibility = null;
-		_defaultVerticalScrollVisibility = null;
-
 		// Unsubscribe from the old layout's property changes and subscribe to the new layout
 		_layoutPropertyChangedProxy?.Unsubscribe();
 		_layoutPropertyChangedProxy = null;
@@ -680,9 +671,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		if (PlatformView.ScrollView is not null)
+		var scrollViewer = PlatformView.GetFirstDescendant<ScrollViewer>();
+		if (scrollViewer is not null)
 		{
-			OnScrollViewerFound();
+			OnScrollViewerFound(scrollViewer);
 			return;
 		}
 
@@ -703,24 +695,23 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		PlatformView.Loaded += _pendingLoadedHandler;
 	}
 
-	void OnScrollViewerFound()
+	void OnScrollViewerFound(ScrollViewer scrollViewer)
 	{
-		if (PlatformView is null || PlatformView.ScrollView is null)
+		if (_scrollViewer == scrollViewer)
 		{
 			return;
 		}
 
-		PlatformView.ScrollView.ViewChanged -= ScrollViewChanged;
-		PlatformView.ScrollView.PointerWheelChanged -= PointerScrollChanged;
-		PlatformView.ScrollView.ExtentChanged -= ScrollViewExtentChanged;
+		if (_scrollViewer is not null)
+		{
+			_scrollViewer.ViewChanged -= ScrollViewChanged;
+		}
 
-		PlatformView.ScrollView.ViewChanged += ScrollViewChanged;
-		PlatformView.ScrollView.PointerWheelChanged += PointerScrollChanged;
-		PlatformView.ScrollView.ExtentChanged += ScrollViewExtentChanged;
+		_scrollViewer = scrollViewer;
+		_scrollViewer.ViewChanged += ScrollViewChanged;
 
 		UpdateVerticalScrollBarVisibility();
 		UpdateHorizontalScrollBarVisibility();
-		UpdateSnapPoints();
 	}
 
 	void LayoutPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -768,146 +759,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 	}
 
-	double _lastSnapPointExtent;
-	List<double>? _cachedSnapPointOffsets;
-	SnapPointsType _cachedSnapPointsType;
-	SnapPointsAlignment _cachedSnapPointsAlignment;
-
-	void ScrollViewExtentChanged(Microsoft.UI.Xaml.Controls.ScrollView sender, object args)
-	{
-		// Only recalculate snap points when the extent actually changes
-		// to avoid redundant work during intermediate layout passes.
-		var currentExtent = IsLayoutHorizontal ? sender.ExtentWidth : sender.ExtentHeight;
-		if (currentExtent != _lastSnapPointExtent)
-		{
-			_lastSnapPointExtent = currentExtent;
-			UpdateSnapPoints();
-		}
-	}
-
 	void UpdateSnapPoints()
 	{
-		if (PlatformView?.ScrollView?.ScrollPresenter is not WScrollPresenter scrollPresenter)
-		{
-			return;
-		}
-
-		if (Layout is not ItemsLayout itemsLayout)
-		{
-			return;
-		}
-
-		var snapPointsType = itemsLayout.SnapPointsType;
-
-		if (snapPointsType == SnapPointsType.None)
-		{
-			scrollPresenter.HorizontalSnapPoints.Clear();
-			scrollPresenter.VerticalSnapPoints.Clear();
-			_cachedSnapPointOffsets = null;
-			_cachedSnapPointsType = SnapPointsType.None;
-			return;
-		}
-
-		// NOTE: MandatorySingle is treated identically to Mandatory.
-		// WinUI's ScrollPresenter snap point object model does not natively support
-		// "single item per gesture" limiting. Both Mandatory and MandatorySingle
-		// will snap to the nearest snap point, but a fling gesture can skip past
-		// multiple items. A true MandatorySingle implementation would require
-		// intercepting scroll inertia to limit travel distance, which is not
-		// supported by the current ScrollPresenter API.
-
-		var itemCount = _collectionViewSource?.View?.Count ?? 0;
-		if (itemCount == 0)
-		{
-			scrollPresenter.HorizontalSnapPoints.Clear();
-			scrollPresenter.VerticalSnapPoints.Clear();
-			_cachedSnapPointOffsets = null;
-			return;
-		}
-
-		var snapAlignment = itemsLayout.SnapPointsAlignment;
-
-		// Compute offsets from realized item containers.
-		// Uses actual measured sizes to handle variable-size items,
-		// complex templates, and async image loading.
-		double runningOffset = 0;
-		double spacing = 0;
-		var newOffsets = new List<double>();
-
-		if (Layout is LinearItemsLayout linearLayout)
-		{
-			spacing = linearLayout.ItemSpacing;
-		}
-		else if (Layout is GridItemsLayout gridLayout)
-		{
-			spacing = IsLayoutHorizontal ? gridLayout.HorizontalItemSpacing : gridLayout.VerticalItemSpacing;
-		}
-
-		foreach (var container in PlatformView.GetChildren<ItemContainer>())
-		{
-			if (container is null)
-			{
-				continue;
-			}
-
-			double itemExtent = IsLayoutHorizontal ? container.ActualWidth : container.ActualHeight;
-			if (itemExtent <= 0)
-			{
-				continue;
-			}
-
-			newOffsets.Add(runningOffset);
-			runningOffset += itemExtent + spacing;
-		}
-
-		if (newOffsets.Count == 0)
-		{
-			// Items not yet realized; snap points will be applied
-			// when ExtentChanged fires after items are laid out.
-			return;
-		}
-
-		// Skip rebuild if snap points haven't changed — avoids redundant
-		// WinUI collection clears and allocations on every ExtentChanged.
-		if (_cachedSnapPointOffsets is not null &&
-			_cachedSnapPointsType == snapPointsType &&
-			_cachedSnapPointsAlignment == snapAlignment &&
-			_cachedSnapPointOffsets.Count == newOffsets.Count &&
-			_cachedSnapPointOffsets.SequenceEqual(newOffsets))
-		{
-			return;
-		}
-
-		// Rebuild snap points — clear both axes to handle orientation changes
-		var alignment = GetScrollSnapPointsAlignment(snapAlignment);
-
-		scrollPresenter.HorizontalSnapPoints.Clear();
-		scrollPresenter.VerticalSnapPoints.Clear();
-
-		var snapPoints = IsLayoutHorizontal
-			? scrollPresenter.HorizontalSnapPoints
-			: scrollPresenter.VerticalSnapPoints;
-
-		foreach (var offset in newOffsets)
-		{
-			snapPoints.Add(new Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint(
-				offset, alignment));
-		}
-
-		_cachedSnapPointOffsets = newOffsets;
-		_cachedSnapPointsType = snapPointsType;
-		_cachedSnapPointsAlignment = snapAlignment;
-	}
-
-	static WScrollSnapPointsAlignment GetScrollSnapPointsAlignment(SnapPointsAlignment alignment)
-	{
-		return alignment switch
-		{
-			SnapPointsAlignment.Start => WScrollSnapPointsAlignment.Near,
-			SnapPointsAlignment.Center => WScrollSnapPointsAlignment.Center,
-			SnapPointsAlignment.End => WScrollSnapPointsAlignment.Far,
-			_ => WScrollSnapPointsAlignment.Near,
-		};
+		// Snap points via ScrollPresenter are not available with ScrollViewer.
+		// Snap point support requires implementing IScrollSnapPointsInfo on a custom panel
+		// if needed in the future. For now, snap points are not supported with ScrollViewer.
 	}
 
 	void UpdateEmptyView()
@@ -1183,102 +1039,55 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	void UpdateVerticalScrollBarVisibility()
 	{
+		if (_scrollViewer is null)
+			return;
+
 		var scrollBarVisibility = Element.VerticalScrollBarVisibility;
-		var scrollView = PlatformView.ScrollView;
-
-		if (scrollView is null)
-			return;
-
-		if (scrollBarVisibility != ScrollBarVisibility.Default)
-		{
-			// If the value is changing to anything other than the default, record the default
-			if (_defaultVerticalScrollVisibility is null)
-			{
-				_defaultVerticalScrollVisibility = scrollView.VerticalScrollBarVisibility;
-			}
-		}
-
-		if (_defaultVerticalScrollVisibility is null)
-		{
-			// If the default has never been recorded, then this has never been set to anything but the
-			// default value; there's nothing to do.
-			return;
-		}
 
 		switch (scrollBarVisibility)
 		{
 			case ScrollBarVisibility.Always:
-				scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
+				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Visible;
 				break;
 			case ScrollBarVisibility.Never:
-				scrollView.VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
+				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Hidden;
 				break;
 			case ScrollBarVisibility.Default:
-				scrollView.VerticalScrollBarVisibility = _defaultVerticalScrollVisibility.Value;
+				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
 				break;
 		}
-
 	}
 
 	void UpdateHorizontalScrollBarVisibility()
 	{
+		if (_scrollViewer is null)
+			return;
+
 		var scrollBarVisibility = Element.HorizontalScrollBarVisibility;
-		var scrollView = PlatformView.ScrollView;
-
-		if (scrollView is null)
-			return;
-
-		if (scrollBarVisibility != ScrollBarVisibility.Default)
-		{
-			// If the value is changing to anything other than the default, record the default
-			if (_defaultHorizontalScrollVisibility is null)
-			{
-				_defaultHorizontalScrollVisibility = scrollView.HorizontalScrollBarVisibility;
-			}
-		}
-
-		if (_defaultHorizontalScrollVisibility is null)
-		{
-			// If the default has never been recorded, then this has never been set to anything but the
-			// default value; there's nothing to do.
-			return;
-		}
 
 		switch (scrollBarVisibility)
 		{
 			case ScrollBarVisibility.Always:
-				scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Visible;
+				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Visible;
 				break;
 			case ScrollBarVisibility.Never:
-				scrollView.HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Hidden;
+				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Hidden;
 				break;
 			case ScrollBarVisibility.Default:
-				scrollView.HorizontalScrollBarVisibility = _defaultHorizontalScrollVisibility.Value;
+				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
 				break;
 		}
-
 	}
 
-	void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
+	void ScrollViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
 	{
-		if (PlatformView?.ScrollView is null)
+		if (_scrollViewer is null)
 			return;
 
-		if (PlatformView.ScrollView.ComputedHorizontalScrollMode == ScrollingScrollMode.Enabled)
-		{
-			PlatformView.ScrollView.AddScrollVelocity(new(e.GetCurrentPoint(PlatformView.ScrollView).Properties.MouseWheelDelta, 0), null);
-		}
+		HandleScroll(_scrollViewer);
 	}
 
-	void ScrollViewChanged(UI.Xaml.Controls.ScrollView sender, object args)
-	{
-		if (PlatformView?.ScrollView?.ScrollPresenter is null)
-			return;
-
-		HandleScroll(PlatformView.ScrollView.ScrollPresenter);
-	}
-
-	void HandleScroll(WScrollPresenter scrollViewer)
+	void HandleScroll(ScrollViewer scrollViewer)
 	{
 		if (_isScrollingForItemsUpdate)
 		{
