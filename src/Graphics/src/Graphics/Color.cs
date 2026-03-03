@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -454,11 +455,11 @@ namespace Microsoft.Maui.Graphics
 				return true;
 			}
 
-			color = GetNamedColor(value);
+			color = GetNamedColor(value)!;
 			return color is not null;
 		}
 
-		static Color GetNamedColor(ReadOnlySpan<char> value)
+		static Color? GetNamedColor(ReadOnlySpan<char> value)
 		{
 			// the longest built-in Color's name is much lower than this check, so we should not allocate here in a typical usage
 			Span<char> loweredValue = value.Length <= 128 ? stackalloc char[value.Length] : new char[value.Length];
