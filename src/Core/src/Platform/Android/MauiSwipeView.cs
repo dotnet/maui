@@ -561,6 +561,11 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				AView? swipeItem = item?.ToPlatform(MauiContext);
+				if (swipeItem?.Parent != null && item is IElement element)
+				{
+					element.Handler?.DisconnectHandler();
+					swipeItem = item?.ToPlatform(MauiContext);
+				}
 
 				if (swipeItem is not null)
 				{
