@@ -39,19 +39,6 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			handler.ToPlatform().UpdateBackground(label);
-
-			if (label.Clip is not null)
-				handler.UpdateValue(nameof(IView.Clip));
-		}
-
-		public static void MapClip(ILabelHandler handler, ILabel label)
-		{
-			ViewHandler.MapClip(handler, label);
-
-			// The base MapClip only clips the child (TextBlock), so we also need to
-			// clip the WrapperView to ensure the label background is clipped.
-			if (handler.ContainerView is WrapperView wrapper)
-				wrapper.ClipSelf = label.Clip is not null;
 		}
 
 		public static void MapOpacity(ILabelHandler handler, ILabel label)

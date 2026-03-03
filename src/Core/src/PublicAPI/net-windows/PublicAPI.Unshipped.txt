@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.Maui.Handlers.LabelHandler.MapClip(Microsoft.Maui.Handlers.ILabelHandler! handler, Microsoft.Maui.ILabel! label) -> void
