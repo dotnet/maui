@@ -37,6 +37,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_BackgroundColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("SkyBlueBackgroundColor");
@@ -69,6 +73,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_UnselectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("BlueUnselectedColor");
@@ -120,6 +128,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ShowTitleViewWithBackgroundColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("SkyBlueBackgroundColor");
@@ -327,6 +339,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_ForegroundColorAndUnselectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("MagentaForegroundColor");
@@ -345,6 +361,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_BackgroundColorAndForegroundColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("LightGreenBackgroundColor");
@@ -360,6 +380,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_BackgroundColorAndTitleColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("LightGreenBackgroundColor");
@@ -375,6 +399,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_BackgroundColorAndUnselectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("LightGreenBackgroundColor");
@@ -409,6 +437,10 @@ public class ShellPagesFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellPages_DisabledColorAndUnselectedColor()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+		}
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("MaroonUnselectedColor");
