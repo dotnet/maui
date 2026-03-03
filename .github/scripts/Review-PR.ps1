@@ -531,6 +531,30 @@ if ($DryRun) {
             }
         }
 
+        # Phase 4: Apply Labels
+        Write-Host ""
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
+        Write-Host "║  PHASE 4: APPLY LABELS                                    ║" -ForegroundColor Blue
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
+        Write-Host ""
+
+        $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
+        if (-not (Test-Path $labelHelperPath)) {
+            Write-Host "⚠️ Label helper missing, attempting targeted recovery..." -ForegroundColor Yellow
+            git checkout $savedHead -- $labelHelperPath 2>&1 | Out-Null
+        }
+
+        if (Test-Path $labelHelperPath) {
+            try {
+                . $labelHelperPath
+                Apply-AgentLabels -PRNumber $PRNumber -RepoRoot $RepoRoot
+            }
+            catch {
+                Write-Host "⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "⚠️ Label helper not found at: $labelHelperPath — skipping labels" -ForegroundColor Yellow
+        }
     }
 }
 
