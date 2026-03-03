@@ -375,26 +375,18 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			incc.CollectionChanged += ItemsChanged;
 		}
 
-		// Set ItemsSource and ItemTemplate directly on the ItemsRepeater, NOT on the
-		// base ItemsView. The base ItemsView class requires PART_ScrollView (WinUI 3
-		// ScrollView control) in its template to wire up its internal ItemsRepeater
-		// management. Since we use ScrollViewer instead (for RefreshContainer compatibility),
-		// the base class's OnApplyTemplate() can't find PART_ScrollView and its internal
-		// wiring is broken — it won't propagate ItemsSource/ItemTemplate to the repeater.
-		// We bypass this by setting them directly on the ItemsRepeater ourselves.
-		if (PlatformView is MauiItemsView mauiView && mauiView.ItemsRepeater is ItemsRepeater repeater)
-		{
-			repeater.ItemsSource = _collectionViewSource?.Source;
+		PlatformView.ItemsSource = null;
+		PlatformView.ItemsSource = _collectionViewSource?.View;
 
-			if (VirtualView.ItemTemplate is not null)
-			{
-				_itemFactory = new ItemFactory(Element);
-				repeater.ItemTemplate = _itemFactory;
-			}
-			else if (repeater.ItemTemplate is not null)
-			{
-				repeater.ItemTemplate = null;
-			}
+
+		if (VirtualView.ItemTemplate is not null)
+		{
+			_itemFactory = new ItemFactory(Element);
+			PlatformView.ItemTemplate = _itemFactory;
+		}
+		else if (PlatformView.ItemTemplate is not null)
+		{
+			PlatformView.ItemTemplate = null;
 		}
 
 		UpdateEmptyViewVisibility();
@@ -441,12 +433,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (VirtualView?.ItemsSource is null && PlatformView is not null)
 		{
-			// Clear the ItemsRepeater's source directly (not ItemsView.ItemsSource)
-			// since we manage the repeater ourselves due to ScrollViewer replacing PART_ScrollView.
-			if (PlatformView is MauiItemsView mauiView && mauiView.ItemsRepeater is not null)
-			{
-				mauiView.ItemsRepeater.ItemsSource = null;
-			}
+			PlatformView.ItemsSource = null;
 		}
 	}
 
@@ -503,7 +490,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		// Get the actual count from the CollectionView's view
-		var viewCount = _itemsSource?.Count ?? 0;
+		var viewCount = _collectionViewSource?.View?.Count ?? 0;
 		if (viewCount == 0)
 		{
 			return;
@@ -552,7 +539,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 						return;
 					}
 
-					var currentViewCount = _itemsSource?.Count ?? 0;
+					var currentViewCount = _collectionViewSource?.View?.Count ?? 0;
 					var scrollIndex = Math.Min(_pendingScrollToIndex, currentViewCount - 1);
 
 					if (scrollIndex >= 0)
@@ -614,12 +601,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
 		}
 
-		// Set layout directly on the ItemsRepeater (same reason as ItemsSource —
-		// base class's PART_ScrollView wiring is broken, so we manage the repeater ourselves).
-		if (PlatformView is MauiItemsView miv && miv.ItemsRepeater is ItemsRepeater ir)
-		{
-			ir.Layout = CreateItemsLayout();
-		}
+		PlatformView.Layout = CreateItemsLayout();
 
 		// Update header/footer orientation
 		if (PlatformView is MauiItemsView mauiItemsView)
@@ -856,7 +838,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		bool isEmpty = (_itemsSource?.Count ?? 0) == 0;
+		// Check both CollectionViewSource.View and the underlying _itemsSource
+		// After a Reset action, CollectionViewSource.View.Count might not be immediately updated
+		bool isEmpty = (_collectionViewSource?.View?.Count ?? 0) == 0 && (_itemsSource?.Count ?? 0) == 0;
 
 		if (isEmpty)
 		{
@@ -1112,9 +1096,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		Element.SendScrolled(itemsViewScrolledEventArgs);
 
 		var remainingItemsThreshold = Element.RemainingItemsThreshold;
-		if (_itemsSource != null && remainingItemsThreshold > -1)
+		if (_collectionViewSource != null && remainingItemsThreshold > -1)
 		{
-			var itemsRemaining = _itemsSource.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
+			var itemsRemaining = _collectionViewSource.View.Count - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex;
 
 			if (itemsRemaining <= remainingItemsThreshold)
 			{
@@ -1196,7 +1180,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		// Validate index is within bounds
-		var itemCount = _itemsSource?.Count ?? 0;
+		var itemCount = _collectionViewSource?.View?.Count ?? 0;
 		if (index < 0 || index >= itemCount)
 		{
 			return;
@@ -1298,14 +1282,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	/// </summary>
 	int FindItemIndex(object item)
 	{
-		if (_itemsSource is null)
+		if (_collectionViewSource is null)
 		{
 			return -1;
 		}
 
-		for (int index = 0; index < _itemsSource.Count; index++)
+		for (int index = 0; index < _collectionViewSource.View.Count; index++)
 		{
-			var viewItem = _itemsSource[index];
+			var viewItem = _collectionViewSource.View[index];
 
 			// Check for ItemTemplateContext (non-grouped templated items)
 			if (viewItem is ItemTemplateContext pair)

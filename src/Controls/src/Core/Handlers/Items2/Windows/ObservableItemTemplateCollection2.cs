@@ -206,7 +206,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 			Insert(startIndex, new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
 				false, false, _mauiContext));
-			startIndex++;
 		}
 	}
 
