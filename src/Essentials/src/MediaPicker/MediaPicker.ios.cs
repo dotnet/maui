@@ -744,7 +744,7 @@ namespace Microsoft.Maui.Media
 	/// Wrapper that applies compression lazily when the stream is opened.
 	/// This avoids iOS resource limits when processing multiple photos.
 	/// </summary>
-	class PHPickerProcessedFileResult : FileResult
+	class PHPickerProcessedFileResult : FileResult, IDisposable
 	{
 		readonly FileResult _originalResult;
 		readonly int? _maximumWidth;
@@ -753,7 +753,11 @@ namespace Microsoft.Maui.Media
 		readonly bool _rotateImage;
 		readonly bool _preserveMetaData;
 
+		// Cached result of the first call to PlatformOpenReadAsync to avoid re-processing
+		byte[] _cachedData;
+
 		internal PHPickerProcessedFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality, bool rotateImage, bool preserveMetaData)
+			: base()
 		{
 			_originalResult = originalResult;
 			_maximumWidth = maximumWidth;
@@ -762,38 +766,96 @@ namespace Microsoft.Maui.Media
 			_rotateImage = rotateImage;
 			_preserveMetaData = preserveMetaData;
 
-			// Copy metadata from original
-			FileName = originalResult.FileName;
-			FullPath = originalResult.FullPath;
-			ContentType = originalResult.ContentType;
+			// Copy metadata from original, adjusting extension for compressed output
+			var originalFileName = originalResult.FileName;
+			var originalFullPath = originalResult.FullPath;
+			var originalContentType = originalResult.ContentType;
+
+			// Preserve the original format: PNG stays PNG, everything else compresses to JPEG.
+			// When no compression is applied (quality == 100), preserve the original extension as-is.
+			var originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
+				Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
+			string outputExtension;
+			if (compressionQuality == 100)
+				outputExtension = Path.GetExtension(originalFileName ?? string.Empty);
+			else if (originalWasPng)
+				outputExtension = ".png";
+			else
+				outputExtension = ".jpg";
+
+			FileName = !string.IsNullOrEmpty(originalFileName) && !string.IsNullOrEmpty(outputExtension)
+				? Path.ChangeExtension(originalFileName, outputExtension)
+				: originalFileName;
+
+			FullPath = !string.IsNullOrEmpty(originalFullPath) && !string.IsNullOrEmpty(outputExtension)
+				? Path.ChangeExtension(originalFullPath, outputExtension)
+				: originalFullPath;
+
+			ContentType = string.Equals(outputExtension, ".png", StringComparison.OrdinalIgnoreCase)
+				? "image/png"
+				: string.Equals(outputExtension, ".jpg", StringComparison.OrdinalIgnoreCase) || string.Equals(outputExtension, ".jpeg", StringComparison.OrdinalIgnoreCase)
+					? "image/jpeg"
+					: originalContentType;
 		}
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
 		{
-			// Load the original stream
-			using var originalStream = await _originalResult.OpenReadAsync();
+			// Return cached result on subsequent calls to avoid re-processing
+			if (_cachedData is not null)
+				return new MemoryStream(_cachedData, writable: false);
 
-			// Apply processing (compression/resizing)
-			using var processedStream = await ImageProcessor.ProcessImageAsync(
-				originalStream,
-				_maximumWidth,
-				_maximumHeight,
-				_compressionQuality,
-				_originalResult.FileName,
-				_rotateImage,
-				_preserveMetaData);
-
-			// If processing failed, return original stream
-			if (processedStream == null)
+			// Load the original stream into memory once to avoid multiple expensive NSItemProvider loads.
+			byte[] originalData;
+			using (var originalStream = await _originalResult.OpenReadAsync())
+			using (var buffer = new MemoryStream())
 			{
-				return await _originalResult.OpenReadAsync();
+				await originalStream.CopyToAsync(buffer);
+				originalData = buffer.ToArray();
 			}
 
-			// Read processed stream into memory and return
-			var memoryStream = new MemoryStream();
-			await processedStream.CopyToAsync(memoryStream);
-			memoryStream.Position = 0;
-			return memoryStream;
+			Stream processedStream = null;
+			try
+			{
+				// processedStream is always an independent MemoryStream from ImageProcessor.ProcessImageAsync;
+				// it does not reference or depend on originalStream after this call completes.
+				using var originalForProcessing = new MemoryStream(originalData, writable: false);
+				processedStream = await ImageProcessor.ProcessImageAsync(
+					originalForProcessing,
+					_maximumWidth,
+					_maximumHeight,
+					_compressionQuality,
+					_originalResult.FileName,
+					_rotateImage,
+					_preserveMetaData);
+			}
+			catch
+			{
+				// Swallow processing exceptions and fall back to the original data.
+				processedStream = null;
+			}
+
+			if (processedStream is null)
+			{
+				// Fall back to the original data if processing failed or returned null.
+				_cachedData = originalData;
+			}
+			else
+			{
+				using (processedStream)
+				using (var buffer = new MemoryStream())
+				{
+					await processedStream.CopyToAsync(buffer);
+					_cachedData = buffer.ToArray();
+				}
+			}
+
+			return new MemoryStream(_cachedData, writable: false);
+		}
+
+		public void Dispose()
+		{
+			(_originalResult as IDisposable)?.Dispose();
+			GC.SuppressFinalize(this);
 		}
 	}
 }
