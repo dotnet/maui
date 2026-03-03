@@ -167,17 +167,35 @@ namespace Microsoft.Maui.Platform
 				// cancel button instance — iOS 26 may recreate it during theme transitions.
 				if (OperatingSystem.IsIOSVersionAtLeast(26))
 				{
-					var capturedColor = platformColor;
 					var weakSearchBar = new WeakReference<UISearchBar>(uiSearchBar);
+					var weakVirtualView = new WeakReference<ISearchBar>(searchBar);
 					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
 					{
 						if (!weakSearchBar.TryGetTarget(out var sb))
+						{
 							return;
+						}
+
+						if (!weakVirtualView.TryGetTarget(out var virtualSearchBar))
+						{
+							return;
+						}
+
+						// Re-evaluate the desired cancel button color; it may have been
+						// changed or cleared since this callback was queued.
+						var currentColor = virtualSearchBar.CancelButtonColor;
+						if (currentColor is null)
+						{
+							RemoveCancelButtonOverlay(sb);
+							return;
+						}
 
 						var currentButton = sb.FindDescendantView<UIButton>(
 							btn => btn.FindParent(v => v is UITextField) == null);
-						if (currentButton != null)
-							ApplyCancelButtonOverlay(sb, currentButton, capturedColor);
+						if (currentButton is not null)
+						{
+							ApplyCancelButtonOverlay(sb, currentButton, currentColor.ToPlatform());
+						}
 					});
 				}
 			}
@@ -230,7 +248,7 @@ namespace Microsoft.Maui.Platform
 			{
 				// The cancel button hasn't been laid out yet (e.g. on initial load when
 				// CancelButtonColor is set via AppThemeBinding before the view appears).
-				// Retry once after the next layout pass so we get a valid frame.
+				// Retry after the next layout pass (up to two times) so we get a valid frame.
 				if (retryCount < 2)
 					ScheduleOverlayRetry(uiSearchBar, color, retryCount);
 				return;
@@ -276,8 +294,8 @@ namespace Microsoft.Maui.Platform
 
 		static void RemoveCancelButtonOverlay(UISearchBar uiSearchBar)
 		{
-			// Walk all descendants of the search bar to find and remove the overlay.
-			// The overlay is a direct sibling of the cancel button (child of cancel button's parent).
+			// The overlay is added as a direct sibling of the cancel button (child of cancel button's parent).
+			// Find the cancel button's parent view and remove the overlay from it by tag.
 			var cancelButtonParent = uiSearchBar.FindDescendantView<UIButton>(
 				btn => btn.FindParent(v => v is UITextField) == null)?.Superview;
 			cancelButtonParent?.ViewWithTag(CancelButtonColorOverlayTag)?.RemoveFromSuperview();
