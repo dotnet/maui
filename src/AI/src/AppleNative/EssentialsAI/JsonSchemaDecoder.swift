@@ -3,6 +3,23 @@ import FoundationModels
 
 class JsonSchemaDecoder {
 
+    enum SchemaError: Error, LocalizedError {
+        case unsupportedType(String)
+        case missingObjectProperties
+        case missingArrayItems
+
+        var errorDescription: String? {
+            switch self {
+            case .unsupportedType(let type):
+                return "Unsupported JSON schema type '\(type)'"
+            case .missingObjectProperties:
+                return "Object schema missing 'properties'"
+            case .missingArrayItems:
+                return "Array schema missing 'items'"
+            }
+        }
+    }
+
     /// Simple JSON Schema representation
     private class JsonSchema: Codable {
         var type: String?
@@ -50,23 +67,24 @@ class JsonSchemaDecoder {
         else { return nil }
 
         // Convert into a DynamicJsonSchema
-        guard let dynamicSchema = toDynamicSchema(jsonSchema)
-        else { return nil }
+        let dynamicSchema = try toDynamicSchema(jsonSchema)
 
         // Get the final GenerationSchema
         return try GenerationSchema(root: dynamicSchema, dependencies: [])
     }
 
     /// Convert the object representation of a JSON schema into a DynamicGenerationSchema
-    private static func toDynamicSchema(_ schema: JsonSchema)
-        -> DynamicGenerationSchema?
+    private static func toDynamicSchema(_ schema: JsonSchema) throws
+        -> DynamicGenerationSchema
     {
         switch schema.type {
         // Handle objects with properties
         case "object":
-            guard let properties = schema.properties else { return nil }
-            let props = properties.compactMap { (name, value) in
-                parseJsonProperty(name, value, schema)
+            guard let properties = schema.properties else {
+                throw SchemaError.missingObjectProperties
+            }
+            let props = try properties.map { (name, value) in
+                try parseJsonProperty(name, value, schema)
             }
             return DynamicGenerationSchema(
                 name: schema.title ?? "Object",
@@ -75,10 +93,10 @@ class JsonSchemaDecoder {
             )
         // Handle arrays with items
         case "array":
-            guard
-                let items = schema.items,
-                let itemSchema = toDynamicSchema(items)
-            else { return nil }
+            guard let items = schema.items else {
+                throw SchemaError.missingArrayItems
+            }
+            let itemSchema = try toDynamicSchema(items)
             return DynamicGenerationSchema(
                 arrayOf: itemSchema,
                 minimumElements: schema.minItems,
@@ -95,7 +113,8 @@ class JsonSchemaDecoder {
         case "integer": return DynamicGenerationSchema(type: Int.self)
         case "number": return DynamicGenerationSchema(type: Double.self)
         case "boolean": return DynamicGenerationSchema(type: Bool.self)
-        default: return nil
+        default:
+            throw SchemaError.unsupportedType(schema.type ?? "unknown")
         }
     }
 
@@ -103,10 +122,8 @@ class JsonSchemaDecoder {
         _ propertyName: String,
         _ value: JsonSchema,
         _ parentSchema: JsonSchema
-    ) -> DynamicGenerationSchema.Property? {
-        guard let nestedSchema = toDynamicSchema(value) else {
-            return nil
-        }
+    ) throws -> DynamicGenerationSchema.Property {
+        let nestedSchema = try toDynamicSchema(value)
         let isRequired = parentSchema.required?.contains(propertyName) == true
         return DynamicGenerationSchema.Property(
             name: propertyName,

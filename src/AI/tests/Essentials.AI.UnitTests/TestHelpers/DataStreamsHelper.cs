@@ -11,7 +11,7 @@ public static class DataStreamsHelper
 
 	public static string GetTxtItinerary(string fileName)
 	{
-		var directory = Path.Combine("..", "..", "..", "..", "..", "src", "AI", "tests", "Essentials.AI.UnitTests", "TestData", "DataStreams", "Itinerary");
+		var directory = Path.Combine("TestData", "DataStreams", "Itinerary");
 		var path = Path.Combine(directory, Path.ChangeExtension(fileName, ".txt"));
 		return Path.GetFullPath(path);
 	}
