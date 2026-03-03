@@ -6,7 +6,7 @@ static Microsoft.Maui.Graphics.Color.operator ==(Microsoft.Maui.Graphics.Color? 
 virtual Microsoft.Maui.Graphics.Color.<Clone>$() -> Microsoft.Maui.Graphics.Color!
 virtual Microsoft.Maui.Graphics.Color.EqualityContract.get -> System.Type!
 virtual Microsoft.Maui.Graphics.Color.PrintMembers(System.Text.StringBuilder! builder) -> bool
-~virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color? other) -> bool
+virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color? other) -> bool
 Microsoft.Maui.Graphics.Color.AddLuminosity(float delta) -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.GetComplementary() -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Graphics.Color.ToArgbHex(bool includeAlpha = false) -> string!
