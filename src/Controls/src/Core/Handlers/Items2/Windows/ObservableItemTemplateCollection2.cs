@@ -18,6 +18,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	readonly double _itemHeight;
 	readonly double _itemWidth;
 	readonly Thickness _itemSpacing;
+	readonly NotifyCollectionChangedEventHandler _collectionChanged;
 	readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
 	bool _innerCollectionChange = false;
@@ -35,6 +36,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		_itemHeight = itemHeight ?? 0;
 		_itemWidth = itemWidth ?? 0;
 		_itemSpacing = itemSpacing ?? default;
+		_collectionChanged = InnerCollectionChanged;
 
 		PopulateInitialItems(itemsSource, itemTemplate, container);
 		SubscribeToSourceChanges(itemsSource);
@@ -47,7 +49,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	{
 		if (itemsSource is INotifyCollectionChanged notifyCollectionChanged)
 		{
-			_proxy.Subscribe(notifyCollectionChanged, InnerCollectionChanged);
+			_proxy.Subscribe(notifyCollectionChanged, _collectionChanged);
 		}
 
 		CollectionChanged += TemplateCollectionChanged;
