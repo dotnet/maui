@@ -512,6 +512,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
+		if (!PlatformView.IsLoaded)
+		{
+			return;
+		}
+
 		if (_itemsSource is null || _itemsSource.Count == 0)
 		{
 			return;
@@ -534,7 +539,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			// Use dispatcher to ensure the scroll happens after layout is fully complete
 			VirtualView.Dispatcher.Dispatch(() =>
 			{
-				if (PlatformView is null)
+				if (PlatformView is null || !PlatformView.IsLoaded)
 				{
 					return;
 				}
@@ -561,7 +566,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				// Use dispatcher to ensure the scroll happens after layout is fully complete
 				VirtualView.Dispatcher.Dispatch(() =>
 				{
-					if (PlatformView is null || _pendingScrollToIndex < 0)
+					if (PlatformView is null ||!PlatformView.IsLoaded || _pendingScrollToIndex < 0)
 					{
 						_pendingScrollToIndex = -1;
 						return;

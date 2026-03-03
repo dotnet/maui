@@ -247,6 +247,12 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 			return;
 
 		int insertIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : groupList.Count - e.NewItems.Count);
+		
+		if (insertIndex < 0 || insertIndex > Items.Count)
+		{
+			ResetWithoutResubscribe();
+			return;
+		}
 		var newItems = new List<ItemTemplateContext2>(e.NewItems.Count);
 
 		_suppressNotifications = true;
@@ -268,6 +274,11 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 			return;
 
 		int removeIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
+		if (removeIndex < 0 || removeIndex + e.OldItems.Count >= Items.Count)
+		{
+			ResetWithoutResubscribe();
+			return;
+		}
 		var removedItems = new List<ItemTemplateContext2>(e.OldItems.Count);
 
 		_suppressNotifications = true;
@@ -288,6 +299,11 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 			return;
 
 		int replaceIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : 0);
+		if (replaceIndex < 0 || replaceIndex + e.NewItems.Count - 1 >= Items.Count)
+		{
+			ResetWithoutResubscribe();
+			return;
+		}
 		var oldItems = new List<ItemTemplateContext2>(e.NewItems.Count);
 		var newItems = new List<ItemTemplateContext2>(e.NewItems.Count);
 
@@ -316,6 +332,11 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 		int oldIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
 		int newIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : 0);
+		if (oldIndex < 0 || oldIndex >= Items.Count || newIndex < 0 || newIndex > Items.Count)
+		{
+			ResetWithoutResubscribe();
+			return;
+		}
 		var movedItems = new List<ItemTemplateContext2>(e.OldItems.Count);
 
 		_suppressNotifications = true;
