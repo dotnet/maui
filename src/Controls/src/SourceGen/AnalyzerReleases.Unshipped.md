@@ -22,3 +22,10 @@ MAUIG2042 | XamlInflation | Error | BindingIndexerEmpty
 MAUIG2043 | XamlInflation | Error | BindingIndexerTypeUnsupported
 MAUIG2045 | XamlInflation | Warning | BindingPropertyNotFound
 MAUIG2064 | XamlInflation | Error | NamescopeDuplicate
+MAUIX2007 | XamlParsing | Warning | AmbiguousExpressionOrMarkup
+MAUIX2008 | XamlParsing | Error | AmbiguousMemberExpression
+MAUIX2009 | XamlParsing | Error | MemberNotFound
+MAUIX2010 | XamlParsing | Info | ExpressionNotSettable
+MAUIX2011 | XamlParsing | Warning | AmbiguousMemberWithStaticType
+MAUIX2012 | XamlParsing | Error | CSharpExpressionsRequirePreviewFeatures
+MAUIX2013 | XamlParsing | Error | AsyncLambdaNotSupported

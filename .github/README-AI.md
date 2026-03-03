@@ -72,17 +72,16 @@ please test PR #32479
 please reproduce issue #12345
 ```
 
-**UI Test Coding Agent:**
+**Write Tests Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
 copilot
 
-# Invoke the uitest-coding-agent
-/agent uitest-coding-agent
+# Invoke the write-tests-agent
+/agent write-tests-agent
 
-# Write or run UI tests
+# Write UI tests (agent will invoke write-ui-tests skill)
 please write UI tests for issue #12345
-please run the UI tests from PR #32479
 ```
 
 **PR Agent:**
@@ -112,7 +111,7 @@ please review https://github.com/dotnet/maui/pull/XXXXX
 
 3. **Choose your agent** from the dropdown:
    - `sandbox-agent` for manual testing and experimentation
-   - `uitest-coding-agent` for writing and running UI tests
+   - `write-tests-agent` for writing tests (invokes appropriate skill)
    - `pr` for reviewing and working on existing PRs
 
 4. **Enter a task** in the text box:
@@ -205,7 +204,7 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 - **`agents/pr.md`** - PR workflow phases 1-3 (Pre-Flight, Tests, Gate)
 - **`agents/pr/post-gate.md`** - PR workflow phases 4-5 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
-- **`agents/uitest-coding-agent.md`** - UI test agent for writing and running tests
+- **`agents/write-tests-agent.md`** - Test writing agent (dispatches to skills like write-ui-tests)
 
 ### Agent Files
 
@@ -214,7 +213,7 @@ Agent files in the `.github/agents/` directory:
 - **`agents/pr.md`** - PR workflow phases 1-3 (Pre-Flight, Tests, Gate)
 - **`agents/pr/post-gate.md`** - PR workflow phases 4-5 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
-- **`agents/uitest-coding-agent.md`** - UI test writing and execution
+- **`agents/write-tests-agent.md`** - Test writing (invokes skills like write-ui-tests)
 
 ### Shared Instruction Files
 
@@ -250,7 +249,8 @@ Reusable skills in `.github/skills/` that agents can invoke:
 
 - **`try-fix/`** - Proposes and tests independent fix approaches, records results, learns from failures
 - **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
-- **`write-tests/`** - Creates UI tests for issues following MAUI conventions
+- **`write-ui-tests/`** - Creates UI tests for issues following MAUI conventions
+- **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
 - **`pr-build-status/`** - Retrieves Azure DevOps build status for PRs
 
 ### Recent Improvements (January 2026)
@@ -258,13 +258,13 @@ Reusable skills in `.github/skills/` that agents can invoke:
 **PR Agent Consolidation:**
 1. **Unified PR Agent** - Replaced separate `issue-resolver` and `pr-reviewer` agents with single 5-phase `pr` agent
 2. **try-fix Skill** - New skill for exploring independent fix alternatives with empirical testing
-3. **Skills Integration** - Added `verify-tests-fail-without-fix` and `write-tests` skills for reusable test workflows
+3. **Skills Integration** - Added `verify-tests-fail-without-fix` and `write-ui-tests` skills for reusable test workflows
 4. **Agent/Skills Guidelines** - New instruction files for authoring agents and skills
 
 **Prior Infrastructure Consolidation (November 2025):**
 1. **Unified Log Structure** - All logs now under `CustomAgentLogsTmp/` with subdirectories for Sandbox and UITests
 2. **Shared Script Library** - Created reusable PowerShell scripts for device startup, build, and deployment
-3. **Agent Simplification** - Consolidated `uitest-pr-validator` into `uitest-coding-agent` for clarity
+3. **Agent Simplification** - Consolidated test writing into `write-tests-agent` (dispatcher) + `write-ui-tests` skill
 4. **Automated Testing Scripts** - All agents now use PowerShell scripts instead of manual commands
 
 ### General Guidelines
@@ -365,8 +365,8 @@ For issues or questions about the AI agent instructions:
 ## Metrics
 
 **Agent Files**:
-- 4 agent files (pr.md, pr/post-gate.md, sandbox-agent.md, uitest-coding-agent.md)
-- 4 skills (try-fix, verify-tests-fail-without-fix, write-tests, pr-build-status)
+- 4 agent files (pr.md, pr/post-gate.md, sandbox-agent.md, write-tests-agent.md)
+- 5 skills (try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, pr-build-status)
 - All validated and consistent with consolidated structure
 
 **Automation**:

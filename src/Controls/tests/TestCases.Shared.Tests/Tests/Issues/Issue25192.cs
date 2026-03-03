@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CarouselViewShouldRenderCorrectly()
 		{
 			App.WaitForElement("Item1");
-			Thread.Sleep(1000); // Wait for carouselView items loading
-			VerifyScreenshot();
+			// Use retryTimeout to wait for CarouselView items to fully load and render
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }
