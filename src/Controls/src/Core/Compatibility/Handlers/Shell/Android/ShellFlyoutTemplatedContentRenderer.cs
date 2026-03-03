@@ -213,6 +213,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateFlyoutHeaderBehavior();
 
+			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
+
+			UpdateFlyoutBackground();
+
+			UpdateVerticalScrollMode();
+
 			UpdateFlyoutFooter();
 
 			if (FlyoutView.FlyoutBehavior == FlyoutBehavior.Locked)
@@ -259,6 +265,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected void OnElementSelected(Element element)
 		{
 			((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
+		}
+
+		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Shell.FlyoutHeaderBehaviorProperty.PropertyName)
+				UpdateFlyoutHeaderBehavior();
+			else if (e.IsOneOf(
+				Shell.FlyoutBackgroundColorProperty,
+				Shell.FlyoutBackgroundProperty,
+				Shell.FlyoutBackgroundImageProperty,
+				Shell.FlyoutBackgroundImageAspectProperty))
+				UpdateFlyoutBackground();
+			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+				UpdateVerticalScrollMode();
+			else if (e.IsOneOf(
+				Shell.FlyoutHeaderProperty,
+				Shell.FlyoutHeaderTemplateProperty))
+				UpdateFlyoutHeader();
+			else if (e.IsOneOf(
+				Shell.FlyoutFooterProperty,
+				Shell.FlyoutFooterTemplateProperty))
+				UpdateFlyoutFooter();
+			else if (e.IsOneOf(
+				Shell.FlyoutContentProperty,
+				Shell.FlyoutContentTemplateProperty))
+				UpdateFlyoutContent();
 		}
 
 		public virtual void UpdateFlyoutContent()
@@ -396,6 +428,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (footer is null)
 			{
+				UpdateContentPadding();
 				return;
 			}
 
@@ -698,6 +731,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MauiWindowInsetListener.RemoveViewWithLocalListener(coordinator);
 			}
+
+			if (_shellContext?.Shell != null)
+				_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
 
 			_flyoutHeader?.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
 
