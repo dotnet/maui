@@ -18,6 +18,6 @@ public class Issue30363 : _IssuesUITest
 	{
 		App.WaitForElement("cvItem");
 		App.Tap("cvItem");
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

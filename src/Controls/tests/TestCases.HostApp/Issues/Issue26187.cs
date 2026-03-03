@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			if (e.CurrentSelection.FirstOrDefault() is string issue)
 			{
-				Navigation.PushAsync(new NewPage(issue));
+				_ = Navigation.PushAsync(new NewPage(issue));
 			}
 
 			// Clear Selection

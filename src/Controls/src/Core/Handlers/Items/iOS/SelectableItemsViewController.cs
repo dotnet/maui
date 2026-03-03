@@ -59,40 +59,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					CollectionView.PerformBatchUpdates(null, _ =>
 					{
-						CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+						ValidateAndSelectItem(selectedItem, originalSource);
 					});
 				}
 				else
 				{
-					// Ensure ItemsSource hasn't been disposed
-					if (ItemsSource is EmptySource)
-					{
-						return;
-					}
-
-					// Exit if the ItemsSource reference no longer matches the one captured at invocation.
-					if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
-					{
-						return;
-					}
-
-					// Recalculate the index for the selectedItem now that the collection may have changed.(Adding, deleting etc..)
-					var updatedIndex = GetIndexForItem(selectedItem);
-					if (updatedIndex.Section < 0 || updatedIndex.Item < 0)
-					{
-						return;
-					}
-
-					// Retrieve the current item at that index and verify it still equals the intended selection.
-					var liveItem = GetItemAtIndex(updatedIndex);
-					if (!Equals(liveItem, selectedItem))
-					{
-						return;
-					}
-
-					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+					ValidateAndSelectItem(selectedItem, originalSource);
 				}
 			}
+		}
+
+		void ValidateAndSelectItem(object selectedItem, object originalSource)
+		{
+			// Ensure ItemsSource hasn't been disposed
+			if (ItemsSource is EmptySource)
+			{
+				return;
+			}
+
+			// Exit if the ItemsSource reference no longer matches the one captured at invocation.
+			if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
+			{
+				return;
+			}
+
+			// Recalculate the index for the selectedItem now that the collection may have changed.(Adding, deleting etc..)
+			var updatedIndex = GetIndexForItem(selectedItem);
+			if (updatedIndex.Section < 0 || updatedIndex.Item < 0)
+			{
+				return;
+			}
+
+			// Retrieve the current item at that index and verify it still equals the intended selection.
+			var liveItem = GetItemAtIndex(updatedIndex);
+			if (!Equals(liveItem, selectedItem))
+			{
+				return;
+			}
+
+			CollectionView.SelectItem(updatedIndex, true, UICollectionViewScrollPosition.None);
 		}
 
 		// Called by Forms to clear the native selection
