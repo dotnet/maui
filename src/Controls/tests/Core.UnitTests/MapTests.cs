@@ -462,6 +462,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(circle.IsVisible);
 		}
 
+		[Fact]
+		public void MapStyleDefaultIsNull()
+		{
+			var map = new Map();
+			Assert.Null(map.MapStyle);
+		}
+
+		[Fact]
+		public void MapStyleCanBeSet()
+		{
+			var map = new Map();
+			var style = "[{\"featureType\":\"water\",\"stylers\":[{\"color\":\"#00ff00\"}]}]";
+			map.MapStyle = style;
+			Assert.Equal(style, map.MapStyle);
+		}
+
+		[Fact]
+		public void MapStyleCanBeCleared()
+		{
+			var map = new Map();
+			map.MapStyle = "[{\"featureType\":\"water\",\"stylers\":[{\"color\":\"#00ff00\"}]}]";
+			map.MapStyle = null;
+			Assert.Null(map.MapStyle);
+		}
+
 		// Checks if for every item in the items source there's a corresponding pin
 		static bool IsMapWithItemsSource(IEnumerable itemsSource, Map map)
 		{

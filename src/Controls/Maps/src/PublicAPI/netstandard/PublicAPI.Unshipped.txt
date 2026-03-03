@@ -1,5 +1,3 @@
-
-#nullable enable
 Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.ClusterClickedEventArgs(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
@@ -12,6 +10,8 @@ Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.get -> bool
 Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.set -> void
 Microsoft.Maui.Controls.Maps.Map.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
 Microsoft.Maui.Controls.Maps.Map.MapLongClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.MapClickedEventArgs!>?
+Microsoft.Maui.Controls.Maps.Map.MapStyle.get -> string?
+Microsoft.Maui.Controls.Maps.Map.MapStyle.set -> void
 Microsoft.Maui.Controls.Maps.Map.MoveToRegion(Microsoft.Maui.Maps.MapSpan! mapSpan, bool animated) -> void
 Microsoft.Maui.Controls.Maps.Map.Region.get -> Microsoft.Maui.Maps.MapSpan?
 Microsoft.Maui.Controls.Maps.Map.Region.set -> void
@@ -33,8 +33,10 @@ Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.Location.get -> Micros
 Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.UserLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
 const Microsoft.Maui.Controls.Maps.Pin.DefaultClusteringIdentifier = "maui_default_cluster" -> string!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Maps.Map.MapStyleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.RegionProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifierProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.ImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
+﻿#nullable enable

@@ -143,6 +143,12 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+			GoogleMap? googleMap = handler?.Map;
+			googleMap?.UpdateMapStyle(map);
+		}
+
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			if (arg is MoveToRegionRequest request && request.Region != null)
@@ -437,6 +443,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				map.UpdateIsScrollEnabled(VirtualView);
 				map.UpdateIsTrafficEnabled(VirtualView);
 				map.UpdateIsZoomEnabled(VirtualView);
+				map.UpdateMapStyle(VirtualView);
 			}
 
 			InitialUpdate();
