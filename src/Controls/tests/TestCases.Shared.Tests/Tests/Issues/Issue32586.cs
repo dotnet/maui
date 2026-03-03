@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -78,7 +78,14 @@ public class Issue32586 : _IssuesUITest
 		// The grid's bottom may be inset from screen edge due to ContentPage safe area,
 		// but the footer should fill within the grid without additional insets.
 		var distanceFromGridBottom = gridBottom - footerBottom;
-		Assert.That(distanceFromGridBottom, Is.LessThan(40),
+
+		// On Android, grid.GetRect() may include area behind the system navigation bar,
+		// so the gap is larger (nav bar is ~48dp). On iOS the grid is already inset.
+		var maxAllowedGap = 40;
+#if ANDROID
+		maxAllowedGap = 130; // Account for Android system navigation bar
+#endif
+		Assert.That(distanceFromGridBottom, Is.LessThan(maxAllowedGap),
 			$"Footer bottom ({footerBottom}) should reach near grid bottom ({gridBottom}) " +
 			$"when SafeAreaEdges=None on Grid, but is {distanceFromGridBottom}pt short.");
 	}

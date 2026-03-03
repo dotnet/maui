@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 32586, "[iOS] Layout issue using TranslateToAsync causes infinite property changed cycle", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 32586, "[iOS] Layout issue using TranslateToAsync causes infinite property changed cycle", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue32586 : ContentPage
 {
 	const uint AnimationDuration = 250;
