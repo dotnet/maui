@@ -1,2 +1,8 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
