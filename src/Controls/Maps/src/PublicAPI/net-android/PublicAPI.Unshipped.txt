@@ -12,6 +12,7 @@ Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.get -> bool
 Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabled.set -> void
 Microsoft.Maui.Controls.Maps.Map.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
 Microsoft.Maui.Controls.Maps.Map.MapLongClicked -> System.EventHandler<Microsoft.Maui.Controls.Maps.MapClickedEventArgs!>?
+Microsoft.Maui.Controls.Maps.Map.MoveToRegion(Microsoft.Maui.Maps.MapSpan! mapSpan, bool animated) -> void
 Microsoft.Maui.Controls.Maps.Map.Region.get -> Microsoft.Maui.Maps.MapSpan?
 Microsoft.Maui.Controls.Maps.Map.Region.set -> void
 Microsoft.Maui.Controls.Maps.Map.UserLocationChanged -> System.EventHandler<Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs!>?

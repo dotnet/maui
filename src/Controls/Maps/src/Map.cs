@@ -259,7 +259,15 @@ namespace Microsoft.Maui.Controls.Maps
 		/// </summary>
 		/// <param name="mapSpan">A <see cref="MapSpan"/> object containing details on what region should be shown.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
-		public void MoveToRegion(MapSpan mapSpan)
+		public void MoveToRegion(MapSpan mapSpan) => MoveToRegion(mapSpan, true);
+
+		/// <summary>
+		/// Adjusts the viewport of the map control to view the specified region, with control over animation.
+		/// </summary>
+		/// <param name="mapSpan">A <see cref="MapSpan"/> object containing details on what region should be shown.</param>
+		/// <param name="animated">Whether the transition should be animated.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
+		public void MoveToRegion(MapSpan mapSpan, bool animated)
 		{
 			if (mapSpan is null)
 			{
@@ -267,7 +275,7 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 
 			_lastMoveToRegion = mapSpan;
-			Handler?.Invoke(nameof(IMap.MoveToRegion), _lastMoveToRegion);
+			Handler?.Invoke(nameof(IMap.MoveToRegion), new MoveToRegionRequest(_lastMoveToRegion, animated));
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

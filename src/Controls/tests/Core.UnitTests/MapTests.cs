@@ -622,6 +622,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void MoveToRegionThrowsOnNull()
+		{
+			var map = new Map();
+			Assert.Throws<ArgumentNullException>(() => map.MoveToRegion(null!));
+		}
+
+		[Fact]
+		public void MoveToRegionAnimatedThrowsOnNull()
+		{
+			var map = new Map();
+			Assert.Throws<ArgumentNullException>(() => map.MoveToRegion(null!, true));
+		}
+
+		[Fact]
+		public void MoveToRegionAnimatedOverloadExists()
+		{
+			var map = new Map();
+			var span = new MapSpan(new Location(0, 0), 1, 1);
+
+			// Should not throw - verifies the overload exists and is callable
+			map.MoveToRegion(span, false);
+			map.MoveToRegion(span, true);
+		}
+
+		[Fact]
+		public void MoveToRegionRequestProperties()
+		{
+			var span = new MapSpan(new Location(10, 20), 1, 1);
+			var request = new MoveToRegionRequest(span, true);
+
+			Assert.Same(span, request.Region);
+			Assert.True(request.Animated);
+
+			var request2 = new MoveToRegionRequest(null, false);
+			Assert.Null(request2.Region);
+			Assert.False(request2.Animated);
+		}
+
+		[Fact]
 		public void ShowInfoWindowDoesNotThrowWhenPinHasNoParent()
 		{
 			var pin = new Pin
@@ -1027,5 +1066,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		#endregion
+
+		[Fact]
+		public void FromLocationsHandlesAntimeridianCrossing()
+		{
+			// Points near the antimeridian (179° and -179° should result in a small span, not 358°)
+			var locations = new[]
+			{
+				new Location(0, 179),
+				new Location(0, -179)
+			};
+
+			var span = MapSpan.FromLocations(locations);
+
+			// The span should be small (around 2-3 degrees), not 358 degrees
+			Assert.True(span.LongitudeDegrees < 10, $"Expected small longitude span for antimeridian crossing, got {span.LongitudeDegrees}");
+		}
 	}
 }
