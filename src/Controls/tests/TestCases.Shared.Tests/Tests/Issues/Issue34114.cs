@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_WINDOWS // This test fails on Windows because of a known issue with clipping in WinUI.
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,3 +29,4 @@ public class Issue34114 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
