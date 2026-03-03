@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
-		// Empirically measured on iOS 26.1; no UIKit API exposes this value.
+		// Trailing glass pill overflow (pts) added to UIStepper width in landscape on iOS 26+.
+		// No UIKit API exposes this value; measured empirically on iOS 26.1.
+		// If it changes in a future iOS release, update and re-verify. See: https://github.com/dotnet/maui/issues/34273
 		const double iOSLiquidGlassStepperOverflow = 20;
 
 		readonly StepperProxy _proxy = new();
