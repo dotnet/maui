@@ -7,6 +7,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
+		// Empirically measured on iOS 26.1; no UIKit API exposes this value.
+		const double iOSLiquidGlassStepperOverflow = 20;
+
 		readonly StepperProxy _proxy = new();
 
 		protected override UIStepper CreatePlatformView()
@@ -38,8 +41,6 @@ namespace Microsoft.Maui.Handlers
 				bool isLandscape = screen.Bounds.Width > screen.Bounds.Height;
 				if (isLandscape)
 				{
-					// Empirically measured on iOS 26.1; no UIKit API exposes this value.
-					const double iOSLiquidGlassStepperOverflow = 20;
 					result = new Size(result.Width + iOSLiquidGlassStepperOverflow, result.Height);
 				}
 			}
