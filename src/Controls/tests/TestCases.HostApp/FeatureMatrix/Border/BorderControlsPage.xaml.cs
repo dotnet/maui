@@ -22,7 +22,7 @@ public partial class BorderControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new BorderViewModel();
+		_viewModel.Reset();
 		await Navigation.PushAsync(new OptionsPage(_viewModel));
 	}
 }

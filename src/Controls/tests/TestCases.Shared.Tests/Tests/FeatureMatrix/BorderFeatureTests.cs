@@ -22,6 +22,16 @@ public class BorderFeatureTests : _GalleryUITest
 		App.Tap("Options");
 	}
 
+	// On Windows, crop the top portion to exclude platform chrome before comparing screenshots.
+	private void VerifyBorderScreenshot()
+	{
+#if WINDOWS
+		VerifyScreenshot(cropTop: 100);
+#else
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
+	}
+
 	// ── Non-DashArray tests (Order 1–9) ──
 
 	[Test]
@@ -185,11 +195,7 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-#if WINDOWS
-		VerifyScreenshot(cropTop: 100);
-#else
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
+		VerifyBorderScreenshot();
 	}
 
 	// ── Non-DashArray tests disabled for iOS/Catalyst (Order 10–14) ──
@@ -336,11 +342,7 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-#if WINDOWS
-		VerifyScreenshot(cropTop: 100);
-#else
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
+		VerifyBorderScreenshot();
 	}
 
 	[Test]
@@ -362,11 +364,7 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-#if WINDOWS
-		VerifyScreenshot(cropTop: 100);
-#else
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
+		VerifyBorderScreenshot();
 	}
 
 	[Test]
@@ -644,11 +642,7 @@ public class BorderFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
-#if WINDOWS
-		VerifyScreenshot(cropTop: 100);
-#else
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-#endif
+		VerifyBorderScreenshot();
 	}
 
 	// 🟡 Medium priority: Background color change

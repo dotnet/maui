@@ -25,6 +25,22 @@ public class BorderViewModel : INotifyPropertyChanged
 		SetLabelContent();
 	}
 
+	public void Reset()
+	{
+		Padding = 5;
+		StrokeThickness = 1;
+		StrokeDashArray = new DoubleCollection { 0, 0 };
+		StrokeDashOffset = 0;
+		StrokeLineJoin = PenLineJoin.Miter;
+		StrokeMiterLimit = 10.0;
+		StrokeShape = new Microsoft.Maui.Controls.Shapes.Rectangle();
+		StrokeLineCap = PenLineCap.Flat;
+		Stroke = Brush.Red;
+		Background = new SolidColorBrush(Colors.LightGray);
+		Shadow = null;
+		SetLabelContent();
+	}
+
 	public void SetLabelContent()
 	{
 		ContentView = new Label
