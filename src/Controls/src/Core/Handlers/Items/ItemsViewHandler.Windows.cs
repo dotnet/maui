@@ -15,7 +15,6 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using WASDKApp = Microsoft.UI.Xaml.Application;
 using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
-using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
@@ -26,8 +25,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected CollectionViewSource CollectionViewSource;
 		ScrollViewer _scrollViewer;
 		FrameworkElement _emptyView;
-		WASDKScrollBarVisibility? _defaultHorizontalScrollVisibility;
-		WASDKScrollBarVisibility? _defaultVerticalScrollVisibility;
 		View _formsEmptyView;
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
@@ -346,9 +343,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			FindScrollViewer(ListViewBase);
 
-			_defaultHorizontalScrollVisibility = null;
-			_defaultVerticalScrollVisibility = null;
-
 			UpdateItemTemplate();
 			UpdateItemsSource();
 			UpdateScrollBarVisibility();
@@ -383,51 +377,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateVerticalScrollBarVisibility()
 		{
-			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
-			{
-				// If the value is changing to anything other than the default, record the default 
-				if (_defaultVerticalScrollVisibility == null)
-					_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
-			}
-
-			if (_defaultVerticalScrollVisibility == null)
-			{
-				// If the default has never been recorded, then this has never been set to anything but the 
-				// default value; there's nothing to do.
-				return;
-			}
-
-			switch (Element.VerticalScrollBarVisibility)
-			{
-				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetVerticalScrollBarVisibility(Control, WASDKScrollBarVisibility.Visible);
-					break;
-				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetVerticalScrollBarVisibility(Control, WASDKScrollBarVisibility.Hidden);
-					break;
-				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetVerticalScrollBarVisibility(Control, _defaultVerticalScrollVisibility.Value);
-					break;
-			}
+			_scrollViewer?.UpdateVerticalScrollBarVisibility(Element.VerticalScrollBarVisibility);
 		}
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			if (_defaultHorizontalScrollVisibility == null)
-				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
-
-			switch (Element.HorizontalScrollBarVisibility)
-			{
-				case (ScrollBarVisibility.Always):
-					ScrollViewer.SetHorizontalScrollBarVisibility(Control, WASDKScrollBarVisibility.Visible);
-					break;
-				case (ScrollBarVisibility.Never):
-					ScrollViewer.SetHorizontalScrollBarVisibility(Control, WASDKScrollBarVisibility.Hidden);
-					break;
-				case (ScrollBarVisibility.Default):
-					ScrollViewer.SetHorizontalScrollBarVisibility(Control, _defaultHorizontalScrollVisibility.Value);
-					break;
-			}
+			_scrollViewer?.UpdateHorizontalScrollBarVisibility(Element.HorizontalScrollBarVisibility);
 		}
 
 		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
@@ -444,6 +399,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_scrollViewer = scrollViewer;
 			_scrollViewer.ViewChanged += ScrollViewChanged;
+
+			UpdateScrollBarVisibility();
 		}
 
 		void ScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)

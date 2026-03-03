@@ -1039,44 +1039,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	void UpdateVerticalScrollBarVisibility()
 	{
-		if (_scrollViewer is null)
-			return;
-
-		var scrollBarVisibility = Element.VerticalScrollBarVisibility;
-
-		switch (scrollBarVisibility)
-		{
-			case ScrollBarVisibility.Always:
-				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Visible;
-				break;
-			case ScrollBarVisibility.Never:
-				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Hidden;
-				break;
-			case ScrollBarVisibility.Default:
-				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
-				break;
-		}
+		_scrollViewer?.UpdateVerticalScrollBarVisibility(Element.VerticalScrollBarVisibility);
 	}
 
 	void UpdateHorizontalScrollBarVisibility()
 	{
-		if (_scrollViewer is null)
-			return;
-
-		var scrollBarVisibility = Element.HorizontalScrollBarVisibility;
-
-		switch (scrollBarVisibility)
-		{
-			case ScrollBarVisibility.Always:
-				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Visible;
-				break;
-			case ScrollBarVisibility.Never:
-				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Hidden;
-				break;
-			case ScrollBarVisibility.Default:
-				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
-				break;
-		}
+		_scrollViewer?.UpdateHorizontalScrollBarVisibility(Element.HorizontalScrollBarVisibility);
 	}
 
 	void ScrollViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
