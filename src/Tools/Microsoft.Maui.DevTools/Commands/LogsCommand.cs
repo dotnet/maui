@@ -166,7 +166,7 @@ public static class LogsCommand
 		process.OutputDataReceived += (s, e) =>
 		{
 			if (e.Data != null)
-				Console.WriteLine(e.Data);
+				WriteColorizedLogLine(e.Data);
 		};
 
 		process.ErrorDataReceived += (s, e) =>
@@ -189,5 +189,81 @@ public static class LogsCommand
 			process.Kill(entireProcessTree: true);
 			throw;
 		}
+	}
+
+	/// <summary>
+	/// Writes a log line with color based on log level.
+	/// Detects Android logcat format (E/, W/, I/, D/, V/) and iOS os_log levels.
+	/// </summary>
+	private static void WriteColorizedLogLine(string line)
+	{
+		// Android logcat: "06-01 12:00:00.000  1234  5678 E Tag: message"
+		// or brief format: "E/Tag(1234): message"
+		var color = DetectLogLevel(line);
+		if (color != null)
+		{
+			Console.ForegroundColor = color.Value;
+			Console.WriteLine(line);
+			Console.ResetColor();
+		}
+		else
+		{
+			Console.WriteLine(line);
+		}
+	}
+
+	private static ConsoleColor? DetectLogLevel(string line)
+	{
+		if (line.Length < 2) return null;
+
+		// Android logcat long format: level letter at column ~31, or after PID/TID
+		// "06-01 12:00:00.000  1234  5678 E Tag: ..."
+		// Android brief format: "E/Tag(1234): ..."
+		// Also handle: " E " anywhere early in the line
+
+		// Brief format: starts with "X/" where X is level
+		if (line.Length > 1 && line[1] == '/')
+		{
+			return line[0] switch
+			{
+				'E' => ConsoleColor.Red,
+				'W' => ConsoleColor.Yellow,
+				'I' => ConsoleColor.Cyan,
+				'D' => ConsoleColor.Gray,
+				'V' => ConsoleColor.DarkGray,
+				_ => null
+			};
+		}
+
+		// Long format: find single letter level after timestamp+pids (roughly chars 30-35)
+		// Pattern: "MM-DD HH:MM:SS.mmm  PID  TID L Tag: msg"
+		var searchEnd = Math.Min(line.Length, 40);
+		for (int i = 20; i < searchEnd; i++)
+		{
+			if (line[i] == ' ' && i + 2 < line.Length && line[i + 2] == ' ')
+			{
+				return line[i + 1] switch
+				{
+					'E' => ConsoleColor.Red,
+					'W' => ConsoleColor.Yellow,
+					'I' => ConsoleColor.Cyan,
+					'D' => ConsoleColor.Gray,
+					'V' => ConsoleColor.DarkGray,
+					_ => null
+				};
+			}
+		}
+
+		// iOS: look for common level indicators
+		if (line.Contains("Error", StringComparison.OrdinalIgnoreCase) ||
+			line.Contains("<Error>", StringComparison.Ordinal))
+			return ConsoleColor.Red;
+		if (line.Contains("Warning", StringComparison.OrdinalIgnoreCase) ||
+			line.Contains("<Warning>", StringComparison.Ordinal))
+			return ConsoleColor.Yellow;
+		if (line.Contains("<Debug>", StringComparison.Ordinal))
+			return ConsoleColor.Gray;
+
+		return null;
 	}
 }

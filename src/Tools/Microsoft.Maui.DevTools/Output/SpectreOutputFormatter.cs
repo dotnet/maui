@@ -193,6 +193,22 @@ public class SpectreOutputFormatter : IOutputFormatter
 		}
 	}
 
+	/// <summary>
+	/// Writes a pre-formatted Spectre markup line (no escaping).
+	/// </summary>
+	public void WriteMarkupLine(string markup)
+	{
+		_console.MarkupLine(markup);
+	}
+
+	/// <summary>
+	/// Shows an interactive Spectre prompt (SelectionPrompt, TextPrompt, etc.).
+	/// </summary>
+	public T Prompt<T>(IPrompt<T> prompt)
+	{
+		return _console.Prompt(prompt);
+	}
+
 	public void WriteTable<T>(IEnumerable<T> items, params (string Header, Func<T, string> Selector)[] columns)
 	{
 		var itemsList = items.ToList();

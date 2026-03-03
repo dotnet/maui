@@ -67,11 +67,27 @@ public static class DoctorCommand
 
 					if (fixableIssues.Any())
 					{
-						formatter.WriteInfo("Attempting automatic fixes...");
-						foreach (var issue in fixableIssues)
+						if (!useJson && formatter is SpectreOutputFormatter spectreFix)
 						{
-							formatter.WriteProgress($"Fixing: {issue.Name}");
-							await doctorService.TryFixAsync(issue.Fix!, context.GetCancellationToken());
+							await spectreFix.LiveProgressAsync(async (ctx) =>
+							{
+								for (int i = 0; i < fixableIssues.Count; i++)
+								{
+									var issue = fixableIssues[i];
+									var task = ctx.AddTask($"Fixing: {issue.Name}");
+									var success = await doctorService.TryFixAsync(issue.Fix!, context.GetCancellationToken());
+									task.Complete(success ? $"Fixed: {issue.Name}" : $"Failed: {issue.Name}");
+								}
+							});
+						}
+						else
+						{
+							formatter.WriteInfo("Attempting automatic fixes...");
+							foreach (var issue in fixableIssues)
+							{
+								formatter.WriteProgress($"Fixing: {issue.Name}");
+								await doctorService.TryFixAsync(issue.Fix!, context.GetCancellationToken());
+							}
 						}
 					}
 				}
