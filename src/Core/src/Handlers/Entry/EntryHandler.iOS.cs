@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Handlers
 				if (VirtualView is not null && !shouldChange && !string.IsNullOrWhiteSpace(replacementString) &&
 					replacementString.Length >= maxLength)
 				{
-					VirtualView.Text = replacementString.Substring(0, maxLength);
+					VirtualView.Text = replacementString.AsSpan(0, maxLength).ToString();
 				}
 
 				return shouldChange;
