@@ -1,6 +1,6 @@
 ---
 name: use-local-runtime
-description: "Build and test the MAUI repo against a locally-built .NET runtime using dev shipping packages."
+description: Build and test the MAUI repo against a locally-built .NET runtime using dev shipping packages. Use when asked to "use local runtime", "test with local runtime", or "build MAUI against local runtime".
 metadata:
   author: dotnet-maui
   version: "1.0"
@@ -15,6 +15,8 @@ This uses the runtime's dev shipping packages — the same NuGet packages that f
 
 ## Step 1: Build the runtime shipping packages
 
+**Goal**: Produce the dev shipping NuGet packages from a local dotnet/runtime clone.
+
 ```bash
 cd /path/to/runtime
 ./build.sh -s clr+libs+packs+host     # macOS/Linux
@@ -25,14 +27,18 @@ cd /path/to/runtime
 
 ## Step 2: Find the package version
 
+**Goal**: Identify the exact version string from the built nupkg files.
+
 ```bash
 ls artifacts/packages/Debug/Shipping/Microsoft.NETCore.App.Runtime.*.nupkg
 # Example: Microsoft.NETCore.App.Runtime.osx-arm64.11.0.0-dev.nupkg
 ```
 
-The version string is typically `11.0.0-dev`. Note it for the next step.
+The version string is typically `10.0.0-dev` or `11.0.0-dev` etc. Note it for the next step.
 
 ## Step 3: Update the MAUI repo to use your local packages
+
+**Goal**: Point MAUI's package resolution at the local runtime build output.
 
 1. **Update `eng/Versions.props`** — change `MicrosoftNETCoreAppRefPackageVersion` and pin the derived versions:
 
@@ -76,15 +82,26 @@ rm -rf ./local-nuget-cache
 
 ## Step 4: Build MAUI
 
+**Goal**: Restore and build MAUI using the local runtime packages.
+
 ```bash
 ./build.sh -restore -build
 ```
 
-## Iterating after runtime changes
+## Step 5: Iterate after runtime changes
+
+**Goal**: Quickly rebuild after making further runtime changes.
 
 1. Rebuild the runtime: `./build.sh -s clr+libs+packs+host`
 2. Delete the local NuGet cache: `rm -rf ./local-nuget-cache`
 3. Rebuild MAUI: `./build.sh -restore -build`
+
+## Output
+
+A working MAUI build linked against your local runtime. The key artifacts are:
+
+- **MAUI build output** in `artifacts/` — built against the local runtime packages
+- **Local NuGet cache** in `./local-nuget-cache` — delete between iterations to pick up new packages
 
 ## Troubleshooting
 
@@ -92,7 +109,7 @@ rm -rf ./local-nuget-cache
 |---------|----------|
 | NuGet doesn't pick up updated packages | Delete the local cache: `rm -rf ./local-nuget-cache` |
 | Version mismatch errors | Ensure `MicrosoftNETCoreAppRefPackageVersion` matches the exact version from your nupkg filenames |
-| MAUI build fails with missing packages | Your local runtime build may not include all packages MAUI needs — keep the `dotnet11` feed as a fallback source in `NuGet.config` |
+| MAUI build fails with missing packages | Your local runtime build may not include all packages MAUI needs — keep the existing NuGet sources in `NuGet.config` as fallback |
 
 ## Notes
 
