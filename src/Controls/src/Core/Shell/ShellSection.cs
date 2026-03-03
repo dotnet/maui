@@ -848,6 +848,14 @@ namespace Microsoft.Maui.Controls
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
 
+			// NOTE:
+			// We intentionally raise PresentedPageAppearing (and thus SendPageAppearing/OnAppearing)
+			// before issuing the platform navigation request and awaiting its completion. This matches
+			// the behavior used for single-level Pop navigation and keeps Shell lifecycle events
+			// consistent across navigation patterns. At this point the root page may not yet be
+			// visually presented by the native stack (the pop-to-root animation can still be in
+			// progress), but Shell-level state (e.g., tab bar visibility) must already be updated
+			// so the platform reads the correct value when it commits the native navigation.
 			PresentedPageAppearing();
 			InvokeNavigationRequest(args);
 
