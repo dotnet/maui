@@ -29,7 +29,7 @@
             x:Name="ItemContentControl"
             MauiContext="{Binding MauiContext}"
             FormsDataTemplate="{Binding FormsDataTemplate}"
-                FormsDataContext="{Binding Item}"
+            FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}">
         </local:ItemContentControl>
     </DataTemplate>
@@ -37,10 +37,10 @@
     <DataTemplate x:Key="GroupHeaderTemplate">
         <local:ItemContentControl
             x:Name="ItemContentControl"
-                DataContext="{Binding HeaderItemTemplateContext}"
+            DataContext="{Binding HeaderItemTemplateContext}"
             MauiContext="{Binding MauiContext}"
             FormsDataTemplate="{Binding FormsDataTemplate}"
-                FormsDataContext="{Binding Item}"
+            FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}">
         </local:ItemContentControl>
     </DataTemplate>
@@ -69,14 +69,14 @@
     </Style>
 
     <ControlTemplate x:Key="FormsListViewTemplate"
-            TargetType="local:FormsListView">
+                     TargetType="local:FormsListView">
         <Border BorderBrush="{TemplateBinding BorderBrush}"
                 Background="{TemplateBinding Background}"
                 BorderThickness="{TemplateBinding BorderThickness}">
             <Grid>
                 <ContentControl x:Name="EmptyViewContentControl"
                                 HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"/>
+                                VerticalContentAlignment="Stretch"/>
                 <ScrollViewer x:Name="ScrollViewer"
                               TabNavigation="{TemplateBinding TabNavigation}"
                               HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
@@ -187,7 +187,7 @@
                             </ScrollViewer>
                             <ContentControl x:Name="EmptyViewContentControl"
                                             HorizontalContentAlignment="Stretch"
-                                    VerticalContentAlignment="Stretch"/>
+                                            VerticalContentAlignment="Stretch"/>
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -196,7 +196,7 @@
     </Style>
 
     <Style x:Key="HorizontalCarouselListStyle"
-            TargetType="local:FormsListView">
+           TargetType="local:FormsListView">
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
                 Value="Hidden"/>
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
@@ -226,7 +226,7 @@
     </Style>
 
     <Style x:Key="VerticalCarouselListStyle"
-            TargetType="local:FormsListView">
+           TargetType="local:FormsListView">
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
                 Value="Hidden"/>
         <Setter Property="ScrollViewer.VerticalScrollMode"
@@ -273,8 +273,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListViewHeaderItem">
                     <StackPanel Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
                         <ContentPresenter x:Name="ContentPresenter"
                                           Margin="{TemplateBinding Padding}"
                                           Content="{TemplateBinding Content}"
@@ -289,7 +289,7 @@
     </Style>
 
     <!-- Custom version of the style which removes the horizontal rule below the header -->
-    <Style TargetType="GridViewHeaderItem"> 
+    <Style TargetType="GridViewHeaderItem">
         <Setter Property="FontFamily"
                 Value="{ThemeResource ContentControlThemeFontFamily}"/>
         <Setter Property="FontSize"
@@ -312,8 +312,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="GridViewHeaderItem">
                     <StackPanel Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
                         <ContentPresenter x:Name="ContentPresenter"
                                           Margin="{TemplateBinding Padding}"
                                           Content="{TemplateBinding Content}"
@@ -352,9 +352,6 @@
                                         ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
                                         HorizontalCacheLength="2"
                                         VerticalCacheLength="2"
-                                        ItemsSource="{TemplateBinding ItemsSource}"
-                                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                                        Layout="{TemplateBinding Layout}"
                                         Margin="{TemplateBinding Padding}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"

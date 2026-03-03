@@ -25,9 +25,18 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	FrameworkElement? _footer;
 
 	WStackPanel? _containerPanel;
-	FrameworkElement? _itemsRepeater;
+	ItemsRepeater? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
+
+	/// <summary>
+	/// Gets the ItemsRepeater from the template. Used by the handler to set
+	/// ItemsSource directly, bypassing the base ItemsView class which requires
+	/// PART_ScrollView (WinUI 3 ScrollView) to wire up its internal repeater management.
+	/// Since we use ScrollViewer instead of ScrollView (for RefreshContainer compatibility),
+	/// the base class's internal wiring is broken and we must manage the repeater ourselves.
+	/// </summary>
+	internal ItemsRepeater? ItemsRepeater => _itemsRepeater;
 
 	public MauiItemsView()
 	{
@@ -115,7 +124,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
-		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
+		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as ItemsRepeater;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 
 		if (_emptyView is not null && _emptyViewContentControl is not null)
