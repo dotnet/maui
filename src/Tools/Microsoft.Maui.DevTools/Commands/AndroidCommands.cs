@@ -85,6 +85,9 @@ public static class AndroidCommands
 
 				if (!useJson && formatter is SpectreOutputFormatter spectre)
 				{
+					// Resolve package list: explicit --packages or interactive selection
+					var pkgList = await ResolveInstallPackagesAsync(packages, spectre, androidProvider, context.GetCancellationToken());
+
 					await spectre.LiveProgressAsync(async (ctx) =>
 					{
 						// Step 1: JDK
@@ -138,15 +141,6 @@ public static class AndroidCommands
 						licenseTask.Complete("Licenses accepted");
 
 						// Step 4: Install packages
-						var pkgList = packages is { Length: > 0 } ? packages.ToList() : new List<string>
-						{
-							"platform-tools",
-							"emulator",
-							"platforms;android-35",
-							"build-tools;35.0.0",
-							$"system-images;android-35;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
-						};
-
 						var pkgTask = ctx.AddTask($"Installing packages (0/{pkgList.Count})");
 						pkgTask.Update(0, $"Installing packages (0/{pkgList.Count})...");
 						await androidProvider.InstallPackagesAsync(pkgList, true,
@@ -447,6 +441,8 @@ public static class AndroidCommands
 						return;
 					}
 
+					var spectre = formatter as SpectreOutputFormatter;
+
 					void WriteGroupedPackages(IEnumerable<SdkPackage> pkgs, string title)
 					{
 						if (!pkgs.Any())
@@ -468,7 +464,7 @@ public static class AndroidCommands
 							if (items.Count == 1)
 							{
 								var p = items[0];
-								formatter.WriteProgress($"  {Markup.Escape(p.Path)}  [dim]{Markup.Escape(p.Version ?? "")}[/]  [dim italic]{Markup.Escape(p.Description ?? "")}[/]");
+								spectre?.WriteMarkupLine($"  {Markup.Escape(p.Path)}  [dim]{Markup.Escape(p.Version ?? "")}[/]  [dim italic]{Markup.Escape(p.Description ?? "")}[/]");
 							}
 							else
 							{
@@ -483,14 +479,14 @@ public static class AndroidCommands
 									.OrderByDescending(g => int.TryParse(g.Key, out var n) ? n : 0)
 									.ToList();
 
-								formatter.WriteProgress($"  [bold]{Markup.Escape(group.Key)}[/]  [dim]({byMajor.Count} major versions, {items.Count} total)[/]");
+								spectre?.WriteMarkupLine($"  [bold]{Markup.Escape(group.Key)}[/]  [dim]({byMajor.Count} major, {items.Count} total)[/]");
 								foreach (var major in byMajor)
 								{
 									var latest = major.First();
 									var latestVer = latest.Path.Contains(';', StringComparison.Ordinal) ? latest.Path.Substring(latest.Path.LastIndexOf(';') + 1) : latest.Version ?? "";
 									var others = major.Count() - 1;
 									var suffix = others > 0 ? $" [dim](+{others} older)[/]" : "";
-									formatter.WriteProgress($"    {Markup.Escape(latestVer),-20} [dim]{Markup.Escape(latest.Description ?? "")}[/]{suffix}");
+									spectre?.WriteMarkupLine($"    {Markup.Escape(latestVer),-20} [dim]{Markup.Escape(latest.Description ?? "")}[/]{suffix}");
 								}
 							}
 						}
@@ -758,39 +754,99 @@ public static class AndroidCommands
 
 			try
 			{
-				// Auto-detect system image if not provided
-				if (string.IsNullOrEmpty(package))
+				// Interactive system image selection if not provided
+				if (string.IsNullOrEmpty(package) && !useJson && formatter is SpectreOutputFormatter spectre)
+				{
+					var sysImages = await spectre.StatusAsync("Finding installed system images...", async () =>
+					{
+						var installed = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+						return installed.Where(p => p.Path.StartsWith("system-images;", StringComparison.Ordinal)).ToList();
+					});
+
+					if (sysImages.Count == 0)
+					{
+						throw new InvalidOperationException(
+							"No system images installed. Install one first with: maui android install");
+					}
+
+					if (sysImages.Count == 1)
+					{
+						package = sysImages[0].Path;
+						spectre.WriteInfo($"Using system image: {package}");
+					}
+					else
+					{
+						var selected = spectre.Prompt(
+							new SelectionPrompt<SdkPackage>()
+								.Title("[bold]Select a system image[/]")
+								.PageSize(12)
+								.HighlightStyle(new Style(Color.DodgerBlue1))
+								.UseConverter(p =>
+								{
+									var parts = p.Path.Split(';');
+									var api = parts.Length > 1 ? parts[1] : "";
+									var variant = parts.Length > 2 ? parts[2] : "";
+									var arch = parts.Length > 3 ? parts[3] : "";
+									return $"[bold]{Markup.Escape(api)}[/]  {Markup.Escape(variant)}  [dim]{Markup.Escape(arch)}[/]";
+								})
+								.AddChoices(sysImages.OrderByDescending(p => p.Path)));
+						package = selected.Path;
+					}
+				}
+				else if (string.IsNullOrEmpty(package))
 				{
 					package = await androidProvider.GetMostRecentSystemImageAsync(context.GetCancellationToken());
 					if (string.IsNullOrEmpty(package))
 					{
 						throw new InvalidOperationException(
-							"No system images installed. Install one first with: maui android sdk install \"system-images;android-35;google_apis;arm64-v8a\"");
+							"No system images installed. Install one first with: maui android install");
 					}
-					
 					if (!useJson)
-					{
 						formatter.WriteInfo($"Auto-detected system image: {package}");
-					}
 				}
+
+				// Interactive device profile selection if not provided
+				if (string.IsNullOrEmpty(device) && !useJson && formatter is SpectreOutputFormatter spectre2)
+				{
+					var deviceProfiles = new List<(string Id, string Name)>
+					{
+						("pixel_6", "Pixel 6"),
+						("pixel_8", "Pixel 8"),
+						("pixel_9", "Pixel 9"),
+						("pixel_fold", "Pixel Fold"),
+						("pixel_tablet", "Pixel Tablet"),
+						("medium_phone", "Medium Phone"),
+						("small_phone", "Small Phone"),
+					};
+
+					var selectedDevice = spectre2.Prompt(
+						new SelectionPrompt<(string Id, string Name)>()
+							.Title("[bold]Select a device profile[/]")
+							.HighlightStyle(new Style(Color.DodgerBlue1))
+							.UseConverter(d => $"[bold]{Markup.Escape(d.Name)}[/]  [dim]{Markup.Escape(d.Id)}[/]")
+							.AddChoices(deviceProfiles));
+					device = selectedDevice.Id;
+				}
+
+				device ??= "pixel_6";
 
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would create AVD: {name}");
 					formatter.WriteProgress($"Package: {package}");
-					formatter.WriteProgress($"Device: {device ?? "(default: pixel_6)"}");
+					formatter.WriteProgress($"Device: {device}");
 					return;
 				}
 
-				await androidProvider.CreateAvdAsync(name, device ?? "pixel_6", package, force, context.GetCancellationToken());
+				await androidProvider.CreateAvdAsync(name, device, package, force, context.GetCancellationToken());
 
 				if (useJson)
 				{
-					formatter.Write(new { success = true, name = name, package = package });
+					formatter.Write(new { success = true, name = name, package = package, device = device });
 				}
 				else
 				{
-					formatter.WriteSuccess($"Created AVD: {name}");
+					formatter.WriteSuccess($"Created AVD: {name} (device: {device})");
 				}
 			}
 			catch (Exception ex)
@@ -832,8 +888,18 @@ public static class AndroidCommands
 					return;
 				}
 
-				formatter.WriteProgress($"Starting {name}...");
-				await androidProvider.StartAvdAsync(name, coldBoot, wait, context.GetCancellationToken());
+				if (!useJson && formatter is SpectreOutputFormatter spectre)
+				{
+					await spectre.StatusAsync($"Starting {name}...", async () =>
+					{
+						await androidProvider.StartAvdAsync(name, coldBoot, wait, context.GetCancellationToken());
+					});
+				}
+				else
+				{
+					formatter.WriteProgress($"Starting {name}...");
+					await androidProvider.StartAvdAsync(name, coldBoot, wait, context.GetCancellationToken());
+				}
 
 				if (useJson)
 				{
@@ -964,4 +1030,136 @@ public static class AndroidCommands
 
 		return command;
 	}
+
+	/// <summary>
+	/// Resolves packages to install: uses explicit --packages if provided, otherwise shows interactive prompts.
+	/// </summary>
+	private static async Task<List<string>> ResolveInstallPackagesAsync(
+		string[]? explicitPackages,
+		SpectreOutputFormatter spectre,
+		IAndroidProvider androidProvider,
+		CancellationToken cancellationToken)
+	{
+		// If user specified packages explicitly, use those
+		if (explicitPackages is { Length: > 0 })
+			return explicitPackages.ToList();
+
+		// Try to fetch available packages for interactive selection
+		List<SdkPackage> installed;
+		List<SdkPackage> available;
+		try
+		{
+			(installed, available) = await spectre.StatusAsync("Fetching available packages...", async () =>
+			{
+				var inst = await androidProvider.GetInstalledPackagesAsync(cancellationToken);
+				var avail = await androidProvider.GetAvailablePackagesAsync(cancellationToken);
+				return (inst, avail);
+			});
+		}
+		catch
+		{
+			// Can't list packages (SDK not installed yet) — use sensible defaults
+			return GetDefaultPackages();
+		}
+
+		// Merge: all known platforms (installed + available), dedup by path
+		var allPackages = installed.Concat(available)
+			.GroupBy(p => p.Path)
+			.Select(g => g.FirstOrDefault(p => p.IsInstalled) ?? g.First()) // prefer installed entry
+			.ToList();
+
+		// Build platform choices: platforms;android-XX
+		var platforms = allPackages
+			.Where(p => p.Path.StartsWith("platforms;android-", StringComparison.Ordinal))
+			.OrderByDescending(p =>
+			{
+				var apiStr = p.Path.Substring("platforms;android-".Length);
+				return int.TryParse(apiStr, out var n) ? n : 0;
+			})
+			.ToList();
+
+		if (platforms.Count == 0)
+			return GetDefaultPackages();
+
+		// Prompt 1: Select Android platform
+		var platformChoices = platforms.Select(p =>
+		{
+			var apiStr = p.Path.Substring("platforms;android-".Length);
+			var status = p.IsInstalled ? "[green]Installed[/]" : "[dim]Not installed[/]";
+			// Display: "Android 35  Android SDK Platform 35  Installed"
+			return new PlatformChoice(
+				p.Path,
+				$"Android {apiStr}",
+				p.Description ?? $"Android SDK Platform {apiStr}",
+				p.IsInstalled);
+		}).ToList();
+
+		var selectedPlatform = spectre.Prompt(
+			new SelectionPrompt<PlatformChoice>()
+				.Title("[bold]Select an Android platform to install[/]")
+				.PageSize(15)
+				.HighlightStyle(new Style(Color.DodgerBlue1))
+				.UseConverter(c =>
+				{
+					var status = c.IsInstalled ? "[green]Installed[/]" : "[dim]Not installed[/]";
+					return $"[bold]{Markup.Escape(c.DisplayName)}[/]  {Markup.Escape(c.Description)}  {status}";
+				})
+				.AddChoices(platformChoices));
+
+		var apiLevel = selectedPlatform.PackagePath.Substring("platforms;android-".Length);
+
+		// Find matching build-tools for this API level
+		var matchingBuildTools = allPackages
+			.Where(p => p.Path.StartsWith($"build-tools;{apiLevel}.", StringComparison.Ordinal)
+				|| p.Path == $"build-tools;{apiLevel}.0.0")
+			.OrderByDescending(p => p.Version)
+			.FirstOrDefault();
+
+		var buildToolsPath = matchingBuildTools?.Path ?? $"build-tools;{apiLevel}.0.0";
+		var arch = PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64";
+		var sysImagePath = $"system-images;android-{apiLevel};google_apis;{arch}";
+
+		// Prompt 2: Select install scope
+		var scopeChoices = new List<InstallScope>
+		{
+			new("Platform only",
+				$"Install {selectedPlatform.PackagePath}",
+				new List<string> { selectedPlatform.PackagePath }),
+			new("Platform + Build Tools",
+				$"Install platform and {buildToolsPath}",
+				new List<string> { selectedPlatform.PackagePath, buildToolsPath, "platform-tools" }),
+			new("Full Development Setup",
+				"Platform, Build Tools, System Image, and Emulator",
+				new List<string>
+				{
+					selectedPlatform.PackagePath,
+					buildToolsPath,
+					"platform-tools",
+					"emulator",
+					sysImagePath
+				})
+		};
+
+		var selectedScope = spectre.Prompt(
+			new SelectionPrompt<InstallScope>()
+				.Title("[bold]Select what to install[/]")
+				.HighlightStyle(new Style(Color.DodgerBlue1))
+				.UseConverter(s => $"[bold]{Markup.Escape(s.Name)}[/]  [dim]{Markup.Escape(s.Description)}[/]")
+				.AddChoices(scopeChoices));
+
+		spectre.WriteInfo($"Will install: {string.Join(", ", selectedScope.Packages)}");
+		return selectedScope.Packages;
+	}
+
+	private static List<string> GetDefaultPackages() => new()
+	{
+		"platform-tools",
+		"emulator",
+		"platforms;android-35",
+		"build-tools;35.0.0",
+		$"system-images;android-35;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
+	};
+
+	private record PlatformChoice(string PackagePath, string DisplayName, string Description, bool IsInstalled);
+	private record InstallScope(string Name, string Description, List<string> Packages);
 }

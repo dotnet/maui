@@ -255,7 +255,17 @@ public static class AppleCommands
 
 			try
 			{
-				await provider.BootSimulatorAsync(udid, context.GetCancellationToken());
+				if (formatter is SpectreOutputFormatter spectre)
+				{
+					await spectre.StatusAsync($"Booting simulator {udid}...", async () =>
+					{
+						await provider.BootSimulatorAsync(udid, context.GetCancellationToken());
+					});
+				}
+				else
+				{
+					await provider.BootSimulatorAsync(udid, context.GetCancellationToken());
+				}
 
 				if (formatter is JsonOutputFormatter)
 				{
@@ -263,7 +273,7 @@ public static class AppleCommands
 				}
 				else
 				{
-					formatter.WriteSuccess($"Simulator {udid} started");
+					formatter.WriteSuccess($"Simulator {udid} booted");
 				}
 			}
 			catch (Exception ex)
@@ -285,7 +295,17 @@ public static class AppleCommands
 
 			try
 			{
-				await provider.ShutdownSimulatorAsync(udid, context.GetCancellationToken());
+				if (formatter is SpectreOutputFormatter spectre)
+				{
+					await spectre.StatusAsync($"Shutting down simulator {udid}...", async () =>
+					{
+						await provider.ShutdownSimulatorAsync(udid, context.GetCancellationToken());
+					});
+				}
+				else
+				{
+					await provider.ShutdownSimulatorAsync(udid, context.GetCancellationToken());
+				}
 
 				if (formatter is JsonOutputFormatter)
 				{

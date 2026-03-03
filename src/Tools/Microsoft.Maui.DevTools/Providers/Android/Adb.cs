@@ -41,7 +41,7 @@ public class Adb
 	private static Device MapToMauiDevice(AdbDeviceInfo info)
 	{
 		var isEmulator = info.IsEmulator;
-		var state = MapDeviceState(info.State);
+		var state = MapDeviceState(info.Status);
 		var isRunning = state == DeviceState.Connected || state == DeviceState.Booted;
 
 		return new Device
@@ -59,14 +59,14 @@ public class Adb
 		};
 	}
 
-	private static DeviceState MapDeviceState(string? state)
+	private static DeviceState MapDeviceState(AdbDeviceStatus status)
 	{
-		return state switch
+		return status switch
 		{
-			"device" => DeviceState.Connected,
-			"offline" => DeviceState.Offline,
-			"unauthorized" => DeviceState.Disconnected,
-			"bootloader" => DeviceState.Booting,
+			AdbDeviceStatus.Online => DeviceState.Connected,
+			AdbDeviceStatus.Offline => DeviceState.Offline,
+			AdbDeviceStatus.Unauthorized => DeviceState.Disconnected,
+			AdbDeviceStatus.NotRunning => DeviceState.Shutdown,
 			_ => DeviceState.Unknown
 		};
 	}
