@@ -27,7 +27,6 @@ public class Issue33351 : _IssuesUITest
 
         App.WaitForElement("PopToRootButton");
         App.Tap("PopToRootButton");
-
         App.WaitForElement("TabBarVisibleLabel");
         
         VerifyScreenshot();
