@@ -264,10 +264,10 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
 4. **code-review** (`.github/skills/code-review/SKILL.md`)
-   - **Purpose**: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Two modes: triage (can Fix phase be skipped?) and compare (rank passing candidates).
-   - **Trigger phrases**: "review code for PR #XXXXX", "triage PR fix", "compare fix candidates"
-   - **Used by**: PR agent between Gate and Fix (triage), and after Fix before Report (comparison)
-   - **Note**: Uses independence-first assessment — reads code before PR description to avoid anchoring bias
+   - **Purpose**: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Walks through a MAUI-specific checklist covering handler lifecycle, platform code, safe area, threading, public API, and test patterns.
+   - **Trigger phrases**: "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code"
+   - **Note**: Standalone skill — uses independence-first assessment (reads code before PR description to avoid anchoring bias). Can be used by any agent or invoked directly.
+   - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` — only post comments. Approval is a human decision.
 
 5. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
    - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
