@@ -32,8 +32,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			ResetBoxView();
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -45,8 +43,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			ResetBoxView();
 			App.WaitForElement("GreenRadioButton");
 			App.Tap("GreenRadioButton");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -56,17 +52,15 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void BoxView_BlueColor()
 		{
 			ResetBoxView();
-			// Switch away from default Blue then back to verify the Blue radio button
+			// Switch away from the default Blue then back to explicitly verify the Blue radio button
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
 			App.WaitForElement("BlueRadioButton");
 			App.Tap("BlueRadioButton");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		// ── CornerRadius tests (Order 4–5) ──
+		// ── CornerRadius tests (Order 4) ──
 
 		[Test]
 		[Order(4)]
@@ -77,8 +71,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CornerRadiusEntry");
 			App.ClearText("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "30");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -96,8 +88,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("HeightEntry");
 			App.ClearText("HeightEntry");
 			App.EnterText("HeightEntry", "150");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -112,8 +102,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityEntry");
 			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -127,9 +115,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ResetBoxView();
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
-
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			App.WaitForNoElement("BoxViewControl");
 		}
 
 		// ── Combined property tests (Order 8–11) ──
@@ -145,7 +131,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -160,7 +145,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityEntry");
 			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0.5");
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -175,7 +159,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
 			App.WaitForElement("FlowDirectionRTLCheckBox");
 			App.Tap("FlowDirectionRTLCheckBox");
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -194,8 +177,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Reset back to default state and verify
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
-
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -216,7 +197,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("OpacityEntry", "0.5");
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -233,7 +213,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("RedRadioButton");
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
@@ -250,7 +229,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("OpacityEntry", "0.5");
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
-			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif

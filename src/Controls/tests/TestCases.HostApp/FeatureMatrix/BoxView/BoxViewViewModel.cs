@@ -19,7 +19,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 
 	private bool _isGreenChecked = false;
 
-	private string _cornerRadiusEntryText = null;
+	private string _cornerRadiusEntryText = string.Empty;
 	private string _opacityEntryText = "1";
 	private string _widthEntryText = "200";
 	private string _heightEntryText = "100";
@@ -37,7 +37,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 		IsGreenChecked = false;
 		IsRTL = false;
 		HasShadow = false;
-		CornerRadiusEntryText = null;
+		CornerRadiusEntryText = string.Empty;
 		OpacityEntryText = "1";
 		WidthEntryText = "200";
 		HeightEntryText = "100";
@@ -165,7 +165,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_opacity != value)
 			{
 				_opacity = value;
-				OnPropertyChanged(nameof(Opacity));
+				OnPropertyChanged();
 			}
 		}
 	}
@@ -177,7 +177,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_cornerRadius != value)
 			{
 				_cornerRadius = value;
-				OnPropertyChanged(nameof(CornerRadius));
+				OnPropertyChanged();
 			}
 		}
 	}
@@ -186,8 +186,11 @@ public class BoxViewViewModel : INotifyPropertyChanged
 		get => _isVisible;
 		set
 		{
-			_isVisible = value;
-			OnPropertyChanged();
+			if (_isVisible != value)
+			{
+				_isVisible = value;
+				OnPropertyChanged();
+			}
 		}
 	}
 	private bool _hasShadow = false;
@@ -210,7 +213,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 						Offset = new Point(5, 5)
 					}
 					: null;
-				OnPropertyChanged(nameof(HasShadow));
+				OnPropertyChanged();
 			}
 		}
 	}
@@ -223,7 +226,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_boxShadow != value)
 			{
 				_boxShadow = value;
-				OnPropertyChanged(nameof(BoxShadow));
+				OnPropertyChanged();
 			}
 		}
 	}
