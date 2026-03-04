@@ -12,22 +12,24 @@ namespace Microsoft.Maui.DeviceTests
 		// An ObjectDisposedException was thrown when closing a Windows app that had style triggers
 		// bound to IsFocused, because FocusManager.LostFocus fired asynchronously AFTER the
 		// IServiceScope was disposed during window teardown. The fix adds a guard in
-		// UpdateIsFocused that checks whether the MAUI window handler is still connected.
-		[Fact(DisplayName = "UpdateIsFocused skips update when MAUI window handler is absent (teardown guard)")]
-		public async Task UpdateIsFocused_WhenMauiWindowAbsent_IsFocusedUnchanged()
+		// CanInvokeMappers that checks MauiContext.IsWindowScopeDisposed, preventing
+		// disposed-scope access when property mappers run after teardown.
+		[Fact(DisplayName = "UpdateIsFocused does not throw after window scope is disposed (teardown guard)")]
+		public async Task UpdateIsFocused_WhenWindowScopeDisposed_DoesNotThrow()
 		{
-
 			var entry = new Entry();
 			((IView)entry).IsFocused = true;
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				// In the device test context (ContextStub), GetOptionalPlatformWindow() returns
-				// a WinUI window, but GetWindow() returns null because no MAUI window is
-				// registered in Application.Windows. This mirrors the post-teardown state:
-				// after Window.Destroying() disconnects the MAUI window handler, GetWindow()
-				// can no longer find a matching entry, so the guard triggers.
-				var handler = CreateHandler<EntryHandler>(entry);
+				// Use a real MauiContext (not ContextStub) so we can call DisposeWindowScope()
+				// to simulate the window teardown state.
+				var mauiContext = new MauiContext(ApplicationServices);
+				var handler = CreateHandler<EntryHandler>(entry, mauiContext);
+
+				// Simulate window teardown: Window.Destroying() eventually calls
+				// DisposeWindowScope(), which sets IsWindowScopeDisposed = true.
+				mauiContext.DisposeWindowScope();
 
 				// Act: invoke UpdateIsFocused(false) via reflection, simulating the async
 				// FocusManager.LostFocus callback that fires after window scope disposal.
@@ -35,16 +37,14 @@ namespace Microsoft.Maui.DeviceTests
 					"UpdateIsFocused",
 					BindingFlags.Instance | BindingFlags.NonPublic);
 
+				// Should not throw ObjectDisposedException even though the scope is disposed.
+				// CanInvokeMappers detects IsWindowScopeDisposed = true and skips mapper execution,
+				// preventing access to services (e.g. IFontManager) from the disposed scope.
 				updateIsFocused!.Invoke(handler, [false]);
 
-				// Assert: the teardown guard should have detected the absent MAUI window
-				// handler and returned early, leaving IsFocused unchanged.
-				// Without the fix, IsFocused would be set to false, triggering style triggers
-				// that resolve IFontManager from a disposed IServiceScope
-				// Note: in the ContextStub (device test host), GetOptionalPlatformWindow() returns
-				// a WinUI window but GetWindow() returns null (no MAUI window in Application.Windows),
-				// which is equivalent to the post-teardown state where window?.Handler == null → ObjectDisposedException.
-				Assert.True(entry.IsFocused);
+				// UpdateIsFocused itself runs and updates IsFocused to false, but the IsFocused
+				// property mapper is skipped because CanInvokeMappers returns false.
+				Assert.False(entry.IsFocused);
 
 				((IViewHandler)handler).DisconnectHandler();
 			});
