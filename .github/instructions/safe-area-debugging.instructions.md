@@ -6,60 +6,30 @@ applyTo:
   - "**/*safearea*"
 ---
 
-# Safe Area Investigation Guidelines
+# Safe Area Guidelines
 
-## 🚨 Critical Platform Behavior Differences
+## Platform Differences
 
-**macOS 14/15 vs macOS 26 report DIFFERENT safe area insets:**
+| | macOS 14/15 | macOS 26+ |
+|-|-------------|-----------|
+| Title bar inset | ~28px | ~0px |
+| Used in CI | ✅ | ❌ |
 
-| macOS Version | Title Bar Safe Area | CI? |
-|---------------|---------------------|-----|
-| **macOS 14/15** | ~28px top inset | ✅ Yes — CI runs this |
-| **macOS 26 (Tahoe/Liquid Glass)** | ~0px top inset | ❌ No |
+Local macOS 26+ testing does NOT validate CI behavior. Fixes must pass CI on macOS 14/15.
 
-- ❌ **NEVER assume local macOS 26 testing reproduces CI behavior**
-- ✅ Safe area fixes MUST pass CI (macOS 14/15) to be valid
-
-**Platform defaults:**
-
-| Platform | `UseSafeArea` Default |
+| Platform | `UseSafeArea` default |
 |----------|-----------------------|
-| **iOS** | `false` |
-| **macCatalyst** | `true` |
+| iOS | `false` |
+| macCatalyst | `true` |
 
----
+## Architecture (PR #34024)
 
-## Current Architecture (PR #34024)
+**`IsParentHandlingSafeArea`** — before applying adjustments, `MauiView`/`MauiScrollView` walk ancestors to check if any ancestor handles the **same edges**. If so, descendant skips (avoids double-padding). Edge-aware: parent handling `Top` does not block child handling `Bottom`. Result cached in `bool? _parentHandlesSafeArea`; cleared on `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, `MovedToWindow`. `AppliesSafeAreaAdjustments` is `internal` for cross-type ancestor checks.
 
-### Primary: `IsParentHandlingSafeArea` (edge-aware parent walk)
-
-Before applying safe area adjustments, `MauiView` and `MauiScrollView` check whether an ancestor is already handling the **same edges**. If so, the descendant skips to avoid double-padding.
-
-Key properties:
-- **Edge-aware**: parent handling `Top` does NOT block child handling `Bottom`
-- **Cached** in `bool? _parentHandlesSafeArea`, cleared on `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, and `MovedToWindow`
-- `AppliesSafeAreaAdjustments` is `internal` so `MauiScrollView` can check `MauiView` ancestors
-- See `MauiView.IsParentHandlingSafeArea()` for the implementation
-
-### Secondary: `EqualsAtPixelLevel`
-
-Safe area values are compared at device-pixel resolution before triggering layout invalidation. This absorbs sub-pixel animation noise (e.g., `0.0000001pt` during `TranslateToAsync`) that would otherwise cause oscillation loops (#32586, #33934).
-
----
+**`EqualsAtPixelLevel`** — safe area compared at device-pixel resolution to absorb sub-pixel animation noise (`0.0000001pt` during `TranslateToAsync`), preventing oscillation loops (#32586, #33934).
 
 ## Anti-Patterns
 
-### ❌ Window Guard (tried and removed)
+**❌ Window Guard** — comparing `Window.SafeAreaInsets` to filter callbacks blocks legitimate updates. On macCatalyst + custom TitleBar, `WindowViewController` pushes content down, changing the **view's** `SafeAreaInsets` without changing the **window's**. Caused 28px CI shift (macOS 14/15 only). Never gate per-view callbacks on window-level insets.
 
-Comparing `Window.SafeAreaInsets` to filter noise callbacks blocks legitimate updates. On macCatalyst with a custom TitleBar, `WindowViewController` repositions content by pushing it down — changing the **view's** `SafeAreaInsets` without changing the **window's**. This caused a 28px content shift on CI (macOS 14/15 only). Never compare `Window.SafeAreaInsets` to gate per-view callbacks.
-
-### ❌ Semantic mismatch in comparisons
-
-`_safeArea` is filtered through `GetSafeAreaForEdge` (zeroes edges per `SafeAreaRegions`). Raw `UIView.SafeAreaInsets` includes all edges. Never compare them directly — compare raw-to-raw or adjusted-to-adjusted only.
-
----
-
-## Related
-
-- `.github/copilot-instructions.md` — Platform-specific file extensions (`.ios.cs` = iOS + macCatalyst)
-- `.github/instructions/uitests.instructions.md` — UI test categories and SafeAreaEdges category
+**❌ Semantic mismatch** — `_safeArea` is filtered by `GetSafeAreaForEdge` (zeroes edges per `SafeAreaRegions`); raw `UIView.SafeAreaInsets` includes all edges. Never compare them — compare raw-to-raw or adjusted-to-adjusted.
