@@ -1,3 +1,4 @@
+﻿#nullable enable
 Microsoft.Maui.Controls.Maps.Circle.CircleClicked -> System.EventHandler?
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs
 Microsoft.Maui.Controls.Maps.ClusterClickedEventArgs.ClusterClickedEventArgs(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Maps.Pin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> void
@@ -39,4 +40,3 @@ static readonly Microsoft.Maui.Controls.Maps.MapElement.IsVisibleProperty -> Mic
 static readonly Microsoft.Maui.Controls.Maps.MapElement.ZIndexProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.ClusteringIdentifierProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Pin.ImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
-﻿#nullable enable
