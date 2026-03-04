@@ -112,8 +112,6 @@ namespace Microsoft.Maui.Handlers
 						.FireAndForget();
 				}
 			});
-
-			SetupTouchDismissGesture();
 		}
 
 		static UIViewController? GetCurrentViewController(UIViewController? viewController)
@@ -275,27 +273,53 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupTouchDismissGesture()
 		{
-			if (_tapGestureRecognizer is not null && PlatformView?.Window is null)
-				return;
- 
-			var weakPlatformView = new WeakReference<MauiPicker>(PlatformView);
+			// Don't setup if window isn't available yet
+			if (PlatformView?.Window is null)
+			{
+    			return;
+			}
+
+			// Don't setup if already configured
+			if (_tapGestureRecognizer is not null)
+			{
+    			return;
+			}
+			var weakHandler = new WeakReference<PickerHandler>(this);
 			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
 			{
-				if (weakPlatformView.TryGetTarget(out var platformView))
-					platformView?.EndEditing(true);
+				if (weakHandler.TryGetTarget(out var handler))
+				{
+					handler.DismissPicker();
+				}
 			});
 			_tapGestureRecognizer.CancelsTouchesInView = false;
-			if (PlatformView?.Window is not null)
-			{
-				PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
-			}
+			PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
 		}
- 
+		
+		void DismissPicker()
+		{
+#if MACCATALYST
+			// On MacCatalyst, dismiss the UIAlertController and clean up the tap gesture directly,
+			// since ResignFirstResponder is not called here and OnEnded will not fire.
+			if (_pickerController is not null)
+			{
+				_pickerController.DismissViewController(true, null);
+				if (VirtualView is IPicker virtualView)
+					virtualView.IsFocused = virtualView.IsOpen = false;
+			}
+			RemoveTouchDismissGesture();
+#else
+			// On iOS, dismiss by ending editing
+			PlatformView?.EndEditing(true);
+#endif
+		}
+  
+
 		void RemoveTouchDismissGesture()
 		{
-			if (_tapGestureRecognizer is not null && PlatformView?.Window is not null)
+			if (_tapGestureRecognizer is not null)
 			{
-				PlatformView.Window.RemoveGestureRecognizer(_tapGestureRecognizer);
+				_tapGestureRecognizer.View?.RemoveGestureRecognizer(_tapGestureRecognizer);
 				_tapGestureRecognizer.Dispose();
 				_tapGestureRecognizer = null;
 			}
@@ -317,7 +341,6 @@ namespace Microsoft.Maui.Handlers
 
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
-				Handler?.SetupTouchDismissGesture();
 				platformView.EditingChanged += OnEditing;
 			}
 
@@ -356,10 +379,12 @@ namespace Microsoft.Maui.Handlers
 				int selectedIndex = handler.VirtualView?.SelectedIndex ?? 0;
 				handler.DisplayAlert(handler.PlatformView, selectedIndex);
 #endif
+				Handler?.SetupTouchDismissGesture();
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
+				Handler?.RemoveTouchDismissGesture();
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
 					return;
 
