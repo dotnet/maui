@@ -126,7 +126,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 		foreach (var group in _itemsSource)
 		{
-			if (group is not IEnumerable items || group is string)
+			if (group is string || group is not IEnumerable itemsList)
 				continue;
 
 			var header = CreateHeaderContext(group);
@@ -256,7 +256,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 			return;
 
 		int insertIndex = flatIndex + (e.NewStartingIndex >= 0 ? e.NewStartingIndex : groupList.Count - e.NewItems.Count);
-		
+
 		if (insertIndex < 0 || insertIndex > Items.Count)
 		{
 			ResetWithoutResubscribe();
@@ -320,8 +320,8 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		for (int i = 0; i < e.NewItems.Count; i++)
 		{
 			oldItems.Add(Items[replaceIndex + i]);
-			var item = e.NewItems[i];	
-			if(item is null)
+			var item = e.NewItems[i];
+			if (item is null)
 				continue;
 
 			var newItem = CreateItemContext(e.NewItems[i]!);
