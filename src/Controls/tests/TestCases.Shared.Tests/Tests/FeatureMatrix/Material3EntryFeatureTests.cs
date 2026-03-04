@@ -457,6 +457,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.Tap("ShadowCheckBox");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TestEntry");
 		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -502,8 +503,11 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TestEntry");
 		VerifyScreenshot(tolerance: 0.5, cropBottom: CropBottomValue, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 

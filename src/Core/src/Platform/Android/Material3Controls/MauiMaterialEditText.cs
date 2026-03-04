@@ -5,6 +5,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Google.Android.Material.TextField;
+
 namespace Microsoft.Maui.Platform;
 
 // TODO: Material3: Make it public in .NET 11
