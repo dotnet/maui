@@ -201,38 +201,78 @@ When reviewing safe area PRs, pay extra attention to:
 
 ---
 
-## Examples from PR #34024
+## Current Architecture (PR #34024)
 
-### ❌ What Went Wrong
+### Primary Fix — `IsParentHandlingSafeArea` (Edge-Aware Parent Hierarchy Walk)
 
-**Aggressive guard blocked legitimate callbacks**:
+`MauiView` and `MauiScrollView` now walk the ancestor hierarchy before applying safe area adjustments. If an ancestor is already applying safe area for the **same edges**, the descendant skips its own adjustment.
+
 ```csharp
-// This blocked view-level safe area changes when window-level was unchanged
+bool IsParentHandlingSafeArea()
+{
+    if (_parentHandlesSafeArea.HasValue)
+        return _parentHandlesSafeArea.Value;
+
+    // Edge-aware: only defer if a parent handles the SAME edges as us
+    _parentHandlesSafeArea = this.FindParent(x =>
+    {
+        if (x is not MauiView mv || !mv._appliesSafeAreaAdjustments)
+            return false;
+        for (int edge = 0; edge < 4; edge++)
+        {
+            if (GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None &&
+                mv.GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None)
+                return true;
+        }
+        return false;
+    }) is not null;
+    return _parentHandlesSafeArea.Value;
+}
+```
+
+**Key design choices:**
+- **Edge-aware**: Parent handling `Top` does NOT block child handling `Bottom` — they are independent
+- **Cached**: Result stored in `bool? _parentHandlesSafeArea`, cleared on `SafeAreaInsetsDidChange`, `InvalidateSafeArea`, and `MovedToWindow`
+- **`AppliesSafeAreaAdjustments` property**: Exposed as `internal` so `MauiScrollView` can check `MauiView` ancestors
+
+### Secondary Fix — `EqualsAtPixelLevel`
+
+Sub-pixel animation noise (e.g., `0.0000001pt` differences during `TranslateToAsync`) is filtered by comparing safe area values at device-pixel resolution:
+
+```csharp
+return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
+       (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+```
+
+This prevents the oscillation loop in #32586 and #33934 without requiring any external guards.
+
+---
+
+## Anti-Patterns (Tried and Removed in PR #34024)
+
+### ❌ Window Guard (Don't Use)
+
+The Window Guard compared `Window.SafeAreaInsets` to filter "noise" callbacks:
+
+```csharp
+// BAD: Blocked view-level safe area changes when window-level was unchanged
 if (windowInsets == _lastWindowSafeAreaInsets)
     return;
 ```
 
-**Semantic mismatch in comparison**:
+**Why it failed**: On macCatalyst with a custom TitleBar, `WindowViewController.LayoutTitleBar()` repositions content by setting `_contentWrapperTopConstraint.Constant = titleBarHeight`. This pushes the content wrapper DOWN, changing the view's own `SafeAreaInsets` WITHOUT changing `Window.SafeAreaInsets`. The guard blocked this legitimate change, causing a 28px content shift in CI (macOS 14/15 only — not reproducible on macOS 26 Tahoe).
+
+**Never compare `Window.SafeAreaInsets` to filter per-view callbacks.** The view's own `SafeAreaInsets` can change independently of the window's.
+
+### ❌ Semantic Mismatch in Comparison
+
 ```csharp
-// Compared raw SafeAreaInsets (includes adjustments) to _safeArea (excludes adjustments)
+// BAD: Compared raw SafeAreaInsets (all edges) to _safeArea (filtered by SafeAreaRegions)
 if (vc.View!.SafeAreaInsets == _safeArea)
     return;
 ```
 
-### ✅ Correct Approach
-
-**Check actual changed value**:
-```csharp
-// Compare the value that actually changed (view-level insets)
-if (vc.View!.SafeAreaInsets == _lastViewSafeAreaInsets)
-    return;
-```
-
-**Maintain semantic compatibility**:
-```csharp
-// Both values are "view safe area insets" - semantically identical
-_lastViewSafeAreaInsets = vc.View!.SafeAreaInsets;
-```
+`_safeArea` is filtered through `GetSafeAreaForEdge` which zeroes edges based on `SafeAreaRegions`. Raw `SafeAreaInsets` include all edges. These are semantically different — never compare them directly.
 
 ---
 
