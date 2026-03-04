@@ -74,60 +74,24 @@ public static partial class AppHostBuilderExtensions
 		if (RuntimeFeature.IsMaterial3Enabled)
 		{
 			handlersCollection.AddHandler<Label, LabelHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<Label, LabelHandler>();
-		}
-#else
-		handlersCollection.AddHandler<Label, LabelHandler>();
-#endif
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
 			handlersCollection.AddHandler<Editor, EditorHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<Editor, EditorHandler>();
-		}
-#else
-		handlersCollection.AddHandler<Editor, EditorHandler>();
-#endif
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
 			handlersCollection.AddHandler<Picker, PickerHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<Picker, PickerHandler>();
-		}
-#else
-		handlersCollection.AddHandler<Picker, PickerHandler>();
-#endif
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
-		}
-#else
-		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
-#endif
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
 		}
 		else
 		{
+			handlersCollection.AddHandler<Label, LabelHandler>();
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+			handlersCollection.AddHandler<Picker, PickerHandler>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		}
 #else
+		handlersCollection.AddHandler<Label, LabelHandler>();
+		handlersCollection.AddHandler<Editor, EditorHandler>();
+		handlersCollection.AddHandler<Picker, PickerHandler>();
+		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
