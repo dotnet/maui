@@ -18,6 +18,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ContentControl? _emptyViewContentControl;
 	FrameworkElement? _emptyView;
 	View? _mauiEmptyView;
+	WVisibility _emptyViewVisibility = WVisibility.Collapsed;
 
 	ContentControl? _headerContentControl;
 	FrameworkElement? _header;
@@ -38,9 +39,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
 	public WVisibility EmptyViewVisibility
 	{
-		get => _emptyViewContentControl?.Visibility ?? WVisibility.Collapsed;
+		get => _emptyViewVisibility;
 		set
 		{
+			_emptyViewVisibility = value;
+
 			if (_emptyViewContentControl is not null)
 			{
 				_emptyViewContentControl.Visibility = value;
@@ -122,6 +125,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		if (_emptyView is not null && _emptyViewContentControl is not null)
 		{
 			_emptyViewContentControl.Content = _emptyView;
+			_emptyViewContentControl.Visibility = _emptyViewVisibility;
 		}
 
 		if (_header is not null && _headerContentControl is not null)
