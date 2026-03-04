@@ -15,6 +15,8 @@ public class Issue29141 : ContentPage
     RadioButton _groupFooterTemplateGrid;
     RadioButton _isGroupedFalse;
     RadioButton _isGroupedTrue;
+    Button _switchToStringCollectionButton;
+    Button _addItemButton;
 
     public Issue29141()
     {
@@ -90,6 +92,20 @@ public class Issue29141 : ContentPage
         };
         _isGroupedTrue.CheckedChanged += OnIsGroupedChanged;
 
+        _switchToStringCollectionButton = new Button
+        {
+            Text = "Use String Collection",
+            AutomationId = "SwitchToStringCollection"
+        };
+        _switchToStringCollectionButton.Clicked += (s, e) => _viewModel.SwitchToStringItems();
+
+        _addItemButton = new Button
+        {
+            Text = "Add Item",
+            AutomationId = "AddItemButton"
+        };
+        _addItemButton.Clicked += (s, e) => _viewModel.AddItem();
+
         // Build the UI
         var controlsLayout = new StackLayout
         {
@@ -129,7 +145,15 @@ public class Issue29141 : ContentPage
                 {
                     Orientation = StackOrientation.Horizontal,
                     Children = { _isGroupedFalse, _isGroupedTrue }
-                }
+                },
+                new Label
+                {
+                    Text = "Scenarios:",
+                    FontSize = 12,
+                    FontAttributes = FontAttributes.Bold
+                },
+                _switchToStringCollectionButton,
+                _addItemButton
             }
         };
 
@@ -241,12 +265,28 @@ public class Issue29141CollectionViewViewModel : INotifyPropertyChanged
     DataTemplate _itemTemplate;
     bool _isGrouped = false;
     ObservableCollection<Issue29141ItemModel> _observableCollection;
+    ObservableCollection<string> _stringCollection;
+    bool _useStringItems;
+    DataTemplate _stringItemTemplate;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     public Issue29141CollectionViewViewModel()
     {
         LoadItems();
+
+        _stringCollection = new ObservableCollection<string> { "String A", "String B", "String C" };
+        _stringItemTemplate = new DataTemplate(() =>
+        {
+            var label = new Label
+            {
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center
+            };
+            label.SetBinding(Label.TextProperty, ".");
+            return label;
+        });
+
         ItemTemplate = new DataTemplate(() =>
         {
             var stackLayout = new StackLayout
@@ -293,6 +333,25 @@ public class Issue29141CollectionViewViewModel : INotifyPropertyChanged
             };
     }
 
+    public void SwitchToStringItems()
+    {
+        _useStringItems = true;
+        ItemTemplate = _stringItemTemplate;
+        OnPropertyChanged(nameof(ItemsSource));
+    }
+
+    public void AddItem()
+    {
+        if (_useStringItems)
+        {
+            _stringCollection.Add($"String {_stringCollection.Count + 1}");
+        }
+        else
+        {
+            _observableCollection.Add(new Issue29141ItemModel { Caption = $"Item {_observableCollection.Count + 1}" });
+        }
+    }
+
     public DataTemplate GroupHeaderTemplate
     {
         get => _groupHeaderTemplate;
@@ -319,7 +378,7 @@ public class Issue29141CollectionViewViewModel : INotifyPropertyChanged
 
     public object ItemsSource
     {
-        get => _observableCollection;
+        get => _useStringItems ? (object)_stringCollection : _observableCollection;
     }
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
