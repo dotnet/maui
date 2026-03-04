@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -15,7 +14,8 @@ namespace Microsoft.Maui.Platform
 
 		//Material 2 design spec - https://m2.material.io/components/sliders/android#discrete-slider
 		//Additional info - https://github.com/material-components/material-components-android/blob/60b0325b39741784fca4d7aba079b65453bc7c66/lib/java/com/google/android/material/slider/res/values/dimens.xml#L27
-		const int TARGET_SIZE = 20; // 10 radius * 2
+		// Thumb diameter per Material Design spec: https://m2.material.io/components/sliders
+		const int ThumbDiameterDp = 20;
 
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
@@ -86,19 +86,12 @@ namespace Microsoft.Maui.Platform
 
 		static void SetThumbDrawable(SeekBar seekBar, Context context, Drawable thumbDrawable)
 		{
-			// Check if we're setting the same drawable to avoid unnecessary work
-			if (ReferenceEquals(seekBar.Thumb, thumbDrawable))
-			{
-				return;
-			}
-
-			int thumbSize = (int)context.ToPixels(TARGET_SIZE);
+			int thumbSize = (int)context.ToPixels(ThumbDiameterDp);
 
 			if (thumbSize <= 0)
 			{
 				return;
 			}
-
 
 			using (Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!))
 			using (Canvas canvas = new Canvas(bitmap))
