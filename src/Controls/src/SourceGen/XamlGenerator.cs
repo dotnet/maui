@@ -194,9 +194,10 @@ public class XamlGenerator : IIncrementalGenerator
 
 				// Incremental Hot Reload: if enabled and we have a previous XAML for this file,
 				// compute a diff and emit an UpdateComponent file.
+				var assemblyName = compilation.AssemblyName ?? string.Empty;
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload
 					&& xamlItem.Xaml is not null
-					&& XamlHotReloadState.TryGetPrevious(relativePath, out var previousXaml, out var previousVersion)
+					&& XamlHotReloadState.TryGetPrevious(assemblyName, relativePath, out var previousXaml, out var previousVersion)
 					&& previousXaml != xamlItem.Xaml
 					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var rootType, out var accessModifier)
 					&& rootType != null)
@@ -216,18 +217,18 @@ public class XamlGenerator : IIncrementalGenerator
 					{
 						var version = previousVersion + 1;
 						sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, $"uc_v{previousVersion}to{version}.xsg"), ucCode);
-						XamlHotReloadState.Update(relativePath, xamlItem.Xaml, version);
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, version);
 					}
 					else
 					{
 						// Structural change or no-op: update cache so next reload is based on latest XAML
-						XamlHotReloadState.Update(relativePath, xamlItem.Xaml, previousVersion);
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, previousVersion);
 					}
 				}
 				else if (xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
 					// First run: seed the cache (version 1, since IC sets __version = 1)
-					XamlHotReloadState.Update(relativePath, xamlItem.Xaml, 1);
+					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
 
 					// Emit the MetadataUpdateHandler glue class (once, alongside the IC)
 					if (InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var handlerRootType, out _)

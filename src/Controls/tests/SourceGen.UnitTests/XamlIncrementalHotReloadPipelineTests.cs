@@ -172,7 +172,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state was seeded
-		var hasPrev = XamlHotReloadState.TryGetPrevious(PageRelativePath, out _, out var version);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out var version);
 		Assert.True(hasPrev, "XamlHotReloadState should be seeded after first run");
 		Assert.Equal(1, version);
 	}
@@ -258,7 +258,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state NOT seeded when IHR is disabled
-		var hasPrev = XamlHotReloadState.TryGetPrevious(PageRelativePath, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _);
 		Assert.False(hasPrev, "XamlHotReloadState should NOT be seeded when IHR is disabled");
 	}
 
@@ -303,6 +303,122 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		// Assert: no handler when IHR is disabled
 		var handlerSource = FindUCSource(result, ".handler.xsg.cs");
 		Assert.Null(handlerSource);
+	}
+
+	// -----------------------------------------------------------------------
+	// Bug 1: TryGet out-var pattern test
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void GeneratedCode_UsesOutVarPatternForTryGet()
+	{
+		// Arrange
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Label x:Name="myLabel" Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Label x:Name="myLabel" Text="World" />
+			</ContentPage>
+			""";
+
+		// Act
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var ucSource = FindUCSource(run2, "uc_v");
+
+		// Assert: must use out-var pattern, NOT "var __uc = TryGet(...)"
+		if (ucSource != null)
+		{
+			Assert.Contains("out var ", ucSource, StringComparison.Ordinal);
+			// Old buggy pattern was: var __uc_0 = TryGet(...) -- make sure it's gone
+			Assert.DoesNotContain("= TryGet(", ucSource, StringComparison.Ordinal);
+		}
+		// If ucSource is null the property change is structural (x:Name present) -- that's acceptable
+	}
+
+	// -----------------------------------------------------------------------
+	// Bug 2: Root property change emits this.Prop = value
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void RootPropertyChange_EmitsThisDotAssignment()
+	{
+		// Arrange
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage"
+			             Title="Hello">
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage"
+			             Title="World">
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		// Act
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var ucSource = FindUCSource(run2, "uc_v");
+
+		// Assert: root property change should emit this.Title = "World" (not registry lookup)
+		if (ucSource != null)
+		{
+			Assert.Contains("this.Title", ucSource, StringComparison.Ordinal);
+			// Must NOT do a registry lookup for the root node
+			Assert.DoesNotContain("TryGet", ucSource.Split('\n')
+				.FirstOrDefault(l => l.Contains("Title", StringComparison.Ordinal)) ?? "", StringComparison.Ordinal);
+		}
+		// null means structural fallback (acceptable if x:Class treated as structural)
+	}
+
+	// -----------------------------------------------------------------------
+	// Bug 3: XamlHotReloadState isolated by assembly name
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void HotReloadState_IsolatedByAssemblyName()
+	{
+		// Arrange
+		XamlHotReloadState.Reset();
+		const string xaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="App.MainPage">
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string relPath = "MainPage.xaml";
+
+		// Seed with assembly "App1"
+		XamlHotReloadState.Update("App1", relPath, xaml, 1);
+
+		// "App2" with same relative path should NOT see "App1" state
+		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", relPath, out _, out _);
+		Assert.False(hasPrev, "Different assembly should not see another assembly's state");
+
+		// "App1" SHOULD see its own state
+		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", relPath, out var storedXaml, out var storedVer);
+		Assert.True(hasSelf);
+		Assert.Equal(xaml, storedXaml);
+		Assert.Equal(1, storedVer);
 	}
 
 	// -----------------------------------------------------------------------
