@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,9 +16,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shape)]
 		public void LineWithReversedCoordinatesShouldRenderSymmetrical()
 		{
-			// Wait for the test grid to be ready
 			App.WaitForElement("DescriptionLabel");
-			VerifyScreenshot();
+
+			// Wait for the symmetry check to complete (SizeChanged fires after layout)
+			App.WaitForElement("SymmetryResult");
+
+			// The HostApp computes path bounds for both lines and checks symmetry.
+			// "Pass" means bounds1.Left + bounds2.Right ≈ 200 and bounds1.Right + bounds2.Left ≈ 200,
+			// proving the path coordinates are symmetric around the center axis (X=100).
+			var result = App.FindElement("SymmetryResult").GetText();
+			Assert.That(result, Is.EqualTo("Pass"),
+				"Line paths should be symmetric: path coordinates for mirror-image lines should mirror around center axis X=100");
 		}
 	}
 }
