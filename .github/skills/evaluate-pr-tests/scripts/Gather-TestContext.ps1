@@ -63,11 +63,11 @@ git fetch origin --quiet 2>$null
 $changedFiles = @()
 $diffOutput = git diff --name-only "$BaseBranch...HEAD" 2>$null
 if ($diffOutput) {
-    $changedFiles = $diffOutput -split "`n" | Where-Object { $_ -ne "" }
+    $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
 } else {
     $diffOutput = git diff --name-only "$BaseBranch" 2>$null
     if ($diffOutput) {
-        $changedFiles = $diffOutput -split "`n" | Where-Object { $_ -ne "" }
+        $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
     }
 }
 
