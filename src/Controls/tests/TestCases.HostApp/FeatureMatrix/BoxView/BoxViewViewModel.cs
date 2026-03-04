@@ -14,10 +14,34 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	private bool _isRedChecked = false;
 	private bool _isBlueChecked = true;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	private bool _isRTL = false;
 
+
+	private bool _isGreenChecked = false;
 
 	private string _cornerRadiusEntryText = null;
-	private string _opacityEntryText = null;
+	private string _opacityEntryText = "1";
+	private string _widthEntryText = "200";
+	private string _heightEntryText = "100";
+
+	public void Reset()
+	{
+		Color = Colors.Blue;
+		Width = 200;
+		Height = 100;
+		IsVisible = true;
+		Opacity = 1.0;
+		CornerRadius = default;
+		IsRedChecked = false;
+		IsBlueChecked = true;
+		IsGreenChecked = false;
+		IsRTL = false;
+		HasShadow = false;
+		CornerRadiusEntryText = null;
+		OpacityEntryText = "1";
+		WidthEntryText = "200";
+		HeightEntryText = "100";
+	}
 
 	public string CornerRadiusEntryText
 	{
@@ -27,8 +51,6 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_cornerRadiusEntryText != value)
 			{
 				_cornerRadiusEntryText = value;
-				if (double.TryParse(value, out double radius))
-					CornerRadius = radius;
 				OnPropertyChanged();
 			}
 		}
@@ -42,8 +64,32 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_opacityEntryText != value)
 			{
 				_opacityEntryText = value;
-				if (double.TryParse(value, out double opacity))
-					Opacity = opacity;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string WidthEntryText
+	{
+		get => _widthEntryText;
+		set
+		{
+			if (_widthEntryText != value)
+			{
+				_widthEntryText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string HeightEntryText
+	{
+		get => _heightEntryText;
+		set
+		{
+			if (_heightEntryText != value)
+			{
+				_heightEntryText = value;
 				OnPropertyChanged();
 			}
 		}
@@ -58,7 +104,11 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isRedChecked = value;
 				if (value)
+				{
 					Color = Colors.Red;
+					_isGreenChecked = false;
+					OnPropertyChanged(nameof(IsGreenChecked));
+				}
 				OnPropertyChanged();
 			}
 		}
@@ -73,7 +123,26 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isBlueChecked = value;
 				if (value)
+				{
 					Color = Colors.Blue;
+					_isGreenChecked = false;
+					OnPropertyChanged(nameof(IsGreenChecked));
+				}
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsGreenChecked
+	{
+		get => _isGreenChecked;
+		set
+		{
+			if (_isGreenChecked != value)
+			{
+				_isGreenChecked = value;
+				if (value)
+					Color = Colors.Green;
 				OnPropertyChanged();
 			}
 		}
@@ -166,6 +235,20 @@ public class BoxViewViewModel : INotifyPropertyChanged
 		get => _height;
 		set { _height = value; OnPropertyChanged(); }
 	}
+	public bool IsRTL
+	{
+		get => _isRTL;
+		set
+		{
+			if (_isRTL != value)
+			{
+				_isRTL = value;
+				FlowDirection = value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public FlowDirection FlowDirection
 	{
 		get => _flowDirection;
