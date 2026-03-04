@@ -125,7 +125,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 		foreach (var group in _itemsSource)
 		{
-			if (group is not IList itemsList)
+			if (group is string || group is not IEnumerable itemsList)
 				continue;
 
 			var header = CreateHeaderContext(group);
