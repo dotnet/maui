@@ -140,10 +140,10 @@ function Test-UITestConventions {
     $testMethods = [regex]::Matches($content, '\[Test\]')
     $categories = [regex]::Matches($content, '\[Category\(')
     if ($categories.Count -eq 0) {
-        $issues += "Missing ``[Category]`` attribute"
+        $issues += "Missing ``[Category]`` attribute — exactly ONE required (on class or method)"
     }
-    elseif ($categories.Count -gt 1 -and $testMethods.Count -eq 1) {
-        $issues += "Multiple ``[Category]`` attributes on single test method (use only ONE)"
+    elseif ($categories.Count -gt 1) {
+        $issues += "Found $($categories.Count) ``[Category]`` attributes — must have exactly ONE (on class or method, not both)"
     }
     $info += "Test methods: $($testMethods.Count), Category attributes: $($categories.Count)"
 
