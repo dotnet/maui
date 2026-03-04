@@ -26,7 +26,8 @@ parameters:
   - name: pool
     type: object
     default:
-      name: AcesShared
+      name: Azure Pipelines
+      vmImage: ubuntu-22.04
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
