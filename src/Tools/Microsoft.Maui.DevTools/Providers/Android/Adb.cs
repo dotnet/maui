@@ -30,12 +30,50 @@ public class Adb
 		try
 		{
 			var devices = await _runner.ListDevicesAsync(cancellationToken);
-			return devices.Select(MapToMauiDevice).ToList();
+			var result = new List<Device>();
+
+			foreach (var info in devices)
+			{
+				// If this is a running emulator without an AVD name, query it via adb
+				if (info.IsEmulator && string.IsNullOrEmpty(info.AvdName) && info.Status == AdbDeviceStatus.Online)
+				{
+					info.AvdName = await QueryAvdNameAsync(info.Serial, cancellationToken);
+				}
+				result.Add(MapToMauiDevice(info));
+			}
+
+			return result;
 		}
 		catch (InvalidOperationException)
 		{
 			return new List<Device>();
 		}
+	}
+
+	/// <summary>
+	/// Queries a running emulator for its AVD name via 'adb -s &lt;serial&gt; emu avd name'.
+	/// </summary>
+	private async Task<string?> QueryAvdNameAsync(string serial, CancellationToken cancellationToken)
+	{
+		if (AdbPath == null) return null;
+
+		try
+		{
+			var result = await ProcessRunner.RunAsync(AdbPath, $"-s {serial} emu avd name",
+				timeout: TimeSpan.FromSeconds(5), cancellationToken: cancellationToken);
+			if (result.Success && !string.IsNullOrWhiteSpace(result.StandardOutput))
+			{
+				// Output is typically "AVD_NAME\nOK\n" — take the first non-empty line
+				var name = result.StandardOutput
+					.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+					.FirstOrDefault(l => !l.Equals("OK", StringComparison.OrdinalIgnoreCase))
+					?.Trim();
+				return string.IsNullOrEmpty(name) ? null : name;
+			}
+		}
+		catch { /* non-critical — fall back to no AVD name */ }
+
+		return null;
 	}
 
 	private static Device MapToMauiDevice(AdbDeviceInfo info)
@@ -44,18 +82,24 @@ public class Adb
 		var state = MapDeviceState(info.Status);
 		var isRunning = state == DeviceState.Connected || state == DeviceState.Booted;
 
+		var details = new Dictionary<string, object>();
+		if (!string.IsNullOrEmpty(info.AvdName))
+			details["avd"] = info.AvdName;
+
 		return new Device
 		{
 			Id = info.Serial,
-			Name = info.Model ?? info.Serial,
+			Name = !string.IsNullOrEmpty(info.AvdName) ? info.AvdName : (info.Model ?? info.Serial),
 			Platforms = new[] { "android" },
 			Type = isEmulator ? DeviceType.Emulator : DeviceType.Physical,
 			State = state,
 			IsEmulator = isEmulator,
 			IsRunning = isRunning,
 			ConnectionType = isEmulator ? ConnectionType.Local : ConnectionType.Usb,
+			EmulatorId = info.AvdName,
 			Model = info.Model,
 			Idiom = DeviceIdiom.Phone,
+			Details = details.Count > 0 ? details : null,
 		};
 	}
 
