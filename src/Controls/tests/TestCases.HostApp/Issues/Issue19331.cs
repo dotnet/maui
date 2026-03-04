@@ -3,11 +3,6 @@
 [Issue(IssueTracker.Github, 19331, "SwipeItems referencing causes crash on Android", PlatformAffected.Android)]
 public class Issue19331 : ContentPage
 {
-	public const string StatusLabelId = "StatusLabel19331";
-	public const string SwipeRow1Id = "SwipeRow1_19331";
-	public const string SwipeRow2Id = "SwipeRow2_19331";
-	public const string SwipeRow3Id = "SwipeRow3_19331";
-
 	public Issue19331()
 	{
 		var sharedSwipeItems = new SwipeItems
@@ -21,7 +16,7 @@ public class Issue19331 : ContentPage
 
 		var statusLabel = new Label
 		{
-			AutomationId = StatusLabelId,
+			AutomationId = "StatusLabel19331",
 			Text = "Swipe rows to test",
 			HorizontalOptions = LayoutOptions.Center,
 			Margin = new Thickness(0, 10)
@@ -35,7 +30,7 @@ public class Issue19331 : ContentPage
 		};
 		row1Content.Add(new Label
 		{
-			AutomationId = SwipeRow1Id,
+			AutomationId = "SwipeRow1_19331",
 			Text = "Row 1 - Swipe left",
 			VerticalOptions = LayoutOptions.Center
 		});
@@ -48,7 +43,7 @@ public class Issue19331 : ContentPage
 		};
 		row2Content.Add(new Label
 		{
-			AutomationId = SwipeRow2Id,
+			AutomationId = "SwipeRow2_19331",
 			Text = "Row 2 - Swipe left",
 			VerticalOptions = LayoutOptions.Center
 		});
@@ -61,7 +56,7 @@ public class Issue19331 : ContentPage
 		};
 		row3Content.Add(new Label
 		{
-			AutomationId = SwipeRow3Id,
+			AutomationId = "SwipeRow3_19331",
 			Text = "Row 3 - Swipe left",
 			VerticalOptions = LayoutOptions.Center
 		});
