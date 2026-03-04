@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			oldView.Layer.RemoveAllAnimations();
 
 			// On iOS 26+, setting newView.Alpha = 0 before the fade-in causes Liquid Glass
-			// tab bar icons to composite while the parent view has zero alpha, resulting in
-			// icons not rendering. Skip setting alpha to 0 so
-			// the tab bar view stays at its default alpha=1 when iOS 26 composites its icons.
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			// tab bar icons to composite at zero opacity, resulting in missing tab icons.
+			// We skip the initial alpha=0 on iOS 26+, which means there is no fade-in
+			// animation on iOS 26+ — this is intentional to avoid the rendering issue.
+			if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
 			{
 				newView.Alpha = 0;
 			}

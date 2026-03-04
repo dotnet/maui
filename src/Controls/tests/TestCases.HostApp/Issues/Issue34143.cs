@@ -73,6 +73,7 @@ public class Issue34143 : TestShell
 	{
 		public Issue34143MainPage()
 		{
+			BackgroundColor = Colors.White;
 			Content = new VerticalStackLayout
 			{
 				VerticalOptions = LayoutOptions.Center,
@@ -101,6 +102,7 @@ public class Issue34143 : TestShell
 	{
 		public Issue34143ModalPage()
 		{
+			BackgroundColor = Colors.White;
 			Title = "Modal";
 			Content = new VerticalStackLayout
 			{
@@ -130,6 +132,7 @@ public class Issue34143 : TestShell
 	{
 		public Issue34143TabPage(string contentText)
 		{
+			BackgroundColor = Colors.White;
 			Content = new VerticalStackLayout
 			{
 				VerticalOptions = LayoutOptions.Center,
