@@ -95,10 +95,22 @@ static class InitializeComponentCodeWriter
 			codeWriter.WriteLine($"{accessModifier} partial class {rootType.Name}");
 			using (newblock())
 			{
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
+				{
+					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+					codeWriter.WriteLine("private int __version = 0;");
+					codeWriter.WriteLine();
+				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
+
+				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
+				var nodeIds = xamlItem.ProjectItem.EnableIncrementalHotReload
+					? NodeIdHelper.AssignIds(root)
+					: null;
+
 				using (newblock())
 				{
 					if (xamlItem.ProjectItem.EnableDiagnostics)
@@ -138,6 +150,22 @@ $$"""
 					{
 						WriteMultiLineString(codeWriter, localMethod);
 						codeWriter.WriteLine();
+					}
+
+					// Emit Register calls and __version bump for incremental hot reload
+					if (nodeIds != null)
+					{
+						codeWriter.WriteLine();
+						foreach (var kvp in sgcontext.Variables)
+						{
+							if (kvp.Key is ElementNode en
+								&& nodeIds.TryGetValue(en, out var nodeId)
+								&& !string.IsNullOrEmpty(nodeId))
+							{
+								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
+							}
+						}
+						codeWriter.WriteLine("__version = 1;");
 					}
 				}
 			}
