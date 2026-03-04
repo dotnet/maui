@@ -578,7 +578,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
-	[Fact("FlyoutPage Detail Does Not Leak When Replaced")]
+	[Fact("FlyoutPage Detail Handler Is Disconnected When Replaced")]
 	public async Task FlyoutPageDetailDoesNotLeak()
 	{
 		SetupBuilder();
@@ -587,40 +587,39 @@ public class MemoryTests : ControlsHandlerTestBase
 		var flyoutPage = new FlyoutPage
 		{
 			Flyout = new ContentPage { Title = "Flyout" },
-			Detail = new ContentPage { Title = "Detail" }
+			Detail = new NavigationPage(new ContentPage { Title = "Initial Detail" })
 		};
 
 		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
 		{
 			await OnLoadedAsync(flyoutPage);
 
-			var detailPage1 = new ContentPage { Title = "Detail 1" };
-			var navPage1 = new NavigationPage(detailPage1);
-			flyoutPage.Detail = navPage1;
-			
-			await OnLoadedAsync(detailPage1);
+			// Capture old detail and its handler before replacement
+			var oldDetail = flyoutPage.Detail;
+			var oldHandler = oldDetail.Handler;
+			Assert.NotNull(oldHandler);
 
-			references.Add(new(navPage1));
-			references.Add(new(navPage1.Handler));
-			references.Add(new(navPage1.Handler.PlatformView));
-			references.Add(new(detailPage1));
-			references.Add(new(detailPage1.Handler));
-			references.Add(new(detailPage1.Handler.PlatformView));
+			references.Add(new(oldDetail));
+			references.Add(new(oldHandler));
+			references.Add(new(oldHandler.PlatformView));
 
-			var detailPage2 = new ContentPage { Title = "Detail 2" };
-			var navPage2 = new NavigationPage(detailPage2);
-			flyoutPage.Detail = navPage2;
+			// Replace detail
+			var newDetailPage = new ContentPage { Title = "New Detail" };
+			flyoutPage.Detail = new NavigationPage(newDetailPage);
+			await OnLoadedAsync(newDetailPage);
 
-			await OnLoadedAsync(detailPage2);
+			// The fix calls previousDetail.Handler?.DisconnectHandler() in the Detail setter.
+			// Without the fix, the old handler stays connected (non-null).
+			Assert.Null(oldDetail.Handler);
 
-			navPage1 = null;
-			detailPage1 = null;
+			oldDetail = null;
+			oldHandler = null;
 		});
 
 		await AssertionExtensions.WaitForGC([.. references]);
 	}
 
-	[Fact("FlyoutPage Detail Does Not Leak With Multiple Replacements")]
+	[Fact("FlyoutPage Detail Handler Disconnects With Multiple Replacements")]
 	public async Task FlyoutPageDetailDoesNotLeakWithMultipleReplacements()
 	{
 		SetupBuilder();
@@ -629,7 +628,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		var flyoutPage = new FlyoutPage
 		{
 			Flyout = new ContentPage { Title = "Flyout" },
-			Detail = new ContentPage { Title = "Detail" }
+			Detail = new NavigationPage(new ContentPage { Title = "Initial Detail" })
 		};
 
 		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
@@ -638,25 +637,27 @@ public class MemoryTests : ControlsHandlerTestBase
 
 			for (int i = 0; i < 5; i++)
 			{
-				var detailPage = new ContentPage { Title = $"Detail {i}" };
-				var navPage = new NavigationPage(detailPage);
-				
-				flyoutPage.Detail = navPage;
-				await OnLoadedAsync(detailPage);
+				var oldDetail = flyoutPage.Detail;
+				var oldHandler = oldDetail.Handler;
+				Assert.NotNull(oldHandler);
 
 				if (i < 3)
 				{
-					references.Add(new(navPage));
-					references.Add(new(navPage.Handler));
-					references.Add(new(navPage.Handler.PlatformView));
-					references.Add(new(detailPage));
-					references.Add(new(detailPage.Handler));
-					references.Add(new(detailPage.Handler.PlatformView));
+					references.Add(new(oldDetail));
+					references.Add(new(oldHandler));
+					references.Add(new(oldHandler.PlatformView));
 				}
 
-				await Task.Delay(50);
-			}
+				var newDetailPage = new ContentPage { Title = $"Detail {i}" };
+				flyoutPage.Detail = new NavigationPage(newDetailPage);
+				await OnLoadedAsync(newDetailPage);
 
+				// Each replacement must disconnect the previous detail's handler
+				Assert.Null(oldDetail.Handler);
+
+				oldDetail = null;
+				oldHandler = null;
+			}
 		});
 
 		await AssertionExtensions.WaitForGC([.. references]);
