@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -14,37 +13,29 @@ namespace Microsoft.Maui.DeviceTests
 		// IServiceScope was disposed during window teardown. The fix adds a guard in
 		// CanInvokeMappers that checks MauiContext.IsWindowScopeDisposed, preventing
 		// disposed-scope access when property mappers run after teardown.
-		[Fact(DisplayName = "UpdateIsFocused does not throw after window scope is disposed (teardown guard)")]
-		public async Task UpdateIsFocused_WhenWindowScopeDisposed_DoesNotThrow()
+		[Fact(DisplayName = "CanInvokeMappers returns false after window scope is disposed (teardown guard)")]
+		public async Task CanInvokeMappers_AfterWindowScopeDisposed_ReturnsFalse()
 		{
 			var entry = new Entry();
-			((IView)entry).IsFocused = true;
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				// Use a real MauiContext (not ContextStub) so we can call DisposeWindowScope()
-				// to simulate the window teardown state.
+				// Use a real MauiContext (not ContextStub) so we can call DisposeWindowScope().
 				var mauiContext = new MauiContext(ApplicationServices);
 				var handler = CreateHandler<EntryHandler>(entry, mauiContext);
+
+				// Before teardown, mappers should be allowed to run.
+				Assert.True(handler.CanInvokeMappers());
 
 				// Simulate window teardown: Window.Destroying() eventually calls
 				// DisposeWindowScope(), which sets IsWindowScopeDisposed = true.
 				mauiContext.DisposeWindowScope();
 
-				// Act: invoke UpdateIsFocused(false) via reflection, simulating the async
-				// FocusManager.LostFocus callback that fires after window scope disposal.
-				var updateIsFocused = typeof(ViewHandler).GetMethod(
-					"UpdateIsFocused",
-					BindingFlags.Instance | BindingFlags.NonPublic);
-
-				// Should not throw ObjectDisposedException even though the scope is disposed.
-				// CanInvokeMappers detects IsWindowScopeDisposed = true and skips mapper execution,
-				// preventing access to services (e.g. IFontManager) from the disposed scope.
-				updateIsFocused!.Invoke(handler, [false]);
-
-				// UpdateIsFocused itself runs and updates IsFocused to false, but the IsFocused
-				// property mapper is skipped because CanInvokeMappers returns false.
-				Assert.False(entry.IsFocused);
+				// After disposal, CanInvokeMappers must return false.
+				// Without this guard, mappers would run and attempt to resolve services
+				// (e.g. IFontManager) from the disposed IServiceScope, causing
+				// ObjectDisposedException (#34272).
+				Assert.False(handler.CanInvokeMappers());
 
 				((IViewHandler)handler).DisconnectHandler();
 			});
