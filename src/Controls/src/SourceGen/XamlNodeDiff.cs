@@ -39,7 +39,7 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 /// <summary>
 /// Describes all property changes on a single element node, identified by its stable path within the tree.
 /// </summary>
-readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChanges)
+readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChanges, XmlType? nodeXmlType = null)
 {
 	/// <summary>
 	/// Stable path from the root, e.g. <c>""</c> for root, <c>"Label[0]"</c>, <c>"VerticalStackLayout[0]/Label[0]"</c>.
@@ -48,6 +48,12 @@ readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChan
 
 	/// <summary>Property-level changes on this node.</summary>
 	public IReadOnlyList<PropertyDiff> PropertyChanges { get; } = propertyChanges;
+
+	/// <summary>
+	/// The XAML type declaration of this node, used by code writers to resolve the C# type for casting.
+	/// May be <see langword="null"/> when not available (e.g. in tests).
+	/// </summary>
+	public XmlType? NodeXmlType { get; } = nodeXmlType;
 }
 
 /// <summary>
@@ -97,7 +103,7 @@ static class XamlNodeDiff
 
 		var nodeChanges = new List<NodeDiff>();
 
-		if (!DiffNode(oldRoot, newRoot, "", nodeChanges))
+		if (!DiffNode(oldRoot, newRoot, "", 0, nodeChanges))
 			return null;
 
 		return new XamlTreeDiff(nodeChanges);
@@ -111,8 +117,9 @@ static class XamlNodeDiff
 	/// Recursively diffs two <see cref="ElementNode"/>s at the same tree position.
 	/// </summary>
 	/// <param name="nodeId">Stable path string for this node, used in <see cref="NodeDiff"/>.</param>
+	/// <param name="depth">Current depth in the tree (root = 0, children of root = 1, etc.).</param>
 	/// <returns><see langword="false"/> if a structural difference is detected.</returns>
-	static bool DiffNode(ElementNode oldNode, ElementNode newNode, string nodeId, List<NodeDiff> nodeChanges)
+	static bool DiffNode(ElementNode oldNode, ElementNode newNode, string nodeId, int depth, List<NodeDiff> nodeChanges)
 	{
 		// Structural check 1: element type must match
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
@@ -124,7 +131,7 @@ static class XamlNodeDiff
 			return false;
 
 		if (propDiffs.Count > 0)
-			nodeChanges.Add(new NodeDiff(nodeId, propDiffs));
+			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType));
 
 		// Structural check 2: collection items (child elements) must have same count and types
 		if (oldNode.CollectionItems.Count != newNode.CollectionItems.Count)
@@ -137,8 +144,8 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				var childId = ChildNodeId(nodeId, oldElem.XmlType.Name, i);
-				if (!DiffNode(oldElem, newElem, childId, nodeChanges))
+				var childId = ChildNodeId(oldElem.XmlType.Name, depth + 1, i);
+				if (!DiffNode(oldElem, newElem, childId, depth + 1, nodeChanges))
 					return false;
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
@@ -290,10 +297,6 @@ static class XamlNodeDiff
 	/// <summary>
 	/// Builds a stable child node ID by appending the child type name and its position index.
 	/// </summary>
-	static string ChildNodeId(string parentId, string childTypeName, int index)
-	{
-		if (string.IsNullOrEmpty(parentId))
-			return $"{childTypeName}[{index}]";
-		return $"{parentId}/{childTypeName}[{index}]";
-	}
+	static string ChildNodeId(string childTypeName, int depth, int index)
+		=> $"{childTypeName}_{depth}_{index}";
 }
