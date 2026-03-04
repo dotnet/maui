@@ -2,6 +2,9 @@
 # This pipeline installs the Copilot CLI and invokes the PR reviewer agent
 # to conduct automated code reviews on pull requests.
 #
+# Environment setup follows the same patterns as ui-tests-steps.yml and
+# device-tests-steps.yml: enable-kvm → provision → dotnet install → appium.
+#
 # For more information, see:
 # https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
 
@@ -36,6 +39,8 @@ variables:
     value: false
   - name: Codeql.SkipTaskAutoInjection
     value: true
+  - name: APPIUM_HOME
+    value: $(System.DefaultWorkingDirectory)/.appium/
 
 stages:
   - stage: ReviewPR
@@ -75,248 +80,35 @@ stages:
               mkdir -p $(Build.ArtifactStagingDirectory)/logs
             displayName: 'Create Artifact Directories'
 
-          # Provision environment (Xcode, .NET SDK, Android SDK, etc.)
+          ##################################################
+          #         Provision Machine (same as uitests)    #
+          ##################################################
+
+          # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml and device-tests-steps.yml)
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - template: common/enable-kvm.yml
+
+          # Provision SDKs (same parameters as ui-tests-steps.yml)
           - template: common/provision.yml
             parameters:
               skipXcode: ${{ eq(parameters.Platform, 'android') }}
               skipProvisionator: true
-              skipAndroidCommonSdks: ${{ eq(parameters.Platform, 'ios') }}
-              skipAndroidPlatformApis: ${{ eq(parameters.Platform, 'ios') }}
-              skipJdk: ${{ eq(parameters.Platform, 'ios') }}
+              skipJdk: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidPlatformApis: true
+              onlyAndroidPlatformDefaultApis: true
+              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCreateAvds: true
+              androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ eq(parameters.Platform, 'android') }}
               skipCertificates: true
-              # Android emulator setup (skip for iOS)
-              skipAndroidEmulatorImages: ${{ eq(parameters.Platform, 'ios') }}
-              skipAndroidCreateAvds: ${{ eq(parameters.Platform, 'ios') }}
-              androidEmulatorApiLevel: '30'
 
-          # Configure AVD for hardware acceleration (AcesShared ARM64 macOS agents have HVF)
-          # Match maui-pr Cake script: no GPU override on macOS (uses default hw GPU)
-          - script: |
-              echo "=== Configuring AVD for hardware-accelerated emulation ==="
-              AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
-              if [ -f "$AVD_CONFIG" ]; then
-                echo "Found AVD config: $AVD_CONFIG"
-                cat "$AVD_CONFIG"
-              else
-                echo "##vso[task.logissue type=warning]AVD config not found at: $AVD_CONFIG"
-                ls -la "$HOME/.android/avd/" 2>/dev/null || echo "AVD directory not found"
-              fi
-            displayName: 'Configure AVD'
-            condition: eq('${{ parameters.Platform }}', 'android')
+          ##################################################
+          #         Install .NET (same as uitests)         #
+          ##################################################
 
-          # Set up Android SDK PATH (required on self-hosted agents)
-          - pwsh: |
-              if ($env:ANDROID_SDK_ROOT) {
-                $platformTools = Join-Path $env:ANDROID_SDK_ROOT "platform-tools"
-                $emulatorPath = Join-Path $env:ANDROID_SDK_ROOT "emulator"
-                $cmdlineTools = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/latest/bin"
-                
-                # Use Azure Pipelines' prependpath command to persist across steps
-                Write-Host "##vso[task.prependpath]$platformTools"
-                Write-Host "##vso[task.prependpath]$emulatorPath"
-                Write-Host "##vso[task.prependpath]$cmdlineTools"
-                
-                Write-Host "Added to PATH (will apply to subsequent steps):"
-                Write-Host "  platform-tools: $platformTools"
-                Write-Host "  emulator: $emulatorPath"
-                Write-Host "  cmdline-tools: $cmdlineTools"
-                
-                # Verify the tools exist
-                if (Test-Path (Join-Path $platformTools "adb")) {
-                  Write-Host "✅ adb found at: $platformTools/adb"
-                } else {
-                  Write-Host "⚠️ adb NOT found at expected location"
-                }
-                if (Test-Path (Join-Path $emulatorPath "emulator")) {
-                  Write-Host "✅ emulator found at: $emulatorPath/emulator"
-                } else {
-                  Write-Host "⚠️ emulator NOT found at expected location"
-                }
-              } else {
-                Write-Host "##vso[task.logissue type=warning]ANDROID_SDK_ROOT not set, skipping PATH setup"
-              }
-              
-              # Auto-detect and set JAVA_HOME if not already set
-              if (-not $env:JAVA_HOME) {
-                if ($IsLinux) {
-                  # On Linux, look for JDK in standard locations
-                  $jvmDirs = @("/usr/lib/jvm", "/usr/java")
-                  foreach ($jvmDir in $jvmDirs) {
-                    $jdk = Get-ChildItem "$jvmDir/java-17*" -ErrorAction SilentlyContinue | Select-Object -First 1
-                    if (-not $jdk) {
-                      $jdk = Get-ChildItem "$jvmDir/microsoft-*17*" -ErrorAction SilentlyContinue | Select-Object -First 1
-                    }
-                    if (-not $jdk) {
-                      $jdk = Get-ChildItem "$jvmDir/temurin-17*" -ErrorAction SilentlyContinue | Select-Object -First 1
-                    }
-                    if ($jdk) {
-                      Write-Host "##vso[task.setvariable variable=JAVA_HOME]$($jdk.FullName)"
-                      Write-Host "Set JAVA_HOME to: $($jdk.FullName)"
-                      break
-                    }
-                  }
-                } else {
-                  # macOS
-                  $jvmDir = "/Library/Java/JavaVirtualMachines"
-                  $msJdk = Get-ChildItem "$jvmDir/microsoft-*.jdk" -ErrorAction SilentlyContinue | Select-Object -First 1
-                  if ($msJdk) {
-                    $javaHome = "$($msJdk.FullName)/Contents/Home"
-                    Write-Host "##vso[task.setvariable variable=JAVA_HOME]$javaHome"
-                    Write-Host "Set JAVA_HOME to: $javaHome"
-                  }
-                }
-              }
-            displayName: 'Configure Android SDK PATH'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-
-          # Start Android Emulator directly
-          # On Linux CI (Azure Pipelines Ubuntu): AVDs may be in ~/.config/.android/avd/
-          # We set ANDROID_AVD_HOME so emulator can find them
-          - script: |
-              echo "=== Starting Android Emulator ==="
-              echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
-              echo "JAVA_HOME: $JAVA_HOME"
-              
-              # Fix KVM permissions (Azure Pipelines Ubuntu user not in kvm group by default)
-              echo "=== Fixing KVM permissions ==="
-              if [ -e /dev/kvm ]; then
-                echo "KVM device exists, checking group membership..."
-                echo "Current groups: $(groups)"
-                echo "KVM group: $(grep kvm /etc/group)"
-                sudo gpasswd -a $USER kvm
-                echo "Added $USER to kvm group"
-                # Also set permissions directly (group change needs relogin)
-                sudo chmod 666 /dev/kvm
-                echo "Set /dev/kvm permissions to 666"
-                ls -la /dev/kvm
-              fi
-              
-              # Install missing shared libraries (libpulse needed by emulator)
-              echo "=== Installing emulator dependencies ==="
-              sudo apt-get update -qq
-              sudo apt-get install -y -qq libpulse0 > /dev/null 2>&1 || true
-              
-              EMULATOR_BIN="$ANDROID_SDK_ROOT/emulator/emulator"
-              echo "Emulator binary: $EMULATOR_BIN"
-              $EMULATOR_BIN -version 2>&1 | head -3
-              
-              # Find AVD location - check multiple possible paths
-              AVD_HOME=""
-              for candidate in "$HOME/.android/avd" "$HOME/.config/.android/avd"; do
-                if [ -d "$candidate/Emulator_30.avd" ]; then
-                  AVD_HOME="$candidate"
-                  echo "Found AVD at: $candidate/Emulator_30.avd"
-                  break
-                fi
-              done
-              
-              if [ -z "$AVD_HOME" ]; then
-                echo "##[error]Could not find Emulator_30 AVD in any known location"
-                find /home -name "Emulator_30.avd" -type d 2>/dev/null || true
-                exit 1
-              fi
-              
-              export ANDROID_AVD_HOME="$AVD_HOME"
-              echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
-              
-              # Verify emulator can see the AVD
-              echo "Available AVDs:"
-              $EMULATOR_BIN -list-avds 2>/dev/null || true
-              
-              # Check KVM access
-              echo "=== Hardware acceleration check ==="
-              $EMULATOR_BIN -accel-check 2>&1 || true
-              
-              # Start the emulator
-              echo "=== Starting emulator ==="
-              EMULATOR_LOG="/tmp/emulator-Emulator_30.log"
-              nohup $EMULATOR_BIN -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect -no-metrics > "$EMULATOR_LOG" 2>&1 &
-              EMULATOR_PID=$!
-              echo "Emulator PID: $EMULATOR_PID"
-              
-              # Wait briefly and check if process is still alive
-              sleep 5
-              if ! kill -0 $EMULATOR_PID 2>/dev/null; then
-                echo "##[error]Emulator process died immediately"
-                cat "$EMULATOR_LOG" 2>/dev/null | tail -50
-                exit 1
-              fi
-              echo "Emulator process is running"
-              
-              # Wait for ADB device
-              echo "=== Waiting for ADB device ==="
-              adb start-server 2>/dev/null || true
-              device_timeout=120
-              device_waited=0
-              while ! adb devices 2>/dev/null | grep -q "emulator.*device"; do
-                if adb devices 2>/dev/null | grep -q "emulator.*offline"; then
-                  echo "Device found but offline, waiting..."
-                fi
-                sleep 5
-                device_waited=$((device_waited + 5))
-                if [ $device_waited -ge $device_timeout ]; then
-                  echo "##[error]Emulator device did not appear after ${device_timeout}s"
-                  cat "$EMULATOR_LOG" 2>/dev/null | tail -30
-                  exit 1
-                fi
-                if ! kill -0 $EMULATOR_PID 2>/dev/null; then
-                  echo "##[error]Emulator process died while waiting for device"
-                  cat "$EMULATOR_LOG" 2>/dev/null | tail -30
-                  exit 1
-                fi
-              done
-              
-              DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
-              echo "✅ Emulator detected: $DEVICE_ID"
-              
-              # Wait for boot completion
-              echo "=== Waiting for boot ==="
-              boot_timeout=300
-              boot_waited=0
-              while [ "$(adb -s $DEVICE_ID shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-                sleep 5
-                boot_waited=$((boot_waited + 5))
-                if [ $boot_waited -ge $boot_timeout ]; then
-                  echo "##[error]Boot timeout after ${boot_timeout}s"
-                  exit 1
-                fi
-              done
-              echo "✅ Emulator fully booted: $DEVICE_ID"
-              
-              # Wait for package manager
-              echo "Waiting for package manager service..."
-              pm_timeout=60
-              pm_waited=0
-              while ! adb -s $DEVICE_ID shell pm list packages 2>/dev/null | grep -q "package:"; do
-                sleep 3
-                pm_waited=$((pm_waited + 3))
-                if [ $pm_waited -ge $pm_timeout ]; then
-                  echo "⚠️ Package manager not ready (non-fatal)"
-                  break
-                fi
-              done
-              if [ $pm_waited -lt $pm_timeout ]; then
-                echo "✅ Package manager service is ready"
-              fi
-              
-              echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
-              echo ""
-              echo "=== ✅ Android Emulator Started Successfully ==="
-              adb devices -l
-            displayName: 'Start Android Emulator'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            timeoutInMinutes: 15
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME)
-
-          # Install .NET and workloads via Cake (build.ps1 works on both Linux and macOS via pwsh)
-          - pwsh: |
-              ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
-            displayName: 'Install .NET and workloads'
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET'
             retryCountOnTaskFailure: 2
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -326,408 +118,61 @@ stages:
             displayName: 'Add .NET to PATH'
 
           # Build MSBuild tasks (required for MAUI builds)
-          - pwsh: |
-              ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
-            
-          # Verify environment is ready
-          - script: |
-              echo "=== Verifying Build Environment ==="
-              ERRORS=""
-              
-              # Check .NET SDK
-              echo "Checking .NET SDK..."
-              if ! dotnet --version; then
-                ERRORS="${ERRORS}\n- .NET SDK not available"
-              else
-                echo "✓ .NET SDK: $(dotnet --version)"
-              fi
-              
-              # Check Android SDK (only for Android platform)
-              if [ "${{ parameters.Platform }}" = "android" ]; then
-                echo "Checking Android SDK..."
-                if [ -z "$ANDROID_HOME" ] && [ -z "$ANDROID_SDK_ROOT" ]; then
-                  ERRORS="${ERRORS}\n- ANDROID_HOME/ANDROID_SDK_ROOT not set"
-                else
-                  SDK_PATH="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-                  if [ ! -d "$SDK_PATH" ]; then
-                    ERRORS="${ERRORS}\n- Android SDK directory not found: $SDK_PATH"
-                  else
-                    echo "✓ Android SDK: $SDK_PATH"
-                  fi
-                fi
-                
-                # Check emulator binary
-                echo "Checking Android Emulator..."
-                if which emulator > /dev/null 2>&1; then
-                  echo "✓ emulator: $(which emulator)"
-                  emulator -version 2>&1 | head -1 || true
-                else
-                  echo "⚠️ emulator not in PATH (may be at \$ANDROID_SDK_ROOT/emulator/emulator)"
-                fi
-                
-                # Check adb
-                echo "Checking adb..."
-                if which adb > /dev/null 2>&1; then
-                  echo "✓ adb: $(which adb)"
-                else
-                  echo "⚠️ adb not in PATH"
-                fi
-                
-                # Check KVM (Linux) or HVF (macOS) hardware acceleration
-                echo "Checking hardware virtualization..."
-                if [ "$(uname)" = "Linux" ]; then
-                  if [ -e /dev/kvm ]; then
-                    echo "✓ KVM available (/dev/kvm exists)"
-                    ls -la /dev/kvm
-                  else
-                    ERRORS="${ERRORS}\n- KVM not available (/dev/kvm missing)"
-                  fi
-                fi
-              fi
-              
-              # Check Xcode (macOS only, iOS only)
-              if [ "$(uname)" = "Darwin" ] && [ "${{ parameters.Platform }}" = "ios" ]; then
-                echo "Checking Xcode..."
-                if ! xcodebuild -version; then
-                  ERRORS="${ERRORS}\n- Xcode not available"
-                else
-                  echo "✓ Xcode available"
-                fi
-                
-                # Check iOS simulators
-                echo "Checking iOS simulators..."
-                if ! xcrun simctl list devices available | grep -q "iPhone"; then
-                  ERRORS="${ERRORS}\n- No iOS simulators available"
-                else
-                  echo "✓ iOS simulators available"
-                fi
-              fi
-              
-              # Check Java/JDK (only for Android platform)
-              if [ "${{ parameters.Platform }}" = "android" ]; then
-                echo "Checking JDK..."
-                if ! java -version 2>&1; then
-                  ERRORS="${ERRORS}\n- JDK not available"
-                else
-                  echo "✓ JDK available"
-                fi
-              fi
-              
-              # Report errors
-              if [ -n "$ERRORS" ]; then
-                echo ""
-                echo "##vso[task.logissue type=error]=== Environment Verification FAILED ==="
-                echo -e "Missing dependencies:$ERRORS"
-                echo "##vso[task.logissue type=error]Build environment is not properly configured. See above for details."
-                exit 1
-              fi
-              
-              echo ""
-              echo "=== Environment Verification PASSED ==="
-            displayName: 'Verify Build Environment'
-
 
           # Restore .NET tools (includes xharness)
-          - script: |
-              echo "Restoring .NET tools..."
-              dotnet tool restore
-              echo "Tools restored successfully"
+          - script: dotnet tool restore
             displayName: 'Restore .NET Tools'
 
-          # Verify Android emulator is running
-          - script: |
-              echo "=== Verifying Android Emulator ==="
-              adb devices -l
-              DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
-              if [ -z "$DEVICE_ID" ]; then
-                echo "##vso[task.logissue type=error]No emulator device found"
-                exit 1
-              fi
-              echo "✅ Emulator running: $DEVICE_ID"
-              echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
-            displayName: 'Verify Android Emulator'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            timeoutInMinutes: 5
+          ##################################################
+          #     Boot Android Emulator via Cake (same as    #
+          #     device-tests-steps.yml / uitests)          #
+          ##################################################
 
-          # Install Node.js (cross-platform: apt on Linux, brew on macOS)
-          - script: |
-              echo "Installing Node.js..."
-              if [ "$(uname)" = "Linux" ]; then
-                # Use NodeSource for Node.js 22 on Linux
-                curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-                sudo apt-get install -y nodejs
-              else
-                brew install node@22
-                brew link --overwrite node@22
-              fi
-              if ! node --version; then
-                echo "##vso[task.logissue type=error]Failed to install Node.js"
-                exit 1
-              fi
-              npm --version
-              echo "Node.js installed successfully"
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - script: dotnet cake eng/devices/android.cake --target=boot --device="android-emulator-64_30" --apiversion="30" --verbosity=diagnostic
+              displayName: 'Boot Android Emulator (Cake)'
+              timeoutInMinutes: 15
+
+            # Capture emulator device ID for Copilot agent
+            - script: |
+                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                if [ -z "$DEVICE_ID" ]; then
+                  echo "##vso[task.logissue type=error]No emulator device found after Cake boot"
+                  adb devices -l
+                  exit 1
+                fi
+                echo "✅ Emulator running: $DEVICE_ID"
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+              displayName: 'Capture Emulator UDID'
+              timeoutInMinutes: 5
+
+          ##################################################
+          #     Install Node.js + Appium (same as uitests) #
+          ##################################################
+
+          - task: UseNode@1
+            inputs:
+              version: "20.3.1"
             displayName: 'Install Node.js'
 
-          # Install Appium and platform drivers
-          - script: |
-              echo "Installing Appium and platform drivers..."
-
-              # Get npm global bin directory and add to PATH
-              NPM_BIN=$(npm config get prefix)/bin
-              echo "NPM global bin directory: $NPM_BIN"
-              export PATH="$NPM_BIN:$PATH"
-
-              # Install Appium globally
-              npm install -g appium
-
-              # Install both drivers
-              echo "Installing UiAutomator2 driver for Android..."
-              appium driver install uiautomator2
-              echo "Installing XCUITest driver for iOS..."
-              appium driver install xcuitest
-
-              # Verify installation
-              if ! which appium; then
-                echo "##vso[task.logissue type=error]Failed to install Appium"
-                exit 1
-              fi
-
-              APPIUM_PATH=$(which appium)
-              echo "Appium path: $APPIUM_PATH"
-              echo "Appium version: $(appium --version)"
-              echo "Appium drivers installed:"
-              appium driver list --installed
-
-              # Export PATH for subsequent steps
-              echo "##vso[task.prependpath]$NPM_BIN"
-
-              echo "Appium installed successfully"
+          - pwsh: |
+              $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+              dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
             displayName: 'Install Appium'
-
-
-          # Verify/refresh Android Emulator before PR Reviewer runs
-          # Reuses the already-running emulator if healthy (avoids disk space issues on hosted agents)
-          - script: |
-              echo "=== Checking Android Emulator for PR Reviewer ==="
-
-              # Check if emulator is still running and healthy
-              DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
-              if [ -n "$DEVICE_ID" ]; then
-                BOOT_DONE=$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-                if [ "$BOOT_DONE" = "1" ]; then
-                  echo "✅ Emulator $DEVICE_ID is running and booted"
-                  # Verify package manager is still responsive
-                  if adb -s "$DEVICE_ID" shell pm list packages 2>/dev/null | grep -q "package:"; then
-                    echo "✅ Package manager is responsive"
-                    echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
-                    echo "=== Android Emulator Ready (reused) ==="
-                    adb devices -l
-                    exit 0
-                  fi
-                fi
-              fi
-
-              echo "⚠️ Emulator not healthy, attempting restart..."
-
-              # Find AVD home (same logic as Start step)
-              AVD_HOME=""
-              for candidate in "$HOME/.android/avd" "$HOME/.config/.android/avd"; do
-                if [ -d "$candidate/Emulator_30.avd" ]; then
-                  AVD_HOME="$candidate"
-                  break
-                fi
-              done
-              export ANDROID_AVD_HOME="${AVD_HOME:-$HOME/.android/avd}"
-
-              # Kill any existing emulator
-              adb devices | grep emulator | awk '{print $1}' | xargs -I{} adb -s {} emu kill 2>/dev/null || true
-              sleep 5
-
-              # Restart ADB server
-              adb kill-server
-              sleep 2
-              adb start-server
-              sleep 2
-
-              # Start fresh emulator
-              EMULATOR_LOG="/tmp/emulator-fresh.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect -no-metrics > "$EMULATOR_LOG" 2>&1 &
-
-              # Wait for device
-              device_timeout=300
-              device_waited=0
-              while ! adb devices | grep -q "emulator.*device"; do
-                sleep 5
-                device_waited=$((device_waited + 5))
-                if [ $device_waited -ge $device_timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator device did not appear in time"
-                  cat "$EMULATOR_LOG" 2>/dev/null | tail -30
-                  exit 1
-                fi
-              done
-
-              # Wait for boot
-              DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
-              boot_timeout=600
-              boot_waited=0
-              while [ "$(adb -s $DEVICE_ID shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-                sleep 5
-                boot_waited=$((boot_waited + 5))
-                if [ $boot_waited -ge $boot_timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
-                  exit 1
-                fi
-              done
-
-              echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
-              echo "=== Fresh Android Emulator Ready! ==="
-              adb devices -l
-            displayName: 'Restart Android Emulator (Fresh)'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            continueOnError: true
-            timeoutInMinutes: 15
+            retryCountOnTaskFailure: 2
+            timeoutInMinutes: 10
             env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME)
+              APPIUM_HOME: $(APPIUM_HOME)
 
-          # Boot iOS Simulator (only for iOS platform)
-          - script: |
-              echo "=== Booting iOS Simulator ==="
-              echo "Available runtimes:"
-              xcrun simctl list runtimes available
-
-              # Find iOS runtime in priority order: 18.x > 17.x > 26.x
-              # iOS 26.x comes with Xcode 26 and may be the only runtime available
-              RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
-              ')
-              if [ -z "$RUNTIME" ]; then
-                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                  [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
-                ')
-              fi
-              if [ -z "$RUNTIME" ]; then
-                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                  [.runtimes[] | select(.name | test("iOS 26"))] | sort_by(.version) | last | .identifier // empty
-                ')
-              fi
-
-              if [ -z "$RUNTIME" ]; then
-                echo "##vso[task.logissue type=error]No iOS runtime found (tried iOS 18, 17, 26)"
-                xcrun simctl list runtimes available
-                exit 1
-              fi
-              echo "Selected iOS runtime: $RUNTIME"
-
-              # Determine the correct device type based on runtime version
-              # iOS 26.x → iPhone 11 Pro (matches UITest.cs ios-26 environment and snapshot baselines)
-              # iOS 18.x/17.x → iPhone Xs (matches UITest.cs ios environment and snapshot baselines)
-              # Both devices have the same screen resolution: 375×812 pt, 1125×2436 px @3x
-              IS_IOS26=false
-              if echo "$RUNTIME" | grep -q "iOS-26"; then
-                IS_IOS26=true
-              fi
-
-              if [ "$IS_IOS26" = "true" ]; then
-                PRIMARY_DEVICE="iPhone 11 Pro"
-                PRIMARY_DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
-                SECONDARY_DEVICE="iPhone Xs"
-                SECONDARY_DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-XS"
-              else
-                PRIMARY_DEVICE="iPhone Xs"
-                PRIMARY_DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-XS"
-                SECONDARY_DEVICE="iPhone 11 Pro"
-                SECONDARY_DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
-              fi
-              echo "Target device: $PRIMARY_DEVICE (fallback: $SECONDARY_DEVICE)"
-
-              # Look for existing primary device
-              UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" --arg name "$PRIMARY_DEVICE" '
-                .devices[$rt] // [] |
-                map(select(.name == $name)) |
-                .[0].udid // empty
-              ')
-
-              # Fallback to secondary device (same resolution)
-              if [ -z "$UDID" ]; then
-                UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" --arg name "$SECONDARY_DEVICE" '
-                  .devices[$rt] // [] |
-                  map(select(.name == $name)) |
-                  .[0].udid // empty
-                ')
-                if [ -n "$UDID" ]; then
-                  echo "Found existing $SECONDARY_DEVICE: $UDID"
-                fi
-              else
-                echo "Found existing $PRIMARY_DEVICE: $UDID"
-              fi
-
-              # If neither exists, try to create one
-              if [ -z "$UDID" ]; then
-                echo "No matching device found - creating $PRIMARY_DEVICE for runtime $RUNTIME..."
-                UDID=$(xcrun simctl create "$PRIMARY_DEVICE" "$PRIMARY_DEVICE_TYPE" "$RUNTIME" 2>&1)
-                if [ $? -ne 0 ]; then
-                  echo "$PRIMARY_DEVICE device type unavailable: $UDID"
-                  echo "Trying $SECONDARY_DEVICE..."
-                  UDID=$(xcrun simctl create "$SECONDARY_DEVICE" "$SECONDARY_DEVICE_TYPE" "$RUNTIME" 2>&1)
-                  if [ $? -ne 0 ]; then
-                    echo "##vso[task.logissue type=warning]Failed to create $SECONDARY_DEVICE: $UDID"
-                    echo "Falling back to any available iPhone..."
-                    UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
-                      .devices[$rt] // [] |
-                      map(select(.name | test("iPhone"))) |
-                      .[0].udid // empty
-                    ')
-                  else
-                    echo "Created $SECONDARY_DEVICE simulator: $UDID"
-                  fi
-                else
-                  echo "Created $PRIMARY_DEVICE simulator: $UDID"
-                fi
-              fi
-
-              if [ -z "$UDID" ]; then
-                echo "##vso[task.logissue type=error]No iOS simulator found"
-                echo "Available devices:"
-                xcrun simctl list devices available
-                exit 1
-              fi
-
-              # Shutdown any other booted simulators to avoid resource contention
-              xcrun simctl list devices booted --json | jq -r '
-                .devices | to_entries | map(.value) | flatten |
-                map(select(.state == "Booted" and .udid != "'"$UDID"'")) |
-                .[].udid
-              ' | while read OTHER_UDID; do
-                echo "Shutting down other simulator: $OTHER_UDID"
-                xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
-              done
-
-              echo "Booting simulator: $UDID"
-              xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
-              sleep 10
-
-              # Log the selected device details for debugging
-              echo "=== Selected Simulator Details ==="
-              DEVICE_INFO=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '
-                .devices | to_entries[] | .value[] | select(.udid == $udid) | "\(.name) (\(.udid))"
-              ')
-              echo "Device: $DEVICE_INFO"
-              echo "Runtime: $RUNTIME"
-              echo "iOS 26 mode: $IS_IOS26"
-              echo "Booted simulators:"
-              xcrun simctl list devices booted
-
-              echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
-              echo "iOS Simulator UDID: $UDID"
-            displayName: 'Boot iOS Simulator'
-            condition: eq('${{ parameters.Platform }}', 'ios')
-            timeoutInMinutes: 5
+          ##################################################
+          #     Copilot-specific setup and execution       #
+          ##################################################
 
           # Install GitHub CLI (cross-platform: apt on Linux, brew on macOS)
           - script: |
@@ -744,63 +189,34 @@ stages:
               else
                 brew install gh
               fi
-              if ! gh --version; then
-                echo "##vso[task.logissue type=error]Failed to install GitHub CLI"
-                exit 1
-              fi
-              echo "GitHub CLI installed successfully"
+              gh --version
             displayName: 'Install GitHub CLI'
 
-          # Authenticate GitHub CLI by writing token directly to gh config
-          # (bypasses read:org scope validation that gh auth login requires)
+          # Authenticate GitHub CLI
           - script: |
-              echo "Authenticating with GitHub CLI..."
-              if [ -z "$GH_CLI_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
-                exit 1
-              fi
-              # Write token to gh config directly (avoids read:org scope check)
               mkdir -p "$HOME/.config/gh"
               printf 'github.com:\n    oauth_token: %s\n    git_protocol: https\n' "$GH_CLI_TOKEN" > "$HOME/.config/gh/hosts.yml"
-              # Verify token works with a simple API call
               LOGIN=$(gh api user --jq '.login' 2>&1)
               if [ $? -ne 0 ]; then
                 echo "##vso[task.logissue type=error]GitHub CLI authentication failed: $LOGIN"
                 exit 1
               fi
-              echo "GitHub CLI authenticated successfully as: $LOGIN"
+              echo "GitHub CLI authenticated as: $LOGIN"
             displayName: 'Authenticate GitHub CLI'
             env:
               GH_CLI_TOKEN: $(GH_CLI_TOKEN)
 
-          # Install GitHub Copilot CLI
+          # Install and authenticate Copilot CLI
           - script: |
-              echo "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
-              if ! which copilot; then
-                echo "##vso[task.logissue type=error]Failed to install GitHub Copilot CLI"
-                exit 1
-              fi
               copilot --version
-              echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
-          # Authenticate Copilot CLI
           - script: |
-              echo "Authenticating Copilot CLI..."
               if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]COPILOT_GITHUB_TOKEN is not set. Please configure the COPILOT_TOKEN pipeline variable with a fine-grained PAT."
+                echo "##vso[task.logissue type=error]COPILOT_GITHUB_TOKEN is not set"
                 exit 1
               fi
-              echo "COPILOT_GITHUB_TOKEN is set (${#COPILOT_GITHUB_TOKEN} chars)"
-
-              # Verify gh CLI auth is available for copilot's fallback path
-              if gh auth status >/dev/null 2>&1; then
-                echo "✅ GitHub CLI is authenticated"
-              else
-                echo "⚠️ GitHub CLI not authenticated, copilot will use env var only"
-              fi
-
               echo "✅ Copilot CLI authentication configured"
             displayName: 'Authenticate Copilot CLI'
             env:
@@ -809,24 +225,20 @@ stages:
 
           # Run the PR Reviewer Agent
           - script: |
-              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
 
               # Configure git identity
               git config user.email "copilot-ci@microsoft.com"
               git config user.name "Copilot CI"
-              echo "Git identity configured"
 
-              # Create Directory.Build.Override.props to skip Xcode version check
+              # Skip Xcode version check
               cp Directory.Build.Override.props.in Directory.Build.Override.props
-              # sed -i syntax differs: Linux uses sed -i, macOS uses sed -i ''
               if [ "$(uname)" = "Linux" ]; then
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               else
                 sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               fi
 
-              # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
 
               # Invoke the PR reviewer
@@ -837,55 +249,35 @@ stages:
 
               echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
 
-              # Terminate any orphaned copilot CLI processes
-              echo "Cleaning up orphaned copilot processes..."
-              SELF_PID=$$
+              # Cleanup orphaned copilot processes
               for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
-                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
-                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
-                  if echo "$PROC_CMD" | grep -q "copilot"; then
-                    echo "  Stopping copilot process $proc: $PROC_CMD"
-                    kill "$proc" 2>/dev/null || true
-                  fi
+                if [ -n "$proc" ] && [ "$proc" != "$$" ]; then
+                  kill "$proc" 2>/dev/null || true
                 fi
               done
 
-              # Copy Copilot session files
-              if [ -d "$HOME/.copilot" ]; then
-                echo "Copying Copilot session state..."
-                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
-              fi
-
-              # Copy CustomAgentLogsTmp if it exists
-              if [ -d "CustomAgentLogsTmp" ]; then
-                echo "Copying CustomAgentLogsTmp..."
-                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
-              fi
-
-              # Copy any Review_Feedback files
+              # Collect artifacts
+              cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state 2>/dev/null || true
+              cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ 2>/dev/null || true
               find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
+              cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ 2>/dev/null || true
 
-              # Copy any .github/agent-pr-session files
-              if [ -d ".github/agent-pr-session" ]; then
-                echo "Copying agent-pr-session..."
-                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
-              fi
-
-              # Check for failure
               if [ $COPILOT_EXIT_CODE -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
-
-              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             displayName: 'Run PR Reviewer Agent'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               GITHUB_TOKEN: $(GH_CLI_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
+              APPIUM_HOME: $(APPIUM_HOME)
 
-          # Publish Copilot logs and session artifacts
+          ##################################################
+          #                    Publish                     #
+          ##################################################
+
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Copilot Logs'
             inputs:
@@ -894,7 +286,6 @@ stages:
               publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
-          # Publish build logs if they exist
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Build Logs'
             inputs:
@@ -903,7 +294,6 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
-          # Fail the pipeline if Copilot failed
           - script: |
               if [ "$(CopilotFailed)" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
