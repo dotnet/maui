@@ -61,7 +61,57 @@ namespace Microsoft.Maui.DeviceTests
 				$"Y-axis bottom mismatch: bounds1.Bottom={bounds1.Bottom:F1} vs bounds2.Bottom={bounds2.Bottom:F1}");
 		}
 
-		[Theory(DisplayName = "Shape Updates brush Correctly")]
+		[Fact(DisplayName = "Line PathForBounds should produce symmetric paths with thick StrokeThickness (Issue #26961)")]
+	public void LinePathForBoundsWithThickStrokeShouldBeSymmetric()
+	{
+		// Reproduces #26961: incorrect line positions when StrokeThickness is large and
+		// the line starts near the right/bottom edge of the container.
+		// With StrokeThickness=20 the view is inset to {10,10,190,190}. line2 starts at
+		// X1=200, so pathBounds.Right=200 > viewBounds.Right=190. The fix shifts line2
+		// left by 10, restoring mirror symmetry around X=100.
+		var line1 = new Line { X1 = 0, Y1 = 0, X2 = 100, Y2 = 100, StrokeThickness = 20 };
+		var line2 = new Line { X1 = 200, Y1 = 0, X2 = 100, Y2 = 100, StrokeThickness = 20 };
+
+		var viewBounds = new Graphics.Rect(0, 0, 200, 200);
+		var path1 = ((IShape)line1).PathForBounds(viewBounds);
+		var path2 = ((IShape)line2).PathForBounds(viewBounds);
+
+		var bounds1 = path1.GetBoundsByFlattening(1);
+		var bounds2 = path2.GetBoundsByFlattening(1);
+
+		const float tolerance = 2f;
+		Assert.True(
+			Math.Abs(bounds1.Left + bounds2.Right - 200f) < tolerance,
+			$"X-axis symmetry (left+right) failed: bounds1.Left={bounds1.Left:F1} + bounds2.Right={bounds2.Right:F1} should equal 200");
+		Assert.True(
+			Math.Abs(bounds1.Right + bounds2.Left - 200f) < tolerance,
+			$"X-axis symmetry (right+left) failed: bounds1.Right={bounds1.Right:F1} + bounds2.Left={bounds2.Left:F1} should equal 200");
+	}
+
+	[Fact(DisplayName = "Line PathForBounds should correctly apply StrokeThickness inset offset")]
+	public void LinePathForBoundsStrokeThicknessInsetShouldBeCorrect()
+	{
+		// Verifies that the StrokeThickness/2 inset on viewBounds is correctly translated
+		// to the path position. A line starting at the origin should be shifted right/down
+		// by exactly StrokeThickness/2 so the stroke doesn't clip against the edge.
+		const double strokeThickness = 10.0;
+		var line = new Line { X1 = 0, Y1 = 0, X2 = 100, Y2 = 100, StrokeThickness = strokeThickness };
+
+		var viewBounds = new Graphics.Rect(0, 0, 200, 200);
+		var path = ((IShape)line).PathForBounds(viewBounds);
+		var bounds = path.GetBoundsByFlattening(1);
+
+		const float tolerance = 2f;
+		float expectedInset = (float)(strokeThickness / 2);
+		Assert.True(
+			Math.Abs(bounds.Left - expectedInset) < tolerance,
+			$"StrokeThickness inset not applied: bounds.Left should be ~{expectedInset} but was {bounds.Left:F1}");
+		Assert.True(
+			Math.Abs(bounds.Top - expectedInset) < tolerance,
+			$"StrokeThickness inset not applied: bounds.Top should be ~{expectedInset} but was {bounds.Top:F1}");
+	}
+
+	[Theory(DisplayName = "Shape Updates brush Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
