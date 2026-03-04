@@ -2300,12 +2300,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							{
 								var margin = view.Margin;
 
-								// Removed height from calculation since it's overwritten anyway
+								// Apply margins AFTER back button spacing calculations
+								var newWidth = value.Width - (nfloat)(margin.Left + margin.Right);
+								if (newWidth < 0)
+									newWidth = 0;
+
 								value = new RectangleF(
 									value.X + (nfloat)margin.Left,
 									value.Y + (nfloat)margin.Top,
-									value.Width - (nfloat)(margin.Left + margin.Right),
-									value.Height  // Keep original height since it gets overwritten
+									newWidth,
+									value.Height  // Height margins not applied - container height forced to ToolbarHeight on next line
 								);
 							}
 						}
