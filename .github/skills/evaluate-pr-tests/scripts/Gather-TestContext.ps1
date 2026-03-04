@@ -159,12 +159,18 @@ function Test-UITestConventions {
     }
 
     # --- Wait patterns (per-interaction check) ---
-    # Extract all App.Tap/Click/FindElement calls and their target IDs
-    $interactions = [regex]::Matches($content, 'App\.(Tap|Click|FindElement)\("([^"]+)"\)')
-    $waits = [regex]::Matches($content, 'App\.WaitForElement\("([^"]+)"\)') | ForEach-Object { $_.Groups[1].Value }
+    # Extract all App.Tap/Click/FindElement calls and their target IDs (literals or identifiers)
+    $interactionRegex = 'App\.(Tap|Click|FindElement)\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))\s*\)'
+    $interactions = [regex]::Matches($content, $interactionRegex)
+    
+    $waitRegex = 'App\.WaitForElement\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))\s*\)'
+    $waits = [regex]::Matches($content, $waitRegex) | ForEach-Object { 
+        if ($_.Groups[1].Success) { $_.Groups[1].Value } else { $_.Groups[2].Value }
+    }
+
     $missingWaits = @()
     foreach ($interaction in $interactions) {
-        $targetId = $interaction.Groups[2].Value
+        $targetId = if ($interaction.Groups[2].Success) { $interaction.Groups[2].Value } else { $interaction.Groups[3].Value }
         if ($targetId -notin $waits) {
             $missingWaits += $targetId
         }
@@ -186,6 +192,8 @@ function Test-UITestConventions {
     # Check test references IDs that exist in HostApp
     $testReferencedIds = [regex]::Matches($content, 'App\.\w+\("([^"]+)"\)') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique
 
+    $allHostIds = @()
+
     foreach ($hostFile in $HostAppFiles) {
         if (-not (Test-Path $hostFile)) { continue }
         $hostContent = Get-Content $hostFile -Raw
@@ -206,19 +214,7 @@ function Test-UITestConventions {
 
         # Extract HostApp AutomationIds
         $hostIds = [regex]::Matches($hostContent, 'AutomationId\s*=\s*"([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
-
-        # Forward check: test references IDs not in HostApp (will fail at runtime)
-        foreach ($id in $testReferencedIds) {
-            if ($hostIds.Count -gt 0 -and $id -notin $hostIds) {
-                $issues += "Test references AutomationId ``$id`` not found in HostApp"
-            }
-        }
-
-        # Reverse check: HostApp IDs not used in test (informational, not an issue)
-        $unusedIds = $hostIds | Where-Object { $_ -notin $testReferencedIds }
-        if ($unusedIds.Count -gt 0) {
-            $info += "HostApp AutomationIds not referenced in test: $($unusedIds -join ', ')"
-        }
+        $allHostIds += $hostIds
 
         # Check for UITest controls in screenshot tests
         if ($content -match "VerifyScreenshot") {
@@ -229,6 +225,23 @@ function Test-UITestConventions {
                 $issues += "HostApp uses ``Editor`` in screenshot test — use ``UITestEditor`` to prevent cursor blink flakiness"
             }
         }
+    }
+
+    # Consolidated ID checks
+    $allHostIds = $allHostIds | Select-Object -Unique
+
+    # Forward check: test references IDs not in HostApp (will fail at runtime)
+    # Only check IDs that look like AutomationIds (PascalCase, no spaces) — skip text selectors
+    foreach ($id in $testReferencedIds) {
+        if ($allHostIds.Count -gt 0 -and $id -match "^[A-Z]\w+$" -and $id -notin $allHostIds) {
+            $issues += "Test references AutomationId ``$id`` not found in HostApp"
+        }
+    }
+
+    # Reverse check: HostApp IDs not used in test (informational, not an issue)
+    $unusedIds = $allHostIds | Where-Object { $_ -notin $testReferencedIds }
+    if ($unusedIds.Count -gt 0) {
+        $info += "HostApp AutomationIds not referenced in test: $($unusedIds -join ', ')"
     }
 
     return @{ Issues = $issues; Info = $info }
@@ -255,9 +268,9 @@ function Test-UnitTestConventions {
             $info += "Uses NUnit ``[Test]`` attribute (verify this is correct for the project)"
         }
         else {
-            # Only flag as issue if the file name looks like a test class
+            # Only flag as issue if the file name ends with Test/Tests (actual test class)
             $utFileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
-            if ($utFileName -match "Test") {
+            if ($utFileName -match "Tests?$") {
                 $issues += "No test methods found (no ``[Fact]``, ``[Theory]``, or ``[Test]`` attributes)"
             }
             else {
