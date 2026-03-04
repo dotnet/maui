@@ -40,6 +40,15 @@ This guidance assumes:
 - **iOS/macOS**: Xcode (current stable version)
 - **Windows**: Windows SDK
 
+### Azure DevOps CI Access
+
+- **Azure CLI (`az`)** — **strongly recommended** for investigating CI builds, test failures, and pipeline status
+  - Install: `brew install azure-cli` (macOS) / `winget install Microsoft.AzureCLI` (Windows)
+  - Setup: `az login && az extension add --name azure-devops`
+  - Defaults: `az devops configure --defaults organization=https://dev.azure.com/dnceng-public project=public`
+  - **Always prefer `az` over raw `curl`/`Invoke-RestMethod`** when querying Azure DevOps APIs
+  - See `.github/instructions/azdo-ci.instructions.md` for detailed CI investigation guidance
+
 ## Project Structure
 
 ### Important Directories
