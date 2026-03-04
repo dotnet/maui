@@ -422,7 +422,12 @@ public static class AndroidCommands
 				}
 				else if (showAvailable)
 				{
-					packages = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+					var available = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+					var installed = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+					var installedPaths = new HashSet<string>(installed.Select(p => p.Path), StringComparer.OrdinalIgnoreCase);
+
+					// Mark available packages that are already installed
+					packages = available.Select(p => installedPaths.Contains(p.Path) ? p with { IsInstalled = true } : p).ToList();
 				}
 				else
 				{
