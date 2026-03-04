@@ -163,15 +163,17 @@ namespace Microsoft.Maui.Handlers
 			if (handler.IsConnectingHandler())
 				return;
 
-			// When SafeAreaEdges changes on a view, its descendants may be repositioned on the
-			// next layout pass. Since SafeAreaInsetsDidChange is filtered at the Window level
-			// (to block animation noise), we must explicitly propagate the invalidation so
-			// descendants re-evaluate their safe area padding.
+			// When SafeAreaEdges changes on a view, its descendants may need to re-evaluate
+			// whether a parent is now handling their safe area edges. UIKit does not fire
+			// SafeAreaInsetsDidChange on descendants for MAUI property changes, so we must
+			// explicitly walk the tree to clear the _parentHandlesSafeArea cache and trigger
+			// re-evaluation on the next layout pass.
 			InvalidateDescendantSafeAreas(handler.ToPlatform());
 		}
 
 		// Walks the native subview tree and marks every descendant MauiView/MauiScrollView as
-		// needing safe-area re-validation, bypassing the Window-level noise guard.
+		// needing safe-area re-validation. This clears the cached _parentHandlesSafeArea value
+		// so each descendant re-evaluates whether a parent now handles its safe area edges.
 		static void InvalidateDescendantSafeAreas(UIView? view)
 		{
 			if (view is null)
