@@ -45,6 +45,7 @@ This guidance assumes:
 - **Azure CLI (`az`)** — **strongly recommended** for investigating CI builds, test failures, and pipeline status
   - Install: `brew install azure-cli` (macOS) / `winget install Microsoft.AzureCLI` (Windows)
   - Setup: `az login && az extension add --name azure-devops`
+    - Note: `dnceng-public` is publicly accessible — `az login` is optional for MAUI CI queries
   - Defaults: `az devops configure --defaults organization=https://dev.azure.com/dnceng-public project=public`
   - **Prefer `az` over raw `curl`/`Invoke-RestMethod`** when querying Azure DevOps APIs
   - For structured CI queries, use the `azdo-build-investigator` skill scripts in `.github/skills/azdo-build-investigator/`
