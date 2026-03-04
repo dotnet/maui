@@ -319,7 +319,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 
 #### Internal Skills (Used by Agents)
 
-10. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+11. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
