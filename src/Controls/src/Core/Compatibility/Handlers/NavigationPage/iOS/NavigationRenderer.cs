@@ -2301,6 +2301,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								var margin = view.Margin;
 
 								// Apply margins AFTER back button spacing calculations
+								// Margins push the view inward to keep it within the nav bar bounds
 								var newWidth = value.Width - (nfloat)(margin.Left + margin.Right);
 								if (newWidth < 0)
 									newWidth = 0;
@@ -2309,12 +2310,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 									value.X + (nfloat)margin.Left,
 									value.Y + (nfloat)margin.Top,
 									newWidth,
-									value.Height  // Height margins not applied - container height forced to ToolbarHeight on next line
+									value.Height
 								);
 							}
 						}
 
 						value.Height = ToolbarHeight;
+
+						// Reduce height by vertical margins so the view stays within the nav bar
+						if (_child?.VirtualView is IView marginView)
+						{
+							var verticalMargin = (nfloat)(marginView.Margin.Top + marginView.Margin.Bottom);
+							value.Height = (nfloat)Math.Max(0, value.Height - verticalMargin);
+						}
 					}
 
 					base.Frame = value;
