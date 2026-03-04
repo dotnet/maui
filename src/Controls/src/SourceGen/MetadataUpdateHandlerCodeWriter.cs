@@ -14,6 +14,17 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// It enumerates all live page instances via <see cref="XamlComponentRegistry"/>
 /// and calls the right <c>UpdateComponent</c> method based on each instance's <c>__version</c> field.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <b>Trim / Native AOT:</b> The generated <c>UpdateApplication</c> method dispatches via
+/// reflection (<c>FieldInfo.GetValue</c>, <c>Type.GetMethod</c>, <c>MethodInfo.Invoke</c>).
+/// In trimmed or Native AOT builds these calls will silently no-op because the
+/// <c>UpdateComponent_vNtoM</c> method bodies may be trimmed away.
+/// This is intentional — XAML Incremental Hot Reload is a <b>debug-time feature only</b>
+/// and is never enabled in Release/trimmed/AOT configurations
+/// (<c>EnableMauiIncrementalHotReload</c> is only set in Debug builds).
+/// </para>
+/// </remarks>
 static class MetadataUpdateHandlerCodeWriter
 {
 	static readonly string NewLine = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n";
