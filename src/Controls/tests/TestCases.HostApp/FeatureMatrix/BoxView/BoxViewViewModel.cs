@@ -106,6 +106,8 @@ public class BoxViewViewModel : INotifyPropertyChanged
 				if (value)
 				{
 					Color = Colors.Red;
+					_isBlueChecked = false;
+					OnPropertyChanged(nameof(IsBlueChecked));
 					_isGreenChecked = false;
 					OnPropertyChanged(nameof(IsGreenChecked));
 				}
@@ -125,6 +127,8 @@ public class BoxViewViewModel : INotifyPropertyChanged
 				if (value)
 				{
 					Color = Colors.Blue;
+					_isRedChecked = false;
+					OnPropertyChanged(nameof(IsRedChecked));
 					_isGreenChecked = false;
 					OnPropertyChanged(nameof(IsGreenChecked));
 				}
@@ -142,7 +146,13 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isGreenChecked = value;
 				if (value)
+				{
 					Color = Colors.Green;
+					_isRedChecked = false;
+					OnPropertyChanged(nameof(IsRedChecked));
+					_isBlueChecked = false;
+					OnPropertyChanged(nameof(IsBlueChecked));
+				}
 				OnPropertyChanged();
 			}
 		}

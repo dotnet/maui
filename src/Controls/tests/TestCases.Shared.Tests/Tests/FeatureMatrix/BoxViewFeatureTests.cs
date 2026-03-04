@@ -16,14 +16,64 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_UniformCornerRadius()
+		void ResetBoxView()
 		{
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
+		}
 
+		// ── Color tests (Order 1–3) ──
+
+		[Test]
+		[Order(1)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_Color()
+		{
+			ResetBoxView();
+			App.WaitForElement("RedRadioButton");
+			App.Tap("RedRadioButton");
+
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test]
+		[Order(2)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_GreenColor()
+		{
+			ResetBoxView();
+			App.WaitForElement("GreenRadioButton");
+			App.Tap("GreenRadioButton");
+
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test]
+		[Order(3)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_BlueColor()
+		{
+			ResetBoxView();
+			// Switch away from default Blue then back to verify the Blue radio button
+			App.WaitForElement("RedRadioButton");
+			App.Tap("RedRadioButton");
+			App.WaitForElement("BlueRadioButton");
+			App.Tap("BlueRadioButton");
+
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		// ── CornerRadius tests (Order 4–5) ──
+
+		[Test]
+		[Order(4)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_UniformCornerRadius()
+		{
+			ResetBoxView();
 			App.WaitForElement("CornerRadiusEntry");
 			App.ClearText("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "30");
@@ -32,17 +82,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
+		// ── Dimension tests (Order 5) ──
+
 		[Test]
+		[Order(5)]
 		[Category(UITestCategories.BoxView)]
 		public void BoxView_WidthAndHeight()
 		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
+			ResetBoxView();
 			App.WaitForElement("WidthEntry");
 			App.ClearText("WidthEntry");
 			App.EnterText("WidthEntry", "300");
-
 			App.WaitForElement("HeightEntry");
 			App.ClearText("HeightEntry");
 			App.EnterText("HeightEntry", "150");
@@ -51,31 +101,92 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_Color()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
+		// ── Opacity tests (Order 6) ──
 
-			App.WaitForElement("RedRadioButton");
-			App.Tap("RedRadioButton");
+		[Test]
+		[Order(6)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_OpacityZero()
+		{
+			ResetBoxView();
+			App.WaitForElement("OpacityEntry");
+			App.ClearText("OpacityEntry");
+			App.EnterText("OpacityEntry", "0");
 
 			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
+		// ── Visibility tests (Order 7) ──
+
 		[Test]
+		[Order(7)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_IsVisible()
+		{
+			ResetBoxView();
+			App.WaitForElement("VisibilityCheckBox");
+			App.Tap("VisibilityCheckBox");
+
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		// ── Combined property tests (Order 8–11) ──
+
+		[Test]
+		[Order(8)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_CornerRadiusWithColor()
+		{
+			ResetBoxView();
+			App.WaitForElement("CornerRadiusEntry");
+			App.ClearText("CornerRadiusEntry");
+			App.EnterText("CornerRadiusEntry", "60,10,20,40");
+			App.WaitForElement("RedRadioButton");
+			App.Tap("RedRadioButton");
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test]
+		[Order(9)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_ColorWithOpacity()
+		{
+			ResetBoxView();
+			App.WaitForElement("RedRadioButton");
+			App.Tap("RedRadioButton");
+			App.WaitForElement("OpacityEntry");
+			App.ClearText("OpacityEntry");
+			App.EnterText("OpacityEntry", "0.5");
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test]
+		[Order(10)]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_CornerRadiusWithFlowDirection()
+		{
+			ResetBoxView();
+			App.WaitForElement("CornerRadiusEntry");
+			App.ClearText("CornerRadiusEntry");
+			App.EnterText("CornerRadiusEntry", "60,10,20,40");
+			App.WaitForElement("FlowDirectionRTLCheckBox");
+			App.Tap("FlowDirectionRTLCheckBox");
+			App.WaitForElement("ResetButton");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		}
+
+		[Test]
+		[Order(11)]
 		[Category(UITestCategories.BoxView)]
 		public void BoxView_Reset()
 		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			// Change multiple properties
+			ResetBoxView();
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
-
 			App.WaitForElement("CornerRadiusEntry");
 			App.ClearText("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "30,30,30,30");
@@ -88,170 +199,57 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_GreenColor()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("GreenRadioButton");
-			App.Tap("GreenRadioButton");
-
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_OpacityZero()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("OpacityEntry");
-			App.ClearText("OpacityEntry");
-			App.EnterText("OpacityEntry", "0");
-
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_IsVisible()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("VisibilityCheckBox");
-			App.Tap("VisibilityCheckBox");
-
-			// Use retryTimeout to allow UI to settle after visibility change
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_CornerRadiusWithColor()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("CornerRadiusEntry");
-			App.ClearText("CornerRadiusEntry");
-			App.EnterText("CornerRadiusEntry", "60,10,20,40");
-
-			App.WaitForElement("RedRadioButton");
-			App.Tap("RedRadioButton");
-
-			// Use retryTimeout to allow UI to settle after color change
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_ColorWithOpacity()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("RedRadioButton");
-			App.Tap("RedRadioButton");
-
-			App.WaitForElement("OpacityEntry");
-			App.ClearText("OpacityEntry");
-			App.EnterText("OpacityEntry", "0.5");
-
-			// Use retryTimeout to allow UI to settle after opacity change
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_CornerRadiusWithFlowDirection()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("CornerRadiusEntry");
-			App.ClearText("CornerRadiusEntry");
-			App.EnterText("CornerRadiusEntry", "60,10,20,40");
-
-			App.WaitForElement("FlowDirectionRTLCheckBox");
-			App.Tap("FlowDirectionRTLCheckBox");
-
-			// Use retryTimeout to allow UI to settle after flow direction change
-			App.WaitForElement("ResetButton");
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		}
 #if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/27732
+		// ── Shadow tests - disabled on Windows (Order 12–14) ──
+
 		[Test]
+		[Order(12)]
 		[Category(UITestCategories.BoxView)]
 		public void BoxView_CornerRadiusWithOpacityAndShadow()
 		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
+			ResetBoxView();
 			App.WaitForElement("CornerRadiusEntry");
 			App.ClearText("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
-
 			App.WaitForElement("OpacityEntry");
 			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0.5");
-
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
-
-			// Use retryTimeout to allow UI to settle after shadow change
 			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
+		[Order(13)]
 		[Category(UITestCategories.BoxView)]
 		public void BoxView_CornerRadiusWithColorAndShadow()
 		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
+			ResetBoxView();
 			App.WaitForElement("CornerRadiusEntry");
 			App.ClearText("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
-
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
-
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
-
-			// Use retryTimeout to allow UI to settle after shadow change
 			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
+		[Order(14)]
 		[Category(UITestCategories.BoxView)]
 		public void BoxView_ColorWithOpacityAndShadow()
 		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
+			ResetBoxView();
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
-
 			App.WaitForElement("OpacityEntry");
 			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0.5");
-
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
-
-			// Use retryTimeout to allow UI to settle after shadow change
 			App.WaitForElement("ResetButton");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
