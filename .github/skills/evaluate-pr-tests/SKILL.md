@@ -165,7 +165,7 @@ Does the test need to interact with visual UI elements?
 **UI Tests:**
 - File naming: `IssueXXXXX.cs`
 - `[Issue()]` attribute on HostApp page
-- `[Category()]` attribute (exactly one per test)
+- `[Category()]` attribute — exactly ONE per test class (on the class or method, not both)
 - `_IssuesUITest` base class
 - `WaitForElement` before interactions
 - No `Task.Delay`/`Thread.Sleep`
