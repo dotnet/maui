@@ -68,15 +68,9 @@ namespace Microsoft.Maui.Platform
 		// otherwise, false. Null means not yet determined.
 		bool? _scrollViewDescendant;
 
-		// Cached Window.SafeAreaInsets used to distinguish genuine safe area changes
-		// (rotation, status bar, keyboard) from animation-induced noise.
-		// See SafeAreaInsetsDidChange and InvalidateSafeArea.
-		UIEdgeInsets _lastWindowSafeAreaInsets;
-
-		// Cached view-level SafeAreaInsets used to detect repositioning (e.g., content
-		// pushed down by a custom TitleBar) that changes the view's own insets without
-		// changing Window.SafeAreaInsets.
-		UIEdgeInsets _lastViewSafeAreaInsets;
+		// Cached result of whether a parent MauiView is already handling safe area.
+		// Null means not yet determined. Invalidated when view hierarchy changes.
+		bool? _parentHandlesSafeArea;
 
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
@@ -393,6 +387,26 @@ namespace Microsoft.Maui.Platform
 
 
 		/// <summary>
+		/// Returns whether this view is currently applying safe area adjustments to its layout.
+		/// Used by descendant views to avoid double-applying safe area when a parent already handles it.
+		/// </summary>
+		internal bool AppliesSafeAreaAdjustments => _appliesSafeAreaAdjustments;
+
+		/// <summary>
+		/// Checks if any ancestor MauiView is already applying safe area adjustments.
+		/// When a parent already handles safe area, this view should not double-apply insets,
+		/// which would otherwise cause infinite layout cycles (#33595, #32586).
+		/// </summary>
+		bool IsParentHandlingSafeArea()
+		{
+			if (_parentHandlesSafeArea.HasValue)
+				return _parentHandlesSafeArea.Value;
+
+			_parentHandlesSafeArea = this.FindParent(x => x is MauiView mv && mv._appliesSafeAreaAdjustments) is not null;
+			return _parentHandlesSafeArea.Value;
+		}
+
+		/// <summary>
 		/// Checks if the current measure information is still valid for the given constraints.
 		/// This optimization avoids redundant measure operations when constraints haven't changed.
 		/// </summary>
@@ -620,7 +634,7 @@ namespace Microsoft.Maui.Platform
 			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			// Return whether the way safe area interacts with our view has changed.
 			// Compare at device-pixel resolution to filter sub-pixel noise from animations
@@ -713,43 +727,18 @@ namespace Microsoft.Maui.Platform
 
 		public override void SafeAreaInsetsDidChange()
 		{
-			// Window.SafeAreaInsets represent device-level safe area (status bar, home indicator)
-			// and are stable during animations. A view's own SafeAreaInsets fluctuate as it moves,
-			// producing noise that can trigger infinite layout cycles (#32586, #33934).
-			// Filtering at the Window level blocks that noise while allowing genuine changes
-			// (rotation, keyboard, status bar) that do alter Window.SafeAreaInsets.
-			if (Window is not null)
-			{
-				var windowInsets = Window.SafeAreaInsets;
-				if (windowInsets == _lastWindowSafeAreaInsets)
-				{
-					// Window insets unchanged, but the view may have been repositioned
-					// (e.g., content pushed down by a custom TitleBar). If the view's own
-					// insets also haven't changed, this is animation noise — skip.
-					var viewInsets = SafeAreaInsets;
-					if (viewInsets == _lastViewSafeAreaInsets)
-						return;
-					_lastViewSafeAreaInsets = viewInsets;
-				}
-				else
-				{
-					_lastWindowSafeAreaInsets = windowInsets;
-					_lastViewSafeAreaInsets = SafeAreaInsets;
-				}
-			}
-
 			_safeAreaInvalidated = true;
+			_parentHandlesSafeArea = null;
 			base.SafeAreaInsetsDidChange();
 		}
 
 		/// <summary>
-		/// Directly invalidates this view's safe area, bypassing the Window.SafeAreaInsets guard.
-		/// Called when a parent's SafeAreaEdges changes and repositions descendants without
-		/// changing Window.SafeAreaInsets.
+		/// Directly invalidates this view's safe area, forcing re-evaluation on next layout pass.
 		/// </summary>
 		internal void InvalidateSafeArea()
 		{
 			_safeAreaInvalidated = true;
+			_parentHandlesSafeArea = null;
 			SetNeedsLayout();
 		}
 
@@ -762,10 +751,7 @@ namespace Microsoft.Maui.Platform
 			base.MovedToWindow();
 
 			_scrollViewDescendant = null;
-
-			// Reset cached insets so the new window's safe area is processed.
-			_lastWindowSafeAreaInsets = Window?.SafeAreaInsets ?? UIEdgeInsets.Zero;
-			_lastViewSafeAreaInsets = SafeAreaInsets;
+			_parentHandlesSafeArea = null;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
