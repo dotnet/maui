@@ -127,9 +127,10 @@ class Issue33407E1Page : ContentPage
 				{
 					Text = "1. In the Entry control below, input some text. The test passes if the text is not obscured."
 				},
-				new Entry
+				new UITestEntry
 				{
 					IsPassword = false,
+					IsCursorVisible = false,
 					Placeholder = "IsPassword=False",
 					AutomationId = "Entry1"
 				},
@@ -137,9 +138,10 @@ class Issue33407E1Page : ContentPage
 				{
 					Text = "2. In the Entry control below, input some text. The test passes if the text is obscured."
 				},
-				new Entry
+				new UITestEntry
 				{
 					IsPassword = true,
+					IsCursorVisible = false,
 					Placeholder = "IsPassword=True",
 					AutomationId = "Entry2"
 				}
