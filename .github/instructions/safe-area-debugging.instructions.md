@@ -6,7 +6,7 @@ applyTo:
   - "**/*safearea*"
 ---
 
-# Safe Area Guidelines
+# Safe Area Guidelines (iOS/macCatalyst)
 
 ## Platform Differences
 
