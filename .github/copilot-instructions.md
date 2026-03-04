@@ -46,8 +46,8 @@ This guidance assumes:
   - Install: `brew install azure-cli` (macOS) / `winget install Microsoft.AzureCLI` (Windows)
   - Setup: `az login && az extension add --name azure-devops`
   - Defaults: `az devops configure --defaults organization=https://dev.azure.com/dnceng-public project=public`
-  - **Always prefer `az` over raw `curl`/`Invoke-RestMethod`** when querying Azure DevOps APIs
-  - See `.github/instructions/azdo-ci.instructions.md` for detailed CI investigation guidance
+  - **Prefer `az` over raw `curl`/`Invoke-RestMethod`** when querying Azure DevOps APIs
+  - For structured CI queries, use the `pr-build-status` skill scripts in `.github/skills/pr-build-status/`
 
 ## Project Structure
 
