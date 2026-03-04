@@ -1,5 +1,5 @@
 ---
-name: pr-build-status
+name: azdo-build-investigator
 description: "Investigate CI failures for dotnet/maui PRs — build errors, Helix test logs, and binlog analysis. Use when asked about failing checks, CI status, test failures, 'why is CI red', 'build failed', 'what's failing on PR', Helix failures, or device test failures."
 metadata:
   author: dotnet-maui
@@ -35,45 +35,45 @@ Optional for binlog analysis (MSBuild failures):
 
 ## Scripts
 
-All scripts are in `.github/skills/pr-build-status/scripts/`
+All scripts are in `.github/skills/azdo-build-investigator/scripts/`
 
 ### 1. Get Build IDs for a PR
 ```bash
-pwsh .github/skills/pr-build-status/scripts/Get-PrBuildIds.ps1 -PrNumber <PR_NUMBER>
+pwsh .github/skills/azdo-build-investigator/scripts/Get-PrBuildIds.ps1 -PrNumber <PR_NUMBER>
 ```
 
 ### 2. Get Build Status
 ```bash
-pwsh .github/skills/pr-build-status/scripts/Get-BuildInfo.ps1 -BuildId <BUILD_ID>
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildInfo.ps1 -BuildId <BUILD_ID>
 # For failed jobs only:
-pwsh .github/skills/pr-build-status/scripts/Get-BuildInfo.ps1 -BuildId <BUILD_ID> -FailedOnly
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildInfo.ps1 -BuildId <BUILD_ID> -FailedOnly
 ```
 
 ### 3. Get Build Errors and Test Failures
 ```bash
 # Get all errors (build errors + test failures)
-pwsh .github/skills/pr-build-status/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID>
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID>
 
 # Get only build/compilation errors
-pwsh .github/skills/pr-build-status/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID> -ErrorsOnly
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID> -ErrorsOnly
 
 # Get only test failures
-pwsh .github/skills/pr-build-status/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID> -TestsOnly
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildErrors.ps1 -BuildId <BUILD_ID> -TestsOnly
 ```
 
 ### 4. Get Helix Console Logs
 ```bash
 # List all Helix work items and their status
-pwsh .github/skills/pr-build-status/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID>
+pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID>
 
 # Filter by platform
-pwsh .github/skills/pr-build-status/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID> -Platform Windows
+pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID> -Platform Windows
 
 # Show console log content for failed work items
-pwsh .github/skills/pr-build-status/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID> -ShowConsoleLog
+pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID> -ShowConsoleLog
 
 # Filter by work item name and show more log lines
-pwsh .github/skills/pr-build-status/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID> -WorkItem "*Lifecycle*" -ShowConsoleLog -TailLines 200
+pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <BUILD_ID> -WorkItem "*Lifecycle*" -ShowConsoleLog -TailLines 200
 ```
 
 ## Workflow

@@ -47,7 +47,7 @@ This guidance assumes:
   - Setup: `az login && az extension add --name azure-devops`
   - Defaults: `az devops configure --defaults organization=https://dev.azure.com/dnceng-public project=public`
   - **Prefer `az` over raw `curl`/`Invoke-RestMethod`** when querying Azure DevOps APIs
-  - For structured CI queries, use the `pr-build-status` skill scripts in `.github/skills/pr-build-status/`
+  - For structured CI queries, use the `azdo-build-investigator` skill scripts in `.github/skills/azdo-build-investigator/`
 
 ## Project Structure
 
@@ -294,7 +294,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-8. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+8. **azdo-build-investigator** (`.github/skills/azdo-build-investigator/SKILL.md`)
    - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
    - **Used by**: When investigating CI failures
