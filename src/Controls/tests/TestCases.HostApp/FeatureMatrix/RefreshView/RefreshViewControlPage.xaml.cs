@@ -59,6 +59,8 @@ public partial class RefreshViewControlMainPage : ContentPage
 			}
 		};
 
+		RefreshView.Refreshing += OnRefreshViewRefreshing;
+
 		RefreshView.SetBinding(RefreshView.CommandProperty, "Command");
 		RefreshView.SetBinding(RefreshView.CommandParameterProperty, "CommandParameter");
 		RefreshView.SetBinding(RefreshView.FlowDirectionProperty, "FlowDirection");
@@ -99,6 +101,9 @@ public partial class RefreshViewControlMainPage : ContentPage
 			}
 		};
 
+		RefreshView.Refreshing += OnRefreshViewRefreshing;
+
+
 		RefreshView.SetBinding(RefreshView.CommandProperty, "Command");
 		RefreshView.SetBinding(RefreshView.CommandParameterProperty, "CommandParameter");
 		RefreshView.SetBinding(RefreshView.FlowDirectionProperty, "FlowDirection");
@@ -120,4 +125,12 @@ public partial class RefreshViewControlMainPage : ContentPage
 	{
 		SetCollectionViewContent();
 	}
+
+	private void OnRefreshViewRefreshing(object sender, EventArgs e)
+{
+    if (BindingContext is RefreshViewViewModel vm)
+    {
+        vm.RefreshEventStatusText = "Raised";
+    }
+}
 }

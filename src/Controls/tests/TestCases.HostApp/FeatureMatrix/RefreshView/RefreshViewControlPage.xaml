@@ -13,7 +13,7 @@
        </ContentPage.ToolbarItems>
 
        <Grid Padding="20"
-             RowDefinitions="Auto, *, Auto, Auto, Auto, Auto, Auto"
+             RowDefinitions="Auto, *, Auto, Auto, Auto, Auto, Auto, Auto"
              ColumnDefinitions="0.5*, 0.5*"
              RowSpacing="5"
              ColumnSpacing="0">
@@ -40,7 +40,8 @@
                                   IsRefreshing="{Binding IsRefreshing}"
                                   RefreshColor="{Binding RefreshColor}"
                                   Shadow="{Binding Shadow}"
-                                  AutomationId="RefreshView">
+                                  AutomationId="RefreshView"
+                                  Refreshing="OnRefreshViewRefreshing">
 
                             <ScrollView>
                                    <BoxView Color="{Binding BoxViewColor}"
@@ -115,5 +116,19 @@
                              Clicked="OnCollectionViewContentClicked"
                              AutomationId="CollectionViewContentButton"/>
               </HorizontalStackLayout>
+
+              <Label
+                     Grid.Row="7"
+                     Grid.Column="0"
+                     HorizontalOptions="Center"
+                     Text="Refreshing Event :"
+                     FontSize="16"/>
+
+              <Label
+                     Grid.Row="7"
+                     Grid.Column="1"
+                     AutomationId="RefreshingEventLabel"
+                     Text="{Binding RefreshEventStatusText}"
+                     FontSize="16"/>
        </Grid>
 </ContentPage>
