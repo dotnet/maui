@@ -3,6 +3,8 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 32886, "[Android, iOS, Mac] Entry ClearButton not visible on dark theme", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue32886 : TestContentPage
 {
+	Label _themeLabel;
+
 	protected override void Init()
 	{
 		Title = "Issue32886";
@@ -25,9 +27,18 @@ public class Issue32886 : TestContentPage
 		};
 		button.Clicked += Button_Clicked;
 
+		_themeLabel = new Label
+		{
+			Text = "Light",
+			AutomationId = "ThemeLabel",
+			HeightRequest = 0,
+			Opacity = 0
+		};
+
 		var layout = new VerticalStackLayout();
 		layout.Children.Add(entry);
 		layout.Children.Add(button);
+		layout.Children.Add(_themeLabel);
 
 		Content = layout;
 
@@ -39,7 +50,9 @@ public class Issue32886 : TestContentPage
 	{
 		if (Application.Current is not null)
 		{
-			Application.Current.UserAppTheme = Application.Current.UserAppTheme != AppTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+			var newTheme = Application.Current.UserAppTheme != AppTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+			Application.Current.UserAppTheme = newTheme;
+			_themeLabel.Text = newTheme == AppTheme.Dark ? "Dark" : "Light";
 		}
 	}
 }

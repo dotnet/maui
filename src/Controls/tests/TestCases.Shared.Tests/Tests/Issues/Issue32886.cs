@@ -40,6 +40,10 @@ public class Issue32886 : _IssuesUITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("ThemeButton");
+
+		// Wait for the theme change to propagate through the UI
+		App.WaitForTextToBePresentInElement("ThemeLabel", "Dark");
+
 #if WINDOWS // On Windows, the clear button isn't visible when Entry loses focus, so manually focused to check its icon color.
         App.Tap("TestEntry");
 #endif
@@ -47,9 +51,9 @@ public class Issue32886 : _IssuesUITest
 #if IOS
 		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
 		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
-		VerifyScreenshot(cropBottom: 1550);
+		VerifyScreenshot(cropBottom: 1550, retryTimeout: TimeSpan.FromSeconds(3));
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(3));
 #endif
 	}
 }
