@@ -44,7 +44,9 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
+#if !WINDOWS
 		private Size _lastSize;
+#endif
 
 		public BorderHandler() : base(Mapper, CommandMapper)
 		{
@@ -65,6 +67,11 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView IBorderHandler.PlatformView => PlatformView;
 
+#if !WINDOWS
+		// On Windows, ContentPanel.ContentPanelSizeChanged already handles size-based
+		// shape updates. Calling UpdateValue(Shape) during PlatformArrange on Windows
+		// causes Path.Data to be set during the WinUI arrange pass, which invalidates
+		// layout and can cause LayoutCycleException with many nested Borders (#32406).
 		/// <inheritdoc />
 		public override void PlatformArrange(Rect rect)
 		{
@@ -76,6 +83,7 @@ namespace Microsoft.Maui.Handlers
 				UpdateValue(nameof(IBorderStroke.Shape));
 			}
 		}
+#endif
 
 		/// <summary>
 		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
