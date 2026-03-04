@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls
 				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(Text), MapText);
 				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(TextTransform), MapText);
 				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
 				EntryHandler2.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
 			}
 #endif
