@@ -393,16 +393,32 @@ namespace Microsoft.Maui.Platform
 		internal bool AppliesSafeAreaAdjustments => _appliesSafeAreaAdjustments;
 
 		/// <summary>
-		/// Checks if any ancestor MauiView is already applying safe area adjustments.
-		/// When a parent already handles safe area, this view should not double-apply insets,
-		/// which would otherwise cause infinite layout cycles (#33595, #32586).
+		/// Checks if any ancestor MauiView is already applying safe area adjustments for the same edges
+		/// that this view handles. When a parent already handles a specific safe area edge, this view
+		/// should not double-apply insets for that edge — but it may still handle OTHER edges independently.
+		/// This prevents double-padding when parent and child handle the same edges (#33595, #32586),
+		/// while allowing parent and child to handle DIFFERENT edges without conflict (#28986).
 		/// </summary>
 		bool IsParentHandlingSafeArea()
 		{
 			if (_parentHandlesSafeArea.HasValue)
 				return _parentHandlesSafeArea.Value;
 
-			_parentHandlesSafeArea = this.FindParent(x => x is MauiView mv && mv._appliesSafeAreaAdjustments) is not null;
+			// Check if any ancestor MauiView handles any of the SAME edges we handle.
+			// Edge-aware check: parent handling only TOP doesn't block child handling BOTTOM.
+			_parentHandlesSafeArea = this.FindParent(x =>
+			{
+				if (x is not MauiView mv || !mv._appliesSafeAreaAdjustments)
+					return false;
+				// Return true only if parent handles any edge that this view also handles
+				for (int edge = 0; edge < 4; edge++)
+				{
+					if (GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None &&
+						mv.GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None)
+						return true;
+				}
+				return false;
+			}) is not null;
 			return _parentHandlesSafeArea.Value;
 		}
 
