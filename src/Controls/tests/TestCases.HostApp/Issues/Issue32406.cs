@@ -15,6 +15,7 @@ public class Issue32406 : ContentPage
 
 		// Create enough nested Border elements to trigger the layout cycle.
 		// The original report shows crashes at ~300 elements with 3+ nesting levels.
+		// Each element creates nestingDepth Borders (350 * 3 = 1050 total Borders).
 		const int elementCount = 350;
 		const int nestingDepth = 3;
 

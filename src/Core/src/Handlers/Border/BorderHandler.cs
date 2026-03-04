@@ -67,11 +67,11 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView IBorderHandler.PlatformView => PlatformView;
 
-#if !WINDOWS
 		// On Windows, ContentPanel.ContentPanelSizeChanged already handles size-based
 		// shape updates. Calling UpdateValue(Shape) during PlatformArrange on Windows
 		// causes Path.Data to be set during the WinUI arrange pass, which invalidates
 		// layout and can cause LayoutCycleException with many nested Borders (#32406).
+#if !WINDOWS
 		/// <inheritdoc />
 		public override void PlatformArrange(Rect rect)
 		{
