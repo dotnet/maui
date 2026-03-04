@@ -284,15 +284,12 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
-<<<<<<< Updated upstream
-=======
 10. **evaluate-pr-tests** (`.github/skills/evaluate-pr-tests/SKILL.md`)
    - **Purpose**: Evaluates tests added in a PR for coverage, quality, edge cases, and test type appropriateness
    - **Trigger phrases**: "evaluate tests in PR #XXXXX", "review test quality", "are these tests good enough", "check test coverage"
    - **Scripts**: `Gather-TestContext.ps1`
    - **Checks**: Fix coverage, edge case gaps, test type preference (unit > device > UI), conventions, flakiness risk, duplicate coverage, platform scope, assertion quality
 
->>>>>>> Stashed changes
 #### Internal Skills (Used by Agents)
 
 10. **try-fix** (`.github/skills/try-fix/SKILL.md`)
