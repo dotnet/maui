@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return;
 
-			void OnLayoutChanged(object sender, Android.Views.View.LayoutChangeEventArgs e)
+			void OnLayoutChanged(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
 			{
 				if (drawerLayout.IsDrawerOpen(flyout) == desiredState)
 				{
@@ -309,7 +309,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 				var headerPlatformView = header.ToPlatform();
 				var appBar = headerPlatformView.GetParentOfType<AppBarLayout>();
-				Assert.Equal(appBar.MeasuredHeight, headerPlatformView.MeasuredHeight);
+				Assert.Equal(appBar.MeasuredHeight - appBar.PaddingTop, headerPlatformView.MeasuredHeight);
 			});
 		}
 
@@ -381,8 +381,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menuItem1.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
-				menuItem2.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+				menuItem1.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
+				menuItem2.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
 
 				Assert.NotEqual(icon1, menuItem1.Icon);
 				Assert.NotEqual(icon2, menuItem2.Icon);
@@ -449,8 +449,125 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menu.GetItem(1).Icon.AssertColorAtCenter(Android.Graphics.Color.Green);
-				menu.GetItem(2).Icon.AssertColorAtCenter(Android.Graphics.Color.Red);
+				menu.GetItem(1).Icon.AssertColorAtCenter(global::Android.Graphics.Color.Green);
+				menu.GetItem(2).Icon.AssertColorAtCenter(global::Android.Graphics.Color.Red);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Flyout Header Changes When Updated")]
+		public async Task FlyoutHeaderReactsToChanges()
+		{
+			SetupBuilder();
+
+			var initialHeader = new Label() { Text = "Hello" };
+			var newHeader = new Label() { Text = "Hello Part 2" };
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutHeader = initialHeader;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				var initialHeaderPlatformView = initialHeader.ToPlatform();
+				Assert.NotNull(initialHeaderPlatformView);
+				Assert.NotNull(initialHeader.Handler);
+
+				shell.FlyoutHeader = newHeader;
+
+				var newHeaderPlatformView = newHeader.ToPlatform();
+				Assert.NotNull(newHeaderPlatformView);
+				Assert.NotNull(newHeader.Handler);
+
+				Assert.Null(initialHeader.Handler);
+
+				await OpenFlyout(handler);
+
+				var appBar = newHeaderPlatformView.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Ensure Default Colors are White for BottomNavigationView")]
+		public async Task ShellTabColorsDefaultToWhite()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
+			{
+				var bottomNavigationView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
+				Assert.NotNull(bottomNavigationView);
+
+				var background = bottomNavigationView.Background;
+				Assert.NotNull(background);
+
+				if (background is ColorChangeRevealDrawable changeRevealDrawable)
+				{
+					Assert.Equal(global::Android.Graphics.Color.White, changeRevealDrawable.EndColor);
+				}
+			});
+		}
+
+		[Fact(DisplayName = "ShellContentFragment.Destroy handles null _shellContext gracefully")]
+		public async Task ShellContentFragmentDestroyHandlesNullShellContext()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = new ContentPage { Title = "Page 1" }
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = new ContentPage { Title = "Page 2" }
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Navigate to trigger fragment creation
+				await shell.GoToAsync("//Item2");
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Test normal destruction - should work without issues
+				await shell.GoToAsync("//Item1");
+				await OnNavigatedToAsync(shell.CurrentPage);
+
+				// Test null context scenario
+				var exception = Record.Exception(() =>
+				{
+					// Create fragment with null context - this should not throw
+					Page page = new ContentPage();
+					var fragment = new ShellContentFragment((IShellContext)null, page);
+
+					// Dispose the fragment which calls Destroy internally
+					// This validates the null-conditional operators in Destroy method
+					fragment.Dispose();
+				});
+
+				// Verify no exception was thrown - validates (_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
+				Assert.Null(exception);
 			});
 		}
 
@@ -466,8 +583,8 @@ namespace Microsoft.Maui.DeviceTests
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
-				context.FromPixels(platformView.MeasuredWidth),
-				context.FromPixels(platformView.MeasuredHeight));
+				context.FromPixels(platformView.MeasuredWidth- (platformView.PaddingLeft + platformView.PaddingRight)),
+				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 
 		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)

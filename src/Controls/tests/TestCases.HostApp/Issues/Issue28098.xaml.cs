@@ -8,9 +8,7 @@ public partial class Issue28098 : ContentPage
 	public Issue28098()
 	{
 		InitializeComponent();
-		#if ANDROID
 		carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
-		#endif
 	}
 
 	protected override void OnAppearing()

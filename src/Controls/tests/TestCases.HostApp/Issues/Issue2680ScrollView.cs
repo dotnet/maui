@@ -16,6 +16,11 @@
 
 		protected override void Init()
 		{
+			var contentView = new ContentView
+			{
+				HeightRequest = 2000
+			};
+
 			// Initialize ui here instead of ctor 
 			var longStackLayout = new StackLayout();
 
@@ -24,21 +29,26 @@
 
 			longStackLayout.Children.Add(toggleButton);
 
-			longStackLayout.Children.Add(new Label
+			firstItemLabel = new Label
 			{
-				Text = "First label",
+				Text = "Not scrolled",
 				AutomationId = FirstItemMark
-			});
+			};
+
+			longStackLayout.Children.Add(firstItemLabel);
 			Enumerable.Range(2, 50).Select(i => new Label { Text = $"Test label {i}" })
 				.ToList().ForEach(label => longStackLayout.Children.Add(label));
+
+			contentView.Content = longStackLayout;
 
 			scrollView = new ScrollView
 			{
 				Orientation = ScrollOrientation.Neither,
 				AutomationId = ScrollViewMark,
-				Content = longStackLayout
+				Content = contentView
 			};
 
+			scrollView.Scrolled += ScrollViewOnScrolled;
 			Content = scrollView;
 		}
 
@@ -48,8 +58,15 @@
 			scrollView.Orientation = IsScrollEnabled ? ScrollOrientation.Vertical : ScrollOrientation.Neither;
 		}
 
+		void ScrollViewOnScrolled(object sender, ScrolledEventArgs e)
+		{
+			firstItemLabel.Text = "Scrolled";
+		}
+
 		ScrollView scrollView;
 		Button toggleButton;
+
+		Label firstItemLabel;
 
 		const string ScrollViewMark = "ScrollView";
 		const string FirstItemMark = "FirstItem";

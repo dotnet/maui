@@ -11,10 +11,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TemplatedView_should_have_the_InternalChildren_correctly_when_ControlTemplate_changed()
 		{
 			var sut = new TemplatedView();
-			IList<Element> internalChildren = ((IControlTemplated)sut).InternalChildren;
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
+			var controlTemplated = (IControlTemplated)sut;
+			var internalChildren = controlTemplated.InternalChildren;
+			controlTemplated.AddLogicalChild(new VisualElement());
+			controlTemplated.AddLogicalChild(new VisualElement());
+			controlTemplated.AddLogicalChild(new VisualElement());
 
 			sut.ControlTemplate = new ControlTemplate(typeof(ExpectedView));
 
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			tv.ControlTemplate = new ControlTemplate(typeof(ExpectedView));
 
-			IList<Element> internalChildren = ct.InternalChildren;
+			var internalChildren = ct.InternalChildren;
 			Assert.Equal(ct.TemplateRoot, internalChildren[0]);
 		}
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var contentView = new MyTestContentView();
 			contentView.LoadFromXaml(xaml);
 
-			IList<Element> internalChildren = contentView.InternalChildren;
+			var internalChildren = ((IControlTemplated)contentView).InternalChildren;
 			Assert.Equal(internalChildren[0], contentView.TemplateChildObtained);
 		}
 
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var contentView = new MyTestTemplatedView();
 			contentView.LoadFromXaml(xaml);
 
-			IList<Element> internalChildren = contentView.InternalChildren;
+			var internalChildren = contentView.LogicalChildrenInternal;
 			Assert.Equal(internalChildren[0], contentView.TemplateChildObtained);
 		}
 

@@ -36,42 +36,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var list = new SetterSpecificityList<object>();
 			list[SetterSpecificity.DefaultValue] = nameof(SetterSpecificity.DefaultValue);
 			list[SetterSpecificity.FromHandler] = nameof(SetterSpecificity.FromHandler);
-			WeakReference<object> weakReference;
+			WeakReference weakReference;
 
 			{
 				var o = new object();
-				weakReference = new WeakReference<object>(o);
+				weakReference = new WeakReference(o);
 				list[SetterSpecificity.FromBinding] = o;
 			}
 
 			list.Remove(SetterSpecificity.FromBinding);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(weakReference.TryGetTarget(out _));
+			Assert.False(await weakReference.WaitForCollect());
 		}
 
 		[Fact]
 		public async Task RemovingLastValueDoesNotLeak()
 		{
 			var list = new SetterSpecificityList<object>();
-			WeakReference<object> weakReference;
+			WeakReference weakReference;
 
 			{
 				var o = new object();
-				weakReference = new WeakReference<object>(o);
+				weakReference = new WeakReference(o);
 				list[SetterSpecificity.ManualValueSetter] = o;
 			}
 
 			list.Remove(SetterSpecificity.ManualValueSetter);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(weakReference.TryGetTarget(out _));
+			Assert.False(await weakReference.WaitForCollect());
 		}
 
 		[Fact]

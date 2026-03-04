@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewPositionVisibility"
     Title="Issue 12848">
     <StackLayout>
@@ -19,9 +20,9 @@
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <Label
-                      Text="{Binding}"
-                      FontSize="96"
-                      HorizontalTextAlignment="Center"/>
+                        Text="{Binding}"
+                        FontSize="96"
+                        HorizontalTextAlignment="Center"/>
                 </DataTemplate>
             </CarouselView.ItemTemplate>
         </CarouselView>

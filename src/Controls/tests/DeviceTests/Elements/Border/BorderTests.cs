@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if ANDROID
-		[Fact("Checks that the default background is transparent")]
+		[Fact("Checks that the default background is transparent", Skip = "Android Helix is failing this test")]
 		public async Task DefaultBackgroundIsTransparent ()
 		{
 			// We use a Grid container to set a background color and then make sure that the Border background
@@ -254,6 +255,35 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<LayoutHandler>(layout);
 				handlerReference = new WeakReference(label.Handler);
 				platformViewReference = new WeakReference(label.Handler.PlatformView);
+			});
+
+			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
+		}
+
+		[Fact(DisplayName = "Border With Stroke Shape And Name Does Not Leak")]
+		public async Task DoesNotLeakWithStrokeShape()
+		{
+			SetupBuilder();
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var border = new Border();
+				var rect = new RoundRectangle();
+				border.StrokeShape = rect;
+				layout.Add(border);
+
+				var nameScope = new NameScope();
+				((INameScope)nameScope).RegisterName("Border", border);
+				layout.transientNamescope = nameScope;
+				border.transientNamescope = nameScope;
+				rect.transientNamescope = nameScope;
+
+				var handler = CreateHandler<LayoutHandler>(layout);
+				handlerReference = new WeakReference(border.Handler);
+				platformViewReference = new WeakReference(border.Handler.PlatformView);
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);

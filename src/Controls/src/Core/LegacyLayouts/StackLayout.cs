@@ -92,12 +92,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return result;
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			ComputeConstraintForView(view, false);
+			_layoutInformation = new LayoutInformation();
+			base.OnChildMeasureInvalidated(child, trigger);
 		}
 
-		internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+		protected override LayoutConstraint ComputeConstraintForView(View view)
+		{
+			return ComputeConstraintForView(view, false);
+		}
+
+		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_layoutInformation = new LayoutInformation();
 			base.InvalidateMeasureInternal(trigger);
@@ -166,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						if (expander != null)
 						{
 							// we have multiple expanders, make sure previous expanders are reset to not be fixed because they no logner are
-							ComputeConstraintForView(child, false);
+							child.ComputedConstraint = ComputeConstraintForView(child, false);
 						}
 						expander = child;
 					}
@@ -185,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				minimumHeight -= spacing;
 				if (expander != null)
-					ComputeConstraintForView(expander, layout.Expanders == 1); // warning : slightly obtuse, but we either need to setup the expander or clear the last one
+					expander.ComputedConstraint = ComputeConstraintForView(expander, layout.Expanders == 1); // warning : slightly obtuse, but we either need to setup the expander or clear the last one
 			}
 			else
 			{
@@ -201,7 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						layout.Expanders++;
 						if (expander != null)
 						{
-							ComputeConstraintForView(child, false);
+							child.ComputedConstraint = ComputeConstraintForView(child, false);
 						}
 						expander = child;
 					}
@@ -220,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 				minimumWidth -= spacing;
 				if (expander != null)
-					ComputeConstraintForView(expander, layout.Expanders == 1);
+					expander.ComputedConstraint = ComputeConstraintForView(expander, layout.Expanders == 1);
 			}
 
 			layout.Bounds = new Rect(x, y, boundsWidth, boundsHeight);
@@ -356,7 +362,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		void ComputeConstraintForView(View view, bool isOnlyExpander)
+		LayoutConstraint ComputeConstraintForView(View view, bool isOnlyExpander)
 		{
 			if (Orientation == StackOrientation.Horizontal)
 			{
@@ -364,16 +370,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					if (isOnlyExpander && view.HorizontalOptions.Alignment == LayoutAlignment.Fill && Constraint == LayoutConstraint.Fixed)
 					{
-						view.ComputedConstraint = LayoutConstraint.Fixed;
+						return LayoutConstraint.Fixed;
 					}
 					else
 					{
-						view.ComputedConstraint = LayoutConstraint.VerticallyFixed;
+						return LayoutConstraint.VerticallyFixed;
 					}
 				}
 				else
 				{
-					view.ComputedConstraint = LayoutConstraint.None;
+					return LayoutConstraint.None;
 				}
 			}
 			else
@@ -382,16 +388,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					if (isOnlyExpander && view.VerticalOptions.Alignment == LayoutAlignment.Fill && Constraint == LayoutConstraint.Fixed)
 					{
-						view.ComputedConstraint = LayoutConstraint.Fixed;
+						return LayoutConstraint.Fixed;
 					}
 					else
 					{
-						view.ComputedConstraint = LayoutConstraint.HorizontallyFixed;
+						return LayoutConstraint.HorizontallyFixed;
 					}
 				}
 				else
 				{
-					view.ComputedConstraint = LayoutConstraint.None;
+					return LayoutConstraint.None;
 				}
 			}
 		}

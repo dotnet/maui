@@ -27,6 +27,7 @@
 			class CarouselViewTestPage : ContentPage
 			{
 				CollectionView cv;
+				List<string> items;
 				public CarouselViewTestPage()
 				{
 					cv = new CollectionView
@@ -42,31 +43,29 @@
 							};
 							label.SetBinding(Label.TextProperty, new Binding("."));
 							label.SetBinding(Label.AutomationIdProperty, new Binding("."));
+							var tapGestureRecognizer = new TapGestureRecognizer();
+							tapGestureRecognizer.Tapped += (sender, e) => LabelTapped();
+							label.GestureRecognizers.Add(tapGestureRecognizer);
 							return label;
 						})
 					};
-					Content = cv;
-					InitCV();
-				}
 
-				async void InitCV()
-				{
-					var items = new List<string>();
+					items = new List<string>();
 					for (int i = 0; i < 10; i++)
 					{
 						items.Add($"items{i}");
 					}
-
 					cv.ItemsSource = items;
+					Content = cv;
+				}
 
-					//give the cv time to draw the items
-					await Task.Delay(1000);
+				// Scrolls to last item then pops the page
+				async void LabelTapped()
+				{
 
 					cv.ScrollTo(items.Count - 1);
 
-					//give the cv time to scroll
-					var rand = new Random();
-					await Task.Delay(rand.Next(10, 200));
+					await Task.Delay(200);
 
 					await Navigation.PopAsync(false);
 

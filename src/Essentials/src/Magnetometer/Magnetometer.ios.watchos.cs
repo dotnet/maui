@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			MotionManager.StartMagnetometerUpdates(NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		void DataUpdated(CMMagnetometerData data, NSError error)
+		void DataUpdated(CMMagnetometerData? data, NSError? error)
 		{
 			if (data == null)
 				return;

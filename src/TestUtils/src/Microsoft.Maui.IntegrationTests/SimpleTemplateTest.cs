@@ -2,52 +2,51 @@ using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
-[Category(Categories.Build)]
+[Trait("Category", "Build")]
 public class SimpleTemplateTest : BaseTemplateTests
 {
-	[Test]
+	public SimpleTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
+
+	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	[TestCase("maui", DotNetPrevious, "Debug", false, "", "")]
-	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
-	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
-	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty", "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty", "TrimMode=partial")]
-	[TestCase("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	[TestCase("mauilib", DotNetPrevious, "Release", true, "", "")]
-	[TestCase("mauilib", DotNetCurrent, "Debug", true, "", "")]
-	[TestCase("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	//Debug not ready yet
+	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
+	//[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
 	{
+		SetTestIdentifier(id, framework, config, shouldPack, additionalDotNetNewParams, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
-		string[]? warningsToIgnore = null;
-
-		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
+		// We only have these packs for Android
+		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
 		{
-			warningsToIgnore = new string[]
-			{
-				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
-			};
+			OnlyAndroid(projectFile);
 		}
 
 		var buildProps = BuildProps;
@@ -58,46 +57,43 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
+		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
-	[TestCase("maui", DotNetPrevious, "Debug")]
+	[Theory]
+	[InlineData("maui", DotNetPrevious, "Debug")]
 	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		FileUtilities.ReplaceInFile(projectFile,
 			"$(MauiVersion)",
 			MauiPackageVersion);
 
-		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
 	}
 
-	[Test]
+	[Theory]
 	// with spaces
-	[TestCase("maui", "Project Space", "projectspace")]
-	[TestCase("maui-blazor", "Project Space", "projectspace")]
-	[TestCase("mauilib", "Project Space", "projectspace")]
-	// with invalid characters
-	[TestCase("maui", "Project@Symbol", "projectsymbol")]
-	[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
-	[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+	[InlineData("maui", "Project Space", "projectspace")]
+	[InlineData("maui-blazor", "Project Space", "projectspace")]
+	[InlineData("mauilib", "Project Space", "projectspace")]
+	[InlineData("maui", "Project@Symbol", "projectsymbol")]
+	[InlineData("maui-blazor", "Project@Symbol", "projectsymbol")]
+	[InlineData("mauilib", "Project@Symbol", "projectsymbol")]
 	public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		EnableTizen(projectFile);
 
 		// libraries do not have application IDs
 		if (id != "mauilib")
@@ -110,7 +106,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 				.Elements("ApplicationId")
 				.Single()
 				.Value;
-			Assert.AreEqual($"com.companyname.{expectedId}", appId);
+			Assert.Equal($"com.companyname.{expectedId}", appId);
 
 			// Check the app title matches the project name exactly (it might have been XML-encoded, but loading the document decodes that)
 			var appTitle = doc.Root!
@@ -118,38 +114,34 @@ public class SimpleTemplateTest : BaseTemplateTests
 				.Elements("ApplicationTitle")
 				.Single()
 				.Value;
-			Assert.AreEqual(projectName, appTitle);
+			Assert.Equal(projectName, appTitle);
 		}
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
+	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	[TestCase("maui", DotNetPrevious, "Debug", false, "")]
-	[TestCase("maui", DotNetPrevious, "Release", false, "")]
-	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
-	[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
+	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
@@ -158,9 +150,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		FileUtilities.ReplaceInFile(projectFile,
-			"</Project>",
-			$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
+		if (mv is not null or "")
+		{
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
+		}
 
 		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\log\\{Path.GetFileName(projectDir)}.binlog");
 
@@ -172,28 +167,25 @@ public class SimpleTemplateTest : BaseTemplateTests
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps),
+		Assert.True(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
 #if ENABLE_PREVIOUS_TFM_BUILDS
-	[Test]
-	[TestCase("maui", "Debug", false)]
-	[TestCase("maui", "Release", false)]
-	[TestCase("maui-blazor", "Debug", false)]
-	[TestCase("maui-blazor", "Release", false)]
-	[TestCase("mauilib", "Debug", true)]
-	[TestCase("mauilib", "Release", true)]
+	[Theory]
+	[InlineData("maui", "Debug", false)]
+	[InlineData("maui", "Release", false)]
+	[InlineData("maui-blazor", "Debug", false)]
+	[InlineData("maui-blazor", "Release", false)]
+	[InlineData("mauilib", "Debug", true)]
+	[InlineData("mauilib", "Release", true)]
 	public void PreviousDotNetCanUseLatestMaui(string id, string config, bool shouldPack)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetPrevious, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// TODO: fix this as we should be able to build tizen net8
-		// EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
@@ -212,46 +204,41 @@ public class SimpleTemplateTest : BaseTemplateTests
 			""");
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 #endif
 
-	[Test]
+	[Fact]
 	public void BuildHandlesBadFilesInImages()
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "Images", ".DS_Store"), "Boom!");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
 	/// <summary>
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
-	[Test]
-	[TestCase("mauilib", DotNetPrevious, "Debug")]
-	[TestCase("mauilib", DotNetPrevious, "Release")]
-	[TestCase("mauilib", DotNetCurrent, "Debug")]
-	[TestCase("mauilib", DotNetCurrent, "Release")]
+	[Theory]
+	[InlineData("mauilib", DotNetPrevious, "Debug")]
+	[InlineData("mauilib", DotNetPrevious, "Release")]
+	[InlineData("mauilib", DotNetCurrent, "Debug")]
+	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		var projectSectionsToReplace = new Dictionary<string, string>()
 		{
@@ -268,23 +255,22 @@ public class SimpleTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile, projectSectionsToReplace);
 		Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
-	[TestCase("maui", DotNetCurrent, "Debug")]
-	[TestCase("mauilib", DotNetCurrent, "Debug")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug")]
+	[Theory]
+	[InlineData("maui", DotNetCurrent, "Debug")]
+	[InlineData("mauilib", DotNetCurrent, "Debug")]
+	[InlineData("maui-blazor", DotNetCurrent, "Debug")]
 	public void BuildWithoutPackageReference(string id, string framework, string config)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		FileUtilities.ReplaceInFile(projectFile,
 			"</Project>",
 			"<PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences></PropertyGroup></Project>");
@@ -292,26 +278,25 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"<PackageReference Include=\"Microsoft.Maui.Controls\" Version=\"$(MauiVersion)\" />",
 			"");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
-	[TestCase("maui", "Debug", "2.0", "2", "")]
-	[TestCase("maui", "Release", "2.0", "2", "TrimMode=partial")]
-	[TestCase("maui", "Release", "0.3", "3", "TrimMode=partial")]
-	[TestCase("maui-blazor", "Debug", "2.0", "2", "")]
-	[TestCase("maui-blazor", "Release", "2.0", "2", "TrimMode=partial")]
-	[TestCase("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
+	[Theory]
+	[InlineData("maui", "Debug", "2.0", "2", "")]
+	[InlineData("maui", "Release", "2.0", "2", "TrimMode=partial")]
+	[InlineData("maui", "Release", "0.3", "3", "TrimMode=partial")]
+	[InlineData("maui-blazor", "Debug", "2.0", "2", "")]
+	[InlineData("maui-blazor", "Release", "2.0", "2", "TrimMode=partial")]
+	[InlineData("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
 	public void BuildWithDifferentVersionNumber(string id, string config, string display, string version, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir),
+		Assert.True(DotnetInternal.New(id, projectDir, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		FileUtilities.ReplaceInFile(projectFile,
 			$"<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>",
 			$"<ApplicationDisplayVersion>{display}</ApplicationDisplayVersion>");
@@ -326,35 +311,41 @@ public class SimpleTemplateTest : BaseTemplateTests
 			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
 		}
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	// This test is super temporary and is just for the interim
-	// while we productize the CollectionViewHandler2. Once we
-	// ship it as the default, this test will fail and can be deleted.
-	[Test]
-	[TestCase("maui", DotNetCurrent, "", false)]
-	[TestCase("maui", DotNetCurrent, "--sample-content", true)]
-	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
+	[Theory]
+	[InlineData("SentenceStudio.ServiceDefaults")]
+	[InlineData("MyApp.ServiceDefaults")]
+	[InlineData("Company.Product.ServiceDefaults")]
+	public void AspireServiceDefaultsTemplateUsesCorrectProjectName(string projectName)
 	{
-		var projectDir = TestDirectory;
-		var programFile = Path.Combine(projectDir, "MauiProgram.cs");
+		var projectDir = Path.Combine(TestDirectory, projectName);
+		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
-			$"Unable to create template {id}. Check test output for errors.");
+		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\"", output: _output),
+			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
-		var programContents = File.ReadAllText(programFile);
+		// Verify the project file was created with the correct name (this was the bug)
+		Assert.True(File.Exists(expectedProjectFile),
+			$"Expected project file '{expectedProjectFile}' was not created. This indicates the template naming issue.");
 
-		if (shouldHaveHandler2)
-		{
-			AssertContains("#if IOS || MACCATALYST", programContents);
-			AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
-		}
-		else
-		{
-			AssertDoesNotContain("#if IOS || MACCATALYST", programContents);
-			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
-		}
+		// Verify no incorrectly named files exist
+		var incorrectFiles = Directory.GetFiles(projectDir, "*.csproj")
+			.Where(f => !f.Equals(expectedProjectFile, StringComparison.OrdinalIgnoreCase))
+			.ToArray();
+
+		if (incorrectFiles.Any())
+			Assert.Fail($"Found incorrectly named project files: {string.Join(", ", incorrectFiles.Select(Path.GetFileName))}. Only '{Path.GetFileName(expectedProjectFile)}' should exist.");
+
+		// Verify the content is correct
+		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
+			"Expected Extensions.cs file was not created.");
+
+		// Verify we can build it (even if restore fails due to placeholder tokens, the project structure should be valid)
+		var projectContent = File.ReadAllText(expectedProjectFile);
+		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
+			"Project file should contain Aspire-specific properties.");
 	}
 }

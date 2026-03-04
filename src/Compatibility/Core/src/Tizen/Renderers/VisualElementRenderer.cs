@@ -599,10 +599,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		protected virtual void OnFocused(object sender, EventArgs e)
 		{
-			if (null != Element)
-			{
-				Element.SetValue(VisualElement.IsFocusedPropertyKey, true);
-			}
+			Element?.SetValue(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		/// <summary>
@@ -610,10 +607,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		protected virtual void OnUnfocused(object sender, EventArgs e)
 		{
-			if (null != Element)
-			{
-				Element.SetValue(VisualElement.IsFocusedPropertyKey, false);
-			}
+			Element?.SetValue(VisualElement.IsFocusedPropertyKey, false);
 		}
 
 		/// <summary>

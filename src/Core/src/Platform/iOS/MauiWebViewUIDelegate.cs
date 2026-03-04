@@ -59,7 +59,10 @@ namespace Microsoft.Maui.Platform
 			);
 		}
 
+
+#pragma warning disable CS0672 // Member overrides obsolete member
 		public override void RunJavaScriptTextInputPanel(
+#pragma warning restore CS0672 // Member overrides obsolete member
 			WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
 		{
 			// TODO the okAction and cancelAction were already taking null when I removed `#nullable disable`

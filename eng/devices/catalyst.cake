@@ -85,32 +85,26 @@ void ExecuteBuild(string project, string binDir, string config, string rid, stri
 	});
 }
 
+
 void ExecuteTests(string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath)
 {
 	CleanResults(resultsDir);
 
 	var testApp = GetTestApplications(project, device, config, tfm, rid).FirstOrDefault();
-
 	Information($"Testing App: {testApp}");
-	var settings = new DotNetToolSettings
-	{
-		DiagnosticOutput = true,
-		ToolPath = toolPath,
-		ArgumentCustomization = args => args.Append($"run xharness apple test --app=\"{testApp}\" --targets=\"{device}\" --output-directory=\"{resultsDir}\" --verbosity=\"Debug\" ")
-	};
 
-	bool testsFailed = true;
-	try
+	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
 	{
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	}
-	finally
-	{
-		HandleTestResults(resultsDir, testsFailed, true);
-	}
-
-	Information("Testing completed.");
+		return new DotNetToolSettings
+		{
+			DiagnosticOutput = true,
+			ToolPath = toolPath,
+			ArgumentCustomization = args => 
+				args.Append($"run xharness apple test --app=\"{testApp}\" --targets=\"{device}\" --output-directory=\"{resultsDir}\" " + 
+					" --verbosity=\"Debug\" " + 
+					$"--set-env=\"TestFilter={category}\" ")
+		};
+	});
 }
 
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string toolPath)

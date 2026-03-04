@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Debug.WriteLine("Button Clicked");
 			TestLabel.Text = Success;
-			DisplayAlert("Issue 11969", "Button Clicked", "Ok");
+			DisplayAlertAsync("Issue 11969", "Button Clicked", "Ok");
 		}
 	}
 }

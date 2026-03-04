@@ -78,11 +78,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Control.Adapter = null;
 				}
 
-				if (_adapter != null)
-				{
-					_adapter.Dispose();
-					_adapter = null;
-				}
+				_adapter?.Dispose();
+				_adapter = null;
 			}
 
 

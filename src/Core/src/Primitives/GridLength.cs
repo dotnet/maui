@@ -3,50 +3,66 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Maui.Converters;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="Type[@FullName='Microsoft.Maui.GridLength']/Docs/*" />
+	/// <summary>
+	/// Used to define the size (width/height) of Grid ColumnDefinition and RowDefinition.
+	/// </summary>
+	/// <remarks>
+	/// GridLength of type <see cref="GridUnitType.Absolute"/> represents exact size.
+	/// GridLength of type <see cref="GridUnitType.Auto"/> adapts to fit content size.
+	/// GridLength of type <see cref="GridUnitType.Star"/> distributes remaining space proportionally.
+	/// This value type is readonly.
+	/// </remarks>
 	[DebuggerDisplay("{Value}.{GridUnitType}")]
 	[TypeConverter(typeof(GridLengthTypeConverter))]
 	public readonly struct GridLength
 	{
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Auto']/Docs/*" />
+		/// <summary>A ready-to-use GridLength of <see cref="GridUnitType.Auto"/>. Value is ignored.</summary>
 		public static readonly GridLength Auto = new GridLength(1, GridUnitType.Auto);
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Star']/Docs/*" />
+		/// <summary>A ready-to-use GridLength of <see cref="GridUnitType.Star"/>. Distributes available space proportionally.</summary>
 		public static readonly GridLength Star = new GridLength(1, GridUnitType.Star);
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>Gets the numeric value of the GridLength. Represents an absolute size or weight; ignored for Auto.</summary>
 		public readonly double Value { get; }
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='GridUnitType']/Docs/*" />
+		/// <summary>Gets the unit type that indicates how the GridLength is interpreted.</summary>
 		public readonly GridUnitType GridUnitType { get; }
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='IsAbsolute']/Docs/*" />
+		/// <summary>Gets a value indicating whether this GridLength uses Absolute units.</summary>
 		public bool IsAbsolute
 		{
 			get { return GridUnitType == GridUnitType.Absolute; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='IsAuto']/Docs/*" />
+		/// <summary>Gets a value indicating whether this GridLength uses Auto sizing.</summary>
 		public bool IsAuto
 		{
 			get { return GridUnitType == GridUnitType.Auto; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='IsStar']/Docs/*" />
+		/// <summary>Gets a value indicating whether this GridLength uses Star (proportional) sizing.</summary>
 		public bool IsStar
 		{
 			get { return GridUnitType == GridUnitType.Star; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new <see cref="GridLength"/> instance that represents an absolute length.</summary>
+		/// <param name="value">The absolute size.</param>
+		/// <remarks>Equivalent to new GridLength(value, GridUnitType.Absolute).</remarks>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is less than zero or not a number.</exception>
 		public GridLength(double value) : this(value, GridUnitType.Absolute)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new <see cref="GridLength"/> instance with the specified value and unit type.</summary>
+		/// <param name="value">The size or weight.</param>
+		/// <param name="type">The unit type (Absolute, Star, or Auto).</param>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is less than zero or not a number.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="type"/> is not a valid <see cref="GridUnitType"/>.</exception>
 		public GridLength(double value, GridUnitType type)
 		{
 			if (value < 0 || double.IsNaN(value))
@@ -58,10 +74,12 @@ namespace Microsoft.Maui
 			GridUnitType = type;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='Equals']/Docs/*" />
+		/// <summary>Determines whether the specified object is equal to the current GridLength.</summary>
+		/// <param name="obj">The object to compare with this GridLength.</param>
+		/// <returns><see langword="true"/> if the specified object is a GridLength equal to this instance; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object? obj)
 		{
-			return obj is GridLength && Equals((GridLength)obj);
+			return obj is GridLength other && Equals(other);
 		}
 
 		bool Equals(GridLength other)
@@ -69,41 +87,53 @@ namespace Microsoft.Maui
 			return GridUnitType == other.GridUnitType && Math.Abs(Value - other.Value) < double.Epsilon;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
+		/// <summary>Returns the hash code for this GridLength.</summary>
+		/// <returns>A hash code for the current GridLength.</returns>
 		public override int GetHashCode()
 		{
 			return GridUnitType.GetHashCode() * 397 ^ Value.GetHashCode();
 		}
 
+		/// <summary>Converts a double to a GridLength using Absolute units.</summary>
+		/// <param name="absoluteValue">The absolute size.</param>
+		/// <returns>A GridLength instance representing an absolute length.</returns>
 		public static implicit operator GridLength(double absoluteValue)
 		{
 			return new GridLength(absoluteValue);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/GridLength.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+#if NET11_0_OR_GREATER
+		/// <summary>Converts a string to a GridLength using the type converter.</summary>
+		/// <param name="value">The string value representing a GridLength ("auto", "*", "2*", or a number).</param>
+		/// <returns>A GridLength instance parsed from the string.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+		/// <exception cref="FormatException">Thrown if <paramref name="value"/> is not a valid GridLength format.</exception>
+		public static implicit operator GridLength(string value)
+		{
+			if (value is null)
+				throw new ArgumentNullException(nameof(value));
+			
+			return Converters.GridLengthTypeConverter.ParseStringToGridLength(value);
+		}
+#endif
+
+		/// <summary>Returns a string that represents this GridLength.</summary>
+		/// <returns>A string representation in the format "{Value}.{GridUnitType}".</returns>
 		public override string ToString()
 		{
 			return string.Format("{0}.{1}", Value, GridUnitType);
 		}
 
+		/// <summary>Indicates whether two GridLength instances are equal.</summary>
+		/// <param name="left">The first GridLength to compare.</param>
+		/// <param name="right">The second GridLength to compare.</param>
+		/// <returns><see langword="true"/> if the two GridLengths are equal; otherwise, <see langword="false"/>.</returns>
 		public static bool operator ==(GridLength left, GridLength right) => left.Equals(right);
 
+		/// <summary>Indicates whether two GridLength instances are not equal.</summary>
+		/// <param name="left">The first GridLength to compare.</param>
+		/// <param name="right">The second GridLength to compare.</param>
+		/// <returns><see langword="true"/> if the two GridLengths differ; otherwise, <see langword="false"/>.</returns>
 		public static bool operator !=(GridLength left, GridLength right) => !(left == right);
-
-		private sealed class GridLengthTypeConverter : TypeConverter
-		{
-			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
-				=> sourceType == typeof(double);
-
-			public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
-				=> value switch
-				{
-					double d => (GridLength)d,
-					_ => throw new NotSupportedException(),
-				};
-
-			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType) => throw new NotSupportedException();
-		}
 	}
 }

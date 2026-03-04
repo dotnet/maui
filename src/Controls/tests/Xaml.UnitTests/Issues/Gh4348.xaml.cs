@@ -1,42 +1,30 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Gh4348VM : ObservableCollection<string>
 {
-	public class Gh4348VM : ObservableCollection<string>
+	public Gh4348VM()
 	{
-		public Gh4348VM()
-		{
-			Add("foo");
-			Add("bar");
-		}
+		Add("foo");
+		Add("bar");
 	}
+}
 
-	public partial class Gh4348 : ContentPage
+public partial class Gh4348 : ContentPage
+{
+	public Gh4348() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Gh4348()
+		[Theory]
+		[XamlInflatorData]
+		internal void GenericBaseClassResolution(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Gh4348(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void GenericBaseClassResolution(bool useCompiledXaml)
-			{
-				var layout = new Gh4348(useCompiledXaml) { BindingContext = new Gh4348VM() };
-				Assert.That(layout.labelCount.Text, Is.EqualTo("2"));
-			}
+			var layout = new Gh4348(inflator) { BindingContext = new Gh4348VM() };
+			Assert.Equal("2", layout.labelCount.Text);
 		}
 	}
 }

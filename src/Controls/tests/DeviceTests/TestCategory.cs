@@ -13,6 +13,7 @@
 		public const string CollectionView = "CollectionView";
 		public const string Compatibility = "Compatibility";
 		public const string ContentView = "ContentView";
+		public const string DatePicker = nameof(DatePicker);
 		public const string Dispatcher = "Dispatcher";
 		public const string Editor = "Editor";
 		public const string Element = "Element";
@@ -41,6 +42,7 @@
 		public const string SearchBar = "SearchBar";
 		public const string Shape = "Shape";
 		public const string Shell = "Shell";
+		public const string Slider = "Slider";
 		public const string SwipeView = "SwipeView";
 		public const string TabbedPage = "TabbedPage";
 		public const string TextInput = "TextInput";

@@ -8,7 +8,7 @@ on:
 
 jobs:
   add-label:
-    if: github.event.action == 'completed'
+    if: github.event.action == 'completed' && github.repository_owner == 'dotnet'
     runs-on: ubuntu-latest
 
     steps:
@@ -51,7 +51,7 @@ jobs:
             }
 
   remove-label:
-    if: github.event.action == 'requested' || github.event.action == 'rerequested'
+    if: (github.event.action == 'requested' || github.event.action == 'rerequested') && github.repository_owner == 'dotnet'
     runs-on: ubuntu-latest
 
     steps:

@@ -65,12 +65,9 @@ namespace Microsoft.Maui
 				return new Point();
 
 			var decorView = nativeActivity.Window?.DecorView;
-			var rectangle = new Android.Graphics.Rect();
+			var rectangle = new global::Android.Graphics.Rect();
 
-			if (decorView is not null)
-			{
-				decorView.GetWindowVisibleDisplayFrame(rectangle);
-			}
+			decorView?.GetWindowVisibleDisplayFrame(rectangle);
 
 			float dpi = nativeActivity.Resources.DisplayMetrics.Density;
 			return new Point(0, -(rectangle.Top / dpi));

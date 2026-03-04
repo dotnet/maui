@@ -26,7 +26,8 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='Inner']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -67,67 +68,86 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='InsertPageBefore']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
+		/// <param name="before">Internal parameter for platform use.</param>
 		public void InsertPageBefore(Page page, Page before)
 		{
 			OnInsertPageBefore(page, before);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='ModalStack']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='NavigationStack']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][1]/Docs/*" />
+		/// <summary>Pops the current page from the navigation stack with animation.</summary>
+		/// <returns>The page that was popped.</returns>
 		public Task<Page> PopAsync()
 		{
 			return OnPopAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopAsync'][2]/Docs/*" />
+		/// <summary>Pops the current page from the navigation stack.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>The page that was popped.</returns>
 		public Task<Page> PopAsync(bool animated)
 		{
 			return OnPopAsync(animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][1]/Docs/*" />
+		/// <summary>Pops the current modal page with animation.</summary>
+		/// <returns>The modal page that was popped.</returns>
 		public Task<Page> PopModalAsync()
 		{
 			return OnPopModal(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopModalAsync'][2]/Docs/*" />
+		/// <summary>Pops the current modal page.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>The modal page that was popped.</returns>
 		public Task<Page> PopModalAsync(bool animated)
 		{
 			return OnPopModal(animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs/*" />
+		/// <summary>Pops all pages except the root page with animation.</summary>
+		/// <returns>A task representing the operation.</returns>
 		public Task PopToRootAsync()
 		{
 			return OnPopToRootAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PopToRootAsync'][2]/Docs/*" />
+		/// <summary>Pops all pages except the root page.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task representing the operation.</returns>
 		public Task PopToRootAsync(bool animated)
 		{
 			return OnPopToRootAsync(animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][1]/Docs/*" />
+		/// <summary>Pushes a page onto the navigation stack with animation.</summary>
+		/// <param name="root">The page to push.</param>
+		/// <returns>A task representing the operation.</returns>
 		public Task PushAsync(Page root)
 		{
 			return PushAsync(root, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][2]/Docs/*" />
+		/// <summary>Pushes a page onto the navigation stack.</summary>
+		/// <param name="root">The page to push.</param>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task representing the operation.</returns>
 		public Task PushAsync(Page root, bool animated)
 		{
 			if (root.RealParent is not null)
@@ -135,13 +155,18 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushAsync(root, animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][1]/Docs/*" />
+		/// <summary>Presents a page modally with animation.</summary>
+		/// <param name="modal">The page to present modally.</param>
+		/// <returns>A task representing the operation.</returns>
 		public Task PushModalAsync(Page modal)
 		{
 			return PushModalAsync(modal, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][2]/Docs/*" />
+		/// <summary>Presents a page modally.</summary>
+		/// <param name="modal">The page to present modally.</param>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task representing the operation.</returns>
 		public Task PushModalAsync(Page modal, bool animated)
 		{
 			if (modal.RealParent is not null && modal.RealParent is not IWindow)
@@ -149,7 +174,9 @@ namespace Microsoft.Maui.Controls.Internals
 			return OnPushModal(modal, animated);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='RemovePage']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		/// <param name="page">Internal parameter for platform use.</param>
 		public void RemovePage(Page page)
 		{
 			OnRemovePage(page);

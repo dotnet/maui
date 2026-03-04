@@ -1,12 +1,1 @@
 *       @dotnet/dotnet-maui-reviewers
-
-# Blazor Desktop
-/src/BlazorWebView/                                     @dotnet/dotnet-maui-blazor-eng
-/src/Templates/src/templates/maui-blazor/               @dotnet/dotnet-maui-blazor-eng
-/src/Templates/src/templates/maui-blazor-solution/      @dotnet/dotnet-maui-blazor-eng
-
-# Localization
-/eng/automation/LocProject.json                        @tj-devel709
-**/localize/*.json                                     @tj-devel709
-**/*.resx                                              @tj-devel709
-**.*.resx.lcl                                          @tj-devel709

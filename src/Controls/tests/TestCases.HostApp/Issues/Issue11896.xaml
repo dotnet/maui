@@ -17,9 +17,9 @@
       <Button Command="{Binding RemoveCommand}" Text="Remove item" AutomationId="RemoveButton" />
     </HorizontalStackLayout>
 
-    <local:CollectionView2 Grid.Row="1" ItemsSource="{Binding ItemList}">
+    <CollectionView Grid.Row="1" ItemsSource="{Binding ItemList}">
 
-      <local:CollectionView2.HeaderTemplate>
+      <CollectionView.HeaderTemplate>
         <DataTemplate>
           <Label
               Padding="10"
@@ -27,21 +27,21 @@
               FontSize="Large"
               Text="Cities" />
         </DataTemplate>
-      </local:CollectionView2.HeaderTemplate>
+      </CollectionView.HeaderTemplate>
 
-      <local:CollectionView2.ItemTemplate>
+      <CollectionView.ItemTemplate>
         <DataTemplate>
           <Label Padding="20,5,5,5" Text="{Binding .}" />
         </DataTemplate>
-      </local:CollectionView2.ItemTemplate>
+      </CollectionView.ItemTemplate>
 
-      <local:CollectionView2.EmptyViewTemplate>
+      <CollectionView.EmptyViewTemplate>
         <DataTemplate>
           <Label Padding="20,5,5,5" Text="Empty" />
         </DataTemplate>
-      </local:CollectionView2.EmptyViewTemplate>
+      </CollectionView.EmptyViewTemplate>
 
-      <local:CollectionView2.FooterTemplate>
+      <CollectionView.FooterTemplate>
         <DataTemplate>
           <Label
               Padding="10"
@@ -49,9 +49,9 @@
               FontSize="Large"
               Text="Hello world !!!" />
         </DataTemplate>
-      </local:CollectionView2.FooterTemplate>
+      </CollectionView.FooterTemplate>
 
-    </local:CollectionView2>
+    </CollectionView>
 
   </Grid>
 </ContentPage>

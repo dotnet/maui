@@ -68,7 +68,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Binding: Unsupported indexer index type: "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vazba: Nepodporovaný typ indexu indexeru: {0}]]></Val>
+            <Val><![CDATA[Vazba: Nepodporovaný typ indexu indexeru: {0}.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Neplatný kód XAML: {0}]]></Val>
+            <Val><![CDATA[Neplatný kód XAML: {0}.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -275,7 +275,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Resource "{0}" not found.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Prostředek {0} se nenašel.]]></Val>
+            <Val><![CDATA[Prostředek {0} se nepovedlo najít.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -380,7 +380,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[x:Static: nejde najít veřejné nebo přístupné interní statické pole, statickou vlastnost, konstantu nebo hodnotu výčtu s názvem {0} v typu {1}.]]></Val>
+            <Val><![CDATA[x:Static: nejde najít veřejné nebo přístupné interní statické pole, statickou vlastnost, konstantu nebo hodnotu výčtu s názvem „{0}“ v typu „{1}“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -389,7 +389,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Syntax for x:Static is "[Member=]5D;[prefix:]5D;typeName.staticMemberName".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Syntaxe pro x:Static je [Člen=]5D;[předpona:]5D;názevTypu.názevStatickéhoČlenu.]]></Val>
+            <Val><![CDATA[Syntaxe pro x:Static je [Member=]5D;[prefix:]5D;typeName.staticMemberName.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -398,7 +398,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Undeclared xmlns prefix "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nedeklarovaná předpona xmlns: {0}]]></Val>
+            <Val><![CDATA[Nedeklarovaná předpona xmlns: „{0}“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -26,6 +26,7 @@ public class Issue12652 : _IssuesUITest
 #if WINDOWS
         App.Tap("navViewItem");
 #endif
+		App.WaitForElement(Top3);
 		App.Tap(Top3);
 		App.WaitForElement("TopTabPage3");
 		App.Tap("Main 2");
@@ -38,6 +39,7 @@ public class Issue12652 : _IssuesUITest
 #if WINDOWS
 		App.TapCoordinates(50, 50);
 #endif
+		App.WaitForElement("Main 2");
 		App.Tap("Main 2");
 		App.WaitForElement("TopTabPage2");
 		App.Tap("Main 1");

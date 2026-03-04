@@ -75,12 +75,12 @@ namespace Microsoft.Maui.Resizetizer
 				Log.LogWarning($"Unable to parse color for '{splashInfo.Filename}'.");
 				color = SKColors.White;
 			}
-			
+
 			using var img = SKImage.FromEncodedData(sourceFilePath);
-			
+
 			var info = new SKImageInfo(screenSize.Width, screenSize.Height);
 			using var surface = SKSurface.Create(info);
-			
+
 			var canvas = surface.Canvas;
 			canvas.Clear(color.Value);
 
@@ -101,9 +101,9 @@ namespace Microsoft.Maui.Resizetizer
 
 			canvas.DrawImage(img, dest, sampling, paint);
 			canvas.Flush();
-			
+
 			using var updatedsplash = surface.Snapshot();
-			
+
 			using var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100);
 			using var stream = File.Create(destFilePath);
 			data.SaveTo(stream);

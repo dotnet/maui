@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
 
@@ -81,12 +82,14 @@ namespace Microsoft.Maui.Platform
 
 		object? _content;
 		bool _isSelected;
+		bool _isEnabled;
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
 		WBrush? _selectedForeground;
 		WBrush? _selectedTitleColor;
 		WBrush? _unselectedTitleColor;
 		WBrush? _unselectedForeground;
+		WBrush? _iconColor;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 		WeakReference<object>? _data;
@@ -105,12 +108,12 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? Foreground
 		{
-			get => IsSelected ? SelectedForeground : UnselectedForeground;
+			get => IconColor ?? (IsSelected ? SelectedForeground : UnselectedForeground);
 		}
 
 		public WBrush? Background
 		{
-			get => IsSelected ? SelectedBackground : UnselectedBackground;
+			get => (IsSelected ? SelectedBackground : UnselectedBackground) ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent); //The Background color is set to null since both SelectedBackground and UnselectedBackground return null. Adding a default transparent background ensures it is never null, preventing rendering inconsistencies.
 		}
 
 		public object? Data
@@ -170,6 +173,17 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public WBrush? IconColor
+		{
+			get => _iconColor;
+			set
+			{
+				_iconColor = value;
+				OnPropertyChanged(nameof(IconColor));
+				UpdateForeground();
+			}
+		}
+
 		public WBrush? SelectedForeground
 		{
 			get => _selectedForeground;
@@ -219,6 +233,18 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public bool IsEnabled
+		{
+			get => _isEnabled;
+			set
+			{
+				if (_isEnabled != value)
+				{
+					_isEnabled = value;
+					OnPropertyChanged(nameof(IsEnabled));
+				}
+			}
+		}
 		void OnPropertyChanged(string args) =>
 			OnPropertyChanged(new PropertyChangedEventArgs(args));
 

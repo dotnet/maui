@@ -124,17 +124,17 @@ namespace Microsoft.Maui.DeviceTests
 			WeakReference viewReference = null;
 			WeakReference handlerReference = null;
 			WeakReference platformReference = null;
+
+			var view = new Microsoft.Maui.Controls.ScrollView();
+			var page = new ContentPage { Content = view };
+			await CreateHandlerAndAddToWindow(page, () =>
 			{
-				var view = new Microsoft.Maui.Controls.ScrollView();
-				var page = new ContentPage { Content = view };
-				await CreateHandlerAndAddToWindow(page, () =>
-				{
-					viewReference = new(view);
-					handlerReference = new(view.Handler);
-					platformReference = new(view.Handler.PlatformView);
-					page.Content = null;
-				});
-			}
+				viewReference = new(view);
+				handlerReference = new(view.Handler);
+				platformReference = new(view.Handler.PlatformView);
+				page.Content = null;
+			});
+
 
 			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
 		}
@@ -174,9 +174,9 @@ namespace Microsoft.Maui.DeviceTests
 			var screenHeightConstraint = 600;
 
 			var label = new Label() { Text = "Text inside a ScrollView" };
-			var childLayout = new VerticalStackLayout { label };
-			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout };
-			var parentLayout = new Grid { scrollView };
+			var childLayout = new VerticalStackLayout { SafeAreaEdges = SafeAreaEdges.None, Children = { label } };
+			var scrollView = new ScrollView() { SafeAreaEdges = SafeAreaEdges.None, VerticalOptions = LayoutOptions.Fill, Content = childLayout };
+			var parentLayout = new Grid { SafeAreaEdges = SafeAreaEdges.None, Children = { scrollView } };
 
 			var expectedHeight = 100;
 			parentLayout.HeightRequest = expectedHeight;

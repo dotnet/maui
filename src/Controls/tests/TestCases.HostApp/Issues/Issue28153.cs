@@ -1,4 +1,4 @@
-﻿namespace Controls.TestCases.HostApp.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 28153, "The border color of the RadioButton is visible in Windows only", PlatformAffected.UWP)]
 class Issue28153 : ContentPage

@@ -1,4 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 27818, "CarouselView crashes on iOS 15.8.3 when using CarouselViewHandler2", PlatformAffected.iOS)]
 public class Issue27818 : ContentPage
 {

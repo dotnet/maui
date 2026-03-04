@@ -21,7 +21,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 		{
 		}
 
-		public ICommand AddCommand => new Command(async () => await AddItemsAsync());
+		public ICommand AddCommand => new Command(AddItemsAsync);
 
 		public ICommand ClearCommand => new Command(() => Items.Clear());
 
@@ -29,9 +29,8 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 
 		public string FooterText => "This Is A Footer";
 
-		async Task AddItemsAsync()
+		void AddItemsAsync()
 		{
-			await Task.Delay(TimeSpan.FromSeconds(1));
 			AddItems(Items, 2);
 		}
 	}

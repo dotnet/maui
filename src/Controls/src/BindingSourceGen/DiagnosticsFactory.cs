@@ -76,7 +76,7 @@ internal static class DiagnosticsFactory
 			new DiagnosticDescriptor(
 				id: "BSG0006",
 				title: "Lambda result type cannot be resolved",
-				messageFormat: "The lambda result type cannot be resolved. Make sure that soruce generated fields / properties are not used in the path.",
+				messageFormat: "The lambda result type cannot be resolved. Make sure that source generated fields / properties are not used in the path.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),

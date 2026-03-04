@@ -1,16 +1,20 @@
-﻿using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
-
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+﻿namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[SetUpFixture]
-	public class MySetUpClass
+	/// <summary>
+	/// One-time setup that runs before any tests.
+	/// In xUnit, this is done via AssemblyInfo.cs or a static constructor.
+	/// The call is made in ModuleInitializer or assembly load.
+	/// </summary>
+	public static class XamlUnitTestsSetup
 	{
-		[OneTimeSetUp]
-		public void RunBeforeAnyTests()
+		static XamlUnitTestsSetup()
 		{
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
+		}
+
+		public static void Initialize()
+		{
+			// Trigger the static constructor
 		}
 	}
 }

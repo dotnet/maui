@@ -1,16 +1,25 @@
 using System;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+/// <summary>
+/// Flagging enumeration defining text decorations.
+/// </summary>
+[Flags]
+public enum TextDecorations
 {
-	/// <include file="../../docs/Microsoft.Maui/TextDecorations.xml" path="Type[@FullName='Microsoft.Maui.TextDecorations']/Docs/*" />
-	[Flags]
-	public enum TextDecorations
-	{
-		/// <include file="../../docs/Microsoft.Maui/TextDecorations.xml" path="//Member[@MemberName='None']/Docs/*" />
-		None = 0,
-		/// <include file="../../docs/Microsoft.Maui/TextDecorations.xml" path="//Member[@MemberName='Underline']/Docs/*" />
-		Underline = 1 << 0,
-		/// <include file="../../docs/Microsoft.Maui/TextDecorations.xml" path="//Member[@MemberName='Strikethrough']/Docs/*" />
-		Strikethrough = 1 << 1,
-	}
+	/// <summary>
+	/// No text decoration.
+	/// </summary>
+	None = 0,
+
+	/// <summary>
+	/// A text underline.
+	/// </summary>
+	Underline = 1 << 0,
+
+	/// <summary>
+	/// A single-line strikethrough.
+	/// </summary>
+	Strikethrough = 1 << 1,
 }

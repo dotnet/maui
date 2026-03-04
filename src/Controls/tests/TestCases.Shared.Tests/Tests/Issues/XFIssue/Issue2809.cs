@@ -16,6 +16,7 @@ public class Issue2809 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{
+		App.WaitForMoreButton();
 		App.TapMoreButton();
 		App.Tap("Item 1");
 	}

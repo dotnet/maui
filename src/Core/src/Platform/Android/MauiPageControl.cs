@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 
 		IIndicatorView? _indicatorView;
 
+		bool _isTemplateIndicator;
+
 		public MauiPageControl(Context? context) : base(context)
 		{
 		}
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_pageShape = null;
 			_currentPageShape = null;
+			_isTemplateIndicator = false;
 
 			if ((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
 				UpdateShapes();
@@ -63,7 +66,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorCount()
 		{
-			if (_indicatorView == null || Context == null)
+			if (_indicatorView == null || Context == null || _isTemplateIndicator)
 				return;
 
 			var index = GetIndexFromPosition();
@@ -88,7 +91,7 @@ namespace Microsoft.Maui.Platform
 
 				imageView.SetOnClickListener(new TEditClickListener(view =>
 				{
-					if (view?.Tag != null)
+					if (_indicatorView.IsEnabled && view?.Tag != null)
 					{
 						var position = (int)view.Tag;
 						_indicatorView.Position = position;
@@ -107,6 +110,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
+			_isTemplateIndicator = true;
 
 			RemoveAllViews();
 			AddView(handler);
@@ -150,9 +154,7 @@ namespace Microsoft.Maui.Platform
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
 
-			if (shape.Paint != null)
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-				shape.Paint.Color = color;
+			shape.Paint?.Color = color;
 #pragma warning restore CA1416
 
 			return shape;
@@ -170,7 +172,11 @@ namespace Microsoft.Maui.Platform
 
 		void RemoveViews(int startAt)
 		{
-			for (int i = startAt; i < ChildCount; i++)
+			if (_isTemplateIndicator)
+				return;
+
+			var count = ChildCount;
+			for (int i = startAt; i < count; i++)
 			{
 				var imageView = GetChildAt(ChildCount - 1);
 				imageView?.SetOnClickListener(null);

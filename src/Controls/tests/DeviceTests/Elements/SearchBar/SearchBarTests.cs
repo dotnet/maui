@@ -1,10 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 #if MACCATALYST || IOS
 		// Only Mac Catalyst and iOS needs the CancelButtonColor nuanced handling verifying
 		[Fact(DisplayName = "CancelButtonColor is set correctly")]
+		[SkipOnIOSVersion(26, "iOS 26 changed UISearchBar internal structure")]
 		public async Task CancelButtonColorSetCorrectly()
 		{
 			var expected = Graphics.Colors.Red;
@@ -86,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 				Opacity = 0.35f
 			};
 			var expectedValue = searchBar.Opacity;
-			
+
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
 			await InvokeOnMainThreadAsync(async () =>
 			{
@@ -96,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a SearchBar should match with native IsVisible")]		
+		[Description("The IsVisible property of a SearchBar should match with native IsVisible")]
 		public async Task VerifySearchBarIsVisibleProperty()
 		{
 			var searchBar = new SearchBar
@@ -108,9 +110,9 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
 			await InvokeOnMainThreadAsync(async () =>
    			{
-				var isVisible = await GetPlatformIsVisible(handler);
-				Assert.Equal(expectedValue, isVisible);
-			});
+				   var isVisible = await GetPlatformIsVisible(handler);
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 
 #if false

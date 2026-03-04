@@ -140,9 +140,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				RemeasureLayout(formsElement);
 				formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
 			}
-			else if (uiView != null)
+			else
 			{
-				uiView.SizeToFit();
+				uiView?.SizeToFit();
 			}
 		}
 

@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 27169, "Grid inside ScrollView should measure with infinite constraints", PlatformAffected.iOS)]
 public class Issue27169 : ContentPage

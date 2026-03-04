@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this MaterialButton platformButton, Button button)
 		{
-			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			var text = TextTransformUtilities.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.Text = text;
 
 			// Content layout depends on whether or not the text is empty; changing the text means

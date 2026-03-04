@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST // Getting OpenQA.Selenium.InvalidSelectorException on Catalyst Line No: 20. 
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +16,6 @@ public class Issue6484 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void RemovingIntermediatePagesBreaksShell()
 	{
-		App.WaitForElement("Success");
+		App.WaitForElementTillPageNavigationSettled("Success");
 	}
 }
-#endif

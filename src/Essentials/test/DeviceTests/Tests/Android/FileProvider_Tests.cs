@@ -26,13 +26,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			var shareableUri = FileSystemUtils.GetShareableFileUri(new ReadOnlyFile(file));
 
 			// Launch an intent to let tye user pick where to open this content
-			var intent = new Android.Content.Intent(Android.Content.Intent.ActionSend);
+			var intent = new global::Android.Content.Intent(global::Android.Content.Intent.ActionSend);
 			intent.SetType("text/plain");
-			intent.PutExtra(Android.Content.Intent.ExtraStream, shareableUri);
-			intent.PutExtra(Android.Content.Intent.ExtraTitle, "Title Here");
-			intent.SetFlags(Android.Content.ActivityFlags.GrantReadUriPermission);
+			intent.PutExtra(global::Android.Content.Intent.ExtraStream, shareableUri);
+			intent.PutExtra(global::Android.Content.Intent.ExtraTitle, "Title Here");
+			intent.SetFlags(global::Android.Content.ActivityFlags.GrantReadUriPermission);
 
-			var intentChooser = Android.Content.Intent.CreateChooser(intent, "Pick something");
+			var intentChooser = global::Android.Content.Intent.CreateChooser(intent, "Pick something");
 
 			Platform.CurrentActivity.StartActivity(intentChooser);
 		}
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			return file;
 		}
 
-		static Android.Net.Uri GetShareableUri(string file, FileProviderLocation location)
+		static global::Android.Net.Uri GetShareableUri(string file, FileProviderLocation location)
 		{
 			try
 			{

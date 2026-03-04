@@ -9,7 +9,21 @@
         "netstandard",
         "Appium",
         "XCUI",
-        "Automator"
+        "Automator",
+        "cgmanifest",
+        "Namescopes",
+        "sourcegen",
+        "Tizen",
+        "darc",
+        "Darc",
+        "xcrun",
+        "simctl",
+        "screencap",
+        "mlaunch",
+        "devicectl",
+        "xcdevice",
+        "MAUIX",
+        "Parameterless"
     ],
     "ignoreWords": [],
     "patterns": [

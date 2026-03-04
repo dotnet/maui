@@ -375,9 +375,6 @@ configuration:
         - isActivitySender:
             user: roubachof
             issueAuthor: False
-        - isActivitySender:
-            user: davidbritch
-            issueAuthor: False
       then:
       - addLabel:
           label: i/great-reporter
@@ -557,16 +554,16 @@ configuration:
           label: "t/breaking \U0001F4A5"
       then:
       - addReply:
-          reply: "\U0001F6A8 API change(s) detected @davidbritch FYI"
-      description: Tag Dave Britch when a breaking change is tagged on an issue
+          reply: "\U0001F6A8 API change(s) detected @davidortinau FYI"
+      description: Tag David Ortinau when a breaking change is tagged on an issue
     - if:
       - payloadType: Pull_Request
       - labelAdded:
           label: "t/breaking \U0001F4A5"
       then:
       - addReply:
-          reply: "\U0001F6A8 API change(s) detected @davidbritch FYI"
-      description: Tag Dave Britch when a breaking change is tagged on an PR
+          reply: "\U0001F6A8 API change(s) detected @davidortinau FYI"
+      description: Tag David Ortinau when a breaking change is tagged on an PR
     - if:
       - payloadType: Issue_Comment
       - isIssue

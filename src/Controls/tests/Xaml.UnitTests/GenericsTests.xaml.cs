@@ -1,31 +1,22 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class GenericsTests : ContentPage
 {
-	public partial class GenericsTests : ContentPage
+	public List<string> P { get; set; }
+
+	public GenericsTests() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public List<string> P { get; set; }
-
-		public GenericsTests()
+		[Fact]
+		public void NoGenericsOnXaml2006()
 		{
-			InitializeComponent();
-		}
-
-		public GenericsTests(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[Test]
-			public void NoGenericsOnXaml2006()
-			{
-				var xaml = @"
+			var xaml = @"
 				<ContentPage 
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
@@ -36,66 +27,66 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						</ResourceDictionary>
 					</ContentPage.Resources>
 				</ContentPage>";
-				Assert.Throws(new XamlParseExceptionConstraint(8, 9), () => new ContentPage().LoadFromXaml(xaml));
-			}
+			var ex = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+			Assert.Contains("8", ex.XmlInfo.LineNumber.ToString(), StringComparison.Ordinal);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void GenericSupportOnXaml2009(bool useCompiledXaml)
-			{
-				var layout = new GenericsTests(useCompiledXaml);
-				Assert.True(layout.Resources.ContainsKey("genericButtonList"));
-				var list = layout.Resources["genericButtonList"];
-				Assert.That(list, Is.TypeOf<List<Button>>());
-				Assert.AreEqual(2, ((List<Button>)list).Count);
-			}
+		[Theory]
+		[XamlInflatorData]
+		internal void GenericSupportOnXaml2009(XamlInflator inflator)
+		{
+			var layout = new GenericsTests(inflator);
+			Assert.True(layout.Resources.ContainsKey("genericButtonList"));
+			var list = layout.Resources["genericButtonList"];
+			Assert.IsType<List<Button>>(list);
+			Assert.Equal(2, ((List<Button>)list).Count);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void FindGenericByName(bool useCompiledXaml)
-			{
-				var layout = new GenericsTests(useCompiledXaml);
-				var list = layout.FindByName<List<Button>>("myList");
-				Assert.That(list, Is.Not.Null);
-				Assert.That(list, Is.TypeOf<List<Button>>());
+		[Theory]
+		[XamlInflatorData]
+		internal void FindGenericByName(XamlInflator inflator)
+		{
+			var layout = new GenericsTests(inflator);
+			var list = layout.FindByName<List<Button>>("myList");
+			Assert.NotNull(list);
+			Assert.IsType<List<Button>>(list);
 
-				var nestedGenericList = layout.TestListMember;
-				Assert.That(nestedGenericList, Is.Not.Null);
-				Assert.That(nestedGenericList, Is.TypeOf<List<KeyValuePair<string, string>>>());
+			var nestedGenericList = layout.TestListMember;
+			Assert.NotNull(nestedGenericList);
+			Assert.IsType<List<KeyValuePair<string, string>>>(nestedGenericList);
 
-				Assert.That(nestedGenericList.Count, Is.EqualTo(1));
-			}
+			Assert.Single(nestedGenericList);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestGenericParsing(bool useCompiledXaml)
-			{
-				var layout = new GenericsTests(useCompiledXaml);
+		[Theory]
+		[XamlInflatorData]
+		internal void TestGenericParsing(XamlInflator inflator)
+		{
+			var layout = new GenericsTests(inflator);
 
-				Assert.NotNull(layout.P);
+			Assert.NotNull(layout.P);
 
-				var list = layout.Resources["list"];
-				Assert.NotNull(list);
-				Assert.That(list, Is.TypeOf<List<String>>());
+			var list = layout.Resources["list"];
+			Assert.NotNull(list);
+			Assert.IsType<List<String>>(list);
 
-				var dict = layout.Resources["dict"];
-				Assert.NotNull(dict);
-				Assert.That(dict, Is.TypeOf<Dictionary<string, string>>());
+			var dict = layout.Resources["dict"];
+			Assert.NotNull(dict);
+			Assert.IsType<Dictionary<string, string>>(dict);
 
-				var queue = layout.Resources["genericsquaredlist"];
-				Assert.NotNull(dict);
-				Assert.That(queue, Is.TypeOf<List<KeyValuePair<string, string>>>());
-			}
+			var queue = layout.Resources["genericsquaredlist"];
+			Assert.NotNull(dict);
+			Assert.IsType<List<KeyValuePair<string, string>>>(queue);
+		}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestXamlPrimitives(bool useCompiledXaml)
-			{
-				var layout = new GenericsTests(useCompiledXaml);
-				var list = layout.Resources["stringList"];
-				Assert.NotNull(list);
-				Assert.That(list, Is.TypeOf<List<String>>());
-			}
+		[Theory]
+		[XamlInflatorData]
+		internal void TestXamlPrimitives(XamlInflator inflator)
+		{
+			var layout = new GenericsTests(inflator);
+			var list = layout.Resources["stringList"];
+			Assert.NotNull(list);
+			Assert.IsType<List<String>>(list);
 		}
 	}
 }

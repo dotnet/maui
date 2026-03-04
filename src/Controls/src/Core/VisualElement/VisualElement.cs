@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement, IConstrainedView
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -269,12 +269,9 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
-		bool _isVisibleExplicit = (bool)IsVisibleProperty.DefaultValue;
-
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue),
-			coerceValue: CoerceIsVisibleProperty);
+			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
@@ -591,9 +588,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the current rendered height of this element. This is a read-only bindable property.
+		/// Gets the current rendered height of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The height of an element is set during layout.</remarks>
+		/// <value>
+		/// The height of the element in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The height of an element is set during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double Height
 		{
 			get { return _mockHeight == -1 ? (double)GetValue(HeightProperty) : _mockHeight; }
@@ -601,11 +607,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the desired height override of this element. This is a bindable property.
+		/// Gets or sets the desired height override of this element in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The desired height in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset; the effective minimum height will be zero.</para>
 		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of an element; setting the <see cref="HeightRequest"/> will change the resulting height of the element during the next layout pass.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double HeightRequest
 		{
@@ -665,13 +678,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// This value represents the cumulative InputTransparent value.
-		/// All types that override this property need to also invoke
-		/// the RefreshInputTransparentProperty() method if the value will change.
 		/// 
 		/// This method is not virtual as none of the derived types actually need
 		/// to change the calculation. If this ever needs to change, then the
-		/// RefreshInputTransparentProperty() method should also call the
-		/// RefreshPropertyValue() method - just like how the
+		/// InputTransparentContainerElement.OnCascadeInputTransparentPropertyChanged
+		/// method should also call the RefreshPropertyValue() method - just like how the
 		/// RefreshIsEnabledProperty() method does.
 		/// </summary>
 		private protected bool InputTransparentCore
@@ -698,36 +709,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// This value represents the cumulative IsVisible value.
-		/// All types that override this property need to also invoke
-		/// the RefreshIsVisibleProperty() method if the value will change.
-		/// </summary>
-		private protected bool IsVisibleCore
-		{
-			get
-			{
-				if (_isVisibleExplicit == false)
-				{
-					// If the explicitly set value is false, then nothing else matters
-					// And we can save the effort of a Parent check
-					return false;
-				}
-
-				var parent = Parent as VisualElement;
-				while (parent is not null)
-				{
-					if (!parent.IsVisible)
-					{
-						return false;
-					}
-					parent = parent.Parent as VisualElement;
-				}
-
-				return _isVisibleExplicit;
-			}
-		}
-
-		/// <summary>
 		/// Gets a value indicating whether this element is focused currently. This is a bindable property.
 		/// </summary>
 		/// <remarks>Applications may have multiple focuses depending on the implementation of the underlying platform. Menus and modals in particular may leave multiple items with focus.</remarks>
@@ -745,11 +726,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the minimum height the element will request during layout. This is a bindable property.
+		/// Gets or sets the minimum height the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The minimum height in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset and a height will be determined automatically.</para>
 		/// <para><see cref="MinimumHeightRequest"/> is used to ensure that the element has at least the specified height during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MinimumHeightRequest
 		{
@@ -758,11 +746,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the minimum width the element will request during layout. This is a bindable property.
+		/// Gets or sets the minimum width the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The minimum width in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset; the effective minimum width will be zero.</para>
 		/// <para><see cref="MinimumWidthRequest"/> is used to ensure that the element has at least the specified width during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MinimumWidthRequest
 		{
@@ -771,11 +766,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the maximum height the element will request during layout. This is a bindable property.
+		/// Gets or sets the maximum height the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The maximum height in device-independent units (DIUs). The default is <see cref="double.PositiveInfinity"/>.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
 		/// <para><see cref="MaximumHeightRequest"/> is used to ensure that the element has no more than the specified height during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MaximumHeightRequest
 		{
@@ -784,11 +786,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the maximum width the element will request during layout. This is a bindable property.
+		/// Gets or sets the maximum width the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The maximum width in device-independent units (DIUs). The default is <see cref="double.PositiveInfinity"/>.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
 		/// <para><see cref="MaximumWidthRequest"/> is used to ensure the element has no more than the specified width during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MaximumWidthRequest
 		{
@@ -875,9 +884,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the X translation delta of the element. This is a bindable property.
+		/// Gets or sets the X translation delta of the element in device-independent units. This is a bindable property.
 		/// </summary>
-		/// <remarks>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</remarks>
+		/// <value>
+		/// The X translation offset in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double TranslationX
 		{
 			get { return (double)GetValue(TranslationXProperty); }
@@ -885,9 +903,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the Y translation delta of the element. This is a bindable property.
+		/// Gets or sets the Y translation delta of the element in device-independent units. This is a bindable property.
 		/// </summary>
-		/// <remarks>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</remarks>
+		/// <value>
+		/// The Y translation offset in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double TranslationY
 		{
 			get { return (double)GetValue(TranslationYProperty); }
@@ -900,9 +927,18 @@ namespace Microsoft.Maui.Controls
 		public IList<TriggerBase> Triggers => (IList<TriggerBase>)GetValue(TriggersProperty);
 
 		/// <summary>
-		/// Gets the current width of this element. This is a read-only bindable property.
+		/// Gets the current width of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The width value of an element is set during the layout cycle.</remarks>
+		/// <value>
+		/// The width of the element in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The width value of an element is set during the layout cycle.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double Width
 		{
 			get { return _mockWidth == -1 ? (double)GetValue(WidthProperty) : _mockWidth; }
@@ -910,11 +946,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the desired width override of this element. This is a bindable property.
+		/// Gets or sets the desired width override of this element in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The desired width in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset and a width will be determined automatically.</para>
 		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of an element; setting the <see cref="WidthRequest"/> will change the resulting width of the element during the next layout pass.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double WidthRequest
 		{
@@ -923,9 +966,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the current X position of this element. This is a read-only bindable property.
+		/// Gets the current X position of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The position of an element is set during layout.</remarks>
+		/// <value>
+		/// The X coordinate of the element's position in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The position of an element is set during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double X
 		{
 			get { return _mockX == -1 ? (double)GetValue(XProperty) : _mockX; }
@@ -933,9 +985,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the current Y position of this element. This is a read-only bindable property.
+		/// Gets the current Y position of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The position of an element is set during layout.</remarks>
+		/// <value>
+		/// The Y coordinate of the element's position in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The position of an element is set during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double Y
 		{
 			get { return _mockY == -1 ? (double)GetValue(YProperty) : _mockY; }
@@ -977,6 +1038,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
+
+		bool IConstrainedView.HasFixedConstraints => Constraint == LayoutConstraint.Fixed;
 
 		/// <summary>
 		/// Gets a value that indicates that layout for this element is disabled.
@@ -1311,7 +1374,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				ComputeConstraintForView(view);
+				view.ComputedConstraint = ComputeConstraintForView(view);
 			}
 		}
 
@@ -1380,11 +1443,11 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				if (LogicalChildrenInternal[i] is View child)
-					ComputeConstraintForView(child);
+					child.ComputedConstraint = ComputeConstraintForView(child);
 			}
 		}
 
-		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
+		protected virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.
@@ -1408,23 +1471,25 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		internal void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
-			InvalidateMeasureInternal(new InvalidationEventArgs(trigger, 0));
-		}
+			InvalidateMeasureCache();
 
-		internal virtual void InvalidateMeasureInternal(InvalidationEventArgs eventArgs)
-		{
-			_measureCache.Clear();
 
-			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
-			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
-
-			switch (eventArgs.Trigger)
+			switch (trigger)
 			{
 				case InvalidationTrigger.MarginChanged:
+					ParentView?.InvalidateMeasure();
+					break;
 				case InvalidationTrigger.HorizontalOptionsChanged:
 				case InvalidationTrigger.VerticalOptionsChanged:
+					if (this is View thisView && Parent is VisualElement visualParent)
+					{
+						thisView.ComputedConstraint = visualParent.ComputeConstraintForView(thisView);
+					}
+
+					// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
+					// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
 					ParentView?.InvalidateMeasure();
 					break;
 				default:
@@ -1432,50 +1497,47 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			FireMeasureChanged(eventArgs);
+			InvokeMeasureInvalidated(trigger);
+#pragma warning disable CS0618 // Type or member is obsolete
+			(Parent as VisualElement)?.OnChildMeasureInvalidated(this, trigger);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		private protected void FireMeasureChanged(InvalidationTrigger trigger, int depth)
+		private protected void InvokeMeasureInvalidated(InvalidationTrigger trigger)
 		{
-			FireMeasureChanged(new InvalidationEventArgs(trigger, depth));
+			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 
+		/// <summary>
+		/// A flag that determines whether the measure invalidated event should not be propagated up the visual tree.
+		/// </summary>
+		/// <remarks>
+		/// Propagation will still occur within legacy layout subtrees.
+		/// </remarks>
+		internal static bool SkipMeasureInvalidatedPropagation { get; set /* for testing purpose */; } =
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.SkipMeasureInvalidatedPropagation", out var enabled) && enabled;
 
-		private protected void FireMeasureChanged(InvalidationEventArgs args)
+		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			var depth = args.CurrentInvalidationDepth;
-			MeasureInvalidated?.Invoke(this, args);
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, args.Trigger, ++depth);
-		}
-
-		// We don't want to change the execution path of Page or Layout when they are calling "InvalidationMeasure"
-		// If you look at page it calls OnChildMeasureInvalidated from OnChildMeasureInvalidatedInternal
-		// Because OnChildMeasureInvalidated is public API and the user might override it, we need to keep it as is
-		//private protected int CurrentInvalidationDepth { get; set; }
-
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
-		{
-			switch (trigger)
+			if (SkipMeasureInvalidatedPropagation)
 			{
-				case InvalidationTrigger.VerticalOptionsChanged:
-				case InvalidationTrigger.HorizontalOptionsChanged:
-					// When a child changes its HorizontalOptions or VerticalOptions
-					// the size of the parent won't change, so we don't have to invalidate the measure
-					return;
-				case InvalidationTrigger.RendererReady:
-				// Undefined happens in many cases, including when `IsVisible` changes
-				case InvalidationTrigger.Undefined:
-					FireMeasureChanged(trigger, depth);
-					return;
-				default:
-					// When visibility changes `InvalidationTrigger.Undefined` is used,
-					// so here we're sure that visibility didn't change
-					if (child.IsVisible)
-					{
-						FireMeasureChanged(InvalidationTrigger.MeasureChanged, depth);
-					}
-					return;
+				return;
 			}
+
+			var propagatedTrigger = GetPropagatedTrigger(trigger);
+			InvokeMeasureInvalidated(propagatedTrigger);
+			(Parent as VisualElement)?.OnChildMeasureInvalidated(this, propagatedTrigger);
+		}
+
+		private protected static InvalidationTrigger GetPropagatedTrigger(InvalidationTrigger trigger)
+		{
+			var propagatedTrigger = trigger == InvalidationTrigger.RendererReady ? trigger : InvalidationTrigger.MeasureChanged;
+			return propagatedTrigger;
+		}
+
+		private protected void InvalidateMeasureCache()
+		{
+			_measureCache.Clear();
 		}
 
 		/// <inheritdoc/>
@@ -1532,7 +1594,6 @@ namespace Microsoft.Maui.Controls
 				fe.Handler?.UpdateValue(nameof(IView.Visibility));
 			}
 
-			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
 
@@ -1697,17 +1758,6 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		static object CoerceIsVisibleProperty(BindableObject bindable, object value)
-		{
-			if (bindable is VisualElement visualElement)
-			{
-				visualElement._isVisibleExplicit = (bool)value;
-				return visualElement.IsVisibleCore;
-			}
-
-			return false;
-		}
-
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
@@ -1775,9 +1825,6 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
 
-			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
-				this.RefreshPropertyValue(IsVisibleProperty, _isVisibleExplicit);
-
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
@@ -1787,27 +1834,6 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected void RefreshIsEnabledProperty() =>
 			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
-
-		/// <summary>
-		/// This method must always be called if some event occurs and the value of
-		/// the <see cref="IsVisibleCore"/> property will change.
-		/// </summary>
-		internal void RefreshIsVisibleProperty() =>
-			this.RefreshPropertyValue(IsVisibleProperty, _isVisibleExplicit);
-
-		/// <summary>
-		/// This method must always be called if some event occurs and the value of
-		/// the InputTransparentCore property will change.
-		/// </summary>
-		private protected void RefreshInputTransparentProperty()
-		{
-			// This method does not need to call the
-			// this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
-			// method because none of the derived types will affect this view. All we
-			// need to do is propagate the new value to all the children.
-
-			(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
-		}
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
@@ -1963,6 +1989,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutArrange(this);
 			return ArrangeOverride(bounds);
 		}
 
@@ -1984,9 +2011,18 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <remarks>Calling this method will trigger a layout cycle for the sub-tree of this element.</remarks>
+		[Obsolete("Use ArrangeOverride instead. This method will be removed in a future version.")]
 		public void Layout(Rect bounds)
 		{
-			Bounds = bounds;
+			if (Handler is null)
+			{
+				Bounds = bounds;
+				return;
+			}
+
+			// This forces any call to Layout to use the newer Arrange passes
+			// This should make it so legacy code that calls Layout will still work, but will use the new Measure and Arrange passes.
+			Arrange(bounds);
 		}
 
 		/// <inheritdoc/>
@@ -2008,6 +2044,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutMeasure(this);
 			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
 			return DesiredSize;
 		}

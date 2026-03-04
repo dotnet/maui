@@ -32,6 +32,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _isRotating;
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
+			{
+				return;
+			}
+
+			if (ItemsView?.Loop == false || _carouselViewLoopManager is null)
+			{
+				CollectionView.ReloadData();
+				InitialPositionSet = false;
+			}
+		}
+
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
@@ -47,20 +61,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			UICollectionViewCell cell;
 
-			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
+			if (ItemsView?.Loop == true)
 			{
-				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
-				cell = cellAndCorrectedIndex.cell;
-				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
-
-				if (cell is DefaultCell defaultCell)
+				// In iOS 15 and 16, when the ItemsSource of the CarouselView is updated from another page
+				// via the ViewModel (or similar), GetCell is called immediately—while _carouselViewLoopManager
+				// is still null. As a result, an invalid index is passed to base.GetCell, leading to an ArgumentNullException.
+				// 
+				// However, in iOS 17 and 18, GetCell is only called after navigating back to the page containing
+				// the CarouselView. By that time, CarouselViewLoopManager has been properly initialized during
+				// the window attachment, so the issue does not occur.
+				// 
+				// This fix ensures proper handling across all iOS versions by initializing the loop manager
+				// when needed and providing a fallback implementation, making navigation scenarios work consistently.
+				if (_carouselViewLoopManager is null)
 				{
-					UpdateDefaultCell(defaultCell, correctedIndexPath);
+					InitializeCarouselViewLoopManager();
 				}
 
-				if (cell is TemplatedCell templatedCell)
+				if (_carouselViewLoopManager is not null)
 				{
-					UpdateTemplatedCell(templatedCell, correctedIndexPath);
+					var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
+					cell = cellAndCorrectedIndex.cell;
+					var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
+
+					if (cell is DefaultCell defaultCell)
+					{
+						UpdateDefaultCell(defaultCell, correctedIndexPath);
+					}
+
+					if (cell is TemplatedCell templatedCell)
+					{
+						UpdateTemplatedCell(templatedCell, correctedIndexPath);
+					}
+				}
+				else
+				{
+					// Fallback case: If _carouselViewLoopManager is still null after attempted initialization,
+					// we bypass loop-specific behavior and use base implementation directly.
+
+					cell = base.GetCell(collectionView, indexPath);
 				}
 			}
 			else
@@ -184,6 +223,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemIndex = GetIndexFromIndexPath(indexPath);
 			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
+
+		private protected override (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(CarouselTemplatedCell), "maui_carousel");
 
 		protected override void RegisterViewTypes()
 		{
@@ -334,6 +376,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			int targetPosition;
 			if (_positionAfterUpdate == -1)
 			{
 				return;
@@ -341,7 +384,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_gotoPosition = -1;
 
-			var targetPosition = _positionAfterUpdate;
+			// We need to update the position while modifying the collection.
+			targetPosition = GetTargetPosition();
+
 			_positionAfterUpdate = -1;
 
 			SetPosition(targetPosition);
@@ -352,6 +397,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			//If we are adding a new item make sure to maintain the CurrentItemPosition
 			return currentItemPosition != -1 ? currentItemPosition : carouselPosition;
+		}
+
+		private int GetTargetPosition()
+		{
+
+			if (ItemsSource.ItemCount == 0)
+			{
+				return 0;
+			}
+
+			return ItemsView.ItemsUpdatingScrollMode switch
+			{
+				ItemsUpdatingScrollMode.KeepItemsInView => 0,
+				ItemsUpdatingScrollMode.KeepLastItemInView => ItemsSource.ItemCount - 1,
+				_ => _positionAfterUpdate
+			};
 		}
 
 		int GetPositionWhenResetItems()

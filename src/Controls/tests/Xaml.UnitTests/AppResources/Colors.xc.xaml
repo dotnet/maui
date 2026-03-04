@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="using:Microsoft.Maui.Controls.Xaml.UnitTests"> 
+  <Color x:Key="AccentColor">#FF4B14</Color>
+  <Color x:Key="BlackOpacityColor">#99253748</Color>
+  <Color x:Key="BlackTextColor">#253748</Color>
+  <Color x:Key="BackgroundColor">#F8F8F8</Color>
+  <Color x:Key="PinkColor">#ED0241</Color>
+  <Color x:Key="GrayColor">#ACB1B4</Color>
+  <Color x:Key="DarkColor">#203446</Color>
+  <Color x:Key="WhiteColor">#FFFFFF</Color>
+  <Color x:Key="GreenColor">#368F95</Color>
+
+  <Color x:Key="Primary">#FF96F3</Color>
+  <Color x:Key="PrimaryDark">#1976D2</Color>
+  <Color x:Key="Accent">#96d1ff</Color>
+  <Color x:Key="LightBackgroundColor">#FAFAFA</Color>
+  <Color x:Key="DarkBackgroundColor">#C0C0C0</Color>
+  <Color x:Key="MediumGrayTextColor">#4d4d4d</Color>
+  <Color x:Key="LightTextColor">#999999</Color>
+    
+  <Style TargetType="local:Gh7531" x:Key="style">
+    <Setter Property="BackgroundColor" Value="HotPink"/>
+  </Style>
+</ResourceDictionary>

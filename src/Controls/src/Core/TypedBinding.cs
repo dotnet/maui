@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 namespace Microsoft.Maui.Controls.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TypedBindingBase']/Docs/*" />
+	/// <summary>Provides the base class for type-safe bindings with compile-time property access.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TypedBindingBase : BindingBase
 	{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Internals
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>Gets or sets the converter used to convert values between source and target.</summary>
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter passed to the converter.</summary>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>Gets or sets the source object for the binding.</summary>
 		public object Source
 		{
 			get { return _source; }
@@ -146,6 +146,12 @@ namespace Microsoft.Maui.Controls.Internals
 		BindableProperty _targetProperty;
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
+		BindingMode _cachedMode;
+		bool _isSubscribed;
+		bool _isTSource; // cached type check result
+		object _cachedDefaultValue; // cached default value
+		bool _hasDefaultValue;
+		bool _skipConvert; // true when TProperty matches property.ReturnType
 
 		// Applies the binding to a previously set source and target.
 		internal override void Apply(bool fromTarget = false)
@@ -205,7 +211,14 @@ namespace Microsoft.Maui.Controls.Internals
 			RelativeBindingSource relativeSource, Element relativeSourceTarget, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
-			await relativeSource.Apply(this, relativeSourceTarget, targetObject, targetProperty, specificity);
+			try
+			{
+				await relativeSource.Apply(this, relativeSourceTarget, targetObject, targetProperty, specificity);
+			}
+			catch (Exception ex)
+			{
+				BindingDiagnostics.SendBindingFailure(this, relativeSource, targetObject, targetProperty, "Binding", BindingExpression.ApplyingRelativeSourceBindingErrorMessage, relativeSource.Mode, ex.Message);
+			}
 		}
 
 		internal override BindingBase Clone()
@@ -276,6 +289,13 @@ namespace Microsoft.Maui.Controls.Internals
 			if (_handlers != null)
 				Unsubscribe();
 
+			_isSubscribed = false;
+			_cachedMode = BindingMode.Default;
+			_hasDefaultValue = false;
+			_cachedDefaultValue = null;
+			_skipConvert = false;
+			_isTSource = false;
+
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			_weakSource.SetTarget(null);
 			_weakTarget.SetTarget(null);
@@ -287,24 +307,58 @@ namespace Microsoft.Maui.Controls.Internals
 		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
 		{
-			var isTSource = sourceObject is TSource;
-			if (!isTSource && sourceObject is not null)
+			// Use cached type check after first apply (source type doesn't change)
+			var isTSource = _isTSource;
+			if (!_hasDefaultValue)
 			{
-				BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
+				isTSource = sourceObject is TSource;
+				_isTSource = isTSource;
+				if (!isTSource && sourceObject is not null)
+				{
+					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
+				}
 			}
 
-			var mode = this.GetRealizedMode(property);
+			// Use cached mode if available, otherwise compute and cache it
+			var mode = _cachedMode;
+			if (mode == BindingMode.Default)
+			{
+				mode = this.GetRealizedMode(property);
+				_cachedMode = mode;
+			}
+
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;
 
 			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 
-			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
+			// Only subscribe once per binding lifetime
+			if (!_isSubscribed && isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
+			{
 				Subscribe((TSource)sourceObject);
+				_isSubscribed = true;
+			}
 
 			if (needsGetter)
 			{
-				var value = FallbackValue ?? property.GetDefaultValue(target);
+				// Use cached default value
+				object value;
+				if (FallbackValue != null)
+				{
+					value = FallbackValue;
+				}
+				else if (_hasDefaultValue)
+				{
+					value = _cachedDefaultValue;
+				}
+				else
+				{
+					value = property.GetDefaultValue(target);
+					_cachedDefaultValue = value;
+					_skipConvert = typeof(TProperty) == property.ReturnType && Converter == null;
+					_hasDefaultValue = true;
+				}
+
 				if (isTSource)
 				{
 					try
@@ -316,8 +370,13 @@ namespace Microsoft.Maui.Controls.Internals
 					catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
 					{
 					}
+					catch (Exception ex)
+					{
+						BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from getter: {ex.Message}");
+					}
 				}
-				if (!BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
+				// Skip TryConvert when types match and no converter
+				if (!_skipConvert && !BindingExpressionHelper.TryConvert(ref value, property, property.ReturnType, true))
 				{
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, property.ReturnType);
 					return;
@@ -335,7 +394,21 @@ namespace Microsoft.Maui.Controls.Internals
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));
 					return;
 				}
-				_setter((TSource)sourceObject, (TProperty)value);
+
+				try
+				{
+					_setter((TSource)sourceObject, (TProperty)value);
+				}
+				catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
+				{
+					// Ignore exceptions that are thrown when the source object is null or the property
+					// cannot be found. This can happen when the source object is a collection and the
+					// property is not found in the collection item.
+				}
+				catch (Exception ex)
+				{
+					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", $"Exception thrown from setter: {ex.Message}");
+				}
 			}
 		}
 
@@ -495,15 +568,22 @@ namespace Microsoft.Maui.Controls.Internals
 				Listener = new BindingExpression.WeakPropertyChangedProxy();
 				//avoid GC collection, keep a ref to the OnPropertyChanged handler
 				handler = new PropertyChangedEventHandler(OnPropertyChanged);
+				//cache the Apply delegate to avoid allocation on every property change
+				_applyAction = () => _binding.Apply(false);
 			}
+
+			readonly Action _applyAction;
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (!string.IsNullOrEmpty(e.PropertyName) && string.CompareOrdinal(e.PropertyName, PropertyName) != 0)
 					return;
 
+				// Note: sender is typically a ViewModel (INotifyPropertyChanged), not a BindableObject,
+				// so (sender as BindableObject)?.Dispatcher usually returns null.
+				// DispatchIfRequired handles null dispatcher via EnsureDispatcher fallback.
 				IDispatcher dispatcher = (sender as BindableObject)?.Dispatcher;
-				dispatcher.DispatchIfRequired(() => _binding.Apply(false));
+				dispatcher.DispatchIfRequired(_applyAction);
 			}
 		}
 

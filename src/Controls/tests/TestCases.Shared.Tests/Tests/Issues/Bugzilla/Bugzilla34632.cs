@@ -18,6 +18,7 @@ public class Bugzilla34632 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla34632Test()
 	{
+		App.WaitForElement("btnModal");
 		App.SetOrientationPortrait();
 		App.WaitForElement("btnModal");
 		App.Tap("btnModal");
@@ -27,6 +28,8 @@ public class Bugzilla34632 : _IssuesUITest
 		App.WaitForElement("btnModal");
 		App.Tap("btnModal");
 		App.SetOrientationPortrait();
+		Thread.Sleep(1000);
+		App.WaitForElement("btnDismissModal");
 		App.Tap("btnDismissModal");
 		App.TapFlyoutPageIcon("Main Page");
 		App.WaitForElement("btnFlyout");

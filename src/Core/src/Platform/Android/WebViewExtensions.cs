@@ -26,7 +26,10 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 			else
+			{
+				// Load about:blank when source is null to ensure proper layout bounds
 				platformWebView.LoadUrl("about:blank");
+			}
 		}
 
 		public static void UpdateSettings(this AWebView platformWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)

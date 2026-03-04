@@ -36,10 +36,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		bool _bound;
 		bool _measureInvalidated;
+		bool _needsArrange;
 		Size _measuredSize;
 		Size _cachedConstraints;
 
+		// Indicates the cell is being used as a supplementary view (group header/footer)
+		internal bool isSupplementaryView = false;
 		internal bool MeasureInvalidated => _measureInvalidated;
+
+		// Flags changes confined to the header/footer, preventing unnecessary recycling and revalidation of templated cells.
+		internal bool isHeaderOrFooterChanged = false;
 
 		public DataTemplate CurrentTemplate
 		{
@@ -66,6 +72,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal UIView PlatformView { get; set; }
 
+		CollectionViewHandler2 CollectionViewHandler
+		{
+			get
+			{
+				if (PlatformHandler?.VirtualView is View view &&
+					view.Parent is ItemsView itemsView &&
+					itemsView.Handler is CollectionViewHandler2 handler)
+				{
+					return handler;
+				}
+				return null;
+			}
+		}
+
 		internal void Unbind()
 		{
 			_bound = false;
@@ -85,20 +105,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
-					? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
-					: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+				var constraints = GetMeasureConstraints(preferredAttributes);
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure = virtualView.Measure(constraints.Width, constraints.Height);
+					// Only use the cached first-item measurement for actual item cells (not headers/footers)
+					if (!isSupplementaryView)
+					{
+						var cachedSize = GetCachedFirstItemSizeFromHandler();
+						if (cachedSize != CGSize.Empty)
+						{
+							_measuredSize = cachedSize.ToSize();
+							// Even when we have a cached measurement, we still need to call Measure
+							// to update the virtual view's internal state and bookkeeping
+							virtualView.Measure(constraints.Width, _measuredSize.Height);
+						}
+						else
+						{
+							_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+							// If this is the first item being measured, cache it for MeasureFirstItem strategy
+							SetCachedFirstItemSizeToHandler(_measuredSize.ToCGSize());
+						}
+					}
+					else
+					{
+						// For headers/footers, always measure directly without using or updating the first-item cache
+						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+					}
 					_cachedConstraints = constraints;
-					_measuredSize = measure;
+					_needsArrange = true;
 				}
 
-				var size = ScrollDirection == UICollectionViewScrollDirection.Vertical
-					? new Size(preferredAttributes.Size.Width, _measuredSize.Height)
-					: new Size(_measuredSize.Width, preferredAttributes.Size.Height);
+				var preferredSize = preferredAttributes.Size;
+				// Use measured size only when unconstrained
+				var size = new Size(
+					double.IsPositiveInfinity(constraints.Width) ? _measuredSize.Width : preferredSize.Width,
+					double.IsPositiveInfinity(constraints.Height) ? _measuredSize.Height : preferredSize.Height
+				);
 
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
@@ -109,33 +152,74 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return preferredAttributes;
 		}
 
+		private protected virtual Size GetMeasureConstraints(UICollectionViewLayoutAttributes preferredAttributes)
+		{
+			var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
+				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
+				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+			return constraints;
+		}
+
+		/// <summary>
+		/// Gets the cached first item size from the handler for MeasureFirstItem optimization.
+		/// </summary>
+		private CGSize GetCachedFirstItemSizeFromHandler()
+		{
+			return CollectionViewHandler?.GetCachedFirstItemSize() ?? CGSize.Empty;
+		}
+
+		/// <summary>
+		/// Sets the cached first item size to the handler for MeasureFirstItem optimization.
+		/// </summary>
+		private void SetCachedFirstItemSizeToHandler(CGSize size)
+		{
+			CollectionViewHandler?.SetCachedFirstItemSize(size);
+		}
+
 		public override void LayoutSubviews()
 		{
+			base.LayoutSubviews();
+
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				// While the platform view Frame is set via auto-layout constraints,
-				// we have to set the Frame on the virtual view manually.
-				// Subviews will eventually be arranged via LayoutSubviews once the cell comes into play.
-				var frame = new Rect(Point.Zero, Bounds.Size.ToSize());
-				if (virtualView.Frame != frame)
+				var boundsSize = Bounds.Size.ToSize();
+				if (!_needsArrange)
 				{
-					virtualView.Arrange(frame);
+					// While rotating the device, and under other circumstances,
+					// a layout pass is being triggered without going through PreferredLayoutAttributesFittingAttributes first.
+					// In this case we should not trigger an Arrange pass because
+					// the last measurement does not match the new bounds size.
+					return;
 				}
-			}
 
-			base.LayoutSubviews();
+				_needsArrange = false;
+
+				// We now have to apply the new bounds size to the virtual view
+				// which will automatically set the frame on the platform view too.
+				var frame = new Rect(Point.Zero, boundsSize);
+				virtualView.Arrange(frame);
+			}
 		}
 
 		public override void PrepareForReuse()
 		{
 			//Unbind();
+			isSupplementaryView = false;
 			base.PrepareForReuse();
 		}
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			var virtualView = PlatformHandler?.VirtualView as View ?? 
-			                  template.CreateContent(bindingContext, itemsView) as View;
+			View virtualView = null;
+			if (CurrentTemplate != template)
+			{
+				CurrentTemplate = template;
+				virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			}
+			else if (PlatformHandler?.VirtualView is View existingView)
+			{
+				virtualView = existingView;
+			}
 
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
@@ -147,6 +231,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
+			var oldElement = PlatformHandler?.VirtualView as View;
+
+			if (oldElement is not null && oldElement != virtualView && isHeaderOrFooterChanged)
+			{
+				oldElement.BindingContext = null;
+				itemsView.RemoveLogicalChild(oldElement);
+				PlatformHandler = null;
+				PlatformView?.RemoveFromSuperview();
+			}
+
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;
@@ -162,16 +256,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
-				InitializeContentConstraints(PlatformView);
+				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
+				
+				if (this.Selected)
+				{
+					UpdateVisualStates();
+					UpdateSelectionColor();
+				}
 			}
 
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
+				if (view.Parent is null)
+				{
+					itemsView.AddLogicalChild(view);
+				}
 			}
 
 			_bound = true;
@@ -196,7 +300,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
 					{
 						var setter = state.Setters[setterIndex];
-						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+							setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 						{
 							return true;
 						}
@@ -296,14 +401,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// This is a no-op
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			// If the cell is not bound (or getting unbounded), we don't want to measure it
 			// and cause a useless and harming InvalidateLayout on the collection view layout
 			if (!_measureInvalidated && _bound)
 			{
 				_measureInvalidated = true;
+				return true;
 			}
+
+			return false;
 		}
 	}
 }

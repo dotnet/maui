@@ -1,8 +1,7 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,25 +19,20 @@ public class Maui13962CustomCheckBox : CheckBox
 
 public partial class Maui13962 : ContentView
 {
-
 	public Maui13962() => InitializeComponent();
 
-	public Maui13962(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
+		public Test() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-	[TestFixture]
-	class Test
-	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void ResolutionOfOverridenBP([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void ResolutionOfOverridenBP(XamlInflator inflator)
 		{
 			//shouln't throw
-			var page = new Maui13962(useCompiledXaml);
+			var page = new Maui13962(inflator);
 		}
 	}
 }

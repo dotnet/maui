@@ -14,7 +14,6 @@ public class Issue1426 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.LifeCycle)]
-	[Category(UITestCategories.Compatibility)]
 	public void Issue1426Test()
 	{
 		var beforeRect = App.WaitForElement("CoffeeImageId").GetRect();

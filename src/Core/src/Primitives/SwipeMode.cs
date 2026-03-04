@@ -1,11 +1,13 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+/// <summary>
+/// Specifies the behavior of a SwipeView when an item is invoked.
+/// </summary>
+public enum SwipeMode
 {
-	/// <include file="../../docs/Microsoft.Maui/SwipeMode.xml" path="Type[@FullName='Microsoft.Maui.SwipeMode']/Docs/*" />
-	public enum SwipeMode
-	{
-		/// <include file="../../docs/Microsoft.Maui/SwipeMode.xml" path="//Member[@MemberName='Reveal']/Docs/*" />
-		Reveal, // Display additional context items which may be selected
-		/// <include file="../../docs/Microsoft.Maui/SwipeMode.xml" path="//Member[@MemberName='Execute']/Docs/*" />
-		Execute // Immediately execute the associated command
-	}
+	/// <summary>Display additional context items which may be selected.</summary>
+	Reveal,
+
+	/// <summary>Immediately execute the associated command upon invocation.</summary>
+	Execute
 }

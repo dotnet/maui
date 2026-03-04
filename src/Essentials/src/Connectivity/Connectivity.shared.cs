@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Networking
 		event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
 
 		// a cache so that events aren't fired unnecessarily
-		// this is mainly an issue on Android, but we can stiil do this everywhere
+		// this is mainly an issue on Android, but we can still do this everywhere
 		NetworkAccess currentAccess;
 		List<ConnectionProfile> currentProfiles;
 

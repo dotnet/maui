@@ -1,11 +1,17 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/FillRule.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.FillRule']/Docs/*" />
+	/// <summary>
+	/// Specifies how the interior of a shape is determined.
+	/// </summary>
 	public enum FillRule
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/FillRule.xml" path="//Member[@MemberName='EvenOdd']/Docs/*" />
+		/// <summary>
+		/// A point is inside the shape if a ray from that point crosses an odd number of path segments.
+		/// </summary>
 		EvenOdd,
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/FillRule.xml" path="//Member[@MemberName='Nonzero']/Docs/*" />
+		/// <summary>
+		/// A point is inside the shape if the winding count (sum of crossing directions) is nonzero.
+		/// </summary>
 		Nonzero
 	}
 }

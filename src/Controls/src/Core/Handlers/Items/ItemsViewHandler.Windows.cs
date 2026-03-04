@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			CleanUpCollectionViewSource(platformView);
+			_formsEmptyView?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
 		}
 
@@ -148,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var lastItem = items[itemsCount - 1];
 				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(lastItem);
+				ListViewBase.ScrollIntoView(lastItem, ScrollIntoViewAlignment.Leading);
 			}
 		}
 
@@ -219,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
 					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
-						_formsEmptyView?.Layout(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
+						_formsEmptyView?.Arrange(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
 				}
 
 				_emptyViewDisplayed = true;
@@ -350,8 +351,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateItemTemplate();
 			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
+			UpdateScrollBarVisibility();
 			UpdateEmptyView();
 		}
 
@@ -373,6 +373,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			listView.Loaded += ListViewLoaded;
+		}
+
+		internal void UpdateScrollBarVisibility()
+		{
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -582,7 +588,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
+			}
+			;
 		}
 
 		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
@@ -652,7 +659,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
 				{
-					if (pair.Item == args.Item)
+					if (Equals(pair.Item, args.Item))
 					{
 						return CollectionViewSource.View[n];
 					}

@@ -15,9 +15,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_bitmap = bitmap;
 		}
 
-		public float Width => _bitmap.Width;
+		public float Width => _bitmap?.Width ?? 0;
 
-		public float Height => _bitmap.Height;
+		public float Height => _bitmap?.Height ?? 0;
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
-			using (var context = new PlatformBitmapExportContext(width: (int)width, height: (int)height, disposeBitmap: disposeOriginal))
+			using (var context = new PlatformBitmapExportContext(width: (int)width, height: (int)height, disposeBitmap: false))
 			{
 				var fx = width / Width;
 				var fy = height / Height;
@@ -83,6 +83,13 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 
 				context.Canvas.DrawImage(this, x, y, w, h);
+
+				if (disposeOriginal)
+				{
+					_bitmap.Recycle();
+					_bitmap.Dispose();
+				}
+
 				return context.Image;
 			}
 		}

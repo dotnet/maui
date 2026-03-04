@@ -1,37 +1,26 @@
 using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz56852
 {
-	public partial class Bz56852
+	public Bz56852()
 	{
-		public Bz56852()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz56852(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public void Dispose() => Application.Current = null;
 
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void DynamicResourceApplyingOrder(XamlInflator inflator)
 		{
-			[TearDown]
-			public void TearDown()
-			{
-				Application.Current = null;
-			}
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void DynamicResourceApplyingOrder(bool useCompiledXaml)
-			{
-				var layout = new Bz56852(useCompiledXaml);
-				Assert.That(layout.label.FontSize, Is.EqualTo(50));
-			}
+			var layout = new Bz56852(inflator);
+			Assert.Equal(50, layout.label.FontSize);
 		}
 	}
 }

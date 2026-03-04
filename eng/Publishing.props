@@ -1,21 +1,48 @@
 <Project>
-   <PropertyGroup>
-      <PublishingVersion>3</PublishingVersion>
-      <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-      <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishBlobItems</PublishDependsOnTargets>
-   </PropertyGroup>
+  
+  <Import Project="Versions.targets" />
+  
+  <PropertyGroup>
+    <PublishingVersion>3</PublishingVersion>
+    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+  </PropertyGroup>
 
-   <ItemGroup>
-    <_InstallerManifestFilesToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+  <PropertyGroup>
+    <PublishDependsOnTargets>SetVersionsOnArtifacts;$(PublishDependsOnTargets)</PublishDependsOnTargets>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <_InstallersToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+    <_MetadataRollbacksToPublish Include="$(ArtifactsShippingPackagesDir)\**\metadata\rollbacks\**\*.json" />
+    <_MetadataSdksToPublish Include="$(ArtifactsShippingPackagesDir)\**\metadata\sdks\**\*.json" />
   </ItemGroup>
 
-   <Target Name="_PublishBlobItems">
+  <PropertyGroup>
+    <_UploadPathRoot>maui</_UploadPathRoot>
+  </PropertyGroup>
+
+  <Target Name="SetVersionsOnArtifacts" DependsOnTargets="SetVersions">
+
     <ItemGroup>
-      <ItemsToPushToBlobFeed Include="@(_InstallerManifestFilesToPublish)">
+      <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/%(Filename)%(Extension)">
         <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
         <PublishFlatContainer>true</PublishFlatContainer>
-        <RelativeBlobPath>$(_UploadPathRoot)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
-      </ItemsToPushToBlobFeed>
-    </ItemGroup>
+      </Artifact>
+  
+      <!-- <Artifact Include="@(_MetadataRollbacksToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/metadata/rollback/%(Filename)%(Extension)">
+        <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+        <PublishFlatContainer>false</PublishFlatContainer>
+      </Artifact>
+      
+      <Artifact Include="@(_MetadataSdksToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/metadata/sdks/%(Filename)%(Extension)">
+        <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+        <PublishFlatContainer>false</PublishFlatContainer>
+      </Artifact>-->
+    </ItemGroup> 
+
   </Target>
+
 </Project>

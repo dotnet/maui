@@ -8,6 +8,9 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that returns different values depending on the device idiom.
+	/// </summary>
 	[ContentProperty(nameof(Default))]
 	[RequireService(
 		[typeof(IProvideValueTarget),
@@ -19,15 +22,44 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		// See Device.Idiom
 
+		/// <summary>
+		/// Gets or sets the default value to use if no idiom-specific value is set.
+		/// </summary>
 		public object Default { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use on phone devices.
+		/// </summary>
 		public object Phone { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use on tablet devices.
+		/// </summary>
 		public object Tablet { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use on desktop devices.
+		/// </summary>
 		public object Desktop { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use on TV devices.
+		/// </summary>
 		public object TV { get; set; }
+
+		/// <summary>
+		/// Gets or sets the value to use on watch devices.
+		/// </summary>
 		public object Watch { get; set; }
 
+		/// <summary>
+		/// Gets or sets a converter to apply to the idiom-specific value.
+		/// </summary>
 		public IValueConverter Converter { get; set; }
 
+		/// <summary>
+		/// Gets or sets a parameter to pass to the converter.
+		/// </summary>
 		public object ConverterParameter { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)

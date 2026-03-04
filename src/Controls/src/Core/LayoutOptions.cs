@@ -3,38 +3,40 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="Type[@FullName='Microsoft.Maui.Controls.LayoutOptions']/Docs/*" />
+	/// <summary>A struct whose static members define various alignment and expansion options.</summary>
 	[System.ComponentModel.TypeConverter(typeof(LayoutOptionsConverter))]
 	public struct LayoutOptions : IEquatable<LayoutOptions>
 	{
 		int _flags;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Start']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure that describes an element that appears at the start of its parent and does not expand.</summary>
 		public static readonly LayoutOptions Start = new LayoutOptions(LayoutAlignment.Start, false);
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Center']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure that describes an element that is centered and does not expand.</summary>
 		public static readonly LayoutOptions Center = new LayoutOptions(LayoutAlignment.Center, false);
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='End']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure that describes an element that appears at the end of its parent and does not expand.</summary>
 		public static readonly LayoutOptions End = new LayoutOptions(LayoutAlignment.End, false);
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Fill']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> stucture that describes an element that has no padding around itself and does not expand.</summary>
 		public static readonly LayoutOptions Fill = new LayoutOptions(LayoutAlignment.Fill, false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='StartAndExpand']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure that describes an element that appears at the start of its parent and expands.</summary>
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions StartAndExpand = new LayoutOptions(LayoutAlignment.Start, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='CenterAndExpand']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure that describes an element that is centered and expands.</summary>
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions CenterAndExpand = new LayoutOptions(LayoutAlignment.Center, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='EndAndExpand']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> object that describes an element that appears at the end of its parent and expands.</summary>
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions EndAndExpand = new LayoutOptions(LayoutAlignment.End, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='FillAndExpand']/Docs/*" />
+		/// <summary>A <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure that describes an element that has no padding around itself and expands.</summary>
 		[Obsolete("The StackLayout expansion options are deprecated; please use a Grid instead.")]
 		public static readonly LayoutOptions FillAndExpand = new LayoutOptions(LayoutAlignment.Fill, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.LayoutOptions"/> object with <paramref name="alignment"/> and <paramref name="expands"/>.</summary>
+		/// <param name="alignment">An alignment value.</param>
+		/// <param name="expands">Whether or not an element will expand to fill available space in its parent.</param>
 		public LayoutOptions(LayoutAlignment alignment, bool expands)
 		{
 			var a = (int)alignment;
@@ -43,14 +45,14 @@ namespace Microsoft.Maui.Controls
 			_flags = (int)alignment | (expands ? (int)LayoutExpandFlag.Expand : 0);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Alignment']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates how an element will be aligned.</summary>
 		public LayoutAlignment Alignment
 		{
 			get { return (LayoutAlignment)(_flags & 3); }
 			set { _flags = (_flags & ~3) | (int)value; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="//Member[@MemberName='Expands']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates whether or not the element that is described by this <see cref="Microsoft.Maui.Controls.LayoutOptions"/> structure will occupy the largest space that its parent will give to it.</summary>
 		public bool Expands
 		{
 			get { return (_flags & (int)LayoutExpandFlag.Expand) != 0; }

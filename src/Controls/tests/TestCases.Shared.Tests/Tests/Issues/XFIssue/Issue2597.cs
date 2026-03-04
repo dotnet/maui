@@ -16,6 +16,8 @@ public class Issue2597 : _IssuesUITest
 	[Category(UITestCategories.Stepper)]
 	public void Issue2597Test()
 	{
+		App.WaitForElement("Stepper");
+
 		App.IncreaseStepper("Stepper");
 
 		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
