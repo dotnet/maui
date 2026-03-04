@@ -331,7 +331,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Screenshot: Combined bar background, text color and icon color on pushed page
-			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+			VerifyScreenshot();
 		}
 
 		[Test, Order(14)]
