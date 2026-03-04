@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+	[Category(UITestCategories.BoxView)]
 	public class BoxViewFeatureTests : _GalleryUITest
 	{
 		public const string BoxViewFeatureMatrix = "BoxView Feature Matrix";
@@ -24,9 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ── Color tests (Order 1–3) ──
 
-		[Test]
-		[Order(1)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(1)]
 		public void BoxView_Color()
 		{
 			ResetBoxView();
@@ -35,9 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(2)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(2)]
 		public void BoxView_GreenColor()
 		{
 			ResetBoxView();
@@ -46,9 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(3)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(3)]
 		public void BoxView_BlueColor()
 		{
 			ResetBoxView();
@@ -62,9 +57,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ── CornerRadius tests (Order 4) ──
 
-		[Test]
-		[Order(4)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(4)]
 		public void BoxView_UniformCornerRadius()
 		{
 			ResetBoxView();
@@ -76,9 +69,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ── Dimension tests (Order 5) ──
 
-		[Test]
-		[Order(5)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(5)]
 		public void BoxView_WidthAndHeight()
 		{
 			ResetBoxView();
@@ -93,9 +84,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ── Opacity tests (Order 6) ──
 
-		[Test]
-		[Order(6)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(6)]
 		public void BoxView_OpacityZero()
 		{
 			ResetBoxView();
@@ -107,22 +96,18 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// ── Visibility tests (Order 7) ──
 
-		[Test]
-		[Order(7)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(7)]
 		public void BoxView_IsVisible()
 		{
 			ResetBoxView();
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
-			App.WaitForNoElement("BoxViewControl");
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		// ── Combined property tests (Order 8–11) ──
 
-		[Test]
-		[Order(8)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(8)]
 		public void BoxView_CornerRadiusWithColor()
 		{
 			ResetBoxView();
@@ -134,9 +119,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(9)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(9)]
 		public void BoxView_ColorWithOpacity()
 		{
 			ResetBoxView();
@@ -148,9 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(10)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(10)]
 		public void BoxView_CornerRadiusWithFlowDirection()
 		{
 			ResetBoxView();
@@ -162,9 +143,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(11)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(11)]
 		public void BoxView_Reset()
 		{
 			ResetBoxView();
@@ -183,9 +162,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/27732
 		// ── Shadow tests - disabled on Windows (Order 12–14) ──
 
-		[Test]
-		[Order(12)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(12)]
 		public void BoxView_CornerRadiusWithOpacityAndShadow()
 		{
 			ResetBoxView();
@@ -200,9 +177,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(13)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(13)]
 		public void BoxView_CornerRadiusWithColorAndShadow()
 		{
 			ResetBoxView();
@@ -216,9 +191,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
-		[Test]
-		[Order(14)]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(14)]
 		public void BoxView_ColorWithOpacityAndShadow()
 		{
 			ResetBoxView();

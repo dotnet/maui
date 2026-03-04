@@ -234,19 +234,40 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	public Color Color
 	{
 		get => _color;
-		set { _color = value; OnPropertyChanged(); }
+		set
+		{
+			if (_color != value)
+			{
+				_color = value;
+				OnPropertyChanged();
+			}
+		}
 	}
 
 	public double Width
 	{
 		get => _width;
-		set { _width = value; OnPropertyChanged(); }
+		set
+		{
+			if (_width != value)
+			{
+				_width = value;
+				OnPropertyChanged();
+			}
+		}
 	}
 
 	public double Height
 	{
 		get => _height;
-		set { _height = value; OnPropertyChanged(); }
+		set
+		{
+			if (_height != value)
+			{
+				_height = value;
+				OnPropertyChanged();
+			}
+		}
 	}
 	public bool IsRTL
 	{
