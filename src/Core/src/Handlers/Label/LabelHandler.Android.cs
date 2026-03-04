@@ -48,13 +48,21 @@ namespace Microsoft.Maui.Handlers
 						if (PlatformView.MaxLines != int.MaxValue)
 						{
 							var narrowedPx = (int)Context.ToPixels(actualWidth);
+
+							// AtMost mirrors how the layout pass constrains width, ensuring the
+							// re-measurement reflects the same wrapping behaviour the view will
+							// experience when arranged at actualWidth.
 							PlatformView.Measure(
 								MeasureSpecMode.AtMost.MakeMeasureSpec(narrowedPx),
 								MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
 
-							if (PlatformView.Layout?.LineCount > PlatformView.MaxLines)
+							// Fail-safe: if Layout is null after re-measurement we cannot verify
+							// that truncation won't occur, so return the original size.
+							var measuredLayout = PlatformView.Layout;
+
+							if (measuredLayout is null || measuredLayout.LineCount > PlatformView.MaxLines)
 							{
-								return size; // Narrowing causes truncation; return original size
+								return size; // Narrowing causes truncation (or unverifiable); return original size
 							}
 						}
 
