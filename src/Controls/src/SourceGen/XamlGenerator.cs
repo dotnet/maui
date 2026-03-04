@@ -228,6 +228,16 @@ public class XamlGenerator : IIncrementalGenerator
 				{
 					// First run: seed the cache (version 1, since IC sets __version = 1)
 					XamlHotReloadState.Update(relativePath, xamlItem.Xaml, 1);
+
+					// Emit the MetadataUpdateHandler glue class (once, alongside the IC)
+					if (InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var handlerRootType, out _)
+						&& handlerRootType != null)
+					{
+						var handlerCode = MetadataUpdateHandlerCodeWriter.GenerateHandler(
+							handlerRootType,
+							InitializeComponentCodeWriter.GeneratedCodeAttribute);
+						sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "handler.xsg"), handlerCode);
+					}
 				}
 			}
 			catch (Exception e)
