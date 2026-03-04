@@ -115,6 +115,7 @@ stages:
 
             # Capture emulator device ID for Copilot agent
             - script: |
+                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH"
                 DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
                 if [ -z "$DEVICE_ID" ]; then
                   echo "##vso[task.logissue type=error]No emulator device found after Cake boot"
@@ -123,6 +124,8 @@ stages:
                 fi
                 echo "✅ Emulator running: $DEVICE_ID"
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
               displayName: 'Capture Emulator UDID'
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
