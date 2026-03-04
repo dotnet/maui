@@ -40,9 +40,10 @@ namespace Microsoft.Maui.DeviceTests
 				// Assert: the teardown guard should have detected the absent MAUI window
 				// handler and returned early, leaving IsFocused unchanged.
 				// Without the fix, IsFocused would be set to false, triggering style triggers
-				// that re
-				//
-				// solve IFontManager from the disposed IServiceScope → ObjectDisposedException.
+				// that resolve IFontManager from a disposed IServiceScope
+				// Note: in the ContextStub (device test host), GetOptionalPlatformWindow() returns
+				// a WinUI window but GetWindow() returns null (no MAUI window in Application.Windows),
+				// which is equivalent to the post-teardown state where window?.Handler == null → ObjectDisposedException.
 				Assert.True(entry.IsFocused);
 
 				((IViewHandler)handler).DisconnectHandler();
