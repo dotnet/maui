@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
-using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -24,10 +23,16 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ContentControl? _footerContentControl;
 	FrameworkElement? _footer;
 
-	WStackPanel? _containerPanel;
+	SnappingStackPanel? _containerPanel;
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
+
+	/// <summary>
+	/// Gets the container panel that implements <see cref="IScrollSnapPointsInfo"/>
+	/// for snap point support with <see cref="ScrollViewer"/>.
+	/// </summary>
+	internal SnappingStackPanel? ContainerPanel => _containerPanel;
 
 	public MauiItemsView()
 	{
@@ -114,9 +119,15 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
-		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
+		_containerPanel = GetTemplateChild("PART_ContainerStack") as SnappingStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+
+		// Wire up the ItemsRepeater reference so the panel can compute snap points
+		if (_containerPanel is not null && _itemsRepeater is ItemsRepeater repeater)
+		{
+			_containerPanel.ItemsRepeater = repeater;
+		}
 
 		if (_emptyView is not null && _emptyViewContentControl is not null)
 		{
