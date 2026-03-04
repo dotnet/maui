@@ -73,6 +73,11 @@ namespace Microsoft.Maui.Platform
 		// See SafeAreaInsetsDidChange and InvalidateSafeArea.
 		UIEdgeInsets _lastWindowSafeAreaInsets;
 
+		// Cached view-level SafeAreaInsets used to detect repositioning (e.g., content
+		// pushed down by a custom TitleBar) that changes the view's own insets without
+		// changing Window.SafeAreaInsets.
+		UIEdgeInsets _lastViewSafeAreaInsets;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -717,8 +722,20 @@ namespace Microsoft.Maui.Platform
 			{
 				var windowInsets = Window.SafeAreaInsets;
 				if (windowInsets == _lastWindowSafeAreaInsets)
-					return;
-				_lastWindowSafeAreaInsets = windowInsets;
+				{
+					// Window insets unchanged, but the view may have been repositioned
+					// (e.g., content pushed down by a custom TitleBar). If the view's own
+					// insets also haven't changed, this is animation noise — skip.
+					var viewInsets = SafeAreaInsets;
+					if (viewInsets == _lastViewSafeAreaInsets)
+						return;
+					_lastViewSafeAreaInsets = viewInsets;
+				}
+				else
+				{
+					_lastWindowSafeAreaInsets = windowInsets;
+					_lastViewSafeAreaInsets = SafeAreaInsets;
+				}
 			}
 
 			_safeAreaInvalidated = true;
@@ -748,6 +765,7 @@ namespace Microsoft.Maui.Platform
 
 			// Reset cached insets so the new window's safe area is processed.
 			_lastWindowSafeAreaInsets = Window?.SafeAreaInsets ?? UIEdgeInsets.Zero;
+			_lastViewSafeAreaInsets = SafeAreaInsets;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
