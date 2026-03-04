@@ -21,6 +21,7 @@ This skill uses `bash` together with `pwsh` (PowerShell 7+) to run the PowerShel
 - `pwsh`: https://aka.ms/install-powershell
 
 Optional for binlog analysis (MSBuild failures):
+- `az` (Azure CLI): `brew install azure-cli` / `winget install Microsoft.AzureCLI`, then `az extension add --name azure-devops`
 - `binlogtool`: `dotnet tool install -g binlogtool` (https://www.nuget.org/packages/binlogtool)
 
 ## When to Use
@@ -110,6 +111,12 @@ binlogtool search "/tmp/maui-binlog/*.binlog" "error NU"    # NuGet
 binlogtool search "/tmp/maui-binlog/*.binlog" "XamlC"       # XAML compiler
 binlogtool search "/tmp/maui-binlog/*.binlog" "XA"          # Android build errors
 
+# Reconstruct full text log (useful when you need context around an error)
+binlogtool reconstruct "/tmp/maui-binlog/*.binlog" > /tmp/maui-build.log
+
+# Detect double-write errors (multiple tasks writing to the same output file)
+binlogtool doublewrites "/tmp/maui-binlog/*.binlog"
+
 # Clean up
 Remove-Item -Recurse -Force /tmp/maui-binlog
 ```
@@ -132,6 +139,18 @@ The `Get-HelixLogs.ps1` script retrieves the console logs which show:
 - Test execution output
 - Any crashes or errors
 - Infrastructure issues (timeouts, installation failures, etc.)
+
+## Common Build Error Patterns
+
+| Pattern | Area | Notes |
+|---------|------|-------|
+| `error CS####` | C# compiler | Root cause; check file/line reference |
+| `error NU1###` | NuGet restore | NU1301 = feed unreachable; NU11## = resolution failure |
+| `XamlC` | XAML compiler | MAUI-specific; usually missing type or invalid binding |
+| `##[error]` | ADO infrastructure | Pipeline-level error, not a build error |
+| `System.TimeoutException` | Test infra | Infrastructure timeout; may be transient |
+| `error MT####` | iOS/Mac linker | Linking failure; check build logs |
+| `error BL####` | Build logic | MSBuild task failure |
 
 ## Common Helix Failure Patterns
 
