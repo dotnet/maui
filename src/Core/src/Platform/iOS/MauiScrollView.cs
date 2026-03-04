@@ -328,8 +328,9 @@ namespace Microsoft.Maui.Platform
 			//UpdateKeyboardSubscription();
 			// If nothing changed, we don't need to do anything
 
-			if (!UpdateContentInsetAdjustmentBehavior())
+			if (UpdateContentInsetAdjustmentBehavior())
 			{
+				// Edges changed - invalidate and force re-evaluation
 				InvalidateConstraintsCache();
 				_safeAreaInvalidated = true;
 			}
@@ -340,7 +341,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Mark the safe area as validated given that we're about to check it
-			_safeAreaInvalidated = true;
+			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
 
