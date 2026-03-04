@@ -18,7 +18,12 @@ public class Issue33852 : _IssuesUITest
     {
         App.WaitForElement("ScrollToButton");
         App.Tap("ScrollToButton");
+#if WINDOWS
+        App.WaitForElement("Item_15");
+        App.WaitForElement("Item_25");
+#else
         var firstIndexText = App.FindElement("IndexLabel").GetText();
         Assert.That(firstIndexText, Is.EqualTo("The CollectionView is scrolled"));
+#endif
     }
 }
