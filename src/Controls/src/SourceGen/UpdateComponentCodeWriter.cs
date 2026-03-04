@@ -85,30 +85,44 @@ static class UpdateComponentCodeWriter
 				int compIdx = 0;
 				foreach (var nodeDiff in diff.NodeChanges)
 				{
-					if (string.IsNullOrEmpty(nodeDiff.NodeId))
-						continue; // root node — not tracked in the registry
+					bool isRoot = string.IsNullOrEmpty(nodeDiff.NodeId);
 
+					if (isRoot)
+					{
+						// Bug 2 fix: root node — 'this' IS the component, emit direct assignments
+						INamedTypeSymbol? rootNodeType = null;
+						if (nodeDiff.NodeXmlType is { } xmlTypeRoot)
+							xmlTypeRoot.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out rootNodeType);
+
+						foreach (var propDiff in nodeDiff.PropertyChanges)
+						{
+							EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType);
+						}
+						codeWriter.WriteLine();
+						continue;
+					}
+
+					// Bug 1 fix: TryGet returns bool with out parameter — use out-var pattern
 					var varName = $"__uc_{compIdx++}";
-					codeWriter.WriteLine($"var {varName} = global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\");");
-					codeWriter.WriteLine($"if ({varName} == null) goto fallback;");
+					codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
+					codeWriter.Indent++;
+					codeWriter.WriteLine("goto fallback;");
+					codeWriter.Indent--;
 
 					// Resolve C# type for the cast (best-effort; if unresolvable, go to fallback at runtime)
 					INamedTypeSymbol? nodeType = null;
 					string castPrefix;
-					string castSuffix;
 					if (nodeDiff.NodeXmlType is { } xmlType
 						&& xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out nodeType)
 						&& nodeType != null)
 					{
 						var fqName = nodeType.ToFQDisplayString();
-						castPrefix = $"(({fqName}){varName}).";
-						castSuffix = string.Empty;
+						castPrefix = $"(({fqName}){varName}!).";
 					}
 					else
 					{
 						// Type unknown — use dynamic dispatch (slower but safe)
-						castPrefix = $"(({varName} as global::Microsoft.Maui.Controls.BindableObject))?.";
-						castSuffix = string.Empty;
+						castPrefix = $"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.";
 					}
 
 					foreach (var propDiff in nodeDiff.PropertyChanges)
@@ -130,6 +144,40 @@ static class UpdateComponentCodeWriter
 
 		codeWriter.Flush();
 		return codeWriter.InnerWriter.ToString();
+	}
+
+	static void EmitRootPropertyChange(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		INamedTypeSymbol rootType)
+	{
+		var propName = propDiff.PropertyName.LocalName;
+
+		if (propDiff.Kind == PropertyDiffKind.Clear)
+		{
+			var bpFieldName = $"{propName}Property";
+			var bp = FindStaticField(rootType, bpFieldName);
+			if (bp != null)
+			{
+				codeWriter.WriteLine($"this.ClearValue({rootType.ToFQDisplayString()}.{bpFieldName});");
+				return;
+			}
+			codeWriter.WriteLine($"// Property '{propName}' cleared on root — fallback to runtime reload");
+			codeWriter.WriteLine("goto fallback;");
+			return;
+		}
+
+		var rawValue = propDiff.NewValue ?? string.Empty;
+		var valueExpr = BuildValueExpression(rawValue, rootType, propName);
+
+		if (valueExpr == null)
+		{
+			codeWriter.WriteLine($"// Cannot encode root '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback");
+			codeWriter.WriteLine("goto fallback;");
+			return;
+		}
+
+		codeWriter.WriteLine($"this.{propName} = {valueExpr};");
 	}
 
 	static void EmitPropertyChange(
