@@ -495,6 +495,4 @@ public class StepperFeatureTests : _GalleryUITest
 			Is.EqualTo("5.00")
 		);
 	}
-
-
 }
