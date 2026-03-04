@@ -306,6 +306,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				itemsView.UpdateFlowDirection(ItemsView);
 				foreach (var child in ItemsView.LogicalChildrenInternal)
 				{
+					// Skip the empty view element — its flow direction is handled
+					// separately in AlignEmptyView to avoid double application
+					if (child == _emptyViewFormsElement)
+					{
+						continue;
+					}
+
 					if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 					{
 						view.UpdateFlowDirection(ve);
@@ -320,7 +327,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						cell.Label.UpdateFlowDirection(ItemsView);
 					}
 				}
-	
+
 				CollectionView.UpdateFlowDirection(ItemsView);
 			}
 
@@ -552,7 +559,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Tag = EmptyTag;
-			CollectionView.AddSubview(_emptyUIView);
+
+			// Add the empty view to the CollectionView's superview instead of the CollectionView itself.
+			// The compositional layout's flipsHorizontallyInOppositeLayoutDirection (default true) causes
+			// the CollectionView to flip its content coordinate system when SemanticContentAttribute is
+			// ForceRightToLeft. Layout-managed views (cells, supplementary views) are compensated by the
+			// layout, but direct subviews are NOT — resulting in mirror-flipped rendering.
+			// Adding to the superview avoids this flip zone entirely.
+			var targetView = CollectionView.Superview;
+			if (targetView is not null)
+			{
+				targetView.InsertSubviewAbove(_emptyUIView, CollectionView);
+			}
+			else
+			{
+				CollectionView.AddSubview(_emptyUIView);
+			}
 
 			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{
