@@ -186,7 +186,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			{
 				var isWebviewInitialized = await _webviewReadyTask;
 
-				if (isWebviewInitialized)
+				// Check CoreWebView2 availability to ensure webview is ready and not disposed.
+				// Setting _webview.Source is safe as it's a managed property, but we should only
+				// navigate if CoreWebView2 is initialized to avoid errors during shutdown.
+				var coreWebView = _webview.CoreWebView2;
+				if (isWebviewInitialized && coreWebView != null)
 				{
 					_logger.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
@@ -196,7 +200,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		/// <inheritdoc />
 		protected override void SendMessage(string message)
-			=> _webview.CoreWebView2.PostWebMessageAsString(message);
+		{
+			// Guard against calling into WebView2 after it has been disposed, which can happen
+			// during window shutdown when event handlers are still executing.
+			// Capture CoreWebView2 reference to avoid race condition between null check and usage.
+			var coreWebView = _webview.CoreWebView2;
+			if (coreWebView != null)
+			{
+				coreWebView.PostWebMessageAsString(message);
+			}
+		}
 
 		private async Task<bool> TryInitializeWebView2()
 		{
