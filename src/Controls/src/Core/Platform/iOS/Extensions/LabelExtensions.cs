@@ -21,12 +21,10 @@ namespace Microsoft.Maui.Controls.Platform
 					// when inside a CV1 (CollectionView/CarouselView handler v1) layout pass.
 					// https://github.com/dotnet/maui/issues/25946
 					// CV2 (the default handler in .NET 10) does NOT have this crash.
-					// Applying HTML synchronously in CV2 prevents the jitter caused by the
-					// deferred measurement (measure with no text → HTML applied → remeasure).
-					// https://github.com/dotnet/maui/issues/33065
-					if (IsLabelInsideCV2Handler(label))
+					if (IsPlatformLabelInsideCV2Cell(platformLabel))
 					{
-						// Synchronous: inside a CV2 layout pass — no InvalidateMeasure needed.
+						// Synchronous: safe in CV2, avoids the two-pass jitter.
+						// No InvalidateMeasure needed — text is already correct when measured.
 						platformLabel.UpdateTextHtml(text);
 
 						if (label.Handler is LabelHandler labelHandlerSync)
@@ -68,17 +66,17 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		// Walks the MAUI logical parent tree to determine if this Label lives inside a CV2 handler
-		static bool IsLabelInsideCV2Handler(Label label)
+		// Walks the native UIKit superview chain to determine if this UILabel lives inside a CV2 cell.
+		static bool IsPlatformLabelInsideCV2Cell(UILabel platformLabel)
 		{
-			var parent = label.Parent;
-			while (parent is not null)
+			var superview = platformLabel.Superview;
+			while (superview is not null)
 			{
-				if (parent is ItemsView itemsView)
+				if (superview is ItemsViewCell2)
 				{
-					return itemsView.Handler is CollectionViewHandler2;
+					return true;
 				}
-				parent = parent.Parent;
+				superview = superview.Superview;
 			}
 			return false;
 		}
