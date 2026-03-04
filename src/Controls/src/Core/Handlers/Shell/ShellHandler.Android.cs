@@ -106,9 +106,13 @@ namespace Microsoft.Maui.Controls.Handlers
             UpdateFlyoutBehaviorInternal(behavior);
 
             // Initialize with current item if it exists
+            // Post to ensure the view hierarchy is fully attached before adding fragments
             if (VirtualView.CurrentItem is not null)
             {
-                SwitchToItem(VirtualView.CurrentItem, animate: false);
+                platformView.Post(new Java.Lang.Runnable(() =>
+                {
+                    SwitchToItem(VirtualView.CurrentItem, animate: false);
+                }));
             }
         }
 
@@ -161,6 +165,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             var fragmentManager = VirtualView.FindMauiContext()?.GetFragmentManager();
             if (fragmentManager is null || _contentFrame is null)
+            {
+                return;
+            }
+
+            // Ensure the content frame has a valid ID and is attached to the window
+            if (_contentFrame.Id == AView.NoId || !_contentFrame.IsAttachedToWindow)
             {
                 return;
             }

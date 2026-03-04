@@ -138,6 +138,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _viewPager.Adapter = _adapter;
 
+            // Keep ALL section fragments alive to prevent FragmentStateAdapter from
+            // saving/restoring fragment state. Restored fragments lose MAUI-specific state
+            // (StackNavigationManager, etc.) causing crashes. The renderer approach avoids
+            // this by using direct fragment transactions instead of ViewPager2.
+            _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
+
             // Register page change callback
             _pageChangeCallback = new ShellItemPageChangeCallback(this);
             _viewPager.RegisterOnPageChangeCallback(_pageChangeCallback);
@@ -588,6 +594,11 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         void UpdateAppearance(ShellAppearance appearance)
         {
+            if (appearance is null)
+            {
+                return;
+            }
+
             if (_bottomNavigationView is null || _bottomNavigationView.Visibility != ViewStates.Visible)
             {
                 return;
@@ -751,7 +762,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         void UpdateToolbarAppearance(ShellAppearance appearance)
         {
-            if (_toolbarAppearanceTracker is null || _toolbar is null)
+            if (_toolbarAppearanceTracker is null || _toolbar is null || appearance is null)
             {
                 return;
             }
