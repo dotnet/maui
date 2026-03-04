@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 	public abstract class UITest : UITestBase
 	{
-		string _defaultiOSVersion = "18.5";
+		string _defaultiOSVersion = "26.0.1";
 
 		protected const int SetupMaxRetries = 1;
 		protected const int InstrumentationCrashMaxRetries = 1;
@@ -90,17 +90,17 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.iOS:
-					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "";
+					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "531378C0-61E6-448F-A7D1-07653FDBBAF8";
 					if (!string.IsNullOrEmpty(udid))
 					{
 						config.SetProperty("Udid", udid);
 					}
 					else
-					{					 
+					{
 						config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
 						config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					}
-					
+
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.Mac:
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.LaunchApp();
 		}
-		
+
 		/// <summary>
 		/// Verifies the screenshots and returns an exception in case of failure.
 		/// </summary>
@@ -260,14 +260,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
-			
+
 			// If retryTimeout is specified, keep retrying until timeout expires
 			// Otherwise, just retry once (backward compatible behavior)
 			if (retryTimeout.HasValue)
 			{
 				var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 				Exception? lastException = null;
-				
+
 				while (stopwatch.Elapsed < retryTimeout.Value)
 				{
 					try
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 					}
 				}
-				
+
 				// Final attempt after timeout
 				try
 				{
@@ -559,7 +559,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Reset();
 		}
-		
+
 		protected override void FixtureSetup()
 		{
 			int retries = 0;

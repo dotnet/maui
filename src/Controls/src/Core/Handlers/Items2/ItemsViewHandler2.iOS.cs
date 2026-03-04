@@ -196,11 +196,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var scrollDirection = Controller.GetScrollDirection();
 
 			// If contentSize is zero in the relevant dimension (height for vertical, width for horizontal),
-			// it means none of the content has been realized yet; we need to return the expansive size
-			// the collection view wants by default to get it to start measuring its content
+			// it means none of the content has been realized yet.
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
+				var collectionView = Controller.CollectionView;
+
+				// When the CollectionView has not yet been added to a window (pre-mount measurement),
+				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
+				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
+				// so the layout can compute actual content size from its items.
+				if (collectionView.Window == null)
+				{
+					var previousFrame = collectionView.Frame;
+					try
+					{
+						// Give the CollectionView the available size so the layout calculates correctly
+						collectionView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)widthConstraint, (nfloat)heightConstraint);
+						collectionView.SetNeedsLayout();
+						collectionView.LayoutIfNeeded();
+
+						// Re-read the content size now that the layout has run
+						contentSize = Controller.GetSize();
+					}
+					finally
+					{
+						// Always restore the original frame
+						collectionView.Frame = previousFrame;
+					}
+
+					// If the forced layout produced a valid size, return it directly
+					if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height > 0) ||
+						(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width > 0))
+					{
+						return contentSize;
+					}
+				}
+
+				// Fallback: return the expansive size the collection view wants by default
+				// to get it to start measuring its content
 				var desiredSize = base.GetDesiredSize(widthConstraint, heightConstraint);
 				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 				{
