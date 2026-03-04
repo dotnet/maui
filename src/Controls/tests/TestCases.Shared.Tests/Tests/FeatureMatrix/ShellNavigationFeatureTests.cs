@@ -56,13 +56,28 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.WaitForElement("QuerySenderPageIdentityLabel");
 	}
 
+	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
+
 	void TapShellBackArrow(string parentPageTitle)
 	{
 #if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
-		App.TapBackArrow(parentPageTitle);
+		if (iOS26OrHigher)
+			App.TapBackArrow();
+		else
+			App.TapBackArrow(parentPageTitle);
 #endif
+	}
+
+	// On iOS 26+, the back button accessibility ID changed from the custom text to the static "BackButton".
+	// All other platforms continue to work with the custom identifier.
+	void TapCustomLabelBackArrow(string customLabel)
+	{
+		if (iOS26OrHigher)
+			App.TapBackArrow();
+		else
+			App.TapBackArrow(customLabel);
 	}
 
 	void TapContent1()
@@ -584,7 +599,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 			Does.Contain("Source=ShellItemChanged"));
 	}
 
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/34318
 	// Navigating event fires with Source=ShellContentChanged when switching ShellContent tabs.
 	[Test, Order(34)]
 	public void NavEvents_ShellContentChanged_NavigatingEvent_SourceIsShellContentChanged()
@@ -841,7 +856,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.ClearText("TextOverrideEntry");
 		App.EnterText("TextOverrideEntry", "Go");
 		NavigateToDetail1AndWait();
-		App.TapBackArrow("Go");
+		TapCustomLabelBackArrow("Go");
 		App.WaitForElement("MainPageIdentityLabel");
 		App.WaitForElement("Reset");
 		App.Tap("Reset");
