@@ -175,7 +175,6 @@ Does the test need to interact with visual UI elements?
 
 **Unit Tests:**
 - `[Fact]` or `[Theory]` attributes (xUnit)
-- Descriptive method names
 
 **XAML Tests:**
 - `[Test]` with `[Values] XamlInflator` parameter

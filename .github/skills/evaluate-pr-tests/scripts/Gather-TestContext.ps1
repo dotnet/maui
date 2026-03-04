@@ -100,7 +100,7 @@ foreach ($file in $changedFiles) {
     elseif ($file -match "Xaml\.UnitTests" -and $file -match "\.(cs|xaml)$") {
         $xamlTestFiles += $file
     }
-    elseif ($file -match "\.UnitTests" -and $file -match "\.cs$") {
+    elseif ($file -match "[./]UnitTests" -and $file -match "\.cs$") {
         $unitTestFiles += $file
     }
     elseif ($file -match "\.(cs|xaml)$" -and $file -notmatch "[Tt]est") {
@@ -154,16 +154,17 @@ function Test-UITestConventions {
     if ($content -match "Application\.MainPage") {
         $issues += "Uses obsolete ``Application.MainPage`` — use ``Window.Page`` instead"
     }
-    if ($content -match "#if\s+(ANDROID|IOS|MACCATALYST|WINDOWS)\b") {
+    if ($content -match "#if\s+!?(ANDROID|IOS|MACCATALYST|WINDOWS)\b") {
         $issues += "Contains inline ``#if`` platform directives — move to extension methods"
     }
 
     # --- Wait patterns (per-interaction check) ---
     # Extract all App.Tap/Click/FindElement calls and their target IDs (literals or identifiers)
-    $interactionRegex = 'App\.(Tap|Click|FindElement)\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))\s*\)'
+    $interactionRegex = 'App\.(Tap|Click|FindElement)\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))'
     $interactions = [regex]::Matches($content, $interactionRegex)
     
-    $waitRegex = 'App\.WaitForElement\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))\s*\)'
+    # Match WaitForElement with any number of arguments (timeout overloads etc.)
+    $waitRegex = 'App\.WaitForElement\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))'
     $waits = [regex]::Matches($content, $waitRegex) | ForEach-Object { 
         if ($_.Groups[1].Success) { $_.Groups[1].Value } else { $_.Groups[2].Value }
     }
