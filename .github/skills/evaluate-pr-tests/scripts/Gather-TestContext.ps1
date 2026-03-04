@@ -125,10 +125,10 @@ function Test-UITestConventions {
 
     $content = Get-Content $TestFile -Raw
 
-    # --- Naming ---
+    # --- Naming (only flag files in Issues/ directory that look like issue tests) ---
     $fileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
-    if ($fileName -notmatch "^Issue\d+$") {
-        $issues += "File name ``$fileName`` doesn't follow ``IssueXXXXX`` pattern"
+    if ($TestFile -match "Issues/" -and $fileName -match "^Issue" -and $fileName -notmatch "^Issue\d+$") {
+        $issues += "Issue test file name ``$fileName`` should follow ``IssueXXXXX`` pattern"
     }
 
     # --- Inheritance ---
@@ -158,9 +158,20 @@ function Test-UITestConventions {
         $issues += "Contains inline ``#if`` platform directives — move to extension methods"
     }
 
-    # --- Wait patterns ---
-    if ($content -match "App\.(Tap|Click|FindElement)" -and $content -notmatch "App\.WaitForElement") {
-        $issues += "Interacts with elements without ``WaitForElement`` — may cause flaky tests"
+    # --- Wait patterns (per-interaction check) ---
+    # Extract all App.Tap/Click/FindElement calls and their target IDs
+    $interactions = [regex]::Matches($content, 'App\.(Tap|Click|FindElement)\("([^"]+)"\)')
+    $waits = [regex]::Matches($content, 'App\.WaitForElement\("([^"]+)"\)') | ForEach-Object { $_.Groups[1].Value }
+    $missingWaits = @()
+    foreach ($interaction in $interactions) {
+        $targetId = $interaction.Groups[2].Value
+        if ($targetId -notin $waits) {
+            $missingWaits += $targetId
+        }
+    }
+    if ($missingWaits.Count -gt 0) {
+        $uniqueMissing = $missingWaits | Select-Object -Unique
+        $issues += "Elements interacted with but no ``WaitForElement`` call: $($uniqueMissing -join ', ')"
     }
 
     # --- Screenshot hygiene ---
@@ -171,16 +182,20 @@ function Test-UITestConventions {
         }
     }
 
-    # --- AutomationId consistency ---
-    $testIds = [regex]::Matches($content, '"(\w+)"') | ForEach-Object { $_.Groups[1].Value } | Where-Object { $_ -match "^[A-Z]" -and $_.Length -gt 3 }
+    # --- AutomationId consistency (bidirectional) ---
+    # Check test references IDs that exist in HostApp
+    $testReferencedIds = [regex]::Matches($content, 'App\.\w+\("([^"]+)"\)') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique
 
     foreach ($hostFile in $HostAppFiles) {
         if (-not (Test-Path $hostFile)) { continue }
         $hostContent = Get-Content $hostFile -Raw
 
         # Check HostApp conventions
-        if ($hostContent -notmatch "\[Issue\(") {
-            $issues += "HostApp page ``$([System.IO.Path]::GetFileName($hostFile))`` missing ``[Issue()]`` attribute"
+        # For .xaml files, skip C# attribute checks (they live in code-behind)
+        if ($hostFile -notmatch "\.xaml$") {
+            if ($hostContent -notmatch "\[Issue\(") {
+                $issues += "HostApp page ``$([System.IO.Path]::GetFileName($hostFile))`` missing ``[Issue()]`` attribute"
+            }
         }
         if ($hostContent -match "new\s+Frame\b") {
             $issues += "HostApp uses obsolete ``Frame`` control — use ``Border`` instead"
@@ -191,10 +206,18 @@ function Test-UITestConventions {
 
         # Extract HostApp AutomationIds
         $hostIds = [regex]::Matches($hostContent, 'AutomationId\s*=\s*"([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
-        foreach ($id in $hostIds) {
-            if ($content -notmatch [regex]::Escape($id)) {
-                $issues += "AutomationId ``$id`` in HostApp but not referenced in test"
+
+        # Forward check: test references IDs not in HostApp (will fail at runtime)
+        foreach ($id in $testReferencedIds) {
+            if ($hostIds.Count -gt 0 -and $id -notin $hostIds) {
+                $issues += "Test references AutomationId ``$id`` not found in HostApp"
             }
+        }
+
+        # Reverse check: HostApp IDs not used in test (informational, not an issue)
+        $unusedIds = $hostIds | Where-Object { $_ -notin $testReferencedIds }
+        if ($unusedIds.Count -gt 0) {
+            $info += "HostApp AutomationIds not referenced in test: $($unusedIds -join ', ')"
         }
 
         # Check for UITest controls in screenshot tests
@@ -232,7 +255,14 @@ function Test-UnitTestConventions {
             $info += "Uses NUnit ``[Test]`` attribute (verify this is correct for the project)"
         }
         else {
-            $issues += "No test methods found (no ``[Fact]``, ``[Theory]``, or ``[Test]`` attributes)"
+            # Only flag as issue if the file name looks like a test class
+            $utFileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
+            if ($utFileName -match "Test") {
+                $issues += "No test methods found (no ``[Fact]``, ``[Theory]``, or ``[Test]`` attributes)"
+            }
+            else {
+                $info += "No test attributes found — may be a helper/utility class"
+            }
         }
     }
 
@@ -319,7 +349,9 @@ if ($uiTestFiles.Count -gt 0) {
     foreach ($testFile in $uiTestFiles) {
         $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testFile)
         $matchingHostFiles = $uiHostAppFiles | Where-Object {
+            # Handle .xaml.cs: GetFileNameWithoutExtension("Issue12345.xaml.cs") → "Issue12345.xaml"
             $hostName = [System.IO.Path]::GetFileNameWithoutExtension($_)
+            $hostName = $hostName -replace '\.xaml$', ''
             $hostName -eq $baseName
         }
         $result = Test-UITestConventions -TestFile $testFile -HostAppFiles $matchingHostFiles
