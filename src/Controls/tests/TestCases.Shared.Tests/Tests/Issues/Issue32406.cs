@@ -15,10 +15,7 @@ public class Issue32406 : _IssuesUITest
 	public void NestedBordersShouldNotCauseLayoutCycle()
 	{
 		// If the app crashes with a LayoutCycleException, we'll never reach this point.
-		// Wait for the page to load and verify the success label.
-		App.WaitForElement("ResultLabel", timeout: TimeSpan.FromSeconds(30));
-
-		var text = App.FindElement("ResultLabel").GetText();
-		Assert.That(text, Is.EqualTo("Success"));
+		// Wait for the Loaded handler to set "Success" text, avoiding a race with element existence.
+		App.WaitForTextToBePresentInElement("ResultLabel", "Success", timeout: TimeSpan.FromSeconds(30));
 	}
 }
