@@ -209,6 +209,12 @@ namespace Microsoft.Maui.Controls.Handlers
             };
             _viewPager.Adapter = _adapter;
 
+            // Keep ALL content fragments alive to prevent FragmentStateAdapter from
+            // saving/restoring fragment state. Restored fragments lose MAUI-specific state
+            // (StackNavigationManager, etc.) causing crashes.
+            var itemCount = VirtualView?.Items?.Count ?? 1;
+            _viewPager.OffscreenPageLimit = Math.Max(itemCount, 1);
+
             // Setup TabLayoutMediator
             _tabLayoutMediator = new TabLayoutMediator(
                 _contentTabLayout,
@@ -531,14 +537,21 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     internal class ShellContentNavigationFragment : Fragment, IStackNavigation
     {
-        readonly ShellContent _shellContent;
-        readonly IMauiContext _mauiContext;
-        readonly ShellSectionHandler _handler;
+        ShellContent _shellContent;
+        IMauiContext _mauiContext;
+        ShellSectionHandler _handler;
         StackNavigationManager _stackNavigationManager;
         FragmentContainerView _navigationContainer;
         Page _rootPage;
         int _navigationContainerId;
         ShellContentStackNavigationView _navigationViewAdapter;
+
+        // Default constructor required by Android's FragmentManager for fragment restoration.
+        // When FragmentStateAdapter (ViewPager2) saves and restores fragment state during tab switches,
+        // it uses Fragment.instantiate() which requires a parameterless constructor.
+        public ShellContentNavigationFragment()
+        {
+        }
 
         public ShellContentNavigationFragment(ShellContent shellContent, IMauiContext mauiContext, ShellSectionHandler handler)
         {
@@ -549,12 +562,21 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public override void OnCreate(Bundle savedInstanceState)
         {
-            // Don't pass saved state to prevent stale fragment restoration
+            // Always pass null to prevent restoring stale child fragment state.
+            // OffscreenPageLimit keeps fragments alive so restoration shouldn't occur,
+            // but this is defense-in-depth.
             base.OnCreate(null);
         }
 
         public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
+            // If this fragment was restored by FragmentManager without proper data,
+            // return an empty view. The ViewPager2 adapter will recreate it properly.
+            if (_shellContent is null || _mauiContext is null)
+            {
+                return new FrameLayout(inflater.Context);
+            }
+
             if (_navigationContainer is not null)
             {
                 // Check if NavHostFragment needs recreation
@@ -1002,6 +1024,12 @@ namespace Microsoft.Maui.Controls.Handlers
             readonly ShellSectionHandler _handler;
             AView _view;
 
+            // Default constructor required by Android's FragmentManager for fragment restoration
+            public ShellSectionWrapperFragment()
+            {
+                _handler = null;
+            }
+
             public ShellSectionWrapperFragment(ShellSectionHandler handler)
             {
                 _handler = handler;
@@ -1010,11 +1038,19 @@ namespace Microsoft.Maui.Controls.Handlers
 
             public override void OnCreate(Bundle savedInstanceState)
             {
+                // Always pass null to prevent restoring stale child fragment state.
+                // OffscreenPageLimit keeps fragments alive so restoration shouldn't occur,
+                // but this is defense-in-depth.
                 base.OnCreate(null);
             }
 
             public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
             {
+                // If restored without proper handler reference, return empty view
+                if (_handler is null)
+                {
+                    return new FrameLayout(inflater.Context);
+                }
                 if (_view is null)
                 {
                     _view = _handler.PlatformView ?? _handler.ToPlatform();
