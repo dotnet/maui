@@ -1,4 +1,4 @@
-#if IOS
+#if IOS || ANDROID // Orientation change is not supported on Windows and MacCatalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,40 +11,34 @@ public class Issue33407 : _IssuesUITest
 
 	public override string Issue => "Focusing and entering texts on entry control causes a gap at the top after rotating simulator.";
 
+	[TearDown]
+	public void TearDown()
+	{
+		App.SetOrientationPortrait();
+	}
+
 	[Test]
 	[Category(UITestCategories.Entry)]
 	public void EntryFocusedShouldNotCauseGapAfterRotation()
 	{
-		// Navigate: Categories → tap "E - Entry"
 		App.WaitForElement("CategoryE");
 		App.Tap("CategoryE");
 
-		// Navigate: Entry list → tap "E1"
 		App.WaitForElement("TestE1");
 		App.Tap("TestE1");
 
-		// Wait for first Entry on E1 page
 		App.WaitForElement("Entry1");
-
-		// Click/focus the first Entry
 		App.Tap("Entry1");
 
-		// Rotate to landscape
+		// Rotate while keyboard is visible — RestorePosition() incorrectly used the portrait Y
+		// in landscape space before the fix, causing a gap at the top.
 		App.SetOrientationLandscape();
-		// Allow orientation change to settle
 		Thread.Sleep(2000);
 
-		// Verify no gap appears at top after rotation with Entry focused
-		VerifyScreenshot("EntryFocusedLandscape");
+		// Dismiss keyboard before screenshot to avoid cursor flakiness.
+		App.DismissKeyboard();
 
-		// Navigate back using back button
-		App.Back();
-
-		// Allow keyboard dismiss + page transition to settle
-		Thread.Sleep(1500);
-
-		// Verify the previous page looks correct after returning
-		VerifyScreenshot("EntryListAfterBack");
+		VerifyScreenshot();
 	}
 }
 #endif

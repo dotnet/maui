@@ -939,8 +939,12 @@ public static class KeyboardAutoManagerScroll
 			// the keyboard was visible. the stored origin belongs to the previous orientation, so skip
 			// the restore and let the view settle naturally in the new orientation.
 			var currentSize = ContainerView.Frame.Size;
+			// use a 1pt tolerance to guard against sub-pixel floating-point drift in CGSize;
+			// a real orientation change produces a delta of hundreds of points
+			const float SizeChangeTolerance = 1.0f;
 			var sizeChanged = TopViewBeginContainerSize != CGSize.Empty
-				&& (currentSize.Width != TopViewBeginContainerSize.Width || currentSize.Height != TopViewBeginContainerSize.Height);
+				&& (Math.Abs(currentSize.Width - TopViewBeginContainerSize.Width) > SizeChangeTolerance
+					|| Math.Abs(currentSize.Height - TopViewBeginContainerSize.Height) > SizeChangeTolerance);
 
 			if (!sizeChanged)
 			{
