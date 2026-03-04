@@ -470,12 +470,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		PlatformView.LayoutUpdated -= OnLayoutUpdated;
 		_scrollUpdatePending = false;
 		ApplyItemsUpdatingScrollMode();
-
-		// Notify snap points changed after layout — child positions may have shifted
-		if (PlatformView is MauiItemsView miv)
-		{
-			miv.ContainerPanel?.NotifySnapPointsChanged();
-		}
 	}
 
 	void ApplyItemsUpdatingScrollMode()
@@ -768,13 +762,13 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	void UpdateSnapPoints()
 	{
-		if (_scrollViewer is null || Layout is null)
+		if (_scrollViewer is null || Layout is not ItemsLayout itemsLayout)
 		{
 			return;
 		}
 
-		var snapPointsType = Layout.SnapPointsType;
-		var snapPointsAlignment = Layout.SnapPointsAlignment;
+		var snapPointsType = itemsLayout.SnapPointsType;
+		var snapPointsAlignment = itemsLayout.SnapPointsAlignment;
 		bool isHorizontal = IsLayoutHorizontal;
 
 		// Map MAUI enum values to WinUI equivalents
@@ -793,8 +787,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		};
 
 		// Set snap point properties on the ScrollViewer.
-		// The ScrollViewer will query the SnappingStackPanel (which implements IScrollSnapPointsInfo)
-		// for the actual snap offsets.
+		// The StackPanel (content of ScrollViewer) already implements IScrollSnapPointsInfo,
+		// so ScrollViewer will query it for snap point offsets automatically.
 		if (isHorizontal)
 		{
 			_scrollViewer.HorizontalSnapPointsType = winSnapType;
@@ -804,12 +798,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			_scrollViewer.VerticalSnapPointsType = winSnapType;
 			_scrollViewer.VerticalSnapPointsAlignment = winSnapAlignment;
-		}
-
-		// Notify the panel so it can re-emit snap point change events
-		if (PlatformView is MauiItemsView mauiView)
-		{
-			mauiView.ContainerPanel?.UpdateSnapPoints(snapPointsType, snapPointsAlignment, isHorizontal);
 		}
 	}
 

@@ -343,7 +343,7 @@
                       IsHorizontalScrollChainingEnabled="True"
                       IsVerticalScrollChainingEnabled="True"
                       AutomationProperties.AccessibilityView="Raw">
-            <items2:SnappingStackPanel x:Name="PART_ContainerStack">
+            <StackPanel x:Name="PART_ContainerStack">
                 <ContentControl x:Name="HeaderContentControl"
                                 HorizontalContentAlignment="Stretch"
                                 VerticalContentAlignment="Stretch"/>
@@ -368,7 +368,7 @@
                 <ContentControl x:Name="FooterContentControl"
                                 HorizontalContentAlignment="Stretch"
                                 VerticalContentAlignment="Stretch"/>
-            </items2:SnappingStackPanel>
+            </StackPanel>
         </ScrollViewer>
 
     </ControlTemplate>
