@@ -1221,6 +1221,8 @@ namespace Microsoft.Maui.Controls
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
 		NavigationType _navigationType;
+		Page _pendingPreviousPage;
+		NavigationType _pendingNavigationType;
 
 		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
 		public Shell()
@@ -1673,6 +1675,22 @@ namespace Microsoft.Maui.Controls
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
 
+		void OnCurrentPageLoaded(object sender, EventArgs e)
+		{
+			if (sender is Page page)
+			{
+				page.Loaded -= OnCurrentPageLoaded;
+				page.SendNavigatedTo(new NavigatedToEventArgs(_pendingPreviousPage, _pendingNavigationType));
+				_pendingPreviousPage = null;
+				_pendingNavigationType = default;
+#if ANDROID
+				// Restore flyout behavior observers after deferred NavigatedTo timing
+				// Android requires this call to maintain flyout functionality
+				CurrentContent?.EvaluateDisconnect();
+#endif
+			}
+		}
+
 		void PropagateSendNavigatedTo()
 		{
 			if (CurrentPage is null)
@@ -1687,22 +1705,11 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				// Capture before _previousPage is nulled in SendNavigated() so OnCurrentPageLoaded
+				// receives the correct PreviousPage in NavigatedToEventArgs when it fires asynchronously.
+				_pendingPreviousPage = _previousPage;
+				_pendingNavigationType = _navigationType;
 				CurrentPage.Loaded += OnCurrentPageLoaded;
-			}
-		}
-
-		void OnCurrentPageLoaded(object sender, EventArgs e)
-		{
-			if (sender is Page page)
-			{
-				page.Loaded -= OnCurrentPageLoaded;
-				page.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
-				_navigationType = default;
-#if ANDROID
-				// Restore flyout behavior observers after deferred NavigatedTo timing
-				// Android requires this call to maintain flyout functionality
-				CurrentContent?.EvaluateDisconnect();
-#endif
 			}
 		}
 
