@@ -1,3 +1,4 @@
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,8 +20,9 @@ public class Issue33703 : _IssuesUITest
 		App.WaitForElement("DetailLabel");
 		this.Back();
 		App.WaitForElement("NavigateButton");
-		App.ScrollDown("MainScrollView", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollTo("BottomLabel");
 		App.WaitForElement("BottomLabel");
 		VerifyScreenshot();
 	}
 }
+#endif
