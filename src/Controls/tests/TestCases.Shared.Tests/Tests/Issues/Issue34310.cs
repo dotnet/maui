@@ -1,4 +1,3 @@
-#if !TIZEN
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,4 +19,3 @@ public class Issue34310 : _IssuesUITest
 			"Loaded event should fire for a MAUI View added to a native container via ToPlatform().");
 	}
 }
-#endif
