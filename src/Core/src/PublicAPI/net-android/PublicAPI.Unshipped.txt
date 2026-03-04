@@ -8,6 +8,8 @@ override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+﻿#nullable enable
+Microsoft.Maui.Platform.MauiAppCompatEditText.OnKeyboardBackPressed -> System.EventHandler?
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.MauiScrollView.OnVisibilityChanged(Android.Views.View! changedView, Android.Views.ViewStates visibility) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get -> bool
@@ -25,3 +27,4 @@ override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(An
 override Microsoft.Maui.Platform.MauiWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiAppCompatEditText.OnKeyPreIme(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
