@@ -1,14 +1,13 @@
 ---
 name: code-review
-description: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Uses independence-first assessment (code before narrative) and optional multi-model review. Invoke between Gate and Fix to triage, or after Fix to compare candidates.
+description: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Uses independence-first assessment (code before narrative) and optional multi-model review. Invoke with "review code for PR #XXXXX" or "code review PR #XXXXX".
 ---
 
 # Code Review Skill
 
-Evaluates code changes for correctness, safety, performance, and consistency with .NET MAUI conventions. Designed to plug into the PR agent workflow at two points:
+Standalone skill that evaluates PR code changes for correctness, safety, performance, and consistency with .NET MAUI conventions. Can be invoked directly by users or by other agents/skills.
 
-1. **Pre-Fix Triage** — After Gate passes, quickly assess whether the PR's fix is good enough to skip the expensive Fix phase
-2. **Post-Fix Comparison** — After try-fix exploration, compare candidates on quality dimensions beyond pass/fail
+**Trigger phrases:** "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code"
 
 ## Core Principles
 
@@ -22,31 +21,21 @@ Evaluates code changes for correctness, safety, performance, and consistency wit
 
 | Input | Required | Description |
 |-------|----------|-------------|
-| mode | Yes | `triage` (Pre-Fix) or `compare` (Post-Fix) |
-| pr_number | Yes | GitHub PR number |
-| candidates | Compare only | List of passing fix candidates (from Fix Candidates table) with diffs |
-| state_file | Optional | Path to PR agent state file |
+| pr_number | Yes | GitHub PR number to review |
 
 ## Outputs
 
 | Field | Description |
 |-------|-------------|
-| `verdict` | `LGTM`, `NEEDS_REVIEW`, `NEEDS_CHANGES`, or `SKIP_FIX_PHASE` |
+| `verdict` | `LGTM`, `NEEDS_CHANGES`, or `NEEDS_DISCUSSION` |
 | `confidence` | `high`, `medium`, or `low` |
 | `findings` | Categorized findings with severity levels |
-| `recommendation` | What to do next (proceed to Fix, skip Fix, select candidate N, etc.) |
 
 ---
 
-## Mode 1: Pre-Fix Triage
+## Review Workflow
 
-**When:** After Gate passes (tests FAIL without fix, PASS with fix), before starting Fix phase.
-
-**Purpose:** Determine if the PR's fix is high-quality enough to skip the expensive multi-model Fix exploration.
-
-### Workflow
-
-#### Step 1: Gather Code Context (No PR Narrative)
+### Step 1: Gather Code Context (No PR Narrative)
 
 **Do NOT read the PR description or issue yet.**
 
@@ -70,117 +59,142 @@ Evaluates code changes for correctness, safety, performance, and consistency wit
    git log --oneline -10 -- <changed-file>
    ```
 
-#### Step 2: Form Independent Assessment
+### Step 2: Form Independent Assessment
 
 Based ONLY on the code (no PR description), answer:
 
 1. **What does this change do?** Describe the behavioral change in your own words
 2. **Why might it be needed?** Infer motivation from the code
 3. **Is the approach sound?** Would a simpler alternative work?
-4. **What problems do you see?** Bugs, edge cases, thread safety, missing validation
+4. **What problems do you see?** Run through the MAUI-Specific Review Checklist below
 
-#### Step 3: Read PR Narrative and Reconcile
+### Step 3: Read PR Narrative and Reconcile
 
-Now read the PR description, linked issue, and comments. Treat as claims to verify.
+Now read the PR description, linked issue, and comments. Treat these as **claims to verify**, not facts.
 
 1. Where your assessment disagrees with the author's claims, investigate further
 2. If the PR claims a bug fix, verify the root cause analysis matches the code
 3. Check existing review comments to avoid duplicating feedback
 
-#### Step 4: Triage Verdict
+### Step 4: Devil's Advocate and Verdict
 
-**SKIP_FIX_PHASE** — The fix is correct, minimal, well-targeted, and handles edge cases. No value in exploring alternatives.
+Before finalizing your verdict:
 
-**Criteria for SKIP_FIX_PHASE (ALL must be true):**
-- Fix addresses root cause, not symptoms
-- Minimal change footprint (no unnecessary modifications)
-- Handles edge cases identified in your review
-- Consistent with MAUI codebase patterns
-- No thread-safety, lifecycle, or performance concerns
-- Your confidence is `high`
+1. **Challenge your findings** — For each issue you flagged, ask: "Am I sure, or am I guessing?"
+2. **Challenge your approval** — If you're leaning LGTM, ask: "What could go wrong that I'm not seeing?"
+3. **Check platform blind spots** — If the change touches platforms you can't fully reason about, say so explicitly
 
-**NEEDS_REVIEW** — The fix works (Gate proved it) but has quality concerns. Proceed to Fix phase to explore alternatives.
+Then deliver your verdict:
 
-**Criteria for NEEDS_REVIEW (ANY is sufficient):**
-- Fix addresses symptoms rather than root cause
-- Unnecessarily complex for the problem
-- Missing edge case handling
-- Inconsistent with codebase patterns
-- Thread-safety or lifecycle concerns
-- Your confidence is `medium` or `low`
+- **`LGTM`** — Code is correct, safe, and consistent with MAUI patterns. Ready for human approval.
+- **`NEEDS_CHANGES`** — Concrete issues found that should be addressed before merge.
+- **`NEEDS_DISCUSSION`** — Complex tradeoffs or architectural questions that need human judgment.
 
 ---
 
-## Mode 2: Post-Fix Comparison
+## MAUI-Specific Review Checklist
 
-**When:** After Fix phase completes, before Report phase. Multiple candidates passed tests.
+This is the core of the skill. Walk through each applicable section for every review.
 
-**Purpose:** Compare passing candidates on quality dimensions beyond "tests pass."
+### Platform Code Patterns
 
-### Workflow
+| Rule | Details |
+|------|---------|
+| **File extensions determine compilation targets** | `.android.cs` → Android only. `.ios.cs` → iOS AND MacCatalyst. `.maccatalyst.cs` → MacCatalyst only. `.windows.cs` → Windows only. |
+| **MacCatalyst double-compilation** | Both `.ios.cs` and `.maccatalyst.cs` files compile for MacCatalyst. There is no precedence — if both exist, both compile. Check for duplicate definitions. |
+| **Android namespace collisions** | `View`, `Color`, `Context` exist in both MAUI and Android namespaces. Use type aliases: `using AView = Android.Views.View;`, `using AColor = Android.Graphics.Color;` |
+| **Platform-specific code in shared files** | If a `.cs` file (no platform suffix) uses `#if ANDROID`/`#if IOS`, check that the non-platform path is correct too. |
 
-#### Step 1: Read Each Candidate's Diff
+### Handler Lifecycle
 
-For each passing candidate (PR fix + any try-fix passes):
-1. Read the full diff (`fix.diff` from try-fix output, or `gh pr diff` for PR)
-2. Read the full source files affected
-3. Understand each approach's strategy
+| Rule | Details |
+|------|---------|
+| **ConnectHandler / DisconnectHandler symmetry** | Everything registered in `ConnectHandler` must be unregistered in `DisconnectHandler`. Listeners, event handlers, callbacks — check for leaks. |
+| **Dispose Java.Lang.Object derivatives** | Android listeners that extend `Java.Lang.Object` must be disposed to prevent leaks: `_listener?.Dispose(); _listener = null;` |
+| **Null guards after disconnect** | Handler code must guard against `PlatformView` being null after `DisconnectHandler` runs. |
+| **Mapper initialization** | Mapper methods should initialize state fully, not assume defaults. They can be called at any time, not just on initial setup. |
+| **Base class calls** | `ConnectHandler` should call `base.ConnectHandler()` before custom setup. `DisconnectHandler` should clean up before calling `base.DisconnectHandler()`. |
 
-#### Step 2: Evaluate Each Candidate
+### CollectionView Handler Detection
 
-Score each candidate on these dimensions:
+There are TWO handler implementations. Which one applies depends on platform:
 
-| Dimension | Question |
-|-----------|----------|
-| **Root Cause** | Does it fix the root cause or mask symptoms? |
-| **Simplicity** | How many files/lines changed? Is it the minimal fix? |
-| **Robustness** | Does it handle edge cases? Could it regress? |
-| **Safety** | Thread-safety? Lifecycle correctness? Resource leaks? |
-| **Consistency** | Does it match existing patterns in the codebase? |
-| **Maintainability** | Will future developers understand this change? |
+| Platform | Active Handler | Location |
+|----------|----------------|----------|
+| **Android** | Items/ (only implementation) | `Handlers/Items/Android/` |
+| **Windows** | Items/ (only implementation) | `Handlers/Items/*.Windows.cs` |
+| **iOS/MacCatalyst** | Items2/ (current) | `Handlers/Items2/iOS/` |
 
-#### Step 3: Devil's Advocate
+- Items2/ has **NO Android or Windows code** — never apply Android fixes there
+- Items/ iOS code is **deprecated** — only touch if PR explicitly modifies it
+- If a PR modifies CollectionView files, verify it's editing the correct handler for the target platform
 
-For your top-ranked candidate:
-- What edge cases might still break?
-- What if the test is too narrow and doesn't cover real usage?
-- Could this fix cause regressions in other scenarios?
+### Safe Area
 
-For your lowest-ranked candidate:
-- Could it actually be better in ways you're not seeing?
-- Is its simplicity an advantage you're underweighting?
+| Rule | Details |
+|------|---------|
+| **Opt-in model** | Only views implementing `ISafeAreaView` or `ISafeAreaView2` should get safe area insets applied |
+| **Non-safe-area views** | Must return `SafeAreaPadding.Empty`, not device insets |
+| **No double-padding** | Check for safe area insets being applied at multiple levels of the view hierarchy (e.g., both a Page and its inner ContentPresenter) |
+| **macCatalyst defaults** | `UseSafeArea` defaults to `true` on macCatalyst (vs `false` on iOS) — watch for platform assumption bugs |
+| **Raw vs adjusted insets** | Never compare raw UIKit `SafeAreaInsets` against adjusted `_safeArea` (filtered by `GetSafeAreaForEdge`). Compare raw-to-raw or adjusted-to-adjusted. |
 
-#### Step 4: Comparison Verdict
+### Threading and Memory
 
-Produce a ranked comparison:
+| Rule | Details |
+|------|---------|
+| **Android UI thread** | All Android View APIs must be called on the UI thread. Use `platformView.Post(() => { })` from background threads. |
+| **Modern threading APIs** | Use `MainThread.BeginInvokeOnMainThread()` or `Dispatcher.Dispatch()`. NOT `Device.BeginInvokeOnMainThread` (obsolete). |
+| **Event handler cleanup** | Unsubscribe all event handlers in `DisconnectHandler` to prevent the handler from being kept alive. |
+| **Circular references** | Watch for handler ↔ virtual view strong reference cycles. Use weak references where appropriate. |
 
-```markdown
-## Code Review: Fix Comparison
+### Public API Changes
 
-### Rankings
+| Rule | Details |
+|------|---------|
+| **PublicAPI.Unshipped.txt** | New public APIs must be added to `PublicAPI.Unshipped.txt`. Never disable analyzers to bypass this. |
+| **BOM and header** | PublicAPI files must start with `#nullable enable` (any BOM at file start, not as a symbol line). |
+| **Obsolete APIs in new code** | New code must NOT use: `Application.MainPage` (use `Window.Page`), `Frame` (use `Border`), `Device.BeginInvokeOnMainThread` (use `Dispatcher.Dispatch`). |
+| **Branching** | API additions belong on `net10.0` branch. Bug fixes without API changes go on `main`. |
 
-| Rank | Candidate | Approach | Strengths | Concerns |
-|------|-----------|----------|-----------|----------|
-| 1 | PR #XXXXX | [approach] | [strengths] | [concerns] |
-| 2 | try-fix #3 | [approach] | [strengths] | [concerns] |
-| 3 | try-fix #1 | [approach] | [strengths] | [concerns] |
+### Test Changes
 
-### Recommendation
-**Selected:** [Candidate] — [1-2 sentence justification]
-**Confidence:** high/medium/low
-```
+| Rule | Details |
+|------|---------|
+| **UI tests: two-project requirement** | Every UI test needs a HostApp page (`TestCases.HostApp/Issues/IssueXXXXX.cs`) AND an NUnit test (`TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`). |
+| **HostApp: prefer C# over XAML** | Only use XAML when testing XAML-specific features (bindings, templates, styles). |
+| **Screenshot tests** | Use `VerifyScreenshot(retryTimeout: ...)` — never `Task.Delay()` before `VerifyScreenshot()`. Use `UITestEntry`/`UITestEditor` to avoid cursor blink. |
+| **Single category per test** | Only ONE `[Category(UITestCategories.XYZ)]` per test method. |
+| **No inline #if in tests** | Move platform-specific logic to extension methods, don't use `#if ANDROID` in test methods. |
+| **XAML unit tests** | Issue tests go in `Issues/MauiXXXXX.xaml` + `.xaml.cs`. Use `[Values] XamlInflator inflator` for all three inflator paths. |
+| **Test base classes** | Use `TestShell` for Shell tests, `_IssuesUITest` for UI tests. Check what's available before rolling your own. |
+
+### Template Changes
+
+| Rule | Details |
+|------|---------|
+| **Conditional compilation markers** | Platform `#if` directives (WINDOWS, ANDROID, etc.) MUST be wrapped in `//-:cnd:noEmit` ... `//+:cnd:noEmit`. Template parameters (`#if (IncludeSampleContent)`) must NOT be wrapped. |
+| **Auto-generated files** | Never commit `cgmanifest.json` or `templatestrings.json` — they're auto-generated in CI. |
+
+### What NOT to Flag
+
+Do not waste the reviewer's time on these:
+
+- **Style/formatting** — CI catches these via `dotnet format`
+- **Missing XML docs on non-public APIs** — Not required by convention
+- **Test naming preferences** — Unless names are genuinely misleading
+- **Micro-optimizations in cold paths** — Readability wins unless it's a hot path
+- **Using `var` vs explicit types** — Project convention allows both
 
 ---
 
 ## Multi-Model Review (Optional)
 
-When the environment supports multiple models, run the review in parallel for diverse perspectives. Different models catch different classes of issues.
-
-**When to use:** Pre-Fix Triage mode only (Post-Fix Comparison is fast enough single-model).
+When the environment supports multiple models, run the review in parallel for diverse perspectives. Different model families catch different classes of issues.
 
 **How:**
-1. Select 2-3 models from different families (see SHARED-RULES.md for available models)
-2. Launch sub-agents in parallel with the same review prompt
+1. Select 2-3 models from different families (e.g., Claude + GPT + Gemini)
+2. Launch sub-agents in parallel, each running the full 4-step workflow above
 3. Synthesize: deduplicate findings, elevate issues flagged by multiple models
 4. Present unified review noting which findings had multi-model agreement
 
@@ -188,42 +202,10 @@ When the environment supports multiple models, run the review in parallel for di
 
 ---
 
-## MAUI-Specific Review Rules
-
-### Platform Code
-
-- **Check platform-specific file extensions**: `.android.cs`, `.ios.cs`, `.maccatalyst.cs`, `.windows.cs`
-- **Both `.ios.cs` and `.maccatalyst.cs` compile for MacCatalyst** — no precedence mechanism
-- **Handler lifecycle**: Register in `ConnectHandler`, unregister in `DisconnectHandler`
-- **Dispose `Java.Lang.Object` derivatives** on Android to prevent memory leaks
-- **Use type aliases** for namespace collisions: `using AView = Android.Views.View;`
-
-### Common MAUI Pitfalls
-
-| Pitfall | What to Check |
-|---------|---------------|
-| **Handler lifecycle** | Does `DisconnectHandler` clean up everything `ConnectHandler` registered? |
-| **Platform threading** | Are Android View APIs called on UI thread? (`platformView.Post()`) |
-| **Mapper vs Property** | Is the right mechanism used? Mappers for platform sync, properties for cross-platform |
-| **Null platform view** | Does the handler guard against `PlatformView` being null after disconnect? |
-| **SafeArea** | Does the fix account for safe area insets on iOS/Android? |
-| **CollectionView handler** | Items2/ for iOS/MacCatalyst, Items/ for Android/Windows (see handler detection instructions) |
-
-### What NOT to Flag
-
-- Style/formatting issues (CI catches these via `dotnet format`)
-- Missing XML docs on non-public APIs
-- Test naming conventions (unless egregiously unclear)
-- Minor performance micro-optimizations in non-hot paths
-
----
-
 ## Review Output Format
 
-### Pre-Fix Triage Output
-
 ```markdown
-## Code Review: Pre-Fix Triage — PR #XXXXX
+## Code Review — PR #XXXXX
 
 ### Independent Assessment
 **What this changes:** [Your understanding from code alone]
@@ -236,55 +218,31 @@ When the environment supports multiple models, run the review in parallel for di
 ### Findings
 
 #### ❌ Error — [Brief description]
-[Explanation with specific code references]
+[Explanation with specific file:line references]
 
 #### ⚠️ Warning — [Brief description]
-[Explanation with specific code references]
+[Explanation with specific file:line references]
 
 #### 💡 Suggestion — [Brief description]
 [Explanation]
 
-### Verdict: SKIP_FIX_PHASE / NEEDS_REVIEW
-**Confidence:** high/medium/low
-**Reasoning:** [2-3 sentences]
-**Recommendation:** [Skip Fix phase / Proceed to Fix phase with hints]
-```
-
-### Post-Fix Comparison Output
-
-```markdown
-## Code Review: Fix Comparison — PR #XXXXX
-
-### Candidate Analysis
-
-#### PR Fix: [approach]
-- **Root cause:** ✅/⚠️/❌
-- **Simplicity:** ✅/⚠️/❌
-- **Robustness:** ✅/⚠️/❌
-- **Safety:** ✅/⚠️/❌
-
-#### try-fix #N: [approach]
-- **Root cause:** ✅/⚠️/❌
-- **Simplicity:** ✅/⚠️/❌
-- **Robustness:** ✅/⚠️/❌
-- **Safety:** ✅/⚠️/❌
-
 ### Devil's Advocate
-[Challenges to your top-ranked candidate]
+[Challenges to your own conclusions]
 
-### Recommendation
-**Selected:** [Candidate] — [justification]
-**Confidence:** high/medium/low
+### Verdict: LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION
+**Confidence:** high / medium / low
+**Summary:** [2-3 sentences explaining the verdict]
 ```
 
 ---
 
 ## Verdict Consistency Rules
 
-1. **The verdict must reflect your most severe finding.** If you have any ⚠️ findings, the verdict cannot be `SKIP_FIX_PHASE`.
-2. **When uncertain, proceed to Fix.** `SKIP_FIX_PHASE` requires `high` confidence. If you're unsure, use `NEEDS_REVIEW` and let Fix phase explore alternatives.
-3. **Devil's advocate before finalizing.** Re-read all findings. For each warning, ask: "Would I be comfortable if this merged as-is?"
-4. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly.
+1. **The verdict must match your most severe finding.** If you have any ❌ Error findings, the verdict must be `NEEDS_CHANGES`. If only ⚠️ Warnings, use judgment but explain.
+2. **Devil's advocate before finalizing.** Re-read all findings. For each warning, ask: "Would I be comfortable if this merged as-is?"
+3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
+4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
+5. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
 
 ---
 
@@ -292,8 +250,8 @@ When the environment supports multiple models, run the review in parallel for di
 
 - [ ] Full source files read (not just diffs)
 - [ ] Independent assessment formed before reading PR narrative
-- [ ] Findings categorized by severity
+- [ ] MAUI-specific checklist walked through for each applicable section
+- [ ] Findings categorized by severity (❌ / ⚠️ / 💡)
 - [ ] Devil's advocate check performed
 - [ ] Verdict is consistent with findings
 - [ ] Output follows the format above
-- [ ] Results reported to invoker (or saved to state file)
