@@ -4,6 +4,8 @@ using AViewGroup = Android.Views.ViewGroup;
 using AFrameLayout = Android.Widget.FrameLayout;
 #elif IOS || MACCATALYST
 using UIKit;
+#elif WINDOWS
+using Microsoft.UI.Xaml.Controls;
 #endif
 #nullable enable
 using Microsoft.Maui.Handlers;
@@ -58,6 +60,8 @@ public class Issue34310NativeHostView : View
 public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostView, AFrameLayout>
 {
 	AView? _nativeChild;
+	View? _previousHostedView;
+	IElementHandler? _hostedViewHandler;
 
 	public static readonly IPropertyMapper<Issue34310NativeHostView, Issue34310NativeHostViewHandler> Mapper =
 		new PropertyMapper<Issue34310NativeHostView, Issue34310NativeHostViewHandler>(ViewHandler.ViewMapper)
@@ -92,18 +96,52 @@ public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostV
 
 	void RemoveNativeChild()
 	{
-		if (PlatformView is null || _nativeChild is null) return;
+		if (PlatformView is null || _nativeChild is null)
+		{
+			return;
+		}
+
+		// Dispose the handler before removing the view
+		if (_hostedViewHandler is IDisposable disposable)
+		{
+			disposable.Dispose();
+		}
+
 		PlatformView.RemoveView(_nativeChild);
 		_nativeChild = null;
+		_hostedViewHandler = null;
 	}
 
 	void UpdateHostedView()
 	{
-		if (MauiContext is null || PlatformView is null) return;
-		RemoveNativeChild();
+		if (MauiContext is null || PlatformView is null)
+		{
+			return;
+		}
+
 		var hosted = VirtualView?.HostedView;
-		if (hosted is null) return;
-		var native = hosted.ToPlatform(MauiContext);
+
+		// Change detection - only update if the view actually changed
+		if (hosted == _previousHostedView)
+		{
+			return;
+		}
+
+		RemoveNativeChild();
+		_previousHostedView = hosted;
+
+		if (hosted is null)
+		{
+			return;
+		}
+
+		_hostedViewHandler = hosted.ToHandler(MauiContext);
+		var native = _hostedViewHandler.PlatformView as AView;
+		if (native is null)
+		{
+			return;
+		}
+
 		native.LayoutParameters = new AFrameLayout.LayoutParams(
 			AViewGroup.LayoutParams.MatchParent,
 			AViewGroup.LayoutParams.WrapContent);
@@ -115,6 +153,8 @@ public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostV
 public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostView, UIView>
 {
 	UIView? _nativeChild;
+	View? _previousHostedView;
+	IElementHandler? _hostedViewHandler;
 
 	public static readonly IPropertyMapper<Issue34310NativeHostView, Issue34310NativeHostViewHandler> Mapper =
 		new PropertyMapper<Issue34310NativeHostView, Issue34310NativeHostViewHandler>(ViewHandler.ViewMapper)
@@ -144,20 +184,137 @@ public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostV
 
 	void RemoveNativeChild()
 	{
-		if (_nativeChild is null) return;
+		if (_nativeChild is null)
+			return;
+
+		// Dispose the handler before removing the view
+		if (_hostedViewHandler is IDisposable disposable)
+		{
+			disposable.Dispose();
+		}
+
 		_nativeChild.RemoveFromSuperview();
 		_nativeChild = null;
+		_hostedViewHandler = null;
 	}
 
 	void UpdateHostedView()
 	{
-		if (MauiContext is null || PlatformView is null) return;
-		RemoveNativeChild();
+		if (MauiContext is null || PlatformView is null)
+		{
+			return;
+		}
+
 		var hosted = VirtualView?.HostedView;
-		if (hosted is null) return;
-		var native = hosted.ToPlatform(MauiContext);
+
+		// Change detection - only update if the view actually changed
+		if (hosted == _previousHostedView)
+		{
+			return;
+		}
+
+		RemoveNativeChild();
+		_previousHostedView = hosted;
+
+		if (hosted is null)
+		{
+			return;
+		}
+
+		_hostedViewHandler = hosted.ToHandler(MauiContext);
+		var native = _hostedViewHandler.PlatformView as UIView;
+		if (native is null)
+		{
+			return;
+		}
+
 		native.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 		PlatformView.AddSubview(native);
+		_nativeChild = native;
+	}
+}
+#elif WINDOWS
+public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostView, Grid>
+{
+	Grid? _nativeChild;
+	View? _previousHostedView;
+	IElementHandler? _hostedViewHandler;
+
+	public static readonly IPropertyMapper<Issue34310NativeHostView, Issue34310NativeHostViewHandler> Mapper =
+		new PropertyMapper<Issue34310NativeHostView, Issue34310NativeHostViewHandler>(ViewHandler.ViewMapper)
+		{
+			[nameof(Issue34310NativeHostView.HostedView)] = MapHostedView,
+		};
+
+	public Issue34310NativeHostViewHandler() : base(Mapper) { }
+
+	protected override Grid CreatePlatformView()
+		=> new Grid();
+
+	protected override void ConnectHandler(Grid platformView)
+	{
+		base.ConnectHandler(platformView);
+		UpdateHostedView();
+	}
+
+	protected override void DisconnectHandler(Grid platformView)
+	{
+		RemoveNativeChild();
+		base.DisconnectHandler(platformView);
+	}
+
+	static void MapHostedView(Issue34310NativeHostViewHandler handler, Issue34310NativeHostView view)
+		=> handler.UpdateHostedView();
+
+	void RemoveNativeChild()
+	{
+		if (PlatformView is null || _nativeChild is null)
+		{
+			return;
+		}
+
+		// Dispose the handler before removing the view
+		if (_hostedViewHandler is IDisposable disposable)
+		{
+			disposable.Dispose();
+		}
+
+		PlatformView.Children.Remove(_nativeChild);
+		_nativeChild = null;
+		_hostedViewHandler = null;
+	}
+
+	void UpdateHostedView()
+	{
+		if (MauiContext is null || PlatformView is null)
+		{
+			return;
+		}
+
+		var hosted = VirtualView?.HostedView;
+
+		// Change detection - only update if the view actually changed
+		if (hosted == _previousHostedView)
+		{
+			return;
+		}
+
+		RemoveNativeChild();
+		_previousHostedView = hosted;
+
+		if (hosted is null)
+		{
+			return;
+		}
+
+		_hostedViewHandler = hosted.ToHandler(MauiContext);
+		var native = _hostedViewHandler.PlatformView as Grid;
+		if (native is null)
+		{
+			return;
+		}
+
+		PlatformView.Children.Add(native);
 		_nativeChild = native;
 	}
 }

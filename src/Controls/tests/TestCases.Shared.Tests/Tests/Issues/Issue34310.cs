@@ -1,4 +1,4 @@
-#if !WINDOWS && !TIZEN
+#if !TIZEN
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
