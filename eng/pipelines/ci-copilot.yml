@@ -2,9 +2,6 @@
 # This pipeline installs the Copilot CLI and invokes the PR reviewer agent
 # to conduct automated code reviews on pull requests.
 #
-# Environment setup follows the same patterns as ui-tests-steps.yml and
-# device-tests-steps.yml: enable-kvm → provision → dotnet install → appium.
-#
 # For more information, see:
 # https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
 
@@ -30,8 +27,6 @@ parameters:
     type: object
     default:
       name: AcesShared
-      demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -41,6 +36,8 @@ variables:
     value: true
   - name: APPIUM_HOME
     value: $(System.DefaultWorkingDirectory)/.appium/
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)/logs
 
 stages:
   - stage: ReviewPR
@@ -48,13 +45,7 @@ stages:
     jobs:
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
-        # Android needs Linux (KVM for emulator), iOS needs macOS (Xcode/simulators)
-        ${{ if eq(parameters.Platform, 'android') }}:
-          pool:
-            name: Azure Pipelines
-            vmImage: ubuntu-22.04
-        ${{ else }}:
-          pool: ${{ parameters.pool }}
+        pool: ${{ parameters.pool }}
         timeoutInMinutes: 180
         steps:
           - checkout: self
@@ -74,17 +65,7 @@ stages:
               echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
 
-          # Create artifact directories early (prevents publish failures if steps are skipped)
-          - script: |
-              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
-              mkdir -p $(Build.ArtifactStagingDirectory)/logs
-            displayName: 'Create Artifact Directories'
-
-          ##################################################
-          #         Provision Machine (same as uitests)    #
-          ##################################################
-
-          # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml and device-tests-steps.yml)
+          # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
             - template: common/enable-kvm.yml
 
@@ -103,12 +84,9 @@ stages:
               skipSimulatorSetup: ${{ eq(parameters.Platform, 'android') }}
               skipCertificates: true
 
-          ##################################################
-          #         Install .NET (same as uitests)         #
-          ##################################################
-
+          # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
-            displayName: 'Install .NET'
+            displayName: 'Install .NET and workloads'
             retryCountOnTaskFailure: 2
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -124,16 +102,12 @@ stages:
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
-
+            
           # Restore .NET tools (includes xharness)
           - script: dotnet tool restore
             displayName: 'Restore .NET Tools'
 
-          ##################################################
-          #     Boot Android Emulator via Cake (same as    #
-          #     device-tests-steps.yml / uitests)          #
-          ##################################################
-
+          # Boot Android Emulator via Cake (same as device-tests-steps.yml / ui-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
             - script: dotnet cake eng/devices/android.cake --target=boot --device="android-emulator-64_30" --apiversion="30" --verbosity=diagnostic
               displayName: 'Boot Android Emulator (Cake)'
@@ -150,12 +124,8 @@ stages:
                 echo "✅ Emulator running: $DEVICE_ID"
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
               displayName: 'Capture Emulator UDID'
-              timeoutInMinutes: 5
 
-          ##################################################
-          #     Install Node.js + Appium (same as uitests) #
-          ##################################################
-
+          # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1
             inputs:
               version: "20.3.1"
@@ -170,114 +140,220 @@ stages:
             env:
               APPIUM_HOME: $(APPIUM_HOME)
 
-          ##################################################
-          #     Copilot-specific setup and execution       #
-          ##################################################
-
-          # Install GitHub CLI (cross-platform: apt on Linux, brew on macOS)
           - script: |
               echo "Installing GitHub CLI..."
-              if [ "$(uname)" = "Linux" ]; then
-                (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
-                  && sudo mkdir -p -m 755 /etc/apt/keyrings \
-                  && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-                  && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-                  && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-                  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-                  && sudo apt update \
-                  && sudo apt install gh -y
-              else
-                brew install gh
-              fi
-              gh --version
-            displayName: 'Install GitHub CLI'
-
-          # Authenticate GitHub CLI
-          - script: |
-              mkdir -p "$HOME/.config/gh"
-              printf 'github.com:\n    oauth_token: %s\n    git_protocol: https\n' "$GH_CLI_TOKEN" > "$HOME/.config/gh/hosts.yml"
-              LOGIN=$(gh api user --jq '.login' 2>&1)
-              if [ $? -ne 0 ]; then
-                echo "##vso[task.logissue type=error]GitHub CLI authentication failed: $LOGIN"
+              brew install gh
+              if ! gh --version; then
+                echo "##vso[task.logissue type=error]Failed to install GitHub CLI"
                 exit 1
               fi
-              echo "GitHub CLI authenticated as: $LOGIN"
+              echo "GitHub CLI installed successfully"
+            displayName: 'Install GitHub CLI'
+
+          - script: |
+              echo "Authenticating with GitHub CLI..."
+              if [ -z "$(GH_CLI_TOKEN)" ]; then
+                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
+                exit 1
+              fi
+              echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
+              if ! gh auth status; then
+                echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
+                exit 1
+              fi
             displayName: 'Authenticate GitHub CLI'
             env:
               GH_CLI_TOKEN: $(GH_CLI_TOKEN)
 
-          # Install and authenticate Copilot CLI
           - script: |
+              echo "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
-              copilot --version
-            displayName: 'Install GitHub Copilot CLI'
-
-          - script: |
-              if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]COPILOT_GITHUB_TOKEN is not set"
+              if ! which copilot; then
+                echo "##vso[task.logissue type=error]Failed to install GitHub Copilot CLI"
                 exit 1
               fi
-              echo "✅ Copilot CLI authentication configured"
-            displayName: 'Authenticate Copilot CLI'
-            env:
-              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-              GH_TOKEN: $(GH_CLI_TOKEN)
+              echo "Copilot CLI installed successfully"
+            displayName: 'Install GitHub Copilot CLI'
 
-          # Run the PR Reviewer Agent
+
+          # Boot iOS Simulator (only for iOS platform)
+          # UI test baseline screenshots are captured on iPhone Xs - must use same device
           - script: |
-              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              echo "=== Booting iOS Simulator ==="
+              
+              # Find the latest stable iOS runtime (prefer 18.x, fallback to 17.x)
+              RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+              ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
+              echo "Selected iOS runtime: $RUNTIME"
+              
+              # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
+              UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                .devices[$rt] // [] |
+                map(select(.name == "iPhone Xs")) |
+                .[0].udid // empty
+              ')
+              
+              # If iPhone Xs doesn't exist, try iPhone 11 Pro (same 1125×2436 resolution)
+              if [ -z "$UDID" ]; then
+                UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                  .devices[$rt] // [] |
+                  map(select(.name == "iPhone 11 Pro")) |
+                  .[0].udid // empty
+                ')
+                if [ -n "$UDID" ]; then
+                  echo "Found existing iPhone 11 Pro (same resolution as iPhone Xs): $UDID"
+                fi
+              else
+                echo "Found existing iPhone Xs: $UDID"
+              fi
+              
+              # If neither exists, try to create them
+              if [ -z "$UDID" ]; then
+                echo "No matching device found - attempting to create one for runtime $RUNTIME..."
+                
+                # Try iPhone Xs first
+                UDID=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RUNTIME" 2>&1)
+                if [ $? -ne 0 ]; then
+                  echo "iPhone Xs device type unavailable: $UDID"
+                  # Try iPhone 11 Pro (same 1125×2436 resolution)
+                  UDID=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RUNTIME" 2>&1)
+                  if [ $? -ne 0 ]; then
+                    echo "##vso[task.logissue type=warning]Failed to create iPhone 11 Pro: $UDID"
+                    # Last resort: first available iPhone
+                    UDID=$(xcrun simctl list devices available --json | jq -r '
+                      .devices | to_entries |
+                      map(.value) | flatten |
+                      map(select(.name | test("iPhone"))) |
+                      .[0].udid
+                    ')
+                  else
+                    echo "Created iPhone 11 Pro simulator: $UDID"
+                  fi
+                else
+                  echo "Created iPhone Xs simulator: $UDID"
+                fi
+              fi
+              
+              if [ -z "$UDID" ]; then
+                echo "##vso[task.logissue type=error]No iOS simulator found"
+                exit 1
+              fi
+              
+              # Shutdown any other booted simulators to avoid Appium connecting to wrong device
+              xcrun simctl list devices booted --json | jq -r '
+                .devices | to_entries | map(.value) | flatten |
+                map(select(.state == "Booted" and .udid != "'"$UDID"'")) |
+                .[].udid
+              ' | while read OTHER_UDID; do
+                echo "Shutting down other simulator: $OTHER_UDID"
+                xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
+              done
+              
+              echo "Booting simulator: $UDID"
+              xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
+              sleep 10
+              
+              echo "Booted simulators:"
+              xcrun simctl list devices booted
+              
+              echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
+              echo "iOS Simulator UDID: $UDID"
+            displayName: 'Boot iOS Simulator'
+            condition: eq('${{ parameters.Platform }}', 'ios')
+            timeoutInMinutes: 5
 
-              # Configure git identity
+          - script: |
+              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
+              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              
+              # Configure git identity (required for merge operations on self-hosted agents)
               git config user.email "copilot-ci@microsoft.com"
               git config user.name "Copilot CI"
-
-              # Skip Xcode version check
+              echo "Git identity configured"
+              
+              # Create Directory.Build.Override.props to skip Xcode version check
+              # AcesShared agents may have a newer Xcode than the .NET iOS SDK expects
               cp Directory.Build.Override.props.in Directory.Build.Override.props
-              if [ "$(uname)" = "Linux" ]; then
-                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
-              else
-                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
-              fi
-
+              # Insert ValidateXcodeVersion before closing </Project> tag
+              sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              
+              # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
-
-              # Invoke the PR reviewer
+              
+              # Invoke the PR reviewer using our PowerShell script
+              # The script will merge the PR into the current branch
+              # -PostSummaryComment and -RunFinalize handle posting comments
               set +e
               pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
-
+              
               echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
-
-              # Cleanup orphaned copilot processes
+              
+              # Terminate any orphaned copilot CLI processes that could hold this step's
+              # stdout fd open and prevent the bash step from exiting.
+              # Only target processes whose command line includes the copilot CLI path.
+              echo "Cleaning up orphaned copilot processes..."
+              SELF_PID=$$
               for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
-                if [ -n "$proc" ] && [ "$proc" != "$$" ]; then
-                  kill "$proc" 2>/dev/null || true
+                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
+                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
+                  if echo "$PROC_CMD" | grep -q "copilot"; then
+                    echo "  Stopping copilot process $proc: $PROC_CMD"
+                    kill "$proc" 2>/dev/null || true
+                  fi
                 fi
               done
-
-              # Collect artifacts
-              cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state 2>/dev/null || true
-              cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ 2>/dev/null || true
+              
+              # Copy any Copilot session files
+              if [ -d "$HOME/.copilot" ]; then
+                echo "Copying Copilot session state..."
+                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
+              fi
+              
+              # Copy CustomAgentLogsTmp if it exists
+              if [ -d "CustomAgentLogsTmp" ]; then
+                echo "Copying CustomAgentLogsTmp..."
+                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              
+              # Copy any Review_Feedback files
               find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
-              cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ 2>/dev/null || true
-
+              
+              # Copy any .github/agent-pr-session files
+              if [ -d ".github/agent-pr-session" ]; then
+                echo "Copying agent-pr-session..."
+                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              
+              # Check for failure indicators in output
               if [ $COPILOT_EXIT_CODE -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
+                # Don't exit yet - let artifacts be published first
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
+              
+              # Check output for common failure patterns
+              if grep -qi "error\|failed\|exception" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
+                if grep -qi "simulator.*not\|emulator.*not\|workload.*not\|sdk.*not found" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
+                  echo "##vso[task.logissue type=warning]Copilot encountered environment issues. Check artifacts for details."
+                fi
+              fi
+              
+              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             displayName: 'Run PR Reviewer Agent'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
-              GITHUB_TOKEN: $(GH_CLI_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
-              APPIUM_HOME: $(APPIUM_HOME)
 
-          ##################################################
-          #                    Publish                     #
-          ##################################################
-
+          # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Copilot Logs'
             inputs:
@@ -286,6 +362,7 @@ stages:
               publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
+          # Publish build logs if they exist
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Build Logs'
             inputs:
@@ -294,9 +371,11 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
+          # Fail the pipeline if Copilot failed
           - script: |
               if [ "$(CopilotFailed)" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
                 exit 1
               fi
             displayName: 'Check Copilot Result'
+            condition: succeededOrFailed()
