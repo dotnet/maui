@@ -260,7 +260,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
-   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+   - **Note**: Works on any PR
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
 4. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
@@ -302,7 +302,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
-   - **Output**: Updates session markdown with attempt results and failure analysis
+   - **Output**: Reports attempt results and failure analysis
 
 ### Using Custom Agents
 
