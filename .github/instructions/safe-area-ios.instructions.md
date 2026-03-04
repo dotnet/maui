@@ -1,9 +1,8 @@
 ---
 applyTo:
-  - "**/MauiView.cs"
-  - "**/MauiScrollView.cs"
-  - "**/*SafeArea*"
-  - "**/*safearea*"
+  - "**/Platform/iOS/MauiView.cs"
+  - "**/Platform/iOS/MauiScrollView.cs"
+  - "**/Platform/iOS/*SafeArea*"
 ---
 
 # Safe Area Guidelines (iOS/macCatalyst)

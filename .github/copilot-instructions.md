@@ -187,7 +187,7 @@ git commit -m "Fix: Description of the change"
 - Update relevant docs in `docs/` folder when needed
 
 **Platform-Specific Documentation:**
-- `.github/instructions/safe-area-debugging.instructions.md` - Safe area investigation (iOS/macCatalyst)
+- `.github/instructions/safe-area-ios.instructions.md` - Safe area investigation (iOS/macCatalyst)
 - `.github/instructions/uitests.instructions.md` - UI test guidelines (includes safe area testing section)
 - `.github/instructions/android.instructions.md` - Android handler implementation
 - `.github/instructions/xaml-unittests.instructions.md` - XAML unit test guidelines
