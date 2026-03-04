@@ -42,8 +42,11 @@
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
     <!-- Use local project reference for development, switch to PackageReference for release -->
-    <ProjectReference Include="$(HOME)/dotnet/android-tools/src/Xamarin.Android.Tools.AndroidSdk/Xamarin.Android.Tools.AndroidSdk.csproj" />
-    <!-- <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="1.0.172" /> -->
+    <!-- <ProjectReference Include="Q:\repos\dotnet\android-tools\src\Xamarin.Android.Tools.AndroidSdk\Xamarin.Android.Tools.AndroidSdk.csproj" /> -->
+    <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="1.0.161" />
+    <!-- Use local project reference for development, switch to PackageReference for release -->
+    <!-- <ProjectReference Include="Q:\repos\dotnet\macios-devtools\Xamarin.MacDev\Xamarin.MacDev.csproj" /> -->
+    <PackageReference Include="Xamarin.Apple.Tools.MaciOS" Version="1.0.1" />
   </ItemGroup>
 
   <!-- Allow test project to access internals -->
