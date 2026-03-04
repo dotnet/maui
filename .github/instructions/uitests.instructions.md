@@ -523,6 +523,17 @@ cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
 5. **Check for platform-specific issues** - iOS version compatibility, permissions, etc.
 6. If you can't determine the fix, **ask for guidance** with the full exception details
 
+### Dangerous System Commands (Never Run)
+
+**🚨 NEVER run these commands — they cause destructive system-wide side effects:**
+
+- **`tccutil reset`** — Wipes ALL macOS permissions (Accessibility, Camera, etc.) system-wide. This breaks Appium/WebDriverAgent, Xcode, and other tools. Once reset, permissions must be manually re-granted through System Settings.
+- **`csrutil disable`** — Disables System Integrity Protection
+- **`networksetup`** — Modifies network configuration
+- **`defaults delete`** on system domains — Resets system preferences
+
+**General rule:** Do not run commands that modify macOS system-level privacy, security, or permission settings. If you need to check permissions, read them — never reset or modify them.
+
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
