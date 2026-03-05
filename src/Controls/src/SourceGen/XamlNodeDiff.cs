@@ -21,7 +21,7 @@ enum PropertyDiffKind
 /// <summary>
 /// Describes a change to a single property on an element node.
 /// </summary>
-readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue)
+readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null)
 {
 	/// <summary>The XAML attribute name of the changed property (e.g. <c>Text</c>, <c>TextColor</c>).</summary>
 	public XmlName PropertyName { get; } = propertyName;
@@ -30,10 +30,18 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 	public PropertyDiffKind Kind { get; } = kind;
 
 	/// <summary>
-	/// The new string value when <see cref="Kind"/> is <see cref="PropertyDiffKind.Set"/>.
-	/// <see langword="null"/> when <see cref="Kind"/> is <see cref="PropertyDiffKind.Clear"/>.
+	/// The new string value for simple <see cref="ValueNode"/> changes.
+	/// <see langword="null"/> when <see cref="Kind"/> is <see cref="PropertyDiffKind.Clear"/>
+	/// or the new value is a complex node (see <see cref="NewNode"/>).
 	/// </summary>
 	public string? NewValue { get; } = newValue;
+
+	/// <summary>
+	/// The full XAML node for complex property changes (markup extensions, nested elements).
+	/// <see langword="null"/> for simple <see cref="ValueNode"/> changes where <see cref="NewValue"/> suffices.
+	/// The code writer inspects this to decide how to emit the property assignment.
+	/// </summary>
+	public INode? NewNode { get; } = newNode;
 }
 
 /// <summary>
@@ -179,6 +187,8 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 				var p = nd.PropertyChanges[j];
 				if (p.Kind == PropertyDiffKind.Clear)
 					sb.Append(p.PropertyName.LocalName).Append(" cleared");
+				else if (p.NewNode != null)
+					sb.Append(p.PropertyName.LocalName).Append(" = {").Append(p.NewNode.GetType().Name).Append('}');
 				else
 					sb.Append(p.PropertyName.LocalName).Append(" = \"").Append(p.NewValue ?? "").Append('"');
 			}
@@ -373,11 +383,17 @@ static class XamlNodeDiff
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
 			{
+				// Text content changed — record as a content diff on the parent node
 				if (!StringEquals(oldVal.Value?.ToString(), newVal.Value?.ToString()))
-					return false; // content-text changes → structural for now
+				{
+					var contentName = new XmlName("", "_Content");
+					var contentDiff = new PropertyDiff(contentName, PropertyDiffKind.Set, newVal.Value?.ToString());
+					nodeChanges.Add(new NodeDiff(parentNodeId, new[] { contentDiff }, newNode.XmlType));
+				}
 			}
 			else
 			{
+				// Node type mismatch (Element↔Value) at same position → structural
 				return false;
 			}
 		}
@@ -457,13 +473,6 @@ static class XamlNodeDiff
 				addedNewIndices.Add(newIdxList![i]);
 		}
 
-		// Check that added elements can be created incrementally (only simple properties)
-		foreach (var newIdx in addedNewIndices)
-		{
-			if (!CanCreateIncrementally(newChildren[newIdx]))
-				return false;
-		}
-
 		// Recursively diff matched pairs (using new-position node IDs)
 		foreach (var (oldIdx, newIdx) in matched)
 		{
@@ -522,43 +531,10 @@ static class XamlNodeDiff
 	}
 
 	/// <summary>
-	/// Returns <see langword="true"/> if the element (and its entire subtree) can be created
-	/// incrementally in generated <c>UpdateComponent()</c> code. Only elements with simple
-	/// <see cref="ValueNode"/> properties and recursively-simple children qualify.
-	/// </summary>
-	static bool CanCreateIncrementally(ElementNode element)
-	{
-		foreach (var kvp in element.Properties)
-		{
-			if (kvp.Key.NamespaceURI == "x")
-				continue; // x:Name, x:Class, etc. — not set at runtime
-			if (kvp.Value is not ValueNode)
-				return false; // MarkupNode, ElementNode, ListNode → too complex
-		}
-
-		foreach (var child in element.CollectionItems)
-		{
-			if (child is ElementNode childElement)
-			{
-				if (!CanCreateIncrementally(childElement))
-					return false;
-			}
-			else
-			{
-				return false; // ValueNode children (text content) not supported
-			}
-		}
-
-		return true;
-	}
-
-	/// <summary>
 	/// Diffs the <see cref="ElementNode.Properties"/> dictionaries of two nodes.
-	/// Only simple <see cref="ValueNode"/> properties are considered for incremental update;
-	/// any property backed by a complex node (markup extension, nested element) that changed
-	/// causes this method to return <see langword="false"/>.
-	/// Changes to codegen-sensitive <c>x:</c> properties (e.g. <c>x:Name</c>, <c>x:Class</c>,
-	/// <c>x:DataType</c>) always trigger structural fallback because they affect generated code.
+	/// All property changes are recorded — simple <see cref="ValueNode"/> values, markup extensions,
+	/// and nested elements alike. Only changes to codegen-sensitive <c>x:</c> properties
+	/// (e.g. <c>x:Name</c>, <c>x:Class</c>, <c>x:DataType</c>) trigger structural fallback.
 	/// </summary>
 	static bool DiffProperties(ElementNode oldNode, ElementNode newNode, List<PropertyDiff> diffs)
 	{
@@ -577,15 +553,16 @@ static class XamlNodeDiff
 				// Both sides have the property — compare values
 				if (!NodeValueEquals(oldPropNode, newPropNode))
 				{
-					// Value changed: only simple ValueNode→ValueNode transitions are safe
-					if (oldPropNode is ValueNode oldVal && newPropNode is ValueNode newVal)
+					if (oldPropNode is ValueNode && newPropNode is ValueNode newVal)
 					{
+						// Simple value → simple value
 						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, newVal.Value?.ToString()));
 					}
 					else
 					{
-						// Complex node changed (markup extension, nested element) → structural
-						return false;
+						// Complex change (any combination of ValueNode/MarkupNode/ElementNode/ListNode)
+						// Record with the new node so the code writer can handle it
+						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, null, newPropNode));
 					}
 				}
 				// else: unchanged — no diff entry
@@ -604,17 +581,18 @@ static class XamlNodeDiff
 		{
 			if (!oldNode.Properties.ContainsKey(kvp.Key))
 			{
-				var newPropNode = kvp.Value;
 				if (IsCodegenSensitive(kvp.Key))
 					return false; // adding x:Name/x:Class/etc. → structural
+
+				var newPropNode = kvp.Value;
 				if (newPropNode is ValueNode newVal)
 				{
 					diffs.Add(new PropertyDiff(kvp.Key, PropertyDiffKind.Set, newVal.Value?.ToString()));
 				}
 				else
 				{
-					// New complex property → structural change
-					return false;
+					// New complex property — record with node reference
+					diffs.Add(new PropertyDiff(kvp.Key, PropertyDiffKind.Set, null, newPropNode));
 				}
 			}
 		}
@@ -662,18 +640,60 @@ static class XamlNodeDiff
 		if (a is MarkupNode ma && b is MarkupNode mb)
 			return StringEquals(ma.MarkupString, mb.MarkupString);
 
-		// For ElementNode properties (nested elements like <Button.Shadow><Shadow .../></Button.Shadow>),
-		// we cannot safely diff the sub-tree here; treat any ElementNode property as structurally changed
-		// so the caller falls back to a full reload rather than silently ignoring inner changes.
-		if (a is ElementNode && b is ElementNode)
-			return false;
+		// ElementNode properties: recursively compare type, properties, and children
+		if (a is ElementNode ea && b is ElementNode eb)
+			return ElementNodeEquals(ea, eb);
 
-		// ListNode (property containing multiple child elements) is inherently complex; treat as changed.
-		if (a is ListNode || b is ListNode)
-			return false;
+		// ListNode: compare all children recursively
+		if (a is ListNode la && b is ListNode lb)
+			return ListNodeEquals(la, lb);
 
 		// Different node types → not equal
-		return a.GetType() == b.GetType();
+		return false;
+	}
+
+	/// <summary>Recursively compares two ElementNodes for structural + value equality.</summary>
+	static bool ElementNodeEquals(ElementNode a, ElementNode b)
+	{
+		if (!XmlTypeEquals(a.XmlType, b.XmlType))
+			return false;
+
+		if (a.Properties.Count != b.Properties.Count)
+			return false;
+
+		foreach (var kvp in a.Properties)
+		{
+			if (!b.Properties.TryGetValue(kvp.Key, out var bProp))
+				return false;
+			if (!NodeValueEquals(kvp.Value, bProp))
+				return false;
+		}
+
+		if (a.CollectionItems.Count != b.CollectionItems.Count)
+			return false;
+
+		for (int i = 0; i < a.CollectionItems.Count; i++)
+		{
+			if (!NodeValueEquals(a.CollectionItems[i], b.CollectionItems[i]))
+				return false;
+		}
+
+		return true;
+	}
+
+	/// <summary>Recursively compares two ListNodes for equality.</summary>
+	static bool ListNodeEquals(ListNode a, ListNode b)
+	{
+		if (a.CollectionItems.Count != b.CollectionItems.Count)
+			return false;
+
+		for (int i = 0; i < a.CollectionItems.Count; i++)
+		{
+			if (!NodeValueEquals(a.CollectionItems[i], b.CollectionItems[i]))
+				return false;
+		}
+
+		return true;
 	}
 
 	static bool XmlTypeEquals(XmlType a, XmlType b) =>
