@@ -155,6 +155,27 @@ public static class XamlComponentRegistry
 		}
 	}
 
+	/// <summary>
+	/// Removes all component registrations whose node ID starts with <paramref name="nodeIdPrefix"/>
+	/// (the node itself and all descendants). Used by generated <c>UpdateComponent</c> methods
+	/// when a child element is removed during incremental hot reload.
+	/// </summary>
+	public static void UnregisterSubtree(object page, string nodeIdPrefix)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (nodeIdPrefix is null)
+			throw new ArgumentNullException(nameof(nodeIdPrefix));
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				map.RemoveSubtree(nodeIdPrefix);
+			}
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// Instance tracking helpers
 	// -------------------------------------------------------------------------
@@ -248,6 +269,18 @@ public static class XamlComponentRegistry
 					_entries[newKey] = value;
 				}
 			}
+		}
+
+		public void RemoveSubtree(string nodeIdPrefix)
+		{
+			var keysToRemove = new List<string>();
+			foreach (var key in _entries.Keys)
+			{
+				if (key.StartsWith(nodeIdPrefix, StringComparison.Ordinal))
+					keysToRemove.Add(key);
+			}
+			foreach (var key in keysToRemove)
+				_entries.Remove(key);
 		}
 	}
 }
