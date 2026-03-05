@@ -169,13 +169,13 @@ public class FlyoutPageViewModel : INotifyPropertyChanged
 	}
 
 	bool _shouldHandleBack = false;
-	public bool ShouldhanldeBackButton
+	public bool ShouldHandleBackButton
 	{
 		get => _shouldHandleBack;
 		set
 		{
 			_shouldHandleBack = value;
-			OnPropertyChanged(nameof(ShouldhanldeBackButton));
+			OnPropertyChanged(nameof(ShouldHandleBackButton));
 		}
 	}
 

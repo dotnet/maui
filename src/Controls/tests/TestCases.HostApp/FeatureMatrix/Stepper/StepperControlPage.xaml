@@ -91,7 +91,7 @@
               <Label Grid.Row="4"
                      Grid.Column="1"
                      AutomationId="ValueChangedEventLabel"
-                     Text="{Binding ValueChangedText, StringFormat='{0:F2}'}"
+                     Text="{Binding ValueChangedText}"
                      FontSize="16"
                      VerticalTextAlignment="Center"
                      HorizontalTextAlignment="End"/>
