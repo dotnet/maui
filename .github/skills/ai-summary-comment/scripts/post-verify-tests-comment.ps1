@@ -85,11 +85,11 @@ Write-Host "╚═════════════════════�
 
 # If PRNumber provided but no ReportFile, try to find it
 if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($ReportFile)) {
-    $reportPath = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail/verification-report.md"
+    $reportPath = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail/verification-report.md"
     if (-not (Test-Path $reportPath)) {
         $repoRoot = git rev-parse --show-toplevel 2>$null
         if ($repoRoot) {
-            $reportPath = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail/verification-report.md"
+            $reportPath = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail/verification-report.md"
         }
     }
     

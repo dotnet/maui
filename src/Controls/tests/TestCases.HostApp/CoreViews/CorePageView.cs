@@ -105,6 +105,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewControlPage(), "ScrollView Feature Matrix"),
 			new GalleryPageFactory(() => new GraphicsViewControlPage(), "GraphicsView Feature Matrix"),
 			new GalleryPageFactory(() => new EditorControlPage(), "Editor Feature Matrix"),
+			new GalleryPageFactory(() => new Material3_EditorControlPage(), "Editor Material3 Feature Matrix"),
 			new GalleryPageFactory(() => new ToolbarFeaturePage(), "Toolbar Feature Matrix"),
 			new GalleryPageFactory(() => new StackLayoutControlPage(), "StackLayout Feature Matrix"),
 			new GalleryPageFactory(() => new AbsoluteLayoutControlPage(), "AbsoluteLayout Feature Matrix"),
@@ -120,6 +121,9 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new GridControlPage(), "Grid Feature Matrix"),
 			new GalleryPageFactory(() => new LayoutFeaturePage(), "ScrollView With LayoutOptions Feature Matrix"),
 			new GalleryPageFactory(() => new VisualStateManagerFeaturePage(), "VisualStateManager Feature Matrix"),
+			new GalleryPageFactory(() => new ShellFeaturePage(), "Shell Feature Matrix"),
+			new GalleryPageFactory(() => new BrushesControlPage(), "Brushes Feature Matrix"),
+			new GalleryPageFactory(() => new BindableLayoutControlPage(), "BindableLayout Feature Matrix")
 		};
 
 

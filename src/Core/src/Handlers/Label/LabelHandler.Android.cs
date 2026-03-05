@@ -97,4 +97,13 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateLineHeight(label);
 		}
 	}
+
+	// TODO: Material3 - make it public in .net 11
+	internal class LabelHandler2 : LabelHandler
+	{
+		protected override MauiMaterialTextView CreatePlatformView()
+		{
+			return new MauiMaterialTextView(Context);
+		}
+	}
 }
