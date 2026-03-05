@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -152,14 +151,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				Controller.CollectionView.ScrollToItem(indexPath,
 					position, args.IsAnimated);
-
-				// For non-animated scrolls, track the target so the scroll position can be
-				// restored if UIKit's layout pass (triggered by picker or other interactions)
-				// erroneously resets contentOffset to 0. See https://github.com/dotnet/maui/issues/34271
-				if (!args.IsAnimated)
-				{
-					(Controller?.CollectionView as MauiCollectionView)?.SetPendingScrollRestore();
-				}
 			}
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
