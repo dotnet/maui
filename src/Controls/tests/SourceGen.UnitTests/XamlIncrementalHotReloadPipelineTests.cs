@@ -263,9 +263,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void FirstRun_EmitsMetadataUpdateHandlerSource()
+	public void FirstRun_DoesNotEmitHandlerSource()
 	{
-		// Arrange
+		// Arrange: the SDK-level XamlIncrementalHotReloadHandler is now used instead
+		// of per-page generated handlers, so no .handler.xsg.cs should be emitted.
 		XamlHotReloadState.Reset();
 		var compilation = CreateCompilation();
 		var file = MakeFile(PageXamlV1);
@@ -274,18 +275,9 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(
 			compilation, file, assertNoCompilationErrors: false);
 
-		// Assert: handler source file was emitted alongside IC
+		// Assert: no handler source emitted (SDK handler is used instead)
 		var handlerSource = FindUCSource(result, ".handler.xsg.cs");
-		Assert.NotNull(handlerSource);
-
-		// Should declare MetadataUpdateHandler assembly attribute
-		Assert.Contains("MetadataUpdateHandler", handlerSource, StringComparison.Ordinal);
-		// Should reference the page type
-		Assert.Contains("MainPage", handlerSource, StringComparison.Ordinal);
-		// Should contain UpdateApplication method
-		Assert.Contains("UpdateApplication", handlerSource, StringComparison.Ordinal);
-		// Should enumerate live instances via XamlComponentRegistry
-		Assert.Contains("XamlComponentRegistry", handlerSource, StringComparison.Ordinal);
+		Assert.Null(handlerSource);
 	}
 
 	[Fact]

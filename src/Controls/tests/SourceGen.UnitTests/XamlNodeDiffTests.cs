@@ -444,7 +444,7 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		Assert.Equal("Label_1_0", diff.NodeChanges[0].NodeId);
+		Assert.Equal("Label_0", diff.NodeChanges[0].NodeId);
 	}
 
 	[Fact]
@@ -456,7 +456,7 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		Assert.Equal("Label_2_0", diff.NodeChanges[0].NodeId);
+		Assert.Equal("VerticalStackLayout_0/Label_0", diff.NodeChanges[0].NodeId);
 	}
 
 	[Fact]

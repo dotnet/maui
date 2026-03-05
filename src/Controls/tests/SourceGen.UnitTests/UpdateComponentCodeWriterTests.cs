@@ -178,7 +178,7 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 		Assert.Contains("XamlComponentRegistry.TryGet(this,", result, System.StringComparison.Ordinal);
-		Assert.Contains("Label_1_0", result, System.StringComparison.Ordinal);
+		Assert.Contains("Label_0", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -238,9 +238,9 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 
-		// Two distinct node IDs should appear
-		Assert.Contains("Label_2_0", result, System.StringComparison.Ordinal);
-		Assert.Contains("Label_2_1", result, System.StringComparison.Ordinal);
+		// Two distinct node IDs should appear (VerticalStackLayout_0/Label_0 and VerticalStackLayout_0/Label_1)
+		Assert.Contains("VerticalStackLayout_0/Label_0", result, System.StringComparison.Ordinal);
+		Assert.Contains("VerticalStackLayout_0/Label_1", result, System.StringComparison.Ordinal);
 		// Both TryGet calls present
 		var lookupCount = CountOccurrences(result!, "XamlComponentRegistry.TryGet(this,");
 		Assert.True(lookupCount >= 2, $"Expected at least 2 TryGet calls, got {lookupCount}");

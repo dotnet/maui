@@ -154,8 +154,8 @@ partial class TestPage : ContentPage
 """;
 		var (_, text) = RunGenerator(xaml, CodeBehind, enableIncrementalHotReload: true);
 		Assert.NotNull(text);
-		// Node ID for the first Label child at depth 1, sibling 0 should be "Label_1_0"
-		Assert.Contains("\"Label_1_0\"", text, StringComparison.Ordinal);
+		// Node ID for the first Label child of root, sibling 0 should be "Label_0"
+		Assert.Contains("\"Label_0\"", text, StringComparison.Ordinal);
 	}
 
 	[Fact]

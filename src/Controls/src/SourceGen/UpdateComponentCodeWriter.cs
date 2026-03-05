@@ -240,8 +240,8 @@ static class UpdateComponentCodeWriter
 
 		if (propType == null)
 		{
-			// Unknown type — use TypeDescriptor at runtime (best effort)
-			return BuildTypeDescriptorExpression(rawXamlValue, null);
+			// Type is unresolvable — cannot generate safe code; fall through to goto fallback
+			return null;
 		}
 
 		var fqName = propType.ToFQDisplayString();
@@ -261,15 +261,35 @@ static class UpdateComponentCodeWriter
 		// Integer types
 		if (fqName is "int" or "global::System.Int32" or "long" or "global::System.Int64"
 			or "short" or "global::System.Int16" or "byte" or "global::System.Byte")
-			return rawXamlValue; // emit as-is (numeric literal)
+		{
+			var trimmed = rawXamlValue.Trim();
+			if (long.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+				return trimmed;
+			return null; // invalid numeric — fallback
+		}
 
 		// Float/double
 		if (fqName is "float" or "global::System.Single")
-			return $"{rawXamlValue}f";
+		{
+			var trimmed = rawXamlValue.Trim();
+			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
+				return $"{trimmed}f";
+			return null;
+		}
 		if (fqName is "double" or "global::System.Double")
-			return rawXamlValue;
+		{
+			var trimmed = rawXamlValue.Trim();
+			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
+				return trimmed;
+			return null;
+		}
 		if (fqName is "decimal" or "global::System.Decimal")
-			return $"{rawXamlValue}m";
+		{
+			var trimmed = rawXamlValue.Trim();
+			if (decimal.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
+				return $"{trimmed}m";
+			return null;
+		}
 
 		// All other types: use TypeDescriptor at runtime
 		return BuildTypeDescriptorExpression(rawXamlValue, fqName);
