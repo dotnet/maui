@@ -138,12 +138,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.QueryEditor?.SetTextRange(searchBar.CursorPosition, searchBar.SelectionLength);
+			handler.QueryEditor?.UpdateCursorPosition(searchBar);
 		}
 
 		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.QueryEditor?.SetTextRange(searchBar.CursorPosition, searchBar.SelectionLength);
+			handler.QueryEditor?.UpdateSelectionLength(searchBar);
 		}
 
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -264,22 +264,9 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (sender is UITextField textField && VirtualView is ISearchBar virtualView)
+				if (Handler?.QueryEditor is UITextField textField && VirtualView is ISearchBar virtualView)
 				{
 					virtualView.UpdateText(textField.Text);
-
-					var cursorPosition = textField.GetCursorPosition();
-					var selectedTextLength = textField.GetSelectedTextLength();
-
-					if (virtualView.CursorPosition != cursorPosition)
-					{
-						virtualView.CursorPosition = cursorPosition;
-					}
-
-					if (virtualView.SelectionLength != selectedTextLength)
-					{
-						virtualView.SelectionLength = selectedTextLength;
-					}
 				}
 
 				if (Handler is SearchBarHandler handler)
