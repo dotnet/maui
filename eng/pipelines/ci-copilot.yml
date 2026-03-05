@@ -108,26 +108,58 @@ stages:
           - script: dotnet tool restore
             displayName: 'Restore .NET Tools'
 
-          # Boot Android Emulator via Cake (same as device-tests-steps.yml / ui-tests-steps.yml)
+          # Boot Android Emulator via Cake (creates AVD and launches emulator in background)
           - ${{ if eq(parameters.Platform, 'android') }}:
             - script: dotnet cake eng/devices/android.cake --target=boot --device="android-emulator-64_30" --apiversion="30" --verbosity=diagnostic
               displayName: 'Boot Android Emulator (Cake)'
               timeoutInMinutes: 15
 
-            # Capture emulator device ID for Copilot agent
+            # Wait for emulator to fully boot (Cake boot fires emulator in background)
             - script: |
-                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$PATH"
+                echo "Waiting for emulator device to appear..."
+                timeout=120
+                waited=0
+                while ! adb devices | grep -q "emulator.*device"; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Emulator device did not appear after ${timeout}s"
+                    adb devices -l
+                    exit 1
+                  fi
+                  echo "  Waiting for device... ($waited/${timeout}s)"
+                done
+                echo "Emulator device detected, waiting for boot_completed..."
+
+                timeout=300
+                waited=0
+                while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Emulator did not finish booting after ${timeout}s"
+                    adb shell getprop sys.boot_completed 2>/dev/null || true
+                    exit 1
+                  fi
+                done
+                echo "Boot completed, waiting for package manager..."
+
+                timeout=120
+                waited=0
+                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Package manager not ready after ${timeout}s"
+                    exit 1
+                  fi
+                done
+
                 DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
-                if [ -z "$DEVICE_ID" ]; then
-                  echo "##vso[task.logissue type=error]No emulator device found after Cake boot"
-                  adb devices -l
-                  exit 1
-                fi
-                echo "✅ Emulator running: $DEVICE_ID"
+                echo "✅ Emulator fully booted: $DEVICE_ID"
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
-                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
-                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
-              displayName: 'Capture Emulator UDID'
+              displayName: 'Wait for Emulator Boot and Capture UDID'
+              timeoutInMinutes: 10
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1
