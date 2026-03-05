@@ -497,40 +497,32 @@ namespace Microsoft.Maui.Platform
 
 			contentSize = new Size(width, height);
 
-			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
-			// to ensure the content is correctly aligned and scrolled. This involves a second layout
-			// arrangement with an adjusted starting point and recalculating the content offset.
-			if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+			bool isDirectionChange = _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection;
+
+			// For Right-To-Left (RTL) layouts, iOS natively handles visual mirroring via
+			// SemanticContentAttribute.ForceRightToLeft. Content should remain at normal (0,0) coordinates.
+			// We only set ContentOffset to position the scroll at the RTL "start" (maximum horizontal offset).
+			// Content at negative X coordinates would be outside the scrollable range and unreachable.
+			if (isDirectionChange)
 			{
-				// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators
-				// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
-				if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
-				{
-					bool showsVertical = ShowsVerticalScrollIndicator;
-					bool showsHorizontal = ShowsHorizontalScrollIndicator;
-
-					ShowsVerticalScrollIndicator = false;
-					ShowsHorizontalScrollIndicator = false;
-
-					ShowsVerticalScrollIndicator = showsVertical;
-					ShowsHorizontalScrollIndicator = showsHorizontal;
-				}
-
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
+					// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators.
+					// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
+					if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
+					{
+						bool showsVertical = ShowsVerticalScrollIndicator;
+						bool showsHorizontal = ShowsHorizontalScrollIndicator;
+
+						ShowsVerticalScrollIndicator = false;
+						ShowsHorizontalScrollIndicator = false;
+
+						ShowsVerticalScrollIndicator = showsVertical;
+						ShowsHorizontalScrollIndicator = showsHorizontal;
+					}
+
 					var horizontalOffset = contentSize.Width - bounds.Width;
-
-					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-					{
-						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
-					}
-					else
-					{
-						CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), bounds.Size.ToSize()));
-					}
-
 					ContentOffset = new CGPoint(horizontalOffset, 0);
-
 				}
 				else if (_previousEffectiveUserInterfaceLayoutDirection is not null)
 				{
@@ -538,8 +530,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
-			// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+			// Track the current direction so we can detect future changes.
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 			return contentSize;
