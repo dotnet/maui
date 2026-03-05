@@ -1064,13 +1064,15 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				string text => new TextBlock
 				{
 					Text = text,
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
+					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
 				},
 				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiHeader),
 				_ => new TextBlock
 				{
 					Text = header.ToString(),
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10)
+					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
 				}
 			};
 		}
@@ -1078,6 +1080,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			// This shouldn't happen due to null check above, but handle it safely
 			return;
+		}
+
+		// When the header is a MAUI View (direct or from template), HorizontalOptions/VerticalOptions
+		// are layout hints for the parent MAUI layout. Since the realized view is placed inside a WinUI
+		// ContentControl (not a MAUI layout), we must manually map these options
+		// to the platform view's HorizontalAlignment/VerticalAlignment.
+		if (_mauiHeader is not null && _header is FrameworkElement headerElement)
+		{
+			headerElement.UpdateHorizontalOptions(_mauiHeader);
+			headerElement.UpdateVerticalOptions(_mauiHeader);
 		}
 
 		if (PlatformView is MauiItemsView platformItemsView && _header is not null)
@@ -1145,13 +1157,15 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				string text => new TextBlock
 				{
 					Text = text,
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
+					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0),
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
 				},
 				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiFooter),
 				_ => new TextBlock
 				{
 					Text = footer.ToString(),
-					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0)
+					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0),
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
 				}
 			};
 		}
@@ -1159,6 +1173,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			// This shouldn't happen due to null check above, but handle it safely
 			return;
+		}
+
+		// When the footer is a MAUI View (direct or from template), HorizontalOptions/VerticalOptions
+		// are layout hints for the parent MAUI layout. Since the realized view is placed inside a WinUI
+		// ContentControl (not a MAUI layout), we must manually map these options
+		// to the platform view's HorizontalAlignment/VerticalAlignment.
+		if (_mauiFooter is not null && _footer is FrameworkElement footerElement)
+		{
+			footerElement.UpdateHorizontalOptions(_mauiFooter);
+			footerElement.UpdateVerticalOptions(_mauiFooter);
 		}
 
 		if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
