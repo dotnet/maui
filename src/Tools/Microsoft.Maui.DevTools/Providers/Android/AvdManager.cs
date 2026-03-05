@@ -14,23 +14,82 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 /// </summary>
 public class AvdManager
 {
-	private readonly AvdManagerRunner _runner;
+	private readonly AvdManagerRunner? _runner;
 	private readonly EmulatorRunner _emulatorRunner;
 
 	public AvdManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
 	{
-		_runner = new AvdManagerRunner(getSdkPath, getJdkPath);
+		var sdkPath = getSdkPath();
+		var avdManagerPath = ResolveAvdManagerPath(sdkPath);
+		if (avdManagerPath != null)
+		{
+			var env = BuildEnvironmentVariables(sdkPath, getJdkPath());
+			_runner = new AvdManagerRunner(avdManagerPath, env);
+		}
 		_emulatorRunner = new EmulatorRunner(getSdkPath, getJdkPath);
 	}
 
-	public string? AvdManagerPath => _runner.AvdManagerPath;
+	public bool IsAvailable => _runner != null;
 
 	public string? EmulatorPath => _emulatorRunner.EmulatorPath;
 
-	public bool IsAvailable => _runner.IsAvailable;
+	private static string? ResolveAvdManagerPath(string? sdkPath)
+	{
+		if (string.IsNullOrEmpty(sdkPath))
+			return null;
+
+		var ext = OperatingSystem.IsWindows() ? ".bat" : "";
+
+		// Search cmdline-tools/{version}/bin/ (highest version first), then latest, then legacy tools/bin/
+		var cmdlineToolsDir = Path.Combine(sdkPath, "cmdline-tools");
+		if (Directory.Exists(cmdlineToolsDir))
+		{
+			var subdirs = new List<(string name, Version? version)>();
+			foreach (var dir in Directory.GetDirectories(cmdlineToolsDir))
+			{
+				var name = Path.GetFileName(dir);
+				if (string.IsNullOrEmpty(name) || name == "latest")
+					continue;
+				Version.TryParse(name, out var v);
+				subdirs.Add((name, v ?? new Version(0, 0)));
+			}
+			subdirs.Sort((a, b) => b.version!.CompareTo(a.version));
+
+			foreach (var (name, _) in subdirs)
+			{
+				var toolPath = Path.Combine(cmdlineToolsDir, name, "bin", "avdmanager" + ext);
+				if (File.Exists(toolPath))
+					return toolPath;
+			}
+			var latestPath = Path.Combine(cmdlineToolsDir, "latest", "bin", "avdmanager" + ext);
+			if (File.Exists(latestPath))
+				return latestPath;
+		}
+
+		var legacyPath = Path.Combine(sdkPath, "tools", "bin", "avdmanager" + ext);
+		return File.Exists(legacyPath) ? legacyPath : null;
+	}
+
+	private static Dictionary<string, string> BuildEnvironmentVariables(string? sdkPath, string? jdkPath)
+	{
+		var env = new Dictionary<string, string>();
+		if (!string.IsNullOrEmpty(sdkPath))
+			env["ANDROID_HOME"] = sdkPath;
+		if (!string.IsNullOrEmpty(jdkPath))
+		{
+			env["JAVA_HOME"] = jdkPath;
+			var jdkBin = Path.Combine(jdkPath, "bin");
+			var currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+			env["PATH"] = string.IsNullOrEmpty(currentPath) ? jdkBin : jdkBin + Path.PathSeparator + currentPath;
+		}
+		return env;
+	}
 
 	public async Task<List<AvdInfo>> GetAvdsAsync(CancellationToken cancellationToken = default)
 	{
+		if (_runner == null)
+			return new List<AvdInfo>();
+
 		try
 		{
 			var avds = await _runner.ListAvdsAsync(cancellationToken);
@@ -107,7 +166,7 @@ public class AvdManager
 
 		try
 		{
-			await _runner.CreateAvdAsync(name, systemImage, deviceProfile, force, cancellationToken);
+			await _runner!.CreateAvdAsync(name, systemImage, deviceProfile, force, cancellationToken);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -154,7 +213,7 @@ public class AvdManager
 
 		try
 		{
-			await _runner.DeleteAvdAsync(name, cancellationToken);
+			await _runner!.DeleteAvdAsync(name, cancellationToken);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
