@@ -24,7 +24,37 @@ namespace Microsoft.Maui.Platform
 				Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
 			}
 
+			// When children are allowed to overflow this layout's bounds, we raise the
+			// Canvas.ZIndex of this panel so that overflowing children render on top of
+			// any sibling panels that would otherwise be drawn over them due to z-order.
+			if (!ClipsToBounds)
+			{
+				Canvas.SetZIndex(this, HasChildrenOutsideBounds(finalSize.Width, finalSize.Height) ? 1 : 0);
+			}
+			else
+			{
+				Canvas.SetZIndex(this, 0);
+			}
+
 			return actual;
+		}
+
+		bool HasChildrenOutsideBounds(double width, double height)
+		{
+			if (CrossPlatformLayout is not ILayout layout)
+				return false;
+
+			for (int i = 0; i < layout.Count; i++)
+			{
+				var frame = layout[i].Frame;
+				if (frame.Right > width || frame.Bottom > height
+					|| frame.Left < 0 || frame.Top < 0)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public void UpdateInputTransparent(bool inputTransparent, Brush? background)
