@@ -12,9 +12,11 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// </summary>
 /// <remarks>
 /// <para>
-/// ID format: <c>"{TypeName}_{depth}_{siblingIndex}"</c> — e.g. <c>"Label_1_0"</c> is the first
-/// Label at depth 1. The root element always receives the empty string <c>""</c> so that call
-/// sites can address the root without a special-case.
+/// ID format: <c>"{TypeName}_{siblingIndex}"</c> for direct children of root, or
+/// <c>"{ParentId}/{TypeName}_{siblingIndex}"</c> for nested elements — e.g. <c>"Label_0"</c>
+/// for the first Label under root, <c>"VerticalStackLayout_0/Label_0"</c> for a Label nested
+/// inside the first VerticalStackLayout. The root element always receives the empty string
+/// <c>""</c> so that call sites can address the root without a special-case.
 /// </para>
 /// <para>
 /// Only <see cref="ElementNode"/> nodes in <see cref="ElementNode.CollectionItems"/> are assigned
@@ -32,7 +34,7 @@ internal static class NodeIdHelper
 	{
 		var ids = new Dictionary<ElementNode, string>();
 		ids[root] = "";
-		WalkChildren(root, depth: 1, ids);
+		WalkChildren(root, parentId: "", ids);
 		return ids;
 	}
 
@@ -40,7 +42,7 @@ internal static class NodeIdHelper
 	// Recursive walk
 	// -------------------------------------------------------------------------
 
-	static void WalkChildren(ElementNode parent, int depth, Dictionary<ElementNode, string> ids)
+	static void WalkChildren(ElementNode parent, string parentId, Dictionary<ElementNode, string> ids)
 	{
 		int index = 0;
 		foreach (var item in parent.CollectionItems)
@@ -52,11 +54,13 @@ internal static class NodeIdHelper
 			}
 
 			string typeName = child.XmlType.Name;
-			string id = $"{typeName}_{depth}_{index}";
+			string id = string.IsNullOrEmpty(parentId)
+				? $"{typeName}_{index}"
+				: $"{parentId}/{typeName}_{index}";
 			ids[child] = id;
 
 			// Recurse into the child's collection items
-			WalkChildren(child, depth + 1, ids);
+			WalkChildren(child, id, ids);
 			index++;
 		}
 	}

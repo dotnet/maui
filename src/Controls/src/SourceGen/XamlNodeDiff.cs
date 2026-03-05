@@ -144,7 +144,7 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				var childId = ChildNodeId(oldElem.XmlType.Name, depth + 1, i);
+				var childId = ChildNodeId(nodeId, oldElem.XmlType.Name, i);
 				if (!DiffNode(oldElem, newElem, childId, depth + 1, nodeChanges))
 					return false;
 			}
@@ -289,14 +289,29 @@ static class XamlNodeDiff
 	}
 
 	static bool XmlTypeEquals(XmlType a, XmlType b) =>
-		a.Name == b.Name && a.NamespaceUri == b.NamespaceUri;
+		a.Name == b.Name && a.NamespaceUri == b.NamespaceUri && TypeArgumentsEqual(a.TypeArguments, b.TypeArguments);
+
+	static bool TypeArgumentsEqual(IList<XmlType>? a, IList<XmlType>? b)
+	{
+		if (a is null && b is null) return true;
+		if (a is null || b is null) return false;
+		if (a.Count != b.Count) return false;
+		for (int i = 0; i < a.Count; i++)
+		{
+			if (!XmlTypeEquals(a[i], b[i]))
+				return false;
+		}
+		return true;
+	}
 
 	static bool StringEquals(string? a, string? b) =>
 		string.Equals(a, b, StringComparison.Ordinal);
 
 	/// <summary>
-	/// Builds a stable child node ID by appending the child type name and its position index.
+	/// Builds a stable child node ID by combining the parent path and the child's type + sibling index.
 	/// </summary>
-	static string ChildNodeId(string childTypeName, int depth, int index)
-		=> $"{childTypeName}_{depth}_{index}";
+	static string ChildNodeId(string parentId, string childTypeName, int index)
+		=> string.IsNullOrEmpty(parentId)
+			? $"{childTypeName}_{index}"
+			: $"{parentId}/{childTypeName}_{index}";
 }

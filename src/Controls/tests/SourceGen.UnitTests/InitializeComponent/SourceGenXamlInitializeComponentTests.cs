@@ -23,7 +23,7 @@ public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 		var workingDirectory = Environment.CurrentDirectory;
 		var xamlFile = new AdditionalXamlFile(Path.Combine(workingDirectory, path ?? "Test.xaml"), xaml, RelativePath: path ?? "Test.xaml", TargetFramework: targetFramework, NoWarn: noWarn, ManifestResourceName: $"{compilation.AssemblyName}.Test.xaml", Lineinfo: lineinfo, EnablePreviewFeatures: enablePreviewFeatures, EnableIncrementalHotReload: enableIncrementalHotReload);
 		var result = RunGenerator<XamlGenerator>(compilation, xamlFile, assertNoCompilationErrors);
-		var generated = result.Results.SingleOrDefault().GeneratedSources.SingleOrDefault(gs => gs.HintName.EndsWith(".xsg.cs") && !gs.HintName.EndsWith(".handler.xsg.cs")).SourceText?.ToString();
+		var generated = result.Results.SingleOrDefault().GeneratedSources.SingleOrDefault(gs => gs.HintName.EndsWith(".xsg.cs") && !gs.HintName.EndsWith(".handler.xsg.cs") && !gs.HintName.Contains(".uc_v")).SourceText?.ToString();
 
 		return (result, generated);
 	}
