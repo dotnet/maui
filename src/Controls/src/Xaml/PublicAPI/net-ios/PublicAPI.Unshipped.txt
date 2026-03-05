@@ -5,3 +5,4 @@ static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(object! page,
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(object! page, string! nodeId, out object? component) -> bool
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.ReRoot(object! page, string! oldPrefix, string! newPrefix) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(object! page, string! nodeIdPrefix) -> void
