@@ -135,6 +135,19 @@ stages:
                   sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
                   echo "Updated disk.dataPartition.size to 2048m"
                 fi
+
+                # Pre-authorize ADB keys (mirrors android.cake HandleVirtualDevice)
+                echo "=== Pre-authorizing ADB keys ==="
+                mkdir -p "$HOME/.android"
+                if [ ! -f "$HOME/.android/adbkey" ]; then
+                  adb keygen "$HOME/.android/adbkey" 2>/dev/null || true
+                fi
+                ADB_KEY_PUB="$HOME/.android/adbkey.pub"
+                AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
+                if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+                  cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+                  echo "ADB key pre-authorized for emulator"
+                fi
                 
                 echo "=== Starting Emulator ==="
                 # Kill any stale adb server and restart
@@ -165,6 +178,15 @@ stages:
                     echo "##vso[task.logissue type=error]Emulator did not finish booting after ${timeout}s"
                     exit 1
                   fi
+                  # At 90 seconds, restart ADB server to recover from auth issues (mirrors android.cake)
+                  if [ $waited -eq 90 ]; then
+                    echo "Boot taking longer than expected (90/${timeout}s). Restarting ADB server..."
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server
+                    sleep 2
+                    echo "ADB server restarted. Continuing to wait..."
+                  fi
                 done
                 echo "Boot completed, waiting for package manager..."
 
@@ -181,6 +203,25 @@ stages:
 
                 DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
                 echo "✅ Emulator fully booted: $DEVICE_ID"
+
+                # Prepare emulator for CI use — keeps device responsive during idle period
+                echo "=== Preparing emulator for CI ==="
+                # Disable all animations (reduces CPU load and flakiness)
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0
+                # Prevent screen from turning off (emulator simulates AC charging)
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647
+                adb -s $DEVICE_ID shell svc power stayon true
+                # Wake screen and dismiss any lock screen
+                adb -s $DEVICE_ID shell input keyevent 82
+                sleep 1
+                # Dismiss any "System UI has stopped" or crash dialogs
+                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                # Clear logcat buffer so agent sees only fresh logs
+                adb -s $DEVICE_ID logcat -c 2>/dev/null || true
+                echo "Emulator preparation complete"
+
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
