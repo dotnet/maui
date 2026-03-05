@@ -189,12 +189,17 @@ internal static class XamlIncrementalHotReloadHandler
 			null, Type.EmptyTypes, null);
 #pragma warning restore IL2075
 
-		initMethod?.Invoke(instance, null);
-
-		// Restore BindingContext
-		if (bindableObj != null)
+		try
 		{
-			bindableObj.BindingContext = savedBindingContext;
+			initMethod?.Invoke(instance, null);
+		}
+		finally
+		{
+			// Always restore BindingContext, even if InitializeComponent throws
+			if (bindableObj != null)
+			{
+				bindableObj.BindingContext = savedBindingContext;
+			}
 		}
 	}
 }
