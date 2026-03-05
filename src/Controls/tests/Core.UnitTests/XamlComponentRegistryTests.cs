@@ -236,6 +236,52 @@ public class XamlComponentRegistryTests
 	}
 
 	// -------------------------------------------------------------------------
+	// ReRoot
+	// -------------------------------------------------------------------------
+
+	[Fact]
+	public void ReRoot_RenamesMatchingEntries()
+	{
+		var page = new FakePage();
+		var child = new object();
+		var grandchild = new object();
+
+		XamlComponentRegistry.Register(page, "VSL_0/Label_0", child);
+		XamlComponentRegistry.Register(page, "VSL_0/Label_0/Entry_0", grandchild);
+
+		XamlComponentRegistry.ReRoot(page, "VSL_0/Label_0", "VSL_0/Label_1");
+
+		// Old IDs should no longer resolve
+		Assert.False(XamlComponentRegistry.TryGet(page, "VSL_0/Label_0", out _));
+		Assert.False(XamlComponentRegistry.TryGet(page, "VSL_0/Label_0/Entry_0", out _));
+
+		// New IDs should resolve
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_1", out var foundChild));
+		Assert.Same(child, foundChild);
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_1/Entry_0", out var foundGrandchild));
+		Assert.Same(grandchild, foundGrandchild);
+	}
+
+	[Fact]
+	public void ReRoot_SamePrefixNoOp()
+	{
+		var page = new FakePage();
+		var comp = new object();
+		XamlComponentRegistry.Register(page, "VSL_0/Label_0", comp);
+
+		XamlComponentRegistry.ReRoot(page, "VSL_0/Label_0", "VSL_0/Label_0");
+
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_0", out var found));
+		Assert.Same(comp, found);
+	}
+
+	[Fact]
+	public void ReRoot_NullPage_Throws()
+	{
+		Assert.Throws<ArgumentNullException>(() => XamlComponentRegistry.ReRoot(null!, "a", "b"));
+	}
+
+	// -------------------------------------------------------------------------
 	// Helper types (nested to avoid collision with other tests)
 	// -------------------------------------------------------------------------
 
