@@ -32,6 +32,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		// Clear the default WinUI ItemsView Padding so it doesn't leak through
+		// TemplateBinding to the ItemsRepeater's Margin
+		Padding = new Microsoft.UI.Xaml.Thickness(0);
 	}
 
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
@@ -206,6 +209,27 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 	{
 		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+
+		// For horizontal layouts, the ScrollViewer provides infinite width to its content,
+		// which prevents UniformGridLayout's ItemsStretch=Fill from stretching items to fill
+		// the viewport when there are few items. Setting MinWidth on the ItemsRepeater
+		// ensures items stretch to at least the viewport width.
+		// Using MinWidth (not Width) preserves horizontal scrolling when content exceeds
+		// the viewport — DesiredSize = max(contentWidth, MinWidth), so the ScrollViewer
+		// still sees the full content extent for many-item scenarios.
+		if (_isHorizontalLayout && _itemsRepeater is not null)
+		{
+			if (!double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
+			{
+				_itemsRepeater.MinWidth = availableSize.Width;
+			}
+		}
+		else if (_itemsRepeater is not null)
+		{
+			// Clear MinWidth for vertical layouts - width is naturally constrained
+			// by the ScrollViewer when horizontal scroll is disabled.
+			_itemsRepeater.ClearValue(MinWidthProperty);
+		}
 
 		return base.MeasureOverride(availableSize);
 	}
