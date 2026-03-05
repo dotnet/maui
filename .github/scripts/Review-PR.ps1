@@ -131,12 +131,14 @@ if (-not $ghVersion) {
 }
 Write-Host "  ✅ GitHub CLI: $ghVersion" -ForegroundColor Green
 
-# Check Copilot CLI
-$copilotVersion = copilot --version 2>$null
-if (-not $copilotVersion) {
+# Check Copilot CLI - use Get-Command (reliable) then get version with merged streams
+$copilotCmd = Get-Command copilot -ErrorAction SilentlyContinue
+if (-not $copilotCmd) {
     Write-Error "Copilot CLI is not installed. Install with: npm install -g @github/copilot"
     exit 1
 }
+$copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
+if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
 Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
 # Check PR exists
