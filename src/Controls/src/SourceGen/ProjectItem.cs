@@ -69,6 +69,29 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	public string NoWarn
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.NoWarn") ?? Options.GetValueOrNull("build_property.MauiXamlNoWarn") ?? "";
 
+	/// <summary>
+	/// When true, resources in ResourceDictionary are created lazily via factory functions.
+	/// This enables x:Shared support and faster inflation time.
+	/// </summary>
+	public bool LazyRD
+	{
+		get
+		{
+			// Per-file metadata takes precedence
+			if (Options.IsTrue("build_metadata.additionalfiles.LazyRD"))
+				return true;
+			if (Options.IsFalse("build_metadata.additionalfiles.LazyRD"))
+				return false;
+			// Global build property
+			if (Options.IsTrue("build_property.MauiXamlLazyRD"))
+				return true;
+			if (Options.IsFalse("build_property.MauiXamlLazyRD"))
+				return false;
+			// Default to true for lazy resources (perf improvement)
+			return true;
+		}
+	}
+
 	public string? RelativePath
 		=> Options.GetValueOrNull("build_metadata.additionalfiles.RelativePath");
 

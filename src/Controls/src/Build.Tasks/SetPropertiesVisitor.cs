@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (TrySetRuntimeName(propertyName, Context.Variables[(ElementNode)parentNode], node))
 				return;
+			if (propertyName == XmlName.xShared)
+				throw new BuildException(BuildExceptionCode.XSharedNotSupported, node as IXmlLineInfo, null);
 			if (skips.Contains(propertyName))
 				return;
 			if (parentNode is ElementNode && ((ElementNode)parentNode).SkipProperties.Contains(propertyName))
