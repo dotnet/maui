@@ -100,7 +100,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
-		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
@@ -127,6 +126,18 @@ public static partial class AppHostBuilderExtensions
 		}
 #else
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Image, ImageHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Image, ImageHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Image, ImageHandler>();
 #endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
