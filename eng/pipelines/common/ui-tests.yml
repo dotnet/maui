@@ -39,7 +39,7 @@ parameters:
     - 'SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'ViewBaseTests,Window'
+    - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
 
   projects:
