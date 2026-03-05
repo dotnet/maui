@@ -225,6 +225,14 @@ namespace Maui.Controls.Sample
             _viewModel.OverrideNavigatingStatus = string.Empty;
             _viewModel.OverrideNavigatedStatus = string.Empty;
             _viewModel.TabStackInfo = string.Empty;
+
+            // Restore Shell-level route state to initial state
+            if (!_routeRegistered)
+            {
+                Routing.RegisterRoute("detail2", typeof(DetailPage2));
+                _routeRegistered = true;
+            }
+            ToggleRouteButton.Text = "Unregister Route";
         }
         void OnToggleCancelNavigation(object sender, EventArgs e)
         {

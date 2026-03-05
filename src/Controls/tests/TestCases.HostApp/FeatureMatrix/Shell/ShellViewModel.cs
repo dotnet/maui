@@ -1,9 +1,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using System.Windows.Input;
+
 namespace Maui.Controls.Sample;
 
 public class ShellViewModel : INotifyPropertyChanged
@@ -63,8 +64,7 @@ public class ShellViewModel : INotifyPropertyChanged
     private string _overrideNavigatedStatus = string.Empty;
     private string _tabStackInfo = string.Empty;
     readonly Command<object> _command;
-    public ICommand Command => _command;
-   
+
     public FlyoutDisplayOptions FlyoutDisplayOptions
     {
         get => _flyoutDisplayOptions;
@@ -290,7 +290,7 @@ public class ShellViewModel : INotifyPropertyChanged
             return label;
         });
 
-       _command = new Command<object>(
+        _command = new Command<object>(
             execute: param =>
             {
                 CommandExecuted = param is string s && !string.IsNullOrEmpty(s)
@@ -300,7 +300,7 @@ public class ShellViewModel : INotifyPropertyChanged
             },
             canExecute: _ => _isEnabled);
     }
-	
+    public ICommand Command => _command;
     public string TextOverride
     {
         get => _textOverride;
@@ -439,7 +439,6 @@ public class ShellViewModel : INotifyPropertyChanged
         get => _tabStackInfo;
         set { if (_tabStackInfo != value) { _tabStackInfo = value; OnPropertyChanged(); } }
     }
-
     public event PropertyChangedEventHandler PropertyChanged;
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
