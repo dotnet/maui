@@ -83,6 +83,16 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			var frame = Frame;
+			var alignedFrame = PixelAlign(frame);
+			if (alignedFrame != frame)
+				Frame = alignedFrame;
+		}
+
 		public override void Draw(CGRect dirtyRect)
 		{
 			base.Draw(dirtyRect);
