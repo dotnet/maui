@@ -33,6 +33,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		// Clear the default WinUI ItemsView Padding so it doesn't leak through
+		// TemplateBinding to the ItemsRepeater's Margin
+		Padding = new Microsoft.UI.Xaml.Thickness(0);
 	}
 
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>

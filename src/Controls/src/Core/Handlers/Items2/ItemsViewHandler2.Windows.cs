@@ -108,6 +108,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 		[Controls.StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
 		[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
+		[Controls.View.MarginProperty.PropertyName] = MapMargin,
 	};
 
 	bool _scrollUpdatePending;
@@ -181,6 +182,15 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	public static void MapFooterTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 	{
 		handler.UpdateFooter();
+	}
+
+	public static void MapMargin(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+	{
+		if (handler.PlatformView is FrameworkElement platformView)
+		{
+			var margin = itemsView.Margin;
+			platformView.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
+		}
 	}
 
 	protected override WItemsView CreatePlatformView()
