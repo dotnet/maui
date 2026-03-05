@@ -77,13 +77,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		public override void DraggingStarted(UIScrollView scrollView)
-		{
-			// When the user starts a manual drag, cancel any pending programmatic scroll restore
-			// so that the user's new scroll position is respected.
-			(ViewController?.CollectionView as Items.MauiCollectionView)?.ClearPendingScrollRestore();
-		}
-
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
