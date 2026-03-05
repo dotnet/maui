@@ -42,7 +42,7 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChanges, XmlType? nodeXmlType = null)
 {
 	/// <summary>
-	/// Stable path from the root, e.g. <c>""</c> for root, <c>"Label[0]"</c>, <c>"VerticalStackLayout[0]/Label[0]"</c>.
+	/// Stable path from the root, e.g. <c>""</c> for root, <c>"Label_0"</c>, <c>"VerticalStackLayout_0/Label_0"</c>.
 	/// </summary>
 	public string NodeId { get; } = nodeId;
 

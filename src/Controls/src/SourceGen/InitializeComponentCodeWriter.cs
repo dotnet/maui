@@ -138,7 +138,7 @@ $$"""
 
 		if (rlr?.ResourceContent != null)
 		{
-			this.InitializeComponentRuntime();
+			this.InitializeComponentRuntime();{{(nodeIds != null ? "\n\t\t\tglobal::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);\n\t\t\t__version = 0;" : "")}}
 			return;
 		}
 

@@ -10,8 +10,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -108,13 +106,6 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		return (run1, run2);
 	}
-
-	// Extracts generated sources from a run result by hint-name suffix
-	static ImmutableArray<GeneratedSourceResult> GetSources(GeneratorDriverRunResult result)
-		=> result.GeneratedTrees
-			.Select(t => t)
-			.Select(_ => default(GeneratedSourceResult))
-			.ToImmutableArray();
 
 	static string? FindSourceByHintSuffix(GeneratorDriverRunResult result, string suffix)
 	{
