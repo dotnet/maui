@@ -334,7 +334,7 @@
                              Background="{TemplateBinding Background}"
                              BorderBrush="{TemplateBinding BorderBrush}"
                              BorderThickness="{TemplateBinding BorderThickness}"
-                             CornerRadius="{TemplateBinding CornerRadius}"
+                             CornerRadius="0"
                              TabNavigation="{TemplateBinding TabNavigation}"
                              XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}">
             <controls:StackPanel x:Name="PART_ContainerStack">
