@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Sockets;
 using Microsoft.Maui.DevTools.Errors;
 using Microsoft.Maui.DevTools.Models;
 using Microsoft.Maui.DevTools.Utils;
@@ -14,19 +15,35 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 /// </summary>
 public class Adb
 {
-	private readonly AdbRunner _runner;
+	private readonly AdbRunner? _runner;
+	private readonly string? _adbPath;
 
 	public Adb(Func<string?> getSdkPath)
 	{
-		_runner = new AdbRunner(getSdkPath);
+		_adbPath = ResolveAdbPath(getSdkPath());
+		if (_adbPath != null)
+			_runner = new AdbRunner(_adbPath);
 	}
 
-	public string? AdbPath => _runner.AdbPath;
+	public string? AdbPath => _adbPath;
 
-	public bool IsAvailable => _runner.IsAvailable;
+	public bool IsAvailable => _runner != null;
+
+	private static string? ResolveAdbPath(string? sdkPath)
+	{
+		if (string.IsNullOrEmpty(sdkPath))
+			return null;
+
+		var ext = OperatingSystem.IsWindows() ? ".exe" : "";
+		var path = Path.Combine(sdkPath, "platform-tools", "adb" + ext);
+		return File.Exists(path) ? path : null;
+	}
 
 	public async Task<List<Device>> GetDevicesAsync(CancellationToken cancellationToken = default)
 	{
+		if (_runner == null)
+			return new List<Device>();
+
 		try
 		{
 			var devices = await _runner.ListDevicesAsync(cancellationToken);
@@ -51,29 +68,76 @@ public class Adb
 	}
 
 	/// <summary>
-	/// Queries a running emulator for its AVD name via 'adb -s &lt;serial&gt; emu avd name'.
+	/// Queries a running emulator for its AVD name via 'adb -s &lt;serial&gt; emu avd name',
+	/// falling back to a direct emulator console query if that fails.
 	/// </summary>
 	private async Task<string?> QueryAvdNameAsync(string serial, CancellationToken cancellationToken)
 	{
 		if (AdbPath == null) return null;
 
+		// Try adb emu avd name first
 		try
 		{
 			var result = await ProcessRunner.RunAsync(AdbPath, $"-s {serial} emu avd name",
 				timeout: TimeSpan.FromSeconds(5), cancellationToken: cancellationToken);
 			if (result.Success && !string.IsNullOrWhiteSpace(result.StandardOutput))
 			{
-				// Output is typically "AVD_NAME\nOK\n" — take the first non-empty line
 				var name = result.StandardOutput
 					.Split('\n', StringSplitOptions.RemoveEmptyEntries)
 					.FirstOrDefault(l => !l.Equals("OK", StringComparison.OrdinalIgnoreCase))
 					?.Trim();
-				return string.IsNullOrEmpty(name) ? null : name;
+				if (!string.IsNullOrEmpty(name))
+					return name;
 			}
 		}
-		catch { /* non-critical — fall back to no AVD name */ }
+		catch { /* fall through to console fallback */ }
 
-		return null;
+		// Fallback: query the emulator console directly via TCP
+		// Serial format is "emulator-XXXX" where XXXX is the console port
+		return await QueryAvdNameViaConsoleAsync(serial, cancellationToken);
+	}
+
+	/// <summary>
+	/// Queries AVD name by connecting to the emulator console port directly.
+	/// Emulator serials follow the format "emulator-{port}" where port is the console port.
+	/// </summary>
+	private static async Task<string?> QueryAvdNameViaConsoleAsync(string serial, CancellationToken cancellationToken)
+	{
+		if (!serial.StartsWith("emulator-", StringComparison.OrdinalIgnoreCase))
+			return null;
+
+		if (!int.TryParse(serial.AsSpan("emulator-".Length), out var port))
+			return null;
+
+		try
+		{
+			using var client = new TcpClient();
+			using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			cts.CancelAfter(TimeSpan.FromSeconds(3));
+
+			await client.ConnectAsync("127.0.0.1", port, cts.Token);
+			using var stream = client.GetStream();
+			using var reader = new StreamReader(stream);
+			using var writer = new StreamWriter(stream) { AutoFlush = true };
+
+			// Read the welcome banner ("Android Console: ...")
+			await reader.ReadLineAsync(cts.Token);
+			// Read "OK"
+			await reader.ReadLineAsync(cts.Token);
+
+			// Send "avd name" command
+			await writer.WriteLineAsync("avd name".AsMemory(), cts.Token);
+
+			// Read AVD name
+			var name = await reader.ReadLineAsync(cts.Token);
+			return string.IsNullOrWhiteSpace(name) || name.Equals("OK", StringComparison.OrdinalIgnoreCase)
+				? null
+				: name.Trim();
+		}
+		catch
+		{
+			return null;
+		}
 	}
 
 	private static Device MapToMauiDevice(AdbDeviceInfo info)
@@ -120,7 +184,7 @@ public class Adb
 		if (!IsAvailable)
 			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
 
-		await _runner.StopEmulatorAsync(deviceSerial, cancellationToken);
+		await _runner!.StopEmulatorAsync(deviceSerial, cancellationToken);
 	}
 
 	public async Task WaitForDeviceAsync(string? deviceSerial = null, TimeSpan? timeout = null,
@@ -131,7 +195,7 @@ public class Adb
 
 		try
 		{
-			await _runner.WaitForDeviceAsync(deviceSerial, timeout, cancellationToken);
+			await _runner!.WaitForDeviceAsync(deviceSerial, timeout, cancellationToken);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
