@@ -206,6 +206,14 @@ stages:
 
                 # Prepare emulator for CI use — keeps device responsive during idle period
                 echo "=== Preparing emulator for CI ==="
+                # Wait for device to stabilize after boot (transient offline state)
+                for i in $(seq 1 10); do
+                  if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                    break
+                  fi
+                  echo "Device offline, retrying ($i/10)..."
+                  sleep 3
+                done
                 # Disable all animations (reduces CPU load and flakiness)
                 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0
                 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0
@@ -378,6 +386,57 @@ stages:
             displayName: 'Boot iOS Simulator'
             condition: eq('${{ parameters.Platform }}', 'ios')
             timeoutInMinutes: 5
+
+          # Warm up the emulator right before the agent runs.
+          # The emulator may have been idle for 15-30 min while Appium/Node/CLI were installed.
+          # Without this, SystemUI can ANR when the agent first touches it.
+          - script: |
+              set -e
+              DEVICE_ID="$(DEVICE_UDID)"
+              if [ -z "$DEVICE_ID" ]; then
+                echo "No DEVICE_UDID set — skipping warmup"
+                exit 0
+              fi
+
+              echo "=== Emulator warmup before agent ==="
+              # Verify device is still connected
+              if ! adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                echo "Device not responding. Restarting ADB server..."
+                adb kill-server 2>/dev/null || true
+                sleep 2
+                adb start-server
+                sleep 2
+                timeout 60 adb wait-for-device
+              fi
+
+              # Wake screen and dismiss lock
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_MENU 2>/dev/null || true
+              sleep 2
+
+              # Force-stop any ANR'd system processes and dismiss dialogs
+              adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+              # Press ENTER and BACK to dismiss any remaining dialogs
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_ENTER 2>/dev/null || true
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+              sleep 1
+
+              # Open and close Settings to exercise the system and confirm responsiveness
+              adb -s "$DEVICE_ID" shell am start -a android.settings.SETTINGS 2>/dev/null || true
+              sleep 3
+              adb -s "$DEVICE_ID" shell am force-stop com.android.settings 2>/dev/null || true
+
+              # Final ANR dialog sweep
+              adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+
+              # Clear logcat so agent gets clean logs
+              adb -s "$DEVICE_ID" logcat -c 2>/dev/null || true
+
+              echo "✅ Emulator warmed up and responsive"
+            displayName: 'Warm Up Android Emulator'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            timeoutInMinutes: 3
 
           - script: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
