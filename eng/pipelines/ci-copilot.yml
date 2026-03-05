@@ -108,19 +108,23 @@ stages:
           - script: dotnet tool restore
             displayName: 'Restore .NET Tools'
 
-          # Boot Android Emulator via Cake (creates AVD and launches emulator in background)
+          # Create AVD and boot Android Emulator
           - ${{ if eq(parameters.Platform, 'android') }}:
-            - script: dotnet cake eng/devices/android.cake --target=boot --device="android-emulator-64_30" --apiversion="30" --verbosity=diagnostic
-              displayName: 'Boot Android Emulator (Cake)'
-              timeoutInMinutes: 15
-
-            # Wait for emulator to fully boot (Cake boot fires emulator in background)
+            # Use Cake to create the AVD (connectToDevice handles AVD creation + emulator launch)
+            # but uitest-prepare is the only target that skips Teardown cleanup.
+            # Since uitest-prepare also builds the test app (which we don't need), launch the emulator manually.
             - script: |
-                # Add Android SDK tools to PATH (provision.yml sets ANDROID_SDK_ROOT variable)
-                export PATH="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools:${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/emulator:$PATH"
-                echo "Using ANDROID_SDK_ROOT: ${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
-                echo "adb location: $(which adb 2>/dev/null || echo 'not found')"
+                export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
+                echo "=== Creating AVD ==="
+                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                
+                echo "=== Starting Emulator ==="
+                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim &
+                EMULATOR_PID=$!
+                echo "Emulator PID: $EMULATOR_PID"
+                
                 echo "Waiting for emulator device to appear..."
                 timeout=120
                 waited=0
@@ -143,7 +147,6 @@ stages:
                   waited=$((waited + 5))
                   if [ $waited -ge $timeout ]; then
                     echo "##vso[task.logissue type=error]Emulator did not finish booting after ${timeout}s"
-                    adb shell getprop sys.boot_completed 2>/dev/null || true
                     exit 1
                   fi
                 done
@@ -163,11 +166,10 @@ stages:
                 DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
                 echo "✅ Emulator fully booted: $DEVICE_ID"
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
-                # Persist PATH for subsequent steps
-                echo "##vso[task.prependpath]${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools"
-                echo "##vso[task.prependpath]${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/emulator"
-              displayName: 'Wait for Emulator Boot and Capture UDID'
-              timeoutInMinutes: 10
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+              displayName: 'Create AVD and Boot Android Emulator'
+              timeoutInMinutes: 15
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1
