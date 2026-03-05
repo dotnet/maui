@@ -44,10 +44,54 @@ public class AvdManager
 
 	private static AvdInfo MapToMauiAvd(Xamarin.Android.Tools.AvdInfo avd)
 	{
+		string? systemImage = null;
+		string? target = null;
+
+		// Try to read system image from AVD config.ini
+		if (!string.IsNullOrEmpty(avd.Path))
+		{
+			var configPath = System.IO.Path.Combine(avd.Path, "config.ini");
+			if (File.Exists(configPath))
+			{
+				try
+				{
+					foreach (var line in File.ReadLines(configPath))
+					{
+						if (line.StartsWith("image.sysdir.1=", StringComparison.Ordinal))
+						{
+							// e.g. "image.sysdir.1=system-images/android-36/google_apis/arm64-v8a/"
+							var val = line.Substring("image.sysdir.1=".Length).Trim().TrimEnd('/');
+							systemImage = val.Replace("/", ";", StringComparison.Ordinal);
+							// Extract target like "Android 36 (google_apis/arm64-v8a)"
+							var parts = val.Split('/');
+							if (parts.Length >= 2)
+							{
+								var api = parts[1]; // android-36
+								var variant = parts.Length > 2 ? string.Join("/", parts.Skip(2)) : "";
+								target = string.IsNullOrEmpty(variant)
+									? api.Replace("android-", "Android ", StringComparison.Ordinal)
+									: $"{api.Replace("android-", "Android ", StringComparison.Ordinal)} ({variant})";
+							}
+						}
+						else if (line.StartsWith("tag.display=", StringComparison.Ordinal) && target == null)
+						{
+							target = line.Substring("tag.display=".Length).Trim();
+						}
+					}
+				}
+				catch
+				{
+					// Ignore config read errors
+				}
+			}
+		}
+
 		return new AvdInfo
 		{
 			Name = avd.Name,
 			DeviceProfile = avd.DeviceProfile,
+			SystemImage = systemImage,
+			Target = target,
 			Path = avd.Path,
 		};
 	}

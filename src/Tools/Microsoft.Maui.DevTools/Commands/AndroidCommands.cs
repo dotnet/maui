@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.Maui.DevTools.Models;
 using Microsoft.Maui.DevTools.Output;
 using Microsoft.Maui.DevTools.Providers.Android;
 using Microsoft.Maui.DevTools.Utils;
@@ -345,9 +346,12 @@ public static class AndroidCommands
 		});
 
 		// sdk install
+		var sdkInstallPkgsArg = new Argument<string[]>("packages", "SDK packages to install (prompted interactively if omitted)");
+		sdkInstallPkgsArg.Arity = ArgumentArity.ZeroOrMore;
+		sdkInstallPkgsArg.SetDefaultValue(Array.Empty<string>());
 		var installCommand = new Command("install", "Install SDK packages")
 		{
-			new Argument<string[]>("packages", "SDK packages to install")
+			sdkInstallPkgsArg
 		};
 		installCommand.SetHandler(async (InvocationContext context) =>
 		{
@@ -355,8 +359,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var packages = context.ParseResult.GetValueForArgument(
-				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());
+			var packages = context.ParseResult.GetValueForArgument(sdkInstallPkgsArg);
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
@@ -364,13 +367,150 @@ public static class AndroidCommands
 
 			try
 			{
+				// Interactive selection if no packages specified
+				if ((packages == null || packages.Length == 0) && !useJson && formatter is SpectreOutputFormatter spectre)
+				{
+					var (installed, available) = await spectre.StatusAsync("Fetching available packages...", async () =>
+					{
+						var inst = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+						var avail = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+						return (inst, avail);
+					});
+
+					var installedPaths = new HashSet<string>(installed.Select(p => p.Path), StringComparer.OrdinalIgnoreCase);
+
+					// Merge and dedup
+					var allPackages = installed.Concat(available)
+						.GroupBy(p => p.Path)
+						.Select(g => g.FirstOrDefault(p => p.IsInstalled) ?? g.First())
+						.ToList();
+
+					// Step 1: Pick API level
+					var platforms = allPackages
+						.Where(p => p.Path.StartsWith("platforms;android-", StringComparison.Ordinal))
+						.OrderByDescending(p =>
+						{
+							var apiStr = p.Path.Substring("platforms;android-".Length);
+							return int.TryParse(apiStr, out var n) ? n : 0;
+						})
+						.ToList();
+
+					if (platforms.Count == 0)
+					{
+						throw new InvalidOperationException("No Android platforms found. Run 'maui android install' for full setup.");
+					}
+
+					var selectedPlatform = spectre.Prompt(
+						new SelectionPrompt<SdkPackage>()
+							.Title("[bold]Select an Android API level[/]")
+							.PageSize(15)
+							.HighlightStyle(new Style(Color.DodgerBlue1))
+							.UseConverter(p =>
+							{
+								var apiStr = p.Path.Substring("platforms;android-".Length);
+								var status = installedPaths.Contains(p.Path) ? "[green]✓ Installed[/]" : "[dim]Not installed[/]";
+								return $"[bold]Android {Markup.Escape(apiStr)}[/]  {Markup.Escape(p.Description ?? "")}  {status}";
+							})
+							.AddChoices(platforms));
+
+					var apiLevel = selectedPlatform.Path.Substring("platforms;android-".Length);
+
+					// Step 2: Pick components for that API level
+					var componentChoices = new List<(string Label, string Path, bool Installed)>
+					{
+						($"Platform (platforms;android-{apiLevel})", $"platforms;android-{apiLevel}", installedPaths.Contains($"platforms;android-{apiLevel}")),
+						($"Platform Tools", "platform-tools", installedPaths.Contains("platform-tools")),
+					};
+
+					// Find matching build-tools
+					var matchingBuildTools = allPackages
+						.Where(p => p.Path.StartsWith($"build-tools;{apiLevel}.", StringComparison.Ordinal)
+							|| p.Path == $"build-tools;{apiLevel}.0.0")
+						.OrderByDescending(p => p.Version)
+						.FirstOrDefault();
+					var buildToolsPath = matchingBuildTools?.Path ?? $"build-tools;{apiLevel}.0.0";
+					componentChoices.Add(($"Build Tools ({buildToolsPath})", buildToolsPath, installedPaths.Contains(buildToolsPath)));
+
+					componentChoices.Add(("Emulator", "emulator", installedPaths.Contains("emulator")));
+
+					// Find system images for this API level
+					var sysImages = allPackages
+						.Where(p => p.Path.StartsWith($"system-images;android-{apiLevel};", StringComparison.Ordinal))
+						.ToList();
+					foreach (var img in sysImages)
+					{
+						var parts = img.Path.Split(';');
+						var variant = parts.Length > 2 ? parts[2] : "";
+						var arch = parts.Length > 3 ? parts[3] : "";
+						componentChoices.Add(($"System Image ({variant}/{arch})", img.Path, installedPaths.Contains(img.Path)));
+					}
+
+					// If no system images found in available list, add a default
+					if (!sysImages.Any())
+					{
+						var defaultArch = PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64";
+						var defaultImg = $"system-images;android-{apiLevel};google_apis;{defaultArch}";
+						componentChoices.Add(($"System Image (google_apis/{defaultArch})", defaultImg, false));
+					}
+
+					var selectedComponents = spectre.Prompt(
+						new MultiSelectionPrompt<(string Label, string Path, bool Installed)>()
+							.Title("[bold]Select components to install[/]")
+							.PageSize(15)
+							.HighlightStyle(new Style(Color.DodgerBlue1))
+							.InstructionsText("[grey](Press [blue]<space>[/] to toggle, [green]<enter>[/] to accept)[/]")
+							.UseConverter(c =>
+							{
+								var status = c.Installed ? " [green]✓[/]" : "";
+								return $"{Markup.Escape(c.Label)}{status}";
+							})
+							.AddChoices(componentChoices));
+
+					packages = selectedComponents.Select(c => c.Path).ToArray();
+
+					if (packages.Length == 0)
+					{
+						spectre.WriteWarning("No components selected. Nothing to install.");
+						return;
+					}
+
+					spectre.WriteInfo($"Will install: {string.Join(", ", packages)}");
+				}
+
+				if (packages == null || packages.Length == 0)
+				{
+					throw new InvalidOperationException(
+						"No packages specified. Provide package names or run interactively.");
+				}
+
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would install: {string.Join(", ", packages)}");
 					return;
 				}
 
-				await androidProvider.InstallPackagesAsync(packages, true, context.GetCancellationToken());
+				if (!useJson && formatter is SpectreOutputFormatter spectreInstall)
+				{
+					var total = packages.Length;
+					for (var i = 0; i < total; i++)
+					{
+						var pkg = packages[i];
+						var counter = $"[dim]({i + 1}/{total})[/]";
+						await spectreInstall.Console.Status()
+							.AutoRefresh(true)
+							.Spinner(Spinner.Known.Dots)
+							.SpinnerStyle(new Style(Color.Blue))
+							.StartAsync($"[blue]Installing:[/] {Markup.Escape(pkg)}  {counter}", async _ =>
+							{
+								await androidProvider.InstallPackagesAsync(new[] { pkg }, true, context.GetCancellationToken());
+							});
+						spectreInstall.Console.MarkupLine($"  [green]✓[/] {Markup.Escape(pkg)}");
+					}
+				}
+				else
+				{
+					await androidProvider.InstallPackagesAsync(packages, true, context.GetCancellationToken());
+				}
 
 				if (useJson)
 				{
@@ -720,7 +860,8 @@ public static class AndroidCommands
 					formatter.WriteTable(
 						avds,
 						("Name", a => a.Name),
-						("Target", a => a.Target ?? a.SystemImage ?? "unknown"));
+						("Target", a => a.Target ?? "—"),
+						("Device", a => a.DeviceProfile ?? "—"));
 				}
 			}
 			catch (Exception ex)
@@ -731,9 +872,12 @@ public static class AndroidCommands
 		});
 
 		// emulator create
+		var nameArg = new Argument<string>("name", "AVD name (prompted interactively if omitted)");
+		nameArg.Arity = ArgumentArity.ZeroOrOne;
+		nameArg.SetDefaultValue(string.Empty);
 		var createCommand = new Command("create", "Create a new emulator")
 		{
-			new Argument<string>("name", "AVD name"),
+			nameArg,
 			new Option<string>("--package", "System image package (auto-detects most recent if not specified)"),
 			new Option<string>("--device", "Device definition"),
 			new Option<bool>("--force", "Overwrite existing emulator with the same name")
@@ -744,8 +888,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(
-				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
+			var name = context.ParseResult.GetValueForArgument(nameArg);
 			var package = context.ParseResult.GetValueForOption(
 				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "package"));
 			var device = context.ParseResult.GetValueForOption(
@@ -759,7 +902,7 @@ public static class AndroidCommands
 
 			try
 			{
-				// Interactive system image selection if not provided
+				// --- Step 1: System image selection ---
 				if (string.IsNullOrEmpty(package) && !useJson && formatter is SpectreOutputFormatter spectre)
 				{
 					var sysImages = await spectre.StatusAsync("Finding installed system images...", async () =>
@@ -774,29 +917,21 @@ public static class AndroidCommands
 							"No system images installed. Install one first with: maui android install");
 					}
 
-					if (sysImages.Count == 1)
-					{
-						package = sysImages[0].Path;
-						spectre.WriteInfo($"Using system image: {package}");
-					}
-					else
-					{
-						var selected = spectre.Prompt(
-							new SelectionPrompt<SdkPackage>()
-								.Title("[bold]Select a system image[/]")
-								.PageSize(12)
-								.HighlightStyle(new Style(Color.DodgerBlue1))
-								.UseConverter(p =>
-								{
-									var parts = p.Path.Split(';');
-									var api = parts.Length > 1 ? parts[1] : "";
-									var variant = parts.Length > 2 ? parts[2] : "";
-									var arch = parts.Length > 3 ? parts[3] : "";
-									return $"[bold]{Markup.Escape(api)}[/]  {Markup.Escape(variant)}  [dim]{Markup.Escape(arch)}[/]";
-								})
-								.AddChoices(sysImages.OrderByDescending(p => p.Path)));
-						package = selected.Path;
-					}
+					var selected = spectre.Prompt(
+						new SelectionPrompt<SdkPackage>()
+							.Title("[bold]Select a system image[/]")
+							.PageSize(12)
+							.HighlightStyle(new Style(Color.DodgerBlue1))
+							.UseConverter(p =>
+							{
+								var parts = p.Path.Split(';');
+								var api = parts.Length > 1 ? parts[1] : "";
+								var variant = parts.Length > 2 ? parts[2] : "";
+								var arch = parts.Length > 3 ? parts[3] : "";
+								return $"[bold]{Markup.Escape(api)}[/]  {Markup.Escape(variant)}  [dim]{Markup.Escape(arch)}[/]";
+							})
+							.AddChoices(sysImages.OrderByDescending(p => p.Path)));
+					package = selected.Path;
 				}
 				else if (string.IsNullOrEmpty(package))
 				{
@@ -810,7 +945,7 @@ public static class AndroidCommands
 						formatter.WriteInfo($"Auto-detected system image: {package}");
 				}
 
-				// Interactive device profile selection if not provided
+				// --- Step 2: Device profile selection ---
 				if (string.IsNullOrEmpty(device) && !useJson && formatter is SpectreOutputFormatter spectre2)
 				{
 					var deviceProfiles = new List<(string Id, string Name)>
@@ -835,6 +970,32 @@ public static class AndroidCommands
 
 				device ??= "pixel_6";
 
+				// --- Step 3: Name prompt (after selections so user sees what they picked) ---
+				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectre3)
+				{
+					// Build a sensible default name from the selected image
+					var apiPart = package?.Split(';').ElementAtOrDefault(1) ?? "android";
+					var defaultName = $"MAUI_{apiPart.Replace("-", "_", StringComparison.Ordinal)}";
+
+					name = spectre3.Prompt(
+						new TextPrompt<string>("[bold]Enter a name for the emulator[/]")
+							.DefaultValue(defaultName)
+							.Validate(n =>
+							{
+								if (string.IsNullOrWhiteSpace(n))
+									return ValidationResult.Error("[red]Name cannot be empty[/]");
+								if (n.Contains(' ', StringComparison.Ordinal))
+									return ValidationResult.Error("[red]Name cannot contain spaces[/]");
+								return ValidationResult.Success();
+							}));
+				}
+
+				if (string.IsNullOrEmpty(name))
+				{
+					throw new InvalidOperationException(
+						"AVD name is required. Provide it as an argument or run interactively.");
+				}
+
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would create AVD: {name}");
@@ -843,7 +1004,7 @@ public static class AndroidCommands
 					return;
 				}
 
-				await androidProvider.CreateAvdAsync(name, device, package, force, context.GetCancellationToken());
+				await androidProvider.CreateAvdAsync(name, device, package!, force, context.GetCancellationToken());
 
 				if (useJson)
 				{
@@ -862,9 +1023,12 @@ public static class AndroidCommands
 		});
 
 		// emulator start
+		var startNameArg = new Argument<string>("name", "AVD name to start (prompted interactively if omitted)");
+		startNameArg.Arity = ArgumentArity.ZeroOrOne;
+		startNameArg.SetDefaultValue(string.Empty);
 		var startCommand = new Command("start", "Start an emulator")
 		{
-			new Argument<string>("name", "AVD name to start"),
+			startNameArg,
 			new Option<bool>("--cold-boot", "Perform a cold boot"),
 			new Option<bool>("--wait", "Wait for boot completion")
 		};
@@ -874,8 +1038,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(
-				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
+			var name = context.ParseResult.GetValueForArgument(startNameArg);
 			var coldBoot = context.ParseResult.GetValueForOption(
 				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "cold-boot"));
 			var wait = context.ParseResult.GetValueForOption(
@@ -887,6 +1050,38 @@ public static class AndroidCommands
 
 			try
 			{
+				// Interactive AVD selection if name not provided
+				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectre0)
+				{
+					var avds = await spectre0.StatusAsync("Finding emulators...", async () =>
+						await androidProvider.GetAvdsAsync(context.GetCancellationToken()));
+
+					if (!avds.Any())
+					{
+						throw new InvalidOperationException(
+							"No emulators found. Create one first with: maui android emulator create");
+					}
+
+					var selectedAvd = spectre0.Prompt(
+						new SelectionPrompt<AvdInfo>()
+							.Title("[bold]Select an emulator to start[/]")
+							.PageSize(10)
+							.HighlightStyle(new Style(Color.DodgerBlue1))
+							.UseConverter(a =>
+							{
+								var target = a.Target ?? a.SystemImage ?? "unknown";
+								return $"[bold]{Markup.Escape(a.Name)}[/]  [dim]{Markup.Escape(target)}[/]";
+							})
+							.AddChoices(avds));
+					name = selectedAvd.Name;
+				}
+
+				if (string.IsNullOrEmpty(name))
+				{
+					throw new InvalidOperationException(
+						"AVD name is required. Provide it as an argument or run interactively.");
+				}
+
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would start AVD: {name}");
@@ -927,9 +1122,12 @@ public static class AndroidCommands
 		command.AddCommand(startCommand);
 
 		// emulator stop
+		var stopNameArg = new Argument<string>("name", "Emulator name (prompted interactively if omitted)");
+		stopNameArg.Arity = ArgumentArity.ZeroOrOne;
+		stopNameArg.SetDefaultValue(string.Empty);
 		var stopCommand = new Command("stop", "Stop a running emulator")
 		{
-			new Argument<string>("name", "Emulator name")
+			stopNameArg
 		};
 		stopCommand.SetHandler(async (InvocationContext context) =>
 		{
@@ -937,8 +1135,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(
-				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
+			var name = context.ParseResult.GetValueForArgument(stopNameArg);
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
@@ -946,13 +1143,54 @@ public static class AndroidCommands
 
 			try
 			{
-				// Find the running emulator's serial by AVD name
+				// Find running emulators
 				var devices = await androidProvider.GetDevicesAsync(context.GetCancellationToken());
-				var emulator = devices.FirstOrDefault(d =>
-					d.IsEmulator &&
+				var runningEmulators = devices.Where(d => d.IsEmulator).ToList();
+
+				// Interactive selection if name not provided
+				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectreStop)
+				{
+					if (!runningEmulators.Any())
+					{
+						throw new Errors.MauiToolException(
+							Errors.ErrorCodes.AndroidEmulatorNotFound,
+							"No running emulators found.");
+					}
+
+					var selectedDevice = spectreStop.Prompt(
+						new SelectionPrompt<Device>()
+							.Title("[bold]Select a running emulator to stop[/]")
+							.PageSize(10)
+							.HighlightStyle(new Style(Color.DodgerBlue1))
+							.UseConverter(d =>
+							{
+								var avdName = d.Details?.TryGetValue("avd", out var avd) == true ? avd?.ToString() : null;
+								var label = avdName ?? d.Name ?? d.Id;
+								return $"[bold]{Markup.Escape(label)}[/]  [dim]{Markup.Escape(d.Id)}[/]";
+							})
+							.AddChoices(runningEmulators));
+					name = selectedDevice.Details?.TryGetValue("avd", out var avdVal) == true
+						? avdVal?.ToString() ?? selectedDevice.Id
+						: selectedDevice.Id;
+				}
+
+				if (string.IsNullOrEmpty(name))
+				{
+					throw new InvalidOperationException(
+						"Emulator name is required. Provide it as an argument or run interactively.");
+				}
+
+				var emulator = runningEmulators.FirstOrDefault(d =>
 					d.Details != null &&
 					d.Details.TryGetValue("avd", out var avd) &&
 					string.Equals(avd?.ToString(), name, StringComparison.OrdinalIgnoreCase));
+
+				if (emulator == null)
+				{
+					// Fall back to matching by serial/id directly
+					emulator = runningEmulators.FirstOrDefault(d =>
+						string.Equals(d.Id, name, StringComparison.OrdinalIgnoreCase));
+				}
 
 				if (emulator == null)
 				{
@@ -969,7 +1207,17 @@ public static class AndroidCommands
 					return;
 				}
 
-				await androidProvider.StopEmulatorAsync(serial, context.GetCancellationToken());
+				if (!useJson && formatter is SpectreOutputFormatter spectreStop2)
+				{
+					await spectreStop2.StatusAsync($"Stopping {name}...", async () =>
+					{
+						await androidProvider.StopEmulatorAsync(serial, context.GetCancellationToken());
+					});
+				}
+				else
+				{
+					await androidProvider.StopEmulatorAsync(serial, context.GetCancellationToken());
+				}
 
 				if (useJson)
 				{
@@ -989,9 +1237,12 @@ public static class AndroidCommands
 		command.AddCommand(stopCommand);
 
 		// emulator delete
+		var deleteNameArg = new Argument<string>("name", "AVD name to delete (prompted interactively if omitted)");
+		deleteNameArg.Arity = ArgumentArity.ZeroOrOne;
+		deleteNameArg.SetDefaultValue(string.Empty);
 		var deleteCommand = new Command("delete", "Delete an emulator")
 		{
-			new Argument<string>("name", "AVD name to delete")
+			deleteNameArg
 		};
 		deleteCommand.SetHandler(async (InvocationContext context) =>
 		{
@@ -999,8 +1250,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(
-				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
+			var name = context.ParseResult.GetValueForArgument(deleteNameArg);
 
 			var formatter = useJson 
 				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
@@ -1008,6 +1258,38 @@ public static class AndroidCommands
 
 			try
 			{
+				// Interactive selection if name not provided
+				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectreDel)
+				{
+					var avds = await spectreDel.StatusAsync("Finding emulators...", async () =>
+						await androidProvider.GetAvdsAsync(context.GetCancellationToken()));
+
+					if (!avds.Any())
+					{
+						throw new InvalidOperationException(
+							"No emulators found. Nothing to delete.");
+					}
+
+					var selectedAvd = spectreDel.Prompt(
+						new SelectionPrompt<AvdInfo>()
+							.Title("[bold red]Select an emulator to delete[/]")
+							.PageSize(10)
+							.HighlightStyle(new Style(Color.Red1))
+							.UseConverter(a =>
+							{
+								var target = a.Target ?? a.SystemImage ?? "unknown";
+								return $"[bold]{Markup.Escape(a.Name)}[/]  [dim]{Markup.Escape(target)}[/]";
+							})
+							.AddChoices(avds));
+					name = selectedAvd.Name;
+				}
+
+				if (string.IsNullOrEmpty(name))
+				{
+					throw new InvalidOperationException(
+						"AVD name is required. Provide it as an argument or run interactively.");
+				}
+
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would delete AVD: {name}");

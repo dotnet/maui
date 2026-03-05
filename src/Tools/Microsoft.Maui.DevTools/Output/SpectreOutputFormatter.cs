@@ -14,6 +14,8 @@ public class SpectreOutputFormatter : IOutputFormatter
 	private readonly IAnsiConsole _console;
 	private readonly bool _verbose;
 
+	public IAnsiConsole Console => _console;
+
 	public SpectreOutputFormatter(IAnsiConsole? console = null, bool verbose = false)
 	{
 		_console = console ?? AnsiConsole.Console;
