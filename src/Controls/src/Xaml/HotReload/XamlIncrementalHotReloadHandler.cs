@@ -115,12 +115,21 @@ internal static class XamlIncrementalHotReloadHandler
 						if (method is null)
 							break;
 
+						System.Diagnostics.Debug.WriteLine(
+							$"[XamlIncrementalHotReload] Applying {methodName} on {type.Name} (instance {instance.GetHashCode():X8})");
+
 						method.Invoke(instance, null);
 
 						// Re-read version — the UC method updates __version on success.
 						var newVersion = (int)(versionField.GetValue(instance) ?? 0);
 						if (newVersion <= version)
+						{
+							System.Diagnostics.Debug.WriteLine(
+								$"[XamlIncrementalHotReload] {methodName} did not advance version (stayed at {version}), used fallback reload");
 							break; // Guard against infinite loop if __version didn't advance.
+						}
+						System.Diagnostics.Debug.WriteLine(
+							$"[XamlIncrementalHotReload] {type.Name} version {version} → {newVersion}");
 						version = newVersion;
 					}
 				}

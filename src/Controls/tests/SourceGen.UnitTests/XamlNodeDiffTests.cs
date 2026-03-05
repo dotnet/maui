@@ -392,6 +392,51 @@ public class XamlNodeDiffTests
 		Assert.Equal(1, reorder.Entries[2].OldIndex);
 	}
 
+	// ---------------------------------------------------------------------------
+	// Debug output
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void ToDebugString_PropertyChanges_ShowsNodeAndProps()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label Text=\"World\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var debug = diff.ToDebugString();
+		Assert.Contains("1 node(s) with property changes", debug, StringComparison.Ordinal);
+		Assert.Contains("Label_0", debug, StringComparison.Ordinal);
+		Assert.Contains("Text = \"World\"", debug, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ToDebugString_Reorder_ShowsMovedEntries()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Button Text="B" />
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var debug = diff.ToDebugString();
+		Assert.Contains("1 reorder(s)", debug, StringComparison.Ordinal);
+		Assert.Contains("reorder [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
+		// Shows old → new ID mapping
+		Assert.Contains("→", debug, StringComparison.Ordinal);
+	}
+
 	[Fact]
 	public void ChangedPropertyFromValueToMarkup_ReturnsNull()
 	{

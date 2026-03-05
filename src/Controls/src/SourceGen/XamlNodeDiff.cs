@@ -106,6 +106,55 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildReord
 
 	/// <summary>Returns <see langword="true"/> when the two trees are semantically identical.</summary>
 	public bool IsEmpty => NodeChanges.Count == 0 && ChildReorders.Count == 0;
+
+	/// <summary>
+	/// Returns a human-readable summary of the diff for debug/diagnostic output.
+	/// Emitted as a comment in generated <c>UpdateComponent</c> source files.
+	/// </summary>
+	public string ToDebugString()
+	{
+		var sb = new System.Text.StringBuilder();
+		sb.Append("Diff: ");
+		sb.Append(NodeChanges.Count).Append(" node(s) with property changes");
+		if (ChildReorders.Count > 0)
+			sb.Append(", ").Append(ChildReorders.Count).Append(" reorder(s)");
+
+		for (int i = 0; i < NodeChanges.Count; i++)
+		{
+			var nd = NodeChanges[i];
+			var target = string.IsNullOrEmpty(nd.NodeId) ? "root" : nd.NodeId;
+			sb.AppendLine();
+			sb.Append("  [").Append(target).Append("] ");
+			for (int j = 0; j < nd.PropertyChanges.Count; j++)
+			{
+				if (j > 0) sb.Append(", ");
+				var p = nd.PropertyChanges[j];
+				if (p.Kind == PropertyDiffKind.Clear)
+					sb.Append(p.PropertyName.LocalName).Append(" cleared");
+				else
+					sb.Append(p.PropertyName.LocalName).Append(" = \"").Append(p.NewValue ?? "").Append('"');
+			}
+		}
+
+		for (int i = 0; i < ChildReorders.Count; i++)
+		{
+			var r = ChildReorders[i];
+			var parent = string.IsNullOrEmpty(r.ParentNodeId) ? "root" : r.ParentNodeId;
+			sb.AppendLine();
+			sb.Append("  reorder [").Append(parent).Append("] ");
+			for (int j = 0; j < r.Entries.Count; j++)
+			{
+				if (j > 0) sb.Append(", ");
+				var e = r.Entries[j];
+				if (e.OldNodeId != e.NewNodeId)
+					sb.Append(e.OldNodeId).Append(" → ").Append(e.NewNodeId);
+				else
+					sb.Append(e.OldNodeId).Append(" (unchanged)");
+			}
+		}
+
+		return sb.ToString();
+	}
 }
 
 /// <summary>
