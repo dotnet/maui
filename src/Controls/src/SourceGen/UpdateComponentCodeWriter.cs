@@ -77,6 +77,9 @@ static class UpdateComponentCodeWriter
 
 			using (PrePost.NewBlock(codeWriter))
 			{
+				// Emit diff summary as a comment for diagnostics
+				EmitDiffSummary(codeWriter, diff);
+
 				// Version guard: if the instance is already at a different version, it's either stale
 				// (missed an update) or ahead — in both cases we bail out.
 				codeWriter.WriteLine($"if (__version != {fromVersion}) return;");
@@ -402,4 +405,19 @@ static class UpdateComponentCodeWriter
 
 	static string EscapeString(string value) =>
 		value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+
+	/// <summary>
+	/// Emits the diff summary as a C# comment block at the top of the method body.
+	/// This makes the diff visible when inspecting generated source files in the IDE.
+	/// </summary>
+	static void EmitDiffSummary(IndentedTextWriter codeWriter, XamlTreeDiff diff)
+	{
+		var summary = diff.ToDebugString();
+		var lines = summary.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+		foreach (var line in lines)
+		{
+			codeWriter.WriteLine($"// {line}");
+		}
+		codeWriter.WriteLine();
+	}
 }
