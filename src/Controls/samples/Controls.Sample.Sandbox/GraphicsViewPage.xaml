@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.GraphicsViewPage"
+             Title="GraphicsView Size Mismatch">
+    <Grid Padding="20">
+        <Grid RowDefinitions="Auto,Auto,*">
+            <!-- Instructions -->
+            <Label Grid.Row="0"
+                   Text="Steps: Change Android Display Size in Settings > Display > Display size while this page is open. Watch the sizes below diverge."
+                   FontSize="12"
+                   TextColor="Gray"
+                   Margin="0,0,0,10" />
+
+            <!-- Size comparison label -->
+            <Label x:Name="SizeLabel"
+                   Grid.Row="1"
+                   Text="Size: waiting for draw..."
+                   HorizontalOptions="Center"
+                   FontSize="14"
+                   Margin="0,0,0,10" />
+
+            <!-- The GraphicsView under test -->
+            <GraphicsView x:Name="DrawView"
+                          Grid.Row="2"
+                          BackgroundColor="#F0F0F0" />
+        </Grid>
+    </Grid>
+</ContentPage>

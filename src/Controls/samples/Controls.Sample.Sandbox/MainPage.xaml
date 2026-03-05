@@ -1,5 +1,12 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="Issue #34211 Repro">
+    <Grid>
+        <Button Text="Open GraphicsView Page"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Clicked="OnOpenGraphicsViewClicked" />
+    </Grid>
 </ContentPage>

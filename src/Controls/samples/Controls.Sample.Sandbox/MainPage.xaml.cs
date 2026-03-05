@@ -6,4 +6,9 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	private void OnOpenGraphicsViewClicked(object sender, EventArgs e)
+	{
+		Navigation.PushAsync(new GraphicsViewPage());
+	}
 }
