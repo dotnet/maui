@@ -121,7 +121,7 @@ stages:
                 echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
                 
                 echo "=== Starting Emulator ==="
-                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim &
+                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 &
                 EMULATOR_PID=$!
                 echo "Emulator PID: $EMULATOR_PID"
                 
