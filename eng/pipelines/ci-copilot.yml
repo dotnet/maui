@@ -190,7 +190,7 @@ stages:
           # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1
             inputs:
-              version: "20.3.1"
+              version: "24.x"
             displayName: 'Install Node.js'
 
           - pwsh: |
