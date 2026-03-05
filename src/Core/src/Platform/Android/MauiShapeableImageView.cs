@@ -40,15 +40,15 @@ namespace Microsoft.Maui.Platform
 	// TODO: net11 - Remove this class and update MauiShapeableImageView to public API with the same changes.
 	internal class MaterialShapeableImageView : ShapeableImageView
 	{
-		internal MaterialShapeableImageView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+		public MaterialShapeableImageView(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
 		{
 		}
 
-		internal MaterialShapeableImageView(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
+		public MaterialShapeableImageView(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
 		{
 		}
 
-		internal MaterialShapeableImageView(Context context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyle)
+		public MaterialShapeableImageView(Context context, IAttributeSet? attrs, int defStyle) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyle)
 		{
 		}
 
