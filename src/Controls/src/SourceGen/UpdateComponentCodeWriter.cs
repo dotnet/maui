@@ -10,21 +10,21 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// Generates an <c>UpdateComponent_v{from}to{to}()</c> partial method from a <see cref="XamlTreeDiff"/>.
-/// The generated method applies property-only XAML changes (from a Hot Reload) to live instances
-/// via <see cref="XamlComponentRegistry"/> without re-inflating the full page.
+/// Generates a single <c>UpdateComponent()</c> partial method containing accumulated
+/// <c>if (__version == N)</c> patch blocks from successive XAML Hot Reload edits.
 /// </summary>
 /// <remarks>
 /// <para>
-/// When the method runs:
-/// <list type="number">
-/// <item>Guards: if <c>__version != fromVersion</c> the method returns immediately (stale instance).</item>
-/// <item>For each changed node: looks up the live component from <see cref="XamlComponentRegistry"/>.</item>
-/// <item>Applies each property change using direct C# assignment or <c>TypeDescriptor</c> conversion.</item>
-/// <item>Sets <c>__version = toVersion</c> on success.</item>
-/// </list>
-/// If any component is missing or an unexpected exception occurs, the method jumps to
-/// <c>fallback:</c> which calls <c>InitializeComponentRuntime()</c> for a safe full reload.
+/// Per the spec, the generated method chains sequential <c>if</c> blocks (not <c>else if</c>):
+/// <code>
+/// internal void UpdateComponent()
+/// {
+///     if (__version == 0) { /* v0→v1 patch */ __version = 1; }
+///     if (__version == 1) { /* v1→v2 patch */ __version = 2; }
+/// }
+/// </code>
+/// A v0 instance chains through ALL patches; a fresh instance (whose <c>InitializeComponent</c>
+/// sets <c>__version</c> to the latest) skips them all.
 /// </para>
 /// <para>
 /// Property value encoding strategy (in priority order):
@@ -42,20 +42,98 @@ static class UpdateComponentCodeWriter
 	static readonly string NewLine = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n";
 
 	/// <summary>
-	/// Generates the source text of a partial class containing <c>UpdateComponent_v{fromVersion}to{toVersion}()</c>.
+	/// Generates the code for a single <c>if (__version == fromVersion) { ... __version = toVersion; }</c> block.
 	/// Returns <see langword="null"/> when <paramref name="diff"/> contains no changes.
 	/// </summary>
-	public static string? GenerateUpdateComponent(
-		INamedTypeSymbol rootType,
-		string accessModifier,
+	public static string? GeneratePatchBody(
 		XamlTreeDiff diff,
 		int fromVersion,
 		int toVersion,
+		INamedTypeSymbol rootType,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		if (diff.IsEmpty)
+			return null;
+
+		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
+
+		// Emit diff summary as a comment for diagnostics
+		EmitDiffSummary(codeWriter, diff);
+
+		// Emit child reorders FIRST (before property changes, since property diffs use post-reorder IDs)
+		int reorderIdx = 0;
+		foreach (var reorder in diff.ChildReorders)
+		{
+			EmitChildReorder(codeWriter, reorder, reorderIdx++);
+			codeWriter.WriteLine();
+		}
+
+		int compIdx = 0;
+		foreach (var nodeDiff in diff.NodeChanges)
+		{
+			bool isRoot = string.IsNullOrEmpty(nodeDiff.NodeId);
+
+			if (isRoot)
+			{
+				INamedTypeSymbol? rootNodeType = null;
+				if (nodeDiff.NodeXmlType is { } xmlTypeRoot)
+					xmlTypeRoot.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out rootNodeType);
+
+				foreach (var propDiff in nodeDiff.PropertyChanges)
+				{
+					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType);
+				}
+				codeWriter.WriteLine();
+				continue;
+			}
+
+			var varName = $"__uc_{compIdx++}";
+			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
+			codeWriter.Indent++;
+			codeWriter.WriteLine("goto fallback;");
+			codeWriter.Indent--;
+
+			INamedTypeSymbol? nodeType = null;
+			string castPrefix;
+			if (nodeDiff.NodeXmlType is { } xmlType
+				&& xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out nodeType)
+				&& nodeType != null)
+			{
+				var fqName = nodeType.ToFQDisplayString();
+				castPrefix = $"(({fqName}){varName}!).";
+			}
+			else
+			{
+				castPrefix = $"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.";
+			}
+
+			foreach (var propDiff in nodeDiff.PropertyChanges)
+			{
+				EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName);
+			}
+
+			codeWriter.WriteLine();
+		}
+
+		codeWriter.WriteLine($"__version = {toVersion};");
+
+		codeWriter.Flush();
+		return codeWriter.InnerWriter.ToString();
+	}
+
+	/// <summary>
+	/// Assembles a complete <c>UpdateComponent()</c> source file from accumulated patch bodies.
+	/// Each patch body becomes an <c>if (__version == N) { ... }</c> block inside the single method.
+	/// </summary>
+	public static string? GenerateUpdateComponent(
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		List<string> allPatchBodies,
+		int startVersion = 0)
+	{
+		if (allPatchBodies.Count == 0)
 			return null;
 
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
@@ -71,80 +149,23 @@ static class UpdateComponentCodeWriter
 
 		using (PrePost.NewBlock(codeWriter))
 		{
-			var methodName = $"UpdateComponent_v{fromVersion}to{toVersion}";
 			codeWriter.WriteLine($"[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
-			codeWriter.WriteLine($"internal void {methodName}()");
+			codeWriter.WriteLine($"internal void UpdateComponent()");
 
 			using (PrePost.NewBlock(codeWriter))
 			{
-				// Emit diff summary as a comment for diagnostics
-				EmitDiffSummary(codeWriter, diff);
-
-				// Version guard: if the instance is already at a different version, it's either stale
-				// (missed an update) or ahead — in both cases we bail out.
-				codeWriter.WriteLine($"if (__version != {fromVersion}) return;");
-				codeWriter.WriteLine();
-
-				// Emit child reorders FIRST (before property changes, since property diffs use post-reorder IDs)
-				int reorderIdx = 0;
-				foreach (var reorder in diff.ChildReorders)
+				// Emit each patch as a sequential if (__version == N) block
+				for (int i = 0; i < allPatchBodies.Count; i++)
 				{
-					EmitChildReorder(codeWriter, reorder, reorderIdx++);
-					codeWriter.WriteLine();
+					var body = allPatchBodies[i];
+					var version = startVersion + i;
+					codeWriter.WriteLine($"if (__version == {version})");
+					using (PrePost.NewBlock(codeWriter))
+					{
+						WriteIndentedBody(codeWriter, body);
+					}
 				}
 
-				int compIdx = 0;
-				foreach (var nodeDiff in diff.NodeChanges)
-				{
-					bool isRoot = string.IsNullOrEmpty(nodeDiff.NodeId);
-
-					if (isRoot)
-					{
-						// Bug 2 fix: root node — 'this' IS the component, emit direct assignments
-						INamedTypeSymbol? rootNodeType = null;
-						if (nodeDiff.NodeXmlType is { } xmlTypeRoot)
-							xmlTypeRoot.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out rootNodeType);
-
-						foreach (var propDiff in nodeDiff.PropertyChanges)
-						{
-							EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType);
-						}
-						codeWriter.WriteLine();
-						continue;
-					}
-
-					// Bug 1 fix: TryGet returns bool with out parameter — use out-var pattern
-					var varName = $"__uc_{compIdx++}";
-					codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
-					codeWriter.Indent++;
-					codeWriter.WriteLine("goto fallback;");
-					codeWriter.Indent--;
-
-					// Resolve C# type for the cast (best-effort; if unresolvable, go to fallback at runtime)
-					INamedTypeSymbol? nodeType = null;
-					string castPrefix;
-					if (nodeDiff.NodeXmlType is { } xmlType
-						&& xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out nodeType)
-						&& nodeType != null)
-					{
-						var fqName = nodeType.ToFQDisplayString();
-						castPrefix = $"(({fqName}){varName}!).";
-					}
-					else
-					{
-						// Type unknown — use dynamic dispatch (slower but safe)
-						castPrefix = $"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.";
-					}
-
-					foreach (var propDiff in nodeDiff.PropertyChanges)
-					{
-						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName);
-					}
-
-					codeWriter.WriteLine();
-				}
-
-				codeWriter.WriteLine($"__version = {toVersion};");
 				codeWriter.WriteLine("return;");
 				codeWriter.WriteLine();
 				codeWriter.WriteLine("fallback:");
@@ -155,6 +176,39 @@ static class UpdateComponentCodeWriter
 
 		codeWriter.Flush();
 		return codeWriter.InnerWriter.ToString();
+	}
+
+	/// <summary>
+	/// Backward-compatible overload: generates a single-patch UpdateComponent() from a diff.
+	/// Used by unit tests that test a single diff.
+	/// </summary>
+	public static string? GenerateUpdateComponent(
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		XamlTreeDiff diff,
+		int fromVersion,
+		int toVersion,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	{
+		var patchBody = GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache);
+		if (patchBody == null)
+			return null;
+
+		return GenerateUpdateComponent(rootType, accessModifier, new List<string> { patchBody }, startVersion: fromVersion);
+	}
+
+	static void WriteIndentedBody(IndentedTextWriter codeWriter, string body)
+	{
+		var lines = body.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+		foreach (var line in lines)
+		{
+			if (!string.IsNullOrWhiteSpace(line))
+				codeWriter.WriteLine(line.TrimStart('\t'));
+			else if (line.Length > 0)
+				codeWriter.WriteLine();
+		}
 	}
 
 	static void EmitChildReorder(

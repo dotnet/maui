@@ -146,7 +146,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var icSource = FindSourceByHintSuffix(result, ".xsg.cs");
 		Assert.NotNull(icSource);
 
-		var ucSource = FindSourceByHintSuffix(result, ".uc_v1to2.xsg.cs");
+		var ucSource = FindUCSource(result, "uc.xsg");
 		Assert.Null(ucSource);
 	}
 
@@ -162,10 +162,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		SourceGeneratorDriver.RunGenerator<XamlGenerator>(
 			compilation, file, assertNoCompilationErrors: false);
 
-		// Assert: state was seeded
+		// Assert: state was seeded at version 0 (spec: __version starts at 0)
 		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out var version);
 		Assert.True(hasPrev, "XamlHotReloadState should be seeded after first run");
-		Assert.Equal(1, version);
+		Assert.Equal(0, version);
 	}
 
 	[Fact]
@@ -175,12 +175,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV2_PropertyChange);
 
-		// Assert: UC source exists in run2
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		// Assert: UC source exists in run2 with fixed hint name "uc.xsg"
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
 
-		// Should contain UpdateComponent method with Text property assignment
-		Assert.Contains("UpdateComponent_v1to2", ucSource, StringComparison.Ordinal);
+		// Should contain single UpdateComponent method (not versioned)
+		Assert.Contains("void UpdateComponent()", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("UpdateComponent_v", ucSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -190,8 +191,8 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV2_PropertyChange);
 
-		// Find the UC source specifically (contains "uc_v1to2")
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		// Find the UC source
+		var ucSource = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(ucSource);
 		Assert.Contains("\"World\"", ucSource, StringComparison.Ordinal);
@@ -203,13 +204,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV2_PropertyChange);
 
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
 
-		// Guard: if (__version != 1) return;
-		Assert.Contains("__version != 1", ucSource, StringComparison.Ordinal);
-		// Version bump
-		Assert.Contains("__version = 2", ucSource, StringComparison.Ordinal);
+		// Per spec: if (__version == 0) { ... __version = 1; }
+		Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
+		// Version bump inside the if block
+		Assert.Contains("__version = 1", ucSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -220,7 +221,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV3_StructuralChange);
 
 		// Assert: no UC source for structural change
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.Null(ucSource);
 	}
 
@@ -232,7 +233,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV1); // no change
 
 		// Assert: no UC for identical XAML
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.Null(ucSource);
 	}
 
@@ -316,7 +317,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		// Act
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
-		var ucSource = FindUCSource(run2, "uc_v");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 
 		// Assert: must use out-var pattern, NOT "var __uc = TryGet(...)"
 		if (ucSource != null)
@@ -358,7 +359,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		// Act
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
-		var ucSource = FindUCSource(run2, "uc_v");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 
 		// Assert: root property change should emit this.Title = "World" (not registry lookup)
 		if (ucSource != null)

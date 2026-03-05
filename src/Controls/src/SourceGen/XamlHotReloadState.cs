@@ -7,14 +7,15 @@ using System.Collections.Generic;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// In-process static cache that tracks the last-generated XAML text and version number per file,
-/// enabling the incremental hot reload pipeline to compute diffs between XAML edits.
+/// In-process static cache that tracks the last-generated XAML text, version number, and
+/// accumulated patch bodies per file, enabling the incremental hot reload pipeline to
+/// compute diffs between XAML edits and emit a single <c>UpdateComponent()</c> with all patches.
 /// </summary>
 /// <remarks>
 /// This class uses mutable static state intentionally: Roslyn incremental generators run
 /// in-process during a build session, so state persists across incremental builds.  Each entry
-/// maps a <c>(AssemblyName, RelativePath)</c> pair to the XAML content and version counter used
-/// the last time an <c>InitializeComponent</c> was generated for that file.
+/// maps a <c>(AssemblyName, RelativePath)</c> pair to the XAML content, version counter, and
+/// the list of accumulated patch bodies (each an <c>if (__version == N)</c> block).
 ///
 /// Keyed on assembly name to prevent cross-project cache bleeding when different projects
 /// contain identically-named XAML files (e.g. both have a <c>MainPage.xaml</c>).
@@ -26,8 +27,19 @@ internal static class XamlHotReloadState
 {
 	static readonly object _lock = new();
 
-	// Maps (assemblyName, relativePath) → (xamlText, version)
-	static readonly Dictionary<(string AssemblyName, string RelativePath), (string XamlText, int Version)> _cache = new();
+	// Maps (assemblyName, relativePath) → CacheEntry
+	static readonly Dictionary<(string AssemblyName, string RelativePath), CacheEntry> _cache = new();
+
+	internal sealed class CacheEntry
+	{
+		public string XamlText { get; set; } = string.Empty;
+		public int Version { get; set; }
+		/// <summary>
+		/// Accumulated patch bodies. Each entry is the code for one <c>if (__version == N) { ... }</c> block.
+		/// On structural change, this list is cleared.
+		/// </summary>
+		public List<string> PatchBodies { get; } = new();
+	}
 
 	/// <summary>
 	/// Tries to retrieve the previously stored XAML text and version for the given file.
@@ -50,13 +62,40 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Stores (or replaces) the current XAML text and version for the given file.
+	/// Stores (or replaces) the current XAML text and version for the given file,
+	/// and appends a patch body if provided.
 	/// </summary>
-	public static void Update(string assemblyName, string relativePath, string xamlText, int version)
+	public static void Update(string assemblyName, string relativePath, string xamlText, int version, string? patchBody = null)
 	{
 		lock (_lock)
 		{
-			_cache[(assemblyName, relativePath)] = (xamlText, version);
+			if (!_cache.TryGetValue((assemblyName, relativePath), out var entry))
+			{
+				entry = new CacheEntry();
+				_cache[(assemblyName, relativePath)] = entry;
+			}
+			entry.XamlText = xamlText;
+			entry.Version = version;
+			if (patchBody != null)
+				entry.PatchBodies.Add(patchBody);
+		}
+	}
+
+	/// <summary>
+	/// Stores the XAML text and version, and clears all accumulated patches (structural change).
+	/// </summary>
+	public static void UpdateAndClearPatches(string assemblyName, string relativePath, string xamlText, int version)
+	{
+		lock (_lock)
+		{
+			if (!_cache.TryGetValue((assemblyName, relativePath), out var entry))
+			{
+				entry = new CacheEntry();
+				_cache[(assemblyName, relativePath)] = entry;
+			}
+			entry.XamlText = xamlText;
+			entry.Version = version;
+			entry.PatchBodies.Clear();
 		}
 	}
 
@@ -68,6 +107,19 @@ internal static class XamlHotReloadState
 		lock (_lock)
 		{
 			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.Version : 0;
+		}
+	}
+
+	/// <summary>
+	/// Returns a copy of the accumulated patch bodies for the given file.
+	/// </summary>
+	public static List<string> GetPatchBodies(string assemblyName, string relativePath)
+	{
+		lock (_lock)
+		{
+			if (_cache.TryGetValue((assemblyName, relativePath), out var entry))
+				return new List<string>(entry.PatchBodies);
+			return new List<string>();
 		}
 	}
 

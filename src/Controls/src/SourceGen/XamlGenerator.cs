@@ -189,11 +189,9 @@ public class XamlGenerator : IIncrementalGenerator
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
 					return;
 
-				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
-				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
-
-				// Incremental Hot Reload: if enabled and we have a previous XAML for this file,
-				// compute a diff and emit an UpdateComponent file.
+				// Incremental Hot Reload: compute the diff and update state BEFORE generating IC,
+				// so that IC can read the latest version from XamlHotReloadState and set __version correctly.
+				string? ucCode = null;
 				var assemblyName = compilation.AssemblyName ?? string.Empty;
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload
 					&& xamlItem.Xaml is not null
@@ -202,34 +200,46 @@ public class XamlGenerator : IIncrementalGenerator
 					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var rootType, out var accessModifier)
 					&& rootType != null)
 				{
-					var ucCode = InitializeComponentCodeWriter.TryGenerateUpdateComponent(
+					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousXaml,
 						xamlItem.Xaml,
 						fromVersion: previousVersion,
 						toVersion: previousVersion + 1,
 						rootType,
-						accessModifier,
 						compilation,
 						xmlnsCache,
 						typeCache);
 
-					if (ucCode != null)
+					if (patchBody != null)
 					{
 						var version = previousVersion + 1;
-						sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, $"uc_v{previousVersion}to{version}.xsg"), ucCode);
-						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, version);
+						// Append the new patch body and update state BEFORE IC generation
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, version, patchBody);
+						var allPatches = XamlHotReloadState.GetPatchBodies(assemblyName, relativePath);
+
+						// Generate UC source (emitted after IC below)
+						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, allPatches);
 					}
 					else
 					{
-						// Structural change or no-op: reset version to 1 to match IC hardcoded __version = 1
-						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
+						// Structural change or no-op: reset version and clear patches.
+						XamlHotReloadState.UpdateAndClearPatches(assemblyName, relativePath, xamlItem.Xaml, 0);
 					}
 				}
 				else if (xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
-					// First run: seed the cache (version 1, since IC sets __version = 1).
-					// The SDK-level XamlIncrementalHotReloadHandler handles dispatch for all pages.
-					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
+					// First run: seed the cache at version 0.
+					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 0);
+				}
+
+				// Generate IC — reads latest version from XamlHotReloadState
+				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+
+				// Emit UC source if a diff was computed
+				if (ucCode != null)
+				{
+					sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "uc.xsg"), ucCode);
 				}
 			}
 			catch (Exception e)

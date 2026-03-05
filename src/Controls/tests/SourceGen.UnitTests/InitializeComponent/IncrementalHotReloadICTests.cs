@@ -10,11 +10,14 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// Verifies that the generated IC partial emits:
 ///   - A <c>private int __version = 0;</c> field
 ///   - <c>XamlComponentRegistry.Register()</c> calls for each named/tracked node
-///   - <c>__version = 1;</c> at the end of the method body
+///   - <c>__version = {latestVersion};</c> at the end of the method body (reads from XamlHotReloadState)
 /// When <c>EnableIncrementalHotReload=false</c> (default), none of those are emitted.
 /// </summary>
-public class IncrementalHotReloadICTests : SourceGenXamlInitializeComponentTestBase
+public class IncrementalHotReloadICTests : SourceGenXamlInitializeComponentTestBase, IDisposable
 {
+	public IncrementalHotReloadICTests() => XamlHotReloadState.Reset();
+	public void Dispose() => XamlHotReloadState.Reset();
+
 	const string CodeBehind =
 """
 using System;
@@ -103,7 +106,7 @@ partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void Enabled_VersionSetToOneAtEndOfMethod()
+	public void Enabled_VersionSetAtEndOfMethod()
 	{
 		var xaml =
 """
@@ -117,7 +120,8 @@ partial class TestPage : ContentPage
 """;
 		var (_, text) = RunGenerator(xaml, CodeBehind, enableIncrementalHotReload: true);
 		Assert.NotNull(text);
-		Assert.Contains("__version = 1;", text, StringComparison.Ordinal);
+		// First run: state is seeded at version 0, so IC sets __version = 0
+		Assert.Contains("__version = 0;", text, StringComparison.Ordinal);
 	}
 
 	[Fact]

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Xaml;
 
 /// <summary>
 /// Runtime registry that maps live page/view instances to their child components by stable node ID.
-/// Used by XSG-generated <c>InitializeComponent()</c> and <c>UpdateComponent_vNtoM()</c> methods
+/// Used by XSG-generated <c>InitializeComponent()</c> and <c>UpdateComponent()</c> methods
 /// to find live objects during incremental XAML Hot Reload without re-inflation.
 /// </summary>
 /// <remarks>
@@ -61,7 +61,7 @@ public static class XamlComponentRegistry
 
 	/// <summary>
 	/// Tries to retrieve the live component registered under <paramref name="nodeId"/> for <paramref name="page"/>.
-	/// Called from generated <c>UpdateComponent_vNtoM()</c>.
+	/// Called from generated <c>UpdateComponent()</c>.
 	/// </summary>
 	/// <returns><see langword="true"/> if found and the weak reference is still alive.</returns>
 	public static bool TryGet(object page, string nodeId, out object? component)
