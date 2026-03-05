@@ -218,11 +218,18 @@ stages:
                 echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
                 exit 1
               fi
-              echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
-              if ! gh auth status; then
-                echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
-                exit 1
+              # Use GH_TOKEN env var to avoid scope validation issues with newer gh versions
+              export GH_TOKEN="$(GH_CLI_TOKEN)"
+              gh auth status
+              if [ $? -ne 0 ]; then
+                # Fallback: try direct login
+                echo "$(GH_CLI_TOKEN)" | gh auth login --with-token 2>/dev/null || true
+                if ! gh auth status; then
+                  echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
+                  exit 1
+                fi
               fi
+              echo "GitHub CLI authenticated successfully"
             displayName: 'Authenticate GitHub CLI'
             env:
               GH_CLI_TOKEN: $(GH_CLI_TOKEN)
