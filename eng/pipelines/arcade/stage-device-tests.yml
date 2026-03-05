@@ -443,7 +443,11 @@ stages:
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsIOS_CoreCLR_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsIOS_CoreCLR_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsIOS_CoreCLR_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsIOS_CoreCLR
@@ -493,7 +497,11 @@ stages:
         - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/steps/send-to-helix.yml', '/eng/common/templates-official/steps/send-to-helix.yml@self') }}
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
-            HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsMacCatalyst_CoreCLR_
+            ${{ if eq(parameters.runAsPublic, true) }}:
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsMacCatalyst_CoreCLR_ /p:HelixInternal=False
+            ${{ else }}:
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsMacCatalyst_CoreCLR_ /p:HelixInternal=True
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
             DisplayNamePrefix: DeviceTestsMacCatalyst_CoreCLR
