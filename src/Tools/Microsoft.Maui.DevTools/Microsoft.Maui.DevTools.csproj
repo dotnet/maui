@@ -43,7 +43,7 @@
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
     <!-- Use local project reference for development, switch to PackageReference for release -->
     <!-- <ProjectReference Include="Q:\repos\dotnet\android-tools\src\Xamarin.Android.Tools.AndroidSdk\Xamarin.Android.Tools.AndroidSdk.csproj" /> -->
-    <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="1.0.216" />
+    <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="1.0.220" />
     <!-- Use local project reference for development, switch to PackageReference for release -->
     <!-- <ProjectReference Include="Q:\repos\dotnet\macios-devtools\Xamarin.MacDev\Xamarin.MacDev.csproj" /> -->
     <PackageReference Include="Xamarin.Apple.Tools.MaciOS" Version="1.0.11" />
