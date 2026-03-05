@@ -390,6 +390,12 @@ static class UpdateComponentCodeWriter
 		}
 
 		var rawValue = propDiff.NewValue ?? string.Empty;
+		if (propDiff.NewNode != null)
+		{
+			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — fallback to runtime reload");
+			codeWriter.WriteLine("goto fallback;");
+			return;
+		}
 		var valueExpr = BuildValueExpression(rawValue, rootType, propName);
 
 		if (valueExpr == null)
@@ -432,6 +438,13 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Kind == Set
+		if (propDiff.NewNode != null)
+		{
+			// Complex property (markup extension, nested element, list) — codegen can't emit inline yet
+			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — fallback to runtime reload");
+			codeWriter.WriteLine("goto fallback;");
+			return;
+		}
 		var rawValue = propDiff.NewValue ?? string.Empty;
 		var valueExpr = BuildValueExpression(rawValue, nodeType, propName);
 

@@ -215,10 +215,9 @@ public class XamlNodeDiffTests
 	[Fact]
 	public void DifferentRootType_ReturnsNull()
 	{
-		// Both roots are ContentPage so the ROOT won't differ in type; let's use the child
-		// Note: root element type can't easily differ while staying valid XAML, test via child
-		var old = Parse(Page("<Label Text=\"Hello\" />"));
-		var @new = Parse(Page("<Button Text=\"Hello\" />"));
+		// Root element type mismatch → structural fallback (x:Class binds to a specific type)
+		var old = Parse($"""<ContentPage {MauiXmlns} x:Class="Test.MyPage" />""");
+		var @new = Parse($"""<ContentView {MauiXmlns} x:Class="Test.MyPage" />""");
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
@@ -226,36 +225,47 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void AddedChild_ReturnsNull()
+	public void AddedChild_ProducesChildListChange()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" />"));
 		var @new = Parse(Page("<Label Text=\"Hello\" /><Label Text=\"World\" />"));
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Single(diff.ChildListChanges);
+		var change = diff.ChildListChanges[0];
+		Assert.Equal(1, change.Entries.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
-	public void RemovedChild_ReturnsNull()
+	public void RemovedChild_ProducesChildListChange()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" /><Label Text=\"World\" />"));
 		var @new = Parse(Page("<Label Text=\"Hello\" />"));
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Single(diff.ChildListChanges);
+		var change = diff.ChildListChanges[0];
+		Assert.Single(change.RemovedNodeIds);
 	}
 
 	[Fact]
-	public void ChangedChildElementType_ReturnsNull()
+	public void ChangedChildElementType_ProducesChildListChange()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" />"));
 		var @new = Parse(Page("<Entry Text=\"Hello\" />"));
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Single(diff.ChildListChanges);
+		var change = diff.ChildListChanges[0];
+		// Old Label removed, new Entry added
+		Assert.Single(change.RemovedNodeIds);
+		Assert.Equal(1, change.Entries.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -533,9 +543,9 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void ChildAdded_WithComplexProperties_ReturnsNull()
+	public void ChildAdded_WithComplexProperties_Succeeds()
 	{
-		// Added child has a binding → can't create incrementally
+		// Added child has a binding — diff should still succeed (codegen decides how to handle)
 		var old = Parse(Page("""
 			<VerticalStackLayout>
 				<Label Text="A" />
@@ -550,7 +560,10 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff); // can't create element with binding incrementally
+		Assert.NotNull(diff);
+		Assert.Single(diff.ChildListChanges);
+		var change = diff.ChildListChanges[0];
+		Assert.Equal(1, change.Entries.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -884,17 +897,24 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void ChangedPropertyFromValueToMarkup_ReturnsNull()
+	public void ChangedPropertyFromValueToMarkup_ProducesPropertyDiffWithNode()
 	{
 		// Old: simple string value; New: markup extension (binding)
-		// ValueNode → MarkupNode is a type change → structural fallback required.
+		// At the diff level, this is just a property change — codegen decides how to apply.
 		var old = Parse(Page("<Label Text=\"Hello\" />"));
 		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
 
-		// ValueNode → MarkupNode: different INode concrete types → DiffProperties returns false
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var nd = diff.NodeChanges[0];
+		Assert.Single(nd.PropertyChanges);
+		var prop = nd.PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, prop.Kind);
+		Assert.Null(prop.NewValue); // not a simple string
+		Assert.NotNull(prop.NewNode); // complex node stored
 	}
 
 	[Fact]
@@ -937,10 +957,10 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void NestedElementProperty_Changed_ReturnsNull()
+	public void NestedElementProperty_Changed_ProducesPropertyDiffWithNode()
 	{
 		// Property element syntax: <Button.Shadow><Shadow Color="Red"/></Button.Shadow>
-		// Even though only Color changes, the property is backed by an ElementNode → structural fallback.
+		// The Shadow property is backed by an ElementNode — diff records it with the NewNode.
 		var old = Parse(Page("""
 			<Button>
 				<Button.Shadow>
@@ -958,14 +978,21 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		// ElementNode property → conservative structural fallback
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var nd = diff.NodeChanges[0];
+		Assert.Single(nd.PropertyChanges);
+		var prop = nd.PropertyChanges[0];
+		Assert.Equal("Shadow", prop.PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, prop.Kind);
+		Assert.Null(prop.NewValue); // not a simple string
+		Assert.NotNull(prop.NewNode); // ElementNode stored
 	}
 
 	[Fact]
-	public void NestedElementProperty_Identical_ReturnsNull()
+	public void NestedElementProperty_Identical_NoChange()
 	{
-		// Even identical ElementNode properties trigger structural fallback (conservative)
+		// Identical ElementNode properties should produce an empty diff (no change)
 		var xaml = Page("""
 			<Button>
 				<Button.Shadow>
@@ -978,14 +1005,14 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		// Conservative: any ElementNode in Properties → structural
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.True(diff.IsEmpty);
 	}
 
 	[Fact]
-	public void ListNodeProperty_ReturnsNull()
+	public void ListNodeProperty_Identical_NoChange()
 	{
-		// A property element with 2+ children becomes a ListNode in Properties → structural
+		// Identical ListNode properties should produce an empty diff
 		var old = Parse(Page("""
 			<Label>
 				<Label.GestureRecognizers>
@@ -1005,8 +1032,8 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		// ListNode property → conservative structural fallback
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.True(diff.IsEmpty);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -1073,5 +1100,623 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		Assert.True(diff.IsEmpty);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Multi-edit scenarios (property + structural changes combined)
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void MultiEdit_RootPropertyAndChildProperty()
+	{
+		// Root Title changed AND child Label.Text changed
+		var old = Parse(Page("<Label Text=\"Hello\" />", extraAttrs: "Title=\"Page1\""));
+		var @new = Parse(Page("<Label Text=\"World\" />", extraAttrs: "Title=\"Page2\""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(2, diff.NodeChanges.Count);
+		// Root property
+		var rootDiff = diff.NodeChanges.Single(n => n.NodeId == "");
+		Assert.Equal("Title", rootDiff.PropertyChanges[0].PropertyName.LocalName);
+		Assert.Equal("Page2", rootDiff.PropertyChanges[0].NewValue);
+		// Child property
+		var childDiff = diff.NodeChanges.Single(n => n.NodeId != "");
+		Assert.Equal("Text", childDiff.PropertyChanges[0].PropertyName.LocalName);
+		Assert.Equal("World", childDiff.PropertyChanges[0].NewValue);
+	}
+
+	[Fact]
+	public void MultiEdit_PropertyChangeAndChildAdded()
+	{
+		// Existing Label.Text changed AND new Button added
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="B" />
+				<Button Text="New" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Property change on Label
+		Assert.Single(diff.NodeChanges);
+		Assert.Contains("Label", diff.NodeChanges[0].NodeId, StringComparison.Ordinal);
+		Assert.Equal("B", diff.NodeChanges[0].PropertyChanges[0].NewValue);
+		// Child list change (Button added)
+		Assert.Single(diff.ChildListChanges);
+		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+	}
+
+	[Fact]
+	public void MultiEdit_PropertyChangeAndChildRemoved()
+	{
+		// Label.Text changed AND Button removed
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Changed" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Property change on Label
+		Assert.Single(diff.NodeChanges);
+		Assert.Equal("Changed", diff.NodeChanges[0].PropertyChanges[0].NewValue);
+		// Child list change (Button removed)
+		Assert.Single(diff.ChildListChanges);
+		Assert.Single(diff.ChildListChanges[0].RemovedNodeIds);
+	}
+
+	[Fact]
+	public void MultiEdit_ReorderAndPropertyChanges()
+	{
+		// Reorder Label↔Button AND change properties on both
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" FontSize="14" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Button Text="B2" />
+				<Label Text="A2" FontSize="20" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Reorder
+		Assert.Single(diff.ChildListChanges);
+		// Property changes on both nodes
+		Assert.Equal(2, diff.NodeChanges.Count);
+		var labelDiff = diff.NodeChanges.Single(n => n.NodeId.Contains("Label"));
+		var buttonDiff = diff.NodeChanges.Single(n => n.NodeId.Contains("Button"));
+		Assert.Equal(2, labelDiff.PropertyChanges.Count); // Text + FontSize
+		Assert.Single(buttonDiff.PropertyChanges); // Text only
+	}
+
+	[Fact]
+	public void MultiEdit_ChildAddRemoveAndDeepPropertyChange()
+	{
+		// In a nested structure: add Switch, remove Entry, AND change deeply nested Label.Text
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<HorizontalStackLayout>
+					<Label Text="Deep" />
+				</HorizontalStackLayout>
+				<Entry Text="Remove" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<HorizontalStackLayout>
+					<Label Text="Changed" />
+				</HorizontalStackLayout>
+				<Switch />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Deep property change on Label
+		Assert.Single(diff.NodeChanges);
+		Assert.Contains("Label", diff.NodeChanges[0].NodeId, StringComparison.Ordinal);
+		Assert.Equal("Changed", diff.NodeChanges[0].PropertyChanges[0].NewValue);
+		// Child list change on VSL: Entry removed, Switch added
+		Assert.Single(diff.ChildListChanges);
+		Assert.Single(diff.ChildListChanges[0].RemovedNodeIds);
+		Assert.Contains(diff.ChildListChanges[0].RemovedNodeIds[0], "Entry");
+		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+	}
+
+	[Fact]
+	public void MultiEdit_PropertyChangesAtMultipleDepths()
+	{
+		// Properties changed at root, first-level child, and second-level child simultaneously
+		var old = Parse(Page("""
+			<VerticalStackLayout Spacing="10">
+				<Label Text="A" />
+				<HorizontalStackLayout>
+					<Button Text="B" />
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+			""", extraAttrs: "Title=\"Old\""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout Spacing="20">
+				<Label Text="A2" />
+				<HorizontalStackLayout>
+					<Button Text="B2" />
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+			""", extraAttrs: "Title=\"New\""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Empty(diff.ChildListChanges); // no structural changes
+		Assert.Equal(4, diff.NodeChanges.Count);
+		// Root: Title
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "");
+		// VSL: Spacing
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "VerticalStackLayout_0");
+		// Label: Text
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "VerticalStackLayout_0/Label_0");
+		// Button: Text
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "VerticalStackLayout_0/HorizontalStackLayout_1/Button_0");
+	}
+
+	[Fact]
+	public void MultiEdit_ValueToBindingAndChildAdded()
+	{
+		// Existing Label.Text changed from value to binding AND new Entry added
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Static" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="{Binding Name}" />
+				<Entry Placeholder="New" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Property change: value → binding (complex)
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode); // complex markup
+		// Child list change: Entry added
+		Assert.Single(diff.ChildListChanges);
+		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+	}
+
+	[Fact]
+	public void ToDebugString_MultiEdit_PropertyAndChildChanges()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			""", extraAttrs: "Title=\"Old\""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A2" />
+				<Switch />
+			</VerticalStackLayout>
+			""", extraAttrs: "Title=\"New\""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var debug = diff.ToDebugString();
+		// Root property change
+		Assert.Contains("[root] Title = \"New\"", debug, StringComparison.Ordinal);
+		// Label property change
+		Assert.Contains("Text = \"A2\"", debug, StringComparison.Ordinal);
+		// Child list change: Switch added, Button removed
+		Assert.Contains("+", debug, StringComparison.Ordinal);
+		Assert.Contains("removed:", debug, StringComparison.Ordinal);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Complex property diff tests (no fallback)
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void BindingToValue_ProducesPropertyDiffWithSimpleValue()
+	{
+		// Binding → Value is a property change at the diff level
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+		var @new = Parse(Page("<Label Text=\"Hello\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.Equal("Hello", prop.NewValue);
+		Assert.Null(prop.NewNode); // simple value, no complex node
+	}
+
+	[Fact]
+	public void NewPropertyWithBinding_ProducesPropertyDiff()
+	{
+		// Adding a new property as a binding should produce a diff, not fallback
+		var old = Parse(Page("<Label />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void ListNodeProperty_Changed_ProducesDiff()
+	{
+		// Changing a ListNode property (adding a gesture recognizer) should not trigger fallback
+		var old = Parse(Page("""
+			<Label>
+				<Label.GestureRecognizers>
+					<TapGestureRecognizer />
+				</Label.GestureRecognizers>
+			</Label>
+			"""));
+		var @new = Parse(Page("""
+			<Label>
+				<Label.GestureRecognizers>
+					<TapGestureRecognizer />
+					<SwipeGestureRecognizer />
+				</Label.GestureRecognizers>
+			</Label>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("GestureRecognizers", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode); // ListNode stored
+	}
+
+	[Fact]
+	public void TextContentChanged_ProducesContentDiff()
+	{
+		// Text content (<Label>Hello</Label>) that changes should be tracked
+		var old = Parse(Page("<Label>Hello</Label>"));
+		var @new = Parse(Page("<Label>World</Label>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("_Content", prop.PropertyName.LocalName);
+		Assert.Equal("World", prop.NewValue);
+	}
+
+	[Fact]
+	public void TextContentUnchanged_ProducesEmptyDiff()
+	{
+		// Same text content should produce empty diff
+		var old = Parse(Page("<Label>Hello</Label>"));
+		var @new = Parse(Page("<Label>Hello</Label>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.True(diff.IsEmpty);
+	}
+
+	[Fact]
+	public void ToDebugString_ValueToBinding()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var debug = diff.ToDebugString();
+		Assert.Contains("Text = {MarkupNode}", debug);
+	}
+
+	[Fact]
+	public void ToDebugString_TextContent()
+	{
+		var old = Parse(Page("<Label>Hello</Label>"));
+		var @new = Parse(Page("<Label>World</Label>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var debug = diff.ToDebugString();
+		Assert.Contains("_Content = \"World\"", debug);
+	}
+
+	[Fact]
+	public void NestedElementProperty_AddedNew_ProducesDiff()
+	{
+		// Adding a new nested element property (Shadow on a plain button)
+		var old = Parse(Page("<Button Text=\"Click\" />"));
+		var @new = Parse(Page("""
+			<Button Text="Click">
+				<Button.Shadow>
+					<Shadow Color="Red" />
+				</Button.Shadow>
+			</Button>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Shadow", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Sequential edits (xaml1 → xaml2 → xaml3 → …) — simulating a hot reload session
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void SequentialEdits_PropertyTweaks()
+	{
+		// Developer iterates on label text and color across 4 saves
+		var xaml1 = Parse(Page("<Label Text=\"Draft\" TextColor=\"Gray\" />"));
+		var xaml2 = Parse(Page("<Label Text=\"Hello\" TextColor=\"Gray\" />"));
+		var xaml3 = Parse(Page("<Label Text=\"Hello\" TextColor=\"Blue\" />"));
+		var xaml4 = Parse(Page("<Label Text=\"Hello, World!\" TextColor=\"Blue\" />"));
+
+		// v1→v2: Text changed
+		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
+		Assert.NotNull(d12);
+		Assert.Single(d12.NodeChanges);
+		Assert.Single(d12.NodeChanges[0].PropertyChanges);
+		Assert.Equal("Text", d12.NodeChanges[0].PropertyChanges[0].PropertyName.LocalName);
+		Assert.Equal("Hello", d12.NodeChanges[0].PropertyChanges[0].NewValue);
+
+		// v2→v3: TextColor changed
+		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
+		Assert.NotNull(d23);
+		Assert.Single(d23.NodeChanges);
+		Assert.Single(d23.NodeChanges[0].PropertyChanges);
+		Assert.Equal("TextColor", d23.NodeChanges[0].PropertyChanges[0].PropertyName.LocalName);
+		Assert.Equal("Blue", d23.NodeChanges[0].PropertyChanges[0].NewValue);
+
+		// v3→v4: Text changed again
+		var d34 = XamlNodeDiff.ComputeDiff(xaml3, xaml4);
+		Assert.NotNull(d34);
+		Assert.Single(d34.NodeChanges);
+		Assert.Equal("Hello, World!", d34.NodeChanges[0].PropertyChanges[0].NewValue);
+	}
+
+	[Fact]
+	public void SequentialEdits_GrowingLayout()
+	{
+		// Developer adds children one by one across saves
+		var xaml1 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Title" />
+			</VerticalStackLayout>
+			"""));
+		var xaml2 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Title" />
+				<Entry Placeholder="Name" />
+			</VerticalStackLayout>
+			"""));
+		var xaml3 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Title" />
+				<Entry Placeholder="Name" />
+				<Button Text="Submit" />
+			</VerticalStackLayout>
+			"""));
+
+		// v1→v2: Entry added
+		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
+		Assert.NotNull(d12);
+		Assert.Empty(d12.NodeChanges);
+		Assert.Single(d12.ChildListChanges);
+		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Contains("Entry", d12.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
+
+		// v2→v3: Button added
+		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
+		Assert.NotNull(d23);
+		Assert.Empty(d23.NodeChanges);
+		Assert.Single(d23.ChildListChanges);
+		Assert.Equal(1, d23.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Contains("Button", d23.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
+	}
+
+	[Fact]
+	public void SequentialEdits_AddThenRemoveThenModify()
+	{
+		// v1: baseline
+		var xaml1 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Hello" />
+			</VerticalStackLayout>
+			"""));
+		// v2: add Button
+		var xaml2 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Hello" />
+				<Button Text="Click" />
+			</VerticalStackLayout>
+			"""));
+		// v3: remove Button (undo)
+		var xaml3 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Hello" />
+			</VerticalStackLayout>
+			"""));
+		// v4: change Label text instead
+		var xaml4 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Goodbye" />
+			</VerticalStackLayout>
+			"""));
+
+		// v1→v2: +Button
+		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
+		Assert.NotNull(d12);
+		Assert.Single(d12.ChildListChanges);
+		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+
+		// v2→v3: −Button (undo)
+		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
+		Assert.NotNull(d23);
+		Assert.Single(d23.ChildListChanges);
+		Assert.Single(d23.ChildListChanges[0].RemovedNodeIds);
+
+		// v3→v4: property change only, no structural
+		var d34 = XamlNodeDiff.ComputeDiff(xaml3, xaml4);
+		Assert.NotNull(d34);
+		Assert.Empty(d34.ChildListChanges);
+		Assert.Single(d34.NodeChanges);
+		Assert.Equal("Goodbye", d34.NodeChanges[0].PropertyChanges[0].NewValue);
+	}
+
+	[Fact]
+	public void SequentialEdits_ReorderThenPropertyChange()
+	{
+		// v1: Label, Button, Entry
+		var xaml1 = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+				<Entry Placeholder="C" />
+			</VerticalStackLayout>
+			"""));
+		// v2: reorder to Entry, Label, Button
+		var xaml2 = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Placeholder="C" />
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		// v3: change Entry placeholder (property change after reorder)
+		var xaml3 = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Placeholder="Search..." />
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		// v1→v2: reorder only
+		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
+		Assert.NotNull(d12);
+		Assert.Single(d12.ChildListChanges);
+		Assert.Empty(d12.NodeChanges);
+
+		// v2→v3: property change only (no reorder since order is stable)
+		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
+		Assert.NotNull(d23);
+		Assert.Empty(d23.ChildListChanges);
+		Assert.Single(d23.NodeChanges);
+		Assert.Equal("Search...", d23.NodeChanges[0].PropertyChanges[0].NewValue);
+	}
+
+	[Fact]
+	public void SequentialEdits_ValueToBindingToValue()
+	{
+		// Developer tries a binding, then reverts to static value
+		var xaml1 = Parse(Page("<Label Text=\"Static\" />"));
+		var xaml2 = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+		var xaml3 = Parse(Page("<Label Text=\"Back to static\" />"));
+
+		// v1→v2: value → binding
+		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
+		Assert.NotNull(d12);
+		Assert.Single(d12.NodeChanges);
+		var p12 = d12.NodeChanges[0].PropertyChanges[0];
+		Assert.NotNull(p12.NewNode); // complex
+		Assert.Null(p12.NewValue);
+
+		// v2→v3: binding → value
+		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
+		Assert.NotNull(d23);
+		Assert.Single(d23.NodeChanges);
+		var p23 = d23.NodeChanges[0].PropertyChanges[0];
+		Assert.Null(p23.NewNode); // simple
+		Assert.Equal("Back to static", p23.NewValue);
+	}
+
+	[Fact]
+	public void SequentialEdits_ReplaceChildType()
+	{
+		// Developer replaces one control type with another across two edits
+		var xaml1 = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Placeholder="Name" />
+				<Button Text="Submit" />
+			</VerticalStackLayout>
+			"""));
+		// v2: replace Entry with Editor
+		var xaml2 = Parse(Page("""
+			<VerticalStackLayout>
+				<Editor Placeholder="Name" />
+				<Button Text="Submit" />
+			</VerticalStackLayout>
+			"""));
+		// v3: also replace Button with ImageButton
+		var xaml3 = Parse(Page("""
+			<VerticalStackLayout>
+				<Editor Placeholder="Bio" />
+				<ImageButton />
+			</VerticalStackLayout>
+			"""));
+
+		// v1→v2: Entry removed, Editor added
+		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
+		Assert.NotNull(d12);
+		Assert.Single(d12.ChildListChanges);
+		Assert.Single(d12.ChildListChanges[0].RemovedNodeIds);
+		Assert.Contains("Entry", d12.ChildListChanges[0].RemovedNodeIds[0]);
+		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+
+		// v2→v3: Button removed + ImageButton added, AND Editor.Placeholder changed
+		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
+		Assert.NotNull(d23);
+		Assert.Single(d23.ChildListChanges);
+		Assert.Single(d23.ChildListChanges[0].RemovedNodeIds);
+		Assert.Contains("Button", d23.ChildListChanges[0].RemovedNodeIds[0]);
+		// Editor property change
+		Assert.Single(d23.NodeChanges);
+		Assert.Equal("Bio", d23.NodeChanges[0].PropertyChanges[0].NewValue);
 	}
 }
