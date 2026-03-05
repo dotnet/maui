@@ -116,6 +116,11 @@ stages:
 
             # Wait for emulator to fully boot (Cake boot fires emulator in background)
             - script: |
+                # Add Android SDK tools to PATH (provision.yml sets ANDROID_SDK_ROOT variable)
+                export PATH="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools:${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/emulator:$PATH"
+                echo "Using ANDROID_SDK_ROOT: ${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+                echo "adb location: $(which adb 2>/dev/null || echo 'not found')"
+
                 echo "Waiting for emulator device to appear..."
                 timeout=120
                 waited=0
@@ -158,6 +163,9 @@ stages:
                 DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
                 echo "✅ Emulator fully booted: $DEVICE_ID"
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+                # Persist PATH for subsequent steps
+                echo "##vso[task.prependpath]${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/platform-tools"
+                echo "##vso[task.prependpath]${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/emulator"
               displayName: 'Wait for Emulator Boot and Capture UDID'
               timeoutInMinutes: 10
 
