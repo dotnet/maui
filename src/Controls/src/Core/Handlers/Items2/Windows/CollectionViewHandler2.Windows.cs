@@ -143,7 +143,15 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					});
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
+			PlatformView.Loaded += OnPlatformViewLoaded;
 		}
+	}
+
+	void OnPlatformViewLoaded(object? sender, UI.Xaml.RoutedEventArgs e)
+	{
+		// Re-sync visual states to MAUI selection whenever the view re-enters the visual tree.
+		// This is the fix for the stale selection highlight on navigation back
+		UpdatePlatformSelection();
 	}
 
 	protected override void DisconnectHandler(WItemsView platformView)
@@ -153,6 +161,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		if (oldListViewBase is not null)
 		{
 			oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+			oldListViewBase.Loaded -= OnPlatformViewLoaded;
 			oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
 		}
 
