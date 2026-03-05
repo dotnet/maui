@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public AutoSuggestBox? QueryEditor => null;
 
+		TextBox? _queryTextBox;
+
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
 		{
 			AutoMaximizeSuggestionArea = false,
@@ -33,6 +35,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.TextChanged -= OnTextChanged;
 			platformView.GotFocus -= OnGotFocus;
 			platformView.LostFocus -= OnLostFocus;
+
+			if (_queryTextBox is not null)
+			{
+				_queryTextBox.SelectionChanged -= OnPlatformSelectionChanged;
+				_queryTextBox = null;
+			}
 		}
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
@@ -107,6 +115,18 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
+		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
+				textBox.UpdateCursorPosition(searchBar);
+		}
+
+		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
+				textBox.UpdateSelectionLength(searchBar);
+		}
+
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
@@ -143,6 +163,12 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateKeyboard(VirtualView);
 				PlatformView?.UpdateReturnType(VirtualView);
 			}
+
+			if (PlatformView?.GetFirstDescendant<TextBox>() is TextBox queryTextBox)
+			{
+				_queryTextBox = queryTextBox;
+				_queryTextBox.SelectionChanged += OnPlatformSelectionChanged;
+			}
 		}
 
 		void OnQuerySubmitted(AutoSuggestBox? sender, AutoSuggestBoxQuerySubmittedEventArgs e)
@@ -177,6 +203,21 @@ namespace Microsoft.Maui.Handlers
 		void OnLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			UpdateIsFocused(false);
+		}
+
+		void OnPlatformSelectionChanged(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView == null || _queryTextBox == null)
+				return;
+
+			var cursorPosition = _queryTextBox.GetCursorPosition();
+			var selectedTextLength = _queryTextBox.SelectionLength;
+
+			if (VirtualView.CursorPosition != cursorPosition)
+				VirtualView.CursorPosition = cursorPosition;
+
+			if (VirtualView.SelectionLength != selectedTextLength)
+				VirtualView.SelectionLength = selectedTextLength;
 		}
 	}
 }
