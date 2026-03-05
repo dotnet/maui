@@ -1,4 +1,5 @@
 #nullable enable
+#if !NETSTANDARD
 using System;
 using System.Globalization;
 using System.Reflection;
@@ -94,25 +95,50 @@ internal static class XamlIncrementalHotReloadHandler
 				try
 				{
 					var version = (int)(versionField.GetValue(instance) ?? 0);
-					var methodName = string.Concat(
-						"UpdateComponent_v",
-						version.ToString(CultureInfo.InvariantCulture),
-						"to",
-						(version + 1).ToString(CultureInfo.InvariantCulture));
+
+					// Loop to chain multiple version steps (e.g., v1→v2→v3 if several saves occurred).
+					while (true)
+					{
+						var methodName = string.Concat(
+							"UpdateComponent_v",
+							version.ToString(CultureInfo.InvariantCulture),
+							"to",
+							(version + 1).ToString(CultureInfo.InvariantCulture));
 
 #pragma warning disable IL2075 // type comes from updatedTypes at runtime; DynamicallyAccessedMembers cannot annotate loop variables
-					var method = type.GetMethod(
-						methodName,
-						BindingFlags.NonPublic | BindingFlags.Instance);
+						var method = type.GetMethod(
+							methodName,
+							BindingFlags.NonPublic | BindingFlags.Instance);
 #pragma warning restore IL2075
 
-					// method is null when no UC was generated (structural change or identical XAML).
-					method?.Invoke(instance, null);
+						// method is null when no UC was generated for this version step.
+						if (method is null)
+							break;
+
+						method.Invoke(instance, null);
+
+						// Re-read version — the UC method updates __version on success.
+						var newVersion = (int)(versionField.GetValue(instance) ?? 0);
+						if (newVersion <= version)
+							break; // Guard against infinite loop if __version didn't advance.
+						version = newVersion;
+					}
 				}
 #pragma warning disable CA1031 // Do not catch general exception types
-				catch
+				catch (Exception ex)
 				{
-					// Best-effort: never let hot-reload crash the running app.
+					// Fallback: attempt full-page reload per spec (clear BindingContext → InitializeComponent → restore).
+					System.Diagnostics.Debug.WriteLine(
+						$"[XamlIncrementalHotReload] UpdateComponent failed for {type.Name}: {ex.InnerException?.Message ?? ex.Message}. Falling back to full reload.");
+					try
+					{
+						FallbackReload(instance, type);
+					}
+					catch (Exception fallbackEx)
+					{
+						System.Diagnostics.Debug.WriteLine(
+							$"[XamlIncrementalHotReload] Fallback reload also failed for {type.Name}: {fallbackEx.Message}");
+					}
 				}
 #pragma warning restore CA1031
 			}
@@ -141,4 +167,35 @@ internal static class XamlIncrementalHotReloadHandler
 			return field;
 		}
 	}
+
+	/// <summary>
+	/// Fallback: save BindingContext, re-run InitializeComponent, restore BindingContext.
+	/// </summary>
+	static void FallbackReload(object instance, Type type)
+	{
+		// Save and clear BindingContext if instance is a BindableObject
+		object? savedBindingContext = null;
+		var bindableObj = instance as global::Microsoft.Maui.Controls.BindableObject;
+		if (bindableObj != null)
+		{
+			savedBindingContext = bindableObj.BindingContext;
+			bindableObj.BindingContext = null;
+		}
+
+#pragma warning disable IL2075
+		var initMethod = type.GetMethod(
+			"InitializeComponent",
+			BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public,
+			null, Type.EmptyTypes, null);
+#pragma warning restore IL2075
+
+		initMethod?.Invoke(instance, null);
+
+		// Restore BindingContext
+		if (bindableObj != null)
+		{
+			bindableObj.BindingContext = savedBindingContext;
+		}
+	}
 }
+#endif

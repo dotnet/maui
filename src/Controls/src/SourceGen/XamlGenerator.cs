@@ -227,18 +227,9 @@ public class XamlGenerator : IIncrementalGenerator
 				}
 				else if (xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
-					// First run: seed the cache (version 1, since IC sets __version = 1)
+					// First run: seed the cache (version 1, since IC sets __version = 1).
+					// The SDK-level XamlIncrementalHotReloadHandler handles dispatch for all pages.
 					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
-
-					// Emit the MetadataUpdateHandler glue class (once, alongside the IC)
-					if (InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var handlerRootType, out _)
-						&& handlerRootType != null)
-					{
-						var handlerCode = MetadataUpdateHandlerCodeWriter.GenerateHandler(
-							handlerRootType,
-							InitializeComponentCodeWriter.GeneratedCodeAttribute);
-						sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "handler.xsg"), handlerCode);
-					}
 				}
 			}
 			catch (Exception e)
