@@ -55,40 +55,23 @@ public static class TimePickerExtensions
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
-		// Determine if format contains AM/PM designator
-		bool hasAmPmFormat = format != null && format.Contains('t', StringComparison.Ordinal);
-
 		// Determine which culture to use for consistent formatting
 		CultureInfo formattingCulture;
 		if (format != null)
 		{
-			if (hasAmPmFormat || format.Contains('h', StringComparison.Ordinal))
+			if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
 			{
-				// For 12-hour format or any format with AM/PM, use US locale
 				formattingCulture = new CultureInfo("en-US");
-			}
-
-			if (format != null)
+			}	
+			else if (format.Contains('H', StringComparison.Ordinal))
 			{
-				if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
-				{
-					// For 12-hour format or any format with AM/PM, use US locale
-					formattingCulture = new CultureInfo("en-US");
-				}
-				else if (format.Contains('H', StringComparison.Ordinal))
-				{
-					// For 24-hour format without AM/PM, use German locale
-					formattingCulture = new CultureInfo("de-DE");
-				}
-				else
-				{
-					formattingCulture = cultureInfo;
-				}
+				formattingCulture = new CultureInfo("de-DE");
 			}
 			else
 			{
 				formattingCulture = cultureInfo;
 			}
+				
 		}
 		else
 		{
@@ -96,7 +79,7 @@ public static class TimePickerExtensions
 		}
 
 		// Apply the same culture to both the text display and the picker
-		mauiTimePicker.Text = time?.ToFormattedString(format ?? string.Empty, formattingCulture) ?? string.Empty;
+		mauiTimePicker.Text = time?.ToFormattedString(format ?? string.Empty, formattingCulture);
 
 		if (picker != null && format != null)
 		{
