@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.Border)]
 public class BorderFeatureTests : _GalleryUITest
 {
 	public const string BorderFeatureMatrix = "Border Feature Matrix";
@@ -36,7 +37,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(1)]
-	[Category(UITestCategories.Border)]
 	public void Border_DefaultValues()
 	{
 		// Verify the initial Border appearance without applying any options.
@@ -47,7 +47,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(2)]
-	[Category(UITestCategories.Border)]
 	public void Border_PaddingWithContent_Label()
 	{
 		NavigateToOptions();
@@ -66,7 +65,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(3)]
-	[Category(UITestCategories.Border)]
 	public void Border_PaddingWithContent_Image()
 	{
 		NavigateToOptions();
@@ -85,7 +83,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(4)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithContent_Button()
 	{
 		NavigateToOptions();
@@ -104,7 +101,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(5)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithStrokeShape_RoundRectangle()
 	{
 		NavigateToOptions();
@@ -122,7 +118,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(6)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithStrokeThickness()
 	{
 		NavigateToOptions();
@@ -140,7 +135,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(7)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeWithStrokeThickness_Ellipse()
 	{
 		NavigateToOptions();
@@ -158,7 +152,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(8)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShape_Path()
 	{
 		// Path shape without a DashArray so this test runs on all platforms.
@@ -178,7 +171,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(9)]
-	[Category(UITestCategories.Border)]
 	public void Border_Shadow()
 	{
 		NavigateToOptions();
@@ -204,7 +196,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(10)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeMiterLimitWithStrokeLineJoin_Miter()
 	{
 		NavigateToOptions();
@@ -225,7 +216,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(11)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeWithStrokeLineJoin_Bevel()
 	{
 		NavigateToOptions();
@@ -246,7 +236,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(12)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithStrokeLineJoin_Round()
 	{
 		NavigateToOptions();
@@ -264,7 +253,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(13)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeThicknessWithStrokeLineJoin_Bevel()
 	{
 		NavigateToOptions();
@@ -282,7 +270,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(14)]
-	[Category(UITestCategories.Border)]
 	public void Border_PolygonShapeWithStrokeLineJoin_Bevel()
 	{
 		NavigateToOptions();
@@ -307,7 +294,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(15)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeWithDashArray_Path()
 	{
 		NavigateToOptions();
@@ -328,7 +314,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(16)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeThicknessWithDashArray()
 	{
 		NavigateToOptions();
@@ -347,7 +332,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(17)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithDashOffset()
 	{
 		NavigateToOptions();
@@ -369,7 +353,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(18)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithStrokeColor()
 	{
 		NavigateToOptions();
@@ -393,7 +376,6 @@ public class BorderFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/29741
 	[Test]
 	[Order(19)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Flat()
 	{
 		NavigateToOptions();
@@ -414,7 +396,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(20)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Round()
 	{
 		NavigateToOptions();
@@ -435,7 +416,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(21)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithDashOffsetAndStrokeLineCapRound()
 	{
 		NavigateToOptions();
@@ -459,7 +439,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(22)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Square()
 	{
 		NavigateToOptions();
@@ -480,7 +459,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(23)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithEllipseShapeAndStrokeLineCap_Square()
 	{
 		NavigateToOptions();
@@ -504,7 +482,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(24)]
-	[Category(UITestCategories.Border)]
 	public void Border_PolygonShapeWithStrokeLineCap_Round()
 	{
 		NavigateToOptions();
@@ -531,7 +508,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(25)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithDashArrayAndOffset()
 	{
 		NavigateToOptions();
@@ -557,7 +533,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(26)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeWithPolygon()
 	{
 		NavigateToOptions();
@@ -573,12 +548,8 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// ── New coverage tests (Order 27+) ──
-
-	// 🔴 High priority: Exercise RedColorButton (previously unused AutomationId)
 	[Test]
 	[Order(27)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithRed()
 	{
 		NavigateToOptions();
@@ -594,11 +565,9 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// 🔴 High priority: Exercise RectangleShapeRadio (previously unused AutomationId)
 	// Explicitly switch to another shape, then back to Rectangle to verify reset behavior.
 	[Test]
 	[Order(28)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeRectangle_AfterChange()
 	{
 		NavigateToOptions();
@@ -619,10 +588,8 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// 🟡 Medium priority: Shadow with a non-default color
 	[Test]
 	[Order(29)]
-	[Category(UITestCategories.Border)]
 	public void Border_ShadowWithColor()
 	{
 		NavigateToOptions();
@@ -645,10 +612,8 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyBorderScreenshot();
 	}
 
-	// 🟡 Medium priority: Background color change
 	[Test]
 	[Order(30)]
-	[Category(UITestCategories.Border)]
 	public void Border_BackgroundColor()
 	{
 		NavigateToOptions();
@@ -661,10 +626,8 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// 🟡 Medium priority: Gradient brush stroke
 	[Test]
 	[Order(31)]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeGradientBrush()
 	{
 		NavigateToOptions();
@@ -682,7 +645,6 @@ public class BorderFeatureTests : _GalleryUITest
 
 	[Test]
 	[Order(32)]
-	[Category(UITestCategories.Border)]
 	public void Border_ZeroPadding()
 	{
 		NavigateToOptions();
