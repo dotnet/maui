@@ -7,9 +7,6 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiAppCompatEditText : AppCompatEditText
 	{
-		/// <summary>
-		/// Occurs when the selection within the text changes.
-		/// </summary>
 		public event EventHandler? SelectionChanged;
 
 		public MauiAppCompatEditText(Context context) : base(context)
