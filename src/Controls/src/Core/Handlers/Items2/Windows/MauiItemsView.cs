@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
+using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -23,7 +24,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ContentControl? _footerContentControl;
 	FrameworkElement? _footer;
 
-	StackPanel? _containerPanel;
+	WStackPanel? _containerPanel;
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
@@ -113,7 +114,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
-		_containerPanel = GetTemplateChild("PART_ContainerStack") as StackPanel;
+		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 
