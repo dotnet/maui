@@ -77,7 +77,18 @@ namespace Microsoft.Maui
 
 			return CaptureAsync(platformView);
 #else
-			return Task.FromResult<IScreenshotResult?>(null);
+			var handler = view?.Handler;
+			if (handler?.PlatformView is not { } platformView)
+				return Task.FromResult<IScreenshotResult?>(null);
+
+			var screenshot = handler.MauiContext?.Services?.GetService(typeof(IScreenshot)) as IScreenshot;
+			if (screenshot is null || !screenshot.IsCaptureSupported)
+				return Task.FromResult<IScreenshotResult?>(null);
+
+			if (screenshot is not IViewScreenshot viewScreenshot)
+				return Task.FromResult<IScreenshotResult?>(null);
+
+			return viewScreenshot.CaptureViewAsync(platformView);
 #endif
 		}
 
