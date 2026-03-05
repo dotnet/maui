@@ -342,14 +342,18 @@ stages:
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
               
-              # Ensure copilot CLI is on PATH (npm global bin from UseNode@1)
+              # Ensure copilot CLI is accessible to pwsh subprocess.
+              # npm global install on Linux goes to UseNode@1 toolcache path which may not
+              # be on PATH inside pwsh even when exported from bash. Create a symlink in
+              # /usr/local/bin which is universally on PATH for all shells.
               COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
-              if [ -n "$COPILOT_PATH" ]; then
-                export PATH="$(dirname "$COPILOT_PATH"):$PATH"
-                echo "Added $(dirname "$COPILOT_PATH") to PATH"
+              if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
+                sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
+                echo "Symlinked copilot to /usr/local/bin/copilot"
               fi
-              echo "PATH=$PATH"
               echo "copilot location: $(which copilot 2>/dev/null || echo 'not found')"
+              # Verify pwsh can find it
+              pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
               
               # Configure git identity (required for merge operations on self-hosted agents)
               git config user.email "copilot-ci@microsoft.com"
@@ -374,7 +378,7 @@ stages:
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
               set +e
-              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
