@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-[Category(UITestCategories.Shadow)]
+[Category(UITestCategories.ViewBaseTests)]
 public class VisualTransformFeatureTests : _GalleryUITest
 {
 	public const string VisualTransformFeatureMatrix = "VisualTransform Feature Matrix";
@@ -434,7 +434,7 @@ public class VisualTransformFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	public void VisualTransform_ScaleWithAnchorX()
+	public void VisualTransform_ScaleWithAnchorXAndRotationY()
 	{
 		App.WaitForElement("Reset");
 		App.Tap("Reset");
@@ -461,7 +461,7 @@ public class VisualTransformFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	public void VisualTransform_ScaleXWithAnchorY()
+	public void VisualTransform_ScaleXWithAnchorYAndRotationY()
 	{
 		App.WaitForElement("Reset");
 		App.Tap("Reset");
@@ -488,7 +488,7 @@ public class VisualTransformFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	public void VisualTransform_ScaleYWithAnchorX()
+	public void VisualTransform_ScaleYWithAnchorXAndRotationY()
 	{
 		App.WaitForElement("Reset");
 		App.Tap("Reset");

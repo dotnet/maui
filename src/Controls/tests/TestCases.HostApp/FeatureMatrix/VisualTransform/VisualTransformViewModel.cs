@@ -52,7 +52,7 @@ public class VisualTransformViewModel : INotifyPropertyChanged
 						Radius = 2,
 						Opacity = 0.9f,
 						Brush = new SolidColorBrush(Colors.Gray),
-						Offset = new Point(10, 10) // No offset to prevent positioning issues
+						Offset = new Point(10, 10) // Visible offset to make shadow apparent in screenshots
 					}
 					: null;
 				OnPropertyChanged(nameof(HasShadow));

@@ -5,7 +5,6 @@ trigger:
     - release/*
     - net*.0
     - inflight/*
-    - darc-*
   tags:
     include:
     - '*'
