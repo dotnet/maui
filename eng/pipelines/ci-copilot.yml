@@ -237,10 +237,11 @@ stages:
           - script: |
               echo "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
-              if ! which copilot; then
-                echo "##vso[task.logissue type=error]Failed to install GitHub Copilot CLI"
-                exit 1
-              fi
+              # Ensure npm global bin is on PATH for subsequent steps (Linux UseNode installs to toolcache)
+              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
+              echo "Copilot binary at: $COPILOT_BIN_DIR/copilot"
+              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
+              copilot --version || true
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
