@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class WebView
 	{
-		internal static new void RemapForControls()
+		static WebView()
 		{
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(WebView), typeof(VisualElement));
+
 			// Adjust the mappings to preserve Controls.WebView legacy behaviors
 #if ANDROID
 			WebViewHandler.Mapper.ReplaceMapping<WebView, IWebViewHandler>(PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName, MapDisplayZoomControls);
