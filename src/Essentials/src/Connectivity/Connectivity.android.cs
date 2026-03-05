@@ -184,16 +184,19 @@ namespace Microsoft.Maui.Networking
 							// Use modern NetworkCapabilities instead of obsolete NetworkInfo
 							ProcessNetworkCapabilities(capabilities);
 						}
-						catch
+						catch (Exception ex)
 						{
-							// there is a possibility, but don't worry
+							Debug.WriteLine("Failed to get network capabilities: {0}", ex);
 						}
 					}
 
 					void ProcessAllNetworkInfo()
 					{
-						// For devices that don't return networks from GetAllNetworks() 
-						// (some API 21-22 devices), fall back to active network only
+						// Fallback for API 21-22 devices where GetAllNetworks() returns empty.
+						// NOTE: The original code used GetAllNetworkInfo() which enumerated all
+						// network interfaces; ActiveNetworkInfo returns only the current default
+						// network. On these older API levels multi-network support is limited,
+						// so this is an acceptable trade-off.
 						try
 						{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -204,9 +207,9 @@ namespace Microsoft.Maui.Networking
 							}
 #pragma warning restore CS0618 // Type or member is obsolete
 						}
-						catch
+						catch (Exception ex)
 						{
-							// If even the active network fails, assume no connectivity
+							Debug.WriteLine("Failed to query active network info: {0}", ex);
 							currentAccess = NetworkAccess.None;
 						}
 					}
@@ -232,36 +235,29 @@ namespace Microsoft.Maui.Networking
 #pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
+					// Caller guarantees capabilities is non-null and has NetCapability.Internet.
 					void ProcessNetworkCapabilities(NetworkCapabilities capabilities)
 					{
-						if (capabilities == null)
+						// NetCapability.Validated (API 23+) means the system has verified the
+						// network can actually reach the internet (passes Google's connectivity check).
+						// Without it, the network may be behind a captive portal or otherwise unusable.
+						if (OperatingSystem.IsAndroidVersionAtLeast(23))
 						{
-							return;
-						}
-
-						// Modern approach: Use NetworkCapabilities instead of NetworkInfo
-						// Check for validated internet connectivity (similar to info.IsConnected)
-						if (capabilities.HasCapability(NetCapability.Internet))
-						{
-							// For API 23+, also check if network is validated for better accuracy
-							// For API 21-22, just having Internet capability is sufficient
-							if (OperatingSystem.IsAndroidVersionAtLeast(23))
+							if (capabilities.HasCapability(NetCapability.Validated))
 							{
-								if (capabilities.HasCapability(NetCapability.Validated))
-								{
-									currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
-								}
-								else
-								{
-									// Has internet capability but not validated (similar to IsConnectedOrConnecting)
-									currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
-								}
+								currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
 							}
 							else
 							{
-								// For API 21-22, assume internet capability means connected
-								currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
+								// Has internet capability but not validated (e.g. captive portal)
+								currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
 							}
+						}
+						else
+						{
+							// NetCapability.Validated is unavailable on API 21-22;
+							// treat Internet capability alone as a connected state.
+							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
 						}
 					}
 
@@ -293,9 +289,9 @@ namespace Microsoft.Maui.Networking
 					{
 						capabilities = manager.GetNetworkCapabilities(network);
 					}
-					catch
+					catch (Exception ex)
 					{
-						// there is a possibility, but don't worry about it
+						Debug.WriteLine("Failed to get network capabilities for profile: {0}", ex);
 					}
 
 					var p = ProcessNetworkCapabilities(capabilities);
@@ -312,10 +308,10 @@ namespace Microsoft.Maui.Networking
 						return null;
 					}
 
-					// Check if network has internet or local connectivity
+					// Only include networks that declare internet capability
 					if (!capabilities.HasCapability(NetCapability.Internet))
 					{
-						return null; // Skip networks without internet capability
+						return null;
 					}
 
 					return GetConnectionTypeFromCapabilities(capabilities);
@@ -330,7 +326,9 @@ namespace Microsoft.Maui.Networking
 				return ConnectionProfile.Unknown;
 			}
 
-			// Use modern NetworkCapabilities.HasTransport() instead of obsolete NetworkInfo.Type
+			// A network may advertise multiple transports (e.g. WiFi + VPN).
+			// We return the first "underlying" transport match, prioritising the
+			// physical link type over overlay transports like VPN.
 			if (capabilities.HasTransport(TransportType.Wifi))
 			{
 				return ConnectionProfile.WiFi;
@@ -349,13 +347,6 @@ namespace Microsoft.Maui.Networking
 			if (capabilities.HasTransport(TransportType.Bluetooth))
 			{
 				return ConnectionProfile.Bluetooth;
-			}
-
-			// Additional transport types for completeness
-			if (capabilities.HasTransport(TransportType.Vpn))
-			{
-				// VPN typically runs over another transport, but classify as Unknown for now
-				return ConnectionProfile.Unknown;
 			}
 
 			return ConnectionProfile.Unknown;
