@@ -28,13 +28,14 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		public override bool OnKeyPreIme(Keycode keyCode, KeyEvent? e)
 		{
-			if (keyCode == Keycode.Back && e?.Action == KeyEventActions.Down)
+			if (keyCode != Keycode.Back || e?.Action != KeyEventActions.Down)
 			{
-				this.HideSoftInput();
-				ClearFocus();
+				return base.OnKeyPreIme(keyCode, e);
 			}
 
-			return base.OnKeyPreIme(keyCode, e);
+			this.HideSoftInput();
+			ClearFocus();
+			return true;
 		}
 	}
 }
