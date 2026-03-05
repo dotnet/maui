@@ -350,7 +350,12 @@ stages:
               # AcesShared agents may have a newer Xcode than the .NET iOS SDK expects
               cp Directory.Build.Override.props.in Directory.Build.Override.props
               # Insert ValidateXcodeVersion before closing </Project> tag
-              sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              # GNU sed (Linux) uses -i without suffix; BSD sed (macOS) uses -i ''
+              if [[ "$(uname)" == "Linux" ]]; then
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              else
+                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              fi
               
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
