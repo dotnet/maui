@@ -393,11 +393,11 @@ public class XamlNodeDiffTests
 	}
 
 	// ---------------------------------------------------------------------------
-	// Debug output
+	// Debug output (ToDebugString) — canonical diff verification
 	// ---------------------------------------------------------------------------
 
 	[Fact]
-	public void ToDebugString_PropertyChanges_ShowsNodeAndProps()
+	public void ToDebugString_SinglePropertyChange()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" />"));
 		var @new = Parse(Page("<Label Text=\"World\" />"));
@@ -405,14 +405,95 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		var debug = diff.ToDebugString();
-		Assert.Contains("1 node(s) with property changes", debug, StringComparison.Ordinal);
-		Assert.Contains("Label_0", debug, StringComparison.Ordinal);
-		Assert.Contains("Text = \"World\"", debug, StringComparison.Ordinal);
+		Assert.Equal(
+			"Diff: 1 node(s) with property changes\n  [Label_0] Text = \"World\"",
+			diff.ToDebugString());
 	}
 
 	[Fact]
-	public void ToDebugString_Reorder_ShowsMovedEntries()
+	public void ToDebugString_MultiplePropertiesOnSameNode()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" FontSize=\"14\" />"));
+		var @new = Parse(Page("<Label Text=\"World\" FontSize=\"18\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 1 node(s) with property changes\n  [Label_0] Text = \"World\", FontSize = \"18\"",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_MultipleNodesChanged()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Label Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="X" />
+				<Label Text="Y" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 2 node(s) with property changes\n" +
+			"  [VerticalStackLayout_0/Label_0] Text = \"X\"\n" +
+			"  [VerticalStackLayout_0/Label_1] Text = \"Y\"",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_RootPropertyChange()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />", extraAttrs: "Title=\"Old\""));
+		var @new = Parse(Page("<Label Text=\"Hello\" />", extraAttrs: "Title=\"New\""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 1 node(s) with property changes\n  [root] Title = \"New\"",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_PropertyCleared()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" FontSize=\"14\" />"));
+		var @new = Parse(Page("<Label Text=\"Hello\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 1 node(s) with property changes\n  [Label_0] FontSize cleared",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_PropertyAdded()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label Text=\"Hello\" FontSize=\"20\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 1 node(s) with property changes\n  [Label_0] FontSize = \"20\"",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_ChildReorder()
 	{
 		var old = Parse(Page("""
 			<VerticalStackLayout>
@@ -430,11 +511,108 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
+		// Button was old index 1 (Button_1) → new index 0 (Button_0)
+		// Label was old index 0 (Label_0) → new index 1 (Label_1)
+		Assert.Equal(
+			"Diff: 0 node(s) with property changes, 1 reorder(s)\n" +
+			"  reorder [VerticalStackLayout_0] " +
+			"VerticalStackLayout_0/Button_1 \u2192 VerticalStackLayout_0/Button_0, " +
+			"VerticalStackLayout_0/Label_0 \u2192 VerticalStackLayout_0/Label_1",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_ReorderWithPropertyChanges()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Button Text="B2" />
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var debug = diff.ToDebugString();
+		// Should show both reorder and property change
+		Assert.Contains("reorder(s)", debug, StringComparison.Ordinal);
+		Assert.Contains("reorder [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
+		Assert.Contains("Text = \"B2\"", debug, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ToDebugString_DeeplyNested()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<HorizontalStackLayout>
+					<Label Text="Deep" />
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<HorizontalStackLayout>
+					<Label Text="Changed" />
+				</HorizontalStackLayout>
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 1 node(s) with property changes\n" +
+			"  [VerticalStackLayout_0/HorizontalStackLayout_0/Label_0] Text = \"Changed\"",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_EmptyDiff()
+	{
+		var xaml = Page("<Label Text=\"Hello\" />");
+		var root = Parse(xaml);
+		var diff = XamlNodeDiff.ComputeDiff(root, root);
+
+		Assert.NotNull(diff);
+		Assert.Equal("Diff: 0 node(s) with property changes", diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_ThreeElementReorder()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+				<Entry Placeholder="C" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Placeholder="C" />
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
 		Assert.Contains("1 reorder(s)", debug, StringComparison.Ordinal);
 		Assert.Contains("reorder [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
-		// Shows old → new ID mapping
-		Assert.Contains("→", debug, StringComparison.Ordinal);
+		// All three children should appear in the reorder
+		Assert.Contains("Label_0", debug, StringComparison.Ordinal);
+		Assert.Contains("Button_0", debug, StringComparison.Ordinal);
+		Assert.Contains("Entry_0", debug, StringComparison.Ordinal);
 	}
 
 	[Fact]
