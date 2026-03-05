@@ -220,6 +220,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						RemoveRenderer(renderer);
 					}
 				}
+
+				// After removing tabs, recalculate IsInMoreTab for all remaining renderers.
+				// Positions shift when a tab is removed (e.g., if Tab1 is hidden, Tab5 moves
+				// from the "More" screen into the direct tab bar). Without this update, a renderer
+				// that previously had IsInMoreTab=true would incorrectly push navigation onto
+				// MoreNavigationController even though the tab is now directly visible.
+				UpdateIsInMoreTabForRenderers();
 			}
 
 			if (e.NewItems != null && e.NewItems.Count > 0)
@@ -321,6 +328,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
 				}
+			}
+		}
+
+		void UpdateIsInMoreTabForRenderers()
+		{
+			const int maxTabs = 5;
+			var currentViewControllers = ViewControllers;
+			if (currentViewControllers == null)
+				return;
+
+			bool willUseMore = currentViewControllers.Length > maxTabs;
+			for (int i = 0; i < currentViewControllers.Length; i++)
+			{
+				var renderer = RendererForViewController(currentViewControllers[i]);
+				if (renderer != null)
+					renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
 			}
 		}
 
