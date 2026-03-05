@@ -278,20 +278,23 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		Assert.Empty(diff.NodeChanges); // no property changes
-		var reorder = Assert.Single(diff.ChildReorders);
-		Assert.Equal("VerticalStackLayout_0", reorder.ParentNodeId);
-		Assert.Equal(2, reorder.Entries.Count);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal("VerticalStackLayout_0", change.ParentNodeId);
+		Assert.Equal(2, change.NewChildren.Count);
+		Assert.Empty(change.RemovedNodeIds);
 		// New order: Button (was index 1) at index 0, Label (was index 0) at index 1
-		Assert.Equal("VerticalStackLayout_0/Button_1", reorder.Entries[0].OldNodeId);
-		Assert.Equal("VerticalStackLayout_0/Button_0", reorder.Entries[0].NewNodeId);
-		Assert.Equal("VerticalStackLayout_0/Label_0", reorder.Entries[1].OldNodeId);
-		Assert.Equal("VerticalStackLayout_0/Label_1", reorder.Entries[1].NewNodeId);
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
+		Assert.Equal("VerticalStackLayout_0/Button_1", change.NewChildren[0].OldNodeId);
+		Assert.Equal("VerticalStackLayout_0/Button_0", change.NewChildren[0].NewNodeId);
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[1].Kind);
+		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[1].OldNodeId);
+		Assert.Equal("VerticalStackLayout_0/Label_1", change.NewChildren[1].NewNodeId);
 	}
 
 	[Fact]
-	public void ReorderedChildren_DuplicateTypes_ReturnsNull()
+	public void ReorderedChildren_DuplicateTypes_MatchedPositionally()
 	{
-		// Two Labels — can't uniquely match by type
+		// Two Labels — matched positionally within type group, property swap detected
 		var old = Parse(Page("""
 			<VerticalStackLayout>
 				<Label Text="A" />
@@ -307,7 +310,10 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		// Positional match → detected as property changes, no child list change
+		Assert.Equal(2, diff.NodeChanges.Count);
+		Assert.Empty(diff.ChildListChanges);
 	}
 
 	[Fact]
@@ -329,8 +335,8 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		// Should have a reorder
-		Assert.Single(diff.ChildReorders);
+		// Should have a child list change
+		Assert.Single(diff.ChildListChanges);
 		// Should have property change on Button (Text: "B" → "B2")
 		var propChange = Assert.Single(diff.NodeChanges);
 		Assert.Contains("Button", propChange.NodeId, StringComparison.Ordinal);
@@ -338,9 +344,9 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void ReorderedChildren_IdentityPermutation_NoReorderEntry()
+	public void ReorderedChildren_IdentityPermutation_NoChildListChange()
 	{
-		// Same types, same order — should not produce a reorder entry
+		// Same types, same order — should not produce a child list change
 		var old = Parse(Page("""
 			<VerticalStackLayout>
 				<Label Text="A" />
@@ -357,7 +363,7 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		Assert.Empty(diff.ChildReorders); // no reorder needed
+		Assert.Empty(diff.ChildListChanges); // no child list change needed
 		Assert.Equal(2, diff.NodeChanges.Count); // just property changes
 	}
 
@@ -382,14 +388,196 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		var reorder = Assert.Single(diff.ChildReorders);
-		Assert.Equal(3, reorder.Entries.Count);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal(3, change.NewChildren.Count);
+		Assert.Empty(change.RemovedNodeIds);
 		// Entry was at 2, now at 0
-		Assert.Equal(2, reorder.Entries[0].OldIndex);
+		Assert.Equal(2, change.NewChildren[0].OldIndex);
 		// Label was at 0, now at 1
-		Assert.Equal(0, reorder.Entries[1].OldIndex);
+		Assert.Equal(0, change.NewChildren[1].OldIndex);
 		// Button was at 1, now at 2
-		Assert.Equal(1, reorder.Entries[2].OldIndex);
+		Assert.Equal(1, change.NewChildren[2].OldIndex);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Child addition / removal
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void ChildAdded_SimpleElement_ReturnsAddEntry()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal("VerticalStackLayout_0", change.ParentNodeId);
+		Assert.Equal(2, change.NewChildren.Count);
+		Assert.Empty(change.RemovedNodeIds);
+		// Label retained at same position
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
+		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[0].OldNodeId);
+		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[0].NewNodeId);
+		// Button added
+		Assert.Equal(ChildChangeKind.Added, change.NewChildren[1].Kind);
+		Assert.Equal("VerticalStackLayout_0/Button_1", change.NewChildren[1].NewNodeId);
+		Assert.NotNull(change.NewChildren[1].NewElement);
+	}
+
+	[Fact]
+	public void ChildRemoved_ReturnsRemovedEntry()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal("VerticalStackLayout_0", change.ParentNodeId);
+		Assert.Single(change.NewChildren);
+		// Label retained
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
+		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[0].NewNodeId);
+		// Button removed
+		Assert.Single(change.RemovedNodeIds);
+		Assert.Equal("VerticalStackLayout_0/Button_1", change.RemovedNodeIds[0]);
+	}
+
+	[Fact]
+	public void ChildAddedInMiddle_ShiftsRetainedPositions()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Entry Placeholder="new" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal(3, change.NewChildren.Count);
+		Assert.Empty(change.RemovedNodeIds);
+		// Label retained at 0
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
+		// Entry added at 1
+		Assert.Equal(ChildChangeKind.Added, change.NewChildren[1].Kind);
+		Assert.Equal("VerticalStackLayout_0/Entry_1", change.NewChildren[1].NewNodeId);
+		// Button retained, shifted from 1 to 2
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[2].Kind);
+		Assert.Equal("VerticalStackLayout_0/Button_1", change.NewChildren[2].OldNodeId);
+		Assert.Equal("VerticalStackLayout_0/Button_2", change.NewChildren[2].NewNodeId);
+	}
+
+	[Fact]
+	public void ChildAddAndRemove_MixedOperation()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+				<Entry Text="C" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Switch />
+				<Entry Text="C" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal(3, change.NewChildren.Count);
+		// Label retained
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
+		// Switch added
+		Assert.Equal(ChildChangeKind.Added, change.NewChildren[1].Kind);
+		// Entry retained (shifted from 2 to 2 — same position)
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[2].Kind);
+		// Button removed
+		Assert.Single(change.RemovedNodeIds);
+		Assert.Contains("Button", change.RemovedNodeIds[0], StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ChildAdded_WithComplexProperties_ReturnsNull()
+	{
+		// Added child has a binding → can't create incrementally
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Label Text="{Binding Name}" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.Null(diff); // can't create element with binding incrementally
+	}
+
+	[Fact]
+	public void MultipleChildrenAdded_ReturnsMultipleAddEntries()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+				<Entry Placeholder="C" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var change = Assert.Single(diff.ChildListChanges);
+		Assert.Equal(3, change.NewChildren.Count);
+		Assert.Empty(change.RemovedNodeIds);
+		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
+		Assert.Equal(ChildChangeKind.Added, change.NewChildren[1].Kind);
+		Assert.Equal(ChildChangeKind.Added, change.NewChildren[2].Kind);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -514,8 +702,8 @@ public class XamlNodeDiffTests
 		// Button was old index 1 (Button_1) → new index 0 (Button_0)
 		// Label was old index 0 (Label_0) → new index 1 (Label_1)
 		Assert.Equal(
-			"Diff: 0 node(s) with property changes, 1 reorder(s)\n" +
-			"  reorder [VerticalStackLayout_0] " +
+			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
+			"  children [VerticalStackLayout_0] " +
 			"VerticalStackLayout_0/Button_1 \u2192 VerticalStackLayout_0/Button_0, " +
 			"VerticalStackLayout_0/Label_0 \u2192 VerticalStackLayout_0/Label_1",
 			diff.ToDebugString());
@@ -542,8 +730,8 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
 		// Should show both reorder and property change
-		Assert.Contains("reorder(s)", debug, StringComparison.Ordinal);
-		Assert.Contains("reorder [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
+		Assert.Contains("child list change(s)", debug, StringComparison.Ordinal);
+		Assert.Contains("children [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
 		Assert.Contains("Text = \"B2\"", debug, StringComparison.Ordinal);
 	}
 
@@ -607,12 +795,92 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
-		Assert.Contains("1 reorder(s)", debug, StringComparison.Ordinal);
-		Assert.Contains("reorder [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
+		Assert.Contains("1 child list change(s)", debug, StringComparison.Ordinal);
+		Assert.Contains("children [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
 		// All three children should appear in the reorder
 		Assert.Contains("Label_0", debug, StringComparison.Ordinal);
 		Assert.Contains("Button_0", debug, StringComparison.Ordinal);
 		Assert.Contains("Entry_0", debug, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ToDebugString_ChildAdded()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
+			"  children [VerticalStackLayout_0] " +
+			"VerticalStackLayout_0/Label_0 (unchanged), " +
+			"+VerticalStackLayout_0/Button_1",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_ChildRemoved()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
+			"  children [VerticalStackLayout_0] " +
+			"VerticalStackLayout_0/Label_0 (unchanged)" +
+			"; removed: -VerticalStackLayout_0/Button_1",
+			diff.ToDebugString());
+	}
+
+	[Fact]
+	public void ToDebugString_ChildAddAndRemove()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Switch />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Equal(
+			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
+			"  children [VerticalStackLayout_0] " +
+			"VerticalStackLayout_0/Label_0 (unchanged), " +
+			"+VerticalStackLayout_0/Switch_1" +
+			"; removed: -VerticalStackLayout_0/Button_1",
+			diff.ToDebugString());
 	}
 
 	[Fact]

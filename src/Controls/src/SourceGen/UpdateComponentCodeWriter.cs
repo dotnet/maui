@@ -62,11 +62,12 @@ static class UpdateComponentCodeWriter
 		// Emit diff summary as a comment for diagnostics
 		EmitDiffSummary(codeWriter, diff);
 
-		// Emit child reorders FIRST (before property changes, since property diffs use post-reorder IDs)
-		int reorderIdx = 0;
-		foreach (var reorder in diff.ChildReorders)
+		// Emit child list changes FIRST (before property changes, since property diffs use post-change IDs)
+		int changeIdx = 0;
+		int addedCounter = 0;
+		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildReorder(codeWriter, reorder, reorderIdx++);
+			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, compilation, xmlnsCache, typeCache);
 			codeWriter.WriteLine();
 		}
 
@@ -211,63 +212,160 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
-	static void EmitChildReorder(
+	static void EmitChildListChange(
 		IndentedTextWriter codeWriter,
-		ChildReorderDiff reorder,
-		int reorderIdx)
+		ChildListChangeDiff change,
+		int changeIdx,
+		ref int addedCounter,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
-		bool isRoot = string.IsNullOrEmpty(reorder.ParentNodeId);
+		bool isRoot = string.IsNullOrEmpty(change.ParentNodeId);
 
 		if (isRoot)
 		{
-			// Root-level child reorder is not supported (e.g., ContentPage has a single Content, not Children)
-			codeWriter.WriteLine("// Root-level child reorder not supported — fallback");
+			codeWriter.WriteLine("// Root-level child list change not supported — fallback");
 			codeWriter.WriteLine("goto fallback;");
 			return;
 		}
 
 		// Look up parent from registry
-		var parentVar = $"__rp_{reorderIdx}";
-		codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{reorder.ParentNodeId}\", out var {parentVar}))");
+		var parentVar = $"__rp_{changeIdx}";
+		codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{change.ParentNodeId}\", out var {parentVar}))");
 		codeWriter.Indent++;
 		codeWriter.WriteLine("goto fallback;");
 		codeWriter.Indent--;
 
 		// Cast to Layout to access Children
-		var layoutVar = $"__rl_{reorderIdx}";
+		var layoutVar = $"__rl_{changeIdx}";
 		codeWriter.WriteLine($"var {layoutVar} = {parentVar} as global::Microsoft.Maui.Controls.Layout;");
 		codeWriter.WriteLine($"if ({layoutVar} == null) goto fallback;");
 
-		int count = reorder.Entries.Count;
-
-		// Save references to all children by their old node IDs
-		for (int i = 0; i < count; i++)
+		// Save references to all retained children by their old node IDs
+		int retainedIdx = 0;
+		for (int i = 0; i < change.NewChildren.Count; i++)
 		{
-			var entry = reorder.Entries[i];
-			var childVar = $"__rc_{reorderIdx}_{i}";
+			var entry = change.NewChildren[i];
+			if (entry.Kind != ChildChangeKind.Retained)
+				continue;
+			var childVar = $"__rc_{changeIdx}_{retainedIdx++}";
 			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{entry.OldNodeId}\", out var {childVar}))");
 			codeWriter.Indent++;
 			codeWriter.WriteLine("goto fallback;");
 			codeWriter.Indent--;
 		}
 
-		// Clear children and re-add in new order
+		// Clear children
 		codeWriter.WriteLine($"{layoutVar}.Clear();");
-		for (int i = 0; i < count; i++)
+
+		// Re-add retained children and create+add new children in new order
+		retainedIdx = 0;
+		for (int i = 0; i < change.NewChildren.Count; i++)
 		{
-			var childVar = $"__rc_{reorderIdx}_{i}";
-			codeWriter.WriteLine($"{layoutVar}.Add((global::Microsoft.Maui.IView){childVar}!);");
+			var entry = change.NewChildren[i];
+			if (entry.Kind == ChildChangeKind.Retained)
+			{
+				var childVar = $"__rc_{changeIdx}_{retainedIdx++}";
+				codeWriter.WriteLine($"{layoutVar}.Add((global::Microsoft.Maui.IView){childVar}!);");
+			}
+			else // Added
+			{
+				var newElement = entry.NewElement!;
+				EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, ref addedCounter, compilation, xmlnsCache, typeCache);
+			}
 		}
 
-		// Re-register moved children (and their subtrees) under new node IDs
-		for (int i = 0; i < count; i++)
+		// Re-register retained children whose IDs changed (reorder/position shift)
+		retainedIdx = 0;
+		for (int i = 0; i < change.NewChildren.Count; i++)
 		{
-			var entry = reorder.Entries[i];
+			var entry = change.NewChildren[i];
+			if (entry.Kind != ChildChangeKind.Retained)
+				continue;
 			if (!string.Equals(entry.OldNodeId, entry.NewNodeId, StringComparison.Ordinal))
 			{
 				codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.ReRoot(this, \"{entry.OldNodeId}\", \"{entry.NewNodeId}\");");
 			}
+			retainedIdx++;
 		}
+
+		// Unregister removed children and their subtrees
+		foreach (var removedId in change.RemovedNodeIds)
+		{
+			codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(this, \"{removedId}\");");
+		}
+	}
+
+	/// <summary>
+	/// Emits code that creates a new element, sets its simple properties, recursively creates
+	/// its children, adds them, and registers everything in the component registry.
+	/// </summary>
+	static void EmitNewElement(
+		IndentedTextWriter codeWriter,
+		ElementNode element,
+		string parentLayoutVar,
+		string nodeId,
+		ref int addedCounter,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	{
+		// Resolve XmlType → C# type
+		if (!element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol)
+			|| typeSymbol == null)
+		{
+			codeWriter.WriteLine($"// Cannot resolve type '{element.XmlType.Name}' — fallback");
+			codeWriter.WriteLine("goto fallback;");
+			return;
+		}
+
+		var fqName = typeSymbol.ToFQDisplayString();
+		var idx = addedCounter++;
+		var varName = $"__na_{idx}";
+
+		// Create instance
+		codeWriter.WriteLine($"var {varName} = new {fqName}();");
+
+		// Set simple properties
+		foreach (var kvp in element.Properties)
+		{
+			if (kvp.Key.NamespaceURI == "x")
+				continue; // skip x:Name, x:Class, etc.
+			if (kvp.Value is not ValueNode valueNode)
+				continue; // skip complex properties (already validated by CanCreateIncrementally)
+
+			var propName = kvp.Key.LocalName;
+			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
+			var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName);
+
+			if (valueExpr != null)
+				codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
+		}
+
+		// Recursively create children
+		if (element.CollectionItems.Count > 0)
+		{
+			var childLayoutVar = $"__nal_{idx}";
+			codeWriter.WriteLine($"var {childLayoutVar} = (global::Microsoft.Maui.Controls.Layout){varName};");
+
+			for (int i = 0; i < element.CollectionItems.Count; i++)
+			{
+				if (element.CollectionItems[i] is ElementNode childElement)
+				{
+					var childNodeId = string.IsNullOrEmpty(nodeId)
+						? $"{childElement.XmlType.Name}_{i}"
+						: $"{nodeId}/{childElement.XmlType.Name}_{i}";
+					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, ref addedCounter, compilation, xmlnsCache, typeCache);
+				}
+			}
+		}
+
+		// Add to parent layout
+		codeWriter.WriteLine($"{parentLayoutVar}.Add((global::Microsoft.Maui.IView){varName});");
+
+		// Register in component registry
+		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {varName});");
 	}
 
 	static void EmitRootPropertyChange(
