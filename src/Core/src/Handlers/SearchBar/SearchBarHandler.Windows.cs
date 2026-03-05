@@ -118,13 +118,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
+			{
 				textBox.UpdateCursorPosition(searchBar);
+			}
 		}
 
 		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
+			{
 				textBox.UpdateSelectionLength(searchBar);
+			}
 		}
 
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -207,17 +211,23 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformSelectionChanged(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (VirtualView == null || _queryTextBox == null)
+			if (VirtualView is null || _queryTextBox is null)
+			{
 				return;
+			}
 
 			var cursorPosition = _queryTextBox.GetCursorPosition();
 			var selectedTextLength = _queryTextBox.SelectionLength;
 
 			if (VirtualView.CursorPosition != cursorPosition)
+			{
 				VirtualView.CursorPosition = cursorPosition;
+			}
 
 			if (VirtualView.SelectionLength != selectedTextLength)
+			{
 				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 	}
 }

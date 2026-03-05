@@ -113,7 +113,9 @@ namespace Microsoft.Maui.Platform
 			public override void DidChangeSelection(UITextField textField)
 			{
 				if (_owner.TryGetTarget(out var owner))
+				{
 					owner.SelectionChanged?.Invoke(owner, EventArgs.Empty);
+				}
 			}
 		}
 

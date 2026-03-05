@@ -342,6 +342,7 @@ namespace Microsoft.Maui.Platform
 				end = editText.SelectionEnd;
 				newSelectionLength = selectionLength;
 			}
+
 			// Updating this property results in UpdateSelectionLength being called again messing things up
 			if (newSelectionLength != selectionLength)
 				entry.SelectionLength = newSelectionLength;
