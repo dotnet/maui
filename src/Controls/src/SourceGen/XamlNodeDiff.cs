@@ -57,17 +57,55 @@ readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChan
 }
 
 /// <summary>
-/// The result of a successful (property-only) diff between two XAML trees.
+/// Describes a single child entry in a <see cref="ChildReorderDiff"/>.
+/// </summary>
+readonly struct ChildReorderEntry(string oldNodeId, string newNodeId, int oldIndex)
+{
+	/// <summary>The node ID of this child before the reorder (used to look up the live component).</summary>
+	public string OldNodeId { get; } = oldNodeId;
+
+	/// <summary>The node ID of this child after the reorder (used to re-register in the component registry).</summary>
+	public string NewNodeId { get; } = newNodeId;
+
+	/// <summary>The index of this child in the old (pre-reorder) parent's collection.</summary>
+	public int OldIndex { get; } = oldIndex;
+}
+
+/// <summary>
+/// Describes a reorder of children within a single parent node.
+/// Only produced when all children have unique <see cref="XmlType"/> signatures within the parent,
+/// allowing the diff engine to establish a bijection between old and new positions.
+/// </summary>
+readonly struct ChildReorderDiff(string parentNodeId, XmlType? parentXmlType, IReadOnlyList<ChildReorderEntry> entries)
+{
+	/// <summary>Stable path of the parent node whose children are reordered.</summary>
+	public string ParentNodeId { get; } = parentNodeId;
+
+	/// <summary>The XAML type of the parent, used by code writers to cast at runtime.</summary>
+	public XmlType? ParentXmlType { get; } = parentXmlType;
+
+	/// <summary>
+	/// One entry per child, in <em>new</em> order. Each entry maps a child from its old position/ID
+	/// to its new position/ID.
+	/// </summary>
+	public IReadOnlyList<ChildReorderEntry> Entries { get; } = entries;
+}
+
+/// <summary>
+/// The result of a successful diff between two XAML trees.
 /// A <see langword="null"/> result from <see cref="XamlNodeDiff.ComputeDiff"/> indicates a structural change
 /// that requires a full-page reload.
 /// </summary>
-class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges)
+class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildReorderDiff> childReorders)
 {
-	/// <summary>Per-node property-change records. Empty when the trees are identical.</summary>
+	/// <summary>Per-node property-change records.</summary>
 	public IReadOnlyList<NodeDiff> NodeChanges { get; } = nodeChanges;
 
+	/// <summary>Same-parent child reorder records.</summary>
+	public IReadOnlyList<ChildReorderDiff> ChildReorders { get; } = childReorders;
+
 	/// <summary>Returns <see langword="true"/> when the two trees are semantically identical.</summary>
-	public bool IsEmpty => NodeChanges.Count == 0;
+	public bool IsEmpty => NodeChanges.Count == 0 && ChildReorders.Count == 0;
 }
 
 /// <summary>
@@ -75,10 +113,11 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges)
 /// </summary>
 /// <remarks>
 /// <para>
-/// Only <em>property-only</em> changes are supported. Any structural difference
-/// (different element types, added/removed children, changed markup-extension properties,
-/// changed collection items) causes <see cref="ComputeDiff"/> to return
-/// <see langword="null"/>, signalling that the caller must fall back to a full-page reload.
+/// Property-value changes and same-parent child reorders (when children have unique types)
+/// are supported incrementally. Any other structural difference (added/removed children,
+/// changed markup-extension properties, changed collection items) causes
+/// <see cref="ComputeDiff"/> to return <see langword="null"/>, signalling that the caller
+/// must fall back to a full-page reload.
 /// </para>
 /// <para>
 /// This class is designed to run inside a Roslyn incremental source generator (netstandard2.0)
@@ -88,10 +127,10 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges)
 static class XamlNodeDiff
 {
 	/// <summary>
-	/// Computes a property-only diff between <paramref name="oldRoot"/> and <paramref name="newRoot"/>.
+	/// Computes a diff between <paramref name="oldRoot"/> and <paramref name="newRoot"/>.
 	/// </summary>
 	/// <returns>
-	/// A <see cref="XamlTreeDiff"/> describing the changed properties, or
+	/// A <see cref="XamlTreeDiff"/> describing the changed properties and child reorders, or
 	/// <see langword="null"/> if the trees differ structurally (which requires a full reload).
 	/// </returns>
 	public static XamlTreeDiff? ComputeDiff(ElementNode oldRoot, ElementNode newRoot)
@@ -102,11 +141,12 @@ static class XamlNodeDiff
 			throw new ArgumentNullException(nameof(newRoot));
 
 		var nodeChanges = new List<NodeDiff>();
+		var childReorders = new List<ChildReorderDiff>();
 
-		if (!DiffNode(oldRoot, newRoot, "", 0, nodeChanges))
+		if (!DiffNode(oldRoot, newRoot, "", 0, nodeChanges, childReorders))
 			return null;
 
-		return new XamlTreeDiff(nodeChanges);
+		return new XamlTreeDiff(nodeChanges, childReorders);
 	}
 
 	// -------------------------------------------------------------------------
@@ -119,7 +159,8 @@ static class XamlNodeDiff
 	/// <param name="nodeId">Stable path string for this node, used in <see cref="NodeDiff"/>.</param>
 	/// <param name="depth">Current depth in the tree (root = 0, children of root = 1, etc.).</param>
 	/// <returns><see langword="false"/> if a structural difference is detected.</returns>
-	static bool DiffNode(ElementNode oldNode, ElementNode newNode, string nodeId, int depth, List<NodeDiff> nodeChanges)
+	static bool DiffNode(ElementNode oldNode, ElementNode newNode, string nodeId, int depth,
+		List<NodeDiff> nodeChanges, List<ChildReorderDiff> childReorders)
 	{
 		// Structural check 1: element type must match
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
@@ -133,32 +174,147 @@ static class XamlNodeDiff
 		if (propDiffs.Count > 0)
 			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType));
 
-		// Structural check 2: collection items (child elements) must have same count and types
+		// Structural check 2: collection items must have same count
 		if (oldNode.CollectionItems.Count != newNode.CollectionItems.Count)
 			return false;
 
-		for (int i = 0; i < oldNode.CollectionItems.Count; i++)
+		int childCount = oldNode.CollectionItems.Count;
+		if (childCount == 0)
+			return true;
+
+		// Fast path: check if all element children match positionally by type
+		bool needsReorder = false;
+		bool allElements = true;
+		for (int i = 0; i < childCount; i++)
 		{
 			var oldChild = oldNode.CollectionItems[i];
 			var newChild = newNode.CollectionItems[i];
 
-			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
+			if (oldChild is ElementNode oe && newChild is ElementNode ne)
 			{
-				var childId = ChildNodeId(nodeId, oldElem.XmlType.Name, i);
-				if (!DiffNode(oldElem, newElem, childId, depth + 1, nodeChanges))
-					return false;
-			}
-			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
-			{
-				// Text-content children (rare — most content is in Properties)
-				if (!StringEquals(oldVal.Value?.ToString(), newVal.Value?.ToString()))
-					return false; // treat content-text changes as structural for now
+				if (!XmlTypeEquals(oe.XmlType, ne.XmlType))
+					needsReorder = true;
 			}
 			else
 			{
-				// Type mismatch among collection children → structural
-				return false;
+				allElements = false;
+				break;
 			}
+		}
+
+		if (!needsReorder)
+		{
+			// Positional matching — existing logic
+			for (int i = 0; i < childCount; i++)
+			{
+				var oldChild = oldNode.CollectionItems[i];
+				var newChild = newNode.CollectionItems[i];
+
+				if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
+				{
+					var childId = ChildNodeId(nodeId, oldElem.XmlType.Name, i);
+					if (!DiffNode(oldElem, newElem, childId, depth + 1, nodeChanges, childReorders))
+						return false;
+				}
+				else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
+				{
+					if (!StringEquals(oldVal.Value?.ToString(), newVal.Value?.ToString()))
+						return false; // treat content-text changes as structural for now
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+		else if (allElements)
+		{
+			// All children are elements but types don't match positionally → try reorder
+			if (!TryDiffReorderedChildren(oldNode, newNode, nodeId, depth, nodeChanges, childReorders))
+				return false;
+		}
+		else
+		{
+			// Mix of element/value nodes with type mismatch → structural
+			return false;
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Attempts to match children by their unique <see cref="XmlType"/> signature when positional
+	/// matching fails. If every child type appears exactly once in both old and new, we can establish
+	/// a bijection and treat the difference as a reorder rather than a structural change.
+	/// </summary>
+	static bool TryDiffReorderedChildren(
+		ElementNode oldNode, ElementNode newNode,
+		string parentNodeId, int depth,
+		List<NodeDiff> nodeChanges, List<ChildReorderDiff> childReorders)
+	{
+		int count = oldNode.CollectionItems.Count;
+
+		var oldChildren = new ElementNode[count];
+		var newChildren = new ElementNode[count];
+		for (int i = 0; i < count; i++)
+		{
+			oldChildren[i] = (ElementNode)oldNode.CollectionItems[i];
+			newChildren[i] = (ElementNode)newNode.CollectionItems[i];
+		}
+
+		// Build type-signature → old-index map; duplicate types → can't match uniquely
+		var oldTypeToIndex = new Dictionary<string, int>(count);
+		for (int i = 0; i < count; i++)
+		{
+			var key = TypeSignature(oldChildren[i].XmlType);
+			if (oldTypeToIndex.ContainsKey(key))
+				return false;
+			oldTypeToIndex[key] = i;
+		}
+
+		// Match each new child to its old counterpart by type signature
+		var newOrder = new int[count]; // newOrder[newIndex] = oldIndex
+		for (int i = 0; i < count; i++)
+		{
+			var key = TypeSignature(newChildren[i].XmlType);
+			if (!oldTypeToIndex.TryGetValue(key, out var oldIndex))
+				return false; // type in new doesn't exist in old → structural
+			newOrder[i] = oldIndex;
+			oldTypeToIndex.Remove(key);
+		}
+
+		// Check if it's actually a reorder (not identity permutation)
+		bool isIdentity = true;
+		for (int i = 0; i < count; i++)
+		{
+			if (newOrder[i] != i)
+			{
+				isIdentity = false;
+				break;
+			}
+		}
+
+		// Recursively diff matched pairs using NEW position node IDs (post-reorder)
+		for (int newIdx = 0; newIdx < count; newIdx++)
+		{
+			int oldIdx = newOrder[newIdx];
+			var childId = ChildNodeId(parentNodeId, newChildren[newIdx].XmlType.Name, newIdx);
+			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], childId, depth + 1, nodeChanges, childReorders))
+				return false;
+		}
+
+		// Record the reorder (skip if identity — no actual movement)
+		if (!isIdentity)
+		{
+			var entries = new List<ChildReorderEntry>(count);
+			for (int newIdx = 0; newIdx < count; newIdx++)
+			{
+				int oldIdx = newOrder[newIdx];
+				var oldChildId = ChildNodeId(parentNodeId, oldChildren[oldIdx].XmlType.Name, oldIdx);
+				var newChildId = ChildNodeId(parentNodeId, newChildren[newIdx].XmlType.Name, newIdx);
+				entries.Add(new ChildReorderEntry(oldChildId, newChildId, oldIdx));
+			}
+			childReorders.Add(new ChildReorderDiff(parentNodeId, oldNode.XmlType, entries));
 		}
 
 		return true;
@@ -314,4 +470,24 @@ static class XamlNodeDiff
 		=> string.IsNullOrEmpty(parentId)
 			? $"{childTypeName}_{index}"
 			: $"{parentId}/{childTypeName}_{index}";
+
+	/// <summary>
+	/// Returns a string key that uniquely identifies an <see cref="XmlType"/> including its
+	/// namespace, name, and type arguments. Used for matching children by type during reorder detection.
+	/// </summary>
+	static string TypeSignature(XmlType type)
+	{
+		if (type.TypeArguments == null || type.TypeArguments.Count == 0)
+			return string.Concat(type.NamespaceUri, ":", type.Name);
+
+		var sb = new System.Text.StringBuilder();
+		sb.Append(type.NamespaceUri).Append(':').Append(type.Name).Append('<');
+		for (int i = 0; i < type.TypeArguments.Count; i++)
+		{
+			if (i > 0) sb.Append(',');
+			sb.Append(TypeSignature(type.TypeArguments[i]));
+		}
+		sb.Append('>');
+		return sb.ToString();
+	}
 }
