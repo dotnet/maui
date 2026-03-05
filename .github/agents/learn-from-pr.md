@@ -89,7 +89,6 @@ Present a summary:
 | Situation | Action |
 |-----------|--------|
 | PR not found | Ask user to verify PR number |
-| No session markdown | Proceed with PR diff analysis only |
 | Target file doesn't exist | Create if instruction/architecture doc, skip if code |
 | Duplicate content exists | Skip, note in report |
 | Unclear where to add | Ask user for guidance |
