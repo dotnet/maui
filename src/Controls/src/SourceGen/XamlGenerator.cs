@@ -221,8 +221,8 @@ public class XamlGenerator : IIncrementalGenerator
 					}
 					else
 					{
-						// Structural change or no-op: update cache so next reload is based on latest XAML
-						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, previousVersion);
+						// Structural change or no-op: reset version to 1 to match IC hardcoded __version = 1
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
 					}
 				}
 				else if (xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
