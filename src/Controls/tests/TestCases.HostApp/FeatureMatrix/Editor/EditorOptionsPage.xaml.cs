@@ -87,6 +87,22 @@ public partial class EditorOptionsPage : ContentPage
 		}
 	}
 
+	private void HeightRequest_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(HeightRequestEntry.Text, out double heightRequest))
+		{
+			_viewModel.HeightRequest = heightRequest;
+		}
+	}
+
+	private void WidthRequest_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(WidthRequestEntry.Text, out double widthRequest))
+		{
+			_viewModel.WidthRequest = widthRequest;
+		}
+	}
+
 	private void FontSizeEditor_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (double.TryParse(FontSizeEntry.Text, out double fontSize))
@@ -160,6 +176,19 @@ public partial class EditorOptionsPage : ContentPage
 	private void FontFamilyEditor_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		_viewModel.FontFamily = FontFamilyEntry.Text;
+	}
+
+	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is Button button)
+		{
+			_viewModel.BackgroundColor = button.AutomationId switch
+			{
+				"BackgroundColorYellow" => Colors.Yellow,
+				"BackgroundColorLightBlue" => Colors.LightBlue,
+				_ => null
+			};
+		}
 	}
 
 	private void FlowDirection_CheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -244,3 +273,4 @@ public partial class EditorOptionsPage : ContentPage
 		}
 	}
 }
+

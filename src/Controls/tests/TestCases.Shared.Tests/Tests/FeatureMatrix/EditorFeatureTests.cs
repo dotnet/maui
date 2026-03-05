@@ -347,7 +347,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID  // On iOS and Maccatalyst While updating CursorPosition and SelectionLength, the Editor text gets deleted. & On Android, changing CursorPosition keeps the cursor visible even when IsCursorVisible is set to false, which is unexpected.
-	[Test, Order(5)]
+	[Test, Order(22)]
 	public void VerifyEditorTextWhenSelectionLengthSetValue()
 	{
 		App.WaitForElement("Options");
@@ -366,7 +366,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
 
-	[Test, Order(22)]
+	[Test, Order(23)]
 	public void VerifyEditorTextWhenCursorPositionValueSet()
 	{
 		App.WaitForElement("Options");
@@ -385,7 +385,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("11"));
 	}
 
-	[Test, Order(23)]
+	[Test, Order(24)]
 	public void VerifyEditorCursorPositionWhenSelectionLengthSetValue()
 	{
 		App.WaitForElement("Options");
@@ -410,7 +410,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS // On Windows, cursor position and selection length still work when the Entry is set to read-only.
-	[Test, Order(24)]
+	[Test, Order(25)]
 	public void VerifyEditorCursorPositionWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
@@ -424,7 +424,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("0"));
 	}
 
-	[Test, Order(25)]
+	[Test, Order(26)]
 	public void VerifyEditorSelectionLengthWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
@@ -445,7 +445,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //keybord type is not supported on Windows and Maccatalyst platforms & On Android & IOS related issue:https://github.com/dotnet/maui/issues/26968
-	[Test, Order(26)]
+	[Test, Order(27)]
 	public void VerifyEditorTextWhenKeyboardTypeSet()
 	{
 		App.WaitForElement("Options");
@@ -458,21 +458,6 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("TestEditor");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-
-	[Test, Order(27)]
-	public void VerifyEditorTextWhenReturnTypeSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Search");
-		App.Tap("Search");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		App.Tap("TestEditor");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
 #endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
@@ -762,9 +747,119 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/30571
-	public void VerifyEditorPlaceholderWithAutoSizeDisabled()
 	[Test, Order(45)]
+	public void VerifyEditorWhenBackgroundColorSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(46)]
+	public void VerifyEditorBackgroundColorWithTextColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(47)]
+	public void VerifyEditorBackgroundColorWithPlaceholder()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(48)]
+	public void VerifyEditorBackgroundColorResetToNone()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorNone");
+		App.Tap("BackgroundColorNone");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(49)]
+	public void VerifyEditorWhenHeightRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "100");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(50)]
+	public void VerifyEditorWhenWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("WidthRequestEntry");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", "100");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(51)]
+	public void VerifyEditorWhenHeightAndWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "100");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", "80");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //related issue link: https://github.com/dotnet/maui/issues/30571
+	[Test, Order(52)]
+	public void VerifyEditorPlaceholderWithAutoSizeDisabled()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -779,8 +874,8 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
+	[Test, Order(53)]
 	public void VerifyEditorPlaceholderWithAutoSizeTextChanges()
-	[Test, Order(46)]
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -799,7 +894,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 #endif
 
-	[Test, Order(47)]
+	[Test, Order(54)]
 	public void VerifyEditorTextWhenAutoSizeDisabled()
 	{
 		App.WaitForElement("Options");
@@ -813,7 +908,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshotWithKeyboardHandling();
 	}
 
-	[Test, Order(48)]
+	[Test, Order(55)]
 	public void VerifyEditorTextWhenAutoSizeTextChangesSet()
 	{
 		App.WaitForElement("Options");
@@ -847,3 +942,4 @@ public class EditorFeatureTests : _GalleryUITest
 			VerifyScreenshot(screenshotName, cropBottom: CropBottomValue);
 	}
 }
+

@@ -28,13 +28,14 @@ public partial class EditorControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new EditorViewModel();
+		_viewModel.Reset();
 		_viewModel.Text = "Test Editor";
 		_viewModel.Placeholder = "Enter text here";
 		_viewModel.VerticalTextAlignment = TextAlignment.End;
 		_viewModel.CursorPosition = 0;
 		_viewModel.SelectionLength = 0;
 		_viewModel.HeightRequest = -1;
+		_viewModel.WidthRequest = -1;
 		await Navigation.PushAsync(new EditorOptionsPage(_viewModel));
 	}
 
@@ -130,3 +131,4 @@ public partial class EditorControlMainPage : ContentPage
 		EditorControl.Unfocus();
 	}
 }
+
