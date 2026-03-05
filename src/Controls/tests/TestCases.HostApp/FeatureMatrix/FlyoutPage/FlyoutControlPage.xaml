@@ -106,7 +106,7 @@
                                                         <Label Text="Handle Back Button Press"
                                                                Grid.Row="3"
                                                                Grid.Column="0"/>
-                                                        <Switch IsToggled="{Binding ShouldhanldeBackButton}"
+                                                        <Switch IsToggled="{Binding ShouldHandleBackButton}"
                                                                 AutomationId="HandleBackButtonSwitch"
                                                                 Grid.Row="3"
                                                                 Grid.Column="1"/>

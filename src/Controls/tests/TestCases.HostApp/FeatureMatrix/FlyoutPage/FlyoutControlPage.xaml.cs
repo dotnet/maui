@@ -205,8 +205,9 @@ public partial class FlyoutControlMainPage : FlyoutPage
 	private void RestoreOriginalFlyoutPage()
 	{
 		if (_originalFlyoutPage != null)
-			AttachFlyoutNavigationEvents(_originalFlyoutPage);
-		this.Flyout = _originalFlyoutPage;
+		{
+			this.Flyout = _originalFlyoutPage;
+		}
 	}
 	private async void OnSetDetail1Clicked(object sender, EventArgs e)
 	{
@@ -287,7 +288,7 @@ public partial class FlyoutControlMainPage : FlyoutPage
 		if (BindingContext is FlyoutPageViewModel vm)
 		{
 			vm.BackButtonPressedText = "Raised";
-			e.Handled = vm.ShouldhanldeBackButton;
+			e.Handled = vm.ShouldHandleBackButton;
 			vm.BackButtonHandled = e.Handled.ToString();
 		}
 	}
