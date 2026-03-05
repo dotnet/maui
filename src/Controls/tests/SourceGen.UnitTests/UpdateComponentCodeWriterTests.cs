@@ -132,7 +132,9 @@ $"""
 
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		Assert.Contains("UpdateComponent_v1to2", result, System.StringComparison.Ordinal);
+		Assert.Contains("UpdateComponent", result, System.StringComparison.Ordinal);
+		// Must NOT contain old versioned method names
+		Assert.DoesNotContain("UpdateComponent_v", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -143,7 +145,8 @@ $"""
 
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		Assert.Contains("if (__version != 1) return;", result, System.StringComparison.Ordinal);
+		// Per spec: if (__version == fromVersion) { ... } — uses == not !=
+		Assert.Contains("if (__version == 1)", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -205,8 +208,9 @@ $"""
 
 		var result = Generate(v1, v2, fromVersion: 5, toVersion: 6);
 		Assert.NotNull(result);
-		Assert.Contains("UpdateComponent_v5to6", result, System.StringComparison.Ordinal);
-		Assert.Contains("if (__version != 5) return;", result, System.StringComparison.Ordinal);
+		// Single UpdateComponent() method with if (__version == 5) guard
+		Assert.Contains("void UpdateComponent()", result, System.StringComparison.Ordinal);
+		Assert.Contains("if (__version == 5)", result, System.StringComparison.Ordinal);
 		Assert.Contains("__version = 6;", result, System.StringComparison.Ordinal);
 	}
 

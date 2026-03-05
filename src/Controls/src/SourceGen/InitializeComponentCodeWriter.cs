@@ -165,7 +165,10 @@ $$"""
 								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
 							}
 						}
-						codeWriter.WriteLine("__version = 1;");
+						// Set __version to the latest version from state (so fresh instances skip all UC patches)
+						var assemblyName = compilation.AssemblyName ?? string.Empty;
+						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, xamlItem.ProjectItem.RelativePath ?? string.Empty);
+						codeWriter.WriteLine($"__version = {latestVersion};");
 					}
 				}
 			}
@@ -220,17 +223,15 @@ $$"""
 	}
 
 	/// <summary>
-	/// Generates an <c>UpdateComponent_v{fromVersion}to{toVersion}</c> source from two XAML versions.
-	/// Returns <see langword="null"/> when the diff is structural (full reload required) or there are no
-	/// property-only changes.
+	/// Generates a single patch body (the code for an <c>if (__version == fromVersion) { ... }</c> block)
+	/// from two XAML versions. Returns <see langword="null"/> when the diff is structural or empty.
 	/// </summary>
-	public static string? TryGenerateUpdateComponent(
+	public static string? TryGeneratePatchBody(
 		string oldXaml,
 		string newXaml,
 		int fromVersion,
 		int toVersion,
 		INamedTypeSymbol rootType,
-		string accessModifier,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache)
@@ -254,7 +255,7 @@ $$"""
 		if (diff is null || diff.IsEmpty)
 			return null;
 
-		return UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, diff, fromVersion, toVersion, compilation, xmlnsCache, typeCache);
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)
