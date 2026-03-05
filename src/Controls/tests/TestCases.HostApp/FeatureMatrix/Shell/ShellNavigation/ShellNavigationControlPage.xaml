@@ -167,6 +167,7 @@
                                                  <Button Grid.Row="10"
                                                          Grid.Column="0"
                                                          Grid.ColumnSpan="2"
+                                                         x:Name="ToggleRouteButton"
                                                          Text="Unregister Route"
                                                          FontSize="11"
                                                          HeightRequest="35"

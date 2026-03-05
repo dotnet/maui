@@ -30,9 +30,10 @@ public class ShellViewModel : INotifyPropertyChanged
     private string _overrideNavigatingStatus = string.Empty;
     private string _overrideNavigatedStatus = string.Empty;
     private string _tabStackInfo = string.Empty;
+    readonly Command<object> _command;
     public ShellViewModel()
     {
-        Command = new Command<object>(
+        _command = new Command<object>(
             execute: param =>
             {
                 CommandExecuted = param is string s && !string.IsNullOrEmpty(s)
@@ -43,7 +44,7 @@ public class ShellViewModel : INotifyPropertyChanged
             canExecute: _ => _isEnabled);
     }
     public event PropertyChangedEventHandler PropertyChanged;
-    public ICommand Command { get; }
+    public ICommand Command => _command;
     public string TextOverride
     {
         get => _textOverride;
@@ -64,7 +65,7 @@ public class ShellViewModel : INotifyPropertyChanged
                 _isEnabled = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsEnabledText));
-                ((Command)Command).ChangeCanExecute();
+                _command.ChangeCanExecute();
             }
         }
     }
