@@ -120,6 +120,13 @@ stages:
                 echo "=== Creating AVD ==="
                 echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
                 
+                # Reduce userdata partition to fit on hosted agents (~4.2GB free)
+                AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
+                if [ -f "$AVD_CONFIG" ]; then
+                  sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
+                  echo "Updated disk.dataPartition.size to 2048m"
+                fi
+                
                 echo "=== Starting Emulator ==="
                 nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 &
                 EMULATOR_PID=$!
