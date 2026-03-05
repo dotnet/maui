@@ -137,24 +137,24 @@ stages:
                 fi
                 
                 echo "=== Starting Emulator ==="
-                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 &
+                # Kill any stale adb server and restart
+                adb kill-server 2>/dev/null || true
+                sleep 1
+                adb start-server
+                
+                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
                 EMULATOR_PID=$!
                 echo "Emulator PID: $EMULATOR_PID"
                 
-                echo "Waiting for emulator device to appear..."
-                timeout=120
-                waited=0
-                while ! adb devices | grep -q "emulator.*device"; do
-                  sleep 5
-                  waited=$((waited + 5))
-                  if [ $waited -ge $timeout ]; then
-                    echo "##vso[task.logissue type=error]Emulator device did not appear after ${timeout}s"
-                    adb devices -l
-                    exit 1
-                  fi
-                  echo "  Waiting for device... ($waited/${timeout}s)"
-                done
-                echo "Emulator device detected, waiting for boot_completed..."
+                echo "Waiting for emulator device (adb wait-for-device)..."
+                timeout 120 adb wait-for-device
+                if [ $? -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]adb wait-for-device timed out after 120s"
+                  adb devices -l
+                  cat /tmp/emulator.log | tail -30
+                  exit 1
+                fi
+                echo "Device detected: $(adb devices -l | grep emulator)"
 
                 timeout=300
                 waited=0
