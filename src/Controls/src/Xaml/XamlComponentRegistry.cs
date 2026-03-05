@@ -128,6 +128,33 @@ public static class XamlComponentRegistry
 		UntrackInstance(page);
 	}
 
+	/// <summary>
+	/// Renames all component registrations whose node ID starts with <paramref name="oldPrefix"/>
+	/// so that the prefix is replaced by <paramref name="newPrefix"/>. Used by generated
+	/// <c>UpdateComponent</c> methods after a same-parent child reorder to keep the registry
+	/// in sync with the new position-based node IDs (including all descendants).
+	/// </summary>
+	public static void ReRoot(object page, string oldPrefix, string newPrefix)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (oldPrefix is null)
+			throw new ArgumentNullException(nameof(oldPrefix));
+		if (newPrefix is null)
+			throw new ArgumentNullException(nameof(newPrefix));
+
+		if (string.Equals(oldPrefix, newPrefix, StringComparison.Ordinal))
+			return;
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				map.ReRoot(oldPrefix, newPrefix);
+			}
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// Instance tracking helpers
 	// -------------------------------------------------------------------------
@@ -202,6 +229,25 @@ public static class XamlComponentRegistry
 			}
 			component = null;
 			return false;
+		}
+
+		public void ReRoot(string oldPrefix, string newPrefix)
+		{
+			var keysToRename = new List<string>();
+			foreach (var key in _entries.Keys)
+			{
+				if (key.StartsWith(oldPrefix, StringComparison.Ordinal))
+					keysToRename.Add(key);
+			}
+			foreach (var oldKey in keysToRename)
+			{
+				var newKey = newPrefix + oldKey.Substring(oldPrefix.Length);
+				if (_entries.TryGetValue(oldKey, out var value))
+				{
+					_entries.Remove(oldKey);
+					_entries[newKey] = value;
+				}
+			}
 		}
 	}
 }

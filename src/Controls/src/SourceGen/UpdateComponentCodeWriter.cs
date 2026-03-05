@@ -82,6 +82,14 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine($"if (__version != {fromVersion}) return;");
 				codeWriter.WriteLine();
 
+				// Emit child reorders FIRST (before property changes, since property diffs use post-reorder IDs)
+				int reorderIdx = 0;
+				foreach (var reorder in diff.ChildReorders)
+				{
+					EmitChildReorder(codeWriter, reorder, reorderIdx++);
+					codeWriter.WriteLine();
+				}
+
 				int compIdx = 0;
 				foreach (var nodeDiff in diff.NodeChanges)
 				{
@@ -144,6 +152,65 @@ static class UpdateComponentCodeWriter
 
 		codeWriter.Flush();
 		return codeWriter.InnerWriter.ToString();
+	}
+
+	static void EmitChildReorder(
+		IndentedTextWriter codeWriter,
+		ChildReorderDiff reorder,
+		int reorderIdx)
+	{
+		bool isRoot = string.IsNullOrEmpty(reorder.ParentNodeId);
+
+		if (isRoot)
+		{
+			// Root-level child reorder is not supported (e.g., ContentPage has a single Content, not Children)
+			codeWriter.WriteLine("// Root-level child reorder not supported — fallback");
+			codeWriter.WriteLine("goto fallback;");
+			return;
+		}
+
+		// Look up parent from registry
+		var parentVar = $"__rp_{reorderIdx}";
+		codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{reorder.ParentNodeId}\", out var {parentVar}))");
+		codeWriter.Indent++;
+		codeWriter.WriteLine("goto fallback;");
+		codeWriter.Indent--;
+
+		// Cast to Layout to access Children
+		var layoutVar = $"__rl_{reorderIdx}";
+		codeWriter.WriteLine($"var {layoutVar} = {parentVar} as global::Microsoft.Maui.Controls.Layout;");
+		codeWriter.WriteLine($"if ({layoutVar} == null) goto fallback;");
+
+		int count = reorder.Entries.Count;
+
+		// Save references to all children by their old node IDs
+		for (int i = 0; i < count; i++)
+		{
+			var entry = reorder.Entries[i];
+			var childVar = $"__rc_{reorderIdx}_{i}";
+			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{entry.OldNodeId}\", out var {childVar}))");
+			codeWriter.Indent++;
+			codeWriter.WriteLine("goto fallback;");
+			codeWriter.Indent--;
+		}
+
+		// Clear children and re-add in new order
+		codeWriter.WriteLine($"{layoutVar}.Clear();");
+		for (int i = 0; i < count; i++)
+		{
+			var childVar = $"__rc_{reorderIdx}_{i}";
+			codeWriter.WriteLine($"{layoutVar}.Add((global::Microsoft.Maui.IView){childVar}!);");
+		}
+
+		// Re-register moved children (and their subtrees) under new node IDs
+		for (int i = 0; i < count; i++)
+		{
+			var entry = reorder.Entries[i];
+			if (!string.Equals(entry.OldNodeId, entry.NewNodeId, StringComparison.Ordinal))
+			{
+				codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.ReRoot(this, \"{entry.OldNodeId}\", \"{entry.NewNodeId}\");");
+			}
+		}
 	}
 
 	static void EmitRootPropertyChange(

@@ -259,7 +259,7 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void ReorderedChildren_ReturnsNull()
+	public void ReorderedChildren_UniqueTypes_ReturnsReorderDiff()
 	{
 		var old = Parse(Page("""
 			<VerticalStackLayout>
@@ -276,7 +276,120 @@ public class XamlNodeDiffTests
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
+		Assert.NotNull(diff);
+		Assert.Empty(diff.NodeChanges); // no property changes
+		var reorder = Assert.Single(diff.ChildReorders);
+		Assert.Equal("VerticalStackLayout_0", reorder.ParentNodeId);
+		Assert.Equal(2, reorder.Entries.Count);
+		// New order: Button (was index 1) at index 0, Label (was index 0) at index 1
+		Assert.Equal("VerticalStackLayout_0/Button_1", reorder.Entries[0].OldNodeId);
+		Assert.Equal("VerticalStackLayout_0/Button_0", reorder.Entries[0].NewNodeId);
+		Assert.Equal("VerticalStackLayout_0/Label_0", reorder.Entries[1].OldNodeId);
+		Assert.Equal("VerticalStackLayout_0/Label_1", reorder.Entries[1].NewNodeId);
+	}
+
+	[Fact]
+	public void ReorderedChildren_DuplicateTypes_ReturnsNull()
+	{
+		// Two Labels — can't uniquely match by type
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Label Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="B" />
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
 		Assert.Null(diff);
+	}
+
+	[Fact]
+	public void ReorderedChildren_WithPropertyChanges_ReturnsBothDiffs()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Button Text="B2" />
+				<Label Text="A" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Should have a reorder
+		Assert.Single(diff.ChildReorders);
+		// Should have property change on Button (Text: "B" → "B2")
+		var propChange = Assert.Single(diff.NodeChanges);
+		Assert.Contains("Button", propChange.NodeId, StringComparison.Ordinal);
+		Assert.Equal("B2", propChange.PropertyChanges[0].NewValue);
+	}
+
+	[Fact]
+	public void ReorderedChildren_IdentityPermutation_NoReorderEntry()
+	{
+		// Same types, same order — should not produce a reorder entry
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A2" />
+				<Button Text="B2" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Empty(diff.ChildReorders); // no reorder needed
+		Assert.Equal(2, diff.NodeChanges.Count); // just property changes
+	}
+
+	[Fact]
+	public void ReorderedChildren_ThreeElements_ReturnsCorrectPermutation()
+	{
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Button Text="B" />
+				<Entry Text="C" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Entry Text="C" />
+				<Label Text="A" />
+				<Button Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var reorder = Assert.Single(diff.ChildReorders);
+		Assert.Equal(3, reorder.Entries.Count);
+		// Entry was at 2, now at 0
+		Assert.Equal(2, reorder.Entries[0].OldIndex);
+		// Label was at 0, now at 1
+		Assert.Equal(0, reorder.Entries[1].OldIndex);
+		// Button was at 1, now at 2
+		Assert.Equal(1, reorder.Entries[2].OldIndex);
 	}
 
 	[Fact]
