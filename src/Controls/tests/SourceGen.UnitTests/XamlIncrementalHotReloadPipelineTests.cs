@@ -10,6 +10,7 @@
 #nullable enable
 
 using System;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -214,15 +215,16 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void SecondRun_StructuralChange_NoUCEmitted()
+	public void SecondRun_StructuralChange_EmitsUCWithChildAdd()
 	{
-		// Arrange
+		// Arrange: V3 adds a Button child — our child add/remove support handles this incrementally
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV3_StructuralChange);
 
-		// Assert: no UC source for structural change
+		// Assert: UC source IS emitted for child additions (not structural fallback)
 		var ucSource = FindUCSource(run2, "uc.xsg");
-		Assert.Null(ucSource);
+		Assert.NotNull(ucSource);
+		Assert.Contains("Button", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]

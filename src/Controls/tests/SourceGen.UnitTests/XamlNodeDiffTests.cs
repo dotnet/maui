@@ -235,7 +235,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Single(diff.ChildListChanges);
 		var change = diff.ChildListChanges[0];
-		Assert.Equal(1, change.Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, change.NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -265,7 +265,7 @@ public class XamlNodeDiffTests
 		var change = diff.ChildListChanges[0];
 		// Old Label removed, new Entry added
 		Assert.Single(change.RemovedNodeIds);
-		Assert.Equal(1, change.Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, change.NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -563,7 +563,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Single(diff.ChildListChanges);
 		var change = diff.ChildListChanges[0];
-		Assert.Equal(1, change.Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, change.NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -1151,7 +1151,7 @@ public class XamlNodeDiffTests
 		Assert.Equal("1", diff.NodeChanges[0].NodeId);
 		Assert.Equal("B", diff.NodeChanges[0].PropertyChanges[0].NewValue);
 		Assert.Single(diff.ChildListChanges);
-		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, diff.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -1243,7 +1243,7 @@ public class XamlNodeDiffTests
 		Assert.Single(diff.ChildListChanges);
 		Assert.Single(diff.ChildListChanges[0].RemovedNodeIds);
 		Assert.Equal("3", diff.ChildListChanges[0].RemovedNodeIds[0]);
-		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, diff.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -1308,7 +1308,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(prop.NewNode); // complex markup
 		// Child list change: Entry added
 		Assert.Single(diff.ChildListChanges);
-		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, diff.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
 	[Fact]
@@ -1445,7 +1445,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
-		Assert.Contains("Text = {MarkupNode}", debug);
+		Assert.Contains("Text = {MarkupNode}", debug, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1458,7 +1458,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
-		Assert.Contains("_Content = \"World\"", debug);
+		Assert.Contains("_Content = \"World\"", debug, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -1547,7 +1547,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(d12);
 		Assert.Empty(d12.NodeChanges);
 		Assert.Single(d12.ChildListChanges);
-		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, d12.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 		Assert.Equal("2", d12.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
 
 		// v2→v3: Button added
@@ -1555,7 +1555,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(d23);
 		Assert.Empty(d23.NodeChanges);
 		Assert.Single(d23.ChildListChanges);
-		Assert.Equal(1, d23.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, d23.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 		Assert.Equal("3", d23.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
 	}
 
@@ -1592,7 +1592,7 @@ public class XamlNodeDiffTests
 		var d12 = XamlNodeDiff.ComputeDiff(xaml1, xaml2);
 		Assert.NotNull(d12);
 		Assert.Single(d12.ChildListChanges);
-		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, d12.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 
 		// v2→v3: −Button (undo)
 		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
@@ -1666,13 +1666,13 @@ public class XamlNodeDiffTests
 		Assert.NotNull(p12.NewNode); // complex
 		Assert.Null(p12.NewValue);
 
-		// v2→v3: binding → value
+		// v2→v3: binding → value (now produces simple value diff)
 		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
 		Assert.NotNull(d23);
 		Assert.Single(d23.NodeChanges);
 		var p23 = d23.NodeChanges[0].PropertyChanges[0];
-		Assert.Null(p23.NewNode); // simple
 		Assert.Equal("Back to static", p23.NewValue);
+		Assert.Null(p23.NewNode); // simple value, no complex node
 	}
 
 	[Fact]
@@ -1706,7 +1706,7 @@ public class XamlNodeDiffTests
 		Assert.Single(d12.ChildListChanges);
 		Assert.Single(d12.ChildListChanges[0].RemovedNodeIds);
 		Assert.Equal("1", d12.ChildListChanges[0].RemovedNodeIds[0]);
-		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
+		Assert.Equal(1, d12.ChildListChanges[0].NewChildren.Count(e => e.Kind == ChildChangeKind.Added));
 
 		// v2→v3: Button removed + ImageButton added, AND Editor.Placeholder changed
 		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);

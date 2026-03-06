@@ -121,11 +121,11 @@ internal static class XamlIncrementalHotReloadHandler
 				return cached;
 		}
 
-#pragma warning disable IL2075 // type comes from updatedTypes at runtime
+#pragma warning disable IL2070, IL2075 // type comes from updatedTypes at runtime
 		var method = type.GetMethod(
 			"UpdateComponent",
 			BindingFlags.NonPublic | BindingFlags.Instance);
-#pragma warning restore IL2075
+#pragma warning restore IL2070, IL2075
 
 		lock (s_cacheLock)
 		{
@@ -148,12 +148,12 @@ internal static class XamlIncrementalHotReloadHandler
 			bindableObj.BindingContext = null;
 		}
 
-#pragma warning disable IL2075
+#pragma warning disable IL2070, IL2075
 		var initMethod = type.GetMethod(
 			"InitializeComponent",
 			BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public,
 			null, Type.EmptyTypes, null);
-#pragma warning restore IL2075
+#pragma warning restore IL2070, IL2075
 
 		try
 		{
