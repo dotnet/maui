@@ -1377,6 +1377,246 @@ public class XamlNodeDiffTests
 		Assert.NotNull(prop.NewNode);
 	}
 
+	// -------------------------------------------------------------------------
+	// Property transition matrix: Value ↔ Binding ↔ StaticResource ↔ DynamicResource
+	// -------------------------------------------------------------------------
+
+	[Fact]
+	public void ValueToBinding_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode); // complex (MarkupNode for binding)
+		Assert.Null(prop.NewValue);
+	}
+
+	[Fact]
+	public void ValueToStaticResource_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+		Assert.Null(prop.NewValue);
+	}
+
+	[Fact]
+	public void ValueToDynamicResource_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"Hello\" />"));
+		var @new = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+		Assert.Null(prop.NewValue);
+	}
+
+	[Fact]
+	public void StaticResourceToValue_ProducesSimplePropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"Hello\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.Equal("Hello", prop.NewValue);
+		Assert.Null(prop.NewNode);
+	}
+
+	[Fact]
+	public void DynamicResourceToValue_ProducesSimplePropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"Hello\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.Equal("Hello", prop.NewValue);
+		Assert.Null(prop.NewNode);
+	}
+
+	[Fact]
+	public void BindingToStaticResource_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+		var @new = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void BindingToDynamicResource_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+		var @new = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void StaticResourceToBinding_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void StaticResourceToDynamicResource_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void DynamicResourceToStaticResource_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void DynamicResourceToBinding_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void BindingPathChange_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Title}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void StaticResourceKeyChange_ProducesComplexPropertyDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{StaticResource Key1}\" />"));
+		var @new = Parse(Page("<Label Text=\"{StaticResource Key2}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Single(diff.NodeChanges);
+		var prop = diff.NodeChanges[0].PropertyChanges[0];
+		Assert.Equal("Text", prop.PropertyName.LocalName);
+		Assert.NotNull(prop.NewNode);
+	}
+
+	[Fact]
+	public void SameBinding_NoDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.True(diff.IsEmpty);
+	}
+
+	[Fact]
+	public void SameStaticResource_NoDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"{StaticResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.True(diff.IsEmpty);
+	}
+
+	[Fact]
+	public void SameDynamicResource_NoDiff()
+	{
+		var old = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+		var @new = Parse(Page("<Label Text=\"{DynamicResource MyKey}\" />"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.True(diff.IsEmpty);
+	}
+
 	[Fact]
 	public void ListNodeProperty_Changed_ProducesDiff()
 	{
