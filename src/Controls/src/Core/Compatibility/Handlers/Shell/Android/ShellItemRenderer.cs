@@ -456,7 +456,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (DisplayedPage is null)
+			if (DisplayedPage is null && !_menuSetup)
 				return;
 
 			if (ShellItemController.ShowTabs)
