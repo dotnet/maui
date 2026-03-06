@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private CanvasControl _canvasControl;
 		private readonly PlatformCanvas _canvas;
-		readonly ScalingCanvas _scalingCanvas;
 
 		private IDrawable _drawable;
 		private RectF _dirty;
@@ -39,7 +38,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		{
 			_canvas = new PlatformCanvas();
-			_scalingCanvas = new ScalingCanvas(_canvas);
 
 			Loaded += UserControl_Loaded;
 			Unloaded += UserControl_Unloaded;
@@ -88,7 +86,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var logicalWidth = MathF.Round(actualWidth);
 			var logicalHeight = MathF.Round(actualHeight);
 
-			float adjustedScaleX, adjustedScaleY;
+			float adjustedScaleX = 1f, adjustedScaleY = 1f;
 			if (logicalWidth > 0 && logicalHeight > 0)
 			{
 				adjustedScaleX = actualWidth / logicalWidth;
@@ -98,8 +96,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			else
 			{
-				adjustedScaleX = 1f;
-				adjustedScaleY = 1f;
 				_dirty.Width = actualWidth;
 				_dirty.Height = actualHeight;
 			}
@@ -111,7 +107,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			try
 			{
 				_canvas.Session = args.DrawingSession;
-				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
 
 				if (FlowDirection == FlowDirection.RightToLeft)
 				{
