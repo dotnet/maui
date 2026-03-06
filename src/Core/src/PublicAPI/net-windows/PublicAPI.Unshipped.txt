@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
