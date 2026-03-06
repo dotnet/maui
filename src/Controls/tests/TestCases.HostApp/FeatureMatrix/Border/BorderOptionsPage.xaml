@@ -292,16 +292,19 @@
                                    <HorizontalStackLayout>
                                           <RadioButton Grid.Row="0"
                                                        Content="Label"
+                                                       GroupName="ContentGroup"
                                                        IsChecked="True"
                                                        AutomationId="LabelRadioButton"
                                                        CheckedChanged="OnContentOptionChanged"/>
                                           <RadioButton Grid.Row="1"
                                                        Content="Button"
+                                                       GroupName="ContentGroup"
                                                        AutomationId="ButtonRadioButton"
                                                        CheckedChanged="OnContentOptionChanged"/>
                                    </HorizontalStackLayout>
                                    <RadioButton Grid.Row="2"
                                                 Content="Image"
+                                                GroupName="ContentGroup"
                                                 AutomationId="ImageRadioButton"
                                                 CheckedChanged="OnContentOptionChanged"/>
                             </Grid>

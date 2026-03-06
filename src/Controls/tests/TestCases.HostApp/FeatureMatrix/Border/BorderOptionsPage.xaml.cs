@@ -165,6 +165,7 @@ public partial class OptionsPage : ContentPage
 		if (sender is Button button && button.BackgroundColor != Colors.Transparent)
 		{
 			_shadowColor = button.BackgroundColor;
+			OnShadowEntryChanged(sender, new TextChangedEventArgs(string.Empty, string.Empty));
 		}
 	}
 

@@ -29,7 +29,7 @@ public class BorderViewModel : INotifyPropertyChanged
 	{
 		Padding = 5;
 		StrokeThickness = 1;
-		StrokeDashArray = new DoubleCollection { 0, 0 };
+		StrokeDashArray = null;
 		StrokeDashOffset = 0;
 		StrokeLineJoin = PenLineJoin.Miter;
 		StrokeMiterLimit = 10.0;
@@ -93,7 +93,7 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	private DoubleCollection _strokeDashArray = new DoubleCollection { 0, 0 };
+	private DoubleCollection _strokeDashArray = null;
 	public DoubleCollection StrokeDashArray
 	{
 		get => _strokeDashArray;

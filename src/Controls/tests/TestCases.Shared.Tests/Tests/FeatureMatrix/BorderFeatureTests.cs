@@ -190,7 +190,7 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyBorderScreenshot();
 	}
 
-	// ── Non-DashArray tests disabled for iOS/Catalyst (Order 10–14) ──
+	// ── Tests that fail on iOS/Catalyst — excluded via preprocessor (Order 10–14) ──
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // For more information, see : https://github.com/dotnet/maui/issues/29743
 
@@ -290,10 +290,136 @@ public class BorderFeatureTests : _GalleryUITest
 
 #endif
 
+	[Test]
+	[Order(15)]
+	public void Border_StrokeShapeWithPolygon()
+	{
+		NavigateToOptions();
+
+		App.WaitForElement("PolygonShapeRadio");
+		App.Tap("PolygonShapeRadio");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Order(16)]
+	public void Border_StrokeColorWithRed()
+	{
+		NavigateToOptions();
+
+		App.WaitForElement("RedColorButton");
+		App.Tap("RedColorButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	// Explicitly switch to another shape, then back to Rectangle to verify reset behavior.
+	[Test]
+	[Order(17)]
+	public void Border_StrokeShapeRectangle_AfterChange()
+	{
+		NavigateToOptions();
+
+		// First switch to Ellipse
+		App.WaitForElement("EllipseShapeRadio");
+		App.Tap("EllipseShapeRadio");
+
+		// Then switch back to Rectangle
+		App.WaitForElement("RectangleShapeRadio");
+		App.Tap("RectangleShapeRadio");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Order(18)]
+	public void Border_ShadowWithColor()
+	{
+		NavigateToOptions();
+
+		App.WaitForElement("ShadowRedColorButton");
+		App.Tap("ShadowRedColorButton");
+
+		App.WaitForElement("OffsetXEntry");
+		App.EnterText("OffsetXEntry", "10");
+		App.WaitForElement("OffsetYEntry");
+		App.EnterText("OffsetYEntry", "10");
+		App.WaitForElement("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.8");
+		App.WaitForElement("RadiusEntry");
+		App.EnterText("RadiusEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyBorderScreenshot();
+	}
+
+	[Test]
+	[Order(19)]
+	public void Border_BackgroundColor()
+	{
+		NavigateToOptions();
+
+		App.WaitForElement("BackgroundYellowButton");
+		App.Tap("BackgroundYellowButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Order(20)]
+	public void Border_StrokeGradientBrush()
+	{
+		NavigateToOptions();
+
+		App.WaitForElement("GradientStrokeButton");
+		App.Tap("GradientStrokeButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Order(21)]
+	public void Border_ZeroPadding()
+	{
+		NavigateToOptions();
+
+		App.WaitForElement("PaddingEntry");
+		App.EnterText("PaddingEntry", "0,0,0,0");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
 	// ── DashArray tests (Order 15–18) ──
 
 	[Test]
-	[Order(15)]
+	[Order(22)]
 	public void Border_StrokeShapeWithDashArray_Path()
 	{
 		NavigateToOptions();
@@ -313,7 +439,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(16)]
+	[Order(23)]
 	public void Border_StrokeThicknessWithDashArray()
 	{
 		NavigateToOptions();
@@ -331,7 +457,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(17)]
+	[Order(24)]
 	public void Border_StrokeDashArrayWithDashOffset()
 	{
 		NavigateToOptions();
@@ -352,7 +478,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(18)]
+	[Order(25)]
 	public void Border_StrokeDashArrayWithStrokeColor()
 	{
 		NavigateToOptions();
@@ -375,7 +501,7 @@ public class BorderFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/29741
 	[Test]
-	[Order(19)]
+	[Order(26)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Flat()
 	{
 		NavigateToOptions();
@@ -395,7 +521,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(20)]
+	[Order(27)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Round()
 	{
 		NavigateToOptions();
@@ -415,7 +541,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(21)]
+	[Order(28)]
 	public void Border_StrokeDashArrayWithDashOffsetAndStrokeLineCapRound()
 	{
 		NavigateToOptions();
@@ -438,7 +564,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(22)]
+	[Order(29)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Square()
 	{
 		NavigateToOptions();
@@ -458,7 +584,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(23)]
+	[Order(30)]
 	public void Border_StrokeDashArrayWithEllipseShapeAndStrokeLineCap_Square()
 	{
 		NavigateToOptions();
@@ -481,7 +607,7 @@ public class BorderFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(24)]
+	[Order(31)]
 	public void Border_PolygonShapeWithStrokeLineCap_Round()
 	{
 		NavigateToOptions();
@@ -507,7 +633,7 @@ public class BorderFeatureTests : _GalleryUITest
 	// ── DashArray+Offset (Order 25) — runs on all platforms; issue #29661 (DashArray on iOS/Catalyst) is closed/fixed ──
 
 	[Test]
-	[Order(25)]
+	[Order(32)]
 	public void Border_StrokeColorWithDashArrayAndOffset()
 	{
 		NavigateToOptions();
@@ -529,132 +655,32 @@ public class BorderFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	// ── Polygon shape without DashArray/LineJoin (Order 26) — all platforms ──
-
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/29898
 	[Test]
-	[Order(26)]
-	public void Border_StrokeShapeWithPolygon()
+	[Order(33)]
+	public void Border_StrokeDashArray_Reset()
 	{
 		NavigateToOptions();
 
-		App.WaitForElement("PolygonShapeRadio");
-		App.Tap("PolygonShapeRadio");
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,3");
 
 		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
+		App.EnterText("StrokeThicknessEntry", "15"); // Increased thickness to make dashes more visible.
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
 
-	[Test]
-	[Order(27)]
-	public void Border_StrokeColorWithRed()
-	{
 		NavigateToOptions();
-
-		App.WaitForElement("RedColorButton");
-		App.Tap("RedColorButton");
 
 		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
+		App.EnterText("StrokeThicknessEntry", "5"); // Change thickness to ensure the reset takes effect.
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-
-	// Explicitly switch to another shape, then back to Rectangle to verify reset behavior.
-	[Test]
-	[Order(28)]
-	public void Border_StrokeShapeRectangle_AfterChange()
-	{
-		NavigateToOptions();
-
-		// First switch to Ellipse
-		App.WaitForElement("EllipseShapeRadio");
-		App.Tap("EllipseShapeRadio");
-
-		// Then switch back to Rectangle
-		App.WaitForElement("RectangleShapeRadio");
-		App.Tap("RectangleShapeRadio");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Order(29)]
-	public void Border_ShadowWithColor()
-	{
-		NavigateToOptions();
-
-		App.WaitForElement("ShadowRedColorButton");
-		App.Tap("ShadowRedColorButton");
-
-		App.WaitForElement("OffsetXEntry");
-		App.EnterText("OffsetXEntry", "10");
-		App.WaitForElement("OffsetYEntry");
-		App.EnterText("OffsetYEntry", "10");
-		App.WaitForElement("OpacityEntry");
-		App.EnterText("OpacityEntry", "0.8");
-		App.WaitForElement("RadiusEntry");
-		App.EnterText("RadiusEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyBorderScreenshot();
-	}
-
-	[Test]
-	[Order(30)]
-	public void Border_BackgroundColor()
-	{
-		NavigateToOptions();
-
-		App.WaitForElement("BackgroundYellowButton");
-		App.Tap("BackgroundYellowButton");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Order(31)]
-	public void Border_StrokeGradientBrush()
-	{
-		NavigateToOptions();
-
-		App.WaitForElement("GradientStrokeButton");
-		App.Tap("GradientStrokeButton");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
-	[Order(32)]
-	public void Border_ZeroPadding()
-	{
-		NavigateToOptions();
-
-		App.WaitForElement("PaddingEntry");
-		App.EnterText("PaddingEntry", "0,0,0,0");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
+#endif
 
 }
