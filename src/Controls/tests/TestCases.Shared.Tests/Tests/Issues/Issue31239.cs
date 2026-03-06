@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/19568 
+#if TEST_FAILS_ON_ANDROID // https://github.com/dotnet/maui/issues/19568
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -10,21 +10,18 @@ public class Issue31239(TestDevice testDevice) : _IssuesUITest(testDevice)
 	const string _changeBackgroundButtonId = "changeBackgroundButton";
 	public override string Issue => "[iOS, Mac, Windows] GraphicsView does not change the Background/BackgroundColor";
 
-	[Test, Order(1)]
+	[Test]
 	[Category(UITestCategories.GraphicsView)]
-	public void GraphicsViewBackgroundShouldBeApplied()
+	public void GraphicsViewBackgroundShouldBeAppliedAndChanged()
 	{
 		App.WaitForElement(_changeBackgroundButtonId);
-		VerifyScreenshot();
-	}
 
-	[Test, Order(2)]
-	[Category(UITestCategories.GraphicsView)]
-	public void GraphicsViewBackgroundShouldBeChanged()
-	{
-		App.WaitForElement(_changeBackgroundButtonId);
+		// Verify initial background is applied
+		VerifyScreenshot("GraphicsViewBackgroundShouldBeApplied");
+
+		// Change backgrounds and verify they update
 		App.Tap(_changeBackgroundButtonId);
-		VerifyScreenshot();
+		VerifyScreenshot("GraphicsViewBackgroundShouldBeChanged");
 	}
 }
 #endif

@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Handlers
 			return new PlatformTouchGraphicsView();
 		}
 
-		// A container is needed when the GraphicsView has a background to ensure proper rendering, without it the background may not be drawn correctly.
+		// A container is needed when the GraphicsView has a background to ensure proper rendering,
+		// without it the background may not be drawn correctly on WinUI.
 		public override bool NeedsContainer => VirtualView?.Background is not null || base.NeedsContainer;
 
 		private protected override void OnConnectHandler(FrameworkElement platformView)

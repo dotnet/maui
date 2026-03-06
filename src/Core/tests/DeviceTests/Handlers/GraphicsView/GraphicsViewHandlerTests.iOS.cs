@@ -38,7 +38,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(platformBackgroundColor);
 
-			// Convert the UIColor to MAUI Color for comparison
 			platformBackgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
 
 			Assert.Equal(expectedColor.Red, (float)r, 2);
@@ -52,7 +51,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "GraphicsView Bounds are pixel-aligned when decimal dimensions are used")]
 		public async Task GraphicsViewBoundsArePixelAlignedWithDecimalDimensions()
 		{
-			// Use decimal dimensions that are non-integer at device pixel scale (e.g., 248.25 * 2x = 496.5 px)
 			var graphicsView = new GraphicsViewStub
 			{
 				Drawable = new TestDrawable(Colors.White),
@@ -64,15 +62,12 @@ namespace Microsoft.Maui.DeviceTests
 			var (bounds, scale) = await GetValueAsync(graphicsView, (GraphicsViewHandler handler) =>
 			{
 				var nativeView = GetPlatformGraphicsView(handler);
-				// Must read UIScreen.MainScreen.Scale on the UI thread
 				return (nativeView.Bounds, (double)UIScreen.MainScreen.Scale);
 			}, attachAndRun: true);
 
 			var widthInPixels = bounds.Width * scale;
 			var heightInPixels = bounds.Height * scale;
 
-			// Physical pixel counts must be integers - fractional pixels cause a gray hairline
-			// artifact at the view edge when UpdateBackground() paints the CALayer
 			Assert.True(
 				Math.Abs(widthInPixels - Math.Round(widthInPixels)) < 0.01,
 				$"GraphicsView Bounds.Width ({bounds.Width}pt) is not pixel-aligned on a {scale}x display. " +
@@ -83,6 +78,5 @@ namespace Microsoft.Maui.DeviceTests
 				$"GraphicsView Bounds.Height ({bounds.Height}pt) is not pixel-aligned on a {scale}x display. " +
 				$"Physical height {heightInPixels}px must be an integer to prevent the gray hairline artifact.");
 		}
-
 	}
 }

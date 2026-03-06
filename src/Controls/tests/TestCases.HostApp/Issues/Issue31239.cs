@@ -97,10 +97,8 @@ public class Issue31239 : TestContentPage
 
 	void ChangeBackgroundProperties()
 	{
-		// Change BackgroundColor to a different solid color
 		_backgroundColorGraphicsView.BackgroundColor = Colors.Purple;
 
-		// Change Background to a different gradient
 		_backgroundGraphicsView.Background = new LinearGradientBrush
 		{
 			StartPoint = new Point(0, 0),
