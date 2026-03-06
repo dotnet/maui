@@ -224,9 +224,18 @@ $$"""
 
 	/// <summary>
 	/// Generates a single patch body (the code for an <c>if (__version == fromVersion) { ... }</c> block)
-	/// from two XAML versions. Returns <see langword="null"/> when the diff is structural or empty.
+	/// from two XAML versions. Returns <see langword="null"/> when the diff is structural, empty, or on parse error.
 	/// </summary>
+	/// <param name="cachedOldRoot">The cached parsed tree from the previous generation (may be null on first diff).</param>
+	/// <param name="oldXaml">Fallback: raw old XAML string, used only when <paramref name="cachedOldRoot"/> is null.</param>
+	/// <param name="newXaml">The new XAML text to parse and diff against.</param>
+	/// <param name="parsedNewRoot">On success, the parsed tree for the new XAML (caller should cache it).</param>
+	/// <param name="parseError">
+	/// Set to <see langword="true"/> when the new XAML fails to parse.
+	/// The caller must NOT update <see cref="XamlHotReloadState"/> (keep last-good state).
+	/// </param>
 	public static string? TryGeneratePatchBody(
+		SGRootNode? cachedOldRoot,
 		string oldXaml,
 		string newXaml,
 		int fromVersion,
@@ -234,22 +243,51 @@ $$"""
 		INamedTypeSymbol rootType,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		out SGRootNode? parsedNewRoot,
+		out bool parseError)
 	{
-		SGRootNode? oldRoot;
+		parseError = false;
+		parsedNewRoot = null;
+
+		// Parse old tree only if we don't have a cached one (first diff after seed)
+		SGRootNode? oldRoot = cachedOldRoot;
+		if (oldRoot is null)
+		{
+			try
+			{
+				oldRoot = GeneratorHelpers.ParseXaml(oldXaml, xmlnsCache);
+			}
+			catch
+			{
+				parseError = true;
+				return null;
+			}
+			if (oldRoot is null)
+			{
+				parseError = true;
+				return null;
+			}
+		}
+
+		// Always parse new XAML against current compilation
 		SGRootNode? newRoot;
 		try
 		{
-			oldRoot = GeneratorHelpers.ParseXaml(oldXaml, xmlnsCache);
 			newRoot = GeneratorHelpers.ParseXaml(newXaml, xmlnsCache);
 		}
 		catch
 		{
-			return null; // parse error → fall back to full IC
+			parseError = true;
+			return null;
+		}
+		if (newRoot is null)
+		{
+			parseError = true;
+			return null;
 		}
 
-		if (oldRoot is null || newRoot is null)
-			return null;
+		parsedNewRoot = newRoot;
 
 		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot);
 		if (diff is null || diff.IsEmpty)
