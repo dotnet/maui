@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private CanvasControl _canvasControl;
 		private readonly PlatformCanvas _canvas;
+		readonly ScalingCanvas _scalingCanvas;
 
 		private IDrawable _drawable;
 		private RectF _dirty;
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		{
 			_canvas = new PlatformCanvas();
+			_scalingCanvas = new ScalingCanvas(_canvas);
 
 			Loaded += UserControl_Loaded;
 			Unloaded += UserControl_Unloaded;
@@ -79,17 +81,41 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (_drawable == null)
 				return;
 
+			var actualWidth = (float)sender.ActualWidth;
+			var actualHeight = (float)sender.ActualHeight;
+
+			var logicalWidth = MathF.Round(actualWidth);
+			var logicalHeight = MathF.Round(actualHeight);
+
+			float adjustedScaleX, adjustedScaleY;
+			if (logicalWidth > 0 && logicalHeight > 0)
+			{
+				adjustedScaleX = actualWidth / logicalWidth;
+				adjustedScaleY = actualHeight / logicalHeight;
+				_dirty.Width = logicalWidth;
+				_dirty.Height = logicalHeight;
+			}
+			else
+			{
+				adjustedScaleX = 1f;
+				adjustedScaleY = 1f;
+				_dirty.Width = actualWidth;
+				_dirty.Height = actualHeight;
+			}
+
 			_dirty.X = 0f;
 			_dirty.Y = 0f;
-			_dirty.Width = (float)sender.ActualWidth;
-			_dirty.Height = (float)sender.ActualHeight;
 
 			PlatformGraphicsService.ThreadLocalCreator = sender;
 			try
 			{
 				_canvas.Session = args.DrawingSession;
 				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
-				_drawable.Draw(_canvas, _dirty);
+				// Use adjusted scale factors that map rounded logical dimensions
+				// back to exact physical dimensions, avoiding sub-pixel gaps at view edges.
+				_scalingCanvas.ResetState();
+				_scalingCanvas.Scale(adjustedScaleX, adjustedScaleY);
+				_drawable.Draw(_scalingCanvas, _dirty);
 			}
 			finally
 			{
