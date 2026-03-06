@@ -19,7 +19,7 @@ network: defaults
 
 engine:
   id: copilot
-  model: gpt-5.1-codex
+  model: gpt-5.1-codex-mini
 
 safe-outputs:
   create-issue:
@@ -101,7 +101,7 @@ Iterate over every open PR and check ALL of the following criteria. A single PR 
 #### 🟠 TIER 2 — Quick Review Wins (< 30 min effort)
 
 **5. Small Community PRs with Zero Reviewer Engagement**
-- **Check**: Author is NOT a org member, changed files ≤ 5, additions ≤ 100, age > 7 days, zero reviews (no APPROVED, CHANGES_REQUESTED, or COMMENTED), not draft
+- **Check**: Author's `authorAssociation` is not `MEMBER` or `OWNER` (i.e., community contributor), changed files ≤ 5, additions ≤ 100, age > 7 days, zero reviews (no APPROVED, CHANGES_REQUESTED, or COMMENTED), not draft
 - **Why**: Small community PRs are the easiest to review and have the highest goodwill-to-effort ratio. Leaving them unreviewed discourages contributions.
 - **Report**: List by age (oldest first), include diff size, linked issue
 - **Action**: "Assign reviewer based on area label"
