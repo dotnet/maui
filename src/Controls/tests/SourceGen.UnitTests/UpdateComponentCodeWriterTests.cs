@@ -159,6 +159,11 @@ $"""
 		Assert.NotNull(result);
 		Assert.Contains("fallback:", result, System.StringComparison.Ordinal);
 		Assert.Contains("InitializeComponentRuntime", result, System.StringComparison.Ordinal);
+		// P0 fix: fallback must Unregister before re-inflating
+		Assert.Contains("XamlComponentRegistry.Unregister(this)", result, System.StringComparison.Ordinal);
+		// P0 fix: fallback must save/restore BindingContext per spec
+		Assert.Contains("__savedBc", result, System.StringComparison.Ordinal);
+		Assert.Contains("BindingContext", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]

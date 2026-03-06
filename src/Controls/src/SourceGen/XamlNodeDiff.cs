@@ -572,7 +572,9 @@ static class XamlNodeDiff
 				// Property was removed in new version
 				if (IsCodegenSensitive(name))
 					return false; // removing x:Name/x:Class/etc. → structural
-				diffs.Add(new PropertyDiff(name, PropertyDiffKind.Clear, null));
+				// Carry the old node for complex properties so codegen knows what's being cleared
+				var oldNodeRef = oldPropNode is not ValueNode ? oldPropNode : null;
+				diffs.Add(new PropertyDiff(name, PropertyDiffKind.Clear, null, oldNodeRef));
 			}
 		}
 
