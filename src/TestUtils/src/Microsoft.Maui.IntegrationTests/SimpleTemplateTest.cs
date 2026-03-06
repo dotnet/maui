@@ -343,9 +343,15 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
 			"Expected Extensions.cs file was not created.");
 
-		// Verify we can build it (even if restore fails due to placeholder tokens, the project structure should be valid)
+		// Verify the project file contains required properties
 		var projectContent = File.ReadAllText(expectedProjectFile);
 		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
 			"Project file should contain Aspire-specific properties.");
+		Assert.IsTrue(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
+			"Project file should contain UseMauiCore property.");
+
+		// Verify the project actually builds
+		Assert.IsTrue(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }
