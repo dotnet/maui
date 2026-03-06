@@ -660,7 +660,28 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		switch (Layout)
 		{
 			case GridItemsLayout gridItemsLayout:
-				return CreateGridView(gridItemsLayout);
+				var gridLayout = CreateGridView(gridItemsLayout);
+
+				// Pre-compute MinItemWidth/Height when WidthRequest/HeightRequest is
+				// explicitly set, so UniformGridLayout uses the correct column/row count
+				// from the very first layout pass — before SizeChanged fires.
+				// Without this, ItemsStretch=Fill can stretch items to a large cached
+				// effectiveItemWidth during the initial unconstrained pass, causing the
+				// column formula to yield fewer columns than Span once the constrained
+				// width takes effect.
+				if (VirtualView is not null)
+				{
+					double crossAxisSize = IsLayoutHorizontal
+						? VirtualView.HeightRequest
+						: VirtualView.WidthRequest;
+
+					if (crossAxisSize >= 0)
+					{
+						ApplyMinItemSizeForSpan(gridLayout, gridItemsLayout, crossAxisSize);
+					}
+				}
+
+				return gridLayout;
 			case LinearItemsLayout listItemsLayout:
 				return CreateStackLayout(listItemsLayout);
 			default:
@@ -877,6 +898,25 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 			listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+
+			// Spacing changes affect the MinItemWidth/Height formula:
+			//   itemSize = (crossAxis - (span-1) * spacing) / span
+			// Recompute so the column/row count remains correct.
+			if (_lastGridLayoutWidth > 0)
+			{
+				ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, _lastGridLayoutWidth);
+			}
+			else if (VirtualView is not null)
+			{
+				double crossAxisSize = IsLayoutHorizontal
+					? VirtualView.HeightRequest
+					: VirtualView.WidthRequest;
+
+				if (crossAxisSize >= 0)
+				{
+					ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, crossAxisSize);
+				}
+			}
 		}
 		else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
 			Layout is LinearItemsLayout linearItemsLayout)
