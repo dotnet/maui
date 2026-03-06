@@ -695,6 +695,30 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	}
 
 	/// <summary>
+	/// Computes and sets <c>MinItemWidth</c> (or <c>MinItemHeight</c>) on the given
+	/// <see cref="UniformGridLayout"/> so that the column/row count formula always
+	/// yields the configured <see cref="GridItemsLayout.Span"/>.
+	/// </summary>
+	void ApplyMinItemSizeForSpan(UniformGridLayout uniformGrid, GridItemsLayout gridItemsLayout, double crossAxisSize)
+	{
+		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize) || double.IsInfinity(crossAxisSize))
+			return;
+
+		int span = gridItemsLayout.Span;
+		bool isHorizontal = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+		double spacing = isHorizontal
+			? gridItemsLayout.VerticalItemSpacing
+			: gridItemsLayout.HorizontalItemSpacing;
+
+		double itemSize = Math.Max(1, (crossAxisSize - (span - 1) * spacing) / span);
+
+		if (isHorizontal)
+			uniformGrid.MinItemHeight = itemSize;
+		else
+			uniformGrid.MinItemWidth = itemSize;
+	}
+
+	/// <summary>
 	/// Handles platform view size changes to ensure <see cref="UniformGridLayout"/> recalculates
 	/// the correct column (or row) count after the MAUI layout engine applies a <c>WidthRequest</c>
 	/// constraint. Without this, the grid may show fewer columns than <see cref="GridItemsLayout.Span"/>
@@ -743,7 +767,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (PlatformView is MauiItemsView mauiItemsView)
 			mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, newCrossAxisSize);
 
-		PlatformView.Layout = CreateGridView(gridItemsLayout);
+		var newLayout = CreateGridView(gridItemsLayout);
+		ApplyMinItemSizeForSpan(newLayout, gridItemsLayout, newCrossAxisSize);
+		PlatformView.Layout = newLayout;
 	}
 
 	void FindScrollViewer()
@@ -829,6 +855,18 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			Layout is GridItemsLayout gridItemsLayout)
 		{
 			listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
+
+			// Recompute MinItemWidth/MinItemHeight for the new span so the
+			// column count formula yields the correct result.
+			if (_lastGridLayoutWidth > 0)
+			{
+				ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, _lastGridLayoutWidth);
+			}
+			else if (PlatformView.ActualWidth > 0 || PlatformView.ActualHeight > 0)
+			{
+				double crossAxisSize = IsLayoutHorizontal ? PlatformView.ActualHeight : PlatformView.ActualWidth;
+				ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, crossAxisSize);
+			}
 		}
 	}
 

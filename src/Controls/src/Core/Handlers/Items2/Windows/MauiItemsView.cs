@@ -202,35 +202,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
 
-		// For GridItemsLayout (UniformGridLayout), set MinItemWidth/MinItemHeight
-		// so UniformGridLayout always computes the correct column/row count.
-		//
-		// Without this, UniformGridLayout uses the cached realized item width
-		// from the previous pass. If the first pass saw a wrong available width,
-		// items get stretched too wide and fewer columns result.
-		//
-		// MinItemWidth = (available - (Span-1) * spacing) / Span
-		// guarantees actualColumns = Span.
-		if (_itemsRepeater is not null && Layout is UniformGridLayout uniformGrid)
-		{
-			double crossAxisSize = _isHorizontalLayout ? availableSize.Height : availableSize.Width;
-
-			if (!double.IsInfinity(crossAxisSize) && crossAxisSize > 0)
-			{
-				int span = uniformGrid.MaximumRowsOrColumns;
-				double spacing = _isHorizontalLayout
-					? uniformGrid.MinRowSpacing
-					: uniformGrid.MinColumnSpacing;
-
-				double itemSize = Math.Max(1, (crossAxisSize - (span - 1) * spacing) / span);
-
-				if (_isHorizontalLayout)
-					uniformGrid.MinItemHeight = itemSize;
-				else
-					uniformGrid.MinItemWidth = itemSize;
-			}
-		}
-
 		return base.MeasureOverride(availableSize);
 	}
 
