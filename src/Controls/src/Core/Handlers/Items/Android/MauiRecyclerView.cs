@@ -15,7 +15,7 @@ using AViewCompat = AndroidX.Core.View.ViewCompat;
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 
-	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>
+	public class MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> : RecyclerView, IMauiRecyclerView<TItemsView>, IMauiRecyclerView
 		where TItemsView : ItemsView
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
@@ -84,11 +84,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemsViewAdapter?.Dispose();
 			}
 
-			if (_snapManager != null)
-			{
-				_snapManager.Dispose();
-				_snapManager = null;
-			}
+			_snapManager?.Dispose();
+			_snapManager = null;
 
 			if (_itemDecoration != null)
 			{
@@ -102,11 +99,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_itemTouchHelper = null;
 			}
 
-			if (_itemTouchHelperCallback != null)
-			{
-				_itemTouchHelperCallback.Dispose();
-				_itemTouchHelperCallback = null;
-			}
+			_itemTouchHelperCallback?.Dispose();
+			_itemTouchHelperCallback = null;
 		}
 
 		public virtual void SetUpNewElement(TItemsView newElement)
@@ -276,22 +270,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_itemTouchHelper.Dispose();
 					_itemTouchHelper = null;
 				}
-				if (_itemTouchHelperCallback != null)
-				{
-					_itemTouchHelperCallback.Dispose();
-					_itemTouchHelperCallback = null;
-				}
+
+				_itemTouchHelperCallback?.Dispose();
+				_itemTouchHelperCallback = null;
 			}
 		}
 
 		public virtual void UpdateLayoutManager()
 		{
-			_layoutPropertyChangedProxy?.Unsubscribe();
+			var itemsLayout = _getItemsLayout();
 
-			ItemsLayout = _getItemsLayout();
+			if (itemsLayout == ItemsLayout)
+			{
+				return;
+			}
+
+			_layoutPropertyChangedProxy?.Unsubscribe();
+			ItemsLayout = itemsLayout;
 
 			// Keep track of the ItemsLayout's property changes
-			if (ItemsLayout != null)
+			if (ItemsLayout is not null)
 			{
 				_layoutPropertyChanged ??= LayoutPropertyChanged;
 				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(ItemsLayout, _layoutPropertyChanged);
@@ -427,9 +425,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (args.Mode == ScrollToMode.Position)
 			{
 				// Do not use `IGroupableItemsViewSource` since `UngroupedItemsSource` also implements that interface
-				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource)
+				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource ungroupedSource)
 				{
-					return args.Index;
+					return ungroupedSource.HasHeader ? args.Index + 1 : args.Index;
 				}
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
@@ -473,12 +471,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
-				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
-				// Horizontal & vertical spacing should only exist between items. 
+				// SpacingItemDecoration now removes spacing on outer edges (first/last row or column),
+				// so we only need negative padding on the cross-axis for grid layouts to compensate
+				// for the spacing between columns (vertical grid) or rows (horizontal grid).
 				if (ItemsLayout is GridItemsLayout gridItemsLayout)
 				{
-					if(gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+					if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 					{
 						var verticalPadding = -spacingDecoration.VerticalOffset;
 						SetPadding(0, verticalPadding, 0, verticalPadding);
@@ -488,6 +486,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						var horizontalPadding = -spacingDecoration.HorizontalOffset;
 						SetPadding(horizontalPadding, 0, horizontalPadding, 0);
 					}
+				}
+				else
+				{
+					SetPadding(0, 0, 0, 0);
 				}
 			}
 		}
@@ -596,6 +598,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}
+			else if (showEmptyView && currentAdapter == _emptyViewAdapter)
+			{
+				if (ShouldUpdateEmptyView())
+				{
+					// Header/footer properties changed - detach and reattach adapter to force RecyclerView to recalculate the positions.
+					SetAdapter(null);
+					SwapAdapter(_emptyViewAdapter, true);
+					UpdateEmptyView();
+				}
+			}
+		}
+
+		bool ShouldUpdateEmptyView()
+		{
+			if (ItemsView is StructuredItemsView structuredItemsView)
+			{
+				if (_emptyViewAdapter.Header != structuredItemsView.Header ||
+					_emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate ||
+					_emptyViewAdapter.Footer != structuredItemsView.Footer ||
+					_emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate ||
+					_emptyViewAdapter.EmptyView != ItemsView.EmptyView ||
+					_emptyViewAdapter.EmptyViewTemplate != ItemsView.EmptyViewTemplate)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		internal void AdjustScrollForItemUpdate()

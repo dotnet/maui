@@ -1,4 +1,4 @@
-﻿namespace Maui.Controls.Sample.Issues
+namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 24511, "Spacing in the ItemsLayout of CollectionView stops it from scrolling", PlatformAffected.Android)]
 	public partial class Issue24511 : ContentPage
