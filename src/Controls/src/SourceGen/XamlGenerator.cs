@@ -195,13 +195,15 @@ public class XamlGenerator : IIncrementalGenerator
 				var assemblyName = compilation.AssemblyName ?? string.Empty;
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload
 					&& xamlItem.Xaml is not null
-					&& XamlHotReloadState.TryGetPrevious(assemblyName, relativePath, out var previousXaml, out var previousRoot, out var previousVersion)
+					&& XamlHotReloadState.TryGetPrevious(assemblyName, relativePath, out var previousXaml, out var previousRoot, out var previousNodeIds, out var previousNextId, out var previousVersion)
 					&& previousXaml != xamlItem.Xaml
 					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var rootType, out var accessModifier)
 					&& rootType != null)
 				{
 					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousRoot,
+						previousNodeIds,
+						previousNextId,
 						previousXaml,
 						xamlItem.Xaml,
 						fromVersion: previousVersion,
@@ -211,6 +213,8 @@ public class XamlGenerator : IIncrementalGenerator
 						xmlnsCache,
 						typeCache,
 						out var parsedNewRoot,
+						out var effectiveNewIds,
+						out var newNextNodeId,
 						out var parseError);
 
 					if (parseError)
@@ -221,8 +225,8 @@ public class XamlGenerator : IIncrementalGenerator
 					else if (patchBody != null)
 					{
 						var version = previousVersion + 1;
-						// Append the new patch body and update state (with cached parsed tree) BEFORE IC generation
-						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, parsedNewRoot, version, patchBody);
+						// Append the new patch body and update state (with cached parsed tree + effective IDs) BEFORE IC generation
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, parsedNewRoot, effectiveNewIds, newNextNodeId, version, patchBody);
 						var allPatches = XamlHotReloadState.GetPatchBodies(assemblyName, relativePath);
 
 						// Generate UC source (emitted after IC below)
@@ -231,15 +235,34 @@ public class XamlGenerator : IIncrementalGenerator
 					else
 					{
 						// Structural change or empty diff: update state with new XAML and parsed tree, reset version.
-						XamlHotReloadState.UpdateAndClearPatches(assemblyName, relativePath, xamlItem.Xaml, parsedNewRoot, 0);
+						// Assign fresh IDs for the new tree (reset counter since patches are cleared).
+						Dictionary<ElementNode, string>? freshIds = null;
+						int freshNextId = 0;
+						if (parsedNewRoot != null)
+						{
+							freshIds = NodeIdHelper.AssignIds(parsedNewRoot);
+							freshNextId = freshIds.Count; // children count (root has "")
+						}
+						XamlHotReloadState.UpdateAndClearPatches(assemblyName, relativePath, xamlItem.Xaml, parsedNewRoot, freshIds, freshNextId, 0);
 					}
 				}
 				else if (xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
-					// First run: seed the cache at version 0 with parsed tree.
+					// First run: seed the cache at version 0 with parsed tree and fresh IDs.
 					SGRootNode? seedRoot = null;
-					try { seedRoot = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache); } catch { }
-					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, seedRoot, 0);
+					Dictionary<ElementNode, string>? seedIds = null;
+					int seedNextId = 0;
+					try
+					{
+						seedRoot = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache);
+						if (seedRoot != null)
+						{
+							seedIds = NodeIdHelper.AssignIds(seedRoot);
+							seedNextId = seedIds.Count;
+						}
+					}
+					catch { }
+					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, seedRoot, seedIds, seedNextId, 0);
 				}
 
 				// Generate IC — reads latest version from XamlHotReloadState

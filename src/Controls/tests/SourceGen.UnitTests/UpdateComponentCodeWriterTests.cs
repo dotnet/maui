@@ -186,7 +186,8 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 		Assert.Contains("XamlComponentRegistry.TryGet(this,", result, System.StringComparison.Ordinal);
-		Assert.Contains("Label_0", result, System.StringComparison.Ordinal);
+		// With numeric IDs: direct child of root is "0"
+		Assert.Contains("\"0\"", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -247,9 +248,9 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 
-		// Two distinct node IDs should appear (VerticalStackLayout_0/Label_0 and VerticalStackLayout_0/Label_1)
-		Assert.Contains("VerticalStackLayout_0/Label_0", result, System.StringComparison.Ordinal);
-		Assert.Contains("VerticalStackLayout_0/Label_1", result, System.StringComparison.Ordinal);
+		// Two distinct node IDs should appear (numeric IDs: "1" and "2" for children of VerticalStackLayout)
+		Assert.Contains("\"1\"", result, System.StringComparison.Ordinal);
+		Assert.Contains("\"2\"", result, System.StringComparison.Ordinal);
 		// Both TryGet calls present
 		var lookupCount = CountOccurrences(result!, "XamlComponentRegistry.TryGet(this,");
 		Assert.True(lookupCount >= 2, $"Expected at least 2 TryGet calls, got {lookupCount}");
@@ -314,15 +315,15 @@ $"""
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
 
-		// Should contain parent registry lookup
-		Assert.Contains("VerticalStackLayout_0", result, System.StringComparison.Ordinal);
+		// Should contain parent registry lookup (numeric ID "0" for VerticalStackLayout)
+		Assert.Contains("\"0\"", result, System.StringComparison.Ordinal);
 		// Should cast parent to Layout
 		Assert.Contains("as global::Microsoft.Maui.Controls.Layout", result, System.StringComparison.Ordinal);
 		// Should contain Clear and Add calls
 		Assert.Contains(".Clear()", result, System.StringComparison.Ordinal);
 		Assert.Contains(".Add(", result, System.StringComparison.Ordinal);
-		// Should contain ReRoot calls for moved children
-		Assert.Contains("ReRoot", result, System.StringComparison.Ordinal);
+		// With stable IDs, retained children keep their old IDs — no ReRoot needed
+		Assert.DoesNotContain("ReRoot", result, System.StringComparison.Ordinal);
 	}
 
 	// helpers
