@@ -75,6 +75,20 @@ namespace Microsoft.Maui.Platform
 					var application = handler.GetRequiredService<IApplication>();
 					application.UpdateUserInterfaceStyle();
 					application.ThemeChanged();
+
+					// When the preferred content size category changes (Dynamic Type),
+					// clear the font cache and re-apply fonts to all text elements so
+					// they reflect the new scaling immediately without an app restart.
+					if (previousTraitCollection is not null &&
+						previousTraitCollection.PreferredContentSizeCategory != TraitCollection.PreferredContentSizeCategory)
+					{
+						if (handler.GetRequiredService<IFontManager>() is FontManager fontManager)
+						{
+							fontManager.ClearFontCache();
+						}
+
+						InvalidateFontsOnContentSizeChanged(CurrentView as IView);
+					}
 				}
 				catch (ObjectDisposedException)
 				{
@@ -86,6 +100,30 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
+		}
+		static void InvalidateFontsOnContentSizeChanged(IView? view)
+		{
+			if (view is null)
+			{
+				return;
+			}
+
+			if (view is ITextStyle { Font.AutoScalingEnabled: true } && view.Handler is not null)
+			{
+				view.Handler.UpdateValue(nameof(ITextStyle.Font));
+				view.InvalidateMeasure();
+			}
+
+			if (view is IVisualTreeElement vte)
+			{
+				foreach (var child in vte.GetVisualChildren())
+				{
+					if (child is IView childView)
+					{
+						InvalidateFontsOnContentSizeChanged(childView);
+					}
+				}
+			}
 		}
 	}
 }

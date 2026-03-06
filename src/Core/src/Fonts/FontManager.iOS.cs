@@ -42,6 +42,12 @@ namespace Microsoft.Maui
 			_serviceProvider = serviceProvider;
 		}
 
+		/// <summary>
+		/// Clears the cached scaled font entries so that subsequent font
+		/// requests create new fonts with the current content size category scaling.
+		/// </summary>
+		internal void ClearFontCache() => _fonts.Clear();
+
 		/// <inheritdoc/>
 		public UIFont DefaultFont =>
 			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
