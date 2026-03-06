@@ -82,7 +82,8 @@ internal static class NodeIdHelper
 		{
 			var tc = target.CollectionItems[ti];
 			var sc = source.CollectionItems[si];
-			if (tc is ElementNode targetChild && sc is ElementNode sourceChild)
+			if (tc is ElementNode targetChild && sc is ElementNode sourceChild
+				&& XmlTypeEquals(targetChild.XmlType, sourceChild.XmlType))
 			{
 				TransferRecursive(targetChild, sourceChild, sourceIds, result);
 			}
@@ -90,4 +91,8 @@ internal static class NodeIdHelper
 			si++;
 		}
 	}
+
+	static bool XmlTypeEquals(XmlType a, XmlType b) =>
+		string.Equals(a.Name, b.Name, System.StringComparison.Ordinal)
+		&& string.Equals(a.NamespaceUri, b.NamespaceUri, System.StringComparison.Ordinal);
 }

@@ -240,8 +240,7 @@ public class XamlGenerator : IIncrementalGenerator
 						int freshNextId = 0;
 						if (parsedNewRoot != null)
 						{
-							freshIds = NodeIdHelper.AssignIds(parsedNewRoot);
-							freshNextId = freshIds.Count; // children count (root has "")
+							freshIds = NodeIdHelper.AssignIds(parsedNewRoot, 0, out freshNextId);
 						}
 						XamlHotReloadState.UpdateAndClearPatches(assemblyName, relativePath, xamlItem.Xaml, parsedNewRoot, freshIds, freshNextId, 0);
 					}
@@ -257,8 +256,7 @@ public class XamlGenerator : IIncrementalGenerator
 						seedRoot = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache);
 						if (seedRoot != null)
 						{
-							seedIds = NodeIdHelper.AssignIds(seedRoot);
-							seedNextId = seedIds.Count;
+							seedIds = NodeIdHelper.AssignIds(seedRoot, 0, out seedNextId);
 						}
 					}
 					catch { }
