@@ -603,6 +603,20 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		itemsView.SetLayoutOrientation(IsLayoutHorizontal);
+
+		// Constrain the ItemsRepeater cross-axis early so the first layout pass
+		// uses the correct available width, preventing items from stretching to
+		// fill a wider-than-intended parent before WidthRequest takes effect.
+		if (Layout is GridItemsLayout)
+		{
+			double crossAxisSize = IsLayoutHorizontal
+				? VirtualView?.HeightRequest ?? -1
+				: VirtualView?.WidthRequest ?? -1;
+
+			if (crossAxisSize >= 0)
+				itemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, crossAxisSize);
+		}
+
 		return itemsView;
 	}
 
@@ -643,9 +657,21 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
 			}
 
-			// Clear any previously applied ItemsRepeater cross-axis constraint so it
-			// doesn't persist after switching layout types or orientations.
-			mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, double.PositiveInfinity);
+			// Re-apply the cross-axis constraint for the new layout. Use WidthRequest
+			// (or HeightRequest for horizontal) if set, otherwise clear the constraint.
+			if (Layout is GridItemsLayout)
+			{
+				double crossAxisSize = IsLayoutHorizontal
+					? VirtualView?.HeightRequest ?? -1
+					: VirtualView?.WidthRequest ?? -1;
+
+				mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal,
+					crossAxisSize >= 0 ? crossAxisSize : double.PositiveInfinity);
+			}
+			else
+			{
+				mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, double.PositiveInfinity);
+			}
 
 			mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
 		}
@@ -731,7 +757,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			? gridItemsLayout.VerticalItemSpacing
 			: gridItemsLayout.HorizontalItemSpacing;
 
-		double itemSize = Math.Max(1, (crossAxisSize - (span - 1) * spacing) / span);
+		// Floor to avoid floating-point precision issues in UniformGridLayout's column
+		// count formula: min(Span, floor((available+spacing) / (effectiveItemWidth+spacing))).
+		// Without flooring, a MinItemWidth of e.g. 63.999 can cause floor(239.999/79.999)=2
+		// instead of the expected 3.
+		double itemSize = Math.Max(1, Math.Floor((crossAxisSize - (span - 1) * spacing) / span));
 
 		if (isHorizontal)
 			uniformGrid.MinItemHeight = itemSize;
