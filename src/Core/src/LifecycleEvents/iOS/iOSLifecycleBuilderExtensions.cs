@@ -74,5 +74,19 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		internal static IiOSLifecycleBuilder OnMauiContextCreated(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 		internal static IiOSLifecycleBuilder OnPlatformWindowCreated(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OnPlatformWindowCreated del) => lifecycle.OnEvent(del);
+
+#if IOS && !MACCATALYST
+		[System.Runtime.Versioning.SupportedOSPlatform("ios14.0")]
+		public static IiOSLifecycleBuilder CarPlayDidConnect(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.CarPlayDidConnect del) => lifecycle.OnEvent(del);
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios14.0")]
+		public static IiOSLifecycleBuilder CarPlayDidDisconnect(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.CarPlayDidDisconnect del) => lifecycle.OnEvent(del);
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios14.0")]
+		public static IiOSLifecycleBuilder CarPlayDidSelectManeuver(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.CarPlayDidSelectManeuver del) => lifecycle.OnEvent(del);
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios14.0")]
+		public static IiOSLifecycleBuilder CarPlayDidSelectNavigationAlert(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.CarPlayDidSelectNavigationAlert del) => lifecycle.OnEvent(del);
+#endif
 	}
 }
