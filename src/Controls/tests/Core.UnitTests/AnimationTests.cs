@@ -298,5 +298,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Scale should not have changed (should still be 2, not 3)
 			Assert.Equal(2d, box.Scale);
 		}
+
+		[Fact]
+		public async Task FadeToAsyncCanceledMidFlightReturnsCanceled()
+		{
+			var handler = AnimationReadyHandler<AsyncTicker>.Prepare(new BoxView(), out var box);
+			box.Opacity = 1;
+
+			using var cts = new CancellationTokenSource();
+
+			// Start a long animation (10 seconds) and cancel it after a short delay
+			var animationTask = box.FadeToAsync(0, 10_000, null, cts.Token);
+
+			// Let a few frames run so the animation is mid-flight
+			await Task.Delay(64);
+
+			// Verify it hasn't completed yet
+			Assert.False(animationTask.IsCompleted);
+
+			// Opacity should have moved somewhat (animation is running)
+			Assert.True(box.Opacity < 1d, $"Expected opacity to have decreased from 1, but was {box.Opacity}");
+
+			// Cancel mid-flight
+			cts.Cancel();
+
+			var wasCanceled = await animationTask;
+
+			// Should report canceled
+			Assert.True(wasCanceled);
+
+			// Opacity should be between 0 and 1 (stopped mid-flight, not reached target)
+			Assert.True(box.Opacity < 1d, "Opacity should not have reset to start value");
+			Assert.True(box.Opacity > 0d, "Opacity should not have reached target value 0");
+		}
 	}
 }
