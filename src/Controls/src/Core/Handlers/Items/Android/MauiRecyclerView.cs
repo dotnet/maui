@@ -471,12 +471,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
-				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
-				// Horizontal & vertical spacing should only exist between items. 
-				var horizontalPadding = -spacingDecoration.HorizontalOffset;
-				var verticalPadding = -spacingDecoration.VerticalOffset;
-				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+				// SpacingItemDecoration now removes spacing on outer edges (first/last row or column),
+				// so we only need negative padding on the cross-axis for grid layouts to compensate
+				// for the spacing between columns (vertical grid) or rows (horizontal grid).
+				if (ItemsLayout is GridItemsLayout gridItemsLayout)
+				{
+					if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+					{
+						var verticalPadding = -spacingDecoration.VerticalOffset;
+						SetPadding(0, verticalPadding, 0, verticalPadding);
+					}
+					else
+					{
+						var horizontalPadding = -spacingDecoration.HorizontalOffset;
+						SetPadding(horizontalPadding, 0, horizontalPadding, 0);
+					}
+				}
+				else
+				{
+					SetPadding(0, 0, 0, 0);
+				}
 			}
 		}
 
@@ -511,6 +525,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
+					UpdateItemSpacing();
 				}
 			}
 			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
