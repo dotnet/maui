@@ -1,0 +1,43 @@
+namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, 34165, "CollectionView is scrolling left/right when the collection is empty and inside a RefreshView", PlatformAffected.iOS)]
+public class Issue34165 : ContentPage
+{
+	public const string CollectionViewId = "CollectionView";
+	public const string EmptyViewLabelId = "EmptyViewLabel";
+	public const string RefreshViewId = "RefreshView";
+
+	public Issue34165()
+	{
+		// The EmptyView label is the element we track — if horizontal scrolling occurs,
+		// its on-screen X position will change (the native scroll container moves it).
+		var emptyViewLabel = new Label
+		{
+			Text = "No items — swipe left/right here to test",
+			AutomationId = EmptyViewLabelId,
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center,
+		};
+
+		var collectionView = new CollectionView
+		{
+			AutomationId = CollectionViewId,
+			EmptyView = emptyViewLabel,
+		};
+
+		var refreshView = new RefreshView
+		{
+			AutomationId = RefreshViewId,
+			Content = collectionView,
+		};
+
+		refreshView.Refreshing += (s, e) =>
+		{
+			((RefreshView)s!).IsRefreshing = false;
+		};
+
+		Content = refreshView;
+
+		Console.WriteLine("ISSUE34165: Page loaded — CollectionView is empty, horizontal scroll should NOT be possible");
+	}
+}
