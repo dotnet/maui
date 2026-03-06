@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task FadeToAsyncCanceledMidFlightReturnsCanceled()
 		{
-			var handler = AnimationReadyHandler<AsyncTicker>.Prepare(new BoxView(), out var box);
+			var box = AnimationReadyHandler<AsyncTicker>.Prepare(new BoxView());
 			box.Opacity = 1;
 
 			using var cts = new CancellationTokenSource();
