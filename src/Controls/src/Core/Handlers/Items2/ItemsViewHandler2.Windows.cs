@@ -643,6 +643,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
 			}
 
+			// Clear any previously applied ItemsRepeater cross-axis constraint so it
+			// doesn't persist after switching layout types or orientations.
+			mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, double.PositiveInfinity);
+
 			mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
 		}
 
@@ -698,13 +702,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	/// </summary>
 	void OnPlatformSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 	{
-		if (Layout is not GridItemsLayout || PlatformView is null || VirtualView is null)
+		if (Layout is not GridItemsLayout gridItemsLayout || PlatformView is null || VirtualView is null)
 			return;
 
 		// When no explicit size is set, UniformGridLayout receives the correct available
-		// size naturally from its parent — no forced re-layout needed. Only the explicit
-		// WidthRequest/HeightRequest case causes the initial 0-width pass that miscomputes
-		// column count, so we skip the expensive UpdateLayout() for the common fill case.
+		// size naturally from its parent — no forced re-layout needed.
 		bool hasExplicitCrossAxisSize = IsLayoutHorizontal
 			? VirtualView.HeightRequest >= 0
 			: VirtualView.WidthRequest >= 0;
@@ -712,22 +714,36 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (!hasExplicitCrossAxisSize)
 			return;
 
-		// Only re-measure when the cross-axis dimension actually changes (width for vertical
-		// scroll, height for horizontal scroll) — that is the axis UniformGridLayout uses to
-		// compute column/row count. This prevents redundant layout passes on every resize.
 		double newCrossAxisSize = IsLayoutHorizontal ? e.NewSize.Height : e.NewSize.Width;
 		if (newCrossAxisSize == _lastGridLayoutWidth)
 			return;
 
 		_lastGridLayoutWidth = newCrossAxisSize;
 
-		// SizeChanged fires AFTER the current layout pass completes, so any call that only
-		// processes queued dirty work is a no-op here. We must call InvalidateMeasure() on
-		// the inner ItemsRepeater directly — this schedules a fresh MeasureOverride on the
-		// next frame, giving UniformGridLayout the correct cross-axis size to recompute the
-		// column (or row) count.
+		// Recreating the UniformGridLayout resets its internal EffectiveItemWidth cache.
+		//
+		// UniformGridLayout computes column count as:
+		//   min(Span, floor((available + spacing) / (effectiveItemWidth + spacing)))
+		//
+		// After any layout pass it caches the realized item width as effectiveItemWidth.
+		// If the first pass used a wrong available width (e.g. the view was initially
+		// measured before WidthRequest was applied), items may be stretched to the wrong
+		// size (e.g. 104px for 2 columns). On the next pass the cached 104px feeds back
+		// into the formula and re-produces 2 columns — a stable fixed point that
+		// InvalidateMeasure() alone cannot break.
+		//
+		// A fresh UniformGridLayout starts with effectiveItemWidth=0, so the formula
+		// reduces to min(Span, floor((available+spacing)/spacing)), giving the correct
+		// column count for the actual available width.
+		//
+		// Additionally, we set MaxWidth (or MaxHeight for horizontal layouts) directly on
+		// the ItemsRepeater. This ensures UniformGridLayout always sees the correct
+		// available size even when the parent StackPanel passes a larger constraint during
+		// an intermediate layout pass (e.g., when FrameworkElement.Width is still NaN).
 		if (PlatformView is MauiItemsView mauiItemsView)
-			mauiItemsView.InvalidateItemsRepeaterMeasure();
+			mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, newCrossAxisSize);
+
+		PlatformView.Layout = CreateGridView(gridItemsLayout);
 	}
 
 	void FindScrollViewer()
