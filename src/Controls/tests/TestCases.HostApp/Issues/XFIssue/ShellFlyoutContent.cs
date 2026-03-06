@@ -18,7 +18,8 @@ public class ShellFlyoutContent : TestShell
 		}
 
 		Items.Add(new MenuItem() { Text = "Menu Item" });
-		AddFlyoutItem("Flyout Item Bottom");
+		var bottomItem = AddFlyoutItem("Flyout Item Bottom");
+		bottomItem.AutomationId = "Flyout Item Bottom";
 
 		var layout = new StackLayout()
 		{
