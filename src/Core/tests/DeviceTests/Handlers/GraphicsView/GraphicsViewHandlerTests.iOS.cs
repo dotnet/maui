@@ -83,5 +83,6 @@ namespace Microsoft.Maui.DeviceTests
 				$"GraphicsView Bounds.Height ({bounds.Height}pt) is not pixel-aligned on a {scale}x display. " +
 				$"Physical height {heightInPixels}px must be an integer to prevent the gray hairline artifact.");
 		}
+
 	}
 }
