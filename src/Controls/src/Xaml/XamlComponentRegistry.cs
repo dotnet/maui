@@ -84,6 +84,25 @@ public static class XamlComponentRegistry
 	}
 
 	/// <summary>
+	/// Convenience alias matching the spec's <c>RegisterComponent(element, nodeId)</c> signature.
+	/// Registers the <paramref name="element"/> both as page owner and component under <paramref name="nodeId"/>.
+	/// Intended for root-level self-registration (e.g. <c>RegisterComponent(this, "")</c>).
+	/// </summary>
+	public static void RegisterComponent(object element, string nodeId) =>
+		Register(element, nodeId, element);
+
+	/// <summary>
+	/// Convenience alias matching the spec's <c>GetComponent(nodeId)</c> signature.
+	/// Retrieves the component registered under <paramref name="nodeId"/> for <paramref name="page"/>.
+	/// Returns <see langword="null"/> if not found.
+	/// </summary>
+	public static object? GetComponent(object page, string nodeId)
+	{
+		TryGet(page, nodeId, out var component);
+		return component;
+	}
+
+	/// <summary>
 	/// Returns all live page instances of the given <paramref name="pageType"/> that have registered components.
 	/// Used by <c>UpdateApplication</c> in the generated <c>[MetadataUpdateHandler]</c> to enumerate
 	/// live page instances that need updating.
@@ -257,7 +276,7 @@ public static class XamlComponentRegistry
 			var keysToRename = new List<string>();
 			foreach (var key in _entries.Keys)
 			{
-				if (key.StartsWith(oldPrefix, StringComparison.Ordinal))
+				if (IsNodeOrDescendant(key, oldPrefix))
 					keysToRename.Add(key);
 			}
 			foreach (var oldKey in keysToRename)
@@ -276,11 +295,21 @@ public static class XamlComponentRegistry
 			var keysToRemove = new List<string>();
 			foreach (var key in _entries.Keys)
 			{
-				if (key.StartsWith(nodeIdPrefix, StringComparison.Ordinal))
+				if (IsNodeOrDescendant(key, nodeIdPrefix))
 					keysToRemove.Add(key);
 			}
 			foreach (var key in keysToRemove)
 				_entries.Remove(key);
 		}
+
+		/// <summary>
+		/// Returns true if <paramref name="key"/> is exactly <paramref name="prefix"/>
+		/// or is a descendant path (prefix followed by '/'). Prevents "Label_1" from
+		/// matching "Label_10", "Label_11", etc.
+		/// </summary>
+		static bool IsNodeOrDescendant(string key, string prefix) =>
+			key.Length == prefix.Length
+				? string.Equals(key, prefix, StringComparison.Ordinal)
+				: key.Length > prefix.Length && key.StartsWith(prefix, StringComparison.Ordinal) && key[prefix.Length] == '/';
 	}
 }
