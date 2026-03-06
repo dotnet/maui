@@ -33,6 +33,12 @@ internal static class XamlHotReloadState
 	internal sealed class CacheEntry
 	{
 		public string XamlText { get; set; } = string.Empty;
+		/// <summary>
+		/// The parsed node tree from the last successful generation. Cached so that subsequent
+		/// diffs compare against the exact tree that produced the current <c>InitializeComponent</c>,
+		/// rather than re-parsing the old XAML against a potentially different compilation.
+		/// </summary>
+		public SGRootNode? ParsedRoot { get; set; }
 		public int Version { get; set; }
 		/// <summary>
 		/// Accumulated patch bodies. Each entry is the code for one <c>if (__version == N) { ... }</c> block.
@@ -42,30 +48,32 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Tries to retrieve the previously stored XAML text and version for the given file.
+	/// Tries to retrieve the previously stored XAML text, parsed root, and version for the given file.
 	/// Returns <see langword="false"/> when no entry exists (first run).
 	/// </summary>
-	public static bool TryGetPrevious(string assemblyName, string relativePath, out string previousXaml, out int previousVersion)
+	public static bool TryGetPrevious(string assemblyName, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out int previousVersion)
 	{
 		lock (_lock)
 		{
 			if (_cache.TryGetValue((assemblyName, relativePath), out var entry))
 			{
 				previousXaml = entry.XamlText;
+				previousRoot = entry.ParsedRoot;
 				previousVersion = entry.Version;
 				return true;
 			}
 		}
 		previousXaml = string.Empty;
+		previousRoot = null;
 		previousVersion = 0;
 		return false;
 	}
 
 	/// <summary>
-	/// Stores (or replaces) the current XAML text and version for the given file,
+	/// Stores (or replaces) the current XAML text, parsed root, and version for the given file,
 	/// and appends a patch body if provided.
 	/// </summary>
-	public static void Update(string assemblyName, string relativePath, string xamlText, int version, string? patchBody = null)
+	public static void Update(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, int version, string? patchBody = null)
 	{
 		lock (_lock)
 		{
@@ -75,6 +83,7 @@ internal static class XamlHotReloadState
 				_cache[(assemblyName, relativePath)] = entry;
 			}
 			entry.XamlText = xamlText;
+			entry.ParsedRoot = parsedRoot;
 			entry.Version = version;
 			if (patchBody != null)
 				entry.PatchBodies.Add(patchBody);
@@ -82,9 +91,9 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Stores the XAML text and version, and clears all accumulated patches (structural change).
+	/// Stores the XAML text, parsed root, and version, and clears all accumulated patches (structural change).
 	/// </summary>
-	public static void UpdateAndClearPatches(string assemblyName, string relativePath, string xamlText, int version)
+	public static void UpdateAndClearPatches(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, int version)
 	{
 		lock (_lock)
 		{
@@ -94,6 +103,7 @@ internal static class XamlHotReloadState
 				_cache[(assemblyName, relativePath)] = entry;
 			}
 			entry.XamlText = xamlText;
+			entry.ParsedRoot = parsedRoot;
 			entry.Version = version;
 			entry.PatchBodies.Clear();
 		}
