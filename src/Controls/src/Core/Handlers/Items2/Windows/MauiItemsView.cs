@@ -30,11 +30,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _isHorizontalLayout;
 	WScrollView? _scrollView;
 
-	// Deferred cross-axis constraint: stored when SetItemsRepeaterCrossAxisMaxSize
-	// is called before OnApplyTemplate has populated _itemsRepeater.
-	double _pendingCrossAxisMaxSize = double.NaN;
-	bool _pendingCrossAxisIsHorizontal;
-
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
@@ -141,14 +136,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// Apply orientation if it was set before template was applied
 		ApplyLayoutOrientation();
-
-		// Apply any pending cross-axis constraint that was set before
-		// _itemsRepeater was available (i.e., before OnApplyTemplate).
-		if (!double.IsNaN(_pendingCrossAxisMaxSize))
-		{
-			SetItemsRepeaterCrossAxisMaxSize(_pendingCrossAxisIsHorizontal, _pendingCrossAxisMaxSize);
-			_pendingCrossAxisMaxSize = double.NaN;
-		}
 	}
 
 	/// <summary>Sets the layout orientation and updates the visual tree accordingly.</summary>
@@ -215,20 +202,32 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
 
-		// For vertical grid layouts (UniformGridLayout), constrain the
-		// ItemsRepeater's width to the available size so the layout receives the
-		// correct cross-axis constraint from the very FIRST measure pass.
+		// For GridItemsLayout (UniformGridLayout), set MinItemWidth/MinItemHeight
+		// so UniformGridLayout always computes the correct column/row count.
 		//
-		// Without this, the parent StackPanel inside the ScrollView may pass a
-		// larger (or infinite) available width during intermediate layout passes,
-		// causing UniformGridLayout to stretch items to a wide size, cache that as
-		// effectiveItemWidth, and then compute fewer columns than Span on
-		// subsequent passes when the actual width is smaller.
-		if (!_isHorizontalLayout && _itemsRepeater is not null && Layout is UniformGridLayout)
+		// Without this, UniformGridLayout uses the cached realized item width
+		// from the previous pass. If the first pass saw a wrong available width,
+		// items get stretched too wide and fewer columns result.
+		//
+		// MinItemWidth = (available - (Span-1) * spacing) / Span
+		// guarantees actualColumns = Span.
+		if (_itemsRepeater is not null && Layout is UniformGridLayout uniformGrid)
 		{
-			if (!double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
+			double crossAxisSize = _isHorizontalLayout ? availableSize.Height : availableSize.Width;
+
+			if (!double.IsInfinity(crossAxisSize) && crossAxisSize > 0)
 			{
-				_itemsRepeater.MaxWidth = availableSize.Width;
+				int span = uniformGrid.MaximumRowsOrColumns;
+				double spacing = _isHorizontalLayout
+					? uniformGrid.MinRowSpacing
+					: uniformGrid.MinColumnSpacing;
+
+				double itemSize = Math.Max(1, (crossAxisSize - (span - 1) * spacing) / span);
+
+				if (_isHorizontalLayout)
+					uniformGrid.MinItemHeight = itemSize;
+				else
+					uniformGrid.MinItemWidth = itemSize;
 			}
 		}
 
@@ -257,29 +256,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	internal void SetItemsRepeaterCrossAxisMaxSize(bool isHorizontalLayout, double size)
 	{
 		if (_itemsRepeater is null)
-		{
-			// Template hasn't been applied yet — store for deferred application
-			// in OnApplyTemplate.
-			_pendingCrossAxisMaxSize = size;
-			_pendingCrossAxisIsHorizontal = isHorizontalLayout;
 			return;
-		}
 
-		if (double.IsPositiveInfinity(size) || double.IsNaN(size))
-		{
-			// Clear constraint — let the repeater size naturally from its parent.
-			if (isHorizontalLayout)
-				_itemsRepeater.ClearValue(MaxHeightProperty);
-			else
-				_itemsRepeater.ClearValue(MaxWidthProperty);
-		}
+		if (isHorizontalLayout)
+			_itemsRepeater.MaxHeight = size;
 		else
-		{
-			if (isHorizontalLayout)
-				_itemsRepeater.MaxHeight = size;
-			else
-				_itemsRepeater.MaxWidth = size;
-		}
+			_itemsRepeater.MaxWidth = size;
 	}
 
 }
