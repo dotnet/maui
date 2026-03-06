@@ -716,7 +716,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 
 		_lastGridLayoutWidth = newCrossAxisSize;
-		PlatformView.UpdateLayout();
+
+		// SizeChanged fires AFTER the current layout pass completes, so UpdateLayout() is a
+		// no-op here (nothing is queued dirty). We must call InvalidateMeasure() on the
+		// UniformGridLayout itself — this directly notifies its attached ItemsRepeater to
+		// schedule a fresh MeasureOverride call on the next frame, giving UniformGridLayout
+		// the correct cross-axis size to recompute column (or row) count.
+		if (PlatformView.Layout is UniformGridLayout gridLayout)
+			gridLayout.InvalidateMeasure();
 	}
 
 	void FindScrollViewer()
