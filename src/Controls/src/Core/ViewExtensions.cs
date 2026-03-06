@@ -67,17 +67,21 @@ namespace Microsoft.Maui.Controls
 				registration = cancellationToken.Register(() =>
 				{
 					if (weakView.TryGetTarget(out VisualElement? v))
-					{
-						v.AbortAnimation(name);
-					}
+						v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(name));
 				});
 			}
 
 			new Animation(UpdateProperty, start, end, easing).Commit(view, name, 16, length, finished: (f, a) =>
 			{
 				registration.Dispose();
-				tcs.SetResult(a);
+				tcs.TrySetResult(a);
 			});
+
+			if (cancellationToken.IsCancellationRequested)
+			{
+				if (weakView.TryGetTarget(out VisualElement? v))
+					v.AbortAnimation(name);
+			}
 
 			return tcs.Task;
 		}
@@ -464,9 +468,7 @@ namespace Microsoft.Maui.Controls
 				registration = cancellationToken.Register(() =>
 				{
 					if (weakView.TryGetTarget(out VisualElement? v))
-					{
-						v.AbortAnimation(nameof(TranslateToAsync));
-					}
+						v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(nameof(TranslateToAsync)));
 				});
 			}
 
@@ -477,8 +479,14 @@ namespace Microsoft.Maui.Controls
 			}.Commit(view, nameof(TranslateToAsync), 16, length, null, (f, a) =>
 			{
 				registration.Dispose();
-				tcs.SetResult(a);
+				tcs.TrySetResult(a);
 			});
+
+			if (cancellationToken.IsCancellationRequested)
+			{
+				if (weakView.TryGetTarget(out VisualElement? v))
+					v.AbortAnimation(nameof(TranslateToAsync));
+			}
 
 			return tcs.Task;
 		}
