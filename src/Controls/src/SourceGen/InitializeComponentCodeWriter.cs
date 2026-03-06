@@ -107,9 +107,19 @@ static class InitializeComponentCodeWriter
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
 
 				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
-				var nodeIds = xamlItem.ProjectItem.EnableIncrementalHotReload
-					? NodeIdHelper.AssignIds(root)
-					: null;
+				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.
+				Dictionary<ElementNode, string>? nodeIds = null;
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
+				{
+					var asmName = compilation.AssemblyName ?? string.Empty;
+					var relPath = xamlItem.ProjectItem.RelativePath ?? string.Empty;
+					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, relPath);
+					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, relPath);
+					if (cachedRoot != null && cachedIds != null)
+						nodeIds = NodeIdHelper.TransferIds(root, cachedIds, cachedRoot);
+					else
+						nodeIds = NodeIdHelper.AssignIds(root);
+				}
 
 				using (newblock())
 				{
@@ -227,15 +237,25 @@ $$"""
 	/// from two XAML versions. Returns <see langword="null"/> when the diff is structural, empty, or on parse error.
 	/// </summary>
 	/// <param name="cachedOldRoot">The cached parsed tree from the previous generation (may be null on first diff).</param>
+	/// <summary>
+	/// Attempts to generate a patch body for an incremental XAML change.
+	/// </summary>
+	/// <param name="cachedOldRoot">The cached parsed tree from the previous successful generation, or null for first diff.</param>
+	/// <param name="cachedOldIds">The cached node-ID dictionary for the old tree, or null for first diff.</param>
+	/// <param name="nextNodeId">The next available node-ID counter value.</param>
 	/// <param name="oldXaml">Fallback: raw old XAML string, used only when <paramref name="cachedOldRoot"/> is null.</param>
 	/// <param name="newXaml">The new XAML text to parse and diff against.</param>
 	/// <param name="parsedNewRoot">On success, the parsed tree for the new XAML (caller should cache it).</param>
+	/// <param name="effectiveNewIds">On success, the effective node-ID dictionary for the new tree (caller should cache it).</param>
+	/// <param name="newNextNodeId">On success, the next available counter value after assigning new-tree IDs.</param>
 	/// <param name="parseError">
 	/// Set to <see langword="true"/> when the new XAML fails to parse.
 	/// The caller must NOT update <see cref="XamlHotReloadState"/> (keep last-good state).
 	/// </param>
 	public static string? TryGeneratePatchBody(
 		SGRootNode? cachedOldRoot,
+		Dictionary<ElementNode, string>? cachedOldIds,
+		int nextNodeId,
 		string oldXaml,
 		string newXaml,
 		int fromVersion,
@@ -245,13 +265,18 @@ $$"""
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		out SGRootNode? parsedNewRoot,
+		out Dictionary<ElementNode, string>? effectiveNewIds,
+		out int newNextNodeId,
 		out bool parseError)
 	{
 		parseError = false;
 		parsedNewRoot = null;
+		effectiveNewIds = null;
+		newNextNodeId = nextNodeId;
 
 		// Parse old tree only if we don't have a cached one (first diff after seed)
 		SGRootNode? oldRoot = cachedOldRoot;
+		Dictionary<ElementNode, string>? oldIds = cachedOldIds;
 		if (oldRoot is null)
 		{
 			try
@@ -268,7 +293,9 @@ $$"""
 				parseError = true;
 				return null;
 			}
+			oldIds = NodeIdHelper.AssignIds(oldRoot);
 		}
+		oldIds ??= NodeIdHelper.AssignIds(oldRoot);
 
 		// Always parse new XAML against current compilation
 		SGRootNode? newRoot;
@@ -289,11 +316,14 @@ $$"""
 
 		parsedNewRoot = newRoot;
 
-		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot);
+		// Assign fresh IDs to the new tree (starting from nextNodeId to avoid collision with old IDs)
+		var newIds = NodeIdHelper.AssignIds(newRoot, nextNodeId, out newNextNodeId);
+
+		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out effectiveNewIds);
 		if (diff is null || diff.IsEmpty)
 			return null;
 
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache);
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

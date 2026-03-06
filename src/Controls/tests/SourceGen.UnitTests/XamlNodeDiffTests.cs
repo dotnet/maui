@@ -106,8 +106,8 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var nodeDiff = Assert.Single(diff.NodeChanges);
-		// NodeId is non-empty (child path)
-		Assert.Contains("Label", nodeDiff.NodeId, StringComparison.Ordinal);
+		// NodeId is numeric (child of root)
+		Assert.Equal("0", nodeDiff.NodeId);
 	}
 
 	[Fact]
@@ -178,7 +178,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var nodeDiff3 = Assert.Single(diff.NodeChanges);
-		Assert.Contains("Label", nodeDiff3.NodeId, StringComparison.Ordinal);
+		Assert.Equal("2", nodeDiff3.NodeId);
 		Assert.Single(nodeDiff3.PropertyChanges, p => p.PropertyName.LocalName == "Text" && p.NewValue == "Changed");
 	}
 
@@ -205,7 +205,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		var nodeDiff4 = Assert.Single(diff.NodeChanges);
 		// The path should include all ancestors
-		Assert.Contains("Label", nodeDiff4.NodeId, StringComparison.Ordinal);
+		Assert.Equal("2", nodeDiff4.NodeId);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -289,16 +289,16 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Empty(diff.NodeChanges); // no property changes
 		var change = Assert.Single(diff.ChildListChanges);
-		Assert.Equal("VerticalStackLayout_0", change.ParentNodeId);
+		Assert.Equal("0", change.ParentNodeId);
 		Assert.Equal(2, change.NewChildren.Count);
 		Assert.Empty(change.RemovedNodeIds);
 		// New order: Button (was index 1) at index 0, Label (was index 0) at index 1
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
-		Assert.Equal("VerticalStackLayout_0/Button_1", change.NewChildren[0].OldNodeId);
-		Assert.Equal("VerticalStackLayout_0/Button_0", change.NewChildren[0].NewNodeId);
+		Assert.Equal("2", change.NewChildren[0].OldNodeId);
+		Assert.Equal("2", change.NewChildren[0].NewNodeId);
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[1].Kind);
-		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[1].OldNodeId);
-		Assert.Equal("VerticalStackLayout_0/Label_1", change.NewChildren[1].NewNodeId);
+		Assert.Equal("1", change.NewChildren[1].OldNodeId);
+		Assert.Equal("1", change.NewChildren[1].NewNodeId);
 	}
 
 	[Fact]
@@ -349,7 +349,7 @@ public class XamlNodeDiffTests
 		Assert.Single(diff.ChildListChanges);
 		// Should have property change on Button (Text: "B" → "B2")
 		var propChange = Assert.Single(diff.NodeChanges);
-		Assert.Contains("Button", propChange.NodeId, StringComparison.Ordinal);
+		Assert.Equal("2", propChange.NodeId);
 		Assert.Equal("B2", propChange.PropertyChanges[0].NewValue);
 	}
 
@@ -432,16 +432,16 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var change = Assert.Single(diff.ChildListChanges);
-		Assert.Equal("VerticalStackLayout_0", change.ParentNodeId);
+		Assert.Equal("0", change.ParentNodeId);
 		Assert.Equal(2, change.NewChildren.Count);
 		Assert.Empty(change.RemovedNodeIds);
 		// Label retained at same position
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
-		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[0].OldNodeId);
-		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[0].NewNodeId);
+		Assert.Equal("1", change.NewChildren[0].OldNodeId);
+		Assert.Equal("1", change.NewChildren[0].NewNodeId);
 		// Button added
 		Assert.Equal(ChildChangeKind.Added, change.NewChildren[1].Kind);
-		Assert.Equal("VerticalStackLayout_0/Button_1", change.NewChildren[1].NewNodeId);
+		Assert.Equal("2", change.NewChildren[1].NewNodeId);
 		Assert.NotNull(change.NewChildren[1].NewElement);
 	}
 
@@ -464,14 +464,14 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		var change = Assert.Single(diff.ChildListChanges);
-		Assert.Equal("VerticalStackLayout_0", change.ParentNodeId);
+		Assert.Equal("0", change.ParentNodeId);
 		Assert.Single(change.NewChildren);
 		// Label retained
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
-		Assert.Equal("VerticalStackLayout_0/Label_0", change.NewChildren[0].NewNodeId);
+		Assert.Equal("1", change.NewChildren[0].NewNodeId);
 		// Button removed
 		Assert.Single(change.RemovedNodeIds);
-		Assert.Equal("VerticalStackLayout_0/Button_1", change.RemovedNodeIds[0]);
+		Assert.Equal("2", change.RemovedNodeIds[0]);
 	}
 
 	[Fact]
@@ -501,11 +501,11 @@ public class XamlNodeDiffTests
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[0].Kind);
 		// Entry added at 1
 		Assert.Equal(ChildChangeKind.Added, change.NewChildren[1].Kind);
-		Assert.Equal("VerticalStackLayout_0/Entry_1", change.NewChildren[1].NewNodeId);
+		Assert.Equal("2", change.NewChildren[1].NewNodeId);
 		// Button retained, shifted from 1 to 2
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[2].Kind);
-		Assert.Equal("VerticalStackLayout_0/Button_1", change.NewChildren[2].OldNodeId);
-		Assert.Equal("VerticalStackLayout_0/Button_2", change.NewChildren[2].NewNodeId);
+		Assert.Equal("2", change.NewChildren[2].OldNodeId);
+		Assert.Equal("2", change.NewChildren[2].NewNodeId);
 	}
 
 	[Fact]
@@ -539,7 +539,7 @@ public class XamlNodeDiffTests
 		Assert.Equal(ChildChangeKind.Retained, change.NewChildren[2].Kind);
 		// Button removed
 		Assert.Single(change.RemovedNodeIds);
-		Assert.Contains("Button", change.RemovedNodeIds[0], StringComparison.Ordinal);
+		Assert.Equal("2", change.RemovedNodeIds[0]);
 	}
 
 	[Fact]
@@ -607,7 +607,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		Assert.Equal(
-			"Diff: 1 node(s) with property changes\n  [Label_0] Text = \"World\"",
+			"Diff: 1 node(s) with property changes\n  [0] Text = \"World\"",
 			diff.ToDebugString());
 	}
 
@@ -621,7 +621,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		Assert.Equal(
-			"Diff: 1 node(s) with property changes\n  [Label_0] Text = \"World\", FontSize = \"18\"",
+			"Diff: 1 node(s) with property changes\n  [0] Text = \"World\", FontSize = \"18\"",
 			diff.ToDebugString());
 	}
 
@@ -646,8 +646,8 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Equal(
 			"Diff: 2 node(s) with property changes\n" +
-			"  [VerticalStackLayout_0/Label_0] Text = \"X\"\n" +
-			"  [VerticalStackLayout_0/Label_1] Text = \"Y\"",
+			"  [1] Text = \"X\"\n" +
+			"  [2] Text = \"Y\"",
 			diff.ToDebugString());
 	}
 
@@ -675,7 +675,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		Assert.Equal(
-			"Diff: 1 node(s) with property changes\n  [Label_0] FontSize cleared",
+			"Diff: 1 node(s) with property changes\n  [0] FontSize cleared",
 			diff.ToDebugString());
 	}
 
@@ -689,7 +689,7 @@ public class XamlNodeDiffTests
 
 		Assert.NotNull(diff);
 		Assert.Equal(
-			"Diff: 1 node(s) with property changes\n  [Label_0] FontSize = \"20\"",
+			"Diff: 1 node(s) with property changes\n  [0] FontSize = \"20\"",
 			diff.ToDebugString());
 	}
 
@@ -712,13 +712,13 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		// Button was old index 1 (Button_1) → new index 0 (Button_0)
-		// Label was old index 0 (Label_0) → new index 1 (Label_1)
+		// Button was old index 1 (id "2") → new index 0, Label was old index 0 (id "1") → new index 1
+		// After transplant, OldNodeId == NewNodeId for retained nodes → "(unchanged)"
 		Assert.Equal(
 			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
-			"  children [VerticalStackLayout_0] " +
-			"VerticalStackLayout_0/Button_1 \u2192 VerticalStackLayout_0/Button_0, " +
-			"VerticalStackLayout_0/Label_0 \u2192 VerticalStackLayout_0/Label_1",
+			"  children [0] " +
+			"2 (unchanged), " +
+			"1 (unchanged)",
 			diff.ToDebugString());
 	}
 
@@ -744,7 +744,7 @@ public class XamlNodeDiffTests
 		var debug = diff.ToDebugString();
 		// Should show both reorder and property change
 		Assert.Contains("child list change(s)", debug, StringComparison.Ordinal);
-		Assert.Contains("children [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
+		Assert.Contains("children [0]", debug, StringComparison.Ordinal);
 		Assert.Contains("Text = \"B2\"", debug, StringComparison.Ordinal);
 	}
 
@@ -771,7 +771,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Equal(
 			"Diff: 1 node(s) with property changes\n" +
-			"  [VerticalStackLayout_0/HorizontalStackLayout_0/Label_0] Text = \"Changed\"",
+			"  [2] Text = \"Changed\"",
 			diff.ToDebugString());
 	}
 
@@ -809,11 +809,11 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		var debug = diff.ToDebugString();
 		Assert.Contains("1 child list change(s)", debug, StringComparison.Ordinal);
-		Assert.Contains("children [VerticalStackLayout_0]", debug, StringComparison.Ordinal);
-		// All three children should appear in the reorder
-		Assert.Contains("Label_0", debug, StringComparison.Ordinal);
-		Assert.Contains("Button_0", debug, StringComparison.Ordinal);
-		Assert.Contains("Entry_0", debug, StringComparison.Ordinal);
+		Assert.Contains("children [0]", debug, StringComparison.Ordinal);
+		// All three children should appear in the reorder (with old-tree IDs, all unchanged)
+		Assert.Contains("1 (unchanged)", debug, StringComparison.Ordinal);
+		Assert.Contains("2 (unchanged)", debug, StringComparison.Ordinal);
+		Assert.Contains("3 (unchanged)", debug, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -836,9 +836,9 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Equal(
 			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
-			"  children [VerticalStackLayout_0] " +
-			"VerticalStackLayout_0/Label_0 (unchanged), " +
-			"+VerticalStackLayout_0/Button_1",
+			"  children [0] " +
+			"1 (unchanged), " +
+			"+2",
 			diff.ToDebugString());
 	}
 
@@ -862,9 +862,9 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Equal(
 			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
-			"  children [VerticalStackLayout_0] " +
-			"VerticalStackLayout_0/Label_0 (unchanged)" +
-			"; removed: -VerticalStackLayout_0/Button_1",
+			"  children [0] " +
+			"1 (unchanged)" +
+			"; removed: -2",
 			diff.ToDebugString());
 	}
 
@@ -889,10 +889,10 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		Assert.Equal(
 			"Diff: 0 node(s) with property changes, 1 child list change(s)\n" +
-			"  children [VerticalStackLayout_0] " +
-			"VerticalStackLayout_0/Label_0 (unchanged), " +
-			"+VerticalStackLayout_0/Switch_1" +
-			"; removed: -VerticalStackLayout_0/Button_1",
+			"  children [0] " +
+			"1 (unchanged), " +
+			"+2" +
+			"; removed: -2",
 			diff.ToDebugString());
 	}
 
@@ -1067,7 +1067,7 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void NodeId_DirectChild_ContainsTypeName()
+	public void NodeId_DirectChild_IsNumericId()
 	{
 		var old = Parse(Page("<Label Text=\"A\" />"));
 		var @new = Parse(Page("<Label Text=\"B\" />"));
@@ -1075,11 +1075,11 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		Assert.Equal("Label_0", diff.NodeChanges[0].NodeId);
+		Assert.Equal("0", diff.NodeChanges[0].NodeId);
 	}
 
 	[Fact]
-	public void NodeId_NestedChild_ContainsPath()
+	public void NodeId_NestedChild_IsNumericId()
 	{
 		var old = Parse(Page("<VerticalStackLayout><Label Text=\"A\" /></VerticalStackLayout>"));
 		var @new = Parse(Page("<VerticalStackLayout><Label Text=\"B\" /></VerticalStackLayout>"));
@@ -1087,7 +1087,7 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		Assert.Equal("VerticalStackLayout_0/Label_0", diff.NodeChanges[0].NodeId);
+		Assert.Equal("1", diff.NodeChanges[0].NodeId);
 	}
 
 	[Fact]
@@ -1148,9 +1148,8 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		// Property change on Label
 		Assert.Single(diff.NodeChanges);
-		Assert.Contains("Label", diff.NodeChanges[0].NodeId, StringComparison.Ordinal);
+		Assert.Equal("1", diff.NodeChanges[0].NodeId);
 		Assert.Equal("B", diff.NodeChanges[0].PropertyChanges[0].NewValue);
-		// Child list change (Button added)
 		Assert.Single(diff.ChildListChanges);
 		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
 	}
@@ -1206,8 +1205,8 @@ public class XamlNodeDiffTests
 		Assert.Single(diff.ChildListChanges);
 		// Property changes on both nodes
 		Assert.Equal(2, diff.NodeChanges.Count);
-		var labelDiff = diff.NodeChanges.Single(n => n.NodeId.Contains("Label"));
-		var buttonDiff = diff.NodeChanges.Single(n => n.NodeId.Contains("Button"));
+		var labelDiff = diff.NodeChanges.Single(n => n.NodeId == "1");
+		var buttonDiff = diff.NodeChanges.Single(n => n.NodeId == "2");
 		Assert.Equal(2, labelDiff.PropertyChanges.Count); // Text + FontSize
 		Assert.Single(buttonDiff.PropertyChanges); // Text only
 	}
@@ -1238,12 +1237,12 @@ public class XamlNodeDiffTests
 		Assert.NotNull(diff);
 		// Deep property change on Label
 		Assert.Single(diff.NodeChanges);
-		Assert.Contains("Label", diff.NodeChanges[0].NodeId, StringComparison.Ordinal);
+		Assert.Equal("2", diff.NodeChanges[0].NodeId);
 		Assert.Equal("Changed", diff.NodeChanges[0].PropertyChanges[0].NewValue);
 		// Child list change on VSL: Entry removed, Switch added
 		Assert.Single(diff.ChildListChanges);
 		Assert.Single(diff.ChildListChanges[0].RemovedNodeIds);
-		Assert.Contains(diff.ChildListChanges[0].RemovedNodeIds[0], "Entry");
+		Assert.Equal("3", diff.ChildListChanges[0].RemovedNodeIds[0]);
 		Assert.Equal(1, diff.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
 	}
 
@@ -1276,11 +1275,11 @@ public class XamlNodeDiffTests
 		// Root: Title
 		Assert.Single(diff.NodeChanges, n => n.NodeId == "");
 		// VSL: Spacing
-		Assert.Single(diff.NodeChanges, n => n.NodeId == "VerticalStackLayout_0");
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "0");
 		// Label: Text
-		Assert.Single(diff.NodeChanges, n => n.NodeId == "VerticalStackLayout_0/Label_0");
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "1");
 		// Button: Text
-		Assert.Single(diff.NodeChanges, n => n.NodeId == "VerticalStackLayout_0/HorizontalStackLayout_1/Button_0");
+		Assert.Single(diff.NodeChanges, n => n.NodeId == "3");
 	}
 
 	[Fact]
@@ -1549,7 +1548,7 @@ public class XamlNodeDiffTests
 		Assert.Empty(d12.NodeChanges);
 		Assert.Single(d12.ChildListChanges);
 		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
-		Assert.Contains("Entry", d12.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
+		Assert.Equal("2", d12.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
 
 		// v2→v3: Button added
 		var d23 = XamlNodeDiff.ComputeDiff(xaml2, xaml3);
@@ -1557,7 +1556,7 @@ public class XamlNodeDiffTests
 		Assert.Empty(d23.NodeChanges);
 		Assert.Single(d23.ChildListChanges);
 		Assert.Equal(1, d23.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
-		Assert.Contains("Button", d23.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
+		Assert.Equal("3", d23.ChildListChanges[0].NewChildren.First(e => e.Kind == ChildChangeKind.Added).NewNodeId);
 	}
 
 	[Fact]
@@ -1706,7 +1705,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(d12);
 		Assert.Single(d12.ChildListChanges);
 		Assert.Single(d12.ChildListChanges[0].RemovedNodeIds);
-		Assert.Contains("Entry", d12.ChildListChanges[0].RemovedNodeIds[0]);
+		Assert.Equal("1", d12.ChildListChanges[0].RemovedNodeIds[0]);
 		Assert.Equal(1, d12.ChildListChanges[0].Entries.Count(e => e.Kind == ChildChangeKind.Added));
 
 		// v2→v3: Button removed + ImageButton added, AND Editor.Placeholder changed
@@ -1714,7 +1713,7 @@ public class XamlNodeDiffTests
 		Assert.NotNull(d23);
 		Assert.Single(d23.ChildListChanges);
 		Assert.Single(d23.ChildListChanges[0].RemovedNodeIds);
-		Assert.Contains("Button", d23.ChildListChanges[0].RemovedNodeIds[0]);
+		Assert.Equal("2", d23.ChildListChanges[0].RemovedNodeIds[0]);
 		// Editor property change
 		Assert.Single(d23.NodeChanges);
 		Assert.Equal("Bio", d23.NodeChanges[0].PropertyChanges[0].NewValue);
