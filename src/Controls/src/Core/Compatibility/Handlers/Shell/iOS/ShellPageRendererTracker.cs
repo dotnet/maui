@@ -772,7 +772,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// Set frame to match navigation bar dimensions, starting at origin (0,0)
 				// The X and Y are set to 0 because this view will be positioned by the navigation bar
 				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+<<<<<<< HEAD
 				Height = navigationBarFrame.Height;  // Set Height for MatchHeight logic
+=======
+         		Height = navigationBarFrame.Height;  // Set Height for MatchHeight logic
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 			}
 
 			public override CGRect Frame

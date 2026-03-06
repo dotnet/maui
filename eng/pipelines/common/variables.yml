@@ -70,6 +70,17 @@ variables:
       value: true
     - name: _SignType
       value: real
+<<<<<<< HEAD
+=======
+
+    - group: AzureDevOps-Artifact-Feeds-Pats
+
+- ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+    # DotNet-HelixApi-Access provides: HelixApiAccessToken
+    - group: Publish-Build-Assets
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
     - group: DotNet-HelixApi-Access
     - group: SDL_Settings
     - group: AzureDevOps-Artifact-Feeds-Pats

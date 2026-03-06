@@ -318,6 +318,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			radioButton.Value = null;
 
 			Assert.Null(radioButton.Value);
+<<<<<<< HEAD
 		}
 
 		[Fact]
@@ -408,6 +409,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(radioButton1.IsChecked);
 			Assert.False(radioButton2.IsChecked);
 			Assert.True(radioButton3.IsChecked);
+=======
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 		}
 	}
 }

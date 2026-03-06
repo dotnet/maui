@@ -63,6 +63,7 @@ internal static class SafeAreaExtensions
 			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
+<<<<<<< HEAD
 			bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
 
 			// If this view has no safe area padding to apply, pass insets through to children
@@ -82,17 +83,46 @@ internal static class SafeAreaExtensions
 				}
 			}
 
+=======
+            bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
+
+            // If this view has no safe area padding to apply, pass insets through to children
+            // instead of consuming them. This allows child views with SafeAreaEdges set
+            // to properly handle the insets even when the parent has SafeAreaEdges.None
+            // However, if this view was previously tracked (had padding before), we need to
+            // continue processing to reset the padding to 0
+            if (left == 0 && right == 0 && top == 0 && bottom == 0)
+            {
+                // Only pass through if this view hasn't been tracked yet
+                // If it was tracked, we need to reset its padding
+                if (globalWindowInsetsListener?.IsViewTracked(view) != true)
+                {
+                    // Don't consume insets - pass them through for potential child views to handle
+                    return windowInsets;
+                }
+            }
+
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 
 			if (isKeyboardShowing &&
 				context.GetActivity()?.Window is Window window &&
 				window?.Attributes is WindowManagerLayoutParams attr)
 			{
+<<<<<<< HEAD
 				// When AdjustPan is set, the window pans instead of resizing
 				// so we should not modify any padding - just consume the insets and return
 				// Use MaskAdjust to properly distinguish AdjustPan from AdjustNothing
 				var softInputMode = attr.SoftInputMode;
 				var adjustMode = softInputMode & SoftInput.MaskAdjust;
 				if (adjustMode == SoftInput.AdjustPan)
+=======
+				// If the window is panned from the keyboard being open
+				// and there isn't a bottom inset to apply then just don't touch anything
+				var softInputMode = attr.SoftInputMode;
+				if (softInputMode == SoftInput.AdjustPan
+					&& bottom == 0
+				)
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 				{
 					return WindowInsetsCompat.Consumed;
 				}
@@ -147,6 +177,7 @@ internal static class SafeAreaExtensions
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
+<<<<<<< HEAD
 					// 
 					// Special case: During Shell navigation animations, the view may be positioned
 					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
@@ -164,11 +195,14 @@ internal static class SafeAreaExtensions
 					// will eventually settle at Y=0.
 					var viewIsAnimating = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
 
+=======
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 					if (top > 0 && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
 					}
+<<<<<<< HEAD
 					else if (top > 0 && viewIsAnimating)
 					{
 						// View is animating - positioned beyond status bar but extends off-screen
@@ -180,6 +214,12 @@ internal static class SafeAreaExtensions
 						{
 							top = 0;
 						}
+=======
+					else
+					{
+						if (viewHeight > 0 || hasTrackedViews)
+							top = 0;
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 					}
 
 					// Bottom: how much the view extends into the bottom safe area
@@ -194,6 +234,7 @@ internal static class SafeAreaExtensions
 						// if the view height is zero because it hasn't done the first pass
 						// and we don't have any tracked views yet then we will apply the bottom inset
 						if (viewHeight > 0 || hasTrackedViews)
+<<<<<<< HEAD
 						{
 							bottom = 0;
 						}
@@ -207,11 +248,18 @@ internal static class SafeAreaExtensions
 					// Without this check, the left inset would be incorrectly set to 0 during these animations.
 					var viewIsAnimatingHorizontally = viewLeft > 0 && (viewRight > screenWidth || viewBottom > screenHeight);
 
+=======
+							bottom = 0;
+					}
+
+					// Left: how much the view extends into the left safe area
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 					if (left > 0 && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
 					}
+<<<<<<< HEAD
 					else if (left > 0 && viewIsAnimatingHorizontally && viewLeft > left)
 					{
 						// View is animating and has been shifted beyond the left safe area edge (viewLeft > left).
@@ -224,6 +272,12 @@ internal static class SafeAreaExtensions
 						{
 							left = 0;
 						}
+=======
+					else
+					{
+						if (viewWidth > 0 || hasTrackedViews)
+							left = 0;
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 					}
 
 					// Right: how much the view extends into the right safe area
@@ -236,9 +290,13 @@ internal static class SafeAreaExtensions
 					else
 					{
 						if (viewWidth > 0 || hasTrackedViews)
+<<<<<<< HEAD
 						{
 							right = 0;
 						}
+=======
+							right = 0;
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 					}
 				}
 
@@ -269,6 +327,7 @@ internal static class SafeAreaExtensions
 					var newCutoutTop = top > 0 ? 0 : displayCutout.Top;
 					var newCutoutRight = right > 0 ? 0 : displayCutout.Right;
 					var newCutoutBottom = (bottom > 0 || isKeyboardShowing) ? 0 : displayCutout.Bottom;
+<<<<<<< HEAD
 
 					builder.SetInsets(WindowInsetsCompat.Type.DisplayCutout(),
 						AndroidX.Core.Graphics.Insets.Of(newCutoutLeft, newCutoutTop, newCutoutRight, newCutoutBottom));
@@ -334,6 +393,73 @@ internal static class SafeAreaExtensions
 			}
 		}
 
+=======
+
+					builder.SetInsets(WindowInsetsCompat.Type.DisplayCutout(),
+						AndroidX.Core.Graphics.Insets.Of(newCutoutLeft, newCutoutTop, newCutoutRight, newCutoutBottom));
+				}
+
+				// For keyboard (IME), only consume if we're handling it
+				if (ime is not null && isKeyboardShowing)
+				{
+					var newImeBottom = (bottom > 0 && bottom >= keyboardInsets.Bottom) ? 0 : ime.Bottom;
+					builder.SetInsets(WindowInsetsCompat.Type.Ime(),
+						AndroidX.Core.Graphics.Insets.Of(0, 0, 0, newImeBottom));
+				}
+
+				newWindowInsets = builder.Build();
+
+				// Apply all insets to content view group
+				view.SetPadding((int)left, (int)top, (int)right, (int)bottom);
+				if (left > 0 || right > 0 || top > 0 || bottom > 0)
+				{
+					globalWindowInsetsListener?.TrackView(view);
+				}
+			}
+			else
+			{
+				newWindowInsets = windowInsets;
+			}
+		}
+		else
+		{
+			newWindowInsets = windowInsets;
+		}
+
+		// Fallback: return the base safe area for legacy views
+		return newWindowInsets;
+	}
+
+	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
+	{
+		// Edge-to-edge content - no safe area padding
+		if (safeAreaRegion == SafeAreaRegions.None)
+		{
+			return 0;
+		}
+
+		// Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
+		if (edge == 3)
+        {
+            if (SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
+            {
+                // SoftInput only applies padding when keyboard is showing
+                return isKeyboardShowing ? keyBoardInsets.Bottom : 0;
+            }
+
+            if (isKeyboardShowing)
+            {
+                // Return keyboard insets for any region that includes SoftInput
+                if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
+                    return keyBoardInsets.Bottom;
+
+                // if the keyboard is showing then we will just return 0 for the bottom inset
+                // because that part of the view is covered by the keyboard so we don't want to pad the view
+                return 0;
+            }
+        }
+
+>>>>>>> 5aa9ced8f632c5cebe1bd627d52c129ade4b8447
 		// All other regions respect safe area in some form
 		// This includes:
 		// - Default: Platform default behavior
