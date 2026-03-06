@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private readonly PlatformCanvas _canvas;
 		private readonly ScalingCanvas _scalingCanvas;
 		private IDrawable _drawable;
-		private readonly float _scale = 1;
+		private float _scale;
 		private Color _backgroundColor;
 
 		public PlatformGraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null) : base(context, attrs)
@@ -30,6 +30,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			_scalingCanvas = new ScalingCanvas(_canvas);
 			Drawable = drawable;
 		}
+
+		// Internal virtual (not public API) so subclasses in friend assemblies can supply
+		// a density source consistent with their layout system.
+		internal virtual float GetDisplayDensity() => Resources.DisplayMetrics.Density;
 
 		public Color BackgroundColor
 		{
@@ -78,6 +82,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
 		{
 			base.OnSizeChanged(width, height, oldWidth, oldHeight);
+			_scale = GetDisplayDensity();
 			_width = width;
 			_height = height;
 		}

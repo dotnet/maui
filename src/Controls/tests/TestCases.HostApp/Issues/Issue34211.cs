@@ -58,32 +58,21 @@ public class Issue34211 : ContentPage
 		// Mirror the original: re-invalidate whenever the view resizes
 		_graphicsView.SizeChanged += (_, _) =>
 		{
-#if ANDROID
-			Android.Util.Log.Debug("ISSUE34211", $"[Issue34211.SizeChanged] GraphicsView={_graphicsView.Width:F1}x{_graphicsView.Height:F1} — calling Invalidate()");
-#endif
 			_graphicsView.Invalidate();
 		};
 
 		// Mirror the original: update the label on every draw automatically
 		_drawable.OnDrawn = rect =>
 		{
-#if ANDROID
-			Android.Util.Log.Debug("ISSUE34211", $"[Issue34211.OnDrawn] dirtyRect={rect.Width:F1}x{rect.Height:F1}  GraphicsView={_graphicsView.Width:F1}x{_graphicsView.Height:F1}");
-#endif
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
 				double viewW = _graphicsView.Width;
 				double viewH = _graphicsView.Height;
 				bool widthMatch = Math.Abs(viewW - rect.Width) <= 1.0;
 				bool heightMatch = Math.Abs(viewH - rect.Height) <= 1.0;
-				string status = widthMatch && heightMatch
+				_statusLabel.Text = widthMatch && heightMatch
 					? "PASS: sizes match"
 					: $"FAIL: GraphicsView={viewW:F1}x{viewH:F1} Drawable={rect.Width:F1}x{rect.Height:F1}";
-
-				_statusLabel.Text = status;
-#if ANDROID
-				Android.Util.Log.Debug("ISSUE34211", $"[Issue34211.StatusUpdate] {status}");
-#endif
 			});
 		};
 	}
