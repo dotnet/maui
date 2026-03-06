@@ -13,7 +13,7 @@ public static class TimePickerExtensions
 {
 	public static void UpdateTime(this TimePicker nativeTimePicker, ITimePicker timePicker)
 	{
-		nativeTimePicker.Time = timePicker.Time ?? TimeSpan.Zero;
+		nativeTimePicker.SelectedTime = timePicker.Time;
 
 		if (timePicker.Format?.Contains('H', StringComparison.Ordinal) == true)
 		{
