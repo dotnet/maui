@@ -45,6 +45,7 @@ static class UpdateComponentCodeWriter
 	/// Generates the code for a single <c>if (__version == fromVersion) { ... __version = toVersion; }</c> block.
 	/// Returns <see langword="null"/> when <paramref name="diff"/> contains no changes.
 	/// </summary>
+	/// <param name="newIds">ID dictionary for added nodes (from the new tree). May be null for tests.</param>
 	public static string? GeneratePatchBody(
 		XamlTreeDiff diff,
 		int fromVersion,
@@ -52,7 +53,8 @@ static class UpdateComponentCodeWriter
 		INamedTypeSymbol rootType,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		Dictionary<ElementNode, string>? newIds = null)
 	{
 		if (diff.IsEmpty)
 			return null;
@@ -67,7 +69,7 @@ static class UpdateComponentCodeWriter
 		int addedCounter = 0;
 		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, compilation, xmlnsCache, typeCache);
+			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, compilation, xmlnsCache, typeCache);
 			codeWriter.WriteLine();
 		}
 
@@ -233,6 +235,7 @@ static class UpdateComponentCodeWriter
 		ChildListChangeDiff change,
 		int changeIdx,
 		ref int addedCounter,
+		Dictionary<ElementNode, string>? newIds,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache)
@@ -288,23 +291,12 @@ static class UpdateComponentCodeWriter
 			else // Added
 			{
 				var newElement = entry.NewElement!;
-				EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, ref addedCounter, compilation, xmlnsCache, typeCache);
+				EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache);
 			}
 		}
 
-		// Re-register retained children whose IDs changed (reorder/position shift)
-		retainedIdx = 0;
-		for (int i = 0; i < change.NewChildren.Count; i++)
-		{
-			var entry = change.NewChildren[i];
-			if (entry.Kind != ChildChangeKind.Retained)
-				continue;
-			if (!string.Equals(entry.OldNodeId, entry.NewNodeId, StringComparison.Ordinal))
-			{
-				codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.ReRoot(this, \"{entry.OldNodeId}\", \"{entry.NewNodeId}\");");
-			}
-			retainedIdx++;
-		}
+		// With stable IDs, retained children keep their old IDs — no re-registration needed.
+		// (Old position-based IDs required ReRoot on reorder; stable IDs don't.)
 
 		// Unregister removed children and their subtrees
 		foreach (var removedId in change.RemovedNodeIds)
@@ -316,12 +308,14 @@ static class UpdateComponentCodeWriter
 	/// <summary>
 	/// Emits code that creates a new element, sets its simple properties, recursively creates
 	/// its children, adds them, and registers everything in the component registry.
+	/// Uses the <paramref name="newIds"/> dictionary to look up IDs for each node.
 	/// </summary>
 	static void EmitNewElement(
 		IndentedTextWriter codeWriter,
 		ElementNode element,
 		string parentLayoutVar,
 		string nodeId,
+		Dictionary<ElementNode, string>? newIds,
 		ref int addedCounter,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
@@ -369,10 +363,12 @@ static class UpdateComponentCodeWriter
 			{
 				if (element.CollectionItems[i] is ElementNode childElement)
 				{
-					var childNodeId = string.IsNullOrEmpty(nodeId)
-						? $"{childElement.XmlType.Name}_{i}"
-						: $"{nodeId}/{childElement.XmlType.Name}_{i}";
-					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, ref addedCounter, compilation, xmlnsCache, typeCache);
+					string childNodeId;
+					if (newIds != null && newIds.TryGetValue(childElement, out var childId))
+						childNodeId = childId;
+					else
+						childNodeId = $"{nodeId}_{i}"; // fallback
+					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache);
 				}
 			}
 		}

@@ -5,63 +5,89 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// Assigns stable string IDs to every <see cref="ElementNode"/> in a parsed XAML tree via a
-/// depth-first walk. IDs encode the element type, depth, and sibling index so that structurally
-/// equivalent positions in two different versions of the same XAML file receive the same ID —
-/// enabling the diff engine to correlate nodes across edits.
+/// Assigns unique string IDs to every <see cref="ElementNode"/> in a parsed XAML tree via a
+/// depth-first walk. IDs are simple incrementing integers — fast to generate, unique within a tree,
+/// and identity-based (not position-based) so reordering children does not change any node's ID.
+/// The root always receives <c>""</c> (accessed as <c>this</c> at runtime).
 /// </summary>
-/// <remarks>
-/// <para>
-/// ID format: <c>"{TypeName}_{siblingIndex}"</c> for direct children of root, or
-/// <c>"{ParentId}/{TypeName}_{siblingIndex}"</c> for nested elements — e.g. <c>"Label_0"</c>
-/// for the first Label under root, <c>"VerticalStackLayout_0/Label_0"</c> for a Label nested
-/// inside the first VerticalStackLayout. The root element always receives the empty string
-/// <c>""</c> so that call sites can address the root without a special-case.
-/// </para>
-/// <para>
-/// Only <see cref="ElementNode"/> nodes in <see cref="ElementNode.CollectionItems"/> are assigned
-/// IDs; property-element children (stored in <see cref="ElementNode.Properties"/>) are not
-/// independently addressable at runtime.
-/// </para>
-/// </remarks>
 internal static class NodeIdHelper
 {
 	/// <summary>
 	/// Walks <paramref name="root"/> depth-first and returns a dictionary mapping every
-	/// <see cref="ElementNode"/> to its stable ID.  The root itself maps to <c>""</c>.
+	/// <see cref="ElementNode"/> to its unique ID. The root maps to <c>""</c>; children
+	/// are numbered <c>"0"</c>, <c>"1"</c>, etc. in depth-first order.
 	/// </summary>
 	public static Dictionary<ElementNode, string> AssignIds(ElementNode root)
 	{
 		var ids = new Dictionary<ElementNode, string>();
 		ids[root] = "";
-		WalkChildren(root, parentId: "", ids);
+		int counter = 0;
+		AssignChildrenRecursive(root, ids, ref counter);
 		return ids;
 	}
 
-	// -------------------------------------------------------------------------
-	// Recursive walk
-	// -------------------------------------------------------------------------
-
-	static void WalkChildren(ElementNode parent, string parentId, Dictionary<ElementNode, string> ids)
+	/// <summary>
+	/// Same as <see cref="AssignIds(ElementNode)"/> but starts the counter at
+	/// <paramref name="startId"/>, allowing callers to generate IDs that don't collide
+	/// with a previous set. Returns the next available counter value.
+	/// </summary>
+	public static Dictionary<ElementNode, string> AssignIds(ElementNode root, int startId, out int nextId)
 	{
-		int index = 0;
+		var ids = new Dictionary<ElementNode, string>();
+		ids[root] = "";
+		int counter = startId;
+		AssignChildrenRecursive(root, ids, ref counter);
+		nextId = counter;
+		return ids;
+	}
+
+	/// <summary>
+	/// Walks <paramref name="targetRoot"/> and <paramref name="sourceRoot"/> in parallel (depth-first)
+	/// and copies IDs from <paramref name="sourceIds"/> onto <paramref name="targetRoot"/>'s nodes.
+	/// Both trees must have the same structure (parsed from the same XAML).
+	/// </summary>
+	public static Dictionary<ElementNode, string> TransferIds(
+		ElementNode targetRoot,
+		Dictionary<ElementNode, string> sourceIds,
+		ElementNode sourceRoot)
+	{
+		var result = new Dictionary<ElementNode, string>();
+		TransferRecursive(targetRoot, sourceRoot, sourceIds, result);
+		return result;
+	}
+
+	static void AssignChildrenRecursive(ElementNode parent, Dictionary<ElementNode, string> ids, ref int counter)
+	{
 		foreach (var item in parent.CollectionItems)
 		{
-			if (item is not ElementNode child)
+			if (item is ElementNode child)
 			{
-				index++;
-				continue;
+				ids[child] = counter.ToString();
+				counter++;
+				AssignChildrenRecursive(child, ids, ref counter);
 			}
+		}
+	}
 
-			string typeName = child.XmlType.Name;
-			string id = string.IsNullOrEmpty(parentId)
-				? $"{typeName}_{index}"
-				: $"{parentId}/{typeName}_{index}";
-			ids[child] = id;
+	static void TransferRecursive(
+		ElementNode target, ElementNode source,
+		Dictionary<ElementNode, string> sourceIds,
+		Dictionary<ElementNode, string> result)
+	{
+		if (sourceIds.TryGetValue(source, out var id))
+			result[target] = id;
 
-			// Recurse into the child's collection items
-			WalkChildren(child, id, ids);
-			index++;
+		int ti = 0, si = 0;
+		while (ti < target.CollectionItems.Count && si < source.CollectionItems.Count)
+		{
+			var tc = target.CollectionItems[ti];
+			var sc = source.CollectionItems[si];
+			if (tc is ElementNode targetChild && sc is ElementNode sourceChild)
+			{
+				TransferRecursive(targetChild, sourceChild, sourceIds, result);
+			}
+			ti++;
+			si++;
 		}
 	}
 }

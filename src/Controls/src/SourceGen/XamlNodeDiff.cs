@@ -50,7 +50,8 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 readonly struct NodeDiff(string nodeId, IReadOnlyList<PropertyDiff> propertyChanges, XmlType? nodeXmlType = null)
 {
 	/// <summary>
-	/// Stable path from the root, e.g. <c>""</c> for root, <c>"Label_0"</c>, <c>"VerticalStackLayout_0/Label_0"</c>.
+	/// Stable ID for this node. <c>""</c> for root, <c>"0"</c>, <c>"1"</c>, etc. for children
+	/// (assigned in depth-first order by <see cref="NodeIdHelper"/>).
 	/// </summary>
 	public string NodeId { get; } = nodeId;
 
@@ -250,26 +251,51 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 static class XamlNodeDiff
 {
 	/// <summary>
-	/// Computes a diff between <paramref name="oldRoot"/> and <paramref name="newRoot"/>.
+	/// Computes a diff between <paramref name="oldRoot"/> and <paramref name="newRoot"/>
+	/// using the provided node-ID dictionaries. On success, <paramref name="effectiveNewIds"/>
+	/// maps new-tree nodes to their effective IDs (matched nodes inherit the old ID; added nodes
+	/// keep their new ID). Callers should cache <paramref name="effectiveNewIds"/> for the next diff.
 	/// </summary>
 	/// <returns>
 	/// A <see cref="XamlTreeDiff"/> describing the changes, or
 	/// <see langword="null"/> if the trees differ structurally in ways that require a full reload.
 	/// </returns>
-	public static XamlTreeDiff? ComputeDiff(ElementNode oldRoot, ElementNode newRoot)
+	public static XamlTreeDiff? ComputeDiff(
+		ElementNode oldRoot, ElementNode newRoot,
+		Dictionary<ElementNode, string> oldIds,
+		Dictionary<ElementNode, string> newIds,
+		out Dictionary<ElementNode, string>? effectiveNewIds)
 	{
-		if (oldRoot is null)
-			throw new ArgumentNullException(nameof(oldRoot));
-		if (newRoot is null)
-			throw new ArgumentNullException(nameof(newRoot));
+		if (oldRoot is null) throw new ArgumentNullException(nameof(oldRoot));
+		if (newRoot is null) throw new ArgumentNullException(nameof(newRoot));
+		if (oldIds is null) throw new ArgumentNullException(nameof(oldIds));
+		if (newIds is null) throw new ArgumentNullException(nameof(newIds));
+
+		// Start with new IDs; matched nodes get their old IDs transplanted during the walk
+		var effective = new Dictionary<ElementNode, string>(newIds);
 
 		var nodeChanges = new List<NodeDiff>();
 		var childListChanges = new List<ChildListChangeDiff>();
 
-		if (!DiffNode(oldRoot, newRoot, "", 0, nodeChanges, childListChanges))
+		if (!DiffNode(oldRoot, newRoot, oldIds, newIds, effective, 0, nodeChanges, childListChanges))
+		{
+			effectiveNewIds = null;
 			return null;
+		}
 
+		effectiveNewIds = effective;
 		return new XamlTreeDiff(nodeChanges, childListChanges);
+	}
+
+	/// <summary>
+	/// Convenience overload that auto-assigns IDs for both trees.
+	/// Used by tests and scenarios where ID tracking is not needed.
+	/// </summary>
+	public static XamlTreeDiff? ComputeDiff(ElementNode oldRoot, ElementNode newRoot)
+	{
+		var oldIds = NodeIdHelper.AssignIds(oldRoot);
+		var newIds = NodeIdHelper.AssignIds(newRoot);
+		return ComputeDiff(oldRoot, newRoot, oldIds, newIds, out _);
 	}
 
 	// -------------------------------------------------------------------------
@@ -278,16 +304,29 @@ static class XamlNodeDiff
 
 	/// <summary>
 	/// Recursively diffs two <see cref="ElementNode"/>s at the same tree position.
+	/// Matched new nodes inherit their old counterpart's ID in <paramref name="effective"/>.
 	/// </summary>
-	/// <param name="nodeId">Stable path string for this node, used in <see cref="NodeDiff"/>.</param>
 	/// <param name="depth">Current depth in the tree (root = 0, children of root = 1, etc.).</param>
 	/// <returns><see langword="false"/> if a structural difference is detected.</returns>
-	static bool DiffNode(ElementNode oldNode, ElementNode newNode, string nodeId, int depth,
+	static bool DiffNode(ElementNode oldNode, ElementNode newNode,
+		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
+		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
 	{
 		// Structural check: element type must match
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
 			return false;
+
+		// Determine the node ID: matched nodes use the OLD ID for registry lookup
+		string nodeId;
+		if (depth == 0)
+			nodeId = ""; // root is always "this"
+		else
+			oldIds.TryGetValue(oldNode, out nodeId!);
+
+		// Transplant old ID onto matched new node
+		if (depth > 0)
+			effective[newNode] = nodeId;
 
 		// Diff properties (simple value attributes)
 		var propDiffs = new List<PropertyDiff>();
@@ -298,7 +337,7 @@ static class XamlNodeDiff
 			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType));
 
 		// Diff children
-		return DiffChildren(oldNode, newNode, nodeId, depth, nodeChanges, childListChanges);
+		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
 	}
 
 	/// <summary>
@@ -307,7 +346,9 @@ static class XamlNodeDiff
 	/// </summary>
 	static bool DiffChildren(
 		ElementNode oldNode, ElementNode newNode,
-		string parentNodeId, int depth,
+		string parentNodeId,
+		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
+		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
@@ -335,7 +376,7 @@ static class XamlNodeDiff
 		{
 			if (oldCount != newCount)
 				return false;
-			return DiffChildrenPositional(oldNode, newNode, parentNodeId, depth, nodeChanges, childListChanges);
+			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
 		}
 
 		// All children are elements. Fast path: same count + same positional types → no child list change
@@ -353,11 +394,11 @@ static class XamlNodeDiff
 				}
 			}
 			if (positionalMatch)
-				return DiffChildrenPositional(oldNode, newNode, parentNodeId, depth, nodeChanges, childListChanges);
+				return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
 		}
 
 		// General case: type-based matching for reorder/add/remove
-		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, depth, nodeChanges, childListChanges);
+		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
 	}
 
 	/// <summary>
@@ -366,7 +407,9 @@ static class XamlNodeDiff
 	/// </summary>
 	static bool DiffChildrenPositional(
 		ElementNode oldNode, ElementNode newNode,
-		string parentNodeId, int depth,
+		string parentNodeId,
+		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
+		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
 	{
 		int count = oldNode.CollectionItems.Count;
@@ -377,8 +420,7 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				var childId = ChildNodeId(parentNodeId, oldElem.XmlType.Name, i);
-				if (!DiffNode(oldElem, newElem, childId, depth + 1, nodeChanges, childListChanges))
+				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges))
 					return false;
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
@@ -403,10 +445,13 @@ static class XamlNodeDiff
 	/// <summary>
 	/// General-case: matches old and new children by type signature, handling additions,
 	/// removals, and reorders. Uses a group-by-type positional matching strategy.
+	/// Matched nodes inherit old IDs; added nodes keep their fresh new IDs.
 	/// </summary>
 	static bool DiffChildrenWithMatching(
 		ElementNode oldNode, ElementNode newNode,
-		string parentNodeId, int depth,
+		string parentNodeId,
+		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
+		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
@@ -473,11 +518,10 @@ static class XamlNodeDiff
 				addedNewIndices.Add(newIdxList![i]);
 		}
 
-		// Recursively diff matched pairs (using new-position node IDs)
+		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode)
 		foreach (var (oldIdx, newIdx) in matched)
 		{
-			var childId = ChildNodeId(parentNodeId, newChildren[newIdx].XmlType.Name, newIdx);
-			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], childId, depth + 1, nodeChanges, childListChanges))
+			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges))
 				return false;
 		}
 
@@ -501,30 +545,36 @@ static class XamlNodeDiff
 		var newToOld = new Dictionary<int, int>();
 		foreach (var (oldIdx, newIdx) in matched) newToOld[newIdx] = oldIdx;
 
-		// Build ChildChangeEntry list in new order
+		// Build ChildChangeEntry list in new order, using IDs from the dictionaries
 		var entries = new List<ChildChangeEntry>(newCount);
 		for (int newIdx = 0; newIdx < newCount; newIdx++)
 		{
-			var newChildId = ChildNodeId(parentNodeId, newChildren[newIdx].XmlType.Name, newIdx);
 			if (addedSet.Contains(newIdx))
 			{
+				// Added node: use its fresh new-tree ID
+				newIds.TryGetValue(newChildren[newIdx], out var addedId);
 				entries.Add(new ChildChangeEntry(
-					ChildChangeKind.Added, newChildId, newChildren[newIdx].XmlType,
+					ChildChangeKind.Added, addedId ?? newIdx.ToString(), newChildren[newIdx].XmlType,
 					null, -1, newChildren[newIdx]));
 			}
 			else
 			{
 				var oldIdx = newToOld[newIdx];
-				var oldChildId = ChildNodeId(parentNodeId, oldChildren[oldIdx].XmlType.Name, oldIdx);
+				// Retained node: OldNodeId = old tree's ID (for TryGet), NewNodeId = effective ID
+				oldIds.TryGetValue(oldChildren[oldIdx], out var retainedOldId);
+				effective.TryGetValue(newChildren[newIdx], out var retainedEffId);
 				entries.Add(new ChildChangeEntry(
-					ChildChangeKind.Retained, newChildId, newChildren[newIdx].XmlType,
-					oldChildId, oldIdx, null));
+					ChildChangeKind.Retained, retainedEffId ?? retainedOldId ?? "", newChildren[newIdx].XmlType,
+					retainedOldId ?? "", oldIdx, null));
 			}
 		}
 
 		var removedIds = new List<string>(removedOldIndices.Count);
 		foreach (var oldIdx in removedOldIndices)
-			removedIds.Add(ChildNodeId(parentNodeId, oldChildren[oldIdx].XmlType.Name, oldIdx));
+		{
+			oldIds.TryGetValue(oldChildren[oldIdx], out var removedId);
+			removedIds.Add(removedId ?? "");
+		}
 
 		childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, removedIds));
 		return true;
@@ -720,11 +770,6 @@ static class XamlNodeDiff
 	/// <summary>
 	/// Builds a stable child node ID by combining the parent path and the child's type + sibling index.
 	/// </summary>
-	static string ChildNodeId(string parentId, string childTypeName, int index)
-		=> string.IsNullOrEmpty(parentId)
-			? $"{childTypeName}_{index}"
-			: $"{parentId}/{childTypeName}_{index}";
-
 	/// <summary>
 	/// Returns a string key that uniquely identifies an <see cref="XmlType"/> including its
 	/// namespace, name, and type arguments. Used for matching children by type during reorder detection.

@@ -3,6 +3,7 @@
 
 #nullable enable
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -39,6 +40,17 @@ internal static class XamlHotReloadState
 		/// rather than re-parsing the old XAML against a potentially different compilation.
 		/// </summary>
 		public SGRootNode? ParsedRoot { get; set; }
+		/// <summary>
+		/// Map from each <see cref="ElementNode"/> in <see cref="ParsedRoot"/> to its unique ID.
+		/// These are the IDs that the runtime registry uses. Preserved across diffs so that
+		/// matched nodes keep their identity even when reordered.
+		/// </summary>
+		public Dictionary<ElementNode, string>? NodeIds { get; set; }
+		/// <summary>
+		/// The next available node ID counter. New nodes (added children) start numbering here
+		/// to avoid colliding with existing IDs.
+		/// </summary>
+		public int NextNodeId { get; set; }
 		public int Version { get; set; }
 		/// <summary>
 		/// Accumulated patch bodies. Each entry is the code for one <c>if (__version == N) { ... }</c> block.
@@ -51,7 +63,7 @@ internal static class XamlHotReloadState
 	/// Tries to retrieve the previously stored XAML text, parsed root, and version for the given file.
 	/// Returns <see langword="false"/> when no entry exists (first run).
 	/// </summary>
-	public static bool TryGetPrevious(string assemblyName, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out int previousVersion)
+	public static bool TryGetPrevious(string assemblyName, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
 	{
 		lock (_lock)
 		{
@@ -59,12 +71,16 @@ internal static class XamlHotReloadState
 			{
 				previousXaml = entry.XamlText;
 				previousRoot = entry.ParsedRoot;
+				previousNodeIds = entry.NodeIds;
+				nextNodeId = entry.NextNodeId;
 				previousVersion = entry.Version;
 				return true;
 			}
 		}
 		previousXaml = string.Empty;
 		previousRoot = null;
+		previousNodeIds = null;
+		nextNodeId = 0;
 		previousVersion = 0;
 		return false;
 	}
@@ -73,7 +89,7 @@ internal static class XamlHotReloadState
 	/// Stores (or replaces) the current XAML text, parsed root, and version for the given file,
 	/// and appends a patch body if provided.
 	/// </summary>
-	public static void Update(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, int version, string? patchBody = null)
+	public static void Update(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, string? patchBody = null)
 	{
 		lock (_lock)
 		{
@@ -84,6 +100,8 @@ internal static class XamlHotReloadState
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
+			entry.NodeIds = nodeIds;
+			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
 			if (patchBody != null)
 				entry.PatchBodies.Add(patchBody);
@@ -93,7 +111,7 @@ internal static class XamlHotReloadState
 	/// <summary>
 	/// Stores the XAML text, parsed root, and version, and clears all accumulated patches (structural change).
 	/// </summary>
-	public static void UpdateAndClearPatches(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, int version)
+	public static void UpdateAndClearPatches(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
 	{
 		lock (_lock)
 		{
@@ -104,6 +122,8 @@ internal static class XamlHotReloadState
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
+			entry.NodeIds = nodeIds;
+			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
 			entry.PatchBodies.Clear();
 		}
@@ -117,6 +137,28 @@ internal static class XamlHotReloadState
 		lock (_lock)
 		{
 			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.Version : 0;
+		}
+	}
+
+	/// <summary>
+	/// Returns the cached parsed root for the given file, or null if not cached.
+	/// </summary>
+	public static SGRootNode? GetParsedRoot(string assemblyName, string relativePath)
+	{
+		lock (_lock)
+		{
+			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.ParsedRoot : null;
+		}
+	}
+
+	/// <summary>
+	/// Returns the cached node-ID dictionary for the given file, or null if not cached.
+	/// </summary>
+	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string relativePath)
+	{
+		lock (_lock)
+		{
+			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.NodeIds : null;
 		}
 	}
 
