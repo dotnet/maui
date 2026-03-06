@@ -160,7 +160,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(VerticalStackLayout), LayoutAlignment.Center)]
 		[InlineData(typeof(VerticalStackLayout), LayoutAlignment.Start)]
 		[InlineData(typeof(VerticalStackLayout), LayoutAlignment.End)]
-		public async Task UpdatingLayoutOptionsTriggersParentToRepositionControl(Type layoutType, LayoutAlignment layoutAlignment)
+		public async Task UpdatingLayoutOptionsTriggersParentToRepositionControl([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type layoutType, LayoutAlignment layoutAlignment)
 		{
 			var layoutOptions = new LayoutOptions(layoutAlignment, false);
 
