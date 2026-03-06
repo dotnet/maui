@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+﻿using System;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 #if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,7 +26,6 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private CanvasControl _canvasControl;
 		private readonly PlatformCanvas _canvas;
-		readonly ScalingCanvas _scalingCanvas;
 
 		private IDrawable _drawable;
 		private RectF _dirty;
@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		{
 			_canvas = new PlatformCanvas();
-			_scalingCanvas = new ScalingCanvas(_canvas);
 
 			Loaded += UserControl_Loaded;
 			Unloaded += UserControl_Unloaded;
@@ -87,7 +86,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var logicalWidth = MathF.Round(actualWidth);
 			var logicalHeight = MathF.Round(actualHeight);
 
-			float adjustedScaleX, adjustedScaleY;
+			float adjustedScaleX = 1f, adjustedScaleY = 1f;
 			if (logicalWidth > 0 && logicalHeight > 0)
 			{
 				adjustedScaleX = actualWidth / logicalWidth;
@@ -97,8 +96,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			else
 			{
-				adjustedScaleX = 1f;
-				adjustedScaleY = 1f;
 				_dirty.Width = actualWidth;
 				_dirty.Height = actualHeight;
 			}
@@ -111,11 +108,16 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				_canvas.Session = args.DrawingSession;
 				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
-				// Use adjusted scale factors that map rounded logical dimensions
-				// back to exact physical dimensions, avoiding sub-pixel gaps at view edges.
-				_scalingCanvas.ResetState();
-				_scalingCanvas.Scale(adjustedScaleX, adjustedScaleY);
-				_drawable.Draw(_scalingCanvas, _dirty);
+				// Apply adjusted scale via PlatformCanvas (not DrawingSession.Transform directly)
+				// so the scale is tracked in CurrentState.Matrix, allowing any transforms applied
+				// by the drawable to chain correctly on top of it. This maps the rounded logical
+				// dimensions back to exact physical dimensions, filling the view edge-to-edge
+				// without sub-pixel gaps. Skipped when already 1:1 (no fractional adjustment needed).
+				if (adjustedScaleX is not 1f || adjustedScaleY is not 1f)
+				{
+					_canvas.Scale(adjustedScaleX, adjustedScaleY);
+				}
+				_drawable.Draw(_canvas, _dirty);
 			}
 			finally
 			{
