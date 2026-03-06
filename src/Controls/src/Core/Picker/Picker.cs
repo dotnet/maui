@@ -429,12 +429,11 @@ namespace Microsoft.Maui.Controls
 		int GetSelectedIndex()
 		{
 			if (SelectedItem is null)
-			{
 				return SelectedIndex;
-			}
 
 			int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
-			return newIndex >= 0 ? newIndex : SelectedIndex;
+
+			return newIndex >= 0 ? newIndex : -1;
 		}
 
 		void ResetItems()
@@ -461,7 +460,6 @@ namespace Microsoft.Maui.Controls
 			var picker = (Picker)bindable;
 			picker.UpdateSelectedIndex(newValue);
 		}
-
 		void ClampSelectedIndex(int selectedIndex)
 		{
 			var oldIndex = selectedIndex;
