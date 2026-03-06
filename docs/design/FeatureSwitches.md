@@ -7,6 +7,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MSBuild Property Name | AppContext Setting | Description |
 |-|-|-|
 | MauiXamlInflator | N/A | Controls how XAML files are processed. See [XAML Inflator](#mauixamlinflator) section below. |
+| MauiCssEnabled | Microsoft.Maui.RuntimeFeature.IsCssEnabled | When disabled, CSS stylesheets cannot be used. Defaults to `false` when no `MauiCss` items are present in the project, and `true` otherwise. |
 | MauiEnableIVisualAssemblyScanning | Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled | When enabled, MAUI will scan assemblies for types implementing `IVisual` and for `[assembly: Visual(...)]` attributes and register these types. |
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
@@ -54,6 +55,21 @@ You can override the inflator for individual XAML files using item metadata:
 **Changes in .NET 12:**
 - The `[XamlCompilation]` attribute will be obsolete with `error: true` and becomes a no-op. Use MSBuild properties or item metadata instead.
 
+## MauiCssEnabled
+
+When this feature is disabled, CSS stylesheets cannot be parsed or applied to UI elements. Any attempt to use CSS will throw a `NotSupportedException`.
+
+**Default behavior**: This feature is automatically disabled when your project has no `MauiCss` items (CSS files). If your project includes any CSS files, the feature is automatically enabled.
+
+**When to enable manually**: If your app loads CSS stylesheets dynamically at runtime (e.g., from a network source or embedded resources) rather than including them as `MauiCss` build items, you need to explicitly enable this feature:
+
+```xml
+<PropertyGroup>
+  <MauiCssEnabled>true</MauiCssEnabled>
+</PropertyGroup>
+```
+
+**Trimming benefits**: When disabled, the .NET trimmer can eliminate CSS-related code paths, reducing the final application size.
 ## MauiEnableIVisualAssemblyScanning
 
 When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registered.
