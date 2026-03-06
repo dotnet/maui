@@ -70,6 +70,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	bool _isScrollingForItemsUpdate;
 	int _pendingScrollToIndex = -1;
 	RoutedEventHandler? _pendingLoadedHandler;
+
+	// Tracks the last rendered width so SizeChanged only triggers layout recalc when width actually changes.
+	double _lastGridLayoutWidth = -1;
+
 	protected TItemsView ItemsView => VirtualView;
 	protected TItemsView Element => VirtualView;
 
@@ -205,6 +209,13 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			_layoutPropertyChangedProxy = null;
 		}
 
+		// When WidthRequest is set with HorizontalOptions=Start the MAUI layout engine applies
+		// the width constraint to the platform view AFTER initial construction. UniformGridLayout
+		// may have already calculated column counts using the initial width (which can be 0).
+		// Subscribing to SizeChanged and forcing UpdateLayout() ensures the grid recalculates
+		// the correct number of columns once the constrained width is known.
+		platformView.SizeChanged += OnPlatformSizeChanged;
+
 		VirtualView.ScrollToRequested += ScrollToRequested;
 		FindScrollViewer();
 	}
@@ -217,6 +228,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			incc.CollectionChanged -= ItemsChanged;
 		}
+
+		platformView.SizeChanged -= OnPlatformSizeChanged;
 
 		if (platformView.ScrollView is not null)
 		{
@@ -671,6 +684,39 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			ItemsStretch = UniformGridLayoutItemsStretch.Fill,
 			ItemsJustification = UniformGridLayoutItemsJustification.Start,
 		};
+	}
+
+	/// <summary>
+	/// Handles platform view size changes to ensure <see cref="UniformGridLayout"/> recalculates
+	/// the correct column (or row) count after the MAUI layout engine applies a <c>WidthRequest</c>
+	/// constraint. Without this, the grid may show fewer columns than <see cref="GridItemsLayout.Span"/>
+	/// because the initial layout pass can see a zero or stale available width.
+	/// </summary>
+	void OnPlatformSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
+	{
+		if (Layout is not GridItemsLayout || PlatformView is null)
+			return;
+
+		// When no explicit size is set, UniformGridLayout receives the correct available
+		// size naturally from its parent — no forced re-layout needed. Only the explicit
+		// WidthRequest/HeightRequest case causes the initial 0-width pass that miscomputes
+		// column count, so we skip the expensive UpdateLayout() for the common fill case.
+		bool hasExplicitCrossAxisSize = IsLayoutHorizontal
+			? VirtualView.HeightRequest >= 0
+			: VirtualView.WidthRequest >= 0;
+
+		if (!hasExplicitCrossAxisSize)
+			return;
+
+		// Only re-measure when the cross-axis dimension actually changes (width for vertical
+		// scroll, height for horizontal scroll) — that is the axis UniformGridLayout uses to
+		// compute column/row count. This prevents redundant layout passes on every resize.
+		double newCrossAxisSize = IsLayoutHorizontal ? e.NewSize.Height : e.NewSize.Width;
+		if (newCrossAxisSize == _lastGridLayoutWidth)
+			return;
+
+		_lastGridLayoutWidth = newCrossAxisSize;
+		PlatformView.UpdateLayout();
 	}
 
 	void FindScrollViewer()
