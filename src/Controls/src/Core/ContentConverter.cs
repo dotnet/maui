@@ -132,7 +132,12 @@ namespace Microsoft.Maui.Controls
 	}
 
 	// Internal label type used by ContentPresenter to avoid interference from global Label styles.
-	// A self-hosted empty style blocks inherited Label styles (including ApplyToDerivedTypes) from being applied.
+	// MAUI resolves implicit styles by looking up Type.FullName as the key in ResourceDictionary,
+	// starting from the element's own Resources and walking up the visual tree (see MergedStyle.RegisterImplicitStyles).
+	// By storing an empty Style keyed to typeof(ContentLabel).FullName in the element's own Resources,
+	// the lookup finds it locally and short-circuits — the global Label style (even with ApplyToDerivedTypes)
+	// is never reached. This keeps properties like TextColor unset, so ShouldSetBinding returns true
+	// and the binding to the templated parent (e.g. RadioButton.TextColor) can be established.
 	internal class ContentLabel : Label
 	{
 		static readonly Style s_style = new Style(typeof(ContentLabel));
