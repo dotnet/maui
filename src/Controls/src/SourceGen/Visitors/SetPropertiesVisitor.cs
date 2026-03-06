@@ -61,6 +61,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		// if it's implicit content property, get the content property name
 		bool isImplicitContentProperty = false;
+		ILocalValue? parentVar = null;
 		if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (!parentNode.IsCollectionItem(node))
@@ -68,7 +69,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			string? contentProperty;
 			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
-			var parentVar = Context.Variables[(ElementNode)parentNode];
+			parentVar = Context.Variables[(ElementNode)parentNode];
 			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
 			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
@@ -85,6 +86,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
 			return;
 		if (propertyName.Equals(XmlName.mcIgnorable))
+			return;
+
+		parentVar ??= Context.Variables.TryGetValue((ElementNode)parentNode, out var pv) ? pv : null;
+		if (parentVar == null)
 			return;
 
 		// Try to set runtime name (for x:Name with RuntimeNameProperty attribute)
