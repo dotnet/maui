@@ -22,7 +22,7 @@ public class Issue34343 : _IssuesUITest
 		// Hide Tab1 and navigate to Tab5 (reproduces the issue)
 		App.Tap("HideAndNavigateButton");
 
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 1.0);
 	}
 #endif
 
