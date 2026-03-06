@@ -191,8 +191,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							&& contentPropType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
 							&& contentPropType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
 
+						// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
+						var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
 						if (!isCollection && !isObject)
-							CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+							CheckForDuplicateProperty((ElementNode)parentNode, contentPropertyName, node);
 					}
 
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));

@@ -19,10 +19,11 @@ public partial class Maui3059VisualStates : ContentPage
 		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Fact]
-		internal void VisualStateGroupList_MultipleChildren_NoWarning()
+		[Theory]
+		[XamlInflatorData]
+		internal void VisualStateGroupList_MultipleChildren_NoWarning(XamlInflator inflator)
 		{
-			var page = new Maui3059VisualStates();
+			var page = new Maui3059VisualStates(inflator);
 			Assert.NotNull(page.Content);
 			Assert.IsType<Grid>(page.Content);
 		}

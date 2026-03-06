@@ -283,8 +283,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				// 2. The property type is NOT a collection (doesn't support Add)
 				// 3. The property type is not System.Object (unresolved generic)
 				bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
+				// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
+				var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
 				if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
-					CheckForDuplicateProperty((ElementNode)parentNode, name, node);
+					CheckForDuplicateProperty((ElementNode)parentNode, contentPropertyName, node);
 
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
