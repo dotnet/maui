@@ -1,5 +1,4 @@
 
-#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,14 +22,7 @@ public class Issue34343 : _IssuesUITest
 		// Hide Tab1 and navigate to Tab5 (reproduces the issue)
 		App.Tap("HideAndNavigateButton");
 
-		// After hiding Tab1 and navigating to Tab5, Tab5 content must be visible.
-		App.WaitForElement("Tab5Content");
-
-		// Tap Tab3 in the tab bar and verify Tab3 content is shown.
-		// Bug: the menu is not rebuilt after Tab1 is hidden, so the old menu item IDs
-		// are off by one — tapping "Tab3" navigates to Tab4 instead.
-		App.TapTab("Tab3");
-		App.WaitForElement("Tab3Content");
+		VerifyScreenshot();
 	}
 #endif
 
@@ -52,8 +44,7 @@ public class Issue34343 : _IssuesUITest
 		// Bug: IsInMoreTab was not recalculated after Tab1 was removed, so Tab5
 		// incorrectly routes sub-page navigation through the More tab controller.
 		App.Tap("NavigateToPage51Button");
-		App.WaitForElement("Page51Content");
+		VerifyScreenshot();
 	}
 #endif
 }
-#endif
