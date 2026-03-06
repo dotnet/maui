@@ -281,6 +281,93 @@ public class XamlComponentRegistryTests
 		Assert.Throws<ArgumentNullException>(() => XamlComponentRegistry.ReRoot(null!, "a", "b"));
 	}
 
+	[Fact]
+	public void ReRoot_DoesNotAffectSiblingWithPrefixCollision()
+	{
+		// "Label_1" must NOT match "Label_10" — segment-boundary check
+		var page = new FakePage();
+		var label1 = new object();
+		var label10 = new object();
+		var label1Child = new object();
+
+		XamlComponentRegistry.Register(page, "VSL_0/Label_1", label1);
+		XamlComponentRegistry.Register(page, "VSL_0/Label_1/Entry_0", label1Child);
+		XamlComponentRegistry.Register(page, "VSL_0/Label_10", label10);
+
+		XamlComponentRegistry.ReRoot(page, "VSL_0/Label_1", "VSL_0/Label_5");
+
+		// Label_1 and its child should be renamed
+		Assert.False(XamlComponentRegistry.TryGet(page, "VSL_0/Label_1", out _));
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_5", out var found1));
+		Assert.Same(label1, found1);
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_5/Entry_0", out var foundChild));
+		Assert.Same(label1Child, foundChild);
+
+		// Label_10 must be unaffected
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_10", out var found10));
+		Assert.Same(label10, found10);
+	}
+
+	[Fact]
+	public void UnregisterSubtree_RemovesNodeAndDescendants()
+	{
+		var page = new FakePage();
+		var parent = new object();
+		var child = new object();
+		var sibling = new object();
+
+		XamlComponentRegistry.Register(page, "VSL_0/Label_0", parent);
+		XamlComponentRegistry.Register(page, "VSL_0/Label_0/Entry_0", child);
+		XamlComponentRegistry.Register(page, "VSL_0/Button_1", sibling);
+
+		XamlComponentRegistry.UnregisterSubtree(page, "VSL_0/Label_0");
+
+		Assert.False(XamlComponentRegistry.TryGet(page, "VSL_0/Label_0", out _));
+		Assert.False(XamlComponentRegistry.TryGet(page, "VSL_0/Label_0/Entry_0", out _));
+		// Sibling preserved
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Button_1", out var found));
+		Assert.Same(sibling, found);
+	}
+
+	[Fact]
+	public void UnregisterSubtree_DoesNotAffectSiblingWithPrefixCollision()
+	{
+		// "Label_1" must NOT remove "Label_10"
+		var page = new FakePage();
+		var label1 = new object();
+		var label10 = new object();
+
+		XamlComponentRegistry.Register(page, "VSL_0/Label_1", label1);
+		XamlComponentRegistry.Register(page, "VSL_0/Label_10", label10);
+
+		XamlComponentRegistry.UnregisterSubtree(page, "VSL_0/Label_1");
+
+		Assert.False(XamlComponentRegistry.TryGet(page, "VSL_0/Label_1", out _));
+		Assert.True(XamlComponentRegistry.TryGet(page, "VSL_0/Label_10", out var found));
+		Assert.Same(label10, found);
+	}
+
+	[Fact]
+	public void RegisterComponent_SelfRegisters()
+	{
+		var page = new FakePage();
+		XamlComponentRegistry.RegisterComponent(page, "root");
+
+		Assert.True(XamlComponentRegistry.TryGet(page, "root", out var found));
+		Assert.Same(page, found);
+	}
+
+	[Fact]
+	public void GetComponent_ReturnsRegisteredOrNull()
+	{
+		var page = new FakePage();
+		var comp = new object();
+		XamlComponentRegistry.Register(page, "Label_0", comp);
+
+		Assert.Same(comp, XamlComponentRegistry.GetComponent(page, "Label_0"));
+		Assert.Null(XamlComponentRegistry.GetComponent(page, "NotRegistered"));
+	}
+
 	// -------------------------------------------------------------------------
 	// Helper types (nested to avoid collision with other tests)
 	// -------------------------------------------------------------------------

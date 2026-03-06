@@ -169,9 +169,25 @@ static class UpdateComponentCodeWriter
 
 				codeWriter.WriteLine("return;");
 				codeWriter.WriteLine();
+				// Fallback per spec: save BindingContext → Unregister → re-inflate → restore BindingContext.
+				// Uses InitializeComponentRuntime() (not InitializeComponent()) to avoid recursion — IC is the
+				// generated partial method which would re-register components and set __version to latest,
+				// whereas we need the runtime XAML loader to re-inflate from the current XAML source.
 				codeWriter.WriteLine("fallback:");
-				codeWriter.WriteLine("__version = 0;");
-				codeWriter.WriteLine("this.InitializeComponentRuntime();");
+				codeWriter.WriteLine("var __savedBc = (this as global::Microsoft.Maui.Controls.BindableObject)?.BindingContext;");
+				codeWriter.WriteLine("try");
+				using (PrePost.NewBlock(codeWriter))
+				{
+					codeWriter.WriteLine("if (__savedBc != null) ((global::Microsoft.Maui.Controls.BindableObject)this).BindingContext = null;");
+					codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);");
+					codeWriter.WriteLine("__version = 0;");
+					codeWriter.WriteLine("this.InitializeComponentRuntime();");
+				}
+				codeWriter.WriteLine("finally");
+				using (PrePost.NewBlock(codeWriter))
+				{
+					codeWriter.WriteLine("if (__savedBc != null) ((global::Microsoft.Maui.Controls.BindableObject)this).BindingContext = __savedBc;");
+				}
 			}
 		}
 
