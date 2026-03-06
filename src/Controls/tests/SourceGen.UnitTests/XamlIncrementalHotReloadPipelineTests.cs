@@ -163,7 +163,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state was seeded at version 0 (spec: __version starts at 0)
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out var version);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _, out var version);
 		Assert.True(hasPrev, "XamlHotReloadState should be seeded after first run");
 		Assert.Equal(0, version);
 	}
@@ -250,7 +250,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state NOT seeded when IHR is disabled
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _, out _);
 		Assert.False(hasPrev, "XamlHotReloadState should NOT be seeded when IHR is disabled");
 	}
 
@@ -392,14 +392,14 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		const string relPath = "MainPage.xaml";
 
 		// Seed with assembly "App1"
-		XamlHotReloadState.Update("App1", relPath, xaml, 1);
+		XamlHotReloadState.Update("App1", relPath, xaml, null, 1);
 
 		// "App2" with same relative path should NOT see "App1" state
-		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", relPath, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", relPath, out _, out _, out _);
 		Assert.False(hasPrev, "Different assembly should not see another assembly's state");
 
 		// "App1" SHOULD see its own state
-		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", relPath, out var storedXaml, out var storedVer);
+		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", relPath, out var storedXaml, out _, out var storedVer);
 		Assert.True(hasSelf);
 		Assert.Equal(xaml, storedXaml);
 		Assert.Equal(1, storedVer);
