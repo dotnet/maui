@@ -31,9 +31,6 @@ public class Issue34211 : ContentPage
 		};
 		checkButton.Clicked += (_, _) => _graphicsView.Invalidate();
 
-		// Mirror the original sample's layout:
-		// Label in Auto row, GraphicsView in * row so it fills remaining space
-		// and always has a non-zero size — no HeightRequest needed.
 		Content = new Grid
 		{
 			Padding = 20,
@@ -55,13 +52,8 @@ public class Issue34211 : ContentPage
 		Grid.SetRow(checkButton, 1);
 		Grid.SetRow(_graphicsView, 2);
 
-		// Mirror the original: re-invalidate whenever the view resizes
-		_graphicsView.SizeChanged += (_, _) =>
-		{
-			_graphicsView.Invalidate();
-		};
+		_graphicsView.SizeChanged += (_, _) => _graphicsView.Invalidate();
 
-		// Mirror the original: update the label on every draw automatically
 		_drawable.OnDrawn = rect =>
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
