@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Media
 				pitch = ProsodyPitch(options.Pitch);
 
 			if (options?.Rate.HasValue ?? false)
-				rate = (options.Rate.Value * 100f).ToString(CultureInfo.InvariantCulture) + "%";
+				rate = ProsodyRate(options.Rate.Value);
 
 			// SSML generation
 			var ssml = new StringBuilder();
@@ -92,6 +92,29 @@ namespace Microsoft.Maui.Media
 			ssml.AppendLine($"</speak>");
 
 			return ssml.ToString();
+		}
+
+		static string ProsodyRate(float rate)
+		{
+			// Map MAUI rate range [0.1, 2.0] to Windows SSML rate constants
+			// 1.0 should be "medium" (normal speed)
+			if (rate <= 0.25f)
+			{
+				return "x-slow";
+			}
+			if (rate <= 0.75f)
+			{
+				return "slow";
+			}
+			if (rate <= 1.25f)
+			{
+				return "medium";
+			}
+			if (rate <= 1.75f)
+			{
+				return "fast";
+			}
+			return "x-fast";
 		}
 
 		static string ProsodyPitch(float? pitch)
