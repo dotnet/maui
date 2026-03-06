@@ -110,6 +110,148 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			searchBar.SearchCommand = new MyCommand();
 		}
 
+		[Fact]
+		public void TestSearchCommandExecutesWithEmptyText()
+		{
+			var searchBar = new SearchBar();
+
+			bool executed = false;
+			string executedWithParameter = null;
+			searchBar.SearchCommand = new Command<string>(p => { 
+				executed = true; 
+				executedWithParameter = p;
+			});
+			
+			// Set empty text explicitly
+			searchBar.Text = "";
+			searchBar.SearchCommandParameter = searchBar.Text;
+
+			((ISearchBarController)searchBar).OnSearchButtonPressed();
+
+			Assert.True(executed);
+			Assert.Equal("", executedWithParameter);
+		}
+
+		[Fact]
+		public void TestSearchCommandExecutesWithNullText()
+		{
+			var searchBar = new SearchBar();
+
+			bool executed = false;
+			object executedWithParameter = "not_set";
+			searchBar.SearchCommand = new Command<object>(p => { 
+				executed = true; 
+				executedWithParameter = p;
+			});
+			
+			// Set null text explicitly
+			searchBar.Text = null;
+			searchBar.SearchCommandParameter = searchBar.Text;
+
+			((ISearchBarController)searchBar).OnSearchButtonPressed();
+
+			Assert.True(executed);
+			Assert.Null(executedWithParameter);
+		}
+
+		[Fact]
+		public void TestSearchCommandExecutesWhenTextBecomesEmpty()
+		{
+			var searchBar = new SearchBar();
+
+			bool executed = false;
+			string executedWithParameter = null;
+			searchBar.SearchCommand = new Command<string>(p => { 
+				executed = true; 
+				executedWithParameter = p;
+			});
+			
+			// Set initial non-empty text
+			searchBar.Text = "initial text";
+			
+			// Reset the flag
+			executed = false;
+			
+			// Clear the text - this should trigger SearchCommand
+			// Set SearchCommandParameter to empty text before clearing
+			searchBar.SearchCommandParameter = "";
+			searchBar.Text = "";
+
+			Assert.True(executed);
+			Assert.Equal("", executedWithParameter);
+		}
+
+		[Fact]
+		public void TestSearchCommandExecutesWhenTextBecomesNull()
+		{
+			var searchBar = new SearchBar();
+
+			bool executed = false;
+			object executedWithParameter = "not_set";
+			searchBar.SearchCommand = new Command<object>(p => { 
+				executed = true; 
+				executedWithParameter = p;
+			});
+			
+			// Set initial non-empty text
+			searchBar.Text = "initial text";
+			
+			// Reset the flag
+			executed = false;
+			
+			// Clear the text to null - this should trigger SearchCommand
+			// Set SearchCommandParameter to null before clearing
+			searchBar.SearchCommandParameter = null;
+			searchBar.Text = null;
+
+			Assert.True(executed);
+			Assert.Null(executedWithParameter);
+		}
+
+		[Fact]
+		public void TestSearchCommandDoesNotExecuteWhenTextRemainsEmpty()
+		{
+			var searchBar = new SearchBar();
+
+			bool executed = false;
+			searchBar.SearchCommand = new Command<string>(p => { 
+				executed = true;
+			});
+			
+			// Start with empty text
+			searchBar.Text = "";
+			
+			// Reset the flag
+			executed = false;
+			
+			// Set to empty again - this should NOT trigger SearchCommand
+			searchBar.Text = "";
+
+			Assert.False(executed);
+		}
+
+		[Fact]
+		public void TestSearchCommandDoesNotExecuteWhenTextRemainsNull()
+		{
+			var searchBar = new SearchBar();
+
+			bool executed = false;
+			searchBar.SearchCommand = new Command<object>(p => { 
+				executed = true;
+			});
+			
+			// Start with null text (default)
+			Assert.Null(searchBar.Text);
+			
+			// Reset the flag
+			executed = false;
+			
+			// Set to null again - this should NOT trigger SearchCommand
+			searchBar.Text = null;
+
+			Assert.False(executed);
+		}
+
 		protected override BindableProperty IsEnabledProperty => SearchBar.IsEnabledProperty;
 
 		protected override BindableProperty CommandProperty => SearchBar.SearchCommandProperty;
