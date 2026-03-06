@@ -2,13 +2,13 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34247, "CollectionView with HeaderTemplate and SelectionMode.Single crashes on selection", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 34247, "CollectionView with HeaderTemplate and SelectionMode.Single crashes on selection", PlatformAffected.Android)]
 public class Issue34247 : ContentPage
 {
 	public Issue34247()
 	{
 		var layout = new StackLayout();
-		
+
 		var resultLabel = new Label()
 		{
 			Text = "Select an item to test",
@@ -29,6 +29,17 @@ public class Issue34247 : ContentPage
 			return new Label
 			{
 				Text = "Header",
+				FontSize = 18,
+				FontAttributes = FontAttributes.Bold,
+				Margin = new Thickness(10)
+			};
+		});
+
+		collectionView.FooterTemplate = new DataTemplate(() =>
+		{
+			return new Label
+			{
+				Text = "Footer",
 				FontSize = 18,
 				FontAttributes = FontAttributes.Bold,
 				Margin = new Thickness(10)
