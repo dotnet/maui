@@ -1,0 +1,597 @@
+# UI Test Category Mapping
+# This file maps source file patterns to UI test categories.
+# Used by the smart test detection system to run only relevant tests for PRs.
+#
+# Rules:
+# - Patterns use glob syntax (** for recursive, * for single level)
+# - Categories must match entries in UITestCategories.cs
+# - Use "*" as category to indicate "run all tests"
+# - Platform-specific rules can limit which platforms to test
+# - Rules are evaluated in order; first match wins unless 'additive: true'
+#
+# Maintained by: .NET MAUI Team
+# Related: src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
+
+# Bypass label - if PR has this label, run all tests
+bypassLabel: "run-all-uitests"
+
+# Maximum changed files before we run all tests (safety threshold)
+maxFilesBeforeFullRun: 100
+
+# Category groups (must match ui-tests.yml)
+categoryGroups:
+  - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
+  - 'Border,BoxView,Brush,Button'
+  - 'CarouselView'
+  - 'Cells,CheckBox,ContextActions,CustomRenderers,DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
+  - 'CollectionView'
+  - 'Entry'
+  - 'Editor,Effects,FlyoutPage,Focus,Fonts,Frame,Gestures,GraphicsView'
+  - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
+  - 'Label'
+  - 'Layout'
+  - 'Lifecycle,ManualReview,Maps'
+  - 'ListView'
+  - 'Navigation'
+  - 'Page,Performance,Picker,ProgressBar'
+  - 'RadioButton,RefreshView'
+  - 'SafeAreaEdges,Shadow'
+  - 'ScrollView'
+  - 'SearchBar,Shape,Slider'
+  - 'SoftInput,Stepper,Switch,SwipeView'
+  - 'Shell'
+  - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
+  - 'ViewBaseTests,Window'
+  - 'WebView'
+
+# File pattern to category mappings
+mappings:
+  # =============================================================================
+  # CONTROLS - Individual control source files
+  # =============================================================================
+  
+  # ActionSheet
+  - patterns:
+      - "**/ActionSheet/**"
+      - "**/ActionSheetArguments.cs"
+    categories: ["ActionSheet"]
+
+  # ActivityIndicator
+  - patterns:
+      - "**/ActivityIndicator/**"
+    categories: ["ActivityIndicator"]
+
+  # Border
+  - patterns:
+      - "**/Border/**"
+      - "**/BorderElement.cs"
+    categories: ["Border"]
+
+  # BoxView
+  - patterns:
+      - "**/BoxView/**"
+    categories: ["BoxView"]
+
+  # Brush
+  - patterns:
+      - "**/Brush/**"
+      - "**/GradientBrush.cs"
+      - "**/LinearGradientBrush.cs"
+      - "**/RadialGradientBrush.cs"
+      - "**/SolidColorBrush.cs"
+      - "**/ImageBrush.cs"
+    categories: ["Brush"]
+
+  # Button
+  - patterns:
+      - "**/Button/**"
+      - "**/IButtonController.cs"
+      - "**/IButtonElement.cs"
+    categories: ["Button"]
+
+  # CarouselView
+  - patterns:
+      - "**/CarouselView/**"
+      - "**/Handlers/Items/**/Carousel*"
+      - "**/Handlers/Items2/**/Carousel*"
+    categories: ["CarouselView"]
+
+  # Cells
+  - patterns:
+      - "**/Cells/**"
+    categories: ["Cells"]
+
+  # CheckBox
+  - patterns:
+      - "**/CheckBox/**"
+    categories: ["CheckBox"]
+
+  # CollectionView
+  - patterns:
+      - "**/CollectionView/**"
+      - "**/Handlers/Items/**"
+      - "**/Handlers/Items2/**"
+      - "**/Items/**"
+      - "**/ItemsView.cs"
+    categories: ["CollectionView"]
+
+  # ContentPage
+  - patterns:
+      - "**/ContentPage/**"
+    categories: ["Page"]
+
+  # ContentView
+  - patterns:
+      - "**/ContentView/**"
+    categories: ["Layout"]
+
+  # ContextActions
+  - patterns:
+      - "**/ContextActions/**"
+    categories: ["ContextActions"]
+
+  # DatePicker
+  - patterns:
+      - "**/DatePicker/**"
+      - "**/DateChangedEventArgs.cs"
+      - "**/DatePickerClosedEventArgs.cs"
+      - "**/DatePickerOpenedEventArgs.cs"
+    categories: ["DatePicker"]
+
+  # DisplayAlert / DisplayPrompt
+  - patterns:
+      - "**/AlertArguments.cs"
+      - "**/PromptArguments.cs"
+    categories: ["DisplayAlert", "DisplayPrompt"]
+
+  # DragAndDrop
+  - patterns:
+      - "**/DragAndDrop/**"
+    categories: ["DragAndDrop"]
+
+  # Editor
+  - patterns:
+      - "**/Editor/**"
+      - "**/IEditorController.cs"
+      - "**/EditorAutoSizeOption.cs"
+    categories: ["Editor"]
+
+  # Entry
+  - patterns:
+      - "**/Entry/**"
+      - "**/IEntryController.cs"
+      - "**/InputView/**"
+    categories: ["Entry"]
+
+  # Effects
+  - patterns:
+      - "**/Effect.cs"
+      - "**/PlatformEffect.cs"
+      - "**/RoutingEffect.cs"
+      - "**/NullEffect.cs"
+      - "**/ExportEffectAttribute.cs"
+    categories: ["Effects"]
+
+  # FlyoutPage
+  - patterns:
+      - "**/FlyoutPage/**"
+      - "**/IFlyoutPageController.cs"
+    categories: ["FlyoutPage"]
+
+  # Focus
+  - patterns:
+      - "**/FocusEventArgs.cs"
+    categories: ["Focus"]
+
+  # Fonts
+  - patterns:
+      - "**/Font*"
+      - "**/ExportFontAttribute.cs"
+    categories: ["Fonts"]
+
+  # Frame
+  - patterns:
+      - "**/Frame/**"
+    categories: ["Frame"]
+
+  # Gestures
+  - patterns:
+      - "**/GestureRecognizer.cs"
+      - "**/GestureElement.cs"
+      - "**/PanGestureRecognizer.cs"
+      - "**/PinchGestureRecognizer.cs"
+      - "**/SwipeGestureRecognizer.cs"
+      - "**/TapGestureRecognizer.cs"
+      - "**/PointerGestureRecognizer.cs"
+      - "**/ChildGestureRecognizer.cs"
+      - "**/IGestureController.cs"
+      - "**/IGestureRecognizer.cs"
+      - "**/IGestureRecognizers.cs"
+    categories: ["Gestures"]
+
+  # GraphicsView
+  - patterns:
+      - "**/GraphicsView/**"
+    categories: ["GraphicsView"]
+
+  # Image
+  - patterns:
+      - "**/Image/**"
+      - "**/ImageSource.cs"
+      - "**/ImageSourceConverter.cs"
+      - "**/FileImageSource.cs"
+      - "**/StreamImageSource.cs"
+      - "**/UriImageSource.cs"
+      - "**/ImageElement.cs"
+    categories: ["Image"]
+
+  # ImageButton
+  - patterns:
+      - "**/ImageButton/**"
+    categories: ["ImageButton"]
+
+  # IndicatorView
+  - patterns:
+      - "**/IndicatorView/**"
+    categories: ["IndicatorView"]
+
+  # Label
+  - patterns:
+      - "**/Label/**"
+      - "**/FormattedString.cs"
+      - "**/Span.cs"
+    categories: ["Label"]
+
+  # Layout
+  - patterns:
+      - "**/Layout/**"
+      - "**/LegacyLayouts/**"
+      - "**/BindableLayout/**"
+      - "**/LayoutOptions.cs"
+      - "**/LayoutAlignment.cs"
+      - "**/StackOrientation.cs"
+      - "**/GridLengthTypeConverter.cs"
+      - "**/RowDefinition*.cs"
+      - "**/ColumnDefinition*.cs"
+    categories: ["Layout"]
+
+  # ListView
+  - patterns:
+      - "**/ListView/**"
+      - "**/IListViewController.cs"
+      - "**/ListProxy*.cs"
+    categories: ["ListView"]
+
+  # Maps
+  - patterns:
+      - "**/Maps/**"
+    categories: ["Maps"]
+
+  # Menu
+  - patterns:
+      - "**/Menu/**"
+      - "**/IMenuItemController.cs"
+    categories: ["ContextActions"]
+
+  # Navigation / NavigationPage
+  - patterns:
+      - "**/NavigationPage/**"
+      - "**/NavigableElement/**"
+      - "**/NavigationModel.cs"
+      - "**/NavigationProxy.cs"
+      - "**/NavigationEventArgs.cs"
+      - "**/INavigation.cs"
+      - "**/INavigationPageController.cs"
+    categories: ["Navigation"]
+
+  # Page
+  - patterns:
+      - "**/Page/**"
+      - "**/IPageController.cs"
+      - "**/IPageContainer.cs"
+      - "**/MultiPage.cs"
+    categories: ["Page"]
+
+  # Picker
+  - patterns:
+      - "**/Picker/**"
+      - "**/PickerClosedEventArgs.cs"
+      - "**/PickerOpenedEventArgs.cs"
+    categories: ["Picker"]
+
+  # ProgressBar
+  - patterns:
+      - "**/ProgressBar/**"
+    categories: ["ProgressBar"]
+
+  # RadioButton
+  - patterns:
+      - "**/RadioButton/**"
+    categories: ["RadioButton"]
+
+  # RefreshView
+  - patterns:
+      - "**/RefreshView/**"
+    categories: ["RefreshView"]
+
+  # ScrollView
+  - patterns:
+      - "**/ScrollView/**"
+      - "**/IScrollViewController.cs"
+      - "**/ScrolledEventArgs.cs"
+      - "**/ScrollToRequestedEventArgs.cs"
+    categories: ["ScrollView"]
+
+  # SearchBar
+  - patterns:
+      - "**/SearchBar/**"
+      - "**/ISearchBarController.cs"
+    categories: ["SearchBar"]
+
+  # Shadow
+  - patterns:
+      - "**/Shadow.cs"
+      - "**/ShadowTypeConverter.cs"
+    categories: ["Shadow"]
+
+  # Shapes
+  - patterns:
+      - "**/Shape/**"
+      - "**/Shapes/**"
+      - "**/Handlers/Shapes/**"
+    categories: ["Shape"]
+
+  # Shell
+  - patterns:
+      - "**/Shell/**"
+      - "**/Handlers/Shell/**"
+      - "**/ShellToolbar.cs"
+      - "**/Routing.cs"
+      - "**/RouteFactory.cs"
+    categories: ["Shell"]
+
+  # Slider
+  - patterns:
+      - "**/Slider/**"
+      - "**/ISliderController.cs"
+    categories: ["Slider"]
+
+  # SoftInput (keyboard behavior)
+  - patterns:
+      - "**/SoftInput*"
+      - "**/KeyboardAccelerator.cs"
+    categories: ["SoftInput"]
+
+  # Stepper
+  - patterns:
+      - "**/Stepper/**"
+    categories: ["Stepper"]
+
+  # Switch
+  - patterns:
+      - "**/Switch/**"
+    categories: ["Switch"]
+
+  # SwipeView
+  - patterns:
+      - "**/SwipeView/**"
+      - "**/ISwipeViewController.cs"
+      - "**/ISwipeItem.cs"
+    categories: ["SwipeView"]
+
+  # TabbedPage
+  - patterns:
+      - "**/TabbedPage/**"
+    categories: ["TabbedPage"]
+
+  # TableView
+  - patterns:
+      - "**/TableView/**"
+      - "**/ITableModel.cs"
+      - "**/ITableViewController.cs"
+    categories: ["TableView"]
+
+  # TimePicker
+  - patterns:
+      - "**/TimePicker/**"
+      - "**/TimeChangedEventArgs.cs"
+      - "**/TimePickerClosedEventArgs.cs"
+      - "**/TimePickerOpenedEventArgs.cs"
+    categories: ["TimePicker"]
+
+  # TitleView / TitleBar
+  - patterns:
+      - "**/TitleBar/**"
+      - "**/TitleView*"
+    categories: ["TitleView"]
+
+  # Toolbar / ToolbarItem
+  - patterns:
+      - "**/Toolbar/**"
+      - "**/ToolbarItem*"
+    categories: ["ToolbarItem"]
+
+  # WebView
+  - patterns:
+      - "**/WebView/**"
+      - "**/HybridWebView/**"
+      - "**/IWebViewController.cs"
+      - "**/HtmlWebViewSource.cs"
+      - "**/UrlWebViewSource.cs"
+    categories: ["WebView"]
+
+  # Window
+  - patterns:
+      - "**/Window/**"
+      - "**/IWindowController.cs"
+      - "**/IWindowCreator.cs"
+    categories: ["Window"]
+
+  # =============================================================================
+  # CROSS-CUTTING CONCERNS
+  # =============================================================================
+
+  # Accessibility
+  - patterns:
+      - "**/Accessibility*"
+      - "**/SemanticProperties.cs"
+      - "**/AutomationProperties.cs"
+    categories: ["Accessibility"]
+
+  # Animation
+  - patterns:
+      - "**/Animation.cs"
+      - "**/AnimationExtensions.cs"
+      - "**/AnimatableKey.cs"
+      - "**/Tweener.cs"
+    categories: ["Animation"]
+
+  # Lifecycle
+  - patterns:
+      - "**/Application/**"
+      - "**/BackgroundingEventArgs.cs"
+      - "**/ModalEventArgs.cs"
+      - "**/Modal*EventArgs.cs"
+    categories: ["Lifecycle"]
+
+  # InputTransparent / IsEnabled / IsVisible
+  - patterns:
+      - "**/InputTransparent*"
+    categories: ["InputTransparent"]
+
+  # View base (affects all controls)
+  - patterns:
+      - "**/View/**"
+      - "**/VisualElement/**"
+      - "**/Element/**"
+      - "**/ViewExtensions.cs"
+      - "**/ViewState.cs"
+    categories: ["ViewBaseTests"]
+
+  # SafeArea
+  - patterns:
+      - "**/SafeArea*"
+    categories: ["SafeAreaEdges"]
+
+  # =============================================================================
+  # TEST FILES - Map test changes to their categories
+  # =============================================================================
+
+  # If a specific test file changes, run that category
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Button*"
+    categories: ["Button"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Label*"
+    categories: ["Label"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/CollectionView*"
+    categories: ["CollectionView"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/CarouselView*"
+    categories: ["CarouselView"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Shell*"
+    categories: ["Shell"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Navigation*"
+    categories: ["Navigation"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/ListView*"
+    categories: ["ListView"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/ScrollView*"
+    categories: ["ScrollView"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Entry*"
+    categories: ["Entry"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Editor*"
+    categories: ["Editor"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/WebView*"
+    categories: ["WebView"]
+
+  - patterns:
+      - "**/TestCases.Shared.Tests/Tests/**/Window*"
+    categories: ["Window"]
+
+  # =============================================================================
+  # PLATFORM-SPECIFIC CHANGES - Run all tests for that platform only
+  # =============================================================================
+
+  - patterns:
+      - "**/Platform/Android/**"
+      - "**/Platforms/Android/**"
+      - "**/*.Android.cs"
+    categories: ["*"]
+    platforms: ["android"]
+
+  - patterns:
+      - "**/Platform/iOS/**"
+      - "**/Platforms/iOS/**"
+      - "**/*.iOS.cs"
+    categories: ["*"]
+    platforms: ["ios"]
+
+  - patterns:
+      - "**/Platform/Windows/**"
+      - "**/Platforms/Windows/**"
+      - "**/*.Windows.cs"
+    categories: ["*"]
+    platforms: ["windows"]
+
+  - patterns:
+      - "**/Platform/MacCatalyst/**"
+      - "**/Platforms/MacCatalyst/**"
+      - "**/*.MacCatalyst.cs"
+    categories: ["*"]
+    platforms: ["maccatalyst"]
+
+  # =============================================================================
+  # CATCH-ALL RULES - Core changes that affect everything
+  # =============================================================================
+
+  # Core framework changes - run all tests
+  - patterns:
+      - "**/src/Core/src/**"
+      - "**/Controls.Core.csproj"
+      - "**/Directory.Build.props"
+      - "**/Directory.Build.targets"
+    categories: ["*"]
+
+  # Handler infrastructure changes - run all tests
+  - patterns:
+      - "**/HandlerProperties.cs"
+      - "**/Handlers/HandlerAttribute.cs"
+    categories: ["*"]
+
+  # XAML infrastructure changes - run all tests
+  - patterns:
+      - "**/Xaml/**"
+    categories: ["*"]
+
+  # Hosting/DI changes - run all tests
+  - patterns:
+      - "**/Hosting/**"
+    categories: ["*"]
+
+  # Test infrastructure changes - run all tests
+  - patterns:
+      - "**/TestCases.HostApp/MauiProgram.cs"
+      - "**/TestCases.HostApp/TestCases.cs"
+      - "**/TestCases.HostApp/*.csproj"
+      - "**/TestCases.Shared.Tests/*.csproj"
+      - "**/TestCases.Shared.Tests/UITestCategories.cs"
+      - "**/TestCases.Shared.Tests/UITest.cs"
+    categories: ["*"]
