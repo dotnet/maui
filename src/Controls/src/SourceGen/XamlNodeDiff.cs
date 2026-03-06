@@ -615,14 +615,14 @@ static class XamlNodeDiff
 				// Both sides have the property — compare values
 				if (!NodeValueEquals(oldPropNode, newPropNode))
 				{
-					if (oldPropNode is ValueNode && newPropNode is ValueNode newVal)
+					if (newPropNode is ValueNode newVal)
 					{
-						// Simple value → simple value
+						// New is a simple value (regardless of what old was: value, binding, etc.)
 						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, newVal.Value?.ToString()));
 					}
 					else
 					{
-						// Complex change (any combination of ValueNode/MarkupNode/ElementNode/ListNode)
+						// New is complex (MarkupNode/ElementNode/ListNode)
 						// Record with the new node so the code writer can handle it
 						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, null, newPropNode));
 					}

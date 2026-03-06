@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -100,7 +101,7 @@ $"""
 	// ---------------------------------------------------------------------------
 
 	[Fact]
-	public void StructuralChange_DiffNull_NoUCGenerated()
+	public void ChildAdd_ProducesUCWithChildListChange()
 	{
 		var v1 =
 $"""
@@ -115,9 +116,12 @@ $"""
 	<Button Text="New" />
 </ContentPage>
 """;
-		// Structural change → ComputeDiff returns null → Generate returns null
+		// Child add → UC generated with child list change handling
 		var result = Generate(v1, v2);
-		Assert.Null(result);
+		Assert.NotNull(result);
+		// UC must contain a version guard and child list change handling
+		Assert.Contains("__version == 1", result!, StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry", result!, StringComparison.Ordinal);
 	}
 
 	// ---------------------------------------------------------------------------
