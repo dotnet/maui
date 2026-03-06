@@ -147,8 +147,6 @@ namespace Microsoft.Maui.Platform
 
 			SetToolbar(null);
 
-			_rootView.SetTitleBar(null, null);
-
 			_rootView.AppWindowId = null;
 
 			if (_rootView.Content is RootNavigationView navView)
