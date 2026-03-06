@@ -50,8 +50,8 @@ public class NodeIdHelperTests
 		// Find the Label node
 		var label = FindByType(ids, "Label");
 		Assert.NotNull(label);
-		// Child of root, index=0 (first collection item)
-		Assert.Equal("Label_0", ids[label]);
+		// Child of root — first node in DFS walk gets "0"
+		Assert.Equal("0", ids[label]);
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,9 +78,9 @@ public class NodeIdHelperTests
 		Assert.NotNull(button);
 		Assert.NotNull(entry);
 
-		Assert.Equal("Label_0", ids[label]);
-		Assert.Equal("Button_1", ids[button]);
-		Assert.Equal("Entry_2", ids[entry]);
+		Assert.Equal("0", ids[label]);
+		Assert.Equal("1", ids[button]);
+		Assert.Equal("2", ids[entry]);
 	}
 
 	// -------------------------------------------------------------------------
@@ -105,8 +105,8 @@ public class NodeIdHelperTests
 		Assert.NotNull(vsl);
 		Assert.NotNull(label);
 
-		Assert.Equal("VerticalStackLayout_0", ids[vsl]);
-		Assert.Equal("VerticalStackLayout_0/Label_0", ids[label]);
+		Assert.Equal("0", ids[vsl]);
+		Assert.Equal("1", ids[label]);
 	}
 
 	// -------------------------------------------------------------------------

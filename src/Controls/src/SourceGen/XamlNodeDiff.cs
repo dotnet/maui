@@ -321,8 +321,8 @@ static class XamlNodeDiff
 		string nodeId;
 		if (depth == 0)
 			nodeId = ""; // root is always "this"
-		else
-			oldIds.TryGetValue(oldNode, out nodeId!);
+		else if (!oldIds.TryGetValue(oldNode, out nodeId!))
+			nodeId = ""; // safety fallback
 
 		// Transplant old ID onto matched new node
 		if (depth > 0)
@@ -569,15 +569,27 @@ static class XamlNodeDiff
 			}
 		}
 
-		var removedIds = new List<string>(removedOldIndices.Count);
+		var removedIds = new List<string>();
 		foreach (var oldIdx in removedOldIndices)
-		{
-			oldIds.TryGetValue(oldChildren[oldIdx], out var removedId);
-			removedIds.Add(removedId ?? "");
-		}
+			CollectSubtreeIds(oldChildren[oldIdx], oldIds, removedIds);
 
 		childListChanges.Add(new ChildListChangeDiff(parentNodeId, oldNode.XmlType, entries, removedIds));
 		return true;
+	}
+
+	/// <summary>
+	/// Recursively collects all node IDs from <paramref name="node"/> and its descendants
+	/// (depth-first). Used to enumerate the full subtree for removal.
+	/// </summary>
+	static void CollectSubtreeIds(ElementNode node, Dictionary<ElementNode, string> ids, List<string> result)
+	{
+		if (ids.TryGetValue(node, out var id))
+			result.Add(id);
+		foreach (var item in node.CollectionItems)
+		{
+			if (item is ElementNode child)
+				CollectSubtreeIds(child, ids, result);
+		}
 	}
 
 	/// <summary>
