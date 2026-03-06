@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 #if !(MACCATALYST || MACOS)
 using CoreTelephony;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Networking
 	{
 		static NWPathMonitor sharedMonitor;
 		static readonly object monitorLock = new object();
-		static volatile bool pathInitialized = false;
+		static readonly ManualResetEventSlim initEvent = new ManualResetEventSlim(false);
 
 		static NWPathMonitor SharedMonitor
 		{
@@ -31,29 +32,15 @@ namespace Microsoft.Maui.Networking
 					if (sharedMonitor == null)
 					{
 						sharedMonitor = new NWPathMonitor();
-						
-						// Set up a handler to track when path becomes available
-						Action<NWPath> initHandler = null;
-						initHandler = (path) =>
-						{
-							pathInitialized = true;
-							// Remove the handler after first call to avoid keeping reference
-							sharedMonitor.SnapshotHandler = null;
-						};
-						sharedMonitor.SnapshotHandler = initHandler;
-						
+						sharedMonitor.SnapshotHandler = _ => initEvent.Set();
 						sharedMonitor.SetQueue(DispatchQueue.DefaultGlobalQueue);
 						sharedMonitor.Start();
-						
-						// Wait synchronously for the first path update (up to 5 seconds)
-						var timeout = DateTime.UtcNow.AddSeconds(5);
-						while (!pathInitialized && DateTime.UtcNow < timeout)
-						{
-							System.Threading.Thread.Sleep(10);
-						}
 					}
-					return sharedMonitor;
 				}
+				// Wait for the first path update to ensure CurrentPath is available.
+				// ManualResetEventSlim stays signaled once Set(), so subsequent calls return immediately.
+				initEvent.Wait(TimeSpan.FromSeconds(5));
+				return sharedMonitor;
 			}
 		}
 
@@ -63,7 +50,7 @@ namespace Microsoft.Maui.Networking
 			return monitor?.CurrentPath;
 		}
 
-		internal static NetworkStatus RemoteHostStatus()
+		static NetworkStatus GetNetworkStatus()
 		{
 			var path = GetCurrentPath();
 			if (path == null || path.Status != NWPathStatus.Satisfied)
@@ -77,19 +64,12 @@ namespace Microsoft.Maui.Networking
 			return NetworkStatus.ReachableViaWiFiNetwork;
 		}
 
-		internal static NetworkStatus InternetConnectionStatus()
-		{
-			var path = GetCurrentPath();
-			if (path == null || path.Status != NWPathStatus.Satisfied)
-				return NetworkStatus.NotReachable;
+		// RemoteHostStatus and InternetConnectionStatus previously had different
+		// implementations (DNS probe to www.microsoft.com vs default route check).
+		// With NWPathMonitor they share the same underlying path status.
+		internal static NetworkStatus RemoteHostStatus() => GetNetworkStatus();
 
-#if __IOS__
-			if (path.UsesInterfaceType(NWInterfaceType.Cellular))
-				return NetworkStatus.ReachableViaCarrierDataNetwork;
-#endif
-
-			return NetworkStatus.ReachableViaWiFiNetwork;
-		}
+		internal static NetworkStatus InternetConnectionStatus() => GetNetworkStatus();
 
 		internal static IEnumerable<NetworkStatus> GetActiveConnectionType()
 		{
@@ -126,21 +106,13 @@ namespace Microsoft.Maui.Networking
 	{
 		// Delay to allow connection status to stabilize before notifying listeners
 		const int ConnectionStatusChangeDelayMs = 100;
-		
+
 		NWPathMonitor pathMonitor;
-		Action<NWPath> pathUpdateHandler;
 
 		internal ReachabilityListener()
 		{
 			pathMonitor = new NWPathMonitor();
-			pathUpdateHandler = async (NWPath path) =>
-			{
-				// Add in artificial delay so the connection status has time to change
-				await Task.Delay(ConnectionStatusChangeDelayMs);
-				ReachabilityChanged?.Invoke();
-			};
-			
-			pathMonitor.SnapshotHandler = pathUpdateHandler;
+			pathMonitor.SnapshotHandler = OnPathUpdate;
 			pathMonitor.SetQueue(DispatchQueue.DefaultGlobalQueue);
 			pathMonitor.Start();
 
@@ -160,7 +132,6 @@ namespace Microsoft.Maui.Networking
 			if (pathMonitor != null)
 			{
 				pathMonitor.SnapshotHandler = null;
-				pathUpdateHandler = null;
 				pathMonitor.Cancel();
 				pathMonitor.Dispose();
 				pathMonitor = null;
@@ -171,6 +142,20 @@ namespace Microsoft.Maui.Networking
 			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = null;
 #pragma warning restore CA1416
 #endif
+		}
+
+		async void OnPathUpdate(NWPath path)
+		{
+			try
+			{
+				// Add in artificial delay so the connection status has time to change
+				await Task.Delay(ConnectionStatusChangeDelayMs);
+				ReachabilityChanged?.Invoke();
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"ReachabilityListener handler failed: {ex}");
+			}
 		}
 
 #if !(MACCATALYST || MACOS)
