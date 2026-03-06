@@ -193,9 +193,11 @@ namespace Microsoft.Maui.Networking
 					void ProcessAllNetworkInfo()
 					{
 						// Fallback for API 21-22 devices where GetAllNetworks() returns empty.
-						// NOTE: The original code used GetAllNetworkInfo() which enumerated all
-						// network interfaces; ActiveNetworkInfo returns only the current default
-						// network. On these older API levels multi-network support is limited,
+						// BEHAVIORAL CHANGE: The original code used GetAllNetworkInfo() which
+						// enumerated all network interfaces and picked the best access level.
+						// ActiveNetworkInfo returns only the current default network, so a
+						// better-connected secondary interface will no longer be considered.
+						// On these older API levels multi-network support is limited,
 						// so this is an acceptable trade-off.
 						try
 						{
@@ -231,8 +233,6 @@ namespace Microsoft.Maui.Networking
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
 						}
 					}
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
 #pragma warning restore CS0618 // Type or member is obsolete
 
 					// Caller guarantees capabilities is non-null and has NetCapability.Internet.
