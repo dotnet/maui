@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics.Platform;
@@ -92,10 +93,26 @@ namespace Microsoft.Maui.Platform
 				uiSlider.SetThumbImage(null, UIControlState.Normal);
 				uiSlider.UpdateThumbColor(slider);
 			}
+
+			// On iOS 26+, SetThumbImage() no longer triggers a layout pass that recalculates
+			// the thumb position at runtime. Explicitly call SetNeedsLayout() to restore this.
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				uiSlider.SetNeedsLayout();
+			}
 		}
 
 		static CGSize CalculateDefaultThumbSize(UISlider uiSlider)
 		{
+			if (uiSlider.Bounds.IsEmpty)
+			{
+				var thumbDiameter = uiSlider.IntrinsicContentSize.Height;
+				if (thumbDiameter > 0)
+				{
+					return new CGSize(thumbDiameter, thumbDiameter);
+				}
+			}
+
 			var trackRect = uiSlider.TrackRectForBounds(uiSlider.Bounds);
 			var thumbRect = uiSlider.ThumbRectForBounds(uiSlider.Bounds, trackRect, 0);
 			return thumbRect.Size;
