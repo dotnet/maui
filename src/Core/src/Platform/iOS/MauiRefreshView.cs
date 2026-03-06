@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using CoreFoundation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -43,6 +42,8 @@ namespace Microsoft.Maui.Platform
 				{
 					if (_isRefreshing)
 					{
+						// Store the current scroll position when refresh starts
+						StoreCurrentScrollPosition();
 						TryOffsetRefresh(this, IsRefreshing);
 						_refreshControl.BeginRefreshing();
 					}
@@ -76,6 +77,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIScrollView scrollView)
 			{
+				// ContentOffset.Y < 0 means the scroll view is mid-pull (being dragged down for refresh).
+				// Adjusting the offset here would fight the  bail out early.gesture 
+				if (scrollView.ContentOffset.Y < 0)
+					return true;
+
 				if (refreshing)
 					scrollView.SetContentOffset(new CGPoint(0, _originalY - _refreshControlHeight), true);
 				else
@@ -100,6 +106,18 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return false;
+		}
+
+		void StoreCurrentScrollPosition()
+		{
+			// _refreshControlParent is set to the innermost UIScrollView by TryInsertRefresh.
+    		// If it's not a UIScrollView (unexpected), we leave _originalY as-is.
+			if (_refreshControlParent is UIScrollView scrollView)
+			{
+				// If content fits entirely in the viewport, the offset is always 0.
+				// Explicitly setting it here avoids capturing any floating-point noise.
+				_originalY = (scrollView.ContentSize.Height <= scrollView.Bounds.Height) ? 0 : scrollView.ContentOffset.Y;
+			}
 		}
 
 		bool TryRemoveRefresh(UIView view, int index = 0)
