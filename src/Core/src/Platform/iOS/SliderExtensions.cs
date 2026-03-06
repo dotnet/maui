@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
@@ -103,6 +104,15 @@ namespace Microsoft.Maui.Platform
 
 		static CGSize CalculateDefaultThumbSize(UISlider uiSlider)
 		{
+			if (uiSlider.Bounds.IsEmpty)
+			{
+				var thumbDiameter = uiSlider.IntrinsicContentSize.Height;
+				if (thumbDiameter > 0)
+				{
+					return new CGSize(thumbDiameter, thumbDiameter);
+				}
+			}
+
 			var trackRect = uiSlider.TrackRectForBounds(uiSlider.Bounds);
 			var thumbRect = uiSlider.ThumbRectForBounds(uiSlider.Bounds, trackRect, 0);
 			return thumbRect.Size;

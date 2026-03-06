@@ -11,7 +11,7 @@ public class Issue13258 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "MAUI Slider thumb image is big on android";
+	public override string Issue => "MAUI Slider thumb image is big on ios/ Mac";
 
 	[Test]
 	[Category(UITestCategories.Slider)]
