@@ -1,2 +1,3 @@
 #nullable enable
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateTextColor(this Google.Android.Material.Button.MaterialButton! platformButton, Microsoft.Maui.ITextStyle! button) -> void

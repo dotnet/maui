@@ -11,6 +11,22 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonBackground(button);
 
+		// TODO: Make this public in .NET 11
+		internal static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
+		{
+			var textColor = button.TextColor;
+
+			if (textColor is not null)
+			{
+				platformButton.SetTextColor(textColor.ToPlatform());
+			}
+			else if (platformButton is MauiMaterialButton mauiButton && mauiButton.DefaultTextColors is not null)
+			{
+				// Reset to default MaterialButton text colors that were cached at construction to restore the original ColorStateList
+				platformButton.SetTextColor(mauiButton.DefaultTextColors);
+			}
+		}
+
 		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonStroke(button);
 
