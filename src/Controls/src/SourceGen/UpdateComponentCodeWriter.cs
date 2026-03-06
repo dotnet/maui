@@ -298,10 +298,11 @@ static class UpdateComponentCodeWriter
 		// With stable IDs, retained children keep their old IDs — no re-registration needed.
 		// (Old position-based IDs required ReRoot on reorder; stable IDs don't.)
 
-		// Unregister removed children and their subtrees
+		// Unregister removed children and their entire subtrees (individual calls since flat IDs
+		// don't support prefix-based subtree removal).
 		foreach (var removedId in change.RemovedNodeIds)
 		{
-			codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(this, \"{removedId}\");");
+			codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this, \"{removedId}\");");
 		}
 	}
 
@@ -353,22 +354,41 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
 		}
 
-		// Recursively create children
+		// Recursively create children (only for Layout containers that support Add())
 		if (element.CollectionItems.Count > 0)
 		{
-			var childLayoutVar = $"__nal_{idx}";
-			codeWriter.WriteLine($"var {childLayoutVar} = (global::Microsoft.Maui.Controls.Layout){varName};");
-
+			bool hasElementChildren = false;
 			for (int i = 0; i < element.CollectionItems.Count; i++)
 			{
-				if (element.CollectionItems[i] is ElementNode childElement)
+				if (element.CollectionItems[i] is ElementNode)
+				{ hasElementChildren = true; break; }
+			}
+
+			if (hasElementChildren)
+			{
+				// Only Layout types support Add(); for non-Layout containers (ContentView, ScrollView, etc.)
+				// fall back to full reload to avoid invalid casts.
+				if (!InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Layout"))
 				{
-					string childNodeId;
-					if (newIds != null && newIds.TryGetValue(childElement, out var childId))
-						childNodeId = childId;
-					else
-						childNodeId = $"{nodeId}_{i}"; // fallback
-					EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache);
+					codeWriter.WriteLine($"// Non-layout container '{typeSymbol.Name}' with children — fallback");
+					codeWriter.WriteLine("goto fallback;");
+					return;
+				}
+
+				var childLayoutVar = $"__nal_{idx}";
+				codeWriter.WriteLine($"var {childLayoutVar} = (global::Microsoft.Maui.Controls.Layout){varName};");
+
+				for (int i = 0; i < element.CollectionItems.Count; i++)
+				{
+					if (element.CollectionItems[i] is ElementNode childElement)
+					{
+						string childNodeId;
+						if (newIds != null && newIds.TryGetValue(childElement, out var childId))
+							childNodeId = childId;
+						else
+							childNodeId = $"{nodeId}_{i}"; // fallback
+						EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache);
+					}
 				}
 			}
 		}
@@ -578,6 +598,22 @@ static class UpdateComponentCodeWriter
 			current = current.BaseType!;
 		}
 		return null;
+	}
+
+	/// <summary>
+	/// Checks whether <paramref name="type"/> inherits from a type with the given fully-qualified
+	/// metadata name (e.g. <c>"Microsoft.Maui.Controls.Layout"</c>).
+	/// </summary>
+	static bool InheritsFrom(INamedTypeSymbol type, string baseTypeFqn)
+	{
+		var current = type.BaseType;
+		while (current != null)
+		{
+			if (string.Equals(current.ToFQDisplayString(), baseTypeFqn, StringComparison.Ordinal))
+				return true;
+			current = current.BaseType;
+		}
+		return false;
 	}
 
 	static string EscapeString(string value) =>

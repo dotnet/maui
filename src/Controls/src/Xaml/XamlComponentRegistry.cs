@@ -234,6 +234,10 @@ public static class XamlComponentRegistry
 				if (!list[i].TryGetTarget(out var target) || ReferenceEquals(target, page))
 					list.RemoveAt(i);
 			}
+
+			// Prune the Type key when no instances remain
+			if (list.Count == 0)
+				s_instancesByType.Remove(type);
 		}
 	}
 

@@ -71,7 +71,8 @@ internal static class XamlHotReloadState
 			{
 				previousXaml = entry.XamlText;
 				previousRoot = entry.ParsedRoot;
-				previousNodeIds = entry.NodeIds;
+				// Return a defensive copy so callers cannot corrupt the cached dictionary
+				previousNodeIds = entry.NodeIds != null ? new Dictionary<ElementNode, string>(entry.NodeIds) : null;
 				nextNodeId = entry.NextNodeId;
 				previousVersion = entry.Version;
 				return true;
