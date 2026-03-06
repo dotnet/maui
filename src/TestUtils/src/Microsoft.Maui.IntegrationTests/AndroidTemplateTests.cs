@@ -143,7 +143,6 @@ namespace Microsoft.Maui.IntegrationTests
 			buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 			buildProps.Add("_IsPublishing=true");
 			buildProps.Add("IlcTreatWarningsAsErrors=false");
-			buildProps.Add("TrimmerSingleWarn=false");
 
 			// Restrict to Android-only to avoid restoring NativeAOT packages for other platforms (e.g., iOS)
 			// which may not be available in the configured NuGet sources
