@@ -319,5 +319,77 @@ namespace Microsoft.Maui.DeviceTests
 
 			return cellContent.ToPlatform().GetParentOfType<UIKit.UICollectionViewCell>().GetBoundingBox();
 		}
+
+		[Fact(DisplayName = "CarouselView ScrollBar Visibility should Update")]
+		public async Task CheckCarouselViewScrollBarVisibilityUpdates()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var carouselView = new CarouselView
+			{
+				ItemsSource = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
+				ItemTemplate = new DataTemplate(() => new Label { WidthRequest = 200 })
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler2>(carouselView, async handler =>
+			{
+				await Task.Delay(100); // Allow layout to complete
+				var nativeCollectionView = handler.Controller?.CollectionView;
+				Assert.NotNull(nativeCollectionView);
+
+				// CarouselView should use CompositionalLayout
+				Assert.IsType<UICollectionViewCompositionalLayout>(nativeCollectionView.CollectionViewLayout);
+
+				// Test ScrollBarVisibility.Always
+				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
+				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
+				await Task.Yield(); // Allow BeginInvokeOnMainThread callbacks to drain
+
+				// Poll for the internal scroll view (it may not be created synchronously)
+				UIScrollView internalScrollView = null;
+				for (int attempt = 0; attempt < 10 && internalScrollView == null; attempt++)
+				{
+					internalScrollView = FindInternalScrollView(nativeCollectionView);
+					if (internalScrollView == null)
+						await Task.Delay(100);
+				}
+				Assert.NotNull(internalScrollView); // Must exist for the test to be valid
+
+				Assert.True(internalScrollView.ShowsHorizontalScrollIndicator);
+				Assert.True(internalScrollView.ShowsVerticalScrollIndicator);
+				Assert.True(nativeCollectionView.ShowsHorizontalScrollIndicator);
+				Assert.True(nativeCollectionView.ShowsVerticalScrollIndicator);
+
+				// Test ScrollBarVisibility.Never
+				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
+				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Never;
+				await Task.Yield();
+
+				Assert.False(internalScrollView.ShowsHorizontalScrollIndicator); // Key assertion for this bug!
+				Assert.False(internalScrollView.ShowsVerticalScrollIndicator);
+				Assert.False(nativeCollectionView.ShowsHorizontalScrollIndicator);
+				Assert.False(nativeCollectionView.ShowsVerticalScrollIndicator);
+			});
+		}
+
+		private static UIScrollView FindInternalScrollView(UICollectionView collectionView)
+		{
+			// In CV2 the scroll indicators are managed by an internal UIScrollView.
+			foreach (var subview in collectionView.Subviews)
+			{
+				if (subview is UIScrollView scrollView && scrollView != collectionView)
+				{
+					return scrollView;
+				}
+			}
+			return null;
+		}
 	}
 }
