@@ -625,6 +625,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		PlatformView.Layout = CreateItemsLayout();
 
+		// Reset cached cross-axis size so OnPlatformSizeChanged re-evaluates column count
+		// after the layout type or orientation changes.
+		_lastGridLayoutWidth = -1;
+
 		// Update header/footer orientation
 		if (PlatformView is MauiItemsView mauiItemsView)
 		{
@@ -694,7 +698,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	/// </summary>
 	void OnPlatformSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 	{
-		if (Layout is not GridItemsLayout || PlatformView is null)
+		if (Layout is not GridItemsLayout || PlatformView is null || VirtualView is null)
 			return;
 
 		// When no explicit size is set, UniformGridLayout receives the correct available
@@ -717,13 +721,13 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		_lastGridLayoutWidth = newCrossAxisSize;
 
-		// SizeChanged fires AFTER the current layout pass completes, so UpdateLayout() is a
-		// no-op here (nothing is queued dirty). We must call InvalidateMeasure() on the
-		// UniformGridLayout itself — this directly notifies its attached ItemsRepeater to
-		// schedule a fresh MeasureOverride call on the next frame, giving UniformGridLayout
-		// the correct cross-axis size to recompute column (or row) count.
-		if (PlatformView.Layout is UniformGridLayout gridLayout)
-			gridLayout.InvalidateMeasure();
+		// SizeChanged fires AFTER the current layout pass completes, so any call that only
+		// processes queued dirty work is a no-op here. We must call InvalidateMeasure() on
+		// the inner ItemsRepeater directly — this schedules a fresh MeasureOverride on the
+		// next frame, giving UniformGridLayout the correct cross-axis size to recompute the
+		// column (or row) count.
+		if (PlatformView is MauiItemsView mauiItemsView)
+			mauiItemsView.InvalidateItemsRepeaterMeasure();
 	}
 
 	void FindScrollViewer()
@@ -794,6 +798,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				 e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment))
 		{
 			UpdateSnapPoints();
+		}
+		else if (e.PropertyName == nameof(ItemsLayout.Orientation))
+		{
+			// Orientation change swaps which axis is "cross-axis", so the cached size is
+			// no longer valid — reset it so OnPlatformSizeChanged re-evaluates correctly.
+			_lastGridLayoutWidth = -1;
 		}
 	}
 

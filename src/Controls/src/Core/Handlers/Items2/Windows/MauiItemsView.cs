@@ -212,4 +212,10 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		return base.ArrangeOverride(finalSize);
 	}
 
+	/// <summary>
+	/// Invalidates the inner <c>ItemsRepeater</c>'s measure so that <c>UniformGridLayout</c>
+	/// recalculates column/row count on the next layout pass.
+	/// </summary>
+	internal void InvalidateItemsRepeaterMeasure() => _itemsRepeater?.InvalidateMeasure();
+
 }
