@@ -40,6 +40,14 @@ This guidance assumes:
 - **iOS/macOS**: Xcode (current stable version)
 - **Windows**: Windows SDK
 
+### Azure DevOps CI Access
+
+- **Azure CLI (`az`)** — preferred over `curl`/`Invoke-RestMethod` for CI queries
+  - Install: `brew install azure-cli` (macOS) / `winget install Microsoft.AzureCLI` (Windows)
+  - Setup: `az extension add --name azure-devops` (`az login` optional — `dnceng-public` is publicly accessible)
+  - Defaults: `az devops configure --defaults organization=https://dev.azure.com/dnceng-public project=public`
+  - For structured CI queries, use the `azdo-build-investigator` skill scripts in `.github/skills/azdo-build-investigator/`
+
 ## Project Structure
 
 ### Important Directories

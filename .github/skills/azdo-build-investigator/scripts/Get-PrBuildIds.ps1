@@ -62,4 +62,23 @@ $builds = $checks | Where-Object { $_.link -match "dev\.azure\.com" } | ForEach-
     }
 } | Sort-Object -Property Pipeline, BuildId -Unique
 
-$builds
+# Diagnose the no-build case — common when CI is skipped or not yet triggered
+$noBuildRows = $builds | Where-Object { -not $_.BuildId }
+if ($noBuildRows) {
+    Write-Host ""
+    Write-Host "⚠️  Some pipelines have no build ID — CI was not triggered for these:" -ForegroundColor Yellow
+    foreach ($row in $noBuildRows) {
+        Write-Host "   Pipeline : $($row.Pipeline)" -ForegroundColor Yellow
+        Write-Host "   State    : $($row.State)" -ForegroundColor Yellow
+        Write-Host "   Link     : $($row.Link)" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "   Likely causes:" -ForegroundColor Cyan
+        Write-Host "     • PR only modifies path-excluded files (e.g. .github/**, docs/**)" -ForegroundColor Cyan
+        Write-Host "     • Build has not been queued yet (maintainer trigger required)" -ForegroundColor Cyan
+        Write-Host "     • PR is in draft state" -ForegroundColor Cyan
+        Write-Host "   To check path filters: look for 'paths.exclude' in eng/pipelines/ci.yml" -ForegroundColor Cyan
+        Write-Host ""
+    }
+}
+
+$builds | Where-Object { $_.BuildId }
