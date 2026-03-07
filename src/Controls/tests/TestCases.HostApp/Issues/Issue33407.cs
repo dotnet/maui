@@ -83,7 +83,7 @@ class Issue33407EntryListPage : ContentPage
 		var collection = new CollectionView { SelectionMode = SelectionMode.Single };
 		collection.ItemsSource = new[]
 		{
-			new Issue33407TestItem { Id = "E1", Title = "IsPassword works correctly", AutomationId = "TestE1" }
+			new Issue33407TestItem { Id = "E1", Title = "No gap at top after rotation", AutomationId = "TestE1" }
 		};
 		collection.ItemTemplate = new DataTemplate(() =>
 		{
@@ -125,24 +125,24 @@ class Issue33407E1Page : ContentPage
 			{
 				new Label
 				{
-					Text = "1. In the Entry control below, input some text. The test passes if the text is not obscured."
+					Text = "1. Rotate the device between portrait and landscape with the keyboard hidden. The test passes if no extra gap appears at the top of the page above the entries."
 				},
 				new UITestEntry
 				{
 					IsPassword = false,
 					IsCursorVisible = false,
-					Placeholder = "IsPassword=False",
+					Placeholder = "Top gap check (normal entry)",
 					AutomationId = "Entry1"
 				},
 				new Label
 				{
-					Text = "2. In the Entry control below, input some text. The test passes if the text is obscured."
+					Text = "2. Tap into each Entry, then rotate the device again. The test passes if no additional top gap appears and both entries remain aligned directly under this text."
 				},
 				new UITestEntry
 				{
 					IsPassword = true,
 					IsCursorVisible = false,
-					Placeholder = "IsPassword=True",
+					Placeholder = "Top gap check (password entry)",
 					AutomationId = "Entry2"
 				}
 			}

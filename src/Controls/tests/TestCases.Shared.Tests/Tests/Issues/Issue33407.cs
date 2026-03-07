@@ -33,12 +33,13 @@ public class Issue33407 : _IssuesUITest
 		// Rotate while keyboard is visible — RestorePosition() incorrectly used the portrait Y
 		// in landscape space before the fix, causing a gap at the top.
 		App.SetOrientationLandscape();
-		Thread.Sleep(2000);
 
 		// Dismiss keyboard before screenshot to avoid cursor flakiness.
 		App.DismissKeyboard();
 
-		VerifyScreenshot();
+		// Use retryTimeout to wait for the keyboard-dismiss/restore animation to fully settle
+		// before asserting, avoiding flaky mid-transition screenshots.
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
 #endif
