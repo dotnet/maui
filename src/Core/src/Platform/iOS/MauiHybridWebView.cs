@@ -23,10 +23,7 @@ namespace Microsoft.Maui.Platform
 		{
 			EvaluateJavaScript(
 				new NSString($"window.external.receiveMessage({JsonSerializer.Serialize(rawMessage, RawMessageContext.Default.String)})"),
-				(result, error) =>
-				{
-					// Handle the result or error here
-				});
+				completionHandler: null!);
 		}
 
 		[JsonSourceGenerationOptions()]
