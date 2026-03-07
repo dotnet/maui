@@ -256,7 +256,15 @@ namespace Microsoft.Maui.Platform
 			else if (platformView is Border border)
 				border.UpdateBackground(view.Background);
 			else if (platformView is Panel panel)
+			{
 				panel.UpdateBackground(view.Background);
+
+				// Fix: ensure hit testing works when background is null
+				if (view.Background == null)
+				{
+					panel.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+				}
+			}
 		}
 
 		internal static void UpdatePlatformViewBackground(this FrameworkElement platformView, IView view, Brush? defaultBrush = null)
