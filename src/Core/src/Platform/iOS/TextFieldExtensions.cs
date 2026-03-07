@@ -40,9 +40,15 @@ namespace Microsoft.Maui.Platform
 				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
 				{
 					mauiTextField.SuppressTextPropertySet(true);
-					textField.Text = string.Empty;
-					textField.InsertText(currentText);
-					mauiTextField.SuppressTextPropertySet(false);
+					try
+					{
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+					}
+					finally
+					{
+						mauiTextField.SuppressTextPropertySet(false);
+					}
 				}
 			}
 			else
