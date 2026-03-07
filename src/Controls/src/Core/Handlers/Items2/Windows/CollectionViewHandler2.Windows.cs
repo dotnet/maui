@@ -34,6 +34,7 @@ public partial class CollectionViewHandler2
 public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 {
 	bool _ignorePlatformSelectionChange;
+	bool _selectionDirty;
 
 	protected override IItemsLayout Layout { get => ItemsView.ItemsLayout; }
 
@@ -134,6 +135,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					});
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
+			PlatformView.Loaded += OnPlatformViewLoaded;
 		}
 	}
 
@@ -145,6 +147,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		{
 			oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
 			oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
+			oldListViewBase.Loaded -= OnPlatformViewLoaded;
 		}
 
 		if (ItemsView is not null)
@@ -163,6 +166,19 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		UpdatePlatformSelection();
 
 		_ignorePlatformSelectionChange = false;
+	}
+
+	/// <summary>
+	/// Called when the WinUI ItemsView is loaded into the visual tree.
+	/// Re-applies any pending selection that was deferred while the view was off-screen.
+	/// </summary>
+	void OnPlatformViewLoaded(object sender, UI.Xaml.RoutedEventArgs e)
+	{
+		if (_selectionDirty)
+		{
+			_selectionDirty = false;
+			UpdatePlatformSelection();
+		}
 	}
 
 	/// <summary>
@@ -312,6 +328,15 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 		if (PlatformView is null || ItemsView is null)
 		{
+			return;
+		}
+
+		// When the WinUI ItemsView is not loaded (e.g. the page is hidden during navigation),
+		// Select(index) calls silently fail because item containers are not realized.
+		// Defer the selection update until the view is loaded again.
+		if (!PlatformView.IsLoaded)
+		{
+			_selectionDirty = true;
 			return;
 		}
 
