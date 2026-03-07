@@ -482,7 +482,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			cell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 
-			var bindingContext = ItemsSource[indexPath];
+			if (!TryGetBindingContext(indexPath, out var bindingContext))
+			{
+				// UICollectionView can briefly request cells with stale index paths while the source is changing.
+				// In that case there is no item to bind, so skip the update for this pass.
+				cell.Unbind();
+				return;
+			}
 
 			// If we've already created a cell for this index path (for measurement), re-use the content
 			if (_measurementCells != null && _measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
@@ -493,7 +499,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				cell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);
+				cell.Bind(ItemsView.ItemTemplate, bindingContext, ItemsView);
 			}
 
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
@@ -888,10 +894,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateTemplatedCell(templatedCell, indexPath);
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
-			if (_measurementCells != null)
-				_measurementCells[ItemsSource[indexPath]] = templatedCell;
+			if (_measurementCells != null && TryGetBindingContext(indexPath, out var bindingContext))
+			{
+				_measurementCells[bindingContext] = templatedCell;
+			}
 
 			return templatedCell;
+		}
+
+		bool TryGetBindingContext(NSIndexPath indexPath, out object bindingContext)
+		{
+			bindingContext = null;
+
+			var itemsSource = ItemsSource;
+			if (itemsSource == null || !itemsSource.IsIndexPathValid(indexPath))
+			{
+				return false;
+			}
+
+			bindingContext = itemsSource[indexPath];
+			return bindingContext != null;
 		}
 
 		internal CGSize GetSizeForItem(NSIndexPath indexPath)
