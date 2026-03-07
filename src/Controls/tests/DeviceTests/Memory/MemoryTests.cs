@@ -85,6 +85,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
+				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
 
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
@@ -571,6 +572,91 @@ public class MemoryTests : ControlsHandlerTestBase
 			if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
 			{
 				app.SetWindow(null);
+			}
+		});
+
+		await AssertionExtensions.WaitForGC([.. references]);
+	}
+
+	[Fact("FlyoutPage Detail Handler Is Disconnected When Replaced")]
+	public async Task FlyoutPageDetailDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+		var flyoutPage = new FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = new NavigationPage(new ContentPage { Title = "Initial Detail" })
+		};
+
+		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
+		{
+			await OnLoadedAsync(flyoutPage);
+
+			// Capture old detail and its handler before replacement
+			var oldDetail = flyoutPage.Detail;
+			var oldHandler = oldDetail.Handler;
+			Assert.NotNull(oldHandler);
+
+			references.Add(new(oldDetail));
+			references.Add(new(oldHandler));
+			references.Add(new(oldHandler.PlatformView));
+
+			// Replace detail
+			var newDetailPage = new ContentPage { Title = "New Detail" };
+			flyoutPage.Detail = new NavigationPage(newDetailPage);
+			await OnLoadedAsync(newDetailPage);
+
+			// The fix calls previousDetail.Handler?.DisconnectHandler() in the Detail setter.
+			// Without the fix, the old handler stays connected (non-null).
+			Assert.Null(oldDetail.Handler);
+
+			oldDetail = null;
+			oldHandler = null;
+		});
+
+		await AssertionExtensions.WaitForGC([.. references]);
+	}
+
+	[Fact("FlyoutPage Detail Handler Disconnects With Multiple Replacements")]
+	public async Task FlyoutPageDetailDoesNotLeakWithMultipleReplacements()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+		var flyoutPage = new FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = new NavigationPage(new ContentPage { Title = "Initial Detail" })
+		};
+
+		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
+		{
+			await OnLoadedAsync(flyoutPage);
+
+			for (int i = 0; i < 5; i++)
+			{
+				var oldDetail = flyoutPage.Detail;
+				var oldHandler = oldDetail.Handler;
+				Assert.NotNull(oldHandler);
+
+				if (i < 3)
+				{
+					references.Add(new(oldDetail));
+					references.Add(new(oldHandler));
+					references.Add(new(oldHandler.PlatformView));
+				}
+
+				var newDetailPage = new ContentPage { Title = $"Detail {i}" };
+				flyoutPage.Detail = new NavigationPage(newDetailPage);
+				await OnLoadedAsync(newDetailPage);
+
+				// Each replacement must disconnect the previous detail's handler
+				Assert.Null(oldDetail.Handler);
+
+				oldDetail = null;
+				oldHandler = null;
 			}
 		});
 
