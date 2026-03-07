@@ -317,15 +317,24 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
    - **Used by**: When investigating CI failures
 
-8. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+9. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
    - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
+<<<<<<< Updated upstream
+=======
+10. **evaluate-pr-tests** (`.github/skills/evaluate-pr-tests/SKILL.md`)
+   - **Purpose**: Evaluates tests added in a PR for coverage, quality, edge cases, and test type appropriateness
+   - **Trigger phrases**: "evaluate tests in PR #XXXXX", "review test quality", "are these tests good enough", "check test coverage"
+   - **Scripts**: `Gather-TestContext.ps1`
+   - **Checks**: Fix coverage, edge case gaps, test type preference (unit > device > UI), conventions, flakiness risk, duplicate coverage, platform scope, assertion quality
+
+>>>>>>> Stashed changes
 #### Internal Skills (Used by Agents)
 
-9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+10. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
