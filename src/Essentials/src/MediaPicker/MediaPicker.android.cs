@@ -91,22 +91,14 @@ namespace Microsoft.Maui.Media
 					using var inputStream = File.OpenRead(captureResult);
 					var fileName = System.IO.Path.GetFileName(captureResult);
 					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-						
-						var rotatedPath = System.IO.Path.Combine(
-							System.IO.Path.GetDirectoryName(captureResult),
-							System.IO.Path.GetFileNameWithoutExtension(captureResult) + "_rotated" + System.IO.Path.GetExtension(captureResult));
-							
-						using var outputStream = File.Create(rotatedPath);
-						rotatedStream.Position = 0;
-						await rotatedStream.CopyToAsync(outputStream);
-						
-						// Use the rotated image and delete the original
-						try 
-						{ 
-							File.Delete(captureResult);
-						}
-						catch { }
-						captureResult = rotatedPath;
+					rotatedStream.Position = 0;
+					
+					// Delete original file
+					try { File.Delete(captureResult); } catch { }
+					
+					// Write rotated image to original path (preserves filename)
+					using var outputStream = File.Create(captureResult);
+					await rotatedStream.CopyToAsync(outputStream);
 					}
 					
 					// Apply compression/resizing if needed for photos
@@ -165,17 +157,14 @@ namespace Microsoft.Maui.Media
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
-							var rotatedPath = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(path),
-								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-								
-							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
-							await rotatedStream.CopyToAsync(outputStream);
 							
-							// Use the rotated image
-							path = rotatedPath;
+							// Delete original file
+							try { File.Delete(path); } catch { }
+							
+							// Write rotated image to original path (preserves filename)
+							using var outputStream = File.Create(path);
+							await rotatedStream.CopyToAsync(outputStream);
 						}
 
 						// Apply compression/resizing if needed
@@ -219,17 +208,14 @@ namespace Microsoft.Maui.Media
 					using var inputStream = File.OpenRead(path);
 					var fileName = System.IO.Path.GetFileName(path);
 					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-					
-					var rotatedPath = System.IO.Path.Combine(
-						System.IO.Path.GetDirectoryName(path),
-						System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-						
-					using var outputStream = File.Create(rotatedPath);
 					rotatedStream.Position = 0;
-					await rotatedStream.CopyToAsync(outputStream);
 					
-					// Use the rotated image
-					path = rotatedPath;
+					// Delete original file
+					try { File.Delete(path); } catch { }
+					
+					// Write rotated image to original path (preserves filename)
+					using var outputStream = File.Create(path);
+					await rotatedStream.CopyToAsync(outputStream);
 				}
 
 				// Apply compression/resizing if needed
@@ -290,17 +276,14 @@ namespace Microsoft.Maui.Media
 							using var inputStream = File.OpenRead(path);
 							var fileName = System.IO.Path.GetFileName(path);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
-							var rotatedPath = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(path),
-								System.IO.Path.GetFileNameWithoutExtension(path) + "_rotated" + System.IO.Path.GetExtension(path));
-								
-							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
-							await rotatedStream.CopyToAsync(outputStream);
 							
-							// Use the rotated image
-							path = rotatedPath;
+							// Delete original file
+							try { File.Delete(path); } catch { }
+							
+							// Write rotated image to original path (preserves filename)
+							using var outputStream = File.Create(path);
+							await rotatedStream.CopyToAsync(outputStream);
 						}
 
 						// Apply compression/resizing if needed
@@ -368,21 +351,15 @@ namespace Microsoft.Maui.Media
 
 				if (processedStream != null)
 				{
-					// Determine output extension based on processed data and original filename
-					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options?.CompressionQuality ?? 100, inputFileName);
-					var processedFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + "_processed" + outputExtension;
-					var processedPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(imagePath), processedFileName);
-
-					// Write processed image to file
-					using var outputStream = File.Create(processedPath);
-					processedStream.Position = 0;
-					await processedStream.CopyToAsync(outputStream);
-
-					// Delete original file
-					try
-					{ originalFile.Delete(); }
-					catch { }
-					return processedPath;
+				// Delete original file first
+				try { originalFile.Delete(); } catch { }
+				
+				// Write processed image to original path (preserves filename)
+				using var outputStream = File.Create(imagePath);
+				processedStream.Position = 0;
+				await processedStream.CopyToAsync(outputStream);
+				
+				return imagePath;
 				}
 
 				// If ImageProcessor returns null (e.g., on .NET Standard), ImageProcessor.IsProcessingNeeded would have returned false,
@@ -488,17 +465,14 @@ namespace Microsoft.Maui.Media
 							using var inputStream = File.OpenRead(processedPath);
 							var fileName = System.IO.Path.GetFileName(processedPath);
 							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							
-							var rotatedPath = System.IO.Path.Combine(
-								System.IO.Path.GetDirectoryName(processedPath),
-								System.IO.Path.GetFileNameWithoutExtension(processedPath) + "_rotated" + System.IO.Path.GetExtension(processedPath));
-								
-							using var outputStream = File.Create(rotatedPath);
 							rotatedStream.Position = 0;
-							await rotatedStream.CopyToAsync(outputStream);
 							
-							// Use the rotated image
-							processedPath = rotatedPath;
+							// Delete original file
+							try { File.Delete(processedPath); } catch { }
+							
+							// Write rotated image to original path (preserves filename)
+							using var outputStream = File.Create(processedPath);
+							await rotatedStream.CopyToAsync(outputStream);
 						}
 
 						// Apply compression/resizing if needed
