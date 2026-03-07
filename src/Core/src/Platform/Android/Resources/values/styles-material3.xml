@@ -5,6 +5,7 @@
         <!-- For .NET 9 we opt out of edge to edge enforcement by default -->
         <item name="maui_edgetoedge_optout">true</item>
         <item name="maui_splash">false</item>
+        <item name="bottomNavigationViewStyle">@style/Widget.Material3.BottomNavigationView</item>
     </style>
 
 
