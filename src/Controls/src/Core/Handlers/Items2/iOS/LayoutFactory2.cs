@@ -406,8 +406,14 @@ internal static class LayoutFactory2
 					}
 				}
 
-				lastPosition = pageIndex;
+
+				if (cv2Controller.IsRotating())
+				{
+					return;
+				}
+        
 				//Update the CarouselView position
+        lastPosition = pageIndex;
 				cv2Controller?.SetPosition(carouselPosition);
 				cv2Controller.ScrollToRequested = false;
 			};

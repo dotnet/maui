@@ -7,7 +7,9 @@ using System.Xml.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
+	/// <summary>
+	/// Represents a view that provides context-specific swipe interactions.
+	/// </summary>
 	[ContentProperty(nameof(Content))]
 	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
@@ -15,7 +17,9 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeView"/> class.
+		/// </summary>
 		public SwipeView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
@@ -55,35 +59,45 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Threshold']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the swipe threshold distance.
+		/// </summary>
 		public double Threshold
 		{
 			get { return (double)GetValue(ThresholdProperty); }
 			set { SetValue(ThresholdProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='LeftItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the left side.
+		/// </summary>
 		public SwipeItems LeftItems
 		{
 			get { return (SwipeItems)GetValue(LeftItemsProperty); }
 			set { SetValue(LeftItemsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='RightItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the right side.
+		/// </summary>
 		public SwipeItems RightItems
 		{
 			get { return (SwipeItems)GetValue(RightItemsProperty); }
 			set { SetValue(RightItemsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='TopItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the top side.
+		/// </summary>
 		public SwipeItems TopItems
 		{
 			get { return (SwipeItems)GetValue(TopItemsProperty); }
 			set { SetValue(TopItemsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='BottomItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the bottom side.
+		/// </summary>
 		public SwipeItems BottomItems
 		{
 			get { return (SwipeItems)GetValue(BottomItemsProperty); }
@@ -196,7 +210,9 @@ namespace Microsoft.Maui.Controls
 			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Close']/Docs/*" />
+		/// <summary>
+		/// Closes the swipe view.
+		/// </summary>
 		public void Close(bool animated = true)
 		{
 			CloseRequested?.Invoke(this, new CloseRequestedEventArgs(animated));

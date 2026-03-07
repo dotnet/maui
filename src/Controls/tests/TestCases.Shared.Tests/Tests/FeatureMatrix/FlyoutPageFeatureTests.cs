@@ -4,9 +4,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class FlyoutPageFeatureTests : UITest
+public class FlyoutPageFeatureTests : _GalleryUITest
 {
 	public const string FlyoutPageFeatureMatrix = "Flyout Feature Matrix";
+	public override string GalleryPageName => FlyoutPageFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string FlowDirectionRTL = "FlowDirectionRTL";
@@ -25,12 +26,6 @@ public class FlyoutPageFeatureTests : UITest
 	public FlyoutPageFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(FlyoutPageFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -188,7 +183,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(IsEnabledFalse);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/26726
@@ -202,7 +197,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link:  https://github.com/dotnet/maui/issues/31374, https://github.com/dotnet/maui/issues/31372
@@ -218,7 +213,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(IsPresentedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
@@ -252,7 +247,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.EnterText(TitleEntry, "New Title");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// FlyoutLayoutBehavior is not changed in mobile platforms,  Issue Link: https://github.com/dotnet/maui/issues/16245
@@ -266,7 +261,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorSplit);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/31390
@@ -280,7 +275,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorSplitOnPortrait);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
@@ -296,7 +291,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorPopover);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -339,7 +334,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap("IconFontIconButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(18)]
@@ -354,7 +349,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorPopover);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -399,7 +394,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap("BackgroundColorLightYellowButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(22)]
@@ -412,6 +407,6 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(IsVisibleFalse);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

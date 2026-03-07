@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinitionCollectionTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.RowDefinitionCollectionTypeConverter']/Docs/*" />
+	/// <summary>Converts a comma-separated string of grid lengths to a <see cref="RowDefinitionCollection"/>.</summary>
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.RowDefinitionCollectionTypeConverter")]
 	public class RowDefinitionCollectionTypeConverter : TypeConverter
 	{

@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarTextColorMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode']/Docs/*" />
+	/// <summary>Specifies how iOS status bar text color adjusts based on navigation bar color.</summary>
 	public enum StatusBarTextColorMode
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarTextColorMode.xml" path="//Member[@MemberName='MatchNavigationBarTextLuminosity']/Docs/*" />
+		/// <summary>Adjusts text color based on navigation bar title text luminosity.</summary>
 		MatchNavigationBarTextLuminosity,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/StatusBarTextColorMode.xml" path="//Member[@MemberName='DoNotAdjust']/Docs/*" />
+		/// <summary>Does not adjust the status bar text color.</summary>
 		DoNotAdjust
 	}
 }

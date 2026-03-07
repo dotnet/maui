@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[Category(UITestCategories.Compatibility)]
 		public void DelayedLabelBindingShowsUp()
 		{
 			Task.Delay(2000).Wait();

@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Slider background lays out wrong Android";
 
 		[Test]
-		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
+		[Category(UITestCategories.Slider)]
 		public void Bugzilla29128Test()
 		{
 			App.WaitForElement("SliderId");

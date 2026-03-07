@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla36009Test()
 		{
 			App.WaitForElementTillPageNavigationSettled("Victory");

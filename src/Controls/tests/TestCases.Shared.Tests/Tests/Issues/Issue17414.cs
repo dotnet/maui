@@ -13,7 +13,6 @@ public class Issue17414 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.FlyoutPage)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyFlyoutContentHasNoDefaultCornerRadius()
 	{

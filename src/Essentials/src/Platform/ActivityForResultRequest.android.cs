@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
@@ -26,6 +27,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 {
 	protected ActivityResultLauncher launcher;
 	protected TaskCompletionSource<TResult> tcs = null;
+	protected WeakReference<ComponentActivity> registeredActivity = null;
 
 	/// <summary>
 	/// Gets a value indicating whether the request is registered.
@@ -38,10 +40,19 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	/// <param name="componentActivity">The component activity to register the request with.</param>
 	public void Register(ComponentActivity componentActivity)
 	{
+		// Only register if we don't have a valid registration already
+		// This prevents temporary activities from invalidating the launcher registered with the main activity
+		if (registeredActivity?.TryGetTarget(out var existingActivity) == true &&
+			!existingActivity.IsDestroyed && !existingActivity.IsFinishing)
+		{
+			return;
+		}
+
 		var contract = new TContract();
 		var callback = new ActivityResultCallback<TResult>(result => tcs?.SetResult(result));
 
 		launcher = componentActivity.RegisterForActivityResult(contract, callback);
+		registeredActivity = new WeakReference<ComponentActivity>(componentActivity);
 	}
 
 	/// <summary>
@@ -59,6 +70,10 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		if (!IsRegistered)
 		{
+			Trace.WriteLine("""
+			                ActivityForResultRequest is not registered; cancelling the request. 
+			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
+			                """);
 			tcs.SetCanceled();
 			return tcs.Task;
 		}

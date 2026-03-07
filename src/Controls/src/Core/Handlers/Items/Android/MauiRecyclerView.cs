@@ -425,9 +425,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (args.Mode == ScrollToMode.Position)
 			{
 				// Do not use `IGroupableItemsViewSource` since `UngroupedItemsSource` also implements that interface
-				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource)
+				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource ungroupedSource)
 				{
-					return args.Index;
+					return ungroupedSource.HasHeader ? args.Index + 1 : args.Index;
 				}
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
@@ -583,6 +583,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}
+			else if (showEmptyView && currentAdapter == _emptyViewAdapter)
+			{
+				if (ShouldUpdateEmptyView())
+				{
+					// Header/footer properties changed - detach and reattach adapter to force RecyclerView to recalculate the positions.
+					SetAdapter(null);
+					SwapAdapter(_emptyViewAdapter, true);
+					UpdateEmptyView();
+				}
+			}
+		}
+
+		bool ShouldUpdateEmptyView()
+		{
+			if (ItemsView is StructuredItemsView structuredItemsView)
+			{
+				if (_emptyViewAdapter.Header != structuredItemsView.Header ||
+					_emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate ||
+					_emptyViewAdapter.Footer != structuredItemsView.Footer ||
+					_emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate ||
+					_emptyViewAdapter.EmptyView != ItemsView.EmptyView ||
+					_emptyViewAdapter.EmptyViewTemplate != ItemsView.EmptyViewTemplate)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		internal void AdjustScrollForItemUpdate()
