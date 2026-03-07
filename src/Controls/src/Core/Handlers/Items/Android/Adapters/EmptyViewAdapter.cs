@@ -29,8 +29,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			get => _headerView;
 			set
 			{
+				if (_headerView == value)
+					return;
+
 				_headerView = value;
-				_headerViewType += 1;
+				_headerViewType = GetCurrentMaxViewTypeValue() + 1;
 				UpdateHeaderFooterHeight(_headerView, true);
 			}
 		}
@@ -40,8 +43,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			get => _headerViewTemplate;
 			set
 			{
+				if (_headerViewTemplate == value)
+					return;
+
 				_headerViewTemplate = value;
-				_headerViewType += 1;
+				_headerViewType = GetCurrentMaxViewTypeValue() + 1;
 				UpdateHeaderFooterHeight(_headerViewTemplate, true);
 			}
 		}
@@ -51,8 +57,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			get => _footerView;
 			set
 			{
+				if (_footerView == value)
+					return;
+
 				_footerView = value;
-				_footerViewType += 1;
+				_footerViewType = GetCurrentMaxViewTypeValue() + 1;
 				UpdateHeaderFooterHeight(_footerView, false);
 			}
 		}
@@ -62,8 +71,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			get => _footerViewTemplate;
 			set
 			{
+				if (_footerViewTemplate == value)
+					return;
+
 				_footerViewTemplate = value;
-				_footerViewType += 1;
+				_footerViewType = GetCurrentMaxViewTypeValue() + 1;
 				UpdateHeaderFooterHeight(_footerViewTemplate, false);
 			}
 		}
@@ -74,10 +86,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			get => _emptyView;
 			set
 			{
+				if (_emptyView == value)
+					return;
+
 				_emptyView = value;
 
 				// Change _itemViewType to force OnCreateViewHolder to run again and use this new EmptyView
-				_emptyItemViewType += 1;
+				_emptyItemViewType = GetCurrentMaxViewTypeValue() + 1;
 			}
 		}
 
@@ -86,10 +101,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			get => _emptyViewTemplate;
 			set
 			{
+				if (_emptyViewTemplate == value)
+					return;
+
 				_emptyViewTemplate = value;
 
 				// Change _itemViewType to force OnCreateViewHolder to run again and use this new template
-				_emptyItemViewType += 1;
+				_emptyItemViewType = GetCurrentMaxViewTypeValue() + 1;
 			}
 		}
 
@@ -108,6 +126,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_emptyItemViewType = 2;
 			_footerViewType = 3;
 		}
+
+		int GetCurrentMaxViewTypeValue() => int.Max(int.Max(_headerViewType, _emptyItemViewType), _footerViewType);
 
 		public override void OnViewRecycled(Object holder)
 		{
