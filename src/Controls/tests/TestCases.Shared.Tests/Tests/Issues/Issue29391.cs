@@ -13,13 +13,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] IsSwipeEnabled Not Working on CarouselView (CV2)";
 
+		[SetUp]
+		public void SetUp()
+		{
+			// Reset carousel to Item1 and ensure Switch is toggled on (IsSwipeEnabled=true)
+			// so each test starts from a clean state regardless of prior test ordering.
+			App.WaitForElement("CarouselView");
+
+			// Scroll left repeatedly to get back to Item1
+			App.ScrollLeft("CarouselView", swipePercentage: 0.8);
+			App.ScrollLeft("CarouselView", swipePercentage: 0.8);
+			App.ScrollLeft("CarouselView", swipePercentage: 0.8);
+
+			App.WaitForElement("Item1");
+		}
+
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void IsSwipeEnabledDisablesSwipeGestures()
 		{
-			// Verify initial state: IsSwipeEnabled = true (Switch is toggled on)
-			App.WaitForElement("Item1");
-
 			// Verify swiping works when enabled
 			App.ScrollRight("CarouselView", swipePercentage: 0.8);
 			App.WaitForElement("Item2");
@@ -34,6 +46,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Verify we cannot swipe back either
 			App.ScrollLeft("CarouselView", swipePercentage: 0.8);
 			App.WaitForElement("Item2");
+
+			// Re-enable swiping so SetUp can scroll back for next test
+			App.Tap("Switch");
 		}
 
 		[Test]
@@ -41,7 +56,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void IsSwipeEnabledCanBeToggledBack()
 		{
 			// Start with swipe enabled
-			App.WaitForElement("Item1");
 			App.ScrollRight("CarouselView", swipePercentage: 0.8);
 			App.WaitForElement("Item2");
 
