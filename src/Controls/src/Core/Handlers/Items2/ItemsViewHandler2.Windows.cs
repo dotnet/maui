@@ -746,6 +746,28 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	/// <see cref="UniformGridLayout"/> so that the column/row count formula always
 	/// yields the configured <see cref="GridItemsLayout.Span"/>.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// WinUI's <c>UniformGridLayout</c> internally uses two different formulas for
+	/// computing items per line:
+	/// </para>
+	/// <list type="bullet">
+	/// <item><c>GetItemsPerLine</c>: <c>floor((available + spacing) / (effectiveWidth + spacing))</c></item>
+	/// <item><c>CalculateExtraPixelsInLine</c>: <c>floor(available / (minWidth + spacing))</c></item>
+	/// </list>
+	/// <para>
+	/// When <c>ItemsStretch=Fill</c>, the stretch calculation in <c>CalculateExtraPixelsInLine</c>
+	/// determines how many items fit using the latter (more restrictive) formula. If
+	/// <c>MinItemWidth</c> is too large, the stretch calculation sees fewer items than
+	/// <c>GetItemsPerLine</c> would, inflating the effective width and causing fewer columns.
+	/// </para>
+	/// <para>
+	/// To work around this, we compute <c>MinItemWidth</c> as
+	/// <c>floor(available / span) - spacing</c> which satisfies both formulas.
+	/// After the Fill stretch, the effective width becomes the correct
+	/// <c>(available - (span-1)*spacing) / span</c>.
+	/// </para>
+	/// </remarks>
 	void ApplyMinItemSizeForSpan(UniformGridLayout uniformGrid, GridItemsLayout gridItemsLayout, double crossAxisSize)
 	{
 		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize) || double.IsInfinity(crossAxisSize))
@@ -757,11 +779,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			? gridItemsLayout.VerticalItemSpacing
 			: gridItemsLayout.HorizontalItemSpacing;
 
-		// Floor to avoid floating-point precision issues in UniformGridLayout's column
-		// count formula: min(Span, floor((available+spacing) / (effectiveItemWidth+spacing))).
-		// Without flooring, a MinItemWidth of e.g. 63.999 can cause floor(239.999/79.999)=2
-		// instead of the expected 3.
-		double itemSize = Math.Max(1, Math.Floor((crossAxisSize - (span - 1) * spacing) / span));
+		// Compute MinItemWidth such that WinUI's internal CalculateExtraPixelsInLine
+		// (which uses floor(available / (minWidth + spacing))) sees at least `span` items.
+		// With floor(available / span) - spacing as minWidth:
+		//   minWidth + spacing = floor(available / span)
+		//   available / (minWidth + spacing) = available / floor(available / span) >= span
+		// After ItemsStretch=Fill, the effective width becomes:
+		//   (available - (span-1)*spacing) / span  (the correct item width)
+		double itemSize = Math.Max(1, Math.Floor(crossAxisSize / span) - spacing);
 
 		if (isHorizontal)
 			uniformGrid.MinItemHeight = itemSize;

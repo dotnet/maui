@@ -231,9 +231,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	internal void InvalidateItemsRepeaterMeasure() => _itemsRepeater?.InvalidateMeasure();
 
 	/// <summary>
-	/// Constrains the <c>ItemsRepeater</c>'s maximum cross-axis size so that
+	/// Constrains the <c>ItemsRepeater</c>'s cross-axis size so that
 	/// <c>UniformGridLayout</c> always receives the correct available width (or height),
 	/// even when the parent passes a larger constraint during layout.
+	/// Sets both <c>Width</c> (hard constraint) and <c>MaxWidth</c> on the ItemsRepeater
+	/// to ensure the layout engine sees the exact intended size.
 	/// Pass <see cref="double.PositiveInfinity"/> to clear the constraint.
 	/// </summary>
 	internal void SetItemsRepeaterCrossAxisMaxSize(bool isHorizontalLayout, double size)
@@ -247,9 +249,29 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 
 		if (isHorizontalLayout)
-			_itemsRepeater.MaxHeight = size;
+		{
+			if (double.IsPositiveInfinity(size))
+			{
+				_itemsRepeater.ClearValue(FrameworkElement.MaxHeightProperty);
+				_itemsRepeater.ClearValue(FrameworkElement.HeightProperty);
+			}
+			else
+			{
+				_itemsRepeater.MaxHeight = size;
+			}
+		}
 		else
-			_itemsRepeater.MaxWidth = size;
+		{
+			if (double.IsPositiveInfinity(size))
+			{
+				_itemsRepeater.ClearValue(FrameworkElement.MaxWidthProperty);
+				_itemsRepeater.ClearValue(FrameworkElement.WidthProperty);
+			}
+			else
+			{
+				_itemsRepeater.MaxWidth = size;
+			}
+		}
 	}
 
 }
