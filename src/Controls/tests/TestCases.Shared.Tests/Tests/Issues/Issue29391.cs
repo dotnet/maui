@@ -71,6 +71,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollRight("CarouselView", swipePercentage: 0.8);
 			App.WaitForElement("Item3");
 		}
+
+		[Test]
+		[Category(UITestCategories.CarouselView)]
+		public void ProgrammaticScrollToWorksWhileSwipeDisabled()
+		{
+			// Disable swipe gestures
+			App.Tap("Switch");
+
+			// Programmatic ScrollTo should still work even with IsSwipeEnabled=false
+			App.Tap("ScrollToItem3Button");
+			App.WaitForElement("Item3");
+
+			// Verify position label updated
+			var positionText = App.FindElement("PositionLabel").GetText();
+			Assert.That(positionText, Is.EqualTo("Position: 2"));
+
+			// Re-enable swiping so SetUp can scroll back for next test
+			App.Tap("Switch");
+		}
 	}
 }
 #endif
