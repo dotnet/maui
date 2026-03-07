@@ -464,15 +464,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (goToPosition != carouselPosition || forceScroll)
 			{
+				// Temporarily enable scrolling so programmatic navigation works
+				// even when IsSwipeEnabled is false (which sets ScrollEnabled = false).
+				var wasScrollEnabled = CollectionView.ScrollEnabled;
+				CollectionView.ScrollEnabled = true;
+
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
 
 				if (!LayoutFactory2.IsIndexPathValid(goToIndexPath, CollectionView))
 				{
+					CollectionView.ScrollEnabled = wasScrollEnabled;
 					return;
 				}
 
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
+				CollectionView.ScrollEnabled = wasScrollEnabled;
 			}
 		}
 
