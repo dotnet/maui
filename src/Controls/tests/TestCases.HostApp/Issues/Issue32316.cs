@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 32316, "RTL mode: Padding for the label is not mirroring properly", PlatformAffected.iOS | PlatformAffected.Android)]
 public class Issue32316 : ContentPage
@@ -100,4 +99,3 @@ public class Issue32316 : ContentPage
 		};
 	}
 }
-#endif
