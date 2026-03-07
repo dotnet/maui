@@ -8,6 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 
 public class ButtonFeatureTests : _GalleryUITest
 {
+	const string MainLabel = "ClickedEventLabel";
 	public const string ButtonFeatureMatrix = "Button Feature Matrix";
 
 	public override string GalleryPageName => ButtonFeatureMatrix;
@@ -35,6 +36,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -55,6 +58,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //CharacterSpacingEntry property not working on iOS and Catalyst, Issue: https://github.com/dotnet/maui/issues/21488
@@ -74,6 +79,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		App.WaitForElement("ClickedEventLabel");
 		App.Tap("ClickedEventLabel");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
@@ -117,6 +124,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ClickedEventLabel");
 		App.Tap("ClickedEventLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -146,6 +155,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -161,6 +172,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -180,6 +193,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -195,6 +210,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -213,6 +230,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -234,6 +253,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -253,6 +274,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ClickedEventLabel");
 		App.Tap("ClickedEventLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -271,6 +294,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -318,6 +343,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -334,6 +361,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -352,6 +381,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -369,6 +400,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -385,6 +418,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -408,6 +443,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -424,6 +461,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -439,6 +478,8 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
