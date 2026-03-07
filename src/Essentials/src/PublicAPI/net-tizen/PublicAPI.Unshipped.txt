@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Maui.Media.IViewScreenshot
+Microsoft.Maui.Media.IViewScreenshot.CaptureViewAsync(object! platformView) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult?>!
