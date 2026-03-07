@@ -52,7 +52,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			carouselViewController2.ScrollToRequested = true;
+			// Temporarily enable scrolling so programmatic ScrollTo works
+			// even when IsSwipeEnabled is false (which sets ScrollEnabled = false).
+			var wasScrollEnabled = Controller.CollectionView.ScrollEnabled;
+			Controller.CollectionView.ScrollEnabled = true;
 
 			if (VirtualView?.Loop == true)
 			{
@@ -60,6 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (!IsIndexPathValid(goToIndexPath))
 				{
+					Controller.CollectionView.ScrollEnabled = wasScrollEnabled;
 					return;
 				}
 
@@ -74,6 +78,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				base.ScrollToRequested(sender, args);
 			}
+
+			Controller.CollectionView.ScrollEnabled = wasScrollEnabled;
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler2 handler, CarouselView carouselView)

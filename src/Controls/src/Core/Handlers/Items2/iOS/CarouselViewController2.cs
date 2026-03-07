@@ -194,7 +194,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		internal bool InitialPositionSet { get; private set; }
-		internal bool ScrollToRequested { get; set; }
 
 		void TearDown(CarouselView carouselView)
 		{
@@ -465,16 +464,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (goToPosition != carouselPosition || forceScroll)
 			{
-				ScrollToRequested = true;
+				// Temporarily enable scrolling so programmatic navigation works
+				// even when IsSwipeEnabled is false (which sets ScrollEnabled = false).
+				var wasScrollEnabled = CollectionView.ScrollEnabled;
+				CollectionView.ScrollEnabled = true;
+
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
 
 				if (!LayoutFactory2.IsIndexPathValid(goToIndexPath, CollectionView))
 				{
+					CollectionView.ScrollEnabled = wasScrollEnabled;
 					return;
 				}
 
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
+				CollectionView.ScrollEnabled = wasScrollEnabled;
 			}
 		}
 

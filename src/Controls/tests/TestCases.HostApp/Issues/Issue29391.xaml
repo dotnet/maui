@@ -3,19 +3,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue29391">
-  <Grid RowDefinitions="Auto,*">
+  <Grid RowDefinitions="Auto,Auto,*">
     <HorizontalStackLayout>
       <Label Grid.Row="0"
              Text="IsSwipeEnabled: "/>
       <Switch AutomationId="Switch"
               IsToggled="True"
               x:Name="Switch"/>
+      <Button Text="ScrollTo Item3"
+              AutomationId="ScrollToItem3Button"
+              Clicked="OnScrollToItem3Clicked"/>
     </HorizontalStackLayout>
+    <Label Grid.Row="1"
+           AutomationId="PositionLabel"
+           x:Name="PositionLabel"
+           Text="Position: 0"/>
     <local:CarouselView2
       AutomationId="CarouselView"
-      Grid.Row="1"
+      Grid.Row="2"
       IsSwipeEnabled="{Binding Source={x:Reference Switch}, Path=IsToggled}"
-      x:Name="CarouselView">
+      x:Name="CarouselView"
+      PositionChanged="OnPositionChanged">
       <local:CarouselView2.ItemTemplate>
         <DataTemplate>
           <Border>

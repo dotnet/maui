@@ -347,18 +347,6 @@ internal static class LayoutFactory2
 				}
 
 				var page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
-				if (!itemsView.IsSwipeEnabled && !cv2Controller.ScrollToRequested)
-				{
-					var snapPosition = isHorizontal
-						? UICollectionViewScrollPosition.Left
-						: UICollectionViewScrollPosition.Top;
-
-					cv2Controller.CollectionView.ScrollToItem(
-						NSIndexPath.FromItemSection(lastPosition, 0),
-						snapPosition,
-						false);
-					return;
-				}
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
@@ -418,7 +406,6 @@ internal static class LayoutFactory2
 				//Update the CarouselView position
 				lastPosition = pageIndex;
 				cv2Controller?.SetPosition(carouselPosition);
-				cv2Controller.ScrollToRequested = false;
 			};
 
 			return section;

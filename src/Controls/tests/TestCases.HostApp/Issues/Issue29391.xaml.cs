@@ -7,5 +7,15 @@
 		{
 			InitializeComponent();
 		}
+
+		void OnScrollToItem3Clicked(object sender, EventArgs e)
+		{
+			CarouselView.ScrollTo(2, animate: false);
+		}
+
+		void OnPositionChanged(object sender, PositionChangedEventArgs e)
+		{
+			PositionLabel.Text = $"Position: {e.CurrentPosition}";
+		}
 	}
 }
