@@ -943,9 +943,44 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (iconColor == null)
 				iconColor = barTextColor;
 
-			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
-				? UINavigationBar.Appearance.TintColor
-				: iconColor.ToPlatform();
+			var useCustomColor = iconColor != null && NavPage.OnThisPlatform().GetStatusBarTextColorMode() != StatusBarTextColorMode.DoNotAdjust;
+
+			NavigationBar.TintColor = useCustomColor
+				? iconColor.ToPlatform()
+				: UINavigationBar.Appearance.TintColor;
+
+			// iOS 26+ Liquid Glass ignores TintColor for the back button; apply via appearance instead.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				if (useCustomColor)
+				{
+					var backColor = iconColor.ToPlatform();
+					var colorAttributes = NSDictionary<NSString, NSObject>.FromObjectsAndKeys(
+						new NSObject[] { backColor }, new NSString[] { UIStringAttributeKey.ForegroundColor });
+					var appearance = new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+					appearance.Normal.TitleTextAttributes = colorAttributes;
+					appearance.Highlighted.TitleTextAttributes = colorAttributes;
+					NavigationBar.CompactAppearance.BackButtonAppearance = appearance;
+					NavigationBar.StandardAppearance.BackButtonAppearance = appearance;
+					NavigationBar.ScrollEdgeAppearance.BackButtonAppearance = appearance;
+
+					var backImage = UIImage.GetSystemImage("chevron.backward");
+					if (backImage is not null)
+					{
+						var tinted = backImage.ApplyTintColor(backColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+						NavigationBar.BackIndicatorImage = tinted;
+						NavigationBar.BackIndicatorTransitionMaskImage = tinted;
+					}
+				}
+				else
+				{
+					NavigationBar.CompactAppearance.BackButtonAppearance = null;
+					NavigationBar.StandardAppearance.BackButtonAppearance = null;
+					NavigationBar.ScrollEdgeAppearance.BackButtonAppearance = null;
+					NavigationBar.BackIndicatorImage = null;
+					NavigationBar.BackIndicatorTransitionMaskImage = null;
+				}
+			}
 		}
 
 		void SetStatusBarStyle()
