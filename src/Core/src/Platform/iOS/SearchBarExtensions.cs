@@ -234,17 +234,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Remove any overlay from a previous call (e.g. color change or re-focus)
-			parentView.ViewWithTag(CancelButtonColorOverlayTag)?.RemoveFromSuperview();
+			RemoveCancelButtonOverlay(uiSearchBar);
 
 			// Find the UIImageView that UIButton uses to render the X icon.
-			// We need its frame in the parent view's coordinate space to position the overlay.
 			var iv = cancelButton.FindDescendantView<UIImageView>();
 			if (iv == null)
 				return;
 
-			// Convert the icon's frame from its local coordinate space to the parent view.
-			var iconFrameInParent = parentView.ConvertRectFromView(iv.Frame, iv.Superview);
-			if (iconFrameInParent.Width <= 0 || iconFrameInParent.Height <= 0)
+			// Check that the icon has a valid frame before proceeding.
+			var iconFrame = iv.Frame;
+			if (iconFrame.Width <= 0 || iconFrame.Height <= 0)
 			{
 				// The cancel button hasn't been laid out yet (e.g. on initial load when
 				// CancelButtonColor is set via AppThemeBinding before the view appears).
@@ -260,7 +259,7 @@ namespace Microsoft.Maui.Platform
 			if (xmarkImage == null)
 				return;
 
-			var imageSize = iconFrameInParent.Size;
+			var imageSize = iconFrame.Size;
 			var renderer = new UIGraphicsImageRenderer(imageSize, new UIGraphicsImageRendererFormat
 			{
 				Opaque = false,
@@ -279,33 +278,36 @@ namespace Microsoft.Maui.Platform
 				}
 			}).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
-			// Add the overlay as the last (topmost) sibling of the cancel button so it
-			// renders on top of UIButton's layer-drawn X icon.
-			var overlay = new UIImageView(iconFrameInParent)
+			// Place the overlay directly on top of the icon UIImageView using Auto Layout
+			// constraints so it stays aligned across rotation and split-view resizing.
+			var overlay = new UIImageView
 			{
 				Image = coloredImage,
 				ContentMode = UIViewContentMode.ScaleAspectFit,
 				Tag = CancelButtonColorOverlayTag,
 				UserInteractionEnabled = false,
+				TranslatesAutoresizingMaskIntoConstraints = false,
 			};
 
-			parentView.AddSubview(overlay);
+			// Add to the icon's superview (inside the cancel button) so constraints
+			// can pin directly to the icon view.
+			var iconParent = iv.Superview ?? parentView;
+			iconParent.AddSubview(overlay);
+
+			NSLayoutConstraint.ActivateConstraints(new[]
+			{
+				overlay.LeadingAnchor.ConstraintEqualTo(iv.LeadingAnchor),
+				overlay.TrailingAnchor.ConstraintEqualTo(iv.TrailingAnchor),
+				overlay.TopAnchor.ConstraintEqualTo(iv.TopAnchor),
+				overlay.BottomAnchor.ConstraintEqualTo(iv.BottomAnchor),
+			});
 		}
 
 		static void RemoveCancelButtonOverlay(UISearchBar uiSearchBar)
 		{
-			// The overlay is added as a direct sibling of the cancel button (child of cancel button's parent).
-			// Find the cancel button's parent view and remove the overlay from it by tag.
-			var cancelButtonParent = uiSearchBar.FindDescendantView<UIButton>(
-				btn => btn.FindParent(v => v is UITextField) == null)?.Superview;
-			cancelButtonParent?.ViewWithTag(CancelButtonColorOverlayTag)?.RemoveFromSuperview();
-
-			// Also check one level deeper in the hierarchy in case the search bar layout changes
-			foreach (var subview in uiSearchBar.Subviews)
-			{
-				foreach (var child in subview.Subviews)
-					child.ViewWithTag(CancelButtonColorOverlayTag)?.RemoveFromSuperview();
-			}
+			// The overlay is somewhere in the search bar's subtree — ViewWithTag
+			// searches recursively, so a single call is sufficient.
+			uiSearchBar.ViewWithTag(CancelButtonColorOverlayTag)?.RemoveFromSuperview();
 		}
 
 		internal static void UpdateSearchIcon(this UISearchBar uiSearchBar, ISearchBar searchBar)
