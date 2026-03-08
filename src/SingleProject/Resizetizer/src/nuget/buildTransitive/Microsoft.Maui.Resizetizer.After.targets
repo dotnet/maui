@@ -374,6 +374,8 @@
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
             <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
+            <!-- Default for unknown/custom platform backends -->
+            <_MauiAssetItemMetadata Condition="'$(_MauiAssetItemMetadata)' == ''">Link</_MauiAssetItemMetadata>
         </PropertyGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
@@ -393,6 +395,10 @@
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
+        <!-- Expose processed assets for custom platform backends -->
+        <ItemGroup>
+            <MauiProcessedAsset Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
     </Target>
 
@@ -532,6 +538,11 @@
 
         <ItemGroup>
             <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+        </ItemGroup>
+
+        <!-- Expose processed fonts for custom platform backends -->
+        <ItemGroup>
+            <MauiProcessedFont Include="@(_MauiFontCopied)" />
         </ItemGroup>
 
         <!-- iOS -->
