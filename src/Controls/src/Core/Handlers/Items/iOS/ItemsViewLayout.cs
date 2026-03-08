@@ -5,6 +5,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -500,6 +501,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ForceScrollToLastItem(CollectionView, _itemsLayout);
 			}
+			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				CollectionView.SetContentOffset(CGPoint.Empty, true);
+			}
 		}
 
 		void TrackOffsetAdjustment()
@@ -564,7 +569,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return false;
 		}
-
+		
 		static void ForceScrollToLastItem(UICollectionView collectionView, ItemsLayout itemsLayout)
 		{
 			var sections = (int)collectionView.NumberOfSections();

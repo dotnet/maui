@@ -372,15 +372,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsViewAdapter == null || ItemsView == null)
 				return;
 
-			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
-			{
-				// Keeping the current items in view is the default, so we don't need to watch for data changes
-				_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
-			}
-			else
-			{
-				_itemsUpdateScrollObserver.Start(ItemsViewAdapter);
-			}
+			// We need to observe the adapter for changes for the ItemsUpdatingScrollMode.
+			_itemsUpdateScrollObserver.Start(ItemsViewAdapter);
 		}
 
 		public virtual void ScrollTo(ScrollToRequestEventArgs args)
@@ -389,6 +382,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			var position = DetermineTargetPosition(args);
+
+			if (position < 0)
+			{
+				return;
+			}
 
 			if (args.IsAnimated)
 			{
@@ -623,6 +621,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				ScrollHelper.UndoNextScrollAdjustment();
+			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				if (GetLayoutManager().ItemCount > 0)
+				{
+					ScrollTo(new ScrollToRequestEventArgs(0, 0, Microsoft.Maui.Controls.ScrollToPosition.Start, true));
+				}
 			}
 		}
 
