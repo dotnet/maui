@@ -330,14 +330,20 @@
     <ControlTemplate x:Key="MauiItemsViewTemplate"
                      TargetType="items2:MauiItemsView">
 
-        <controls:ScrollView x:Name="PART_ScrollView"
-                             Background="{TemplateBinding Background}"
-                             BorderBrush="{TemplateBinding BorderBrush}"
-                             BorderThickness="{TemplateBinding BorderThickness}"
-                             CornerRadius="{TemplateBinding CornerRadius}"
-                             TabNavigation="{TemplateBinding TabNavigation}"
-                             XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}">
-            <controls:StackPanel x:Name="PART_ContainerStack">
+    <ScrollViewer x:Name="PART_ScrollViewer"
+                      Background="{TemplateBinding Background}"
+                      BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}"
+                      CornerRadius="{TemplateBinding CornerRadius}"
+                      TabNavigation="{TemplateBinding TabNavigation}"
+                      HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                      VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                      IsHorizontalScrollChainingEnabled="True"
+                      IsVerticalScrollChainingEnabled="True"
+                      AutomationProperties.AccessibilityView="Raw">
+      <controls:StackPanel x:Name="PART_ContainerStack">
                 <ContentControl x:Name="HeaderContentControl"
                                 HorizontalContentAlignment="Stretch"
                                 VerticalContentAlignment="Stretch"/>
@@ -363,9 +369,9 @@
                                 HorizontalContentAlignment="Stretch"
                                 VerticalContentAlignment="Stretch"/>
             </controls:StackPanel>
-        </controls:ScrollView>
-
-    </ControlTemplate>
+    </ScrollViewer>
+      
+  </ControlTemplate>
 
 
 </ResourceDictionary>
