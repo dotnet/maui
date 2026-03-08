@@ -1,6 +1,5 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_WINDOWS
 // Windows: The snapshot does not capture the FlyoutIcon applied to the TitleBar.
-// Android: The fix has not been implemented, so the icon defaults to white.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(changeColor);
 			App.Tap(changeColor);
 			App.WaitForElement(changeColor);
-			VerifyScreenshot(); 
+			VerifyScreenshot();
 			App.WaitForElement(defaultColor);
 			App.Tap(defaultColor);
 			App.WaitForElement(defaultColor);
