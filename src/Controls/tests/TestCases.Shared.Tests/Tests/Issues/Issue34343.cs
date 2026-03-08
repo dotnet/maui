@@ -17,11 +17,11 @@ public class Issue34343 : _IssuesUITest
 	{
 		App.WaitForElement("HideAndNavigateButton");
 		App.Tap("HideAndNavigateButton");
-		VerifyScreenshot(tolerance: 1.0);
+		VerifyScreenshot();
 	}
 #endif
 
-#if IOS
+#if IOS || MACCATALYST
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void SubPageNavigationShouldWorkAfterFirstTabBecomesInvisible()
