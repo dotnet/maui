@@ -313,6 +313,19 @@ namespace Microsoft.Maui.Platform
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
 
+			// Disconnect handlers for all pages in the navigation stack to allow them to be GC'd
+			foreach (var page in NavigationStack)
+			{
+				if (page?.Handler is IPlatformViewHandler pvh)
+				{
+					pvh.DisconnectHandler();
+				}
+			}
+
+			// Clear the navigation stack reference
+			NavigationStack = [];
+			_currentPage = null;
+
 			VirtualView = null;
 			NavigationView = null;
 			SetNavHost(null);

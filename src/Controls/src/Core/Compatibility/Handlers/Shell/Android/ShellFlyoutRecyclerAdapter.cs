@@ -35,9 +35,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_selectedCallback = selectedCallback;
 		}
 
-		public override int ItemCount => _listItems.Count;
+		public override int ItemCount => _listItems?.Count ?? 0;
 
-		protected Shell Shell => _shellContext.Shell;
+		protected Shell Shell => _shellContext?.Shell;
 
 		IShellController ShellController => (IShellController)Shell;
 
@@ -47,11 +47,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override int GetItemViewType(int position)
 		{
+			if (_listItems == null || position >= _listItems.Count)
+				return -1;
 			return _listItems[position].Index;
 		}
 
 		DataTemplate GetDataTemplate(int viewTypeId)
 		{
+			if (_listItems == null)
+				return null;
+
 			AdapterListItem item = null;
 
 			foreach (var ali in _listItems)
@@ -81,6 +86,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
+			if (_listItems == null)
+				return;
+
 			if (holder is ElementViewHolder evh)
 			{
 				// only clear out the Element if the item has been removed
@@ -103,6 +111,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
+			if (_listItems == null || position >= _listItems.Count)
+				return;
+
 			var item = _listItems[position];
 			var elementHolder = (ElementViewHolder)holder;
 

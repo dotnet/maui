@@ -187,7 +187,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_backButtonBehavior != null)
 					_backButtonBehavior.PropertyChanged -= OnBackButtonBehaviorChanged;
 
-				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
+				// Wrap in try-catch because the JNI peer may already be disposed by the time
+				// this is called, and RemoveFlyoutBehaviorObserver uses List.Remove which
+				// calls Equals() - which fails for disposed Java objects.
+				try
+				{
+					((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
+				}
+				catch (ObjectDisposedException)
+				{
+					// Ignore - we're disposing anyway
+				}
 				_shellRootToolBar.PropertyChanged -= OnToolbarPropertyChanged;
 				_shell.Navigated -= OnShellNavigated;
 				_shell.PropertyChanged -= HandleShellPropertyChanged;

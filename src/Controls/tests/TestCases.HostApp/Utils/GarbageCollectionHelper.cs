@@ -7,7 +7,7 @@
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 		}
 

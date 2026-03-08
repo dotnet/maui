@@ -15,11 +15,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.TableView)]
 		public void TableViewMemoryLeakWhenUsingSwitchCellOrEntryCell()
 		{
-			App.WaitForElement("PushPage");
+			// Wait for NavigationPage to fully load its content
+			// The Issue5555 page is a NavigationPage wrapping TestPage - give it time to initialize
+			App.WaitForElement("PushPage", timeout: TimeSpan.FromSeconds(30));
 			App.Tap("PushPage");
-			App.WaitForElement("PushPage");
+			
+			// Wait for push/pop animation to complete - need extra delay for navigation animation
+			Thread.Sleep(500);
+			App.WaitForElement("PushPage", timeout: TimeSpan.FromSeconds(10));
 			App.Tap("PushPage");
-			App.WaitForElement("PushPage");
+			
+			// Wait for second push/pop animation to complete  
+			Thread.Sleep(500);
+			App.WaitForElement("PushPage", timeout: TimeSpan.FromSeconds(10));
 
 			App.WaitForElement("CheckResult");
 			App.Tap("CheckResult");
