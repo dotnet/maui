@@ -178,6 +178,10 @@ namespace Microsoft.Maui.Platform
 			containerView ??= new WrapperView(context);
 			setWrapperView.Invoke(containerView);
 
+			// Transfer any existing transforms from the inner view to the wrapper
+			// This handles the case where transforms were set before Shadow was added
+			TransferTransformsPropertyValues(platformView, containerView, resetSource: true);
+
 			((ViewGroup)containerView).AddView(platformView);
 
 			if (oldIndex is int idx && idx >= 0)
@@ -199,6 +203,7 @@ namespace Microsoft.Maui.Platform
 			var oldIndex = oldParent?.IndexOfChild(containerView);
 			oldParent?.RemoveView(containerView);
 
+			TransferTransformsPropertyValues(containerView, platformView, resetSource: false);
 			CleanupContainerView(containerView, clearWrapperView);
 
 			if (oldIndex is int idx && idx >= 0)
@@ -212,6 +217,25 @@ namespace Microsoft.Maui.Platform
 					vg.RemoveAllViews();
 
 				clearWrapperView.Invoke();
+			}
+		}
+
+		static void TransferTransformsPropertyValues(AView sourceView, AView targetView, bool resetSource)
+		{
+			targetView.TranslationX = sourceView.TranslationX;
+			targetView.TranslationY = sourceView.TranslationY;
+			targetView.ScaleX = sourceView.ScaleX;
+			targetView.ScaleY = sourceView.ScaleY;
+			targetView.Rotation = sourceView.Rotation;
+			targetView.RotationX = sourceView.RotationX;
+			targetView.RotationY = sourceView.RotationY;
+			targetView.PivotX = sourceView.PivotX;
+			targetView.PivotY = sourceView.PivotY;
+
+			// Reset source to defaults if requested (needed when adding container, not when removing)
+			if (resetSource)
+			{
+				sourceView.ResetTransform();
 			}
 		}
 	}
