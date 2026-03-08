@@ -155,6 +155,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	public static void MapIsVisible(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 	{
 		handler.PlatformView.UpdateVisibility(itemsView);
+		handler.UpdateEmptyViewVisibility();
 	}
 
 	public static void MapItemsLayout(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -941,13 +942,18 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 		else
 		{
+			// Always set EmptyViewVisibility to Collapsed when items exist,
+			// regardless of _emptyViewDisplayed state. This handles the case
+			// where the empty view was made visible on the platform but
+			// _emptyViewDisplayed got out of sync (e.g., during Collapsed→Visible
+			// transitions where the template wasn't yet applied when the flag was set).
+			if (_emptyView is not null && PlatformView is IEmptyView emptyView)
+			{
+				emptyView.EmptyViewVisibility = WVisibility.Collapsed;
+			}
+
 			if (_emptyViewDisplayed)
 			{
-				if (_emptyView is not null && PlatformView is IEmptyView emptyView)
-				{
-					emptyView.EmptyViewVisibility = WVisibility.Collapsed;
-				}
-
 				ItemsView.RemoveLogicalChild(_mauiEmptyView);
 			}
 
