@@ -7,6 +7,7 @@
 //  - Stephane Delcroix (.NET port)
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -990,11 +991,12 @@ namespace Microsoft.Maui.Layouts.Flex
 				ordered_indices = null;
 				if (item.ShouldOrderChildren && item.Count > 0)
 				{
-					// The children need to be ordered using a *stable* sort by Order
-					var indices = item.OrderBy(x => x.Order)
-									.Select((value, index) => index)
-									.ToArray();
-					ordered_indices = indices;
+					// Sort original indices by each child's Order using a stable sort.
+					// OrderBy is guaranteed stable in .NET, preserving insertion order
+					// for children with equal Order values.
+					ordered_indices = Enumerable.Range(0, item.Count)
+						.OrderBy(i => item[i].Order)
+						.ToArray();
 				}
 
 				flex_dim = 0;
