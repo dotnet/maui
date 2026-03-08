@@ -345,9 +345,20 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				var page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
+				double page;
+				if (isHorizontal)
+				{
+					page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
+				}
+				else
+				{
+					page = (offset.Y + sectionMargin) / (env.Container.ContentSize.Height - sectionMargin * 2);
+				}
 
-				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
+				// Vertical: Scroll stops wherever touch is released (no auto-centering), so use 0.1 (10%) threshold
+				//           to accept positions near page boundaries where scroll naturally settles
+				double pageThreshold = isHorizontal ? (double.Epsilon * 100) : 0.1;
+				if (Math.Abs(page % 1) > pageThreshold || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
 					return;
 				}
