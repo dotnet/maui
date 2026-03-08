@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Handlers
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				button.SetImage(platformImage, UIControlState.Normal);
-
+				button.BringSubviewToFront(button.ImageView);
 				// UIButton.SetImage(image, forState:) does not immediately assign the image to UIButton.ImageView.Image.
 				// Instead, the image is set internally and only applied to ImageView when the button is rendered.
 				// To ensure SizeThatFits is correct, and avoid race conditions, we have to force a layout.
