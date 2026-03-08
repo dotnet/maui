@@ -2,8 +2,10 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
@@ -32,6 +34,37 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+
+		// Suppress the native WinUI ItemContainer visual states (PointerOver,
+		// Pressed, Selected, and their combinations) so they don't overlay
+		// on top of MAUI's own VisualStateManager states. Setting these on
+		// the parent ItemsView cascades to all child ItemContainer instances.
+		// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/ItemContainer/ItemContainer_themeresources.xaml
+		// Fixes: https://github.com/dotnet/maui/issues/13197
+		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
+
+		// Background fills (PART_CommonVisual.Fill)
+		Resources["ItemContainerBackground"] = transparent;
+		Resources["ItemContainerPointerOverBackground"] = transparent;
+		Resources["ItemContainerPressedBackground"] = transparent;
+		Resources["ItemContainerSelectedBackground"] = transparent;
+		Resources["ItemContainerSelectedPointerOverBackground"] = transparent;
+		Resources["ItemContainerSelectedPressedBackground"] = transparent;
+
+		// Border strokes (PART_CommonVisual.Stroke)
+		Resources["ItemContainerBorderBrush"] = transparent;
+		Resources["ItemContainerPointerOverBorderBrush"] = transparent;
+		Resources["ItemContainerPressedBorderBrush"] = transparent;
+
+		// Selection indicator (PART_SelectionVisual.BorderBrush) — the accent-colored
+		// 3px border that WinUI shows around selected items. MAUI manages its own
+		// selection visual states, so suppress these native indicators.
+		Resources["ItemContainerSelectionVisualBackground"] = transparent;
+		Resources["ItemContainerSelectionVisualPointerOverBackground"] = transparent;
+		Resources["ItemContainerSelectionVisualPressedBackground"] = transparent;
+
+		// Inner border shown in selected states (PART_CommonVisual.Stroke override)
+		Resources["ItemContainerSelectedInnerBorderBrush"] = transparent;
 	}
 
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>

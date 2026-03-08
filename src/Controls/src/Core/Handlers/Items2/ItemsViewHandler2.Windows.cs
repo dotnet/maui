@@ -1264,6 +1264,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			index = FindGroupedItemIndex(args.GroupIndex, args.Index);
 		}
+		else if (args.Mode == ScrollToMode.Element && args.Group is not null)
+		{
+			index = FindGroupedItemByElement(args.Item, args.Group);
+		}
 		else if (args.Mode == ScrollToMode.Element)
 		{
 			index = FindItemIndex(args.Item);
@@ -1295,11 +1299,33 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				break;
 		}
 
-		platformView.StartBringItemIntoView(index, new BringIntoViewOptions()
+		// Store the scroll request and dispatch it to ensure it executes after
+		// the layout has been updated. This prevents unstable scrolling when items
+		// are being rapidly added and ScrollTo is called before layout completes.
+		var scrollIndex = index;
+		var scrollOffset = offset;
+		var isAnimated = args.IsAnimated;
+
+		VirtualView.Dispatcher.Dispatch(() =>
 		{
-			AnimationDesired = args.IsAnimated,
-			VerticalAlignmentRatio = offset,
-			HorizontalAlignmentRatio = offset
+			if (base.PlatformView is not WItemsView pv)
+			{
+				return;
+			}
+
+			// Re-validate index bounds in case collection changed between dispatch
+			var currentItemCount = _collectionViewSource?.View?.Count ?? 0;
+			if (scrollIndex < 0 || scrollIndex >= currentItemCount)
+			{
+				return;
+			}
+
+			pv.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
+			{
+				AnimationDesired = isAnimated,
+				VerticalAlignmentRatio = scrollOffset,
+				HorizontalAlignmentRatio = scrollOffset
+			});
 		});
 	}
 
@@ -1407,6 +1433,105 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			else if (Equals(viewItem, item))
 			{
 				return index;
+			}
+		}
+
+		return -1;
+	}
+	
+	/// <summary>
+	/// Finds the flat index in the flattened grouped collection for a ScrollToMode.Element request
+	/// where a group is specified. If item is null, returns the index of the group header.
+	/// If item is non-null, returns the index of that item within the specified group.
+	/// </summary>
+	int FindGroupedItemByElement(object? item, object group)
+	{
+		if (_collectionViewSource is null)
+		{
+			return -1;
+		}
+
+		if (ItemsView is not GroupableItemsView groupableItemsView)
+		{
+			return -1;
+		}
+
+		var itemsSource = groupableItemsView.ItemsSource;
+		if (itemsSource is null)
+		{
+			return -1;
+		}
+
+		var hasGroupHeader = groupableItemsView.GroupHeaderTemplate is not null;
+		var hasGroupFooter = groupableItemsView.GroupFooterTemplate is not null;
+
+		// Find the target group and its items by matching the group object
+		IList? targetGroupItems = null;
+		int flatIndexOfGroup = 0;
+		int currentFlatIndex = 0;
+
+		foreach (var g in itemsSource)
+		{
+			if (g is not IList groupList)
+			{
+				continue;
+			}
+
+			if (Equals(g, group))
+			{
+				targetGroupItems = groupList;
+				flatIndexOfGroup = currentFlatIndex;
+				break;
+			}
+
+			// Advance past this group's entries in the flat list
+			if (hasGroupHeader)
+			{
+				currentFlatIndex++;
+			}
+
+			currentFlatIndex += groupList.Count;
+
+			if (hasGroupFooter)
+			{
+				currentFlatIndex++;
+			}
+		}
+
+		if (targetGroupItems is null)
+		{
+			return -1;
+		}
+
+		// If item is null, scroll to the group header (if it exists)
+		if (item is null)
+		{
+			if (hasGroupHeader)
+			{
+				return flatIndexOfGroup;
+			}
+
+			// No header template — scroll to the first item in the group instead
+			if (targetGroupItems.Count > 0)
+			{
+				return flatIndexOfGroup;
+			}
+
+			return -1;
+		}
+
+		// Find the item within the target group
+		int itemStartIndex = flatIndexOfGroup;
+		if (hasGroupHeader)
+		{
+			itemStartIndex++;
+		}
+
+		for (int i = 0; i < targetGroupItems.Count; i++)
+		{
+			if (Equals(targetGroupItems[i], item))
+			{
+				return itemStartIndex + i;
 			}
 		}
 
