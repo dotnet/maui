@@ -276,5 +276,20 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
 			Assert.Null(handlerType);
 		}
+
+		[Fact]
+		public void SecondConfigureMauiHandlersCallReplacesHandler()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, ViewHandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub, AlternateButtonHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handlerService = mauiHandlersFactory.GetHandler(typeof(ViewStub));
+			Assert.NotNull(handlerService);
+			Assert.IsType<AlternateButtonHandlerStub>(handlerService);
+		}
 	}
 }
