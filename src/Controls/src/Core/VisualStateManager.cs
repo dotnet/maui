@@ -779,6 +779,25 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		internal static void MergeWithParent(this IList<VisualStateGroup> groups, VisualStateGroupList parentVisualStateGroups)
+		{
+			// Find these VisualStateGroup that are the same for the parent and the child VisualStateGroupList
+			foreach (var parentVisualStateGroup in parentVisualStateGroups)
+			{
+				if (groups.FirstOrDefault(x => x.Name == parentVisualStateGroup.Name) is { } visualStateGroup)
+				{
+					// Find the visual states that were defined in the parent visualStateGroup, but are not defined in the new visualStateGroup
+					foreach (var parentVisualState in parentVisualStateGroup.States)
+					{
+						if (!visualStateGroup.States.Any(x => x.Name == parentVisualState.Name))
+						{
+							visualStateGroup.States.Add(parentVisualState);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	internal class WatchAddList<T> : IList<T>
