@@ -238,6 +238,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsSource = ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
+			UpdateScrollBarVisibility();
 			return itemsSource;
 		}
 
@@ -465,6 +466,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateLoop()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -477,9 +483,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
+			UpdateScrollBarVisibility();
 			CollectionView.ReloadData();
+			ScrollToOriginalPosition(carouselPosition, false);
+		}
 
-			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+		void UpdateScrollBarVisibility()
+		{
+			if (ItemsView is CarouselView carousel)
+			{
+				var visibility = carousel.Loop ? ScrollBarVisibility.Never : ScrollBarVisibility.Always;
+        		CollectionView.UpdateHorizontalScrollBarVisibility(visibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(visibility);
+			}
+		}
+
+		void ScrollToOriginalPosition(int position, bool animate)
+		{
+			if (ItemsView is not CarouselView carousel)
+        		return;
+
+			if (position < 0 || position >= ItemsSource.ItemCount)
+				return;
+
+			var targetIndexPath = GetScrollToIndexPath(position);
+			CollectionView.ScrollToItem(targetIndexPath, UICollectionViewScrollPosition.CenteredHorizontally, animate);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
