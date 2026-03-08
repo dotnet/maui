@@ -5,7 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
-using WScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -28,7 +27,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	WStackPanel? _containerPanel;
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
-	WScrollView? _scrollView;
+	ScrollViewer? _scrollViewer;
 
 	public MauiItemsView()
 	{
@@ -117,7 +116,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
-		_scrollView = GetTemplateChild("PART_ScrollView") as WScrollView;
+		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 
 		if (_emptyView is not null && _emptyViewContentControl is not null)
 		{
@@ -169,9 +168,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Stretch;
 			_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 
-			if (_scrollView is not null)
+			if (_scrollViewer is not null)
 			{
-				_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Horizontal;
+				_scrollViewer.HorizontalScrollMode = UI.Xaml.Controls.ScrollMode.Enabled;
+				_scrollViewer.VerticalScrollMode = UI.Xaml.Controls.ScrollMode.Disabled;
+				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
+				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
 			}
 		}
 		else
@@ -191,9 +193,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
 			_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 
-			if (_scrollView is not null)
+			if (_scrollViewer is not null)
 			{
-				_scrollView.ContentOrientation = UI.Xaml.Controls.ScrollingContentOrientation.Vertical;
+				_scrollViewer.HorizontalScrollMode = UI.Xaml.Controls.ScrollMode.Disabled;
+				_scrollViewer.VerticalScrollMode = UI.Xaml.Controls.ScrollMode.Enabled;
+				_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
+				_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto;
 			}
 		}
 	}
