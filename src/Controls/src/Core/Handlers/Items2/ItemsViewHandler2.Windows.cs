@@ -652,9 +652,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		};
 	}
 
-	static UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
+	UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
 	{
-		return new UniformGridLayout()
+		var layout = new UniformGridLayout()
 		{
 			Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
 					? Orientation.Vertical : Orientation.Horizontal,
@@ -664,6 +664,47 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			ItemsStretch = UniformGridLayoutItemsStretch.Fill,
 			ItemsJustification = UniformGridLayoutItemsJustification.Start,
 		};
+
+		ApplyMinItemSizeForSpan(layout, gridItemsLayout);
+		return layout;
+	}
+
+	/// <summary>
+	/// Computes and applies MinItemWidth/MinItemHeight to work around a WinUI UniformGridLayout bug
+	/// where two internal formulas disagree on items-per-line when ItemsStretch=Fill:
+	///   - GetItemsPerLine uses: floor((available + spacing) / (minWidth + spacing))
+	///   - CalculateExtraPixelsInLine uses: floor(available / (minWidth + spacing))
+	/// The more restrictive formula sees fewer items and inflates the effective width, causing
+	/// fewer columns than requested. By using floor(crossAxisSize / span) - spacing as MinItemWidth,
+	/// both formulas agree on the correct number of columns.
+	/// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/Repeater/UniformGridLayout.cpp
+	/// </summary>
+	void ApplyMinItemSizeForSpan(UniformGridLayout layout, GridItemsLayout gridItemsLayout)
+	{
+		// Only apply when an explicit cross-axis size is set on the CollectionView
+		bool isHorizontal = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+		double crossAxisSize = isHorizontal
+			? VirtualView.HeightRequest
+			: VirtualView.WidthRequest;
+
+		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize))
+			return;
+
+		int span = gridItemsLayout.Span;
+		double spacing = isHorizontal
+			? gridItemsLayout.VerticalItemSpacing
+			: gridItemsLayout.HorizontalItemSpacing;
+
+		// Formula: floor(crossAxisSize / span) - spacing
+		// This ensures both WinUI internal formulas agree on the correct number of columns.
+		double minItemSize = Math.Floor(crossAxisSize / span) - spacing;
+		if (minItemSize <= 0)
+			return;
+
+		if (isHorizontal)
+			layout.MinItemHeight = minItemSize;
+		else
+			layout.MinItemWidth = minItemSize;
 	}
 
 	void FindScrollViewer()
@@ -744,6 +785,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			Layout is GridItemsLayout gridItemsLayout)
 		{
 			listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
+			ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout);
 		}
 	}
 
@@ -754,6 +796,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 			listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+			ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout);
 		}
 		else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
 			Layout is LinearItemsLayout linearItemsLayout)
@@ -975,15 +1018,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		// When the header is a MAUI View (direct or from template), HorizontalOptions/VerticalOptions
-		// are layout hints for the parent MAUI layout. Since the realized view is placed inside a WinUI
-		// ContentControl (not a MAUI layout), we must manually map these options
-		// to the platform view's HorizontalAlignment/VerticalAlignment.
-		if (_mauiHeader is not null && _header is FrameworkElement headerElement)
-		{
-			headerElement.UpdateHorizontalOptions(_mauiHeader);
-			headerElement.UpdateVerticalOptions(_mauiHeader);
-		}
+		ItemsViewExtensions.ApplyMauiLayoutProperties(_mauiHeader, _header);
 
 		if (PlatformView is MauiItemsView platformItemsView && _header is not null)
 		{
@@ -1068,15 +1103,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		// When the footer is a MAUI View (direct or from template), HorizontalOptions/VerticalOptions
-		// are layout hints for the parent MAUI layout. Since the realized view is placed inside a WinUI
-		// ContentControl (not a MAUI layout), we must manually map these options
-		// to the platform view's HorizontalAlignment/VerticalAlignment.
-		if (_mauiFooter is not null && _footer is FrameworkElement footerElement)
-		{
-			footerElement.UpdateHorizontalOptions(_mauiFooter);
-			footerElement.UpdateVerticalOptions(_mauiFooter);
-		}
+		ItemsViewExtensions.ApplyMauiLayoutProperties(_mauiFooter, _footer);
 
 		if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
 		{

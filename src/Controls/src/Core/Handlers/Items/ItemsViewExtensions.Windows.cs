@@ -77,5 +77,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return platformView as FrameworkElement ?? throw new InvalidOperationException("Unable to convert view to FrameworkElement");
 		}
+
+		/// <summary>
+		/// Applies MAUI margin and layout options to a WinUI element that hosts a MAUI View
+		/// (e.g., CollectionView header/footer placed in a WinUI ContentControl).
+		/// The cross-platform layout system never applies these because the element
+		/// is not inside a MAUI layout.
+		/// </summary>
+		internal static void ApplyMauiLayoutProperties(View? mauiView, FrameworkElement? platformElement)
+		{
+			if (mauiView is null || platformElement is null)
+			{
+				return;
+			}
+
+			// Apply MAUI margin as WinUI margin
+			var margin = mauiView.Margin;
+			platformElement.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
+
+			// Map HorizontalOptions/VerticalOptions to WinUI alignment
+			platformElement.UpdateHorizontalOptions(mauiView);
+			platformElement.UpdateVerticalOptions(mauiView);
+		}
 	}
 }
