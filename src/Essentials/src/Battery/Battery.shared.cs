@@ -98,7 +98,11 @@ namespace Microsoft.Maui.Devices
 		public static IBattery Default =>
 			defaultImplementation ??= new BatteryImplementation();
 
-		internal static void SetDefault(IBattery? implementation) =>
+		/// <summary>
+		/// Sets the default implementation of this API that is exposed as the static <see cref="Default"/> property.
+		/// </summary>
+		/// <param name="implementation">An instance that implements the API, or <see langword="null"/> to reset to the platform default.</param>
+		public static void SetDefault(IBattery? implementation) =>
 			defaultImplementation = implementation;
 	}
 
