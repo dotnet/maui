@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Page1"
+             Title="page 1">
+    <VerticalStackLayout Padding="30"
+                         Spacing="25"
+                         VerticalOptions="Center"
+                         HorizontalOptions="Center">
+        <Button Text="page 1"
+                Clicked="OnNavigateToPage2Clicked"
+                HorizontalOptions="Center"/>
+        <Button Text="Navigate to Page 2"
+                Clicked="OnNavigateToPage2AsyncClicked"
+                HorizontalOptions="Center"/>
+        
+        <Entry Text="Test"/>
+    </VerticalStackLayout>
+</ContentPage>
