@@ -103,6 +103,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateScrollingMode();
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			if (handler.PlatformView is RecyclerView recyclerView)
+				recyclerView.Enabled = itemsView.IsEnabled;
+		}
+
 		void UpdateEmptyViewSize(double width, double height)
 		{
 			var adapter = PlatformView.GetAdapter();
