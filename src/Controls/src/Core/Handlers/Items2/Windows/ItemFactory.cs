@@ -63,8 +63,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 					wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 					wrapper.VerticalAlignment = VerticalAlignment.Stretch;
 					wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
-					// Ensure no default padding interferes with item sizing
-					wrapper.Padding = new Microsoft.UI.Xaml.Thickness(0);
 					wrapper.SetContent(viewContent);
 					wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 
@@ -99,11 +97,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			{
 				Child = wrapper,
 				VerticalAlignment = VerticalAlignment.Stretch,
-				HorizontalAlignment = HorizontalAlignment.Stretch,
-				// Ensure no default padding or margin from WinUI's ItemContainer
-				// theme resources interferes with grid item sizing/spacing
-				Padding = new Microsoft.UI.Xaml.Thickness(0),
-				Margin = new Microsoft.UI.Xaml.Thickness(0)
+				HorizontalAlignment = HorizontalAlignment.Stretch
 			};
 
 			return container;

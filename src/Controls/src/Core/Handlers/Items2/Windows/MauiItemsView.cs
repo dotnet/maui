@@ -30,11 +30,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _isHorizontalLayout;
 	WScrollView? _scrollView;
 
-	// Deferred cross-axis max size: stored when SetItemsRepeaterCrossAxisMaxSize is
-	// called before the template is applied, then applied in OnApplyTemplate.
-	double _pendingCrossAxisMaxSize = double.NaN;
-	bool _pendingCrossAxisIsHorizontal;
-
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
@@ -139,13 +134,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_footerContentControl.Content = _footer;
 		}
 
-		// Apply deferred cross-axis max size if it was set before template was applied
-		if (!double.IsNaN(_pendingCrossAxisMaxSize))
-		{
-			SetItemsRepeaterCrossAxisMaxSize(_pendingCrossAxisIsHorizontal, _pendingCrossAxisMaxSize);
-			_pendingCrossAxisMaxSize = double.NaN;
-		}
-
 		// Apply orientation if it was set before template was applied
 		ApplyLayoutOrientation();
 	}
@@ -222,56 +210,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 
 		return base.ArrangeOverride(finalSize);
-	}
-
-	/// <summary>
-	/// Invalidates the inner <c>ItemsRepeater</c>'s measure so that <c>UniformGridLayout</c>
-	/// recalculates column/row count on the next layout pass.
-	/// </summary>
-	internal void InvalidateItemsRepeaterMeasure() => _itemsRepeater?.InvalidateMeasure();
-
-	/// <summary>
-	/// Constrains the <c>ItemsRepeater</c>'s cross-axis size so that
-	/// <c>UniformGridLayout</c> always receives the correct available width (or height),
-	/// even when the parent passes a larger constraint during layout.
-	/// Sets both <c>Width</c> (hard constraint) and <c>MaxWidth</c> on the ItemsRepeater
-	/// to ensure the layout engine sees the exact intended size.
-	/// Pass <see cref="double.PositiveInfinity"/> to clear the constraint.
-	/// </summary>
-	internal void SetItemsRepeaterCrossAxisMaxSize(bool isHorizontalLayout, double size)
-	{
-		if (_itemsRepeater is null)
-		{
-			// Template not applied yet — defer until OnApplyTemplate
-			_pendingCrossAxisMaxSize = size;
-			_pendingCrossAxisIsHorizontal = isHorizontalLayout;
-			return;
-		}
-
-		if (isHorizontalLayout)
-		{
-			if (double.IsPositiveInfinity(size))
-			{
-				_itemsRepeater.ClearValue(FrameworkElement.MaxHeightProperty);
-				_itemsRepeater.ClearValue(FrameworkElement.HeightProperty);
-			}
-			else
-			{
-				_itemsRepeater.MaxHeight = size;
-			}
-		}
-		else
-		{
-			if (double.IsPositiveInfinity(size))
-			{
-				_itemsRepeater.ClearValue(FrameworkElement.MaxWidthProperty);
-				_itemsRepeater.ClearValue(FrameworkElement.WidthProperty);
-			}
-			else
-			{
-				_itemsRepeater.MaxWidth = size;
-			}
-		}
 	}
 
 }

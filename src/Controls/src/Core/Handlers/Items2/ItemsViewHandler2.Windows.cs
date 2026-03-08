@@ -70,10 +70,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	bool _isScrollingForItemsUpdate;
 	int _pendingScrollToIndex = -1;
 	RoutedEventHandler? _pendingLoadedHandler;
-
-	// Tracks the last rendered width so SizeChanged only triggers layout recalc when width actually changes.
-	double _lastGridLayoutWidth = -1;
-
 	protected TItemsView ItemsView => VirtualView;
 	protected TItemsView Element => VirtualView;
 
@@ -209,13 +205,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			_layoutPropertyChangedProxy = null;
 		}
 
-		// When WidthRequest is set with HorizontalOptions=Start the MAUI layout engine applies
-		// the width constraint to the platform view AFTER initial construction. UniformGridLayout
-		// may have already calculated column counts using the initial width (which can be 0).
-		// Subscribing to SizeChanged and forcing UpdateLayout() ensures the grid recalculates
-		// the correct number of columns once the constrained width is known.
-		platformView.SizeChanged += OnPlatformSizeChanged;
-
 		VirtualView.ScrollToRequested += ScrollToRequested;
 		FindScrollViewer();
 	}
@@ -228,8 +217,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			incc.CollectionChanged -= ItemsChanged;
 		}
-
-		platformView.SizeChanged -= OnPlatformSizeChanged;
 
 		if (platformView.ScrollView is not null)
 		{
@@ -603,20 +590,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		itemsView.SetLayoutOrientation(IsLayoutHorizontal);
-
-		// Constrain the ItemsRepeater cross-axis early so the first layout pass
-		// uses the correct available width, preventing items from stretching to
-		// fill a wider-than-intended parent before WidthRequest takes effect.
-		if (Layout is GridItemsLayout)
-		{
-			double crossAxisSize = IsLayoutHorizontal
-				? VirtualView?.HeightRequest ?? -1
-				: VirtualView?.WidthRequest ?? -1;
-
-			if (crossAxisSize >= 0)
-				itemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, crossAxisSize);
-		}
-
 		return itemsView;
 	}
 
@@ -639,10 +612,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		PlatformView.Layout = CreateItemsLayout();
 
-		// Reset cached cross-axis size so OnPlatformSizeChanged re-evaluates column count
-		// after the layout type or orientation changes.
-		_lastGridLayoutWidth = -1;
-
 		// Update header/footer orientation
 		if (PlatformView is MauiItemsView mauiItemsView)
 		{
@@ -655,22 +624,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			{
 				ScrollViewer.SetHorizontalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Disabled);
 				ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
-			}
-
-			// Re-apply the cross-axis constraint for the new layout. Use WidthRequest
-			// (or HeightRequest for horizontal) if set, otherwise clear the constraint.
-			if (Layout is GridItemsLayout)
-			{
-				double crossAxisSize = IsLayoutHorizontal
-					? VirtualView?.HeightRequest ?? -1
-					: VirtualView?.WidthRequest ?? -1;
-
-				mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal,
-					crossAxisSize >= 0 ? crossAxisSize : double.PositiveInfinity);
-			}
-			else
-			{
-				mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, double.PositiveInfinity);
 			}
 
 			mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
@@ -686,28 +639,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		switch (Layout)
 		{
 			case GridItemsLayout gridItemsLayout:
-				var gridLayout = CreateGridView(gridItemsLayout);
-
-				// Pre-compute MinItemWidth/Height when WidthRequest/HeightRequest is
-				// explicitly set, so UniformGridLayout uses the correct column/row count
-				// from the very first layout pass — before SizeChanged fires.
-				// Without this, ItemsStretch=Fill can stretch items to a large cached
-				// effectiveItemWidth during the initial unconstrained pass, causing the
-				// column formula to yield fewer columns than Span once the constrained
-				// width takes effect.
-				if (VirtualView is not null)
-				{
-					double crossAxisSize = IsLayoutHorizontal
-						? VirtualView.HeightRequest
-						: VirtualView.WidthRequest;
-
-					if (crossAxisSize >= 0)
-					{
-						ApplyMinItemSizeForSpan(gridLayout, gridItemsLayout, crossAxisSize);
-					}
-				}
-
-				return gridLayout;
+				return CreateGridView(gridItemsLayout);
 			case LinearItemsLayout listItemsLayout:
 				return CreateStackLayout(listItemsLayout);
 			default:
@@ -727,9 +659,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		};
 	}
 
-	static UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
+	UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
 	{
-		return new UniformGridLayout()
+		var layout = new UniformGridLayout()
 		{
 			Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
 					? Orientation.Vertical : Orientation.Horizontal,
@@ -739,113 +671,47 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			ItemsStretch = UniformGridLayoutItemsStretch.Fill,
 			ItemsJustification = UniformGridLayoutItemsJustification.Start,
 		};
+
+		ApplyMinItemSizeForSpan(layout, gridItemsLayout);
+		return layout;
 	}
 
 	/// <summary>
-	/// Computes and sets <c>MinItemWidth</c> (or <c>MinItemHeight</c>) on the given
-	/// <see cref="UniformGridLayout"/> so that the column/row count formula always
-	/// yields the configured <see cref="GridItemsLayout.Span"/>.
+	/// Computes and applies MinItemWidth/MinItemHeight to work around a WinUI UniformGridLayout bug
+	/// where two internal formulas disagree on items-per-line when ItemsStretch=Fill:
+	///   - GetItemsPerLine uses: floor((available + spacing) / (minWidth + spacing))
+	///   - CalculateExtraPixelsInLine uses: floor(available / (minWidth + spacing))
+	/// The more restrictive formula sees fewer items and inflates the effective width, causing
+	/// fewer columns than requested. By using floor(crossAxisSize / span) - spacing as MinItemWidth,
+	/// both formulas agree on the correct number of columns.
+	/// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/Repeater/UniformGridLayout.cpp
 	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// WinUI's <c>UniformGridLayout</c> internally uses two different formulas for
-	/// computing items per line:
-	/// </para>
-	/// <list type="bullet">
-	/// <item><c>GetItemsPerLine</c>: <c>floor((available + spacing) / (effectiveWidth + spacing))</c></item>
-	/// <item><c>CalculateExtraPixelsInLine</c>: <c>floor(available / (minWidth + spacing))</c></item>
-	/// </list>
-	/// <para>
-	/// When <c>ItemsStretch=Fill</c>, the stretch calculation in <c>CalculateExtraPixelsInLine</c>
-	/// determines how many items fit using the latter (more restrictive) formula. If
-	/// <c>MinItemWidth</c> is too large, the stretch calculation sees fewer items than
-	/// <c>GetItemsPerLine</c> would, inflating the effective width and causing fewer columns.
-	/// </para>
-	/// <para>
-	/// To work around this, we compute <c>MinItemWidth</c> as
-	/// <c>floor(available / span) - spacing</c> which satisfies both formulas.
-	/// After the Fill stretch, the effective width becomes the correct
-	/// <c>(available - (span-1)*spacing) / span</c>.
-	/// </para>
-	/// </remarks>
-	void ApplyMinItemSizeForSpan(UniformGridLayout uniformGrid, GridItemsLayout gridItemsLayout, double crossAxisSize)
+	void ApplyMinItemSizeForSpan(UniformGridLayout layout, GridItemsLayout gridItemsLayout)
 	{
-		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize) || double.IsInfinity(crossAxisSize))
+		// Only apply when an explicit cross-axis size is set on the CollectionView
+		bool isHorizontal = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+		double crossAxisSize = isHorizontal
+			? VirtualView.HeightRequest
+			: VirtualView.WidthRequest;
+
+		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize))
 			return;
 
 		int span = gridItemsLayout.Span;
-		bool isHorizontal = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 		double spacing = isHorizontal
 			? gridItemsLayout.VerticalItemSpacing
 			: gridItemsLayout.HorizontalItemSpacing;
 
-		// Compute MinItemWidth such that WinUI's internal CalculateExtraPixelsInLine
-		// (which uses floor(available / (minWidth + spacing))) sees at least `span` items.
-		// With floor(available / span) - spacing as minWidth:
-		//   minWidth + spacing = floor(available / span)
-		//   available / (minWidth + spacing) = available / floor(available / span) >= span
-		// After ItemsStretch=Fill, the effective width becomes:
-		//   (available - (span-1)*spacing) / span  (the correct item width)
-		double itemSize = Math.Max(1, Math.Floor(crossAxisSize / span) - spacing);
+		// Formula: floor(crossAxisSize / span) - spacing
+		// This ensures both WinUI internal formulas agree on the correct number of columns.
+		double minItemSize = Math.Floor(crossAxisSize / span) - spacing;
+		if (minItemSize <= 0)
+			return;
 
 		if (isHorizontal)
-			uniformGrid.MinItemHeight = itemSize;
+			layout.MinItemHeight = minItemSize;
 		else
-			uniformGrid.MinItemWidth = itemSize;
-	}
-
-	/// <summary>
-	/// Handles platform view size changes to ensure <see cref="UniformGridLayout"/> recalculates
-	/// the correct column (or row) count after the MAUI layout engine applies a <c>WidthRequest</c>
-	/// constraint. Without this, the grid may show fewer columns than <see cref="GridItemsLayout.Span"/>
-	/// because the initial layout pass can see a zero or stale available width.
-	/// </summary>
-	void OnPlatformSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
-	{
-		if (Layout is not GridItemsLayout gridItemsLayout || PlatformView is null || VirtualView is null)
-			return;
-
-		// When no explicit size is set, UniformGridLayout receives the correct available
-		// size naturally from its parent — no forced re-layout needed.
-		bool hasExplicitCrossAxisSize = IsLayoutHorizontal
-			? VirtualView.HeightRequest >= 0
-			: VirtualView.WidthRequest >= 0;
-
-		if (!hasExplicitCrossAxisSize)
-			return;
-
-		double newCrossAxisSize = IsLayoutHorizontal ? e.NewSize.Height : e.NewSize.Width;
-		if (newCrossAxisSize == _lastGridLayoutWidth)
-			return;
-
-		_lastGridLayoutWidth = newCrossAxisSize;
-
-		// Recreating the UniformGridLayout resets its internal EffectiveItemWidth cache.
-		//
-		// UniformGridLayout computes column count as:
-		//   min(Span, floor((available + spacing) / (effectiveItemWidth + spacing)))
-		//
-		// After any layout pass it caches the realized item width as effectiveItemWidth.
-		// If the first pass used a wrong available width (e.g. the view was initially
-		// measured before WidthRequest was applied), items may be stretched to the wrong
-		// size (e.g. 104px for 2 columns). On the next pass the cached 104px feeds back
-		// into the formula and re-produces 2 columns — a stable fixed point that
-		// InvalidateMeasure() alone cannot break.
-		//
-		// A fresh UniformGridLayout starts with effectiveItemWidth=0, so the formula
-		// reduces to min(Span, floor((available+spacing)/spacing)), giving the correct
-		// column count for the actual available width.
-		//
-		// Additionally, we set MaxWidth (or MaxHeight for horizontal layouts) directly on
-		// the ItemsRepeater. This ensures UniformGridLayout always sees the correct
-		// available size even when the parent StackPanel passes a larger constraint during
-		// an intermediate layout pass (e.g., when FrameworkElement.Width is still NaN).
-		if (PlatformView is MauiItemsView mauiItemsView)
-			mauiItemsView.SetItemsRepeaterCrossAxisMaxSize(IsLayoutHorizontal, newCrossAxisSize);
-
-		var newLayout = CreateGridView(gridItemsLayout);
-		ApplyMinItemSizeForSpan(newLayout, gridItemsLayout, newCrossAxisSize);
-		PlatformView.Layout = newLayout;
+			layout.MinItemWidth = minItemSize;
 	}
 
 	void FindScrollViewer()
@@ -917,12 +783,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			UpdateSnapPoints();
 		}
-		else if (e.PropertyName == nameof(ItemsLayout.Orientation))
-		{
-			// Orientation change swaps which axis is "cross-axis", so the cached size is
-			// no longer valid — reset it so OnPlatformSizeChanged re-evaluates correctly.
-			_lastGridLayoutWidth = -1;
-		}
 	}
 
 	void UpdateItemsLayoutSpan()
@@ -931,18 +791,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			Layout is GridItemsLayout gridItemsLayout)
 		{
 			listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
-
-			// Recompute MinItemWidth/MinItemHeight for the new span so the
-			// column count formula yields the correct result.
-			if (_lastGridLayoutWidth > 0)
-			{
-				ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, _lastGridLayoutWidth);
-			}
-			else if (PlatformView.ActualWidth > 0 || PlatformView.ActualHeight > 0)
-			{
-				double crossAxisSize = IsLayoutHorizontal ? PlatformView.ActualHeight : PlatformView.ActualWidth;
-				ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, crossAxisSize);
-			}
+			ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout);
 		}
 	}
 
@@ -953,25 +802,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
 			listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
-
-			// Spacing changes affect the MinItemWidth/Height formula:
-			//   itemSize = (crossAxis - (span-1) * spacing) / span
-			// Recompute so the column/row count remains correct.
-			if (_lastGridLayoutWidth > 0)
-			{
-				ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, _lastGridLayoutWidth);
-			}
-			else if (VirtualView is not null)
-			{
-				double crossAxisSize = IsLayoutHorizontal
-					? VirtualView.HeightRequest
-					: VirtualView.WidthRequest;
-
-				if (crossAxisSize >= 0)
-				{
-					ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout, crossAxisSize);
-				}
-			}
+			ApplyMinItemSizeForSpan(listViewLayout, gridItemsLayout);
 		}
 		else if (PlatformView.Layout is UI.Xaml.Controls.StackLayout stackLayout &&
 			Layout is LinearItemsLayout linearItemsLayout)
