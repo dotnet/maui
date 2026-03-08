@@ -9,6 +9,22 @@ namespace Microsoft.Maui.ApplicationModel
 	/// </summary>
 	public static partial class MainThread
 	{
+		static Func<bool> s_isMainThreadImplementation;
+		static Action<Action> s_beginInvokeOnMainThreadImplementation;
+
+		/// <summary>
+		/// Sets a custom implementation for <see cref="MainThread"/> operations.
+		/// This is intended for custom platform backends that do not have a built-in MainThread implementation.
+		/// </summary>
+		/// <param name="isMainThread">A function that returns <see langword="true"/> if the current thread is the main/UI thread.</param>
+		/// <param name="beginInvokeOnMainThread">An action that dispatches the given <see cref="Action"/> to the main/UI thread.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="isMainThread"/> or <paramref name="beginInvokeOnMainThread"/> is <see langword="null"/>.</exception>
+		public static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
+		{
+			s_isMainThreadImplementation = isMainThread ?? throw new ArgumentNullException(nameof(isMainThread));
+			s_beginInvokeOnMainThreadImplementation = beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
+		}
+
 		/// <summary>
 		/// True if the current thread is the UI thread.
 		/// </summary>
