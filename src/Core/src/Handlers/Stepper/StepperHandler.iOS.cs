@@ -48,6 +48,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateValue(stepper);
 		}
 
+		internal static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateFlowDirection(stepper);
+		}
+
 		class StepperProxy
 		{
 			WeakReference<IStepper>? _virtualView;
