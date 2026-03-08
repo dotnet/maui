@@ -605,6 +605,13 @@
         </ItemGroup>
     </Target>
 
+    <!-- Extensibility target: runs after font processing.
+         Custom backends can register targets via the ResizetizerAfterFontProcessingTargets property. -->
+    <Target Name="_ResizetizerAfterFontProcessing"
+        AfterTargets="ProcessMauiFonts"
+        DependsOnTargets="$(ResizetizerAfterFontProcessingTargets)"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'" />
+
     <Target Name="_ReadResizetizeImagesOutputs">
         <ReadLinesFromFile File="$(_ResizetizerOutputsFile)" Condition="Exists ('$(_ResizetizerOutputsFile)')">
             <Output TaskParameter="Lines" ItemName="_ResizetizerOutputs" />
@@ -655,6 +662,41 @@
             Condition="'@(_ResizetizerImagesToDelete->Count())' != '0'"
             Files="@(_ResizetizerImagesToDelete)"
         />
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_ResizetizerOutputsFile)"
+            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
+
+        <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
+        <ItemGroup>
+            <FileWrites Include="$(_ResizetizerStampFile)" />
+            <FileWrites Include="$(_ResizetizerOutputsFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Extensibility target: runs after image processing but before platform injection.
+         Custom backends can register targets via the ResizetizerAfterImageProcessingTargets property. -->
+    <Target Name="_ResizetizerAfterImageProcessing"
+        AfterTargets="ResizetizeImages"
+        BeforeTargets="_ResizetizeInjectPlatformItems"
+        DependsOnTargets="$(ResizetizerAfterImageProcessingTargets)"
+        Condition="'$(EnableMauiImageProcessing)' == 'true'" />
+
+    <!-- Platform-specific output injection (split from ResizetizeImages for extensibility) -->
+    <Target Name="_ResizetizeInjectPlatformItems"
+        AfterTargets="ResizetizeImages"
+        Condition="'$(EnableMauiImageProcessing)' == 'true'
+            And ('$(_ResizetizerIsAndroidApp)' == 'True'
+            Or '$(_ResizetizerIsiOSApp)' == 'True'
+            Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'
+            Or '$(_ResizetizerIsWPFApp)' == 'True'
+            Or '$(_ResizetizerIsTizenApp)' == 'True')"
+        DependsOnTargets="$(ResizetizeInjectPlatformItemsTargets)">
 
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
@@ -726,21 +768,6 @@
                 <TizenTpkSubDir>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), $([System.IO.Path]::GetFullPath('%(_ResizetizerCollectedImages.RelativeDir)'))))</TizenTpkSubDir>
             </TizenTpkUserIncludeFiles>
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
-        </ItemGroup>
-
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
-        <WriteLinesToFile
-            File="$(_ResizetizerOutputsFile)"
-            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
-            Overwrite="true"
-            WriteOnlyWhenDifferent="true"
-        />
-
-        <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
-        <ItemGroup>
-            <FileWrites Include="$(_ResizetizerStampFile)" />
-            <FileWrites Include="$(_ResizetizerOutputsFile)" />
         </ItemGroup>
     </Target>
 
@@ -900,5 +927,17 @@
     <Target Name="_CleanResizetizer">
         <RemoveDir Directories="$(_ResizetizerIntermediateOutputRoot)" Condition="Exists ('$(_ResizetizerIntermediateOutputRoot)' )" />
     </Target>
+
+    <!-- Extensibility target: runs after all resource processing is complete.
+         Custom backends can register targets via the ResizetizerAfterAllProcessingTargets property. -->
+    <Target Name="_ResizetizerAfterAllProcessing"
+        AfterTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets"
+        DependsOnTargets="$(ResizetizerAfterAllProcessingTargets)" />
+
+    <!-- Optional: Import custom platform-specific targets file.
+         Custom backends can set ResizetizerCustomPlatformTargets to provide a targets file
+         that gets imported by the Resizetizer. -->
+    <Import Project="$(ResizetizerCustomPlatformTargets)"
+            Condition="'$(ResizetizerCustomPlatformTargets)' != '' And Exists('$(ResizetizerCustomPlatformTargets)')" />
 
 </Project>
