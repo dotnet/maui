@@ -221,11 +221,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 				}
 
-				// After removing tabs, recalculate IsInMoreTab for all remaining renderers.
-				// Positions shift when a tab is removed (e.g., if Tab1 is hidden, Tab5 moves
-				// from the "More" screen into the direct tab bar). Without this update, a renderer
-				// that previously had IsInMoreTab=true would incorrectly push navigation onto
-				// MoreNavigationController even though the tab is now directly visible.
+				// Recalculate IsInMoreTab for remaining renderers since tab positions shifted after removal.
 				UpdateIsInMoreTabForRenderers();
 			}
 

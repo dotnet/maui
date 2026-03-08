@@ -4,15 +4,11 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue34343 : Shell
 {
 	ContentPage _tab1Page;
-
 	public Issue34343()
 	{
-		// Register Page51 as a sub-route for navigating from Tab5 (iOS repro)
 		Routing.RegisterRoute("Page51", typeof(Issue34343_Page51));
 
 		var tabBar = new TabBar();
-
-		// Tab 1 - first tab that will be hidden to trigger the bug
 		var button = new Button
 		{
 			Text = "Hide Tab1 and Go to Tab5",
@@ -46,13 +42,9 @@ public class Issue34343 : Shell
 		tab1.Items.Add(tab1Content);
 		tabBar.Items.Add(tab1);
 
-		// Tabs 2-4: use ContentTemplate (lazy creation) to reproduce the Android bug.
-		// With ContentTemplate, the page is null until first shown, so DisplayedPage=null
-		// when SetupMenu fires after Tab1 is hidden — causing SetupMenu to return early
-		// and the tab bar to remain unrebuilt (the core Android bug trigger).
 		for (int i = 2; i <= 4; i++)
 		{
-			int tabNum = i; // capture for closure
+			int tabNum = i;
 			var content = new ShellContent
 			{
 				Title = $"Tab{tabNum}",
@@ -109,10 +101,9 @@ public class Issue34343 : Shell
 		tab5.Items.Add(tab5Content);
 		tabBar.Items.Add(tab5);
 
-		// Tabs 6-7: use ContentTemplate (lazy creation) for the same reason as Tabs 2-4
 		for (int i = 6; i <= 7; i++)
 		{
-			int tabNum = i; // capture for closure
+			int tabNum = i;
 			var content = new ShellContent
 			{
 				Title = $"Tab{tabNum}",
@@ -138,7 +129,7 @@ public class Issue34343 : Shell
 	}
 }
 
-// Sub-page navigated to from Tab5 (relative route "Page51") — iOS repro
+// Sub-page navigated to from Tab5 (relative route "Page51")
 public class Issue34343_Page51 : ContentPage
 {
 	public Issue34343_Page51()
@@ -153,5 +144,3 @@ public class Issue34343_Page51 : ContentPage
 		};
 	}
 }
-
-
