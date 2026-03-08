@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_defaultPlaceholderSize ??= _placeholderLabel.Font.PointSize;
 			_placeholderLabel.Font = value ?? _placeholderLabel.Font.WithSize(
-				value?.PointSize ?? _defaultPlaceholderSize.Value);
+				value?.PointSize ?? _defaultPlaceholderSize.Value) ?? _placeholderLabel.Font;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

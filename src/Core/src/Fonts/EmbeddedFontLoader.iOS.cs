@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 #pragma warning restore CA1422
 #pragma warning restore CA1416
 
-				var uiFont = UIFont.FromName(name, 10);
+				var uiFont = name is not null ? UIFont.FromName(name, 10) : null;
 				if (uiFont != null)
 					return name;
 
