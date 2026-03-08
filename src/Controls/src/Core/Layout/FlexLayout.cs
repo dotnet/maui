@@ -513,42 +513,39 @@ namespace Microsoft.Maui.Controls
 				_viewInfo.Add(child, new FlexInfo());
 			}
 
-			var item = (child as FlexLayout)?._root ?? new Flex.Item();
+			var item = new Flex.Item();
 			InitItemProperties(child, item);
-			if (child is not FlexLayout)
+			item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool inMeasureMode) =>
 			{
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool inMeasureMode) =>
+				Size request;
+
+				if (inMeasureMode)
 				{
-					Size request;
+					var sizeConstraints = item.GetConstraints();
 
-					if (inMeasureMode)
+					sizeConstraints.Width = (inMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
+					sizeConstraints.Height = (inMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+
+					if (child is Image)
 					{
-						var sizeConstraints = item.GetConstraints();
+						// This is a hack to get FlexLayout to behave like it did in Forms
+						// Forms always did its initial image measure unconstrained, which would return
+						// the intrinsic size of the image (no scaling or aspect ratio adjustments)
 
-						sizeConstraints.Width = (inMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
-						sizeConstraints.Height = (inMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
-
-						if (child is Image)
-						{
-							// This is a hack to get FlexLayout to behave like it did in Forms
-							// Forms always did its initial image measure unconstrained, which would return
-							// the intrinsic size of the image (no scaling or aspect ratio adjustments)
-
-							sizeConstraints.Width = double.PositiveInfinity;
-							sizeConstraints.Height = double.PositiveInfinity;
-						}
-
-						request = child.Measure(sizeConstraints.Width, sizeConstraints.Height);
+						sizeConstraints.Width = double.PositiveInfinity;
+						sizeConstraints.Height = double.PositiveInfinity;
 					}
-					else
-					{
-						// Arrange pass, do not ever run a measure here!
-						request = child.DesiredSize;
-					}
-					w = (float)request.Width;
-					h = (float)request.Height;
-				};
-			}
+
+					request = child.Measure(sizeConstraints.Width, sizeConstraints.Height);
+				}
+				else
+				{
+					// Arrange pass, do not ever run a measure here!
+					request = child.DesiredSize;
+				}
+				w = (float)request.Width;
+				h = (float)request.Height;
+			};
 
 			_root.InsertAt(index, item);
 			SetFlexItem(child, item);
