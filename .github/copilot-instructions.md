@@ -214,7 +214,7 @@ git commit -m "Fix: Description of the change"
 
 ### Opening PRs
 
-All PRs are required to have this at the top of the description:
+**Issue-fix PRs** (PRs that fix bugs or add functional features) are required to have this at the top of the description:
 
 ```
 <!-- Please let the below note in for people that find this PR -->
@@ -223,7 +223,9 @@ All PRs are required to have this at the top of the description:
 > It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
 ```
 
-Always put that at the top, without the block quotes. Without it, users will NOT be able to try the PR and your work will have been in vain!
+For issue-fix PRs, always put that at the top, without the block quotes. Without it, users will NOT be able to try the PR and your work will have been in vain!
+
+**Test-only PRs** (PRs with `[Testing]` tag, `area-testing` label, or only test file changes) do NOT need the NOTE block, as users don't need to test artifacts for test-only changes.
 
 
 

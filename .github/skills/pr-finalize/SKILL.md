@@ -108,6 +108,7 @@ Ask: "Is the existing description better than what my template would produce?"
 | Requirement | Good | Bad |
 |-------------|------|-----|
 | Platform prefix (if specific) | `[iOS] Fix Shell back button` | `Fix Shell back button` |
+| **Test-only prefix** | `[Testing] Add CollectionView scroll tests` | `Add CollectionView scroll tests` (if test-only) |
 | Describes behavior, not issue | `[iOS] SafeArea: Return Empty for non-ISafeAreaView views` | `Fix #23892` |
 | Captures the "what" | `Return Empty for non-ISafeAreaView` | `Fix SafeArea bug` |
 | Notes model change if applicable | `(opt-in model)` | (omitted) |
@@ -115,21 +116,47 @@ Ask: "Is the existing description better than what my template would produce?"
 
 ### Title Formula
 
+**For issue-fix PRs:**
 ```
 [Platform] Component: What changed (model change if any)
+```
+
+**For test-only PRs:**
+```
+[Testing] Component: What test coverage added
 ```
 
 Examples:
 - `[iOS] SafeArea: Return Empty for non-ISafeAreaView views (opt-in model)`
 - `[Android] CollectionView: Fix scroll position reset on item update`
 - `[Windows] Shell: Use NavigationView instead of custom flyout`
+- `[Testing] CollectionView: Add scrolling feature matrix test cases`
+- `[Testing] Add UI tests for Button click events`
 
 ## Description Requirements
 
 PR description should:
-1. Start with the required NOTE block (so users can test PR artifacts)
+1. **For issue-fix PRs**: Start with the required NOTE block (so users can test PR artifacts). **Skip for test-only PRs** (e.g., `[Testing]` tag in title, PR only adds tests without functional fixes).
 2. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
 3. Match the actual implementation
+
+### Detecting Test-Only PRs
+
+A PR is considered "test-only" if:
+- Title contains `[Testing]` tag
+- PR has `area-testing` label
+- PR only adds or modifies test files without functional code changes
+- PR description explicitly states it's for test coverage only
+
+**For test-only PRs:** 
+- Do NOT recommend adding the NOTE block (users generally don't need to manually test PR artifacts when changes only affect automated tests or test infrastructure and have no user-facing behavior impact)
+- **DO recommend adding `[Testing]` prefix to title if missing** (helps identify test-only PRs at a glance)
+
+**For issue-fix PRs:** 
+- Always recommend the NOTE block
+- Use platform prefix like `[iOS]`, `[Android]`, `[Windows]` if platform-specific
+
+Use this NOTE block template in the description:
 
 ```markdown
 <!-- Please let the below note in for people that find this PR -->
@@ -196,7 +223,7 @@ Example: "Before: Safe area applied by default (opt-out). After: Only views impl
 | Description doesn't match code | Implementation changed during review | Update description to match actual diff |
 | Missing root cause | Author focused on "what" not "why" | Add root cause from issue/analysis |
 | References wrong approach | Started with A, switched to B | Update to describe final approach |
-| Missing NOTE block | Author didn't use template | Prepend NOTE block, keep rest |
+| Missing NOTE block | Author didn't use template | Prepend NOTE block (unless test-only PR) |
 | Good description replaced | Agent used template blindly | Evaluate existing quality first |
 
 ## Output Format
@@ -208,7 +235,8 @@ Example: "Before: Safe area applied by default (opt-out). After: Only views impl
 
 ### ✅ Title: [Good / Needs Update]
 **Current:** "Existing title"
-**Recommended:** "[Platform] Improved title" (if needed)
+**Recommended:** "[Platform] Improved title" (if issue-fix PR)
+**Recommended:** "[Testing] Improved title" (if test-only PR)
 
 ### ✅ Description: Excellent - Keep As-Is
 
@@ -218,10 +246,32 @@ Example: "Before: Safe area applied by default (opt-out). After: Only views impl
 - Accuracy: ✅ Matches implementation
 - Completeness: ✅ Platforms, breaking changes noted
 
-**Only addition needed:**
-- ❌ Missing NOTE block - prepend to top
+**Only addition needed (if issue-fix PR):**
+- ❌ Missing NOTE block - prepend to top (skip for test-only PRs)
 
-**Action:** Add NOTE block, preserve everything else.
+**Action:** Add NOTE block (unless test-only PR), preserve everything else.
+```
+
+### Test-Only PR Example
+
+```markdown
+## PR #33632 Finalization Review
+
+### ⚠️ Title: Needs Update
+**Current:** "Additional Feature Matrix Test Cases for CollectionView - 2"
+**Recommended:** "[Testing] Additional Feature Matrix Test Cases for CollectionView - 2"
+
+**Issues:**
+- Missing `[Testing]` prefix for test-only PR
+
+### ✅ Description: Good - No Changes Needed
+
+**Quality assessment:**
+- Structure: ✅ Clear sections
+- Test coverage: ✅ Well documented
+- Accuracy: ✅ Matches implementation
+
+**No NOTE block needed** - This is a test-only PR (has `area-testing` label)
 ```
 
 ### When Description Needs Rewrite
