@@ -267,9 +267,26 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
 		var newSelection = ComputeNewMultipleSelection();
-		ItemsView.UpdateSelectedItems(newSelection);
+		if (!SelectionListsAreEqual(newSelection, ItemsView.SelectedItems))
+		{
+			ItemsView.UpdateSelectedItems(newSelection);
+		}
 
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
+	}
+
+	static bool SelectionListsAreEqual(IList<object> list1, IList<object> list2)
+	{
+		if (list1.Count != list2.Count)
+			return false;
+
+		var set2 = new HashSet<object>(list2);
+		for (int i = 0; i < list1.Count; i++)
+		{
+			if (!set2.Contains(list1[i]))
+				return false;
+		}
+		return true;
 	}
 
 	/// <summary>
