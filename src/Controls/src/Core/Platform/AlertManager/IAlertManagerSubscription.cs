@@ -29,6 +29,6 @@ namespace Microsoft.Maui.Controls.Platform
 		/// Called when the page busy state changes.
 		/// </summary>
 		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET 11.")]
-		void OnPageBusy(Page sender, bool enabled) { }
+		void OnPageBusy(Page sender, bool enabled);
 	}
 }

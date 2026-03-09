@@ -39,6 +39,6 @@ namespace Microsoft.Maui.Controls.Platform
 		/// Requests that the page busy indicator be shown or hidden.
 		/// </summary>
 		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET 11.")]
-		void RequestPageBusy(Page page, bool isBusy) { }
+		void RequestPageBusy(Page page, bool isBusy);
 	}
 }
