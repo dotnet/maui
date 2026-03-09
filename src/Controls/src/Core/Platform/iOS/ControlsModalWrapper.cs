@@ -51,6 +51,19 @@ namespace Microsoft.Maui.Controls.Platform
 							PopoverPresentationController.SourceRect = new CoreGraphics.CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 						}
 					}
+
+					if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPopoverArrowDirections() is PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection arrowDirection)
+					{
+						PopoverPresentationController.PermittedArrowDirections = (UIKit.UIPopoverArrowDirection)(long)arrowDirection;
+					}
+				}
+
+				if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPopoverContentSize() is Graphics.Size size && !size.IsZero)
+				{
+					if (size.Width > 0 && size.Height > 0)
+					{
+						PreferredContentSize = new CoreGraphics.CGSize(size.Width, size.Height);
+					}
 				}
 			}
 
