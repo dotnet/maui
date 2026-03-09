@@ -5,14 +5,25 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 34188, "Background color doesn't apply correctly to the spanned region on all the platforms.", PlatformAffected.All)]
 public class Issue34188 : ContentPage
 {
+	StackLayout _outerStack;
+	Label _instructionsLabel;
 	public Issue34188()
 	{
-		Content = new Issue34188Grid
+		_outerStack = new StackLayout();
+		_outerStack.AutomationId = "OuterStack";
+		_instructionsLabel = new Label
+		{
+			Margin = new Thickness(10),
+			AutomationId = "Label"
+		};
+		_outerStack.Children.Add(_instructionsLabel);
+		_outerStack.Children.Add(new Issue34188Grid
 		{
 			AutomationId = "CustomGrid",
 			WidthRequest = 200,
 			HeightRequest = 200
-		};
+		});
+		Content = _outerStack;
 	}
 
 	class Issue34188Grid : Issue34188ControlLayout
