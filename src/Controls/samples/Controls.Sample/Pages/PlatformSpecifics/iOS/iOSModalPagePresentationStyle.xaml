@@ -11,6 +11,7 @@
         <Button Text="Push modal with UIModalPresentationStyle.FormSheet" Clicked="OnPushFormSheetClicked" />
         <Button x:Name="originButton" Text="Push modal with UIModalPresentationStyle.Popover" Clicked="OnPushPopoverClicked" />
         <Button x:Name="originButton2" Text="Push modal with UIModalPresentationStyle.Popover and offset" Clicked="OnPushPopoverOffsetClicked" />
+        <Button x:Name="originButton3" Text="Push modal with Popover and ContentSize/ArrowDirection" Clicked="OnPushPopoverDirectionSizeClicked" />
         <Button Text="Return to Platform-Specifics List" Clicked="OnReturnButtonClicked" />
     </StackLayout>
 </ContentPage>

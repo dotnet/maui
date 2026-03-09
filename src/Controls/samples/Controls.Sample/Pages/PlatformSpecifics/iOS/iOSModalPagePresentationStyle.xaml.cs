@@ -19,7 +19,8 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 		public iOSModalPagePresentationStyle(UIModalPresentationStyle presentationStyle, bool isChildPage = true,
-			View? modalOrigin = null, Rectangle? rectangle = null)
+			View? modalOrigin = null, Rectangle? rectangle = null, Microsoft.Maui.Graphics.Size? popoverSize = null,
+			UIPopoverArrowDirection? arrowDirections = null)
 		{
 			InitializeComponent();
 
@@ -31,6 +32,16 @@ namespace Maui.Controls.Sample.Pages
 			if (rectangle is not null)
 			{
 				On<iOS>().SetModalPopoverRect(rectangle.Value);
+			}
+
+			if (popoverSize is not null)
+			{
+				On<iOS>().SetModalPopoverContentSize(popoverSize.Value);
+			}
+
+			if (arrowDirections is not null)
+			{
+				On<iOS>().SetModalPopoverArrowDirections(arrowDirections.Value);
 			}
 
 			On<iOS>().SetModalPresentationStyle(presentationStyle);
@@ -57,7 +68,13 @@ namespace Maui.Controls.Sample.Pages
 			await Navigation.PushModalAsync(pushMe);
 		}
 
-		async void OnReturnButtonClicked(object? sender, EventArgs e)
+		async void OnPushPopoverDirectionSizeClicked(object sender, EventArgs e)
+		{
+			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.Popover, true, originButton3, null, new Microsoft.Maui.Graphics.Size(240, 240), UIPopoverArrowDirection.Any);
+			await Navigation.PushModalAsync(pushMe);
+		}
+
+		async void OnReturnButtonClicked(object sender, EventArgs e)
 		{
 			if (isChildPage)
 			{
