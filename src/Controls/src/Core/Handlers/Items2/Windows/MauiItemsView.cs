@@ -44,28 +44,17 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 
-		// Background fills (PART_CommonVisual.Fill)
+		// Background fills (PART_CommonVisual.Fill) — suppress the gray overlay
+		// that WinUI shows on PointerOver/Pressed so it doesn't interfere with
+		// MAUI's own VisualStateManager states. Fixes: #13197
 		Resources["ItemContainerBackground"] = transparent;
 		Resources["ItemContainerPointerOverBackground"] = transparent;
 		Resources["ItemContainerPressedBackground"] = transparent;
-		Resources["ItemContainerSelectedBackground"] = transparent;
-		Resources["ItemContainerSelectedPointerOverBackground"] = transparent;
-		Resources["ItemContainerSelectedPressedBackground"] = transparent;
 
 		// Border strokes (PART_CommonVisual.Stroke)
 		Resources["ItemContainerBorderBrush"] = transparent;
 		Resources["ItemContainerPointerOverBorderBrush"] = transparent;
 		Resources["ItemContainerPressedBorderBrush"] = transparent;
-
-		// Selection indicator (PART_SelectionVisual.BorderBrush) — the accent-colored
-		// 3px border that WinUI shows around selected items. MAUI manages its own
-		// selection visual states, so suppress these native indicators.
-		Resources["ItemContainerSelectionVisualBackground"] = transparent;
-		Resources["ItemContainerSelectionVisualPointerOverBackground"] = transparent;
-		Resources["ItemContainerSelectionVisualPressedBackground"] = transparent;
-
-		// Inner border shown in selected states (PART_CommonVisual.Stroke override)
-		Resources["ItemContainerSelectedInnerBorderBrush"] = transparent;
 	}
 
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>
