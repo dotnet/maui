@@ -66,14 +66,7 @@ namespace Tests
 		// Reset static state to avoid affecting other tests
 		static void ClearCustomImplementation()
 		{
-			// Use reflection to clear the static fields since there's no public reset API
-			var type = typeof(MainThread);
-			var isMainThreadField = type.GetField("s_isMainThreadImplementation",
-				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-			var beginInvokeField = type.GetField("s_beginInvokeOnMainThreadImplementation",
-				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-			isMainThreadField?.SetValue(null, null);
-			beginInvokeField?.SetValue(null, null);
+			MainThread.ResetCustomImplementation();
 		}
 	}
 }

@@ -9,8 +9,8 @@ namespace Microsoft.Maui.ApplicationModel
 	/// </summary>
 	public static partial class MainThread
 	{
-		static Func<bool> s_isMainThreadImplementation;
-		static Action<Action> s_beginInvokeOnMainThreadImplementation;
+		static Func<bool> customIsMainThreadImplementation;
+		static Action<Action> customBeginInvokeOnMainThreadImplementation;
 
 		/// <summary>
 		/// Sets a custom implementation for <see cref="MainThread"/> operations.
@@ -21,8 +21,20 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="isMainThread"/> or <paramref name="beginInvokeOnMainThread"/> is <see langword="null"/>.</exception>
 		public static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
 		{
-			s_isMainThreadImplementation = isMainThread ?? throw new ArgumentNullException(nameof(isMainThread));
-			s_beginInvokeOnMainThreadImplementation = beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
+			if (isMainThread is null)
+				throw new ArgumentNullException(nameof(isMainThread));
+
+			if (beginInvokeOnMainThread is null)
+				throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
+
+			customIsMainThreadImplementation = isMainThread;
+			customBeginInvokeOnMainThreadImplementation = beginInvokeOnMainThread;
+		}
+
+		internal static void ResetCustomImplementation()
+		{
+			customIsMainThreadImplementation = null;
+			customBeginInvokeOnMainThreadImplementation = null;
 		}
 
 		/// <summary>
