@@ -139,7 +139,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// Cache the default template once for later restoration
 				_defaultItemContainerTemplate ??= container.Template;
 				container.Template = NonSelectableItemContainerTemplate;
-				container.IsHitTestVisible = false;
 			}
 			else
 			{
@@ -148,7 +147,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				{
 					container.Template = _defaultItemContainerTemplate;
 				}
-				container.IsHitTestVisible = true;
 			}
 
 			return container;
