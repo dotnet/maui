@@ -20,8 +20,6 @@ public class Issue34165 : _IssuesUITest
 
 		App.ScrollRight("CollectionView", ScrollStrategy.Gesture, swipePercentage: 0.8, swipeSpeed: 300);
 
-		Thread.Sleep(500);
-
 		var rectAfter = App.WaitForElement("EmptyViewLabel").GetRect();
 
 		Assert.That(rectAfter.X, Is.EqualTo(rectBefore.X),
