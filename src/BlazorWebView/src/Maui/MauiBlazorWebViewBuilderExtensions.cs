@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <returns>The <see cref="IMauiBlazorWebViewBuilder"/> for chaining.</returns>
 		public static IMauiBlazorWebViewBuilder UsePlatformHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(
 			this IMauiBlazorWebViewBuilder builder)
-			where THandler : IElementHandler
+			where THandler : IViewHandler
 		{
 			builder.Services.ConfigureMauiHandlers(handlers =>
 				handlers.AddHandler<IBlazorWebView, THandler>());
