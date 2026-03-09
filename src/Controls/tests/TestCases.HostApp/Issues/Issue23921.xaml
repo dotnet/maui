@@ -16,16 +16,16 @@
                     Clicked="button_Clicked"/>
         </SwipeView>
 
-      <SwipeView x:Name="swipeTwo"
-                 AutomationId="swipeTwo">
-        <SwipeView.RightItems>
-          <SwipeItem Text="Hi" />
-        </SwipeView.RightItems>
+        <SwipeView x:Name="swipeTwo"
+                   AutomationId="swipeTwo">
+            <SwipeView.RightItems>
+                <SwipeItem Text="Hi" />
+            </SwipeView.RightItems>
 
-        <Button x:Name="buttonTwo"
-                AutomationId="buttonTwo"
-                Text="tap me!"
-                Clicked="button_Clicked"/>
-      </SwipeView>
-  </VerticalStackLayout>
+            <Button x:Name="buttonTwo"
+                    AutomationId="buttonTwo"
+                    Text="tap me!"
+                    Clicked="button_Clicked"/>
+        </SwipeView>
+    </VerticalStackLayout>
 </ContentPage>
