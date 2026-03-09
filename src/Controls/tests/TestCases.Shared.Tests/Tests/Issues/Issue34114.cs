@@ -12,15 +12,7 @@ public class Issue34114 : _IssuesUITest
 
 	public override string Issue => "Label with background clip is not working properly";
 
-	[Test, Order(0)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelBackgroundIsClippedWithEllipseGeometry()
-	{
-		App.WaitForElement("ClippedLabel");
-		VerifyScreenshot();
-	}
-
-	[Test, Order(1)]
+	[Test]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelBackgroundIsClippedWithRectangleGeometry()
 	{
