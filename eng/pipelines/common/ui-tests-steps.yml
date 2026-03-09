@@ -187,6 +187,16 @@ steps:
   condition: always()
   displayName: publish artifacts
 
+# Publish only the snapshots-diff folder as a separate lightweight artifact
+# so it can be downloaded without pulling the full drop (~5GB)
+- task: PublishPipelineArtifact@1
+  condition: always()
+  displayName: Publish snapshots-diff
+  continueOnError: true
+  inputs:
+    targetPath: $(Build.ArtifactStagingDirectory)/Controls.TestCases.Shared.Tests/snapshots-diff
+    artifact: 'snapshots-diff-$(System.JobName)-$(System.JobAttempt)'
+
 # Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |
