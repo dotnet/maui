@@ -58,8 +58,8 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		public async Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
-			platformView is UIElement element ? await CaptureAsync(element) : null;
+		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
+			platformView is UIElement element ? CaptureAsync(element) : Task.FromResult<IScreenshotResult?>(null);
 	}
 
 	partial class ScreenshotResult
