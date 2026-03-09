@@ -164,7 +164,11 @@ namespace Microsoft.Maui.Platform
 				// When children are allowed to overflow this layout's bounds, we raise the
 				// translationZ of this view so that its overflowing children render on top of
 				// any sibling views that would otherwise be drawn over them due to z-order.
-				TranslationZ = HasChildrenOutsideBounds(destination.Width, destination.Height) ? 1f : 0f;
+				// Convert the content area to physical pixels for an exact integer comparison
+				// that avoids floating-point rounding artefacts from the DIU→pixel round-trip.
+				int contentWidthPx = (int)_context.ToPixels(destination.Width);
+				int contentHeightPx = (int)_context.ToPixels(destination.Height);
+				TranslationZ = HasChildrenOutsideBounds(contentWidthPx, contentHeightPx) ? 1f : 0f;
 			}
 
 			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
@@ -179,7 +183,7 @@ namespace Microsoft.Maui.Platform
 		/// layout's bounds. Used to decide whether to raise translationZ so that overflowing
 		/// children render on top of sibling views.
 		/// </summary>
-		bool HasChildrenOutsideBounds(double width, double height)
+		bool HasChildrenOutsideBounds(int widthPx, int heightPx)
 		{
 			if (CrossPlatformLayout is not ILayout layout)
 				return false;
@@ -187,8 +191,14 @@ namespace Microsoft.Maui.Platform
 			for (int i = 0; i < layout.Count; i++)
 			{
 				var frame = layout[i].Frame;
-				if (frame.Right > width || frame.Bottom > height
-					|| frame.Left < 0 || frame.Top < 0)
+
+				// Compare in physical pixels to avoid floating-point rounding between
+				// device-independent units and physical pixels. Allow 1-pixel tolerance
+				// for sub-pixel alignment differences at various screen densities.
+				if ((int)_context.ToPixels(frame.Right) > widthPx + 1
+					|| (int)_context.ToPixels(frame.Bottom) > heightPx + 1
+					|| (int)_context.ToPixels(frame.Left) < -1
+					|| (int)_context.ToPixels(frame.Top) < -1)
 				{
 					return true;
 				}
