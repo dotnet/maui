@@ -343,6 +343,10 @@ namespace Microsoft.Maui.Maps.Handlers
 				MoveToRegion(_lastMoveToRegion, false);
 				if (_pins != null)
 					AddPins(_pins);
+				if (VirtualView?.Elements is IList elements && elements.Count > 0)
+				{
+					SyncMapElements(elements);
+				}
 				_init = false;
 			}
 
