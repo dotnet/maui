@@ -9,8 +9,6 @@ public class Issue34165 : ContentPage
 
 	public Issue34165()
 	{
-		// The EmptyView label is the element we track — if horizontal scrolling occurs,
-		// its on-screen X position will change (the native scroll container moves it).
 		var emptyViewLabel = new Label
 		{
 			Text = "No items — swipe left/right here to test",
@@ -37,7 +35,5 @@ public class Issue34165 : ContentPage
 		};
 
 		Content = refreshView;
-
-		Console.WriteLine("ISSUE34165: Page loaded — CollectionView is empty, horizontal scroll should NOT be possible");
 	}
 }
