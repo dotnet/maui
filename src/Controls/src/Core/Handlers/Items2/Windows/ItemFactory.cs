@@ -108,6 +108,32 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				HorizontalAlignment = HorizontalAlignment.Stretch
 			};
 
+			// Prevent group headers/footers from being selectable:
+			// 1. IsHitTestVisible=false prevents click/tap selection without disabling content.
+			// 2. Override ItemContainerSelectionCheckboxStyle for containers where the
+			//    checkbox hasn't been realized yet (x:DeferLoadStrategy="Lazy").
+			// 3. For recycled containers where the checkbox already exists, hide it directly
+			//    via the visual tree.
+			// Must be set every time to handle recycled containers correctly.
+			bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+			if (isHeaderOrFooter)
+			{
+				container.IsHitTestVisible = false;
+
+				var collapsedStyle = new Microsoft.UI.Xaml.Style(typeof(CheckBox));
+				collapsedStyle.Setters.Add(new Microsoft.UI.Xaml.Setter(
+					UIElement.VisibilityProperty, Visibility.Collapsed));
+				container.Resources["ItemContainerSelectionCheckboxStyle"] = collapsedStyle;
+
+				SetSelectionCheckboxVisibility(container, Visibility.Collapsed);
+			}
+			else
+			{
+				container.IsHitTestVisible = true;
+				container.Resources.Remove("ItemContainerSelectionCheckboxStyle");
+				SetSelectionCheckboxVisibility(container, Visibility.Visible);
+			}
+
 			return container;
 		}
 
@@ -159,6 +185,25 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		}
 
 		_recyclePool.Clear();
+	}
+
+	/// <summary>
+	/// Finds the PART_SelectionCheckbox in the ItemContainer's visual tree and sets its visibility.
+	/// Used to hide the multi-select checkbox on group header/footer items.
+	/// </summary>
+	static void SetSelectionCheckboxVisibility(DependencyObject root, Visibility visibility)
+	{
+		int count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(root);
+		for (int i = 0; i < count; i++)
+		{
+			var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(root, i);
+			if (child is CheckBox cb && cb.Name == "PART_SelectionCheckbox")
+			{
+				cb.Visibility = visibility;
+				return;
+			}
+			SetSelectionCheckboxVisibility(child, visibility);
+		}
 	}
 }
 

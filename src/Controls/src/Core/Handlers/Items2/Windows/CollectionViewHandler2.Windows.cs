@@ -235,6 +235,13 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		{
 			if (itemcontainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
+				// Group headers/footers should never show Selected state
+				if (wrapper.IsHeaderOrFooter)
+				{
+					VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Normal);
+					continue;
+				}
+
 				var actualItem = visualElement.BindingContext;
 				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
@@ -247,14 +254,25 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		if (PlatformView is null || ItemsView is null)
 			return;
 
-		var selectedItem = PlatformView.SelectedItem is ItemTemplateContext2 itemPair
-			? itemPair.Item
-			: PlatformView.SelectedItem;
+		// If the user tapped a group header/footer, deselect it and don't propagate
+		if (PlatformView.SelectedItem is ItemTemplateContext2 itemPair)
+		{
+			if (itemPair.IsHeader || itemPair.IsFooter)
+			{
+				PlatformView.DeselectAll();
+				return;
+			}
 
-		ItemsView.SelectionChanged -= VirtualSelectionChanged;
-		ItemsView.SelectedItem = selectedItem;
-
-		ItemsView.SelectionChanged += VirtualSelectionChanged;
+			ItemsView.SelectionChanged -= VirtualSelectionChanged;
+			ItemsView.SelectedItem = itemPair.Item;
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
+		else
+		{
+			ItemsView.SelectionChanged -= VirtualSelectionChanged;
+			ItemsView.SelectedItem = PlatformView.SelectedItem;
+			ItemsView.SelectionChanged += VirtualSelectionChanged;
+		}
 	}
 
 	void UpdateVirtualMultipleSelection()
@@ -314,9 +332,16 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		var result = new HashSet<object>();
 		foreach (var item in PlatformView.SelectedItems)
 		{
-			var selectedItem = item is ItemTemplateContext2 itc ? itc.Item : item;
-			if (selectedItem is not null)
-				result.Add(selectedItem);
+			// Skip group headers and footers — they should not be selectable
+			if (item is ItemTemplateContext2 itc)
+			{
+				if (!itc.IsHeader && !itc.IsFooter && itc.Item is not null)
+					result.Add(itc.Item);
+			}
+			else if (item is not null)
+			{
+				result.Add(item);
+			}
 		}
 		return result;
 	}
