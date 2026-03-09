@@ -121,7 +121,7 @@ public partial class EntryOptionsPage : ContentPage
 		}
 	}
 
-	private void MaxLengthButton_Clicked(object sender, EventArgs e)
+	private void MaxLengthEntry_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (int.TryParse(MaxLengthEntry.Text, out int maxLength))
 		{
@@ -253,6 +253,35 @@ public partial class EntryOptionsPage : ContentPage
 		else if (sender == TextTransformDefault)
 		{
 			_viewModel.TextTransform = TextTransform.Default;
+		}
+	}
+
+	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is Button button)
+		{
+			_viewModel.BackgroundColor = button.AutomationId switch
+			{
+				"BackgroundColorYellow" => Colors.Yellow,
+				"BackgroundColorLightBlue" => Colors.LightBlue,
+				_ => null
+			};
+		}
+	}
+
+	private void WidthRequestEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double widthRequest))
+		{
+			_viewModel.WidthRequest = widthRequest;
+		}
+	}
+
+	private void HeightRequestEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double heightRequest))
+		{
+			_viewModel.HeightRequest = heightRequest;
 		}
 	}
 

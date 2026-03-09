@@ -7,9 +7,9 @@ namespace Maui.Controls.Sample;
 public class EntryViewModel : INotifyPropertyChanged
 {
 	private string _text = "Test Entry";
-	private Color _textColor = Colors.Black;
+	private Color _textColor = null;
 	private string _placeholder = "Enter text here";
-	private Color _placeholderColor = Colors.Gray;
+	private Color _placeholderColor = null;
 	private double _fontSize = 14;
 	private double _heightrequest = -1;
 	private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
@@ -25,8 +25,10 @@ public class EntryViewModel : INotifyPropertyChanged
 	private bool _isSpellCheckEnabled = false;
 	private Keyboard _keyboard = Keyboard.Default;
 	private string _fontFamily = null;
-	private bool isVisible = true;
+	private bool _isVisible = true;
 	private bool _isEnabled = true;
+	private Color _backgroundColor = null;
+	private double _widthRequest = -1;
 	private ClearButtonVisibility _clearButtonVisibility = ClearButtonVisibility.WhileEditing;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private bool _hasShadow = false;
@@ -157,14 +159,26 @@ public class EntryViewModel : INotifyPropertyChanged
 
 	public bool IsVisible
 	{
-		get => isVisible;
-		set { isVisible = value; OnPropertyChanged(); }
+		get => _isVisible;
+		set { _isVisible = value; OnPropertyChanged(); }
 	}
 
 	public bool IsEnabled
 	{
 		get => _isEnabled;
 		set { _isEnabled = value; OnPropertyChanged(); }
+	}
+
+	public Color BackgroundColor
+	{
+		get => _backgroundColor;
+		set { _backgroundColor = value; OnPropertyChanged(); }
+	}
+
+	public double WidthRequest
+	{
+		get => _widthRequest;
+		set { _widthRequest = value; OnPropertyChanged(); }
 	}
 
 	public Keyboard Keyboard
@@ -268,6 +282,42 @@ public class EntryViewModel : INotifyPropertyChanged
 				OnPropertyChanged(nameof(FontAttributes));
 			}
 		}
+	}
+
+	public void Reset()
+	{
+		Text = "Test Entry";
+		TextColor = null;
+		Placeholder = "Enter text here";
+		PlaceholderColor = null;
+		FontSize = 14;
+		HeightRequest = -1;
+		WidthRequest = -1;
+		BackgroundColor = Colors.Transparent;
+		HorizontalTextAlignment = TextAlignment.Start;
+		VerticalTextAlignment = TextAlignment.Center;
+		IsPassword = false;
+		CharacterSpacing = 0;
+		ReturnType = ReturnType.Default;
+		MaxLength = -1;
+		CursorPosition = 0;
+		SelectionLength = 0;
+		IsReadOnly = false;
+		IsTextPredictionEnabled = false;
+		IsSpellCheckEnabled = false;
+		Keyboard = Keyboard.Default;
+		FontFamily = null;
+		IsVisible = true;
+		IsEnabled = true;
+		ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+		FlowDirection = FlowDirection.LeftToRight;
+		HasShadow = false;
+		TextTransform = TextTransform.Default;
+		FontAttributes = FontAttributes.None;
+		TextChangedText = "TextChanged: Not triggered";
+		CompletedText = "Completed: Not triggered";
+		FocusedText = "Focused: Not triggered";
+		UnfocusedText = "Unfocused: Not triggered";
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

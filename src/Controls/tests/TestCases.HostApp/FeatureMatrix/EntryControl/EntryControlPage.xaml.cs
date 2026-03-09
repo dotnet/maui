@@ -36,7 +36,7 @@ public partial class EntryControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new EntryViewModel();
+		_viewModel.Reset();
 		_viewModel.Text = "Test Entry";
 		_viewModel.Placeholder = "Enter text here";
 		_viewModel.CursorPosition = 0;
@@ -51,7 +51,6 @@ public partial class EntryControlMainPage : ContentPage
 			_viewModel.CursorPosition = cursorPosition;
 		}
 	}
-
 	private void SelectionLength_Clicked(object sender, EventArgs e)
 	{
 		if (int.TryParse(SelectionLengthEntry.Text, out int selectionLength))
