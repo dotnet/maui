@@ -117,16 +117,13 @@ namespace Microsoft.Maui.Handlers
 
 					try
 					{
+						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+
 						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
-						{
-							button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.Automatic), UIControlState.Normal);
-						}
+							button.TintColor = fontImageSource.Color.ToPlatform();
 						else
 						{
-							button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-
 							var tintColor = item.GetTextColor();
-
 							if (tintColor != null)
 								button.TintColor = tintColor.ToPlatform();
 						}
