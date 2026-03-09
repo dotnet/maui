@@ -540,9 +540,11 @@
             <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
         </ItemGroup>
 
-        <!-- Expose processed fonts for custom platform backends -->
+        <!-- Expose processed fonts for custom platform backends.
+             Use a transform of the original MauiFont items rather than the _MauiFontCopied
+             wildcard, which can pick up non-font files (e.g. MauiInfo.plist on iOS). -->
         <ItemGroup>
-            <MauiProcessedFont Include="@(_MauiFontCopied)" />
+            <MauiProcessedFont Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
         </ItemGroup>
 
         <!-- iOS -->
