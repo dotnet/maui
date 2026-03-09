@@ -34,15 +34,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Target = target;
 			TargetType = targetType;
+			// RegisterImplicitStyles handles the initial apply via OnImplicitStyleChanged -> SetStyle.
+			// An explicit Apply(Target) call here would double-attach event handlers when
+			// Application.Current.Resources already contains the implicit style (#24152).
 			RegisterImplicitStyles();
-			// If RegisterImplicitStyles() resolved resources synchronously (e.g. via Application.Current.Resources),
-			// OnImplicitStyleChanged already called SetStyle which applied the implicit style.
-			// Calling Apply(Target) unconditionally would attach event handlers a second time,
-			// causing EventTrigger actions in global implicit styles to fire twice (#24152).
-			if (_implicitStyle == null)
-			{
-				Apply(Target);
-			}
 		}
 
 		public IStyle Style
@@ -180,24 +175,14 @@ namespace Microsoft.Maui.Controls
 				Target.RemoveDynamicResource(_implicitStyles[i]);
 			_implicitStyles.Clear();
 
-			// Reset _implicitStyle so RegisterImplicitStyles can re-apply from scratch.
-			// UnApply the current implicit style first so there is no leftover state.
-			ImplicitStyle?.UnApply(Target);
-			_implicitStyle = null;
-
 			//Register the fallback
 			BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);
 
-			//and proceed as usual
+			//and proceed as usual - RegisterImplicitStyles handles apply via OnImplicitStyleChanged
 			RegisterImplicitStyles();
-			// Only call Apply if RegisterImplicitStyles didn't already apply via synchronous resource resolution.
-			if (_implicitStyle == null)
-			{
-				Apply(Target);
-			}
 		}
 
 		void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)
