@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class GestureManager
+	internal partial class GestureManager
 	{
 		readonly IControlsView _view;
 		object? _containerView;
@@ -76,11 +76,25 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
+			// Skip platform gesture setup when the handler doesn't provide a native view.
+			// GesturePlatformManager's constructor casts to IPlatformViewHandler.
+			if (!IsPlatformHandler(handler))
+				return;
+
 			GesturePlatformManager = new GesturePlatformManager(handler);
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
 			_didHaveWindow = _view.Window != null;
+		}
+
+		static partial void IsPlatformHandlerCore(IElementHandler handler, ref bool result);
+
+		static bool IsPlatformHandler(IElementHandler handler)
+		{
+			bool result = true;
+			IsPlatformHandlerCore(handler, ref result);
+			return result;
 		}
 	}
 }
