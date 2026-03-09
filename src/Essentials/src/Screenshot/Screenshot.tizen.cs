@@ -22,8 +22,11 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync(NView view) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 
+
+#nullable enable
 		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
 			platformView is NView view ? CaptureAsync(view) : Task.FromResult<IScreenshotResult?>(null);
+#nullable restore
 	}
 
 	partial class ScreenshotResult
