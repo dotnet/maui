@@ -19,7 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Button");
 			App.Click("Button");
-			VerifyScreenshot();
+			// Wait for swipe animation to complete
+			App.WaitForElement("Action");
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(1));
 		}
 	}
 }
