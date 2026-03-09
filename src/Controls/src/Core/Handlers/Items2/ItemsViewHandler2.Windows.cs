@@ -329,6 +329,21 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			}
 		}
 
+		// When IsGrouped=true but no ItemTemplate, flatten the grouped source so that
+		// the WinUI ItemsView (which doesn't support native grouping) can display the
+		// individual items. Without this, the raw grouped collections are set as the source
+		// but ItemsView cannot render them, resulting in an empty list.
+		if (itemsSource is not null &&
+			ItemsView is GroupableItemsView groupable && groupable.IsGrouped &&
+			IsItemsSourceGrouped(itemsSource))
+		{
+			return new CollectionViewSource
+			{
+				Source = FlattenGroupedItemsSource(itemsSource),
+				IsSourceGrouped = false
+			};
+		}
+
 		return new CollectionViewSource
 		{
 			Source = itemsSource,
@@ -1265,18 +1280,80 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		int firstVisibleItemIndex = -1;
 		int lastVisibleItemIndex = -1;
 
-		if (PlatformView is null)
+		if (PlatformView is null || _scrollViewer is null)
 		{
 			return (firstVisibleItemIndex, lastVisibleItemIndex, -1);
 		}
 
-		PlatformView.TryGetItemIndex(0, 0, out firstVisibleItemIndex);
-		PlatformView.TryGetItemIndex(1, 1, out lastVisibleItemIndex);
+		// MauiItemsView uses a custom ControlTemplate with a ScrollViewer wrapping
+		// a StackPanel > ItemsRepeater (not the default ItemsView template with ScrollView).
+		// WinUI's TryGetItemIndex relies on its internal ScrollView part (PART_ScrollView),
+		// which doesn't exist in our template — so it always returns -1.
+		// Instead, walk the realized ItemContainer children and check which ones
+		// are visible within the ScrollViewer viewport, similar to CV1's fallback approach.
+		bool isHorizontal = IsLayoutHorizontal;
+		int index = 0;
+
+		foreach (var container in PlatformView.GetChildren<ItemContainer>())
+		{
+			if (container is null)
+			{
+				index++;
+				continue;
+			}
+
+			if (IsElementVisibleInScrollViewer(container, _scrollViewer, isHorizontal))
+			{
+				if (firstVisibleItemIndex == -1)
+				{
+					firstVisibleItemIndex = index;
+				}
+
+				lastVisibleItemIndex = index;
+			}
+
+			index++;
+		}
 
 		double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
 		int centerItemIndex = advancing ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
 
 		return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
+	}
+
+	/// <summary>
+	/// Checks whether a UI element is visible within the scroll viewer's viewport.
+	/// Uses coordinate transformation to compare element bounds against the viewport.
+	/// </summary>
+	static bool IsElementVisibleInScrollViewer(FrameworkElement element, ScrollViewer scrollViewer, bool isHorizontal)
+	{
+		if (element.Visibility != WVisibility.Visible)
+		{
+			return false;
+		}
+
+		try
+		{
+			var transform = element.TransformToVisual(scrollViewer);
+			var elementBounds = transform.TransformBounds(
+				new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+			var viewportBounds = new Windows.Foundation.Rect(
+				0, 0, scrollViewer.ActualWidth, scrollViewer.ActualHeight);
+
+			if (isHorizontal)
+			{
+				return elementBounds.Left < viewportBounds.Right && elementBounds.Right > viewportBounds.Left;
+			}
+			else
+			{
+				return elementBounds.Top < viewportBounds.Bottom && elementBounds.Bottom > viewportBounds.Top;
+			}
+		}
+		catch
+		{
+			// TransformToVisual can throw if the element is not in the visual tree
+			return false;
+		}
 	}
 
 	void ScrollToRequested(object? sender, ScrollToRequestEventArgs args)

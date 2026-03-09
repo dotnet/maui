@@ -89,7 +89,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
 					{
 						if (selectableItemsView.SelectionMode == SelectionMode.Single)
-							isSelected = selectableItemsView.SelectedItem == templateContext.Item;
+							isSelected = Equals(selectableItemsView.SelectedItem, templateContext.Item);
 						else
 							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
 					}
@@ -207,7 +207,7 @@ internal partial class ElementWrapper : ContentControl
 
 		var item = ve.BindingContext;
 		bool isSelected = siv.SelectionMode == SelectionMode.Single
-			? siv.SelectedItem == item
+			? Equals(siv.SelectedItem, item)
 			: siv.SelectedItems?.Contains(item) == true;
 
 		if (isSelected)
