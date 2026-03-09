@@ -20,6 +20,13 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 	readonly Dictionary<object, NotifyCollectionChangedEventHandler> _groupSubscriptions = new();
 	bool _suppressNotifications;
 
+	// Tracks whether a deferred reset is pending. When group-level changes (Add/Remove groups)
+	// trigger OnGroupsCollectionChanged, we defer the Reset notification because group-level
+	// changes can trigger cascading item-level changes within the same synchronous batch.
+	// Firing individual notifications (Remove + Reset + Reset + ...) causes WinUI's ItemsRepeater
+	// to hang as it processes overlapping element realization/recycling cycles.
+	bool _resetPending;
+
 	public GroupedItemTemplateCollection2(IEnumerable itemsSource,
 		DataTemplate itemTemplate, DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate,
 		BindableObject container, IMauiContext? mauiContext = null)
@@ -157,22 +164,22 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		{
 			case NotifyCollectionChangedAction.Add:
 				SubscribeToGroups(args.NewItems);
-				ResetWithoutResubscribe();
+				DeferredResetWithoutResubscribe();
 				break;
 			case NotifyCollectionChangedAction.Move:
-				ResetWithoutResubscribe();
+				DeferredResetWithoutResubscribe();
 				break;
 			case NotifyCollectionChangedAction.Remove:
 				if (args.OldItems is not null)
 				{
 					UnsubscribeFromGroups(args.OldItems);
-					ResetWithoutResubscribe();
+					DeferredResetWithoutResubscribe();
 				}
 				break;
 
 			case NotifyCollectionChangedAction.Replace:
 			case NotifyCollectionChangedAction.Reset:
-				Reset();
+				DeferredReset();
 				break;
 		}
 	}
@@ -214,6 +221,13 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 	void OnGroupItemsChanged(object group, NotifyCollectionChangedEventArgs e)
 	{
+		// If a deferred reset is already pending from a group-level change,
+		// skip individual item-level processing. The pending reset will rebuild
+		// the entire flat list anyway, so item-level updates are redundant and
+		// would fire intermediate notifications that cause WinUI to hang.
+		if (_resetPending)
+			return;
+
 		int flatIndex = GetFlatIndexForGroupItems(group);
 		if (flatIndex == -1)
 			return;
@@ -351,6 +365,24 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 	}
 
 	/// <summary>
+	/// Defers a reset until the dispatcher processes the callback.
+	/// Multiple calls within the same synchronous batch are coalesced into a single reset,
+	/// preventing WinUI's ItemsRepeater from processing intermediate states that cause hangs.
+	/// </summary>
+	void DeferredResetWithoutResubscribe()
+	{
+		if (_resetPending)
+			return;
+
+		_resetPending = true;
+		_container.Dispatcher.Dispatch(() =>
+		{
+			_resetPending = false;
+			ResetWithoutResubscribe();
+		});
+	}
+
+	/// <summary>
 	/// Full reset that also resubscribes to all groups.
 	/// Used for Replace and Reset actions where group references may have changed.
 	/// </summary>
@@ -364,6 +396,22 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 		SubscribeToGroups(_itemsSource);
 		OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+	}
+
+	/// <summary>
+	/// Deferred version of <see cref="Reset"/> that coalesces multiple calls.
+	/// </summary>
+	void DeferredReset()
+	{
+		if (_resetPending)
+			return;
+
+		_resetPending = true;
+		_container.Dispatcher.Dispatch(() =>
+		{
+			_resetPending = false;
+			Reset();
+		});
 	}
 
 	/// <summary>
