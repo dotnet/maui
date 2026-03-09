@@ -1,6 +1,7 @@
 #nullable enable
 #if !NETSTANDARD
 using System;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 // Single assembly-level MetadataUpdateHandler for all XAML page types in user assemblies.
@@ -41,11 +42,8 @@ namespace Microsoft.Maui.Controls.Xaml;
 /// </remarks>
 internal static class XamlIncrementalHotReloadHandler
 {
-	// Cache MethodInfo per type to avoid repeated GetMethod() on every hot-reload cycle.
-	static readonly System.Collections.Generic.Dictionary<Type, MethodInfo?> s_methodCache =
-		new System.Collections.Generic.Dictionary<Type, MethodInfo?>();
-
-	static readonly object s_cacheLock = new object();
+	// ConcurrentDictionary eliminates lock contention and race conditions in the cache.
+	static readonly ConcurrentDictionary<Type, MethodInfo?> s_methodCache = new();
 
 	/// <summary>
 	/// Called by the .NET hot-reload infrastructure <em>before</em> metadata is applied.
@@ -57,11 +55,8 @@ internal static class XamlIncrementalHotReloadHandler
 		if (updatedTypes is null)
 			return;
 
-		lock (s_cacheLock)
-		{
-			foreach (var t in updatedTypes)
-				s_methodCache.Remove(t);
-		}
+		foreach (var t in updatedTypes)
+			s_methodCache.TryRemove(t, out _);
 	}
 
 	/// <summary>
@@ -115,27 +110,21 @@ internal static class XamlIncrementalHotReloadHandler
 
 	static MethodInfo? GetUpdateComponentMethod(Type type)
 	{
-		lock (s_cacheLock)
+		return s_methodCache.GetOrAdd(type, static t =>
 		{
-			if (s_methodCache.TryGetValue(type, out var cached))
-				return cached;
-		}
-
 #pragma warning disable IL2070, IL2075 // type comes from updatedTypes at runtime
-		var method = type.GetMethod(
-			"UpdateComponent",
-			BindingFlags.NonPublic | BindingFlags.Instance);
+			return t.GetMethod(
+				"UpdateComponent",
+				BindingFlags.NonPublic | BindingFlags.Instance,
+				binder: null,
+				types: Type.EmptyTypes,
+				modifiers: null);
 #pragma warning restore IL2070, IL2075
-
-		lock (s_cacheLock)
-		{
-			s_methodCache[type] = method;
-			return method;
-		}
+		});
 	}
 
 	/// <summary>
-	/// Fallback: save BindingContext, re-run InitializeComponent, restore BindingContext.
+	/// Fallback: unregister components, save BindingContext, re-run InitializeComponent, restore BindingContext.
 	/// </summary>
 	static void FallbackReload(object instance, Type type)
 	{
@@ -147,6 +136,9 @@ internal static class XamlIncrementalHotReloadHandler
 			savedBindingContext = bindableObj.BindingContext;
 			bindableObj.BindingContext = null;
 		}
+
+		// Clean up stale registry entries before re-init
+		XamlComponentRegistry.Unregister(instance);
 
 #pragma warning disable IL2070, IL2075
 		var initMethod = type.GetMethod(

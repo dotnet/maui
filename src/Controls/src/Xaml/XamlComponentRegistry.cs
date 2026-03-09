@@ -175,6 +175,26 @@ public static class XamlComponentRegistry
 	}
 
 	/// <summary>
+	/// Removes a single component registration for the given <paramref name="nodeId"/> under <paramref name="page"/>.
+	/// Called from generated <c>UpdateComponent()</c> when a child element is removed during incremental hot reload.
+	/// </summary>
+	public static void Unregister(object page, string nodeId)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (nodeId is null)
+			throw new ArgumentNullException(nameof(nodeId));
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				map.Remove(nodeId);
+			}
+		}
+	}
+
+	/// <summary>
 	/// Removes all component registrations whose node ID starts with <paramref name="nodeIdPrefix"/>
 	/// (the node itself and all descendants). Used by generated <c>UpdateComponent</c> methods
 	/// when a child element is removed during incremental hot reload.
@@ -292,6 +312,11 @@ public static class XamlComponentRegistry
 					_entries[newKey] = value;
 				}
 			}
+		}
+
+		public void Remove(string nodeId)
+		{
+			_entries.Remove(nodeId);
 		}
 
 		public void RemoveSubtree(string nodeIdPrefix)

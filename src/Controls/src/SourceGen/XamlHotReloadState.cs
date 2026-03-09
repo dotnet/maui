@@ -177,6 +177,28 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
+	/// Removes entries for files no longer present in the current compilation.
+	/// Called during pipeline execution with the set of files being processed.
+	/// </summary>
+	public static void PruneStaleEntries(string assemblyName, HashSet<string> activeRelativePaths)
+	{
+		lock (_lock)
+		{
+			var keysToRemove = new List<(string, string)>();
+			foreach (var key in _cache.Keys)
+			{
+				if (string.Equals(key.AssemblyName, assemblyName, System.StringComparison.Ordinal)
+					&& !activeRelativePaths.Contains(key.RelativePath))
+				{
+					keysToRemove.Add(key);
+				}
+			}
+			foreach (var key in keysToRemove)
+				_cache.Remove(key);
+		}
+	}
+
+	/// <summary>
 	/// Clears all cached entries.  Intended for use in tests that need to reset state between runs.
 	/// </summary>
 	public static void Reset()
