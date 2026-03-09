@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //Window issue link - https://github.com/dotnet/maui/issues/29125 && iOS and Mac PR - https://github.com/dotnet/maui/pull/34184
+#if TEST_FAILS_ON_WINDOWS //Windows issue link - https://github.com/dotnet/maui/issues/29125 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,7 +11,7 @@ public class Issue13258 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "MAUI Slider thumb image is big on ios/ Mac";
+	public override string Issue => "MAUI Slider thumb image is big on android";
 
 	[Test]
 	[Category(UITestCategories.Slider)]
