@@ -290,6 +290,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static readonly BindableProperty ModalPopoverRectProperty =
 			BindableProperty.Create(nameof(ModalPopoverRect), typeof(System.Drawing.Rectangle), typeof(Page), System.Drawing.Rectangle.Empty);
 
+		/// <summary>
+		/// Defines the preferred content size for the FormSheet &amp; Popover modal.
+		/// </summary>
+		public static readonly BindableProperty ModalPopoverContentSizeProperty =
+			BindableProperty.Create(nameof(ModalPopoverContentSize), typeof(Microsoft.Maui.Graphics.Size), typeof(Page), Microsoft.Maui.Graphics.Size.Zero);
+
+		/// <summary>
+		/// Defines the permitted arrow directions for the popover modal.
+		/// </summary>
+		public static readonly BindableProperty ModalPopoverArrowDirectionsProperty =
+			BindableProperty.Create(nameof(ModalPopoverArrowDirections), typeof(UIPopoverArrowDirection), typeof(Page), UIPopoverArrowDirection.Any);
+
 
 		/// <summary>
 		/// Gets the modal presentation style of the <see cref="Page"/>.
@@ -320,6 +332,27 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		{
 			return GetPopoverRect(config.Element);
 		}
+
+		/// <summary>
+		/// Gets the preferred content size for the popover modal.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The preferred content size of the popover modal.</returns>
+		public static Microsoft.Maui.Graphics.Size ModalPopoverContentSize(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetModalPopoverContentSize(config.Element);
+		}
+
+		/// <summary>
+		/// Gets the permitted arrow directions for the popover modal.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns>The permitted arrow directions for the popover modal.</returns>
+		public static UIPopoverArrowDirection ModalPopoverArrowDirections(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetModalPopoverArrowDirections(config.Element);
+		}
+
 		/// <summary>
 		/// Sets the modal presentation style of the <see cref="Page"/>.
 		/// </summary>
@@ -357,6 +390,30 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
+		/// Sets the preferred content size for the popover modal.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The preferred content size for the popover modal.</param>
+		/// <returns>The platform specific configuration that contains the element on which to perform the operation.</returns>
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPopoverContentSize(this IPlatformElementConfiguration<iOS, FormsElement> config, Microsoft.Maui.Graphics.Size value)
+		{
+			SetModalPopoverContentSize(config.Element, value);
+			return config;
+		}
+
+		/// <summary>
+		/// Sets the permitted arrow directions for the popover modal.
+		/// </summary>
+		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value">The permitted arrow directions for the popover modal.</param>
+		/// <returns>The platform specific configuration that contains the element on which to perform the operation.</returns>
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPopoverArrowDirections(this IPlatformElementConfiguration<iOS, FormsElement> config, UIPopoverArrowDirection value)
+		{
+			SetModalPopoverArrowDirections(config.Element, value);
+			return config;
+		}
+
+		/// <summary>
 		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
@@ -387,6 +444,26 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
+		/// Gets the current value of the preferred content size that's applied to the <see cref="Page"/>.
+		/// </summary>
+		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
+		/// <returns>The current preferred content size that's applied to the <paramref name="element" />.</returns>
+		public static Microsoft.Maui.Graphics.Size GetModalPopoverContentSize(BindableObject element)
+		{
+			return (Microsoft.Maui.Graphics.Size)element.GetValue(ModalPopoverContentSizeProperty);
+		}
+
+		/// <summary>
+		/// Gets the current value of the permitted arrow directions that's applied to the <see cref="Page"/>.
+		/// </summary>
+		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
+		/// <returns>The current permitted arrow directions that's applied to the <paramref name="element" />.</returns>
+		public static UIPopoverArrowDirection GetModalPopoverArrowDirections(BindableObject element)
+		{
+			return (UIPopoverArrowDirection)element.GetValue(ModalPopoverArrowDirectionsProperty);
+		}
+
+		/// <summary>
 		/// Sets the modal presentation style on a <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
@@ -414,6 +491,26 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		static void SetModalPopoverRect(BindableObject element, System.Drawing.Rectangle value)
 		{
 			element.SetValue(ModalPopoverRectProperty, value);
+		}
+
+		/// <summary>
+		/// Sets the preferred content size for a modal <see cref="Page"/> presented as a popover.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="value">The preferred content size of the popover.</param>
+		static void SetModalPopoverContentSize(BindableObject element, Microsoft.Maui.Graphics.Size value)
+		{
+			element.SetValue(ModalPopoverContentSizeProperty, value);
+		}
+
+		/// <summary>
+		/// Sets the permitted arrow directions for a modal <see cref="Page"/> presented as a popover.
+		/// </summary>
+		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
+		/// <param name="value">The permitted arrow directions for the popover.</param>
+		static void SetModalPopoverArrowDirections(BindableObject element, UIPopoverArrowDirection value)
+		{
+			element.SetValue(ModalPopoverArrowDirectionsProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="PrefersHomeIndicatorAutoHidden"/>.</summary>
