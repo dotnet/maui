@@ -125,7 +125,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 
 		foreach (var group in _itemsSource)
 		{
-			if (group is not IList itemsList)
+			if (group is not IEnumerable items || group is string)
 				continue;
 
 			var header = CreateHeaderContext(group);
@@ -134,7 +134,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 				Items.Add(header);
 			}
 
-			foreach (var item in itemsList)
+			foreach (var item in items)
 			{
 				Items.Add(CreateItemContext(item));
 			}
@@ -192,13 +192,16 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 				return _groupHeaderTemplate is not null ? flatIndex + 1 : flatIndex;
 			}
 
-			if (group is IList itemsList)
+			if (group is IEnumerable items && group is not string)
 			{
 				// Count header + items + footer for this group
 				if (_groupHeaderTemplate is not null)
 					flatIndex++;
 
-				flatIndex += itemsList.Count;
+				if (group is ICollection collection)
+					flatIndex += collection.Count;
+				else
+					flatIndex += items.Cast<object>().Count();
 
 				if (_groupFooterTemplate is not null)
 					flatIndex++;
@@ -214,8 +217,13 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		if (flatIndex == -1)
 			return;
 
+		// For incremental updates (Add/Remove/Replace/Move), we need IList for indexed access.
+		// For IEnumerable-only groups, fall back to a full Reset.
 		if (group is not IList groupList)
+		{
+			ResetWithoutResubscribe();
 			return;
+		}
 
 		switch (e.Action)
 		{

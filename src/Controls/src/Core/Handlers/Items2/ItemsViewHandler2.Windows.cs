@@ -18,6 +18,7 @@ using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
+using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -303,7 +304,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (itemTemplate is not null && itemsSource is not null)
 		{
-			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
+			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped
+				&& IsItemsSourceGrouped(itemsSource))
 			{
 				return new CollectionViewSource
 				{
@@ -371,7 +373,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	{
 		return groupedSource.Cast<object>().
 			Where(group => group is IEnumerable && group is not string).
-			SelectMany(group => ((IEnumerable)group).Cast<object>());
+			SelectMany(group => ((IEnumerable)group).Cast<object>()).
+			ToList();
 	}
 
 
@@ -1336,8 +1339,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			var transform = element.TransformToVisual(scrollViewer);
 			var elementBounds = transform.TransformBounds(
-				new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
-			var viewportBounds = new Windows.Foundation.Rect(
+				new WRect(0, 0, element.ActualWidth, element.ActualHeight));
+			var viewportBounds = new WRect(
 				0, 0, scrollViewer.ActualWidth, scrollViewer.ActualHeight);
 
 			if (isHorizontal)
@@ -1426,6 +1429,15 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			// Re-validate index bounds in case collection changed between dispatch
 			var currentItemCount = _collectionViewSource?.View?.Count ?? 0;
 			if (scrollIndex < 0 || scrollIndex >= currentItemCount)
+			{
+				return;
+			}
+
+			// Guard: StartBringItemIntoView requires the ItemsView to be fully
+			// loaded and its ItemsRepeater to have completed its first layout pass.
+			// Without this check, the call can crash when ScrollTo is dispatched
+			// before the view is in the visual tree (e.g., during OnAppearing).
+			if (!pv.IsLoaded)
 			{
 				return;
 			}
