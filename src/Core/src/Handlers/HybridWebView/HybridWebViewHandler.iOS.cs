@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
-					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
+					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath!, Handler.VirtualView.HybridRoot!);
 
 					// 1.a. Try the special "_framework/hybridwebview.js" path
 					if (relativePath == HybridWebViewDotJsPath)
