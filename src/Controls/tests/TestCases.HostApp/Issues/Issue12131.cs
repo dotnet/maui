@@ -44,7 +44,7 @@ namespace Maui.Controls.Sample.Issues
 				Padding = 10,
 				Children =
 				{
-					new Label { Text = "RefreshView inside VerticalStackLayout" },
+					new Label { Text = "CollectionView wrapped within RefreshView." },
 					sizeLabel,
 					refreshView
 				}
