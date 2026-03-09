@@ -373,6 +373,16 @@
       
   </ControlTemplate>
 
+    <!-- A minimal ItemContainer template with no selection visuals (no checkbox,
+         no selection indicator, no highlight). Applied to group header/footer
+         containers in CV2 so they are never selectable. -->
+    <ControlTemplate x:Key="NonSelectableItemContainerTemplate"
+                     TargetType="controls:ItemContainer">
+        <ContentPresenter Content="{TemplateBinding Child}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch" />
+    </ControlTemplate>
+
 
 </ResourceDictionary>
 
