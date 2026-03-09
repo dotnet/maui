@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	[SupportedOSPlatform(BlazorWebView.AndroidSupportedOSPlatformVersion)]
 #elif IOS
 	[SupportedOSPlatform(BlazorWebView.iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+	[SupportedOSPlatform(BlazorWebView.MacCatalystSupportedOSPlatformVersion)]
 #endif
 	public partial class BlazorWebViewHandler
 	{
