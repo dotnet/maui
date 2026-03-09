@@ -76,8 +76,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			// Skip platform gesture setup when the handler doesn't provide a native view.
-			// GesturePlatformManager's constructor casts to IPlatformViewHandler.
+			// Skip platform gesture setup when the handler does not meet the IPlatformViewHandler
+			// requirement enforced by IsPlatformHandler (e.g., for non-platform or virtual handlers).
 			if (!IsPlatformHandler(handler))
 				return;
 
