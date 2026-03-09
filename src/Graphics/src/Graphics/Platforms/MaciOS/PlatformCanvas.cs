@@ -1004,19 +1004,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private void DrawString(string value, float x, float y)
 		{
-			_context.SaveState();
-
-			var font = new CTFont((_font?.ToCGFont() ?? FontExtensions.GetDefaultCGFont()).FullName, _fontSize);
-			_context.TextMatrix = CGAffineTransform.MakeIdentity();
-			_context.ScaleCTM(1, -1f);
-			_context.TranslateCTM(x, -y);
-			_context.SetFillColor(_fontColor);
-			var attributedString = new NSAttributedString(value, new CTStringAttributes { ForegroundColorFromContext = true, Font = font });
-
-			using (var textLine = new CTLine(attributedString))
-				textLine.Draw(_context);
-
-			_context.RestoreState();
+			using var font = _font?.ToCTFont(_fontSize) ?? FontExtensions.GetDefaultCTFont(_fontSize);
+			var attributes = new CTStringAttributes { Font = font, ForegroundColor = _fontColor.AsCGColor() };
+			using var attributedString = new NSAttributedString(value, attributes);
+			using var textLine = new CTLine(attributedString);
+			_context.TextMatrix = new CGAffineTransform(1, 0, 0, -1, x, y);
+			textLine.Draw(_context);
 		}
 
 		public override void DrawString(
