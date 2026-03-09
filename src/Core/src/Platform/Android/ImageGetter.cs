@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		const long MaxImageBytes = 10 * 1024 * 1024;
 
 		static readonly ConcurrentDictionary<string, BitmapDrawable> s_cache = new();
+		static readonly ConcurrentDictionary<string, Task> s_inFlight = new();
 		static readonly HttpClient s_httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
 
 		readonly Resources _resources;
@@ -38,11 +40,17 @@ namespace Microsoft.Maui.Platform
 			if (s_cache.TryGetValue(source, out var cached))
 				return cached;
 
-			LoadImageAsync(source);
+			// Dedupe concurrent fetches for the same URL
+			if (!s_inFlight.ContainsKey(source))
+			{
+				var task = LoadImageAsync(source);
+				s_inFlight.TryAdd(source, task);
+			}
+
 			return new ColorDrawable(Color.Transparent);
 		}
 
-		async void LoadImageAsync(string source)
+		async Task LoadImageAsync(string source)
 		{
 			try
 			{
@@ -99,6 +107,10 @@ namespace Microsoft.Maui.Platform
 			catch (OperationCanceledException)
 			{
 				Log.Debug(Tag, $"Image download timed out or was cancelled: {source}");
+			}
+			finally
+			{
+				s_inFlight.TryRemove(source, out _);
 			}
 		}
 
