@@ -95,15 +95,14 @@ public partial class ScrollViewControlMainPage : ContentPage
 			vm.RequestedPosition = e.Position;
 			vm.RequestedAnimate = e.ShouldAnimate;
 			vm.Mode = e.Mode;
-			vm.Element = e.Element?.GetType().Name ?? "null";
-			;
+			vm.RequestedElementTypeName = e.Element?.GetType().Name ?? string.Empty;
 		}
 	}
 
-	private void OnScrollToPixelClicked(object sender, EventArgs e)
+	private async void OnScrollToPixelClicked(object sender, EventArgs e)
 	{
 		double x = 150;
 		double y = 300;
-		MyScrollView.ScrollToAsync(x, y, true);
+		await MyScrollView.ScrollToAsync(x, y, true);
 	}
 }

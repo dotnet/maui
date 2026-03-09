@@ -1309,7 +1309,7 @@ public class ScrollViewFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement(ScrollToEndPosition);
 		App.Tap(ScrollToEndPosition);
-
+		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(
 			App.FindElement("ScrollToRequestedLabel").GetText(),
 			Is.EqualTo("Raised"));
@@ -1322,8 +1322,8 @@ public class ScrollViewFeatureTests : _GalleryUITest
 	[TestCase("ScrollToEndPosition", "End")]
 	[TestCase("ScrollToMakeVisiblePosition", "MakeVisible")]
 	public void ScrollView_ScrollToRequested_Position_IsCorrect(
-	string buttonAutomationId,
-	string expectedPosition)
+		string buttonAutomationId,
+		string expectedPosition)
 	{
 		App.WaitForElement(buttonAutomationId);
 
@@ -1449,13 +1449,15 @@ public class ScrollViewFeatureTests : _GalleryUITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		
+
 		// Trigger pixel scroll
 		App.WaitForElement("ScrollToPixelButton");
 		App.Tap("ScrollToPixelButton");
 
 		// Requested values (event args)
 		var requestedY = App.FindElement("RequestedScrollYLabel").GetText();
+
+		App.WaitForElement("ScrollYLabel");
 
 		// Actual scroll values
 		var scrollY = App.FindElement("ScrollYLabel").GetText();

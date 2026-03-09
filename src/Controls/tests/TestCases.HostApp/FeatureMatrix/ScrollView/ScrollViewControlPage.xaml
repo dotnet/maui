@@ -150,7 +150,7 @@
                        FontSize="14"/>
                 <Label
                     AutomationId="ScrollElementLabel"
-                    Text="{Binding Element}"/>
+                    Text="{Binding RequestedElementTypeName}"/>
             </HorizontalStackLayout>
 
             <Button Text="Scroll To Requested"
