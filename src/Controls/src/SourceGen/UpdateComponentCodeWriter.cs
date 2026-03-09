@@ -535,18 +535,20 @@ static class UpdateComponentCodeWriter
 			return null; // invalid numeric — fallback
 		}
 
-		// Float/double
+		// Float/double — reject NaN/Infinity which parse successfully but produce invalid C# literals
 		if (fqName is "float" or "global::System.Single")
 		{
 			var trimmed = rawXamlValue.Trim();
-			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
+			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var fVal)
+				&& !double.IsNaN(fVal) && !double.IsInfinity(fVal))
 				return $"{trimmed}f";
 			return null;
 		}
 		if (fqName is "double" or "global::System.Double")
 		{
 			var trimmed = rawXamlValue.Trim();
-			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
+			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var dVal)
+				&& !double.IsNaN(dVal) && !double.IsInfinity(dVal))
 				return trimmed;
 			return null;
 		}
@@ -617,7 +619,16 @@ static class UpdateComponentCodeWriter
 	}
 
 	static string EscapeString(string value) =>
-		value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+		value.Replace("\\", "\\\\")
+			.Replace("\"", "\\\"")
+			.Replace("\0", "\\0")
+			.Replace("\a", "\\a")
+			.Replace("\b", "\\b")
+			.Replace("\f", "\\f")
+			.Replace("\n", "\\n")
+			.Replace("\r", "\\r")
+			.Replace("\t", "\\t")
+			.Replace("\v", "\\v");
 
 	/// <summary>
 	/// Emits the diff summary as a C# comment block at the top of the method body.
