@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
-using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 
@@ -28,7 +27,7 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	private ScrollToPosition _requestedPosition;
 	private bool _requestedAnimate;
 	private ScrollToMode _mode;
-	private object _element;
+	private string _requestedElementTypeName;
 
 	public ScrollViewViewModel()
 	{
@@ -174,10 +173,17 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 		set { if (_mode != value) { _mode = value; OnPropertyChanged(); } }
 	}
 
-	public object Element
+	public string RequestedElementTypeName
 	{
-		get => _element;
-		set { if (_element != value) { _element = value; OnPropertyChanged(); } }
+		get => _requestedElementTypeName;
+		set
+		{
+			if (_requestedElementTypeName != value)
+			{
+				_requestedElementTypeName = value;
+				OnPropertyChanged();
+			}
+		}
 	}
 
 	private ScrollToPosition _selectedScrollToPosition = ScrollToPosition.MakeVisible;
