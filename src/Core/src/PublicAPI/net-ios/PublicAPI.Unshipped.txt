@@ -25,4 +25,5 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.CarPlayDidSe
 Microsoft.Maui.MauiWidgetCenter
 static Microsoft.Maui.MauiWidgetCenter.ReloadTimelines(string! kind) -> void
 static Microsoft.Maui.MauiWidgetCenter.ReloadAllTimelines() -> void
-static Microsoft.Maui.MauiWidgetCenter.GetSharedDefaults(string! appGroupId) -> Foundation.NSUserDefaults?
+static Microsoft.Maui.MauiWidgetCenter.GetSharedContainerUrl(string! appGroupId) -> Foundation.NSUrl?
+static Microsoft.Maui.MauiWidgetCenter.GetSharedDefaults(string! appGroupId) -> Foundation.NSUserDefaults!

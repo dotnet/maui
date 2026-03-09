@@ -19,10 +19,13 @@ namespace Microsoft.Maui
 	[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst14.0")]
 	public static class MauiWidgetCenter
 	{
+		const int RTLD_LAZY = 1;
+
 		static IntPtr _helperClass;
 		static IntPtr _reloadTimelinesSelector;
 		static IntPtr _reloadAllTimelinesSelector;
 		static bool _initialized;
+		static readonly object _initLock = new object();
 
 		[DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
 		static extern void objc_msgSend_void_IntPtr(IntPtr receiver, IntPtr selector, IntPtr arg1);
@@ -38,30 +41,44 @@ namespace Microsoft.Maui
 			if (_initialized)
 				return _helperClass != IntPtr.Zero;
 
-			_initialized = true;
+			lock (_initLock)
+			{
+				if (_initialized)
+					return _helperClass != IntPtr.Zero;
 
-			var appBundle = NSBundle.MainBundle.BundlePath;
-			var helperPath = $"{appBundle}/Frameworks/MauiWidgetHelper.framework/MauiWidgetHelper";
-			var handle = dlopen(helperPath, 1);
+				var appBundle = NSBundle.MainBundle.BundlePath;
+				var helperPath = $"{appBundle}/Frameworks/MauiWidgetHelper.framework/MauiWidgetHelper";
+				var handle = dlopen(helperPath, RTLD_LAZY);
 
-			if (handle == IntPtr.Zero)
-				return false;
+				if (handle == IntPtr.Zero)
+				{
+					_initialized = true;
+					return false;
+				}
 
-			_helperClass = Class.GetHandle("MauiWidgetHelper");
-			if (_helperClass == IntPtr.Zero)
-				return false;
+				_helperClass = Class.GetHandle("MauiWidgetHelper");
+				if (_helperClass == IntPtr.Zero)
+				{
+					_initialized = true;
+					return false;
+				}
 
-			_reloadTimelinesSelector = Selector.GetHandle("reloadTimelines:");
-			_reloadAllTimelinesSelector = Selector.GetHandle("reloadAllTimelines");
-			return true;
+				_reloadTimelinesSelector = Selector.GetHandle("reloadTimelines:");
+				_reloadAllTimelinesSelector = Selector.GetHandle("reloadAllTimelines");
+				_initialized = true;
+				return true;
+			}
 		}
 
 		/// <summary>
 		/// Reloads the timelines for all configured widgets of the specified kind.
 		/// </summary>
 		/// <param name="kind">The widget kind identifier (matches the <c>kind</c> property in your Swift Widget struct).</param>
+		/// <exception cref="ArgumentNullException"><paramref name="kind"/> is <c>null</c>.</exception>
 		public static void ReloadTimelines(string kind)
 		{
+			ArgumentNullException.ThrowIfNull(kind);
+
 			if (!EnsureInitialized())
 				return;
 
@@ -90,8 +107,10 @@ namespace Microsoft.Maui
 		/// </remarks>
 		/// <param name="appGroupId">The App Group identifier (e.g., "group.com.mycompany.myapp").</param>
 		/// <returns>An <see cref="NSUrl"/> for the container directory, or <c>null</c> if unavailable.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="appGroupId"/> is <c>null</c>.</exception>
 		public static NSUrl? GetSharedContainerUrl(string appGroupId)
 		{
+			ArgumentNullException.ThrowIfNull(appGroupId);
 			return NSFileManager.DefaultManager.GetContainerUrl(appGroupId);
 		}
 
@@ -107,9 +126,11 @@ namespace Microsoft.Maui
 		/// </para>
 		/// </remarks>
 		/// <param name="appGroupId">The App Group identifier (e.g., "group.com.mycompany.myapp").</param>
-		/// <returns>An <see cref="NSUserDefaults"/> instance for the App Group, or <c>null</c> if the group is invalid.</returns>
-		public static NSUserDefaults? GetSharedDefaults(string appGroupId)
+		/// <returns>An <see cref="NSUserDefaults"/> instance for the App Group.</returns>
+		/// <exception cref="ArgumentNullException"><paramref name="appGroupId"/> is <c>null</c>.</exception>
+		public static NSUserDefaults GetSharedDefaults(string appGroupId)
 		{
+			ArgumentNullException.ThrowIfNull(appGroupId);
 			return new NSUserDefaults(appGroupId, NSUserDefaultsType.SuiteName);
 		}
 	}
