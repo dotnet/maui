@@ -696,7 +696,7 @@
             Or '$(_ResizetizerIsWindowsAppSdk)' == 'True'
             Or '$(_ResizetizerIsWPFApp)' == 'True'
             Or '$(_ResizetizerIsTizenApp)' == 'True')"
-        DependsOnTargets="$(ResizetizeInjectPlatformItemsTargets)">
+        DependsOnTargets="$(ResizetizerInjectPlatformItemsTargets)">
 
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
@@ -928,10 +928,14 @@
         <RemoveDir Directories="$(_ResizetizerIntermediateOutputRoot)" Condition="Exists ('$(_ResizetizerIntermediateOutputRoot)' )" />
     </Target>
 
+    <!-- Aggregate target to ensure all resource processing has completed. -->
+    <Target Name="_ResizetizerAllResourceProcessing"
+            DependsOnTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets" />
+
     <!-- Extensibility target: runs after all resource processing is complete.
          Custom backends can register targets via the ResizetizerAfterAllProcessingTargets property. -->
     <Target Name="_ResizetizerAfterAllProcessing"
-        AfterTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets"
+        AfterTargets="_ResizetizerAllResourceProcessing"
         DependsOnTargets="$(ResizetizerAfterAllProcessingTargets)" />
 
     <!-- Optional: Import custom platform-specific targets file.
