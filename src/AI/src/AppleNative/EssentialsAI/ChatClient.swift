@@ -35,7 +35,6 @@ public class ChatClientNative: NSObject {
     ) -> CancellationTokenNative? {
 
         let methodName = "streamResponse"
-        let cq = OperationQueue.current?.underlyingQueue
 
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log {
@@ -59,7 +58,7 @@ public class ChatClientNative: NSObject {
 #endif
 
                     let update = ResponseUpdateNative(updateType: .toolCall, toolCallId: id, toolCallName: name, toolCallArguments: arguments)
-                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                    onUpdate(update)
                 },
                 onToolResult: { id, name, result in
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
@@ -69,7 +68,7 @@ public class ChatClientNative: NSObject {
 #endif
 
                     let update = ResponseUpdateNative(updateType: .toolResult, toolCallId: id, toolCallName: name, toolCallResult: result)
-                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                    onUpdate(update)
                 }
             )
 
@@ -94,7 +93,7 @@ public class ChatClientNative: NSObject {
                     }
 #endif
                     let update = ResponseUpdateNative(updateType: .content, text: text)
-                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                    onUpdate(update)
                 }
 
                 let response = try await responseStream.collect()
@@ -123,7 +122,7 @@ public class ChatClientNative: NSObject {
                     }
 #endif
                     let update = ResponseUpdateNative(updateType: .content, text: text)
-                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                    onUpdate(update)
                 }
 
                 let response = try await responseStream.collect()
@@ -148,7 +147,6 @@ public class ChatClientNative: NSObject {
     ) -> CancellationTokenNative? {
 
         let methodName = "getResponse"
-        let cq = OperationQueue.current?.underlyingQueue
 
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
         if let log = AppleIntelligenceLogger.log {
@@ -172,7 +170,7 @@ public class ChatClientNative: NSObject {
 #endif
 
                     let update = ResponseUpdateNative(updateType: .toolCall, toolCallId: id, toolCallName: name, toolCallArguments: arguments)
-                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                    onUpdate(update)
                 },
                 onToolResult: { id, name, result in
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
@@ -182,7 +180,7 @@ public class ChatClientNative: NSObject {
 #endif
 
                     let update = ResponseUpdateNative(updateType: .toolResult, toolCallId: id, toolCallName: name, toolCallResult: result)
-                    cq?.async { onUpdate(update) } ?? onUpdate(update)
+                    onUpdate(update)
                 }
             )
 
@@ -309,8 +307,6 @@ public class ChatClientNative: NSObject {
             -> (String, ArraySlice<Transcript.Entry>)
     ) -> CancellationTokenNative? {
 
-        let cq = OperationQueue.current?.underlyingQueue
-
         guard !messages.isEmpty else {
             let error = NSError.chatError(.emptyMessages, description: "No messages provided.")
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
@@ -319,7 +315,7 @@ public class ChatClientNative: NSObject {
             }
 #endif
 
-            cq?.async { onComplete(nil, error.toNSError()) } ?? onComplete(nil, error.toNSError())
+            onComplete(nil, error.toNSError())
             return nil
         }
 
@@ -346,7 +342,7 @@ public class ChatClientNative: NSObject {
                 }
 #endif
 
-                cq?.async { onComplete(response, nil) } ?? onComplete(response, nil)
+                onComplete(response, nil)
             } catch {
 #if APPLE_INTELLIGENCE_LOGGING_ENABLED
                 if let log = AppleIntelligenceLogger.log {
@@ -354,7 +350,7 @@ public class ChatClientNative: NSObject {
                 }
 #endif
 
-                cq?.async { onComplete(nil, error.toNSError()) } ?? onComplete(nil, error.toNSError())
+                onComplete(nil, error.toNSError())
             }
         }
 
