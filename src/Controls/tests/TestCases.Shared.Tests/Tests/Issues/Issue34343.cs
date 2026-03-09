@@ -17,6 +17,7 @@ public class Issue34343 : _IssuesUITest
 	{
 		App.WaitForElement("HideAndNavigateButton");
 		App.Tap("HideAndNavigateButton");
+		App.WaitForElement("Tab5Content");
 		VerifyScreenshot();
 	}
 #endif
