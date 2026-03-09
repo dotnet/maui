@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						return null;
 					}
 
-					var del = (Action<string?>)GetExistingManagedDelegate(block);
+					var del = GetExistingManagedDelegate(block) as Action<string?>;
 					return del ?? new ActionStringTrampolineBlock((BlockLiteral*)block).Invoke;
 				}
 
