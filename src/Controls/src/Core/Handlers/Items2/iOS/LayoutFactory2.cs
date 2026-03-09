@@ -457,6 +457,25 @@ internal static class LayoutFactory2
 			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
 		}
 
+		// UICollectionViewCompositionalLayout can report a content width larger than the viewport
+		// after a bounds change (e.g. when inside a RefreshView). This causes UIScrollView to
+		// enable horizontal scrolling on a vertical layout. Clamp the width to the actual bounds. (#34165)
+		public override CGSize CollectionViewContentSize
+		{
+			get
+			{
+				var size = base.CollectionViewContentSize;
+				if (Configuration.ScrollDirection == UICollectionViewScrollDirection.Vertical
+					&& CollectionView is not null
+					&& size.Width > CollectionView.Bounds.Width
+					&& CollectionView.Bounds.Width > 0)
+				{
+					return new CGSize(CollectionView.Bounds.Width, size.Height);
+				}
+				return size;
+			}
+		}
+
 		public override void FinalizeCollectionViewUpdates()
 		{
 			base.FinalizeCollectionViewUpdates();
