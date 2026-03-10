@@ -994,6 +994,32 @@ namespace Microsoft.Maui.Controls
 			if (result?.Location != oldState?.Location)
 			{
 				SetValueFromRenderer(CurrentStatePropertyKey, result);
+
+				// Fire NavigatingFrom after state is updated so CurrentPage is the destination.
+				// _previousPage was captured in SendNavigating before navigation started.
+				if (_previousPage != null)
+				{
+					NavigationType navigationType = NavigationType.Replace;
+
+					switch (source)
+					{
+						case ShellNavigationSource.Pop:
+							navigationType = NavigationType.Pop;
+							break;
+						case ShellNavigationSource.Push:
+							navigationType = NavigationType.Push;
+							break;
+						case ShellNavigationSource.PopToRoot:
+							navigationType = NavigationType.PopToRoot;
+							break;
+						case ShellNavigationSource.Insert:
+							navigationType = NavigationType.Insert;
+							break;
+					}
+
+					_previousPage.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+				}
+
 				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 			}
 		}
@@ -1689,35 +1715,10 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
-				NavigationType navigationType = NavigationType.Replace;
-
-				switch (args.Source)
-				{
-					case ShellNavigationSource.Pop:
-						navigationType = NavigationType.Pop;
-						break;
-					case ShellNavigationSource.ShellItemChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellSectionChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellContentChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.Push:
-						navigationType = NavigationType.Push;
-						break;
-					case ShellNavigationSource.PopToRoot:
-						navigationType = NavigationType.PopToRoot;
-						break;
-					case ShellNavigationSource.Insert:
-						navigationType = NavigationType.Insert;
-						break;
-				}
-
+				// Capture the current page now; SendNavigatingFrom will be called in
+				// UpdateCurrentState after the shell state is updated, ensuring CurrentPage
+				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 			}
 		}
 
