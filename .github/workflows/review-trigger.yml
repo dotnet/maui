@@ -1,0 +1,159 @@
+name: "Trigger AzDO Review Pipeline"
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: number
+      platform:
+        description: 'Platform to review (android, ios, or both)'
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  trigger-review:
+    name: Queue Review Pipeline
+    runs-on: ubuntu-latest
+    if: |
+      github.repository_owner == 'dotnet' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.issue.pull_request != '' &&
+        startsWith(github.event.comment.body, '/review')))
+    steps:
+      - name: Check permissions
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login
+            });
+            const allowed = ['admin', 'write'];
+            if (!allowed.includes(data.permission)) {
+              core.setFailed(`User @${context.payload.comment.user.login} does not have write access. Permission: ${data.permission}`);
+            }
+
+      - name: Parse inputs
+        id: parse
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUT_PLATFORM: ${{ inputs.platform }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "pr_number=$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "platform=$INPUT_PLATFORM" >> "$GITHUB_OUTPUT"
+          else
+            PR_NUMBER="$ISSUE_NUMBER"
+            # Extract platform from comment: /review <platform>
+            PLATFORM=$(echo "$COMMENT_BODY" | sed 's|^/review[[:space:]]*||' | tr '[:upper:]' '[:lower:]' | xargs)
+            if [ -z "$PLATFORM" ]; then
+              PLATFORM="android"
+            fi
+            # Sanitize: only allow alphanumeric characters
+            PLATFORM=$(echo "$PLATFORM" | tr -cd 'a-z')
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate platform
+        shell: bash
+        env:
+          PLATFORM: ${{ steps.parse.outputs.platform }}
+        run: |
+          if [[ "$PLATFORM" != "android" && "$PLATFORM" != "ios" ]]; then
+            echo "::error::Invalid platform '$PLATFORM'. Must be 'android' or 'ios'."
+            exit 1
+          fi
+
+      - name: Queue Azure DevOps pipeline
+        shell: bash
+        env:
+          REVIEW_PR_AZDO_PAT: ${{ secrets.REVIEW_PR_AZDO_PAT }}
+          PR_NUMBER: ${{ steps.parse.outputs.pr_number }}
+          PLATFORM: ${{ steps.parse.outputs.platform }}
+        run: |
+          if [ "$PLATFORM" = "ios" ]; then
+            POOL_STR='{"name": "AcesShared"}'
+          else
+            POOL_STR='{"name": "Azure Pipelines", "vmImage": "ubuntu-22.04"}'
+          fi
+
+          AUTH=$(printf ':%s' "$REVIEW_PR_AZDO_PAT" | base64 -w0)
+
+          echo "Queuing review pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM})"
+
+          jq -n \
+            --arg pr "$PR_NUMBER" \
+            --arg plat "$PLATFORM" \
+            --arg pool "$POOL_STR" \
+            '{
+              definition: {id: 27723},
+              sourceBranch: "refs/heads/main",
+              templateParameters: {
+                PRNumber: $pr,
+                Platform: $plat,
+                pool: $pool
+              }
+            }' > /tmp/request.json
+
+          echo "Request body:"
+          cat /tmp/request.json
+
+          HTTP_CODE=$(curl -s -o /tmp/response.json -w "%{http_code}" -X POST \
+            "https://devdiv.visualstudio.com/DevDiv/_apis/build/builds?api-version=7.0" \
+            -H "Authorization: Basic ${AUTH}" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/request.json)
+
+          RESP_BODY=$(cat /tmp/response.json)
+
+          echo "response_body<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$RESP_BODY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            BUILD_ID=$(echo "$RESP_BODY" | jq -r '.id')
+            BUILD_URL=$(echo "$RESP_BODY" | jq -r '._links.web.href')
+            echo "✅ Pipeline queued successfully!"
+            echo "Build ID: $BUILD_ID"
+            echo "Build URL: $BUILD_URL"
+            echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+            echo "build_url=$BUILD_URL" >> "$GITHUB_OUTPUT"
+            echo "success=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Failed to queue pipeline (HTTP $HTTP_CODE)"
+            echo "$RESP_BODY"
+            echo "success=false" >> "$GITHUB_OUTPUT"
+          fi
+        id: queue
+
+      - name: Add reaction to comment
+        if: github.event_name == 'issue_comment' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const success = '${{ steps.queue.outputs.success }}' === 'true';
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: success ? 'rocket' : 'confused'
+            });
