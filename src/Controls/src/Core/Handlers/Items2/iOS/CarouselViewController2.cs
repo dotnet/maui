@@ -768,6 +768,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Hidden = true;
 			}
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_scrollDebounce?.Cancel();
+				_scrollDebounce?.Dispose();
+				_scrollDebounce = null;
+			}
+
+			base.Dispose(disposing);
+		}
 	}
 
 	class CarouselViewLoopManager : IDisposable
