@@ -311,10 +311,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var animationTask = box.FadeToAsync(0, 10_000, null, cts.Token);
 
 			// Let a few frames run so the animation is mid-flight
-			await Task.Delay(64);
+			// Poll until opacity actually changes (avoids fixed-delay flakiness on loaded CI machines)
+			var sw = System.Diagnostics.Stopwatch.StartNew();
+			while (box.Opacity >= 1d && sw.ElapsedMilliseconds < 5000)
+				await Task.Delay(32);
 
 			// Verify it hasn't completed yet
-			Assert.False(animationTask.IsCompleted);
+			Assert.False(animationTask.IsCompleted, "Animation should still be running");
 
 			// Opacity should have moved somewhat (animation is running)
 			Assert.True(box.Opacity < 1d, $"Expected opacity to have decreased from 1, but was {box.Opacity}");
