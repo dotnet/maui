@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers
         Fragment _parentFragment; // The wrapper fragment that hosts this handler
         IShellContext _shellContext;
         IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
-        LinearLayout _rootLayout;
+        CoordinatorLayout _rootLayout;
         ViewPager2 _viewPager;
         TabLayout _contentTabLayout;
         AppBarLayout _tabAppBarLayout;
@@ -124,39 +124,23 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Creates the platform element - always returns the unified layout.
+        /// Creates the platform element by inflating shellsectionlayout.axml.
+        /// Uses XML layout inflation consistent with NavigationViewHandler and FlyoutViewHandler patterns.
         /// </summary>
         protected override AView CreatePlatformElement()
         {
-            var context = MauiContext?.Context ?? throw new InvalidOperationException("MauiContext cannot be null");
+            var li = MauiContext?.GetLayoutInflater()
+                ?? throw new InvalidOperationException("LayoutInflater cannot be null");
 
-            // Create root LinearLayout (always the same structure)
-            _rootLayout = new LinearLayout(context)
-            {
-                Orientation = Orientation.Vertical,
-                LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
-            };
+            var rootView = li.Inflate(Resource.Layout.shellsectionlayout, null)
+                ?? throw new InvalidOperationException("shellsectionlayout inflation failed");
 
-            // Create AppBarLayout to hold TabLayout (for scrolling behavior with CoordinatorLayout parent)
-            _tabAppBarLayout = new AppBarLayout(context)
-            {
-                LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-            };
-            _rootLayout.AddView(_tabAppBarLayout);
+            _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellsection_coordinator);
+            _tabAppBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.shellsection_appbar);
+            _contentTabLayout = rootView.FindViewById<TabLayout>(Resource.Id.shellsection_tablayout);
+            _viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellsection_viewpager);
 
-            // Create TabLayout (visibility controlled by item count)
-            int actionBarHeight = context.GetActionBarHeight();
-            _contentTabLayout = PlatformInterop.CreateShellTabLayout(context, _tabAppBarLayout, actionBarHeight);
-
-            // Create ViewPager2 (always present)
-            _viewPager = new ViewPager2(context)
-            {
-                Id = AView.GenerateViewId(),
-                LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, 0) { Weight = 1 }
-            };
-            _rootLayout.AddView(_viewPager);
-
-            return _rootLayout;
+            return rootView;
         }
 
         protected override void ConnectHandler(AView platformView)
