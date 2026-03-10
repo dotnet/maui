@@ -209,6 +209,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				else
 				{
 					contentSize.Width = desiredSize.Width;
+
+					// For horizontal layouts, items use FractionalHeight(1f), meaning their height equals
+					// the CollectionView's current frame height. When no items are loaded (Width == 0),
+					// contentSize.Height reflects the container's frame height rather than actual content.
+					// This creates a circular sizing issue in Auto-height containers: the frame grows based
+					// on the incorrect content height and stays locked in even after items load.
+					// Reset to 0 so that MinimumHeight / HeightRequest can determine the correct size.
+					contentSize.Height = 0;
 				}
 			}
 
