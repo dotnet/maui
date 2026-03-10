@@ -13,16 +13,17 @@ public class Issue34188 : ContentPage
 		_outerStack.AutomationId = "OuterStack";
 		_instructionsLabel = new Label
 		{
+			Text = "The spanning cell (green) at row=0, col=1 is arranged with height=200, spanning over both row 0 and row 1. Its green background should be visible throughout the entire 200px height area, not just the top 100px. Without the fix, the parent row's red background is visible in the lower half of the spanning area — this screenshot will not match the correct baseline.",
 			Margin = new Thickness(10),
-			AutomationId = "Label"
+			AutomationId = "InstructionsLabel"
 		};
-		_outerStack.Children.Add(_instructionsLabel);
 		_outerStack.Children.Add(new Issue34188Grid
 		{
 			AutomationId = "CustomGrid",
 			WidthRequest = 200,
 			HeightRequest = 200
 		});
+		_outerStack.Children.Add(_instructionsLabel);
 		Content = _outerStack;
 	}
 

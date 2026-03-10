@@ -14,7 +14,7 @@ public class Issue34188 : _IssuesUITest
 	[Category(UITestCategories.Layout)]
 	public void SpanningCellBackgroundShouldCoverFullSpannedArea()
 	{
-		App.WaitForElement("Label");
+		App.WaitForElement("InstructionsLabel");
 
 		// The spanning cell (green) at row=0, col=1 is arranged with height=200,
 		// spanning over both row 0 and row 1. Its green background should be visible
