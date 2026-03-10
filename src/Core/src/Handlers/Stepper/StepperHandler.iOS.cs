@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Handlers
 			//
 			// If this value changes in a future iOS release, update iOSLiquidGlassStepperOverflow
 			// and re-verify on the new OS version. See: https://github.com/dotnet/maui/issues/34273
-			// OperatingSystem.IsIOS() excludes MacCatalyst (this file compiles for both TFMs).
-			// Mac displays are always landscape and UIStepper on Mac has no glass pill overflow.
+			// This workaround targets iOS 26+ only; UIStepper on MacCatalyst has not shown the
+			// same glass pill overflow behavior in testing.
 			if (OperatingSystem.IsIOS() && OperatingSystem.IsIOSVersionAtLeast(26))
 			{
 				var screen = UIKit.UIScreen.MainScreen;
