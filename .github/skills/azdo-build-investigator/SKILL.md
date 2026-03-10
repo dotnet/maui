@@ -102,10 +102,26 @@ pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <
 
 **Requires `binlogtool`** (`dotnet tool install -g binlogtool`). If not installed, tell the user and stop.
 
+**Finding the artifact name**: maui builds do not use a standard `"binlog"` artifact name. First list available artifacts to find the right one:
+
 ```bash
-# Download the binlog artifact
-az pipelines runs artifact download --run-id BUILD_ID --artifact-name "binlog" --path /tmp/maui-binlog \
-  --org https://dev.azure.com/dnceng-public --project public --detect false
+az pipelines runs artifact list --run-id BUILD_ID \
+  --org https://dev.azure.com/dnceng-public --project public --detect false \
+  --query "[].name" -o tsv
+```
+
+Build log artifacts are named like `Windows_NT_Build Windows (Debug)_Attempt1` or `Darwin_Build macOS (Debug)_Attempt1`. Download via the zip URL from the artifact's `downloadUrl` property:
+
+```bash
+# Get the download URL for the artifact
+az pipelines runs artifact list --run-id BUILD_ID \
+  --org https://dev.azure.com/dnceng-public --project public --detect false \
+  --query "[?contains(name, 'Build')]" -o json
+
+# Download the zip (requires auth token - use gh auth token or az account get-access-token)
+# Then extract and search
+mkdir -p /tmp/maui-binlog
+cd /tmp/maui-binlog && unzip -q artifact.zip
 
 # Search for errors (broad first, then narrow)
 binlogtool search "/tmp/maui-binlog/*.binlog" "error"
