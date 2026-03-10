@@ -1,6 +1,3 @@
-using System.Reflection;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 12131, "RefreshView - CollectionView sizing not working correctly inside VerticalStackLayout", PlatformAffected.Android)]
