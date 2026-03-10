@@ -270,11 +270,10 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		return base.MeasureOverride(availableSize);
 	}
 
-	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
-	{
-		_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-
-		return base.ArrangeOverride(finalSize);
-	}
+	//protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+	//{
+	//	_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+	//	return base.ArrangeOverride(finalSize);
+	//}
 
 }

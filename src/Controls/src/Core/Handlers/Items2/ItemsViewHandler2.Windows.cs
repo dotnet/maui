@@ -135,6 +135,15 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 	{
+		// Only invalidate cache if:
+		// 1. ItemSizingStrategy is MeasureFirstItem
+		// 2. Control is already loaded (runtime template change, not initial load)
+		if (handler is CollectionViewHandler2 cvHandler && itemsView is CollectionView cv &&
+		cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && itemsView.IsLoadedOnPlatform())
+		{
+			cvHandler.InvalidateFirstItemSize();
+		}
+
 		handler.UpdateItemsSource();
 	}
 
@@ -264,6 +273,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		else if (_collectionViewSource?.Source is GroupedItemTemplateCollection2 groupedCollection)
 		{
 			groupedCollection.CleanUp();
+
 		}
 
 		_itemFactory?.CleanUp();
@@ -274,6 +284,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			ItemsView?.RemoveLogicalChild(_mauiEmptyView);
 		}
+		_mauiEmptyView?.Handler?.DisconnectHandler();
 		_mauiEmptyView = null;
 		_emptyView = null;
 		_emptyViewDisplayed = false;
@@ -307,6 +318,19 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped
 				&& IsItemsSourceGrouped(itemsSource))
 			{
+				// When there's no ItemTemplate, use the raw ItemsSource directly (no wrapping)
+				// This allows default ToString() rendering without ItemTemplateContext2 wrapper
+				if (itemTemplate is null)
+				{
+					return new CollectionViewSource
+					{
+						Source = itemsSource,
+						IsSourceGrouped = true
+
+
+					};
+				}
+
 				return new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
@@ -316,7 +340,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 					IsSourceGrouped = false
 				};
 			}
-			else
+
+			if (itemTemplate is not null && itemsSource is not null)
 			{
 				var flattenedSource = itemsSource;
 				if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
@@ -504,6 +529,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
+		if (!PlatformView.IsLoaded)
+		{
+			return;
+		}
+
 		if (_itemsSource is null || _itemsSource.Count == 0)
 		{
 			return;
@@ -526,7 +556,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			// Use dispatcher to ensure the scroll happens after layout is fully complete
 			VirtualView.Dispatcher.Dispatch(() =>
 			{
-				if (PlatformView is null)
+				if (PlatformView is null || !PlatformView.IsLoaded)
 				{
 					return;
 				}
@@ -553,7 +583,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				// Use dispatcher to ensure the scroll happens after layout is fully complete
 				VirtualView.Dispatcher.Dispatch(() =>
 				{
-					if (PlatformView is null || _pendingScrollToIndex < 0)
+					if (PlatformView is null || !PlatformView.IsLoaded || _pendingScrollToIndex < 0)
 					{
 						_pendingScrollToIndex = -1;
 						return;
@@ -673,57 +703,27 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
 	{
-		var layout = new UniformGridLayout()
-		{
-			Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Vertical : Orientation.Horizontal,
-			MaximumRowsOrColumns = gridItemsLayout.Span,
-			MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
-			MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
-			ItemsStretch = UniformGridLayoutItemsStretch.Fill,
-			ItemsJustification = UniformGridLayoutItemsJustification.Start,
-		};
+		// Use custom layout for grouped items to handle headers/footers spanning full width
+		bool isGrouped = ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped;
 
-		ApplyMinItemSizeForSpan(layout, gridItemsLayout);
+		UniformGridLayout layout = isGrouped
+			? new GroupableUniformGridLayout()
+			: new UniformGridLayout();
+
+		layout.Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+			? Orientation.Vertical : Orientation.Horizontal;
+		layout.MaximumRowsOrColumns = gridItemsLayout.Span;
+		layout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
+		layout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+		bool noTemplate = ItemsView.ItemTemplate is null;
+		bool isMeasureAllItems = ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems;
+
+		layout.ItemsStretch = (noTemplate && isMeasureAllItems)
+			? UniformGridLayoutItemsStretch.Uniform
+			: UniformGridLayoutItemsStretch.Fill;
+		layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+
 		return layout;
-	}
-
-	/// <summary>
-	/// Computes and applies MinItemWidth/MinItemHeight to work around a WinUI UniformGridLayout bug
-	/// where two internal formulas disagree on items-per-line when ItemsStretch=Fill:
-	///   - GetItemsPerLine uses: floor((available + spacing) / (minWidth + spacing))
-	///   - CalculateExtraPixelsInLine uses: floor(available / (minWidth + spacing))
-	/// The more restrictive formula sees fewer items and inflates the effective width, causing
-	/// fewer columns than requested. By using floor(crossAxisSize / span) - spacing as MinItemWidth,
-	/// both formulas agree on the correct number of columns.
-	/// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/Repeater/UniformGridLayout.cpp
-	/// </summary>
-	void ApplyMinItemSizeForSpan(UniformGridLayout layout, GridItemsLayout gridItemsLayout)
-	{
-		// Only apply when an explicit cross-axis size is set on the CollectionView
-		bool isHorizontal = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
-		double crossAxisSize = isHorizontal
-			? VirtualView.HeightRequest
-			: VirtualView.WidthRequest;
-
-		if (crossAxisSize <= 0 || double.IsNaN(crossAxisSize))
-			return;
-
-		int span = gridItemsLayout.Span;
-		double spacing = isHorizontal
-			? gridItemsLayout.VerticalItemSpacing
-			: gridItemsLayout.HorizontalItemSpacing;
-
-		// Formula: floor(crossAxisSize / span) - spacing
-		// This ensures both WinUI internal formulas agree on the correct number of columns.
-		double minItemSize = Math.Floor(crossAxisSize / span) - spacing;
-		if (minItemSize <= 0)
-			return;
-
-		if (isHorizontal)
-			layout.MinItemHeight = minItemSize;
-		else
-			layout.MinItemWidth = minItemSize;
 	}
 
 	void FindScrollViewer()
@@ -1412,42 +1412,31 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				break;
 		}
 
-		// Store the scroll request and dispatch it to ensure it executes after
-		// the layout has been updated. This prevents unstable scrolling when items
-		// are being rapidly added and ScrollTo is called before layout completes.
-		var scrollIndex = index;
-		var scrollOffset = offset;
-		var isAnimated = args.IsAnimated;
-
-		VirtualView.Dispatcher.Dispatch(() =>
+		if (platformView.IsLoaded)
 		{
-			if (base.PlatformView is not WItemsView pv)
-			{
-				return;
-			}
+			PerformScrollTo(platformView, index, offset, args.IsAnimated);
+		}
+		else
+		{
+			platformView.Loaded -= OnPlatformViewLoaded;
 
-			// Re-validate index bounds in case collection changed between dispatch
-			var currentItemCount = _collectionViewSource?.View?.Count ?? 0;
-			if (scrollIndex < 0 || scrollIndex >= currentItemCount)
+			void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
 			{
-				return;
+				platformView.Loaded -= OnPlatformViewLoaded;
+				PerformScrollTo(platformView, index, offset, args.IsAnimated);
 			}
+			platformView.Loaded += OnPlatformViewLoaded;
+		}
 
-			// Guard: StartBringItemIntoView requires the ItemsView to be fully
-			// loaded and its ItemsRepeater to have completed its first layout pass.
-			// Without this check, the call can crash when ScrollTo is dispatched
-			// before the view is in the visual tree (e.g., during OnAppearing).
-			if (!pv.IsLoaded)
-			{
-				return;
-			}
+	}
 
-			pv.StartBringItemIntoView(scrollIndex, new BringIntoViewOptions()
-			{
-				AnimationDesired = isAnimated,
-				VerticalAlignmentRatio = scrollOffset,
-				HorizontalAlignmentRatio = scrollOffset
-			});
+	void PerformScrollTo(WItemsView platformView, int index, double offset, bool animated)
+	{
+		platformView.StartBringItemIntoView(index, new BringIntoViewOptions()
+		{
+			AnimationDesired = animated,
+			VerticalAlignmentRatio = offset,
+			HorizontalAlignmentRatio = offset
 		});
 	}
 
@@ -1560,7 +1549,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		return -1;
 	}
-	
+
 	/// <summary>
 	/// Finds the flat index in the flattened grouped collection for a ScrollToMode.Element request
 	/// where a group is specified. If item is null, returns the index of the group header.

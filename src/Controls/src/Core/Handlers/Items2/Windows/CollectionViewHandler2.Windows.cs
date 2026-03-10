@@ -47,7 +47,16 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
 	{
-		handler.UpdateItemsSource();
+		// When IsGrouped changes with GridItemsLayout, we need to recreate the layout
+		// because grouped grids use GroupableUniformGridLayout while ungrouped use UniformGridLayout
+		if (handler.Layout is GridItemsLayout)
+		{
+			handler.UpdateItemsLayout();
+		}
+		else
+		{
+			handler.UpdateItemsSource();
+		}
 	}
 
 	public static void MapGroupHeaderTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)
@@ -123,6 +132,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		base.ConnectHandler(platformView);
 
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
+
 		if (PlatformView is not null)
 		{
 			PlatformView.SetBinding(WItemsView.SelectionModeProperty,
@@ -139,6 +149,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		}
 	}
 
+	void OnPlatformViewLoaded(object? sender, UI.Xaml.RoutedEventArgs e)
+	{
+		// Re-sync visual states to MAUI selection whenever the view re-enters the visual tree.
+		// This is the fix for the stale selection highlight on navigation back
+		if (_selectionDirty)
+		{
+			_selectionDirty = false;
+			UpdatePlatformSelection();
+		}
+	}
+
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
 		var oldListViewBase = platformView;
@@ -146,6 +167,7 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		if (oldListViewBase is not null)
 		{
 			oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+			oldListViewBase.Loaded -= OnPlatformViewLoaded;
 			oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
 			oldListViewBase.Loaded -= OnPlatformViewLoaded;
 		}
@@ -166,19 +188,6 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		UpdatePlatformSelection();
 
 		_ignorePlatformSelectionChange = false;
-	}
-
-	/// <summary>
-	/// Called when the WinUI ItemsView is loaded into the visual tree.
-	/// Re-applies any pending selection that was deferred while the view was off-screen.
-	/// </summary>
-	void OnPlatformViewLoaded(object sender, UI.Xaml.RoutedEventArgs e)
-	{
-		if (_selectionDirty)
-		{
-			_selectionDirty = false;
-			UpdatePlatformSelection();
-		}
 	}
 
 	/// <summary>
@@ -265,9 +274,26 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 
 		var newSelection = ComputeNewMultipleSelection();
-		ItemsView.UpdateSelectedItems(newSelection);
+		if (!SelectionListsAreEqual(newSelection, ItemsView.SelectedItems))
+		{
+			ItemsView.UpdateSelectedItems(newSelection);
+		}
 
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
+	}
+
+	static bool SelectionListsAreEqual(IList<object> list1, IList<object> list2)
+	{
+		if (list1.Count != list2.Count)
+			return false;
+
+		var set2 = new HashSet<object>(list2);
+		for (int i = 0; i < list1.Count; i++)
+		{
+			if (!set2.Contains(list1[i]))
+				return false;
+		}
+		return true;
 	}
 
 	/// <summary>

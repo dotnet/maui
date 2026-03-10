@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -59,9 +60,21 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				if (_view.Handler?.MauiContext is not null && viewContent is not null)
 				{
 					wrapper = new ElementWrapper(_view.Handler.MauiContext);
-					wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
+					wrapper.HorizontalAlignment = viewContent.HorizontalOptions.Alignment switch
+					{
+						LayoutAlignment.Start => HorizontalAlignment.Left,
+						LayoutAlignment.Center => HorizontalAlignment.Center,
+						LayoutAlignment.End => HorizontalAlignment.Right,
+						_ => HorizontalAlignment.Stretch
+					};
+					wrapper.VerticalAlignment = viewContent.VerticalOptions.Alignment switch
+					{
+						LayoutAlignment.Start => VerticalAlignment.Top,
+						LayoutAlignment.Center => VerticalAlignment.Center,
+						LayoutAlignment.End => VerticalAlignment.Bottom,
+						_ => VerticalAlignment.Stretch
+					};
 					wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-					wrapper.VerticalAlignment = VerticalAlignment.Stretch;
 					wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 					wrapper.SetContent(viewContent);
 					wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
@@ -86,12 +99,14 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				if (view is VisualElement visualElement)
 				{
 					bool isSelected = false;
-					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
+					if (selectableItemsView.SelectionMode == SelectionMode.Single)
+						isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
+					else
+						isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
+
+					if (isSelected && view is VisualElement visualElement)
 					{
-						if (selectableItemsView.SelectionMode == SelectionMode.Single)
-							isSelected = Equals(selectableItemsView.SelectedItem, templateContext.Item);
-						else
-							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
+						VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
 					}
 
 					VisualStateManager.GoToState(visualElement, isSelected
@@ -318,15 +333,14 @@ internal partial class ElementWrapper : ContentControl
 		// Check if we should use cached first item size
 		var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
 
+		// Always measure to allow content to load and render
+		var measuredSize = base.MeasureOverride(availableSize);
+
 		if (!cachedSize.IsEmpty)
 		{
-			// Use cached size for MeasureFirstItem strategy
-			base.MeasureOverride(cachedSize);
+			// For MeasureFirstItem: Return cached size for uniform layout
 			return cachedSize;
 		}
-
-		// Measure normally
-		var measuredSize = base.MeasureOverride(availableSize);
 
 		// Cache the size if this is the first item being measured
 		if (handler != null && !IsHeaderOrFooter)
@@ -334,6 +348,36 @@ internal partial class ElementWrapper : ContentControl
 			var currentCached = handler.GetCachedFirstItemSize();
 			if (currentCached.IsEmpty)
 			{
+				// For first item with images: Hook into content's SizeChanged to update cache when images load
+				if (VirtualView is View firstView && Content is FrameworkElement content)
+				{
+					void OnContentSizeChanged(object? sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
+					{
+						// Update cached size with actual loaded size
+						var currentCache = handler.GetCachedFirstItemSize();
+						if (!currentCache.IsEmpty && (e.NewSize.Width > currentCache.Width || e.NewSize.Height > currentCache.Height))
+						{
+							handler.SetCachedFirstItemSize(e.NewSize);
+							// Force layout update
+							InvalidateMeasure();
+						}
+					}
+
+					void OnContentUnloaded(object? sender, RoutedEventArgs e)
+					{
+						// Unwire both events to prevent memory leaks
+						if (sender is FrameworkElement element)
+						{
+							element.SizeChanged -= OnContentSizeChanged;
+							element.Unloaded -= OnContentUnloaded;
+						}
+					}
+
+					// Subscribe once
+					content.SizeChanged += OnContentSizeChanged;
+					content.Unloaded += OnContentUnloaded;
+				}
+
 				handler.SetCachedFirstItemSize(measuredSize);
 			}
 		}
