@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Handlers
 
 			void UpdateThumbColor(UISwitch platformView)
 			{
-				DispatchQueue.MainQueue.DispatchAsync(() =>
+				DispatchQueue.MainQueue.DispatchAsync(async () =>
 				{
 					if (VirtualView is null || PlatformView is null)
 						return;
