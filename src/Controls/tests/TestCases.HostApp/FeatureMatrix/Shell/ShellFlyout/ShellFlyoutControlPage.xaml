@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+    x:Class="Maui.Controls.Sample.ShellFlyoutControlPage"
+    x:DataType="local:ShellViewModel"
+    FlyoutWidth="{Binding FlyoutWidth}"
+    FlyoutHeight="{Binding FlyoutHeight}"
+    FlyoutIcon="{Binding FlyoutIcon}"
+    FlyoutIsPresented="{Binding FlyoutIsPresented}"
+    FlyoutBehavior="{Binding FlyoutBehavior, Mode=TwoWay}"
+    FlyoutHeader="{Binding FlyoutHeader, Mode=TwoWay}"
+    FlyoutFooter="{Binding FlyoutFooter, Mode=TwoWay}"
+    FlyoutHeaderTemplate="{Binding FlyoutHeaderTemplate, Mode=TwoWay}"
+    FlyoutFooterTemplate="{Binding FlyoutFooterTemplate, Mode=TwoWay}"
+    FlyoutContent="{Binding FlyoutContent, Mode=TwoWay}"
+    FlyoutContentTemplate="{Binding FlyoutContentTemplate, Mode=TwoWay}"
+    FlyoutBackgroundColor="{Binding FlyoutBackgroundColor, Mode=TwoWay}"
+    FlyoutBackgroundImage="{Binding FlyoutBackgroundImage, Mode=TwoWay}"
+    FlyoutBackgroundImageAspect="{Binding FlyoutBackgroundImageAspect, Mode=TwoWay}"
+    FlyoutHeaderBehavior="{Binding FlyoutHeaderBehavior, Mode=TwoWay}"
+    FlyoutBackdrop="{Binding FlyoutBackdrop}"
+    FlyoutVerticalScrollMode="{Binding FlyoutVerticalScrollMode}"
+    ItemTemplate="{Binding ItemTemplate, Mode=TwoWay}"
+    MenuItemTemplate="{Binding MenuItemTemplate,Mode=TwoWay}"
+    FlowDirection="{Binding FlowDirection}"
+    AutomationId="ShellFlyout">
+    <FlyoutItem
+        x:Name="HomeFlyoutItem"
+        Title="FlyoutItems"
+        AutomationId="FlyoutItems"
+        FlyoutItemIsVisible="{Binding FlyoutItemIsVisible,Mode=TwoWay}"
+        FlyoutDisplayOptions="{Binding FlyoutDisplayOptions,Mode=TwoWay}">
+        <ShellContent Title="Home"
+                      AutomationId="Home">
+            <ContentPage AutomationId="HomeContentPage">
+                <ContentPage.ToolbarItems>
+                    <ToolbarItem AutomationId="Options"
+                                 Text="Options"
+                                 Clicked="NavigateToOptionsPage_Clicked"/>
+                </ContentPage.ToolbarItems>
+                <VerticalStackLayout Padding="20">
+                    <Label Text="This is Home page content."
+                           FontAttributes="Bold"
+                           FontSize="18"
+                           TextColor="DarkBlue"
+                           AutomationId="HomePageTitle"/>
+                    <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                           FontSize="14"
+                           TextColor="Gray"
+                           AutomationId="HomeCurrentItemLabel"/>
+                </VerticalStackLayout>
+            </ContentPage>
+        </ShellContent>
+
+        <ShellContent Title="Reports"
+                      AutomationId="Reports">
+            <ContentPage AutomationId="ReportsContentPage">
+                <VerticalStackLayout Padding="20">
+                    <Label Text="This is Reports page content."
+                           FontAttributes="Bold"
+                           FontSize="18"
+                           TextColor="DarkGreen"
+                           AutomationId="ReportsPageTitle"/>
+                    <Label Text="{Binding CurrentItemTitle, StringFormat='Current Item: {0}'}"
+                           FontSize="14"
+                           TextColor="Gray"
+                           AutomationId="ReportsCurrentItemLabel"/>
+                </VerticalStackLayout>
+            </ContentPage>
+        </ShellContent>
+    </FlyoutItem>
+
+    <MenuItem Text="OpenFlyout"
+              Clicked="OnOpenFlyoutClicked"
+              AutomationId="OpenFlyout"/>
+    <MenuItem Text="FlyoutBehavior"
+              Clicked="OnSetFlyoutBehaviorClicked"
+              AutomationId="FlyoutBehavior"/>
+</Shell>

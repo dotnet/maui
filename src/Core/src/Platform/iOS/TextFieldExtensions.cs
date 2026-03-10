@@ -32,13 +32,29 @@ namespace Microsoft.Maui.Platform
 		{
 			if (entry.IsPassword && textField.IsFirstResponder)
 			{
+				var currentText = textField.Text;
 				textField.Enabled = false;
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
 				textField.BecomeFirstResponder();
+				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
+				{
+					mauiTextField.SuppressTextPropertySet(true);
+					try
+					{
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+					}
+					finally
+					{
+						mauiTextField.SuppressTextPropertySet(false);
+					}
+				}
 			}
 			else
+			{
 				textField.SecureTextEntry = entry.IsPassword;
+			}
 #if MACCATALYST
 			textField.TextContentType = UITextContentType.OneTimeCode;
 #endif
@@ -215,8 +231,8 @@ namespace Microsoft.Maui.Platform
 
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
+					clearButton.TintColor = null;
 				}
 				else
 				{

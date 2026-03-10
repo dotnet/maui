@@ -226,6 +226,23 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
 		return sb.ToString();
 	}
 
+	/// <inheritdoc />
+	public override void Reset()
+	{
+		// Setting _prevState to null causes the next Process() call to treat the
+		// incoming JSON as a "first chunk" (see the _prevState == null check in
+		// Process), which is the intended behavior after a reset — the chunker
+		// should emit the full initial structure for the new stream rather than
+		// computing a delta against stale state from before the reset.
+		_prevState = null;
+		_openStringPath = null;
+		_emittedStrings.Clear();
+		_pendingStrings.Clear();
+		_pendingContainers.Clear();
+		_emittedPaths.Clear();
+		_openStructures.Clear();
+	}
+
 	// ═══════════════════════════════════════════════════════════════════════════════════════════
 	// FIRST CHUNK PROCESSING
 	// ═══════════════════════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Maui.Controls.Sample.Models;
 
 namespace Maui.Controls.Sample.AI;
 
@@ -19,18 +18,22 @@ public record TravelPlanResult(
 	string Language);
 
 /// <summary>
-/// Result from the Researcher Agent - the best matching destination name (for JSON schema).
+/// Result from the Researcher Agent - the best matching destination (for JSON schema).
 /// </summary>
 internal record DestinationMatchResult(
 	[property: DisplayName("matchedDestinationName")]
 	[property: Description("The exact name of the best matching destination from the available list.")]
-	string MatchedDestinationName);
+	string MatchedDestinationName,
+	[property: DisplayName("matchedDestinationDescription")]
+	[property: Description("A brief description of the matched destination, based on the information provided in the additional context.")]
+	string MatchedDestinationDescription);
 
 /// <summary>
-/// Result from the Researcher Agent - includes full landmark details.
+/// Result from the Researcher Agent - includes destination name and description from RAG context.
 /// </summary>
 public record ResearchResult(
-	Landmark? Landmark,
+	string? DestinationName,
+	string? DestinationDescription,
 	int DayCount,
 	string Language);
 

@@ -270,6 +270,7 @@ Task("dotnet-test")
             "**/Controls.BindingSourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
+            "**/Essentials.AI.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
             "**/Compatibility.Core.UnitTests.csproj",

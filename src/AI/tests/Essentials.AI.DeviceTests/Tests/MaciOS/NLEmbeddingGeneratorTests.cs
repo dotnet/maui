@@ -6,17 +6,17 @@ using Xunit;
 
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorCancellationTests : EmbeddingGeneratorCancellationTestsBase<NLEmbeddingGenerator>
 {
 }
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorConcurrencyTests : EmbeddingGeneratorConcurrencyTestsBase<NLEmbeddingGenerator>
 {
 }
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTestsBase<NLEmbeddingGenerator>
 {
 	[Fact]
@@ -55,12 +55,12 @@ public class NLEmbeddingGeneratorDisposalTests : EmbeddingGeneratorDisposalTests
 	}
 }
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorGenerateTests : EmbeddingGeneratorGenerateTestsBase<NLEmbeddingGenerator>
 {
 }
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorGetServiceTests : EmbeddingGeneratorGetServiceTestsBase<NLEmbeddingGenerator>
 {
 	protected override string ExpectedProviderName => "apple";
@@ -76,7 +76,7 @@ public class NLEmbeddingGeneratorGetServiceTests : EmbeddingGeneratorGetServiceT
 	}
 }
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstantiationTestsBase<NLEmbeddingGenerator>
 {
 	[Fact]
@@ -103,7 +103,7 @@ public class NLEmbeddingGeneratorInstantiationTests : EmbeddingGeneratorInstanti
 	}
 }
 
-[Category("NLEmbeddingGenerator")]
+[Category(Traits.NLEmbeddingGenerator)]
 public class NLEmbeddingGeneratorSimilarityTests : EmbeddingGeneratorSimilarityTestsBase<NLEmbeddingGenerator>
 {
 }

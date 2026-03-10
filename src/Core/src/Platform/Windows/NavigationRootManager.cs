@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Platform
 				// Clear out the toolbar that was set from the previous content
 				SetToolbar(null);
 
-				// We need to make sure to clear out the root view content 
+				// We need to make sure to clear out the root view content
 				// before creating the new view.
 				// Otherwise the new view might try to act on the old content.
 				// It might have code in the handler that retrieves this class.
@@ -146,6 +146,10 @@ namespace Microsoft.Maui.Platform
 			}
 
 			SetToolbar(null);
+
+			_rootView.SetTitleBar(null, null);
+
+			_rootView.AppWindowId = null;
 
 			if (_rootView.Content is RootNavigationView navView)
 				navView.Content = null;

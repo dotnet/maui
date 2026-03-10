@@ -659,7 +659,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var pageContainer = CreateViewControllerForPage(page);
 			var target = nvh.ViewController.ParentViewController;
-			ViewControllers = ViewControllers.Insert(ViewControllers.IndexOf(target), pageContainer);
+			var index = ViewControllers.IndexOf(target);
+			ViewControllers = ViewControllers.Insert(index, pageContainer);
+
+			// Update the flyout icon when the root page changes
+			if (index == 0)
+			{
+				(target as ParentingViewController)?.UpdateLeftBarButtonItem();
+			}
 		}
 
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs e)
@@ -946,10 +953,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
 				: iconColor.ToPlatform();
+
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && NavigationBar.TintColor is not null)
+			{
+				if (VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
+				{
+					foreach (var item in items)
+					{
+						item.TintColor = NavigationBar.TintColor;
+					}
+				}
+			}
 		}
 
 		void SetStatusBarStyle()
 		{
+			if (NavPage is null)
+			{
+				return;
+			}
+			
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
@@ -1064,7 +1087,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// We only check height because the navigation bar constrains vertical space (44pt height),
 				// but allows horizontal flexibility. Width can vary based on icon design and content,
 				// while height must fit within the fixed navigation bar bounds to avoid clipping.
-				
+
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
@@ -1602,12 +1625,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return empty;
 			}
 
+			/// <summary>
+			/// Called when the view controller's view transitions to a new size.
+			/// On iPad iOS 26+, manually updates TitleView frame to handle Stage Manager window resizing.
+			/// </summary>
 			public override void ViewWillTransitionToSize(SizeF toSize, IUIViewControllerTransitionCoordinator coordinator)
 			{
 				base.ViewWillTransitionToSize(toSize, coordinator);
 
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				{
 					UpdateLeftBarButtonItem();
+
+					// For iOS 26+, force TitleView to re-layout on window size changes (iPad Stage Manager, multitasking)
+					// Complements TraitCollectionDidChange handling (device rotation) added in #32815
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						coordinator.AnimateAlongsideTransition(_ =>
+						{
+							UpdateTitleViewFrameForOrientation();
+						}, null);
+					}
+				}
 			}
 
 			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -1649,8 +1688,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 
 				var currentChild = this.Child;
-				var firstPage = n.NavPageController.Pages.FirstOrDefault();
-
+				var firstPage = (n.ViewControllers.FirstOrDefault() as ParentingViewController)?.Child;
 
 				if (n._parentFlyoutPage == null)
 					return;
@@ -1937,6 +1975,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && primaries is not null && _navigation.TryGetTarget(out NavigationRenderer navigationRenderer)
+					  && navigationRenderer.NavigationBar?.TintColor is UIColor tintColor)
+				{
+					foreach (var item in primaries)
+					{
+						item.TintColor = tintColor;
+					}
+				}
 
 				if (_navigation.TryGetTarget(out NavigationRenderer n))
 				{
@@ -2295,10 +2341,34 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								value.Width = (value.X - xSpace) + value.Width;
 								value.X = xSpace;
 							}
+
+							if (_child?.VirtualView is IView view)
+							{
+								var margin = view.Margin;
+
+								// Apply margins AFTER back button spacing calculations
+								// Margins push the view inward to keep it within the nav bar bounds
+								var newWidth = value.Width - (nfloat)(margin.Left + margin.Right);
+								if (newWidth < 0)
+									newWidth = 0;
+
+								value = new RectangleF(
+									value.X + (nfloat)margin.Left,
+									value.Y + (nfloat)margin.Top,
+									newWidth,
+									value.Height
+								);
+							}
 						}
-						;
 
 						value.Height = ToolbarHeight;
+
+						// Reduce height by vertical margins so the view stays within the nav bar
+						if (_child?.VirtualView is IView marginView)
+						{
+							var verticalMargin = (nfloat)(marginView.Margin.Top + marginView.Margin.Bottom);
+							value.Height = (nfloat)Math.Max(0, value.Height - verticalMargin);
+						}
 					}
 
 					base.Frame = value;

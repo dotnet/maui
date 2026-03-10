@@ -7,3 +7,4 @@ using Microsoft.Maui.Essentials.AI;
 
 [assembly: Experimental(DiagnosticIds.Experiments.EssentialsAI)]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Essentials.AI.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Essentials.AI.DeviceTests")]

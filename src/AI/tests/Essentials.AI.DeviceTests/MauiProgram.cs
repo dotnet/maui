@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
@@ -28,6 +29,9 @@ public static class MauiProgram
 				{
 					typeof(MauiProgram).Assembly
 				},
+				SkipCategories = Traits
+					.GetSkipTraits()
+					.ToList(),
 			})
 			.UseHeadlessRunner(new HeadlessRunnerOptions
 			{

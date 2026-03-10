@@ -148,9 +148,7 @@ namespace Microsoft.Maui.Handlers
 					else
 					{
 						var title = new SpannableString(VirtualView.Title ?? string.Empty);
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToPlatform()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
-#pragma warning restore CA1416
 						builder.SetTitle(title);
 					}
 
@@ -160,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 					{
 						var item = items[i];
 						if (item == null)
-							items[i] = String.Empty;
+							items[i] = string.Empty;
 					}
 
 					builder.SetSingleChoiceItems(items, VirtualView.SelectedIndex, (s, e) =>

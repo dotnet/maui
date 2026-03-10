@@ -91,10 +91,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			var font = span.ToFont(defaultFontSize);
-			if (font.IsDefault && defaultFont.HasValue)
-				font = defaultFont.Value;
-
+			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
 			var hasStrikethrough = false;
 			if (span.IsSet(Span.TextDecorationsProperty))

@@ -33,8 +33,9 @@ public record Landmark
 	public Location Location => new(Latitude, Longitude);
 
 	/// <summary>
-	/// Embedding vector generated from Name and ShortDescription for RAG search.
+	/// Embedding vectors generated from the name, short description, and individual
+	/// sentences of the full description for multi-granularity semantic search.
 	/// </summary>
 	[JsonIgnore]
-	public Embedding<float>? Embedding { get; set; }
+	public IReadOnlyList<Embedding<float>>? Embeddings { get; set; }
 }

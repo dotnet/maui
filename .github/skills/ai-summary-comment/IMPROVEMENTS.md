@@ -10,7 +10,7 @@ The `post-ai-summary-comment.ps1` script has been significantly improved to make
 
 **Before:** Script used hardcoded pattern matching with predefined title variations
 
-**After:** Script **automatically discovers ALL sections** from your state file and extracts them dynamically
+**After:** Script **automatically discovers ALL sections** from the provided content and extracts them dynamically
 
 ```powershell
 # Extracts ALL <details><summary><strong>TITLE</strong></summary> sections
@@ -25,13 +25,13 @@ $preFlightContent = Get-SectionByPattern -Sections $allSections -Patterns @(
 
 **Benefits:**
 - ✅ **No hardcoded titles** - works with ANY section header you use
-- ✅ **Automatically adapts** - add new sections without modifying the script
-- ✅ **Better debugging** - shows exactly which sections were found
-- ✅ **More maintainable** - less code, more flexible
+- ✅ Automatically adapts - add new sections without modifying the script
+- ✅ Better debugging - shows exactly which sections were found in the content
+- ✅ More maintainable - less code, more flexible
 
 **Example debug output:**
 ```
-[DEBUG] Found 6 section(s) in state file
+[DEBUG] Found 6 section(s) in content
 [DEBUG] Section: '📋 Issue Summary' (803 chars)
 [DEBUG] Section: '🚦 Gate - Test Verification' (488 chars)
 [DEBUG] Section: '🔧 Fix Candidates' (868 chars)
@@ -91,7 +91,7 @@ $DebugPreference = 'Continue'
 ```
 
 **Shows:**
-- Which sections were found in the state file
+- Which sections were found in the content
 - How many characters each section contains
 - Which patterns matched which sections
 - Why validation passed or failed
@@ -104,7 +104,7 @@ $DebugPreference = 'Continue'
 ```
 ⛔ VALIDATION FAILED
 
-💡 Fix these issues in the state file before posting.
+💡 Fix these issues in the content before posting.
    Or use -SkipValidation to bypass these checks.
 
 🐛 Debug tip: Run with $DebugPreference = 'Continue' for details
@@ -126,7 +126,7 @@ function Extract-AllSections {
 }
 ```
 
-**Result:** Hashtable with ALL sections from your state file
+**Result:** Hashtable with ALL sections from your content
 
 ### Step 2: Map to Phases
 
@@ -208,12 +208,12 @@ Any title matching `'📋.*Report'` or `'Final Report'`:
 
 **No changes needed!** The script is backward compatible.
 
-**Old state files** with exact headers like:
+**Old content** with exact headers like:
 ```markdown
 <summary><strong>📋 Phase 4: Report — Final Recommendation</strong></summary>
 ```
 
-**New state files** with simpler headers like:
+**New content** with simpler headers like:
 ```markdown
 <summary><strong>📋 Final Report</strong></summary>
 ```
@@ -236,7 +236,7 @@ Any title matching `'📋.*Report'` or `'Final Report'`:
 
 ## Common Issues & Solutions
 
-### Issue: "Phase X has NO content in state file"
+### Issue: "Phase X has NO content"
 
 **Step 1:** Enable debug mode to see what was found
 ```powershell
@@ -245,7 +245,7 @@ pwsh -Command '$DebugPreference = "Continue"; ./post-ai-summary-comment.ps1 -PRN
 
 **Look for:**
 ```
-[DEBUG] Found 7 section(s) in state file
+[DEBUG] Found 7 section(s) in content
 [DEBUG] Section: 'Your Section Title' (XXX chars)
 ```
 
@@ -263,7 +263,7 @@ If your title is `"📋 Final Analysis"`, it won't match!
 
 ### Issue: Section extracted but content is empty
 
-**Cause:** State file structure issue (missing content between tags)
+**Cause:** Content structure issue (missing content between tags)
 
 **Check your markdown:**
 ```markdown
@@ -336,7 +336,7 @@ Tested with:
 
 **Debug output example:**
 ```
-[DEBUG] Found 6 section(s) in state file
+[DEBUG] Found 6 section(s) in content
 [DEBUG] Section: '📋 Issue Summary' (803 chars)
 [DEBUG] Section: '📁 Files Changed' (0 chars)
 [DEBUG] Section: '💬 PR Discussion Summary' (0 chars)
@@ -425,16 +425,16 @@ PR #27340 provides a **correct and well-tested fix**...
 ```
 ⛔ VALIDATION FAILED
 Found 1 validation error(s):
-  - Report: Phase Report is marked as '✅ COMPLETE' but has NO content in state file
+  - Report: Phase Report is marked as '✅ COMPLETE' but has NO content
 ```
 
 **After:**
 ```
 ⛔ VALIDATION FAILED
 Found 1 validation error(s):
-  - Report: Phase Report is marked as '✅ COMPLETE' but has NO content in state file
+  - Report: Phase Report is marked as '✅ COMPLETE' but has NO content
 
-💡 Fix these issues in the state file before posting the review comment.
+💡 Fix these issues in the content before posting the review comment.
    Or use -SkipValidation to bypass these checks (not recommended).
 
 🐛 Debug tip: Run with $DebugPreference = 'Continue' for detailed extraction info
@@ -517,7 +517,7 @@ Any of these variations will be recognized:
 
 ## Migration Guide
 
-**No changes needed!** The script is backward compatible. If you have existing state files with the old header format, they'll continue to work.
+**No changes needed!** The script is backward compatible. If you have existing content with the old header format, it will continue to work.
 
 If you want to use the new flexibility:
 - Just use simpler headers like `📋 Final Report` instead of `📋 Phase 4: Report — Final Recommendation`
@@ -527,11 +527,11 @@ If you want to use the new flexibility:
 
 ## Common Issues & Solutions
 
-### Issue: "Phase Report has NO content in state file"
+### Issue: "Phase Report has NO content"
 
-**Solution 1:** Check your state file structure
+**Solution 1:** Check your content structure
 ```bash
-grep -A 5 "📋.*Report" CustomAgentLogsTmp/PRState/pr-XXXXX.md
+grep -A 5 "📋.*Report" your-content-file.md
 ```
 
 Make sure you have:
@@ -612,7 +612,7 @@ $reportContent = Extract-PhaseContent -StateContent $Content -PhaseTitles @(
 ## Future Improvements
 
 Potential enhancements:
-- [ ] Auto-detect phase titles from state file (no hardcoded patterns)
+- [ ] Auto-detect phase titles from content (no hardcoded patterns)
 - [ ] Support markdown headings (`##` / `###`) in addition to `<details>`
 - [ ] Validate links and references work
 - [ ] Check that commit SHAs are valid
@@ -624,7 +624,7 @@ Potential enhancements:
 
 The improvements have been tested with:
 - ✅ PR #27340 (Entry/Editor keyboard issue)
-- ✅ State files with various header formats
+- ✅ Content with various header formats
 - ✅ Dry run mode
 - ✅ Debug mode
 - ✅ Skip validation mode
@@ -636,5 +636,5 @@ The improvements have been tested with:
 
 If you encounter issues or have suggestions, please:
 1. Try debug mode first: `$DebugPreference = 'Continue'`
-2. Check the state file structure
+2. Check the content structure
 3. Report the issue with debug output included

@@ -28,6 +28,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// Header and footer view holders should not participate in selection tracking.
+			// They are not data items and calling GetItem() on their positions would cause
+			// an ArgumentOutOfRangeException due to the header index adjustment.
+			if (ItemsSource.IsHeader(position) || ItemsSource.IsFooter(position))
+			{
+				return;
+			}
+
 			// Watch for clicks so the user can select the item held by this ViewHolder
 			selectable.Clicked += SelectableClicked;
 

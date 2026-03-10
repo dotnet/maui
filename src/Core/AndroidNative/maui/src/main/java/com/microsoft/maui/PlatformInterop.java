@@ -2,6 +2,7 @@ package com.microsoft.maui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
@@ -349,7 +350,8 @@ public class PlatformInterop {
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(inputStream);
+            .load(inputStream)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
@@ -363,6 +365,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
@@ -370,6 +376,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -382,13 +392,22 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
-            .load(inputStream);
+            .load(inputStream)
+            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         load(builder, context, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
         RequestBuilder<Drawable> builder = Glide
             .with(context)
@@ -460,77 +479,6 @@ public class PlatformInterop {
             }
         }
         return null;
-    }
-
-    /**
-     * Sets many values at once on a Paint object
-     * @param paint
-     * @param strokeWidth
-     * @param strokeJoin
-     * @param strokeCap
-     * @param strokeMiter
-     * @param pathEffect
-     */
-    public static void setPaintValues(Paint paint, float strokeWidth, Paint.Join strokeJoin, Paint.Cap strokeCap, float strokeMiter, PathEffect pathEffect)
-    {
-        paint.setStrokeWidth(strokeWidth);
-        paint.setStrokeJoin(strokeJoin);
-        paint.setStrokeCap(strokeCap);
-        paint.setStrokeMiter(strokeMiter);
-        if (pathEffect != null) {
-            paint.setPathEffect(pathEffect);
-        }
-    }
-
-    /**
-     * Draws the background and the border (if any).
-     * @param drawable
-     * @param canvas
-     * @param width
-     * @param height
-     * @param clipPath
-     * @param borderPaint
-     */
-    public static void drawMauiDrawablePath(PaintDrawable drawable, Canvas canvas, int width, int height, @NonNull Path clipPath, Paint borderPaint)
-    {
-        Paint paint = drawable.getPaint();
-        if (paint != null) {
-            canvas.drawPath(clipPath, paint);
-        }
-        if (borderPaint != null) {
-            canvas.drawPath(clipPath, borderPaint);
-        }
-    }
-
-    /**
-     * Gets the value of android.R.attr.windowBackground from the given Context
-     * @param context
-     * @return the color or -1 if not found
-     */
-    public static int getWindowBackgroundColor(Context context)
-    {
-        TypedValue value = new TypedValue();
-        if (!context.getTheme().resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
-            return value.data;
-        } else {
-            return -1;
-        }
-    }
-
-    /**
-     * Needed because TypedValue.isColorType() is only API Q+
-     * https://github.com/aosp-mirror/platform_frameworks_base/blob/1d896eeeb8744a1498128d62c09a3aa0a2a29a16/core/java/android/util/TypedValue.java#L266-L268
-     * @param value
-     * @return true if the TypedValue is a Color
-     */
-    private static boolean isColorType(TypedValue value)
-    {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return value.isColorType();
-        } else {
-            // Implementation from AOSP
-            return (value.type >= TypedValue.TYPE_FIRST_COLOR_INT && value.type <= TypedValue.TYPE_LAST_COLOR_INT);
-        }
     }
 
     /**
@@ -703,5 +651,40 @@ public class PlatformInterop {
      */
     public static void setClipBounds(@NonNull View view, int left, int top, int right, int bottom) {
         view.setClipBounds(new Rect(left, top, right, bottom));
+    }
+
+    /**
+     * Checks if the provided context's underlying Activity is destroyed or finishing.
+     * This is used to prevent Glide crashes when attempting to load images after activity destruction.
+     * @param context The context to check
+     * @return true if the context is destroyed, false otherwise
+     */
+    public static boolean isContextDestroyed(Context context) {
+        Activity activity = getActivity(context);
+        if (activity != null) {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Extracts the Activity from a Context, handling ContextWrapper chains.
+     * @param context The context to extract the Activity from
+     * @return The Activity if found, null otherwise
+     */
+    private static Activity getActivity(Context context) {
+        if (context == null) {
+            return null;
+        }
+        if (context instanceof Activity) {
+            return (Activity) context;
+        }
+        if (context instanceof ContextWrapper) {
+            Context baseContext = ((ContextWrapper) context).getBaseContext();
+            return getActivity(baseContext);
+        }
+        return null;
     }
 }

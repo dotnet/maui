@@ -55,7 +55,8 @@ namespace Microsoft.Maui.Controls
 				NavigationPage.BarTextColorProperty) ||
 				e.IsOneOf(
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
-					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty) ||
+				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty))
 			{
 				ApplyChanges(_currentNavigationPage);
 			}

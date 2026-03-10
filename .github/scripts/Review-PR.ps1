@@ -236,6 +236,25 @@ if (-not (Test-Path $stateDir)) {
     Write-Host "  📁 Created state directory: $stateDir" -ForegroundColor Gray
 }
 
+# Create PRAgent phase directories for structured output
+$PRAgentDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
+$phaseSubdirs = @("pre-flight", "gate", "try-fix", "report")
+foreach ($subdir in $phaseSubdirs) {
+    $dirPath = Join-Path $PRAgentDir $subdir
+    if (-not (Test-Path $dirPath)) {
+        New-Item -ItemType Directory -Path $dirPath -Force | Out-Null
+    }
+}
+Write-Host "  📁 Created PRAgent phase directories: $PRAgentDir" -ForegroundColor Gray
+
+# Save the branch name and commit SHA BEFORE launching the agent.
+# The Copilot agent may change HEAD (e.g., via git checkout, gh pr checkout, git reset)
+# despite prompt instructions forbidding it. Using a pinned SHA for restoration
+# ensures we always recover to the correct state regardless of what the agent did.
+$savedBranch = git branch --show-current
+$savedHead = git rev-parse HEAD
+Write-Host "  📌 Pinned restore point: $savedBranch @ $($savedHead.Substring(0, 10))" -ForegroundColor Gray
+
 # Step 4: Build the prompt for Copilot CLI
 $planTemplatePath = ".github/agents/pr/PLAN-TEMPLATE.md"
 
@@ -255,19 +274,37 @@ $platformInstruction
 - NEVER run ``git checkout``, ``git switch``, ``git fetch``, ``git stash``, or ``git reset``
 - NEVER run ``git push`` - you do NOT have permission to push anything
 - You are ALWAYS on the correct branch already - the script handles this
-- If the state file says "wrong branch", that's stale state - delete it and start fresh
 - If you think you need to switch branches or push changes, you are WRONG - ask the user instead
+
+🚨 **CRITICAL - AUTONOMOUS EXECUTION:**
+- There is NO human operator to respond to questions
+- NEVER stop and ask the user for input - nobody will respond
+- NEVER present a list of options and wait for a choice
+- When you encounter an environment blocker, use your best judgment to choose the best path forward:
+  - If a phase is blocked (e.g., try-fix builds fail), SKIP that phase and proceed to the next one
+  - If Gate passes but Fix phase is blocked, proceed directly to Report phase with Gate results only
+  - If a specific platform fails, try an alternative platform ONCE, then skip if still blocked
+  - Always prefer CONTINUING with partial results over STOPPING completely
+- Document what was skipped and why in your report, but keep moving forward
+
+📁 **PHASE OUTPUT ARTIFACTS (MANDATORY):**
+- After completing EACH phase, write a ``content.md`` file to the phase output directory
+- Pre-Flight: ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``
+- Gate:       ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/content.md``
+- Fix:        ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``
+- Report:     ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``
+- These files are read by the comment scripts to build the PR comment
+- See SHARED-RULES.md "Phase Output Artifacts" section for content format
 
 **Instructions:**
 1. Read the plan template at ``$planTemplatePath`` for the 4-phase workflow
 2. Read ``.github/agents/pr.md`` for Phases 1-2 instructions
 3. Follow ALL critical rules, especially:
-   - STOP on environment blockers and ask before continuing
+   - On environment blockers: skip the blocked phase and continue autonomously (see AUTONOMOUS EXECUTION above)
    - Use task agent for Gate verification
    - Run multi-model try-fix in Phase 3
 
 **Start with Phase 1: Pre-Flight**
-- Create state file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md
 - Gather context from PR #$PRNumber
 - Proceed through all 4 phases
 
@@ -298,7 +335,6 @@ if ($DryRun) {
     Write-Host "PR Review Context:" -ForegroundColor Cyan
     Write-Host "  PR_NUMBER:      $PRNumber" -ForegroundColor White
     Write-Host "  PLATFORM:       $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor White
-    Write-Host "  STATE_FILE:     CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor White
     Write-Host "  PLAN_TEMPLATE:  $planTemplatePath" -ForegroundColor White
     Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
     Write-Host "  PR_TITLE:       $($prInfo.title)" -ForegroundColor White
@@ -330,7 +366,7 @@ if ($DryRun) {
     # Branch switching prevention relies on agent instructions in pr.md only
     
     # Create log directory for this PR
-    $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs"
+    $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/copilot-logs"
     if (-not (Test-Path $prLogDir)) {
         New-Item -ItemType Directory -Path $prLogDir -Force | Out-Null
     }
@@ -369,14 +405,25 @@ if ($DryRun) {
         
         # Restore tracked files to clean state before running post-completion skills.
         # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
-        # which can cause skill files to be missing or modified in subsequent phases.
-        # NOTE: State files in CustomAgentLogsTmp/ are .gitignore'd and untracked,
-        # so this won't touch them. Using HEAD to also restore deleted files.
+        # or even switched branches despite instructions. We use the pinned SHA ($savedHead)
+        # instead of HEAD to guarantee restoration to the correct commit.
+        # NOTE: CustomAgentLogsTmp/ is .gitignore'd and untracked, so this won't touch them.
         Write-Host ""
         Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
         git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase1-exit-git-status.log" -ErrorAction SilentlyContinue
-        git checkout HEAD -- . 2>&1 | Out-Null
-        Write-Host "  ✅ Working tree restored" -ForegroundColor Green
+        
+        # Check if the agent moved HEAD or switched branches
+        $postAgentBranch = git branch --show-current
+        $postAgentHead = git rev-parse HEAD
+        if ($postAgentBranch -ne $savedBranch -or $postAgentHead -ne $savedHead) {
+            Write-Host "  ⚠️ Agent changed git state! Branch: $postAgentBranch (expected: $savedBranch), HEAD: $($postAgentHead.Substring(0, 10)) (expected: $($savedHead.Substring(0, 10)))" -ForegroundColor Red
+            Write-Host "  🔄 Recovering to pinned restore point..." -ForegroundColor Yellow
+            git checkout $savedBranch 2>&1 | Out-Null
+            git reset --hard $savedHead 2>&1 | Out-Null
+        } else {
+            git checkout $savedHead -- . 2>&1 | Out-Null
+        }
+        Write-Host "  ✅ Working tree restored (pinned SHA: $($savedHead.Substring(0, 10)))" -ForegroundColor Green
         
         # Phase 2: Run pr-finalize skill if requested
         if ($RunFinalize) {
@@ -387,12 +434,12 @@ if ($DryRun) {
             Write-Host ""
             
             # Ensure output directory exists for finalize results
-            $finalizeDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize"
+            $finalizeDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize"
             if (-not (Test-Path $finalizeDir)) {
                 New-Item -ItemType Directory -Path $finalizeDir -Force | Out-Null
             }
             
-            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten). If you recommend a new description, also write it to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/recommended-description.md. If you have code review findings, also write them to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/code-review.md."
+            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md. If you recommend a new description, also write it to CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/recommended-description.md. If you have code review findings, also write them to CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/code-review.md."
             
             $finalizeArgs = @(
                 "-p", $finalizePrompt,
@@ -422,17 +469,27 @@ if ($DryRun) {
             Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
             Write-Host ""
             
-            # Restore tracked files (including deleted ones) to clean state.
+            # Restore tracked files (including deleted ones) to clean state using pinned SHA.
             Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
             git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase2-exit-git-status.log" -ErrorAction SilentlyContinue
-            git checkout HEAD -- . 2>&1 | Out-Null
-            Write-Host "  ✅ Working tree restored" -ForegroundColor Green
             
-            # 3a: Post PR agent summary comment (from Phase 1 state file)
+            # Check if Phase 2 (pr-finalize) moved HEAD or switched branches
+            $postPhase2Branch = git branch --show-current
+            $postPhase2Head = git rev-parse HEAD
+            if ($postPhase2Branch -ne $savedBranch -or $postPhase2Head -ne $savedHead) {
+                Write-Host "  ⚠️ Phase 2 changed git state! Recovering to pinned restore point..." -ForegroundColor Red
+                git checkout $savedBranch 2>&1 | Out-Null
+                git reset --hard $savedHead 2>&1 | Out-Null
+            } else {
+                git checkout $savedHead -- . 2>&1 | Out-Null
+            }
+            Write-Host "  ✅ Working tree restored (pinned SHA: $($savedHead.Substring(0, 10)))" -ForegroundColor Green
+            
+            # 3a: Post PR agent summary comment
             $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
             if (-not (Test-Path $scriptPath)) {
-                Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
-                git checkout HEAD -- $scriptPath 2>&1 | Out-Null
+                Write-Host "⚠️ Script missing after restore, attempting targeted recovery..." -ForegroundColor Yellow
+                git checkout $savedHead -- $scriptPath 2>&1 | Out-Null
             }
             if (Test-Path $scriptPath) {
                 Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
@@ -455,11 +512,11 @@ if ($DryRun) {
                 $finalizeScriptPath = ".github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1"
                 if (-not (Test-Path $finalizeScriptPath)) {
                     Write-Host "⚠️ Finalize script missing, attempting targeted recovery..." -ForegroundColor Yellow
-                    git checkout HEAD -- $finalizeScriptPath 2>&1 | Out-Null
+                    git checkout $savedHead -- $finalizeScriptPath 2>&1 | Out-Null
                 }
                 if (Test-Path $finalizeScriptPath) {
-                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly..." -ForegroundColor Yellow
-                    & $finalizeScriptPath -PRNumber $PRNumber
+                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly (unified mode)..." -ForegroundColor Yellow
+                    & $finalizeScriptPath -PRNumber $PRNumber -Unified
                     
                     $finalizeCommentExit = $LASTEXITCODE
                     if ($finalizeCommentExit -eq 0) {
@@ -473,14 +530,38 @@ if ($DryRun) {
                 }
             }
         }
+
+        # Phase 4: Apply Labels
+        Write-Host ""
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
+        Write-Host "║  PHASE 4: APPLY LABELS                                    ║" -ForegroundColor Blue
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
+        Write-Host ""
+
+        $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
+        if (-not (Test-Path $labelHelperPath)) {
+            Write-Host "⚠️ Label helper missing, attempting targeted recovery..." -ForegroundColor Yellow
+            git checkout $savedHead -- $labelHelperPath 2>&1 | Out-Null
+        }
+
+        if (Test-Path $labelHelperPath) {
+            try {
+                . $labelHelperPath
+                Apply-AgentLabels -PRNumber $PRNumber -RepoRoot $RepoRoot
+            }
+            catch {
+                Write-Host "⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
+            }
+        } else {
+            Write-Host "⚠️ Label helper not found at: $labelHelperPath — skipping labels" -ForegroundColor Yellow
+        }
     }
 }
 
 Write-Host ""
-Write-Host "📝 State file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor Gray
 Write-Host "📋 Plan template: $planTemplatePath" -ForegroundColor Gray
 if (-not $DryRun) {
-    Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs/" -ForegroundColor Gray
+    Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/copilot-logs/" -ForegroundColor Gray
     if (-not $Interactive) {
         Write-Host "📄 Session markdown: $sessionFile" -ForegroundColor Gray
     }

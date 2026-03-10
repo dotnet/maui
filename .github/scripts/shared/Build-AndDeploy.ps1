@@ -136,6 +136,20 @@ if ($Platform -eq "android") {
     
     # Deploy to iOS simulator
     Write-Step "Deploying to iOS simulator..."
+
+    # Shutdown any OTHER booted simulators to avoid Appium connecting to the wrong device
+    $bootedSims = xcrun simctl list devices --json | ConvertFrom-Json
+    $otherBooted = $bootedSims.devices.PSObject.Properties.Value |
+        ForEach-Object { $_ } |
+        Where-Object { $_.state -eq "Booted" -and $_.udid -ne $DeviceUdid }
+    
+    if ($otherBooted) {
+        foreach ($sim in $otherBooted) {
+            Write-Info "Shutting down other booted simulator: $($sim.name) ($($sim.udid))"
+            xcrun simctl shutdown $sim.udid 2>$null
+        }
+    }
+
     Write-Info "Booting simulator (if not already running)..."
     xcrun simctl boot $DeviceUdid 2>$null
     

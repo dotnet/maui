@@ -52,6 +52,7 @@ public static class MauiProgram
 		// Register ViewModels
 		builder.Services.AddTransient<LandmarksViewModel>();
 		builder.Services.AddTransient<TripPlanningViewModel>();
+		builder.Services.AddSingleton<ChatViewModel>();
 
 		// Register Services
 		builder.Services.AddSingleton<DataService>();
@@ -59,6 +60,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
+		builder.Services.AddSingleton<ChatService>();
 
 		// Configure Logging
 		builder.Services.AddLogging();
@@ -110,9 +112,6 @@ public static class MauiProgram
 			return appleClient
 				.AsBuilder()
 				.UseLogging(loggerFactory)
-				// This prevents double tool invocation when using Microsoft Agent Framework
-				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
-				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
 				.Build();
 		});
 
@@ -183,7 +182,6 @@ public static class MauiProgram
 		});
 
 		// Add chat client for local model with function calling
-		// TODO: Replace with actual local model client when available
 		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (provider, _) =>
 		{
 			var lf = provider.GetRequiredService<ILoggerFactory>();
