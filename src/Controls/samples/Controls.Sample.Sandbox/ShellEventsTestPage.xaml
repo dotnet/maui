@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ShellEventsTestPage"
+             Title="EventsMenu">
+    <ScrollView>
+        <VerticalStackLayout Spacing="15"
+                             Padding="20">
+            <Label Text="Shell Events &amp; MenuItem Tests"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+
+            <!-- Navigation Events -->
+            <Label Text="Navigation Events"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Label Text="Events are logged below as you navigate."
+                   FontSize="12"
+                   TextColor="Gray"/>
+            <Button Text="Start Event Logging"
+                    Clicked="OnStartEventLoggingClicked"/>
+            <Button Text="Stop Event Logging"
+                    Clicked="OnStopEventLoggingClicked"/>
+            <Button Text="Clear Log"
+                    Clicked="OnClearLogClicked"/>
+
+            <!-- Test Navigation to trigger events -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Trigger Navigation (observe events)"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Push Page (triggers Navigating/Navigated)"
+                    Clicked="OnPushPageClicked"/>
+            <Button Text="GoToAsync → Home (triggers events)"
+                    Clicked="OnGoToHomeClicked"/>
+            <Button Text="GoToAsync → Multi-Tab (triggers events)"
+                    Clicked="OnGoToMultiTabClicked"/>
+
+            <!-- MenuItem Tests -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Shell MenuItem (Flyout)"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Label Text="A 'Test Action' MenuItem is defined in SandboxShell.xaml. Open the flyout to see and tap it."
+                   FontSize="12"
+                   TextColor="Gray"/>
+            <Button Text="Open Flyout (show MenuItem)"
+                    Clicked="OnAddMenuItemClicked"/>
+            <Button Text="Close Flyout"
+                    Clicked="OnRemoveMenuItemClicked"/>
+
+            <!-- Event Log -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Event Log:"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <Border BackgroundColor="#F5F5F5"
+                    Padding="10"
+                    MinimumHeightRequest="150"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 5">
+                <Label x:Name="EventLogLabel"
+                       Text="(no events logged yet)"
+                       FontSize="11"
+                       FontFamily="monospace"/>
+            </Border>
+
+            <!-- Status -->
+            <Label x:Name="StatusLabel"
+                   Text="Status: Ready"
+                   FontSize="12"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

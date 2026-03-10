@@ -83,8 +83,8 @@ namespace Maui.Controls.Sample
 
         private void OnChangeFlyoutBackgroundRed(object? sender, EventArgs e)
         {
-            Shell.Current.FlyoutBackgroundColor = Colors.Red;
-            StatusLabel.Text = "Status: Flyout background = Red";
+            Shell.Current.FlyoutBackgroundColor = Colors.Yellow;
+            StatusLabel.Text = "Status: Flyout background = Yellow";
         }
 
         private void OnChangeFlyoutBackgroundBlue(object? sender, EventArgs e)
@@ -191,6 +191,14 @@ namespace Maui.Controls.Sample
             StatusLabel.Text = "Status: Header behavior = CollapseOnScroll";
         }
 
+        private void OnResetHeaderBehaviorTestClicked(object? sender, EventArgs e)
+        {
+            Shell.Current.FlyoutHeader = null;
+            Shell.Current.FlyoutContent = null;
+            Shell.Current.FlyoutHeaderBehavior = FlyoutHeaderBehavior.Default;
+            StatusLabel.Text = "Status: Header behavior test reset";
+        }
+
         // Flyout Content Tests
         private void OnSetCustomContentClicked(object? sender, EventArgs e)
         {
@@ -212,8 +220,8 @@ namespace Maui.Controls.Sample
         // Flyout Backdrop Tests
         private void OnRedBackdropClicked(object? sender, EventArgs e)
         {
-            Shell.Current.FlyoutBackdrop = new SolidColorBrush(Colors.Red);
-            StatusLabel.Text = "Status: Backdrop = Red";
+            Shell.Current.FlyoutBackdrop = new SolidColorBrush(Colors.Yellow);
+            StatusLabel.Text = "Status: Backdrop = Yellow";
         }
 
         private void OnBlackBackdropClicked(object? sender, EventArgs e)
@@ -239,6 +247,41 @@ namespace Maui.Controls.Sample
         {
             Shell.Current.FlowDirection = FlowDirection.RightToLeft;
             StatusLabel.Text = "Status: Flow direction = RightToLeft";
+        }
+
+        // Add many flyout items to make flyout scrollable (for header behavior testing)
+        private void OnAddManyFlyoutItemsClicked(object? sender, EventArgs e)
+        {
+            var items = new List<string>();
+            for (int i = 1; i <= 30; i++)
+                items.Add($"Test Item {i}");
+
+            Shell.Current.FlyoutContent = new CollectionView
+            {
+                ItemsSource = items,
+                ItemTemplate = new DataTemplate(() =>
+                {
+                    var label = new Label { Padding = new Thickness(15, 10), FontSize = 16 };
+                    label.SetBinding(Label.TextProperty, ".");
+                    return label;
+                })
+            };
+            StatusLabel.Text = "Status: 30 flyout items added (scrollable)";
+        }
+
+        // Reset all flyout settings to defaults
+        private void OnResetAllFlyoutClicked(object? sender, EventArgs e)
+        {
+            Shell.Current.FlyoutHeader = null;
+            Shell.Current.FlyoutFooter = null;
+            Shell.Current.FlyoutContent = null;
+            Shell.Current.FlyoutHeaderBehavior = FlyoutHeaderBehavior.Default;
+            Shell.Current.FlyoutBackdrop = null;
+            Shell.Current.FlyoutBackground = null;
+            Shell.Current.FlyoutWidth = -1;
+            Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout;
+            Shell.Current.FlowDirection = FlowDirection.LeftToRight;
+            StatusLabel.Text = "Status: All flyout settings reset to defaults";
         }
     }
 }
