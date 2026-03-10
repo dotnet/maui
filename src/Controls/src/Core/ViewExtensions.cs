@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls
 			if (cancellationToken.IsCancellationRequested)
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
-					v.AbortAnimation(name);
+					v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(name));
 			}
 
 			return tcs.Task;
@@ -485,7 +485,7 @@ namespace Microsoft.Maui.Controls
 			if (cancellationToken.IsCancellationRequested)
 			{
 				if (weakView.TryGetTarget(out VisualElement? v))
-					v.AbortAnimation(nameof(TranslateToAsync));
+					v.Dispatcher.DispatchIfRequired(() => v.AbortAnimation(nameof(TranslateToAsync)));
 			}
 
 			return tcs.Task;
