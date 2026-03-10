@@ -41,6 +41,13 @@ public class Issue33351 : Shell
             Shell.Current.Navigating += OnShellNavigating;
         }
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            Shell.Current.Navigating -= OnShellNavigating;
+        }
+
         void OnShellNavigating(object sender, ShellNavigatingEventArgs e)
         {
             if (this.Parent != null)

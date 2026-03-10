@@ -867,7 +867,9 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
-				// Send disappearing only to intermediate pages (top page already handled by PresentedPageDisappearing)
+				// RemovePage is called for all pages. SendDisappearing is only called for
+				// intermediate pages; the top page's disappearing event was already fired
+				// by PresentedPageDisappearing() above to avoid duplicate lifecycle events.
 				if (i < oldStack.Count - 1)
 					oldStack[i].SendDisappearing();
 				RemovePage(oldStack[i]);

@@ -18,18 +18,18 @@ public class Issue33351 : _IssuesUITest
     {
         App.WaitForElement("Tab 1");
         App.Tap("Tab 1");
-        
+
         App.WaitForElement("PushPage1Button");
         App.Tap("PushPage1Button");
-        
+
         App.WaitForElement("PushPage2Button");
         App.Tap("PushPage2Button");
-        
+
         App.WaitForElement("PopToRootButton");
         App.Tap("PopToRootButton");
-        
+
         App.WaitForElement("TabBarVisibleLabel");
-        
+
         VerifyScreenshot();
     }
 }
