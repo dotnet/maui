@@ -135,7 +135,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 				Items.Add(header);
 			}
 
-			foreach (var item in items)
+			foreach (var item in itemsList)
 			{
 				Items.Add(CreateItemContext(item));
 			}

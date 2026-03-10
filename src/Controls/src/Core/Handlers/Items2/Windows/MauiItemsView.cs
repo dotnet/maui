@@ -233,8 +233,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 	{
-		_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
-
 		// For horizontal layouts, the ScrollViewer provides infinite width to its content,
 		// which prevents UniformGridLayout's ItemsStretch=Fill from stretching items to fill
 		// the viewport when there are few items. Setting MinWidth on the ItemsRepeater
