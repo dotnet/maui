@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ShellFeaturesTestPage"
+             Title="Shell Features">
+    <ScrollView>
+        <VerticalStackLayout Spacing="15"
+                             Padding="20">
+            <Label Text="Shell Features Tests"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,10"/>
+
+            <!-- TitleView -->
+            <Label Text="Shell.TitleView"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Set TitleView (Label + Image)"
+                    Clicked="OnSetTitleViewClicked"/>
+            <Button Text="Set TitleView (SearchBar)"
+                    Clicked="OnSetTitleViewSearchBar"/>
+            <Button Text="Remove TitleView (Reset to Title)"
+                    Clicked="OnRemoveTitleViewClicked"/>
+
+            <!-- BackButtonBehavior -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Shell.BackButtonBehavior"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Label Text="Push a page first, then test back button overrides"
+                   FontSize="12"
+                   TextColor="Gray"/>
+            <Button Text="Push Page with Custom Back Text"
+                    Clicked="OnPushCustomBackTextClicked"/>
+            <Button Text="Push Page with Back Disabled"
+                    Clicked="OnPushBackDisabledClicked"/>
+            <Button Text="Push Page with Custom Back Command"
+                    Clicked="OnPushCustomBackCommandClicked"/>
+
+            <!-- TabBarIsVisible -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Shell.TabBarIsVisible"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Hide Tab Bar"
+                    Clicked="OnHideTabBarClicked"/>
+            <Button Text="Show Tab Bar"
+                    Clicked="OnShowTabBarClicked"/>
+
+            <!-- NavBarIsVisible -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label Text="Shell.NavBarIsVisible"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Button Text="Hide Navigation Bar"
+                    Clicked="OnHideNavBarClicked"/>
+            <Button Text="Show Navigation Bar"
+                    Clicked="OnShowNavBarClicked"/>
+
+            <!-- Status -->
+            <BoxView HeightRequest="1"
+                     Color="Gray"
+                     Margin="0,10"/>
+            <Label x:Name="StatusLabel"
+                   Text="Status: Ready"
+                   FontSize="12"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

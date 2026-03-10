@@ -7,6 +7,11 @@
     Shell.FlyoutBehavior="Flyout"
     Title="Shell Handler Tests">
 
+    <!-- MenuItem test: appears in flyout menu -->
+    <MenuItem Text="Test Action"
+              IconImageSource="dotnet_bot.png"
+              Clicked="OnTestMenuItemClicked"/>
+
     <!-- <ShellContent Title="Home"
                   ContentTemplate="{DataTemplate local:MainPage}"
                   Route="MainPage"/> -->
@@ -17,18 +22,19 @@
 
 
         <Tab Title="Home"
+             Icon="home.png"
              Route="Home">
-            <ShellContent Icon="groceries.png"
-                          Title="Home"
-                          ContentTemplate="{DataTemplate local:MainPage}"
-                          Route="MainPage"/>
+            <ShellContent
+                Title="Home"
+                ContentTemplate="{DataTemplate local:MainPage}"
+                Route="MainPage"/>
         </Tab>
 
 
         <Tab Title="Tests"
+             Icon="envelope.png"
              Route="Tests">
-            <ShellContent Icon="dotnet_bot.png"
-                          Title="Navigation"
+            <ShellContent Title="Navigation"
                           ContentTemplate="{DataTemplate local:NavigationTestPage}"
                           Route="NavigationTest"/>
             <ShellContent Icon="groceries.png"
@@ -39,10 +45,17 @@
                           Title="Flyout"
                           ContentTemplate="{DataTemplate local:FlyoutTestPage}"
                           Route="FlyoutTest"/>
+            <ShellContent Title="Features"
+                          ContentTemplate="{DataTemplate local:ShellFeaturesTestPage}"
+                          Route="FeaturesTest"/>
+            <ShellContent Title="Events"
+                          ContentTemplate="{DataTemplate local:ShellEventsTestPage}"
+                          Route="EventsTest"/>
         </Tab>
 
 
         <Tab Title="Multi-Tab Test"
+             Icon="rocket_launch.png"
              Route="MultiTab">
             <ShellContent Icon="groceries.png"
                           Title="Content 1"
@@ -60,6 +73,7 @@
 
 
         <Tab Title="Search"
+             Icon="search.png"
              Route="Settings">
             <ShellContent Icon="dotnet_bot.png"
                           Title="Search Test"
