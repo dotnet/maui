@@ -77,16 +77,12 @@ namespace Microsoft.Maui.Platform
 					application.ThemeChanged();
 
 					// When the preferred content size category changes (Dynamic Type),
-					// clear the font cache and re-apply fonts to all text elements so
-					// they reflect the new scaling immediately without an app restart.
+					// re-apply fonts to all text elements so they reflect the new
+					// scaling immediately without an app restart. The font cache is
+					// cleared via ObserveContentSizeCategoryChanged in FontManager.
 					if (previousTraitCollection is not null &&
 						previousTraitCollection.PreferredContentSizeCategory != TraitCollection.PreferredContentSizeCategory)
 					{
-						if (handler.GetRequiredService<IFontManager>() is FontManager fontManager)
-						{
-							fontManager.ClearFontCache();
-						}
-
 						InvalidateFontsOnContentSizeChanged(CurrentView as IView);
 					}
 				}
