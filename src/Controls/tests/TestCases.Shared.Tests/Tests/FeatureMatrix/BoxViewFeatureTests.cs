@@ -132,6 +132,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test, Order(10)]
+		[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/34402")]
 		public void BoxView_CornerRadiusWithFlowDirection()
 		{
 			ResetBoxView();
