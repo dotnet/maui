@@ -143,6 +143,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						return false;
 					}
 
+					// Allow the page to intercept back navigation via OnBackButtonPressed
+					if (tracker.Value.Page?.SendBackButtonPressed() == true)
+					{
+						return false;
+					}
+
 					break;
 				}
 			}
