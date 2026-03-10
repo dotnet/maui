@@ -55,6 +55,33 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		}
 	}
 
+	/// <summary>
+	/// Resolves the type of an implicit content property and, when the property is a non-collection
+	/// non-Object type, calls <see cref="CheckForDuplicateProperty"/> to emit a diagnostic if it has
+	/// already been assigned.
+	/// </summary>
+	/// <param name="lookupName">XmlName used for the <c>GetBindableProperty</c> lookup (namespace may differ from <paramref name="trackingName"/>).</param>
+	/// <param name="trackingName">XmlName used as the deduplication key (always uses the parent element's namespace).</param>
+	void CheckImplicitContentForDuplicate(
+		ILocalValue parentVar,
+		ElementNode parentNode,
+		XmlName lookupName,
+		XmlName trackingName,
+		IXmlLineInfo lineInfo)
+	{
+		bool attached = false;
+		var localName = lookupName.LocalName;
+		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, context, lineInfo);
+		ITypeSymbol? propertyType = null;
+
+		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+			|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+
+		bool isObject = propertyType != null && propertyType.SpecialType == SpecialType.System_Object;
+		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+			CheckForDuplicateProperty(parentNode, trackingName, lineInfo);
+	}
+
 	public void Visit(ValueNode node, INode parentNode)
 	{
 		//TODO support Label text as element
@@ -89,6 +116,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			return;
 
 		parentVar ??= Context.Variables.TryGetValue((ElementNode)parentNode, out var pv) ? pv : null;
+		// Parent element not yet in Variables — can occur for markup extensions or nodes
+		// processed before their parent is fully initialized. Silently skip; the assignment
+		// will be handled through another visitor pass.
 		if (parentVar == null)
 			return;
 
@@ -102,25 +132,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		// Check for duplicate property assignment for implicit content properties
 		if (isImplicitContentProperty)
-		{
-			// Only check for duplicate property assignment if the property is not a collection
-			bool attached = false;
-			var localName = propertyName.LocalName;
-			var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out attached, context, node);
-			ITypeSymbol? propertyType = null;
-			
-			// Try to get the property type
-			bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
-				|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
-			
-			// Only warn if:
-			// 1. We can resolve the property and its type
-			// 2. The property type is NOT a collection (doesn't support Add)
-			// 3. The property type is not System.Object (unresolved generic)
-			bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
-			if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
-				CheckForDuplicateProperty((ElementNode)parentNode, propertyName, node);
-		}
+			CheckImplicitContentForDuplicate(parentVar, (ElementNode)parentNode, propertyName, propertyName, node);
 
 		SetPropertyHelpers.SetPropertyValue(Writer, parentVar, propertyName, node, Context);
 	}
@@ -273,25 +285,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					return;
 
 				// Only check for duplicate property assignment if the property is not a collection
-				// Get the property type and check if it supports Add() for collection behavior
-				bool attached = false;
-				var localName = name.LocalName;
-				var bpFieldSymbol = parentVar.Type.GetBindableProperty(name.NamespaceURI, ref localName, out attached, context, node);
-				ITypeSymbol? propertyType = null;
-				
-				// Try to get the property type
-				bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
-					|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
-				
-				// Only warn if:
-				// 1. We can resolve the property and its type
-				// 2. The property type is NOT a collection (doesn't support Add)
-				// 3. The property type is not System.Object (unresolved generic)
-				bool isObject = propertyType != null && propertyType.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Object;
 				// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
 				var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
-				if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
-					CheckForDuplicateProperty((ElementNode)parentNode, contentPropertyName, node);
+				CheckImplicitContentForDuplicate(parentVar, (ElementNode)parentNode, name, contentPropertyName, node);
 
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
