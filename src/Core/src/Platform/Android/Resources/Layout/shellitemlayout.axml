@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shell Item Layout - Used by ShellItemHandler (ShellItemWrapperFragment)
+    Matches the programmatic view hierarchy built in ShellItemWrapperFragment.OnCreateView().
+    
+    Structure:
+      CoordinatorLayout (root - enables AppBarLayout scrolling behavior)
+        ├── AppBarLayout (toolbar container - toolbar added programmatically via SetupToolbar())
+        └── LinearLayout (ScrollingViewBehavior - content area)
+            ├── ViewPager2 (weight=1 - hosts ShellSection fragments)
+            └── BottomNavigationView (bottom tabs for ShellSections)
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/shellitem_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/shellitem_appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/MauiAppBarLayout">
+
+        <!-- Toolbar is added programmatically via ShellItemHandler.SetupToolbar() -->
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:id="@+id/shellitem_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/shellitem_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:overScrollMode="never" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/shellitem_bottomnavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?attr/bottomNavigationViewStyle" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
