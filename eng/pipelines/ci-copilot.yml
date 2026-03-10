@@ -409,24 +409,36 @@ stages:
                 timeout 60 adb wait-for-device
               fi
 
-              # Wake screen and dismiss lock
-              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
-              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_MENU 2>/dev/null || true
-              sleep 2
+              # Dismiss ANR dialogs and wake screen — run twice for reliability
+              for PASS in 1 2; do
+                echo "--- Warmup pass $PASS ---"
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_MENU 2>/dev/null || true
+                sleep 1
 
-              # Force-stop any ANR'd system processes and dismiss dialogs
-              adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
-              # Press ENTER and BACK to dismiss any remaining dialogs
-              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_ENTER 2>/dev/null || true
-              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
-              sleep 1
+                # Dismiss system dialogs (ANR, crash, etc.)
+                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_ENTER 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                sleep 1
+              done
+
+              # Check for lingering ANR in window state
+              if adb -s "$DEVICE_ID" shell dumpsys window 2>/dev/null | grep -qi "Application Not Responding\|ANR"; then
+                echo "⚠️  ANR dialog still present — force-dismissing with HOME + BACK"
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME 2>/dev/null || true
+                sleep 2
+                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                sleep 1
+              fi
 
               # Open and close Settings to exercise the system and confirm responsiveness
               adb -s "$DEVICE_ID" shell am start -a android.settings.SETTINGS 2>/dev/null || true
               sleep 3
               adb -s "$DEVICE_ID" shell am force-stop com.android.settings 2>/dev/null || true
 
-              # Final ANR dialog sweep
+              # Final dialog sweep
               adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
               adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
 
