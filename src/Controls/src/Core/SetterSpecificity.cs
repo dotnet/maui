@@ -180,6 +180,21 @@ namespace Microsoft.Maui.Controls
 			_value = value;
 		}
 
+		/// <summary>
+		/// Returns a new specificity with full VSM priority, promoting implicit VSM to regular VSM.
+		/// Used for non-Normal visual states (Disabled, Focused, etc.) where the VSM setter
+		/// should override locally-set values even when originating from an implicit style.
+		/// </summary>
+		internal SetterSpecificity WithFullVsmPriority()
+		{
+			if (!IsVsmImplicit)
+				return this;
+
+			// Clear the implicitVsm bit (0x04 at byte offset 24) and set the full vsm bit (0x01 at byte offset 56)
+			var newValue = (_value & ~(0x04UL << 24)) | (0x01UL << 56);
+			return new SetterSpecificity(newValue);
+		}
+
 		public SetterSpecificity CopyStyle(byte extras, ushort manual, byte isDynamicResource, byte isBinding)
 		{
 			return new SetterSpecificity(
