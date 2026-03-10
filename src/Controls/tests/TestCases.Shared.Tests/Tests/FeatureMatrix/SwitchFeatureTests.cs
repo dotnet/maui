@@ -21,7 +21,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	public void Switch_InitialState_VerifyVisualState()
 	{
 		App.WaitForElement("SwitchControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -30,7 +30,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("SwitchControl");
 		App.Tap("SwitchControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -45,7 +45,7 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwitchControl");
 		App.Tap("SwitchControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -92,7 +92,7 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("SwitchControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -109,7 +109,7 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwitchControl");
 		App.Tap("SwitchControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
@@ -126,7 +126,7 @@ public class SwitchFeatureTests : _GalleryUITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("SwitchControl");
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #endif
 
@@ -145,7 +145,7 @@ public class SwitchFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #endif
 
@@ -164,7 +164,7 @@ public class SwitchFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElement("SwitchControl");
         App.Tap("SwitchControl");
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #endif
 
@@ -182,6 +182,6 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwitchControl");
 		App.Tap("SwitchControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

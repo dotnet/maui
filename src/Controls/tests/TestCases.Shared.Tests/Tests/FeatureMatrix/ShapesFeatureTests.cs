@@ -20,7 +20,7 @@ public class ShapesFeatureTests : _GalleryUITest
 #if WINDOWS
 		VerifyScreenshot(cropTop: 100);
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 

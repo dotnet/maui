@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
-	/// Represents a group of tabs within a <see cref="ShellItem"/>. Contains <see cref="ShellContent"/> items.
+	/// Represents a group of tabs within a <see cref="Controls.ShellItem"/>. Contains <see cref="ShellContent"/> items.
 	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -958,6 +958,7 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
+			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove

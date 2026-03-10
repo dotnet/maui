@@ -1,25 +1,24 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Establishes a "broken" baseline by reverting fix files to their merge-base state.
+    Establishes a "broken" baseline by auto-detecting and reverting fix files to their merge-base state.
 
 .DESCRIPTION
     This script provides reusable baseline logic for test verification workflows.
     It handles:
     - Finding the merge-base commit (supports fork workflows, PR metadata, etc.)
-    - Detecting fix files (non-test files that changed since merge-base)
+    - Auto-detecting fix files (non-test files that changed since merge-base)
     - Reverting fix files to create a "broken" state for testing
     - Restoring files back to their current state
 
     Used by verify-tests-fail.ps1 and try-fix skill.
+    
+    IMPORTANT: This script ONLY works with auto-detection. It will fail fast if it cannot
+    detect fix files, which indicates you need to checkout the actual PR branch.
 
 .PARAMETER BaseBranch
     Optional explicit base branch name. If not provided, auto-detects from PR metadata
     or finds the closest merge-base among common branch patterns.
-
-.PARAMETER FixFiles
-    Optional array of explicit fix files. If not provided, auto-detects from git diff
-    by excluding test directories.
 
 .PARAMETER DryRun
     Report what would be done without making any changes.
@@ -28,7 +27,7 @@
     Restore previously reverted files from HEAD.
 
 .EXAMPLE
-    # Establish baseline (revert fix files)
+    # Establish baseline (revert fix files) - auto-detects what to revert
     $baseline = ./EstablishBrokenBaseline.ps1
     # Run tests...
     ./EstablishBrokenBaseline.ps1 -Restore
@@ -38,16 +37,13 @@
     ./EstablishBrokenBaseline.ps1 -DryRun
 
 .EXAMPLE
-    # Explicit base branch
+    # Explicit base branch (still auto-detects fix files)
     $baseline = ./EstablishBrokenBaseline.ps1 -BaseBranch main
 #>
 
 param(
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch,
-
-    [Parameter(Mandatory = $false)]
-    [string[]]$FixFiles,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
@@ -188,18 +184,12 @@ function Find-MergeBase {
 }
 
 # ============================================================
-# Get detected fix files from git diff
+# Get detected fix files from git diff (auto-detect only)
 # ============================================================
 function Get-FixFiles {
     param(
-        [string]$MergeBase,
-        [string[]]$ExplicitFixFiles
+        [string]$MergeBase
     )
-
-    # Override with explicitly provided fix files
-    if ($ExplicitFixFiles -and $ExplicitFixFiles.Count -gt 0) {
-        return $ExplicitFixFiles
-    }
 
     # Auto-detect from git diff
     $DetectedFixFiles = @()
@@ -345,6 +335,35 @@ if ($Restore) {
     }
 }
 
+# ============================================================
+# FAIL-FAST: Require clean working directory
+# ============================================================
+# This check ensures every successful baseline establishment started from a clean state.
+# If this script completes without error, the baseline was valid - no checkpoint logging needed.
+
+$dirtyFiles = git status --porcelain --untracked-files=no 2>$null
+if ($dirtyFiles) {
+    Write-Host "" -ForegroundColor Red
+    Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║  ERROR: DIRTY WORKING DIRECTORY - Cannot establish baseline       ║" -ForegroundColor Red
+    Write-Host "╚═══════════════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "The following files have uncommitted changes:" -ForegroundColor Yellow
+    Write-Host ""
+    $dirtyFiles -split "`n" | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
+    Write-Host ""
+    Write-Host "This usually means a previous try-fix attempt did not restore properly." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "To fix:" -ForegroundColor Cyan
+    Write-Host "  1. Run 'git status' to review the changes" -ForegroundColor White
+    Write-Host "  2. Either commit them: git add . && git commit -m 'Save changes'" -ForegroundColor White
+    Write-Host "  3. Or discard them:   git checkout -- ." -ForegroundColor White
+    Write-Host "  4. Then retry this script" -ForegroundColor White
+    Write-Host ""
+    
+    throw "EstablishBrokenBaseline.ps1 failed: Working directory is not clean. Clean up before establishing baseline."
+}
+
 # Find merge-base
 Write-Host "Detecting base branch and merge point..." -ForegroundColor Cyan
 
@@ -371,18 +390,27 @@ if ($baseInfo.Distance) {
 }
 
 # Get fix files
-$detectedFixFiles = Get-FixFiles -MergeBase $MergeBase -ExplicitFixFiles $FixFiles
+$detectedFixFiles = Get-FixFiles -MergeBase $MergeBase
 
 if ($detectedFixFiles.Count -eq 0) {
-    Write-Host "No fix files detected." -ForegroundColor Yellow
-    return @{
-        Success = $true
-        MergeBase = $MergeBase
-        BaseBranch = $BaseBranchName
-        RevertedFiles = @()
-        NewFiles = @()
-        NoFixFiles = $true
-    }
+    Write-Host "" -ForegroundColor Red
+    Write-Host "ERROR: No fix files detected." -ForegroundColor Red
+    Write-Host "" -ForegroundColor Red
+    Write-Host "This means the script could not find any non-test files that changed between:" -ForegroundColor Yellow
+    Write-Host "  - HEAD (current state)" -ForegroundColor White
+    Write-Host "  - Merge-base: $(if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { $MergeBase })" -ForegroundColor White
+    Write-Host "" -ForegroundColor Yellow
+    Write-Host "Possible causes:" -ForegroundColor Yellow
+    Write-Host "  1. You're on the wrong branch (not the actual PR branch)" -ForegroundColor White
+    Write-Host "  2. Fix files were previously reverted and never restored" -ForegroundColor White
+    Write-Host "  3. The PR only changes test files (no fix to test)" -ForegroundColor White
+    Write-Host "" -ForegroundColor Yellow
+    Write-Host "Required action:" -ForegroundColor Yellow
+    Write-Host "  - Checkout the actual PR branch: gh pr checkout <PR#>" -ForegroundColor White
+    Write-Host "  - Verify fix files exist in the PR changes" -ForegroundColor White
+    Write-Host "" -ForegroundColor Red
+    
+    throw "EstablishBrokenBaseline.ps1 failed: No fix files detected. Cannot establish baseline without fix files."
 }
 
 Write-Host "Fix files ($($detectedFixFiles.Count)):" -ForegroundColor Cyan

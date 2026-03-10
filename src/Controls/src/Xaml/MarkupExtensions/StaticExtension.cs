@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (string.IsNullOrEmpty(Member) || Member.IndexOf(".", StringComparison.Ordinal) == -1)
 				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", serviceProvider);
 
-			var dotIdx = Member.LastIndexOf('.');
+#pragma warning disable CA1865 // Use 'string.LastIndexOf(char)' - CA1307 requires StringComparison
+			var dotIdx = Member.LastIndexOf(".", StringComparison.Ordinal);
+#pragma warning restore CA1865
 			var typename = Member.Substring(0, dotIdx);
 			var membername = Member.Substring(dotIdx + 1);
 

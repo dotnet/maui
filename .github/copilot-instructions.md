@@ -90,6 +90,18 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
+### CI Pipelines (Azure DevOps)
+
+When referencing or triggering CI pipelines, use these current pipeline names:
+
+| Pipeline | Name | Purpose |
+|----------|------|---------|
+| Overall CI | `maui-pr` | Full PR validation build |
+| Device Tests | `maui-pr-devicetests` | Helix-based device tests |
+| UI Tests | `maui-pr-uitests` | Appium-based UI tests |
+
+**⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
+
 ### Code Formatting
 
 Always format code before committing:
@@ -126,6 +138,26 @@ When working with public API changes:
 - **Use `dotnet format analyzers`** if having trouble
 - **If files are incorrect**: Revert all changes, then add only the necessary new API entries
 
+**🚨 CRITICAL: `#nullable enable` must be line 1**
+
+Every `PublicAPI.Unshipped.txt` file starts with `#nullable enable` (often BOM-prefixed: `﻿#nullable enable`) on the **first line**. If this line is moved or removed, the analyzer treats it as a declared API symbol and emits **RS0017** errors.
+
+**Never sort these files with plain `sort`** — the BOM bytes (`0xEF 0xBB 0xBF`) sort after ASCII characters under `LC_ALL=C`, pushing `#nullable enable` to the bottom of the file.
+
+When resolving merge conflicts or adding entries, use this safe pattern that preserves line 1:
+```bash
+for f in $(git diff --name-only --diff-filter=U | grep "PublicAPI.Unshipped.txt"); do
+  # Extract and preserve the #nullable enable line (with or without BOM)
+  HEADER=$(head -1 "$f" | grep -o '.*#nullable enable' || echo '#nullable enable')
+  # Strip conflict markers, remove all #nullable lines, sort+dedup the API entries
+  grep -v '^<<<<<<\|^======\|^>>>>>>\|#nullable enable' "$f" | LC_ALL=C sort -u | sed '/^$/d' > /tmp/api_fix.txt
+  # Reassemble: header first, then sorted entries
+  printf '%s\n' "$HEADER" > "$f"
+  cat /tmp/api_fix.txt >> "$f"
+  git add "$f"
+done
+```
+
 ### Branching
 - `main` - For bug fixes without API changes
 - `net10.0` - For new features and API changes
@@ -136,9 +168,9 @@ When working with public API changes:
 
 1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
 
-2. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+2. **When amending an existing PR, work on the PR's branch directly** - Do NOT create a separate branch off a PR branch. The PR branch already IS a feature branch. Creating a new branch off it means CI won't run on the original PR, defeating the purpose. Use `gh pr checkout` to switch to the PR branch, make your changes, commit, **then** ask before pushing so the user can review locally first.
 
-3. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
+3. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
 
 **Safe Git Workflow:**
 ```bash
@@ -157,14 +189,28 @@ git push
 ```
 
 **When asked to update an existing PR:**
-1. Make the requested changes
-2. Stage and commit the changes
-3. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+```bash
+# Check out the PR branch directly (do NOT create a new branch off it)
+gh pr checkout 12345
+
+# Make fixes and commit to the PR branch
+git add .
+git commit -m "Fix: Description of the change"
+```
+1. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+2. Exception: If the user's instructions explicitly include pushing, proceed without asking.
 
 ### Documentation
+
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
+
+**Platform-Specific Documentation:**
+- `.github/instructions/safe-area-ios.instructions.md` - Safe area investigation (iOS/macCatalyst)
+- `.github/instructions/uitests.instructions.md` - UI test guidelines (includes safe area testing section)
+- `.github/instructions/android.instructions.md` - Android handler implementation
+- `.github/instructions/xaml-unittests.instructions.md` - XAML unit test guidelines
 
 ### Opening PRs
 
@@ -196,22 +242,22 @@ The repository includes specialized custom agents and reusable skills for specif
 
 ### Available Custom Agents
 
-1. **pr** - Sequential 5-phase workflow for reviewing and working on PRs
+1. **pr** - Sequential 4-phase workflow for reviewing and working on PRs
    - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
    - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
    - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
    - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-2. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
-   - **Use when**: Creating new UI tests or updating existing ones
-   - **Capabilities**: UI test authoring, Appium WebDriver usage, NUnit test patterns
-   - **Trigger phrases**: "write UI test for #XXXXX", "create UI tests", "add test coverage"
+2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
+   - **Use when**: Creating new tests for issues or PRs
+   - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
+   - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
 
 3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
    - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
-   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use uitest-coding-agent)
+   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use write-tests-agent)
 
 4. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
    - **Use when**: After complex PR, want to improve instruction files/skills based on lessons learned
@@ -238,10 +284,11 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
 
 3. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
-   - **Purpose**: Verifies PR title and description match actual implementation. Works on any PR. Optionally updates agent session markdown if present.
+   - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
-   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+   - **Note**: Works on any PR
+   - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
 4. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
    - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
@@ -250,28 +297,39 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Output**: Prioritized recommendations for instruction files, skills, code comments
    - **Note**: For applying changes automatically, use the learn-from-pr agent instead
 
-5. **write-tests** (`.github/skills/write-tests/SKILL.md`)
+5. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
    - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
-   - **Trigger phrases**: "write tests for #XXXXX", "create test for issue", "add UI test coverage"
+   - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
    - **Output**: Test files that fail without fix, pass with fix
 
-6. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+6. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+   - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
+   - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
+   - **Output**: Test files for Controls.Xaml.UnitTests
+
+7. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
    - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-7. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+8. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
    - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
    - **Used by**: When investigating CI failures
 
+8. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+   - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
+   - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
+   - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
+   - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
+
 #### Internal Skills (Used by Agents)
 
-8. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
-   - **Output**: Updates session markdown with attempt results and failure analysis
+   - **Output**: Reports attempt results and failure analysis
 
 ### Using Custom Agents
 
@@ -281,7 +339,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Review PR #12345" → Immediately invoke **pr** agent
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
-- User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
+- User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself

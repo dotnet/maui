@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// A read-only view of a <see cref="DataPackage"/>.
+	/// A read-only view of a <see cref="Controls.DataPackage"/>.
 	/// </summary>
 	public class DataPackageView
 	{
