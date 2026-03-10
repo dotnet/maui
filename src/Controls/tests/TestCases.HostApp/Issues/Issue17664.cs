@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 17664, "Incorrect ItemsViewScrolledEventArgs in CollectionView when IsGrouped is set to true", PlatformAffected.iOS | PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 17664, "Incorrect ItemsViewScrolledEventArgs in CollectionView when IsGrouped is set to true", PlatformAffected.iOS)]
 public class Issue17664 : ContentPage
 {
 	CollectionView _collectionView;
@@ -57,7 +57,7 @@ public class Issue17664 : ContentPage
 		_collectionView.Scrolled += (s, e) =>
 		{
 			var flatItems = _groupedItems.SelectMany(group => group).ToList();
-			if (e.LastVisibleItemIndex < flatItems.Count)
+			if (e.LastVisibleItemIndex >= 0 && e.LastVisibleItemIndex < flatItems.Count)
 			{
 				descriptionLabel.Text = flatItems[e.LastVisibleItemIndex];
 			}
