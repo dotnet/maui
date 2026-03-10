@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this content view.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.None (edge-to-edge).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the content view should obey safe area insets.
