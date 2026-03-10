@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Platform
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
 		}
-		
+
 		static void InvalidateFontsOnContentSizeChanged(IView? view)
 		{
 			if (view is null)

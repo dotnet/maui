@@ -44,10 +44,7 @@ namespace Microsoft.Maui
 			// When the preferred content size category changes (Dynamic Type),
 			// clear the font cache so subsequent requests create new fonts
 			// with the current content size category scaling.
-			UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) =>
-			{
-				_fonts.Clear();
-			});
+			UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) => _fonts.Clear());
 		}
 
 		/// <inheritdoc/>
