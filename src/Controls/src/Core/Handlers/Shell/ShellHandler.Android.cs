@@ -13,6 +13,7 @@ using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using Microsoft.Maui.Graphics;
 
 #pragma warning disable RS0016 // Add public types and members to the declared API
 
@@ -39,6 +40,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
         // Track flyout behavior for IShellContext
         FlyoutBehavior _currentBehavior = FlyoutBehavior.Flyout;
+
+        // Track the current scrim brush from appearance observer (matches old ShellFlyoutRenderer pattern).
+        // Initialized to Brush.Transparent because the appearance observer fires with null first.
+        Brush _scrimBrush = Brush.Transparent;
+
+        // Deferred item switch (when view isn't attached to window yet)
+        ShellItem _pendingSwitchItem;
+        bool _pendingSwitchAnimate;
 
         public static PropertyMapper<Shell, ShellHandler> Mapper =
             new PropertyMapper<Shell, ShellHandler>(ElementMapper)
@@ -75,6 +84,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Create MauiDrawerLayout (same as FlyoutViewHandler)
             var drawerLayout = new MauiDrawerLayout(Context);
 
+            // Use Padding layout mode to match old ShellFlyoutRenderer behavior.
+            // In locked mode, the content is padded left by the flyout width
+            // (the drawer stays open and content shifts right).
+            drawerLayout.FlyoutLayoutModeValue = MauiDrawerLayout.FlyoutLayoutMode.Padding;
+
             // Create the content frame that will host shell items
             _contentFrame = new FrameLayout(Context)
             {
@@ -82,7 +96,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 Id = AView.GenerateViewId(),
             };
 
-            // Set the content frame as the main content
+            // Add _contentFrame directly as a child so it's in the view hierarchy
+            // immediately. MauiDrawerLayout.SetContentView + UpdateLayout requires both
+            // content AND flyout views to be set before it parents the content frame.
+            // But we need the content frame to be a child now so fragment transactions
+            // can find it by ID when the FragmentManager processes them.
+            drawerLayout.AddView(_contentFrame, new LP(LP.MatchParent, LP.MatchParent));
+
+            // Also set it as the content view for MauiDrawerLayout's internal tracking
             drawerLayout.SetContentView(_contentFrame);
 
             return drawerLayout;
@@ -105,15 +126,8 @@ namespace Microsoft.Maui.Controls.Handlers
             _currentBehavior = behavior;
             UpdateFlyoutBehaviorInternal(behavior);
 
-            // Initialize with current item if it exists
-            // Post to ensure the view hierarchy is fully attached before adding fragments
-            if (VirtualView.CurrentItem is not null)
-            {
-                platformView.Post(new Java.Lang.Runnable(() =>
-                {
-                    SwitchToItem(VirtualView.CurrentItem, animate: false);
-                }));
-            }
+            // MapCurrentItem mapper will handle initial item switching.
+            // If the view isn't attached yet, SwitchToItem defers automatically via Post().
         }
 
         protected override void DisconnectHandler(MauiDrawerLayout platformView)
@@ -135,6 +149,11 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             _flyoutContentRenderer = null;
             _flyoutContentView = null;
+
+            // Clean up deferred switch listener
+            PlatformView?.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+
+            _pendingSwitchItem = null;
 
             // Disconnect MauiDrawerLayout
             platformView.Disconnect();
@@ -169,9 +188,18 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Ensure the content frame has a valid ID and is attached to the window
-            if (_contentFrame.Id == AView.NoId || !_contentFrame.IsAttachedToWindow)
+            // If MauiDrawerLayout isn't attached to the window yet (e.g., during initial property mapping),
+            // defer until it's in the Activity's hierarchy. We check PlatformView (not _contentFrame)
+            // because ViewAttachedToWindow dispatches parent-first — when the callback fires,
+            // PlatformView.IsAttachedToWindow is true but children haven't been dispatched yet.
+            // The FragmentManager finds containers by searching from the Activity, so once the parent
+            // is attached, children are reachable via findViewById.
+            if (!PlatformView.IsAttachedToWindow)
             {
+                _pendingSwitchItem = newItem;
+                _pendingSwitchAnimate = animate;
+                PlatformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+                PlatformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
                 return;
             }
 
@@ -203,6 +231,20 @@ namespace Microsoft.Maui.Controls.Handlers
                     previousRenderer = null;
                 }
                 previousRenderer.Destroyed += OnDestroyed;
+            }
+        }
+
+        void OnPlatformViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
+        {
+            PlatformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+
+            var item = _pendingSwitchItem;
+            var animate = _pendingSwitchAnimate;
+            _pendingSwitchItem = null;
+
+            if (item is not null && VirtualView is not null && _contentFrame is not null)
+            {
+                SwitchToItem(item, animate);
             }
         }
 
@@ -265,6 +307,12 @@ namespace Microsoft.Maui.Controls.Handlers
             else if (behavior == FlyoutBehavior.Disabled)
             {
                 VirtualView?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, false);
+            }
+
+            // Re-evaluate scrim for behavior change (locked = no scrim)
+            if (VirtualView is not null)
+            {
+                UpdateScrim(_scrimBrush);
             }
         }
 
@@ -332,10 +380,55 @@ namespace Microsoft.Maui.Controls.Handlers
             handler.MauiDrawerLayout.LayoutDirection = shell.FlowDirection.ToLayoutDirection();
         }
 
+        const uint DefaultScrimColor = 0x99000000;
+
         public static void MapFlyoutBackdrop(ShellHandler handler, Shell shell)
         {
-            // TODO: Implement scrim/backdrop for MauiDrawerLayout
-            // For now, use default DrawerLayout scrim
+            if (handler.MauiDrawerLayout is null)
+            {
+                return;
+            }
+
+            handler._scrimBrush = shell.FlyoutBackdrop;
+            handler.UpdateScrim(handler._scrimBrush);
+        }
+
+        void UpdateScrim(Brush backdrop)
+        {
+            if (MauiDrawerLayout is null)
+            {
+                return;
+            }
+
+            if (_currentBehavior == FlyoutBehavior.Locked)
+            {
+                MauiDrawerLayout.SetScrimColor(Colors.Transparent.ToPlatform());
+                return;
+            }
+
+            if (backdrop is SolidColorBrush solidColor)
+            {
+                var backdropColor = solidColor.Color;
+                if (backdropColor is null)
+                {
+                    unchecked
+                    {
+                        MauiDrawerLayout.SetScrimColor((int)DefaultScrimColor);
+                    }
+                }
+                else
+                {
+                    MauiDrawerLayout.SetScrimColor(backdropColor.ToPlatform());
+                }
+            }
+            else
+            {
+                // Default scrim for null/default/gradient brushes
+                unchecked
+                {
+                    MauiDrawerLayout.SetScrimColor((int)DefaultScrimColor);
+                }
+            }
         }
 
         public static void MapFlyoutBackground(ShellHandler handler, Shell shell)
@@ -476,7 +569,18 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
         {
-            // Appearance changes handled by appearance trackers
+            // Match old ShellFlyoutRenderer: null appearance → transparent scrim,
+            // non-null appearance → use FlyoutBackdrop from appearance.
+            if (appearance is null)
+            {
+                _scrimBrush = Brush.Transparent;
+            }
+            else
+            {
+                _scrimBrush = appearance.FlyoutBackdrop;
+            }
+
+            UpdateScrim(_scrimBrush);
         }
 
         #endregion

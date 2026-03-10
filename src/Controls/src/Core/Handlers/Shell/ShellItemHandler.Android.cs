@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     public partial class ShellItemHandler : ElementHandler<ShellItem, ViewPager2>, IAppearanceObserver
     {
-        ViewPager2 _viewPager;
-        BottomNavigationView _bottomNavigationView;
+        internal ViewPager2 _viewPager;
+        internal BottomNavigationView _bottomNavigationView;
         BottomNavigationManager _bottomNavigationManager; // Shared component for bottom nav management
         ShellSectionFragmentAdapter _adapter;
         ShellItemPageChangeCallback _pageChangeCallback;
@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers
         public static PropertyMapper<ShellItem, ShellItemHandler> Mapper = new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
         {
             [nameof(ShellItem.CurrentItem)] = MapCurrentItem,
+            [Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible,
         };
 
         /// <summary>
@@ -83,15 +84,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Creates the platform element (ViewPager2) for the ShellItem.
-        /// This is the same pattern as TabbedPageManager.
+        /// Note: The actual ViewPager2 used at runtime comes from shellitemlayout.axml
+        /// (inflated in ShellItemWrapperFragment). This method satisfies the ElementHandler
+        /// contract. The fragment assigns the real ViewPager2 to _viewPager.
         /// </summary>
         protected override ViewPager2 CreatePlatformElement()
         {
             var context = MauiContext?.Context ?? throw new InvalidOperationException("MauiContext cannot be null");
 
-            // Use shared factory methods for ViewPager2 and BottomNavigationView creation
-            _viewPager = BottomNavigationManager.CreateViewPager2(context);
-            _bottomNavigationView = BottomNavigationManager.CreateBottomNavigationView(context);
+            // Create a placeholder ViewPager2 to satisfy the handler contract.
+            // The ShellItemWrapperFragment replaces _viewPager with the one from XML layout.
+            _viewPager = new ViewPager2(context);
 
             return _viewPager;
         }
@@ -138,6 +141,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _viewPager.Adapter = _adapter;
 
+            // Disable swipe on the ShellItem ViewPager2. Bottom tabs should only switch
+            // via BottomNavigationView tapping (matching Shell renderer behavior). This also
+            // fixes nested ViewPager2 conflict: without this, the outer ViewPager2 captures
+            // horizontal swipes before the inner ShellSection ViewPager2 (content tabs).
+            _viewPager.UserInputEnabled = false;
+
             // Keep ALL section fragments alive to prevent FragmentStateAdapter from
             // saving/restoring fragment state. Restored fragments lose MAUI-specific state
             // (StackNavigationManager, etc.) causing crashes. The renderer approach avoids
@@ -153,7 +162,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// Sets up the bottom navigation view with section tabs using BottomNavigationManager.
         /// This enables code sharing with TabbedPage bottom navigation.
         /// </summary>
-        void SetupBottomNavigation()
+        internal void SetupBottomNavigation()
         {
             if (_bottomNavigationView is null || VirtualView is null || MauiContext is null)
             {
@@ -400,6 +409,25 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Update toolbar with page and navigation state
             UpdateToolbar(page, canNavigateBack);
+
+            // Re-evaluate tab bar visibility for the new page
+            UpdateTabBarVisibility();
+        }
+
+        void UpdateTabBarVisibility()
+        {
+            if (_bottomNavigationView is null || _displayedPage is null || VirtualView is null)
+            {
+                return;
+            }
+
+            var showTabs = ((IShellItemController)VirtualView).ShowTabs;
+            _bottomNavigationView.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
+        }
+
+        static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
+        {
+            handler.UpdateTabBarVisibility();
         }
 
         /// <summary>
@@ -465,25 +493,16 @@ namespace Microsoft.Maui.Controls.Handlers
                 VirtualView?.PropertyChanged += OnShellItemPropertyChanged;
             }
 
-            // Setup ViewPager2 adapter (requires parent fragment to be set first)
-            // This is called from OnViewCreated in the wrapper fragment
-
-            SetupBottomNavigation();
-
-            // Initialize appearance tracker
+            // Initialize shell context and appearance tracker early
             _shellContext ??= GetShellContext();
             _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
 
-            // Register as appearance observer to receive appearance change notifications
-            var shell = VirtualView?.FindParentOfType<Shell>();
-            if (shell is not null)
-            {
-                ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
-                // Note: Shell will call OnAppearanceChanged with the current appearance automatically
-            }
-
-            // Note: Initial section switching is done in OnViewCreated of the wrapper fragment
-            // to ensure the fragment manager is ready
+            // NOTE: Appearance observer registration is deferred to RegisterAppearanceObserver()
+            // called from OnViewCreated in the wrapper fragment. At ConnectHandler time,
+            // the BottomNavigationView and Toolbar from the XML layout are not yet inflated.
+            // Registering here causes the initial OnAppearanceChanged callback to be lost
+            // because the views aren't ready. The old ShellItemRenderer registered in
+            // OnCreateView() AFTER creating all views — we match that pattern.
         }
 
         void OnShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -582,35 +601,76 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Called when Shell appearance changes (colors, styles, etc.)
+        /// Shell sends null appearance when the displayed page has no custom Shell colors,
+        /// signaling that appearance should reset to defaults.
         /// </summary>
         void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
         {
-            UpdateAppearance(appearance);
-            UpdateToolbarAppearance(appearance);
+            if (appearance is not null)
+            {
+                UpdateAppearance(appearance);
+                UpdateToolbarAppearance(appearance);
+            }
+            else
+            {
+                ResetAppearance();
+                ResetToolbarAppearance();
+            }
         }
 
         /// <summary>
-        /// Updates the bottom navigation view appearance based on Shell appearance
+        /// Updates the bottom navigation view appearance based on Shell appearance.
         /// </summary>
         void UpdateAppearance(ShellAppearance appearance)
         {
-            if (appearance is null)
-            {
-                return;
-            }
-
             if (_bottomNavigationView is null || _bottomNavigationView.Visibility != ViewStates.Visible)
             {
                 return;
             }
 
-            if (_appearanceTracker is not null && appearance is not null)
+            _appearanceTracker?.SetAppearance(_bottomNavigationView, appearance);
+        }
+
+        /// <summary>
+        /// Resets the bottom navigation view appearance to defaults.
+        /// Called when Shell sends null appearance (page has no custom Shell colors).
+        /// </summary>
+        void ResetAppearance()
+        {
+            if (_bottomNavigationView is not null && _appearanceTracker is not null)
             {
-                _appearanceTracker.SetAppearance(_bottomNavigationView, appearance);
+                _appearanceTracker.ResetAppearance(_bottomNavigationView);
+            }
+        }
+
+        /// <summary>
+        /// Resets the toolbar appearance to defaults.
+        /// Called when Shell sends null appearance (page has no custom Shell colors).
+        /// </summary>
+        void ResetToolbarAppearance()
+        {
+            if (_toolbarAppearanceTracker is not null && _toolbar is not null && _toolbarTracker is not null)
+            {
+                _toolbarAppearanceTracker.ResetAppearance(_toolbar, _toolbarTracker);
             }
         }
 
         #endregion IAppearanceObserver
+
+        /// <summary>
+        /// Registers as an appearance observer with the Shell. Must be called AFTER
+        /// BottomNavigationView and Toolbar are created (from OnViewCreated), so the
+        /// initial OnAppearanceChanged callback can apply appearance to the ready views.
+        /// Matches the old ShellItemRenderer pattern of registering in OnCreateView.
+        /// </summary>
+        internal void RegisterAppearanceObserver()
+        {
+            var shell = VirtualView?.FindParentOfType<Shell>();
+            if (shell is not null)
+            {
+                ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
+            }
+        }
 
         #region Toolbar Management
 
@@ -822,15 +882,15 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Wrapper Fragment that hosts the ShellItemHandler's ViewPager2 and BottomNavigationView.
-        /// Creates a CoordinatorLayout with AppBarLayout (Toolbar) + ViewPager2 + BottomNavigationView.
-        /// The toolbar is now managed at the ShellItem level (shared across all sections).
+        /// Wrapper Fragment that hosts the ShellItemHandler's layout.
+        /// Inflates shellitemlayout.axml consistent with NavigationViewHandler and FlyoutViewHandler patterns.
+        /// The toolbar is managed at the ShellItem level (shared across all sections).
         /// </summary>
         class ShellItemWrapperFragment : Fragment
         {
             readonly ShellItemHandler _handler;
             CoordinatorLayout _rootLayout;
-            LinearLayout _bottomContainer; // Contains ViewPager2 + BottomNav
+            LinearLayout _bottomContainer;
             ShellBackPressedCallback _backPressedCallback;
 
             public ShellItemWrapperFragment(ShellItemHandler handler)
@@ -842,57 +902,29 @@ namespace Microsoft.Maui.Controls.Handlers
 
             public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
             {
-                var context = Context ?? RequireContext();
+                // Inflate from XML layout — consistent with NavigationViewHandler/FlyoutViewHandler pattern
+                var rootView = inflater.Inflate(Resource.Layout.shellitemlayout, container, false)
+                    ?? throw new InvalidOperationException("shellitemlayout inflation failed");
 
-                // Create root CoordinatorLayout for AppBarLayout scrolling behavior
-                _rootLayout = new CoordinatorLayout(context)
-                {
-                    LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
-                };
+                // Get references from inflated layout
+                _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator);
+                _handler._appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.shellitem_appbar);
+                _bottomContainer = rootView.FindViewById<LinearLayout>(Resource.Id.shellitem_content);
+
+                // Get ViewPager2 and BottomNavigationView from the inflated layout
+                // and assign them to the handler so it can manage adapters and selection
+                _handler._viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager);
+                _handler._bottomNavigationView = rootView.FindViewById<BottomNavigationView>(Resource.Id.shellitem_bottomnavigation);
+
+                // Set initial background to WHITE to match old ShellItemRenderer behavior.
+                // PlatformInterop.createNavigationBar() explicitly calls setBackgroundColor(WHITE).
+                // The appearance tracker will override this when Shell appearance is applied.
+                _handler._bottomNavigationView?.SetBackgroundColor(global::Android.Graphics.Color.White);
 
                 // Setup window insets for safe area handling
                 MauiWindowInsetListener.SetupViewWithLocalListener(_rootLayout);
 
-                // Create AppBarLayout for toolbar
-                _handler._appBarLayout = new AppBarLayout(context)
-                {
-                    LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
-                };
-                _rootLayout.AddView(_handler._appBarLayout);
-
-                // Create bottom container (LinearLayout) for ViewPager2 + BottomNav
-                // This container uses ScrollingViewBehavior to scroll with AppBarLayout
-                _bottomContainer = new LinearLayout(context)
-                {
-                    Orientation = Orientation.Vertical,
-                    LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.MatchParent)
-                    {
-                        Behavior = new AppBarLayout.ScrollingViewBehavior()
-                    }
-                };
-                _rootLayout.AddView(_bottomContainer);
-
-                // Get the ViewPager2 from the handler
-                var viewPager = _handler.PlatformView ?? _handler.ToPlatform() as ViewPager2;
-                if (viewPager is not null)
-                {
-                    // Set layout params for ViewPager2 to take remaining space
-                    viewPager.LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, 0)
-                    {
-                        Weight = 1
-                    };
-                    _bottomContainer.AddView(viewPager);
-                }
-
-                // Add BottomNavigationView from handler
-                var bottomNav = _handler.BottomNavigationView;
-                if (bottomNav is not null)
-                {
-                    bottomNav.LayoutParameters = new LP(LP.MatchParent, LP.WrapContent);
-                    _bottomContainer.AddView(bottomNav);
-                }
-
-                return _rootLayout;
+                return rootView;
             }
 
             public override void OnViewCreated(AView view, Bundle savedInstanceState)
@@ -906,8 +938,16 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Setup the shared toolbar
                 _handler.SetupToolbar();
 
+                // Setup bottom navigation (BottomNavigationView now comes from XML layout)
+                _handler.SetupBottomNavigation();
+
                 // Now that the fragment is attached, setup the ViewPager2 adapter
                 _handler.SetupViewPagerAdapter();
+
+                // Register as appearance observer NOW that all views are ready.
+                // This must happen after SetupToolbar and SetupBottomNavigation so that
+                // when Shell calls OnAppearanceChanged, the views can receive appearance updates.
+                _handler.RegisterAppearanceObserver();
 
                 // Trigger the initial section switch if needed
                 if (_handler.VirtualView?.CurrentItem is not null)
