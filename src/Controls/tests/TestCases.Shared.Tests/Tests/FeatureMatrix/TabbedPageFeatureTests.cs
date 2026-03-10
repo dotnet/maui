@@ -4,22 +4,17 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class TabbedPageFeatureTests : UITest
+[Category(UITestCategories.TabbedPage)]
+public class TabbedPageFeatureTests : _GalleryUITest
 {
-	const string TabbedPageFeatureMatrix = "TabbedPage Feature Matrix";
+	public const string TabbedPageFeatureMatrix = "TabbedPage Feature Matrix";
+	public override string GalleryPageName => TabbedPageFeatureMatrix;
 
 	public TabbedPageFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(TabbedPageFeatureMatrix);
-	}
-
 	[Test, Order(1)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_InitialState_VerifyVisualState()
 	{
 		App.WaitForElement("Tab1Label");
@@ -29,7 +24,6 @@ public class TabbedPageFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(2)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_InitialState_VerifyFunctionalState()
 	{
 		App.WaitForElement("TAB 3");
@@ -44,7 +38,6 @@ public class TabbedPageFeatureTests : UITest
 #endif
 
 	[Test, Order(3)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarBackground_Gradient_Verify()
 	{
 		App.WaitForElement("Options");
@@ -60,7 +53,6 @@ public class TabbedPageFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(4)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarBackground_Solid_Verify()
 	{
 		App.WaitForElement("Options");
@@ -76,7 +68,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(5)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarBackground_And_BarTextColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -95,7 +86,6 @@ public class TabbedPageFeatureTests : UITest
 #endif
 
 	[Test, Order(6)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarBackground_With_SelectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -111,7 +101,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(7)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarBackground_With_UnselectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -127,7 +116,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(8)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarTextColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -141,7 +129,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(9)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarTextColor_And_SelectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -157,7 +144,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(10)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_BarTextColor_And_UnselectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -173,7 +159,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(11)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_SelectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -187,7 +172,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(12)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_UnselectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -203,7 +187,6 @@ public class TabbedPageFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(13)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_SelectedAndUnselectedTabColor_Verify()
 	{
 		App.WaitForElement("Options");
@@ -225,7 +208,6 @@ public class TabbedPageFeatureTests : UITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link - https://github.com/dotnet/maui/issues/31121, https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(14)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_FlowDirection_Verify()
 	{
 		App.WaitForElement("Options");
@@ -243,7 +225,6 @@ public class TabbedPageFeatureTests : UITest
 #endif
 
 	[Test, Order(15)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_ItemTemplate_Verify()
 	{
 		App.WaitForElement("Options");
@@ -257,7 +238,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(16)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_ItemTemplate_And_ItemSource_Verify()
 	{
 		App.WaitForElement("Options");
@@ -273,7 +253,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(17)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_ItemSource_Verify()
 	{
 		App.WaitForElement("Options");
@@ -287,7 +266,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(18)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_ItemSource_And_SelectedItems_Verify()
 	{
 		App.WaitForElement("Options");
@@ -306,7 +284,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(19)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_SelectedItems_Verify()
 	{
 		App.WaitForElement("Options");
@@ -325,7 +302,6 @@ public class TabbedPageFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Android does not show the More button, Issue Link - https://github.com/dotnet/maui/issues/31377, https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(20)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_MoreButton_Verify()
 	{
 		App.WaitForElement("Tab1Label");
@@ -342,7 +318,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(21)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_AddTab_Verify()
 	{
 		App.WaitForElement("Options");
@@ -372,7 +347,6 @@ public class TabbedPageFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14572
 
 	[Test, Order(22)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_RemoveTab_Verify()
 	{
 		App.WaitForElement("Options");
@@ -399,7 +373,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(23)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_InsertTabAt_Verify()
 	{
 		App.WaitForElement("Options");
@@ -422,7 +395,6 @@ public class TabbedPageFeatureTests : UITest
 #endif
 
 	[Test, Order(24)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_IconImageSource_Change_Verify()
 	{
 		App.WaitForElement("Options");
@@ -438,7 +410,6 @@ public class TabbedPageFeatureTests : UITest
 	}
 
 	[Test, Order(25)]
-	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPage_IsEnabled_Verify()
 	{
 		App.WaitForElement("Options");
