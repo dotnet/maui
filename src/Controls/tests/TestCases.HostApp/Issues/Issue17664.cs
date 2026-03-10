@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 17664, "Incorrect ItemsViewScrolledEventArgs in CollectionView when IsGrouped is set to true", PlatformAffected.iOS | PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 17664, "Incorrect ItemsViewScrolledEventArgs in CollectionView when IsGrouped is set to true", PlatformAffected.Android)]
 public class Issue17664 : ContentPage
 {
 	CollectionView _collectionView;

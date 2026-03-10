@@ -96,9 +96,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (itemsSource is not UngroupedItemsSource && itemsSource is IGroupableItemsViewSource groupable)
 			{
 				return (
-				 AdjustGroupIndex(groupable, firstVisibleItemIndex, hasHeader, hasFooter, itemsCount, true),
-				 AdjustGroupIndex(groupable, centerItemIndex, hasHeader, hasFooter, itemsCount, true),
-				 AdjustGroupIndex(groupable, lastVisibleItemIndex, hasHeader, hasFooter, itemsCount, false)
+				 AdjustGroupIndex(groupable, firstVisibleItemIndex, hasHeader, hasFooter, itemsCount, snapForward: true),
+				 AdjustGroupIndex(groupable, centerItemIndex, hasHeader, hasFooter, itemsCount, snapForward: true),
+				 AdjustGroupIndex(groupable, lastVisibleItemIndex, hasHeader, hasFooter, itemsCount, snapForward: false)
 				);
 			}
 
@@ -124,17 +124,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
 		}
 
-		static int AdjustGroupIndex(IGroupableItemsViewSource source, int position, bool hasHeader, bool hasFooter, int count, bool isStart)
+		/// <param name="snapForward">
+		/// When the adapter position falls on a group header or group footer,
+		/// true  = snap to the first data item in the following group (use for FirstVisible/Center),
+		/// false = snap to the last data item in the preceding group (use for LastVisible).
+		/// </param>
+		static int AdjustGroupIndex(IGroupableItemsViewSource source, int position, bool hasHeader, bool hasFooter, int count, bool snapForward)
 		{
-			if (position < 0 || position >= count)
+			if (position < 0)
+			{
+				return 0;
+			}
+
+			if (position >= count)
 			{
 				return Math.Max(0, GetGroupedDataCount(source) - 1);
 			}
 
-			// Adjust for header if present
-			position = position - (hasHeader && position > 0 ? 1 : 0);
-
-			int dataIndex = hasHeader ? 1 : 0, currentItem = hasHeader ? 1 : 0;
+			int dataIndex = 0, currentItem = hasHeader ? 1 : 0;
 
 			// Iterate through items until we reach the target position
 			while (currentItem <= position && currentItem < count)
@@ -159,7 +166,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// If position is a group header/footer, find the nearest data item
 				else if (currentItem == position)
 				{
-					return isStart
+					return snapForward
 					 ? FindNextDataIndex(source, currentItem, hasFooter, count, dataIndex)
 					 : FindPrevDataIndex(source, currentItem, hasHeader);
 				}
@@ -188,6 +195,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return dataCount;
 		}
 
+		// dataIndex: the 0-based data item index to assign to the next valid item found.
+		// Returned without incrementing because the item following a header/footer inherits this index.
 		static int FindNextDataIndex(IGroupableItemsViewSource source, int start, bool hasFooter, int count, int dataIndex)
 		{
 			for (int i = start + 1; i < count; i++)
