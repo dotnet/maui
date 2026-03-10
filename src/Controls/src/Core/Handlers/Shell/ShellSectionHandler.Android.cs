@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.OS;
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers
     {
         Fragment _parentFragment; // The wrapper fragment that hosts this handler
         IShellContext _shellContext;
+        IShellSectionController SectionController => (IShellSectionController)VirtualView;
         IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
         CoordinatorLayout _rootLayout;
         ViewPager2 _viewPager;
@@ -149,11 +151,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _shellContext = GetShellContext();
 
-            // Subscribe to ShellSection.Items collection changes
-            if (VirtualView is INotifyCollectionChanged collectionChanged)
-            {
-                collectionChanged.CollectionChanged += OnItemsCollectionChanged;
-            }
+            // Subscribe to visible items collection changes (fires on add/remove AND visibility changes)
+            SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
+
+            // Subscribe to PropertyChanged on each ShellContent for title updates
+            HookShellContentEvents();
 
             // Wait for the view to be attached before setting up the adapter
             // This ensures the parent fragment is set
@@ -196,8 +198,8 @@ namespace Microsoft.Maui.Controls.Handlers
             // Keep ALL content fragments alive to prevent FragmentStateAdapter from
             // saving/restoring fragment state. Restored fragments lose MAUI-specific state
             // (StackNavigationManager, etc.) causing crashes.
-            var itemCount = VirtualView?.Items?.Count ?? 1;
-            _viewPager.OffscreenPageLimit = Math.Max(itemCount, 1);
+            var visibleItems = SectionController.GetItems();
+            _viewPager.OffscreenPageLimit = Math.Max(visibleItems.Count, 1);
 
             // Setup TabLayoutMediator
             _tabLayoutMediator = new TabLayoutMediator(
@@ -247,12 +249,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetInitialPosition()
         {
-            if (VirtualView?.CurrentItem is null || VirtualView.Items is null)
+            if (VirtualView?.CurrentItem is null)
             {
                 return;
             }
 
-            var currentIndex = VirtualView.Items.IndexOf(VirtualView.CurrentItem);
+            var visibleItems = SectionController.GetItems();
+            var currentIndex = visibleItems.IndexOf(VirtualView.CurrentItem);
             if (currentIndex >= 0 && _viewPager.CurrentItem != currentIndex)
             {
                 _viewPager.SetCurrentItem(currentIndex, false);
@@ -261,26 +264,28 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabLayoutVisibility()
         {
-            if (_contentTabLayout is null || VirtualView?.Items is null)
+            if (_contentTabLayout is null || VirtualView is null)
             {
                 return;
             }
 
-            // Hide TabLayout if only 1 content
-            bool showTabs = VirtualView.Items.Count > 1;
+            // Hide TabLayout if only 1 visible content
+            var visibleCount = SectionController.GetItems().Count;
+            bool showTabs = visibleCount > 1;
             _contentTabLayout.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
             _tabAppBarLayout.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
         }
 
         void UpdateViewPagerUserInput()
         {
-            if (_viewPager is null || VirtualView?.Items is null)
+            if (_viewPager is null || VirtualView is null)
             {
                 return;
             }
 
-            // Disable user swiping if only 1 content
-            bool enableUserInput = VirtualView.Items.Count > 1;
+            // Disable user swiping if only 1 visible content
+            var visibleCount = SectionController.GetItems().Count;
+            bool enableUserInput = visibleCount > 1;
             _viewPager.UserInputEnabled = enableUserInput;
         }
 
@@ -295,10 +300,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // Unsubscribe from events
             _rootLayout.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
 
-            if (VirtualView is INotifyCollectionChanged collectionChanged)
-            {
-                collectionChanged.CollectionChanged -= OnItemsCollectionChanged;
-            }
+            UnhookShellContentEvents();
+
+            SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
             // Detach TabLayoutMediator
             _tabLayoutMediator?.Detach();
@@ -340,12 +344,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            var items = shellSection.Items;
+            var visibleItems = ((IShellSectionController)shellSection).GetItems();
             var currentItem = shellSection.CurrentItem;
 
-            if (items is not null && currentItem is not null)
+            if (visibleItems is not null && currentItem is not null)
             {
-                var targetIndex = items.IndexOf(currentItem);
+                var targetIndex = visibleItems.IndexOf(currentItem);
                 if (targetIndex >= 0 && handler._viewPager.CurrentItem != targetIndex)
                 {
                     handler._viewPager.SetCurrentItem(targetIndex, true);
@@ -360,9 +364,71 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
+            // Unhook old items, hook new items for property change tracking
+            if (e.OldItems is not null)
+            {
+                foreach (ShellContent item in e.OldItems)
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+            }
+            if (e.NewItems is not null)
+            {
+                foreach (ShellContent item in e.NewItems)
+                    item.PropertyChanged += OnShellContentPropertyChanged;
+            }
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                HookShellContentEvents();
+            }
+
+            _adapter.OnItemsCollectionChanged();
             _adapter.NotifyDataSetChanged();
+
+            // Update OffscreenPageLimit for new visible count
+            var visibleCount = SectionController.GetItems().Count;
+            _viewPager.OffscreenPageLimit = Math.Max(visibleCount, 1);
+
             UpdateTabLayoutVisibility();
             UpdateViewPagerUserInput();
+        }
+
+        void HookShellContentEvents()
+        {
+            if (VirtualView?.Items is null)
+                return;
+
+            foreach (var item in VirtualView.Items)
+                item.PropertyChanged += OnShellContentPropertyChanged;
+        }
+
+        void UnhookShellContentEvents()
+        {
+            if (VirtualView?.Items is null)
+                return;
+
+            foreach (var item in VirtualView.Items)
+                item.PropertyChanged -= OnShellContentPropertyChanged;
+        }
+
+        void OnShellContentPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == ShellContent.TitleProperty.PropertyName && sender is ShellContent shellContent)
+            {
+                UpdateTabTitle(shellContent);
+            }
+        }
+
+        internal void UpdateTabTitle(ShellContent shellContent)
+        {
+            if (_contentTabLayout is null || VirtualView is null)
+                return;
+
+            var visibleItems = SectionController.GetItems();
+            int index = visibleItems.IndexOf(shellContent);
+            if (index >= 0)
+            {
+                var tab = _contentTabLayout.GetTabAt(index);
+                tab?.SetText(new Java.Lang.String(shellContent.Title));
+            }
         }
 
         /// <summary>
@@ -418,45 +484,56 @@ namespace Microsoft.Maui.Controls.Handlers
     {
         readonly ShellSection _shellSection;
         readonly IMauiContext _mauiContext;
+        IList<ShellContent> _visibleItems;
+        IShellSectionController SectionController => (IShellSectionController)_shellSection;
 
         public ShellContentFragmentAdapter(ShellSection shellSection, Fragment parentFragment, IMauiContext mauiContext)
             : base(parentFragment)
         {
             _shellSection = shellSection;
             _mauiContext = mauiContext;
+            _visibleItems = SectionController.GetItems();
         }
 
-        public override int ItemCount => _shellSection?.Items?.Count ?? 0;
+        public override int ItemCount => _visibleItems?.Count ?? 0;
 
         public ShellSectionHandler Handler { get; set; }
 
+        /// <summary>
+        /// Refreshes the visible items list. Called when items collection changes (add/remove/visibility).
+        /// </summary>
+        public void OnItemsCollectionChanged()
+        {
+            _visibleItems = SectionController.GetItems();
+        }
+
         public override Fragment CreateFragment(int position)
         {
-            if (_shellSection?.Items is null || position >= _shellSection.Items.Count)
+            if (_visibleItems is null || position >= _visibleItems.Count)
             {
                 return null;
             }
 
-            var shellContent = _shellSection.Items[position];
+            var shellContent = _visibleItems[position];
             return new ShellContentNavigationFragment(shellContent, _mauiContext, Handler);
         }
 
         public override long GetItemId(int position)
         {
-            if (_shellSection?.Items is null || position >= _shellSection.Items.Count)
+            if (_visibleItems is null || position >= _visibleItems.Count)
             {
                 return -1;
             }
-            return _shellSection.Items[position].GetHashCode();
+            return _visibleItems[position].GetHashCode();
         }
 
         public override bool ContainsItem(long itemId)
         {
-            if (_shellSection?.Items is null)
+            if (_visibleItems is null)
             {
                 return false;
             }
-            foreach (var item in _shellSection.Items)
+            foreach (var item in _visibleItems)
             {
                 if (item.GetHashCode() == itemId)
                 {
@@ -483,14 +560,15 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.OnPageSelected(position);
 
-            if (_handler.VirtualView is null || position >= _handler.VirtualView.Items.Count)
+            var visibleItems = ((IShellSectionController)_handler.VirtualView).GetItems();
+            if (_handler.VirtualView is null || position >= visibleItems.Count)
                 return;
 
             // Only update toolbar if this section is currently active
             if (!_handler.IsCurrentlyActiveSection())
                 return;
 
-            var newCurrentItem = _handler.VirtualView.Items[position];
+            var newCurrentItem = visibleItems[position];
             var page = ((IShellContentController)newCurrentItem).GetOrCreateContent();
 
             if (page is null)
@@ -821,7 +899,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Hide/show content tabs based on navigation depth
             if (_handler.ContentTabLayout is not null)
             {
-                var shouldShowTabs = newStack.Count == 1 && shellSection.Items.Count > 1;
+                var shouldShowTabs = newStack.Count == 1 && ((IShellSectionController)shellSection).GetItems().Count > 1;
                 _handler.ContentTabLayout.Visibility = shouldShowTabs ? ViewStates.Visible : ViewStates.Gone;
             }
         }
@@ -935,6 +1013,7 @@ namespace Microsoft.Maui.Controls.Handlers
     internal class ShellTabConfigurationStrategy : Java.Lang.Object, TabLayoutMediator.ITabConfigurationStrategy
     {
         readonly ShellSection _shellSection;
+        IShellSectionController SectionController => (IShellSectionController)_shellSection;
 
         public ShellTabConfigurationStrategy(ShellSection shellSection)
         {
@@ -943,10 +1022,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public void OnConfigureTab(TabLayout.Tab tab, int position)
         {
-            if (_shellSection?.Items is null || position >= _shellSection.Items.Count)
+            var visibleItems = SectionController.GetItems();
+            if (visibleItems is null || position >= visibleItems.Count)
                 return;
 
-            var shellContent = _shellSection.Items[position];
+            var shellContent = visibleItems[position];
             tab.SetText(shellContent.Title);
         }
     }
