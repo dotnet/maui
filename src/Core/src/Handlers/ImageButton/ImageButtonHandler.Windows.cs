@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as Button)?.UpdateCornerRadius(buttonStroke);
 			handler.UpdateValue(nameof(IImageButton.Padding));
 
-			if (button.Shadow is not null)
+			if (handler.VirtualView.Shadow is not null)
 			{
 				handler.UpdateValue(nameof(IImageButton.Shadow));
 			}

@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
 			
-			if (button.Shadow is not null)
+			if (handler.VirtualView.Shadow is not null)
 			{
 				handler.UpdateValue(nameof(IButton.Shadow));
 			}
