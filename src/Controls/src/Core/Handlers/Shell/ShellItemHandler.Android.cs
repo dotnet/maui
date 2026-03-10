@@ -14,6 +14,7 @@ using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal ViewPager2 _viewPager;
         internal BottomNavigationView _bottomNavigationView;
         BottomNavigationManager _bottomNavigationManager; // Shared component for bottom nav management
+        BottomSheetDialog _bottomSheetDialog;
         ShellSectionFragmentAdapter _adapter;
         ShellItemPageChangeCallback _pageChangeCallback;
         IShellContext _shellContext;
@@ -130,6 +132,13 @@ namespace Microsoft.Maui.Controls.Handlers
             if (shellSections is null || shellSections.Count == 0)
                 return;
 
+            // Clean up previous callback if re-setting up (dynamic section additions)
+            if (_pageChangeCallback is not null)
+            {
+                _viewPager.UnregisterOnPageChangeCallback(_pageChangeCallback);
+                _pageChangeCallback = null;
+            }
+
             _shellContext ??= GetShellContext();
 
             // Create adapter with child fragment manager
@@ -181,6 +190,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Set up the tab selection callback
             _bottomNavigationManager.OnTabSelected = OnTabSelected;
+            _bottomNavigationManager.OnMoreClicked = OnMoreClicked;
 
             // Convert ShellSections to ITabItem using the adapter
             var tabItems = new List<ITabItem>();
@@ -194,6 +204,60 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Use the shared manager to setup tabs
             _bottomNavigationManager.SetupTabs(tabItems, currentIndex >= 0 ? currentIndex : 0);
+        }
+
+        void OnMoreClicked()
+        {
+            if (VirtualView is null || _bottomNavigationManager is null)
+                return;
+
+            var items = CreateTabList();
+            _bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
+                OnMoreItemSelected, MauiContext, items, _bottomNavigationView.MaxItemCount);
+            _bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
+            _bottomSheetDialog.Show();
+        }
+
+        void OnMoreItemSelected(int shellSectionIndex, BottomSheetDialog dialog)
+        {
+            var shellItems = ((IShellItemController)VirtualView).GetItems();
+            if (shellItems is null || shellSectionIndex < 0 || shellSectionIndex >= shellItems.Count)
+                return;
+
+            // Navigate to the selected section
+            OnTabSelected(shellSectionIndex);
+            dialog.Dismiss();
+        }
+
+        void OnMoreSheetDismissed(object sender, EventArgs e)
+        {
+            // Update bottom nav to reflect current selection
+            if (VirtualView is not null)
+            {
+                var items = ((IShellItemController)VirtualView).GetItems();
+                var currentIndex = items?.IndexOf(VirtualView.CurrentItem) ?? -1;
+                if (currentIndex >= 0)
+                    _bottomNavigationManager?.SetSelectedItem(currentIndex);
+            }
+
+            if (_bottomSheetDialog is not null)
+            {
+                _bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
+                _bottomSheetDialog.Dispose();
+                _bottomSheetDialog = null;
+            }
+        }
+
+        List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
+        {
+            var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
+            var shellItems = ((IShellItemController)VirtualView).GetItems();
+            for (int i = 0; i < shellItems.Count; i++)
+            {
+                var item = shellItems[i];
+                items.Add((item.Title, item.Icon, item.IsEnabled));
+            }
+            return items;
         }
 
         /// <summary>
@@ -490,7 +554,8 @@ namespace Microsoft.Maui.Controls.Handlers
             // Subscribe to ShellItem property changes to detect CurrentItem changes from navigation
             if (VirtualView is not null)
             {
-                VirtualView?.PropertyChanged += OnShellItemPropertyChanged;
+                VirtualView.PropertyChanged += OnShellItemPropertyChanged;
+                ((IShellItemController)VirtualView).ItemsCollectionChanged += OnShellItemsChanged;
             }
 
             // Initialize shell context and appearance tracker early
@@ -512,6 +577,24 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Update bottom navigation selection
                 UpdateBottomNavigationSelection();
             }
+        }
+
+        void OnShellItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            // The adapter's _sections reference is a live ReadOnlyCollection wrapping
+            // the internal ObservableCollection, so it already sees the new items.
+            // Just notify the adapter of the change — do NOT recreate it, as that would
+            // destroy and recreate all fragments (causing a visible content flicker).
+            if (_adapter is not null && _viewPager is not null)
+            {
+                _adapter.NotifyDataSetChanged();
+                var shellSections = ((IShellItemController)VirtualView).GetItems();
+                _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
+            }
+
+            // Rebuild the bottom navigation menu for the updated sections
+            SetupBottomNavigation();
+            UpdateTabBarVisibility();
         }
 
         void UpdateBottomNavigationSelection()
@@ -542,7 +625,8 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             if (VirtualView is not null)
             {
-                VirtualView?.PropertyChanged -= OnShellItemPropertyChanged;
+                VirtualView.PropertyChanged -= OnShellItemPropertyChanged;
+                ((IShellItemController)VirtualView).ItemsCollectionChanged -= OnShellItemsChanged;
             }
 
             if (_shellSection is not null)
@@ -558,6 +642,14 @@ namespace Microsoft.Maui.Controls.Handlers
             if (shell is not null)
             {
                 ((IShellController)shell).RemoveAppearanceObserver(this);
+            }
+
+            // Clean up bottom sheet dialog
+            if (_bottomSheetDialog is not null)
+            {
+                _bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
+                _bottomSheetDialog.Dispose();
+                _bottomSheetDialog = null;
             }
 
             // Clear BottomNavigationManager listener
