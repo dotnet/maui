@@ -954,14 +954,45 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				? UINavigationBar.Appearance.TintColor
 				: iconColor.ToPlatform();
 
-			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && NavigationBar.TintColor is not null)
+			// iOS 26+ Liquid Glass ignores TintColor for the back button; apply via appearance instead.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 			{
-				if (VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
+				if (NavigationBar.TintColor is not null && VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
 				{
 					foreach (var item in items)
 					{
 						item.TintColor = NavigationBar.TintColor;
 					}
+				}
+
+				var useCustomColor = iconColor != null && NavPage.OnThisPlatform().GetStatusBarTextColorMode() != StatusBarTextColorMode.DoNotAdjust;
+				if (useCustomColor)
+				{
+					var backColor = iconColor.ToPlatform();
+					var colorAttributes = NSDictionary<NSString, NSObject>.FromObjectsAndKeys(
+						new NSObject[] { backColor }, new NSString[] { UIStringAttributeKey.ForegroundColor });
+					var appearance = new UIBarButtonItemAppearance(UIBarButtonItemStyle.Plain);
+					appearance.Normal.TitleTextAttributes = colorAttributes;
+					appearance.Highlighted.TitleTextAttributes = colorAttributes;
+					NavigationBar.CompactAppearance.BackButtonAppearance = appearance;
+					NavigationBar.StandardAppearance.BackButtonAppearance = appearance;
+					NavigationBar.ScrollEdgeAppearance.BackButtonAppearance = appearance;
+
+					var backimage = UIImage.GetSystemImage("chevron.backward");
+					if (backimage is not null)
+					{
+						var tinted = backimage.ApplyTintColor(backColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+						NavigationBar.BackIndicatorImage = tinted;
+						NavigationBar.BackIndicatorTransitionMaskImage = tinted;
+					}
+				}
+				else
+				{
+					NavigationBar.CompactAppearance.BackButtonAppearance = null;
+					NavigationBar.StandardAppearance.BackButtonAppearance = null;
+					NavigationBar.ScrollEdgeAppearance.BackButtonAppearance = null;
+					NavigationBar.BackIndicatorImage = null;
+					NavigationBar.BackIndicatorTransitionMaskImage = null;
 				}
 			}
 		}
@@ -972,7 +1003,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				return;
 			}
-			
+
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 
