@@ -96,9 +96,12 @@ foreach ($artifact in $containerArtifacts) {
     $artifactNameClean = $artifact.name
     Write-Host "`n=== $artifactNameClean ==="
 
-    # Extract container ID from resource.data (format: #/CONTAINERID/)
-    $containerId = $artifact.resource.data -replace '^#/(\d+)/?$', '$1'
-    if (-not $containerId -or $containerId -eq $artifact.resource.data) {
+    # Extract container ID from resource.data (format: #/CONTAINERID/ or #/CONTAINERID/ArtifactName)
+    $containerId = $null
+    if ($artifact.resource.data -match '^#/(\d+)') {
+        $containerId = $matches[1]
+    }
+    if (-not $containerId) {
         Write-Warning "  Could not parse container ID from: $($artifact.resource.data)"
         continue
     }
@@ -135,7 +138,7 @@ foreach ($artifact in $containerArtifacts) {
             New-Item -ItemType Directory -Path $OutputDir | Out-Null
         }
 
-        $downloadUrl = "$Org/_apis/resources/Containers/${containerId}?itemPath=$([Uri]::EscapeDataString($file.path))&api-version=$ContainerApiVersion&`$format=file"
+        $downloadUrl = "$Org/_apis/resources/Containers/${containerId}?itemPath=$([Uri]::EscapeDataString($file.path))&api-version=$ContainerApiVersion&`$format=OctetStream"
         Write-Host "  Downloading: $fileName"
 
         try {
