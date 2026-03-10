@@ -117,6 +117,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (newItem is not GroupFooterItemTemplateContext)
 				{
 					_itemsSource.Insert(startIndex, newItem.Item);
+					startIndex++;
 				}
 			}
 		}
@@ -135,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
-				if ((ItemTemplateContext)args.OldItems[n] is not GroupFooterItemTemplateContext)
+				if ((ItemTemplateContext)args.OldItems[n - startIndex] is not GroupFooterItemTemplateContext)
 				{
 					_itemsSource.RemoveAt(n);
 				}

@@ -135,6 +135,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ListViewBase.DispatcherQueue.TryEnqueue(() =>
 			{
+				if (VirtualView is null || ListViewBase is null)
+				{
+					return;
+				}
 
 				var itemsCount = items.Count;
 

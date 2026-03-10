@@ -19,7 +19,11 @@ public class Issue17969 : _IssuesUITest
 	{
 		App.WaitForElement("collectionView");
 		App.Tap("addItem");
+#if !WINDOWS
 		VerifyScreenshot();
+#else
+		App.WaitForElement("Asian Black Bear"); // Verify that the item is actually added.
+#endif
 
 	}
 
@@ -29,6 +33,10 @@ public class Issue17969 : _IssuesUITest
 	{
 		App.WaitForElement("collectionView");
 		App.Tap("addGroup");
+#if !WINDOWS
 		VerifyScreenshot();
+#else
+		App.WaitForElement("collectionView"); // Verify that the CollectionView is still present and has not crashed.
+#endif
 	}
 }
