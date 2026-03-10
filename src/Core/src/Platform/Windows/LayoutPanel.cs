@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
@@ -27,13 +27,14 @@ namespace Microsoft.Maui.Platform
 			// When children are allowed to overflow this layout's bounds, we raise the
 			// Canvas.ZIndex of this panel so that overflowing children render on top of
 			// any sibling panels that would otherwise be drawn over them due to z-order.
-			if (!ClipsToBounds)
+			// Deferred via DispatcherQueue so it executes AFTER the current layout pass.
+			// Setting Canvas.ZIndex synchronously inside ArrangeOverride triggers
+			// InvalidateArrange on the parent panel, which disrupts the UIAutomation tree
+			// mid-layout and causes WinAppDriver WaitForElement to time out.
+			var newZIndex = !ClipsToBounds && HasChildrenOutsideBounds(finalSize.Width, finalSize.Height) ? 1 : 0;
+			if (Canvas.GetZIndex(this) != newZIndex)
 			{
-				Canvas.SetZIndex(this, HasChildrenOutsideBounds(finalSize.Width, finalSize.Height) ? 1 : 0);
-			}
-			else
-			{
-				Canvas.SetZIndex(this, 0);
+				DispatcherQueue.TryEnqueue(() => Canvas.SetZIndex(this, newZIndex));
 			}
 
 			return actual;
@@ -44,11 +45,19 @@ namespace Microsoft.Maui.Platform
 			if (CrossPlatformLayout is not ILayout layout)
 				return false;
 
+			// Allow 1.0 DIU tolerance for sub-pixel rounding errors that accumulate
+			// across layout math (fractional column widths, margin subtraction, etc.).
+			// Without tolerance, benign rounding (e.g. 100.0 DIU stored as 99.997)
+			// produces false-positive overflow detection and causes unnecessary ZIndex
+			// oscillation across measure/arrange cycles.
+			// Android uses an equivalent ±1 physical-pixel guard for the same reason.
+			const double tolerance = 1.0;
+
 			for (int i = 0; i < layout.Count; i++)
 			{
 				var frame = layout[i].Frame;
-				if (frame.Right > width || frame.Bottom > height
-					|| frame.Left < 0 || frame.Top < 0)
+				if (frame.Right > width + tolerance || frame.Bottom > height + tolerance
+					|| frame.Left < -tolerance || frame.Top < -tolerance)
 				{
 					return true;
 				}
