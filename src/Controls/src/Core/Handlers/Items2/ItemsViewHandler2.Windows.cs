@@ -423,6 +423,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		PlatformView.ItemsSource = null;
 		PlatformView.ItemsSource = _collectionViewSource?.View;
 
+		_scrollViewer?.ChangeView(0, 0, null, disableAnimation: true);
+		_previousHorizontalOffset = 0;
+		_previousVerticalOffset = 0;
 
 		if (VirtualView.ItemTemplate is not null)
 		{

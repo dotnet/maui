@@ -96,7 +96,8 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// before the platform handler is created during the deferred ToPlatform() call.
 				// Without this, items display with default property values instead of the
 				// values defined in VisualState setters. (Fixes #27086)
-				if (view is VisualElement visualElement)
+				if (view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
+					!= SelectionMode.None)
 				{
 					bool isSelected = false;
 					if (selectableItemsView.SelectionMode == SelectionMode.Single)
@@ -108,10 +109,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 					{
 						VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
 					}
-
-					VisualStateManager.GoToState(visualElement, isSelected
-						? VisualStateManager.CommonStates.Selected
-						: VisualStateManager.CommonStates.Normal);
 				}
 
 			}
