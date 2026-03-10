@@ -168,7 +168,16 @@ namespace Microsoft.Maui.Platform
 				// that avoids floating-point rounding artefacts from the DIU→pixel round-trip.
 				int contentWidthPx = (int)_context.ToPixels(destination.Width);
 				int contentHeightPx = (int)_context.ToPixels(destination.Height);
-				TranslationZ = HasChildrenOutsideBounds(contentWidthPx, contentHeightPx) ? 1f : 0f;
+				
+				if (HasChildrenOutsideBounds(contentWidthPx, contentHeightPx))
+				{
+    				OutlineProvider = null;  // Prevent elevation shadow from background
+    				TranslationZ = 1f;
+				}
+				else
+				{
+    				TranslationZ = 0f;
+				}
 			}
 
 			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
