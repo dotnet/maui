@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shell Section Layout - Used by ShellSectionHandler
+    Matches the programmatic view hierarchy built in ShellSectionHandler.CreatePlatformElement().
+    
+    Structure:
+      CoordinatorLayout (root - enables AppBarLayout scrolling for TabLayout)
+        ├── AppBarLayout
+        │   └── TabLayout (content tabs - visibility controlled by Items.Count)
+        └── ViewPager2 (ScrollingViewBehavior - hosts ShellContent fragments)
+    
+    NOTE: Toolbar is NOT in this layout. It lives at ShellItem level (shellitemlayout.axml).
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/shellsection_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/shellsection_appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/shellsection_tablayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:tabMode="scrollable"
+            style="@style/MauiShellTabLayout" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/shellsection_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
