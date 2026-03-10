@@ -24,16 +24,6 @@ Optional for binlog analysis (MSBuild failures):
 - `az` (Azure CLI): `brew install azure-cli` / `winget install Microsoft.AzureCLI`, then `az extension add --name azure-devops`
 - `binlogtool`: `dotnet tool install -g binlogtool` (https://www.nuget.org/packages/binlogtool)
 
-## When to Use
-
-- User asks about CI/CD status for a PR
-- User asks about failed checks or builds
-- User asks "what's failing on PR #XXXXX" / "why is CI red" / "build failed"
-- User wants to see test results
-- **User asks about Helix failures (device tests, integration tests, etc.)**
-- **User needs to debug why tests are failing on Helix infrastructure**
-- **Text logs say "Build FAILED" with no detail — use binlog analysis**
-
 ## Scripts
 
 All scripts are in `.github/skills/azdo-build-investigator/scripts/`
@@ -81,6 +71,11 @@ pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <
 
 > **Focus on the first error chronologically — later errors usually cascade from the root cause.**
 
+**Multiple pipelines**: PRs trigger multiple builds. Investigate in priority order:
+1. **`maui-pr`** (main build) — check first, most failures here
+2. **`maui-pr-devicetests`** — if device test failures
+3. **`maui-pr-uitests`** — if UI test failures
+
 ### Standard Build Failures
 1. Get build IDs: `Get-PrBuildIds.ps1 -PrNumber XXXXX`
    - If output shows ⚠️ with no build IDs, CI was not triggered — read the diagnostic message
@@ -95,14 +90,22 @@ pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <
 4. For specific platform: `Get-HelixLogs.ps1 -BuildId YYYYY -Platform Windows -ShowConsoleLog`
 
 ### Binlog Analysis (MSBuild/XamlC/NuGet failures)
-When text logs are inconclusive, `.binlog` artifacts contain the full MSBuild structured log.
+
+**When to use binlog analysis**:
+- ✅ `Get-BuildErrors` returns generic "Build FAILED" with no error messages
+- ✅ Errors mention MSBuild, XamlC, or NuGet restore issues
+- ✅ Error says "See binlog for details"
+- ❌ Helix test failures (use `Get-HelixLogs` instead)
+- ❌ Clear error messages already visible in build logs
+
+`.binlog` artifacts contain the full MSBuild structured log.
 
 **Requires `binlogtool`** (`dotnet tool install -g binlogtool`). If not installed, tell the user and stop.
 
 ```bash
 # Download the binlog artifact
 az pipelines runs artifact download --run-id BUILD_ID --artifact-name "binlog" --path /tmp/maui-binlog \
-  --org https://dev.azure.com/dnceng-public --project public
+  --org https://dev.azure.com/dnceng-public --project public --detect false
 
 # Search for errors (broad first, then narrow)
 binlogtool search "/tmp/maui-binlog/*.binlog" "error"
@@ -118,7 +121,7 @@ binlogtool reconstruct "/tmp/maui-binlog/*.binlog" > /tmp/maui-build.log
 binlogtool doublewrites "/tmp/maui-binlog/*.binlog"
 
 # Clean up
-Remove-Item -Recurse -Force /tmp/maui-binlog
+rm -rf /tmp/maui-binlog
 ```
 
 ## Understanding Helix Logs
@@ -160,8 +163,3 @@ The `Get-HelixLogs.ps1` script retrieves the console logs which show:
 | "No test result files found" | Tests never ran or process crashed |
 | "error MT..." or "error BL..." | Build/linking error (check build logs instead) |
 | Exit code non-zero | Test failures or infrastructure issues |
-
-## Prerequisites
-
-- `gh` (GitHub CLI) - authenticated
-- `pwsh` (PowerShell 7+)
