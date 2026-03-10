@@ -98,46 +98,52 @@ pwsh .github/skills/azdo-build-investigator/scripts/Get-HelixLogs.ps1 -BuildId <
 - ❌ Helix test failures (use `Get-HelixLogs` instead)
 - ❌ Clear error messages already visible in build logs
 
-`.binlog` artifacts contain the full MSBuild structured log.
+`.binlog` files are MSBuild structured logs inside Container-type build artifacts (e.g., `Windows_NT_Build Windows (Debug)_Attempt1`).
 
-**Requires `binlogtool`** (`dotnet tool install -g binlogtool`). If not installed, tell the user and stop.
+**Requires**:
+- `az` CLI logged in (`az login`) — needed to get Bearer token for Container artifact API
+- `binlogtool` — `dotnet tool install -g binlogtool` (https://www.nuget.org/packages/binlogtool)
 
-**Finding the artifact name**: maui builds do not use a standard `"binlog"` artifact name. First list available artifacts to find the right one:
+If either is missing, tell the user and stop.
 
+**Step 1: List available artifacts** (no auth needed):
 ```bash
 az pipelines runs artifact list --run-id BUILD_ID \
   --org https://dev.azure.com/dnceng-public --project public --detect false \
-  --query "[].name" -o tsv
+  --query "[].{name:name, type:resource.type}" -o table
 ```
 
-Build log artifacts are named like `Windows_NT_Build Windows (Debug)_Attempt1` or `Darwin_Build macOS (Debug)_Attempt1`. Download via the zip URL from the artifact's `downloadUrl` property:
+Build log artifacts are Container-type and named like `Windows_NT_Build Windows (Debug)_Attempt1` or `Darwin_Build macOS (Debug)_Attempt1`.
 
+**Step 2: Download binlogs from a Container artifact**:
 ```bash
-# Get the download URL for the artifact
-az pipelines runs artifact list --run-id BUILD_ID \
-  --org https://dev.azure.com/dnceng-public --project public --detect false \
-  --query "[?contains(name, 'Build')]" -o json
+# Download all binlogs from the build (requires az login)
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildBinlogs.ps1 -BuildId BUILD_ID
 
-# Download the zip (requires auth token - use gh auth token or az account get-access-token)
-# Then extract and search
-mkdir -p /tmp/maui-binlog
-cd /tmp/maui-binlog && unzip -q artifact.zip
+# Download from a specific artifact
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildBinlogs.ps1 -BuildId BUILD_ID -ArtifactName "*Windows*Build*"
 
+# Custom output directory
+pwsh .github/skills/azdo-build-investigator/scripts/Get-BuildBinlogs.ps1 -BuildId BUILD_ID -OutputDir /tmp/mybinlogs
+```
+
+**Step 3: Analyze with binlogtool**:
+```bash
 # Search for errors (broad first, then narrow)
-binlogtool search "/tmp/maui-binlog/*.binlog" "error"
-binlogtool search "/tmp/maui-binlog/*.binlog" "error CS"    # C# compiler
-binlogtool search "/tmp/maui-binlog/*.binlog" "error NU"    # NuGet
-binlogtool search "/tmp/maui-binlog/*.binlog" "XamlC"       # XAML compiler
-binlogtool search "/tmp/maui-binlog/*.binlog" "XA"          # Android build errors
+binlogtool search "/tmp/maui-binlogs/*.binlog" "error"
+binlogtool search "/tmp/maui-binlogs/*.binlog" "error CS"    # C# compiler
+binlogtool search "/tmp/maui-binlogs/*.binlog" "error NU"    # NuGet
+binlogtool search "/tmp/maui-binlogs/*.binlog" "XamlC"       # XAML compiler
+binlogtool search "/tmp/maui-binlogs/*.binlog" "XA"          # Android build errors
 
-# Reconstruct full text log (useful when you need context around an error)
-binlogtool reconstruct "/tmp/maui-binlog/*.binlog" > /tmp/maui-build.log
+# Reconstruct full text log (useful for context around an error)
+binlogtool reconstruct "/tmp/maui-binlogs/*.binlog" > /tmp/maui-build.log
 
-# Detect double-write errors (multiple tasks writing to the same output file)
-binlogtool doublewrites "/tmp/maui-binlog/*.binlog"
+# Detect double-write errors
+binlogtool doublewrites "/tmp/maui-binlogs/*.binlog"
 
-# Clean up
-rm -rf /tmp/maui-binlog
+# Clean up when done
+rm -rf /tmp/maui-binlogs
 ```
 
 ## Understanding Helix Logs
