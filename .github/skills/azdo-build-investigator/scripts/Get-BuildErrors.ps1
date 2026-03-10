@@ -205,4 +205,29 @@ $testFailures = ($uniqueResults | Where-Object { $_.Type -eq "TestFailure" }).Co
 
 Write-Host "`nSummary: $buildErrors build error(s), $testFailures test failure(s)" -ForegroundColor Cyan
 
+# --- SECTION 3: Cross-check ADO test results API for failures not visible in job logs ---
+# Helix work items can exit with code 0 while individual tests fail (reported via ADO test results API).
+# This section detects that scenario so the agent knows to use Get-HelixLogs.ps1 -ShowConsoleLog.
+if (-not $ErrorsOnly) {
+    try {
+        $summaryUrl = "https://dev.azure.com/$Org/$Project/_apis/test/ResultSummaryByBuild?buildId=${BuildId}&api-version=7.1-preview"
+        $summary = Invoke-RestMethod -Uri $summaryUrl -Method Get -ErrorAction SilentlyContinue
+        $reportedFailed = $summary.aggregatedResultsAnalysis.resultsByOutcome.Failed.count
+        $reportedTotal  = $summary.aggregatedResultsAnalysis.totalTests
+        $runsWithFailures = $summary.aggregatedResultsAnalysis.runSummaryByOutcome.Failed.runsCount
+
+        if ($reportedFailed -gt 0 -and $testFailures -eq 0 -and $buildErrors -eq 0) {
+            Write-Host "`n⚠️  ADO test results show $reportedFailed failed test(s) across $runsWithFailures run(s) (out of $reportedTotal total)" -ForegroundColor Yellow
+            Write-Host "   These failures are inside Helix work items that exited with code 0." -ForegroundColor Yellow
+            Write-Host "   To see them, run: Get-HelixLogs.ps1 -BuildId $BuildId -ShowConsoleLog" -ForegroundColor Yellow
+        }
+        elseif ($reportedFailed -gt 0) {
+            Write-Host "`nℹ️  ADO test results: $reportedFailed failed / $reportedTotal total tests" -ForegroundColor Gray
+        }
+    }
+    catch {
+        # ResultSummaryByBuild is a preview API and may not always be available - silently skip
+    }
+}
+
 $uniqueResults
