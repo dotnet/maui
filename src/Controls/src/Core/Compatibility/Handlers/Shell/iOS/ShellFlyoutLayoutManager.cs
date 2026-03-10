@@ -288,9 +288,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
 			var safeAreaInsets = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
-			var contentY = parentBounds.Y + safeAreaInsets.Top;
 
-			var contentHeight = parentBounds.Height - safeAreaInsets.Top - safeAreaInsets.Bottom - footerHeight;
+			// Honor ISafeAreaView.IgnoreSafeArea and explicit margins (same as LayoutHeader)
+			nfloat safeAreaTop = 0;
+			if (ShouldHonorSafeArea(HeaderView?.View) || (HeaderView is null && ShouldHonorSafeArea(Content)))
+			{
+				safeAreaTop = safeAreaInsets.Top;
+			}
+			nfloat safeAreaBottom = safeAreaInsets.Bottom;
+
+			var contentY = parentBounds.Y + safeAreaTop;
+			var contentHeight = parentBounds.Height - safeAreaTop - safeAreaBottom - footerHeight;
+
 			if (HeaderView is not null)
 			{
 				contentY += HeaderView.Frame.Height;

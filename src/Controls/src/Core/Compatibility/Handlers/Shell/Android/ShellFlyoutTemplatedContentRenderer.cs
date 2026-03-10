@@ -101,7 +101,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var topInset = Math.Max(systemBars?.Top ?? 0, displayCutout?.Top ?? 0);
 					var rightInset = Math.Max(systemBars?.Right ?? 0, displayCutout?.Right ?? 0);
 					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-					var appbarLayout = v.FindDescendantView<AppBarLayout>((v) => true);
 
 					v.SetPadding(leftInset, topInset, rightInset, bottomInset);
 
