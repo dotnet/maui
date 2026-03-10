@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // SwipeView automation does not work on Windows. For reference: https://github.com/dotnet/maui/issues/14777
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -36,3 +37,4 @@ public class Issue23921(TestDevice device) : _IssuesUITest(device)
 		Assert.That(buttonWasClicked, Is.True);
 	}
 }
+#endif
