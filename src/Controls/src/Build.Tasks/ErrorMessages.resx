@@ -206,7 +206,7 @@
     <comment>0 is the duplicated key</comment>
   </data>
   <data name="ObsoleteProperty" xml:space="preserve">
-    <value>"{0}" is deprecated: {1}</value>
+    <value>"{0}" is obsolete: {1}</value>
     <comment>0 is the member/type name, 1 is the obsolete message from the attribute</comment>
   </data>
   <data name="ObsoletePropertyError" xml:space="preserve">
