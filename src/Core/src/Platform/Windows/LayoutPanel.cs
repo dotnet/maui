@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
@@ -24,17 +25,22 @@ namespace Microsoft.Maui.Platform
 				Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
 			}
 
-			// When children are allowed to overflow this layout's bounds, we raise the
-			// Canvas.ZIndex of this panel so that overflowing children render on top of
-			// any sibling panels that would otherwise be drawn over them due to z-order.
-			// Deferred via DispatcherQueue so it executes AFTER the current layout pass.
-			// Setting Canvas.ZIndex synchronously inside ArrangeOverride triggers
-			// InvalidateArrange on the parent panel, which disrupts the UIAutomation tree
-			// mid-layout and causes WinAppDriver WaitForElement to time out.
-			var newZIndex = !ClipsToBounds && HasChildrenOutsideBounds(finalSize.Width, finalSize.Height) ? 1 : 0;
-			if (Canvas.GetZIndex(this) != newZIndex)
+			var zIndexTarget = (FrameworkElement)this;
+			if (Parent is WrapperView wrapperView)
 			{
-				DispatcherQueue.TryEnqueue(() => Canvas.SetZIndex(this, newZIndex));
+				zIndexTarget = wrapperView;
+			}
+
+			var zIndexParent = zIndexTarget.Parent;
+			if (!(zIndexParent is ContentPanel contentParent && contentParent.BorderStroke?.Shape is not null))
+			{
+				// Raise z-order for overflow scenarios. If this layout is wrapped, raise the
+				// WrapperView instead so ordering changes relative to sibling layouts.
+				var newZIndex = !ClipsToBounds && HasChildrenOutsideBounds(finalSize.Width, finalSize.Height) ? 1 : 0;
+				if (Canvas.GetZIndex(zIndexTarget) != newZIndex)
+				{
+					Canvas.SetZIndex(zIndexTarget, newZIndex);
+				}
 			}
 
 			return actual;
