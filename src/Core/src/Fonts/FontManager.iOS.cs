@@ -40,13 +40,15 @@ namespace Microsoft.Maui
 		{
 			_fontRegistrar = fontRegistrar;
 			_serviceProvider = serviceProvider;
-		}
 
-		/// <summary>
-		/// Clears the cached scaled font entries so that subsequent font
-		/// requests create new fonts with the current content size category scaling.
-		/// </summary>
-		internal void ClearFontCache() => _fonts.Clear();
+			// When the preferred content size category changes (Dynamic Type),
+			// clear the font cache so subsequent requests create new fonts
+			// with the current content size category scaling.
+			UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) =>
+			{
+				_fonts.Clear();
+			});
+		}
 
 		/// <inheritdoc/>
 		public UIFont DefaultFont =>
