@@ -156,7 +156,23 @@ namespace Microsoft.Maui.Handlers
 			HidePickerDialog();
 		}
 
-		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
-			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
+		// "HH" (uppercase) is the .NET 24-hour specifier; "hh" (lowercase) is 12-hour.
+		// Case-sensitive Ordinal comparison is required to distinguish between them.
+		internal static bool IsCustom24HourFormat(string? format) =>
+			!string.IsNullOrEmpty(format) && format.Contains("HH", StringComparison.Ordinal);
+
+		bool Use24HourView
+		{
+			get
+			{
+				if (VirtualView is null || string.IsNullOrEmpty(VirtualView.Format))
+					return false;
+
+				if (VirtualView.Format == "t")
+					return DateFormat.Is24HourFormat(PlatformView?.Context);
+
+				return IsCustom24HourFormat(VirtualView.Format);
+			}
+		}
 	}
 }
