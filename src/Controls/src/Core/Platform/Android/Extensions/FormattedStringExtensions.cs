@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Android.Content;
 using Android.Graphics;
@@ -83,12 +84,12 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.LineHeight >= 0)
 					spannable.SetSpan(new PlatformLineHeightSpan(context, (float)span.LineHeight, (float)defaultFontSize), start, end, SpanTypes.InclusiveExclusive);
 
-				// CharacterSpacing
-				var characterSpacing = span.CharacterSpacing >= 0
+				// CharacterSpacing with validation
+				var characterSpacing = span.IsSet(Span.CharacterSpacingProperty)
 					? span.CharacterSpacing
 					: defaultCharacterSpacing;
-				if (characterSpacing >= 0)
-					spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+				characterSpacing = Math.Max(0, characterSpacing);
+				spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 
 				// Font
 				var font = span.ToFont(defaultFontSize);
