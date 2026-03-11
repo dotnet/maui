@@ -1,2 +1,4 @@
-#nullable enable
+﻿#nullable enable
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*static Microsoft.Maui.Handlers.WebViewHandler.MapWebChromeClient(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+*REMOVED*static Microsoft.Maui.Handlers.WebViewHandler.MapWebViewClient(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
