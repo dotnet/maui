@@ -8,7 +8,7 @@
         ├── AppBarLayout (toolbar container - toolbar added programmatically via SetupToolbar())
         └── LinearLayout (ScrollingViewBehavior - content area)
             ├── ViewPager2 (weight=1 - hosts ShellSection fragments)
-            └── BottomNavigationView (bottom tabs for ShellSections)
+            └── BottomNavigationView (added programmatically - bottom tabs for ShellSections)
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -21,7 +21,9 @@
         android:id="@+id/shellitem_appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/MauiAppBarLayout">
+        android:theme="@style/MauiAppBarLayout"
+        app:liftOnScroll="true"
+        app:liftOnScrollTargetViewId="@id/shellitem_viewpager">
 
         <!-- Toolbar is added programmatically via ShellItemHandler.SetupToolbar() -->
 
@@ -41,11 +43,10 @@
             android:layout_weight="1"
             android:overScrollMode="never" />
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/shellitem_bottomnavigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="?attr/bottomNavigationViewStyle" />
+        <!-- BottomNavigationView is added programmatically via ShellItemHandler
+             to match the old renderer's 3-arg constructor style resolution.
+             XML style="?attr/..." resolves styles differently than the defStyleAttr
+             constructor parameter, causing icon/text size differences. -->
 
     </LinearLayout>
 
