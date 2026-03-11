@@ -50,10 +50,11 @@ public class Issue32041 : ContentPage
 		// We test by measuring the marker's Y position before and after keyboard appears
 		var bottomMarker = new Border
 		{
-			AutomationId = "BottomMarker",
 			BackgroundColor = Colors.Red,
 			HeightRequest = 60,
-			Margin = new Thickness(0)
+			Margin = new Thickness(0),
+			Padding = new Thickness(0),
+			StrokeThickness = 0
 		};
 
 		var markerContent = new VerticalStackLayout
@@ -82,7 +83,17 @@ public class Issue32041 : ContentPage
 
 		markerContent.Add(markerLabel);
 		markerContent.Add(testEntry);
-		bottomMarker.Content = markerContent;
+
+		var scrollView = new ScrollView
+		{
+			AutomationId = "BottomMarker",
+			Padding = 0,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
+			VerticalScrollBarVisibility = ScrollBarVisibility.Never,
+			Content = markerContent
+		};
+
+		bottomMarker.Content = scrollView;
 
 		mainContainer.Add(fillerContent);
 		Grid.SetRow(fillerContent, 0);
