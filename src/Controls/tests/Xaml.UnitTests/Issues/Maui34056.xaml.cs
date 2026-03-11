@@ -41,7 +41,9 @@ public partial class Maui34056 : ContentPage
             var content = template.CreateContent() as Button;
             Assert.NotNull(content);
 
-            var binding = content.GetContext(Button.CommandProperty)?.Bindings.GetValue();
+            var bindingContext = content.GetContext(Button.CommandProperty);
+            Assert.NotNull(bindingContext);
+            var binding = bindingContext.Bindings.GetValue();
 
             if (inflator is XamlInflator.Runtime)
             {
@@ -70,7 +72,9 @@ public partial class Maui34056 : ContentPage
             var content = template.CreateContent() as Label;
             Assert.NotNull(content);
 
-            var binding = content.GetContext(Label.TextProperty)?.Bindings.GetValue();
+            var bindingContext = content.GetContext(Label.TextProperty);
+            Assert.NotNull(bindingContext);
+            var binding = bindingContext.Bindings.GetValue();
 
             if (inflator is XamlInflator.XamlC)
             {
