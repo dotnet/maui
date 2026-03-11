@@ -185,28 +185,22 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the full name of the target type (namespace-qualified, without assembly).
 		/// </summary>
-		internal ReadOnlySpan<char> TargetTypeFullName
+		internal string TargetTypeFullName
 		{
 			get
 			{
 				// If we have the type already, use it (FullName may be null for special/generic types)
 				if (_targetType?.FullName is not null)
-					return _targetType.FullName.AsSpan();
+					return _targetType.FullName;
 
 				// Extract FullName from AQN: "Namespace.TypeName, AssemblyName, ..."
 				// FullName is everything before the first comma
 				Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
 
-#if NETSTANDARD2_0 || NETSTANDARD2_1
-#pragma warning disable CA1307 // string.IndexOf(char, StringComparison) is not available in netstandard
 				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(',');
-#pragma warning restore CA1307
-#else
-				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(',', StringComparison.Ordinal);
-#endif
 				return commaIndex > 0
-					? _assemblyQualifiedTargetTypeName.AsSpan(0, commaIndex)
-					: _assemblyQualifiedTargetTypeName.AsSpan();
+					? _assemblyQualifiedTargetTypeName.Substring(0, commaIndex)
+					: _assemblyQualifiedTargetTypeName;
 			}
 		}
 
@@ -223,7 +217,7 @@ namespace Microsoft.Maui.Controls
 		internal bool CanBeAppliedTo(Type targetType)
 		{
 			// Use FullName comparison to avoid resolving the type (which may have been trimmed)
-			if (targetType.FullName is not null && TargetTypeFullName.SequenceEqual(targetType.FullName))
+			if (targetType.FullName is not null && TargetTypeFullName == targetType.FullName)
 				return true;
 			if (!ApplyToDerivedTypes)
 				return false;
@@ -232,7 +226,7 @@ namespace Microsoft.Maui.Controls
 				targetType = targetType.BaseType;
 				if (targetType is null)
 					return false;
-				if (targetType.FullName is not null && TargetTypeFullName.SequenceEqual(targetType.FullName))
+				if (targetType.FullName is not null && TargetTypeFullName == targetType.FullName)
 					return true;
 			}
 			return false;
