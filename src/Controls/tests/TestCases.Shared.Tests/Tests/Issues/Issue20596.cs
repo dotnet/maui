@@ -14,7 +14,6 @@ public class Issue20596 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Button)]
-	[Category(UITestCategories.Visual)]
 	public void ShadowShouldUpdateOnCornerRadiusChange()
 	{
 		App.WaitForElement("UpdateCornerRadiusButton");

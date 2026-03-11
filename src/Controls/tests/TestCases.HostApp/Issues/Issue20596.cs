@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 20596, "[Android] Button with corner radius shadow broken on Android device", PlatformAffected.Android | PlatformAffected.WinUI)]
-public partial class Issue20596 : ContentPage
+[Issue(IssueTracker.Github, 20596, "[Android] Button with corner radius shadow broken on Android device", PlatformAffected.Android | PlatformAffected.UWP)]
+public class Issue20596 : ContentPage
 {
 	public Issue20596()
 	{
