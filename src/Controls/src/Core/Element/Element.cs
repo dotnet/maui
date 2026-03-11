@@ -670,8 +670,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
-		BindableProperty _currentPropertyBeingSet;
-
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
 		{
 			if (willFirePropertyChanged)
@@ -679,9 +677,7 @@ namespace Microsoft.Maui.Controls
 				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
 			}
 
-			_currentPropertyBeingSet = property;
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
-			_currentPropertyBeingSet = null;
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
 			UpdateHandlerValue(property.PropertyName, changed);
 
@@ -708,7 +704,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_effects?.Count > 0)
 			{
-				var args = _currentPropertyBeingSet?.CachedPropertyChangedEventArgs ?? new PropertyChangedEventArgs(propertyName);
+				var args = new PropertyChangedEventArgs(propertyName);
 				foreach (Effect effect in _effects)
 				{
 					effect?.SendOnElementPropertyChanged(args);
