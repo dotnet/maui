@@ -577,7 +577,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// When the RecyclerView's size changes (e.g., after an orientation change while
 			// the CollectionView was not visible), we need to invalidate all visible item views
 			// to ensure they are re-measured with the new dimensions.
-			if (oldw > 0 && oldh > 0 && (w != oldw || h != oldh))
+			if (oldw > 0 && oldh > 0 && (Math.Abs(w - oldw) > 1 || Math.Abs(h - oldh) > 1))
 			{
 				InvalidateItemMeasures();
 			}
