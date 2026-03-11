@@ -92,23 +92,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(FocusedStateName, stateGroup.CurrentState.Name);
 		}
 
-		[Fact]
-		public void ContainerChangedFiresWhenMapContainerIsCalled()
-		{
-			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper);
-			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
-
-			VisualElement.RemapForControls(mapper, commandMapper);
-			var handlerStub = new HandlerStub(mapper);
-			var button = new Button();
-			button.Handler = handlerStub;
-
-			bool fired = false;
-			(button as IControlsView).PlatformContainerViewChanged += (_, _) => fired = true;
-			handlerStub.UpdateValue(nameof(IViewHandler.ContainerView));
-			Assert.True(fired);
-		}
-
 		[Theory, Category(TestCategory.Memory)]
 		[InlineData(typeof(ImmutableBrush), false)]
 		[InlineData(typeof(SolidColorBrush), false)]
