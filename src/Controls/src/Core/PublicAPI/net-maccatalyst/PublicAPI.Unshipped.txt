@@ -1,4 +1,19 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Any = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Up | Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Down | Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Left | Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Right -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Down = 2 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Left = 4 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Right = 8 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Unknown = 0 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection.Up = 1 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 *REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetModalPopoverArrowDirections(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetModalPopoverContentSize(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Graphics.Size
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverArrowDirections(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverContentSize(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> Microsoft.Maui.Graphics.Size
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverArrowDirections(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIPopoverArrowDirection value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverContentSize(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, Microsoft.Maui.Graphics.Size value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverArrowDirectionsProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverContentSizeProperty -> Microsoft.Maui.Controls.BindableProperty
