@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 using Microsoft.Maui.Graphics;
 
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(ButtonHandler))]
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
 		const double DefaultSpacing = 10;

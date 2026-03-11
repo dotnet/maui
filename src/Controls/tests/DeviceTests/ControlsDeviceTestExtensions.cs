@@ -17,7 +17,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return
 				mauiAppBuilder
-					.RemapForControls()
 					.ConfigureLifecycleEvents(lifecycle =>
 					{
 #if IOS || MACCATALYST

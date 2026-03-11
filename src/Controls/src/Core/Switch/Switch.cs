@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="IsToggled"/> property to determine or set the current state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(SwitchHandler))]
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
 		/// <summary>
@@ -162,6 +163,17 @@ namespace Microsoft.Maui.Controls
 		private protected override string GetDebuggerDisplay()
 		{
 			return $"{base.GetDebuggerDisplay()}, IsToggled = {IsToggled}";
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool swResult))
+			{
+				IsToggled = swResult;
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
 	{
-		internal static new void RemapForControls()
+		static Entry()
 		{
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Entry), typeof(VisualElement));
+
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
