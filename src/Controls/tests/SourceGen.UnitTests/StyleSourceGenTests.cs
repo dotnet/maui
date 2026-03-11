@@ -206,8 +206,8 @@ public partial class TestPage
 	{
 		// This test verifies that when a Style with Setters is applied to an element,
 		// the Initializer is assigned BEFORE the SetValue(StyleProperty, style) call.
-		// This is critical because IStyle.Apply calls InitializeIfNeeded which needs
-		// the _initializer to be set, otherwise Setters won't be populated.
+		// This is critical because IStyle.Apply runs the lazy initializer which needs
+		// to be set, otherwise Setters won't be populated.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
