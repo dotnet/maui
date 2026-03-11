@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui33591_ShadowedEvent"
+             Title="EventTrigger Shadowed Event Test">
+    <StackLayout>
+        <!-- DerivedButton shadows the Clicked event from Button with a new event -->
+        <local:Maui33591DerivedButton x:Name="TestDerivedButton" Text="Derived">
+            <local:Maui33591DerivedButton.Triggers>
+                <EventTrigger Event="Clicked">
+                    <local:Maui33591TestTriggerAction />
+                </EventTrigger>
+            </local:Maui33591DerivedButton.Triggers>
+        </local:Maui33591DerivedButton>
+    </StackLayout>
+</ContentPage>
