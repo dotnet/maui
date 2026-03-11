@@ -105,6 +105,15 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 		// Fallback: use reflection-based EventTrigger
 		if (eventName != null)
 		{
+			// Warn that AOT-safe path wasn't taken
+			if (targetType == null)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(
+					Descriptors.EventTriggerTargetTypeNotResolved,
+					LocationCreate(context.ProjectItem.RelativePath!, eventLineInfo ?? node, eventName),
+					eventName));
+			}
+
 			writer.WriteLine($"new global::Microsoft.Maui.Controls.EventTrigger {{ Event = \"{eventName}\" }};");
 			node.SkipProperties.Add(new XmlName("", "Event"));
 		}

@@ -274,5 +274,7 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string DuplicatePropertyAssignmentMessage => ResourceManager.GetString("DuplicatePropertyAssignmentMessage", resourceCulture);
 		internal static string EventTriggerEventNotFoundTitle => ResourceManager.GetString("EventTriggerEventNotFoundTitle", resourceCulture);
 		internal static string EventTriggerEventNotFoundMessage => ResourceManager.GetString("EventTriggerEventNotFoundMessage", resourceCulture);
+		internal static string EventTriggerTargetTypeNotResolvedTitle => ResourceManager.GetString("EventTriggerTargetTypeNotResolvedTitle", resourceCulture);
+		internal static string EventTriggerTargetTypeNotResolvedMessage => ResourceManager.GetString("EventTriggerTargetTypeNotResolvedMessage", resourceCulture);
 	}
 }

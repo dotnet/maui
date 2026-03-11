@@ -254,4 +254,11 @@
     <value>Event '{0}' not found on type '{1}'. The EventTrigger will not fire.</value>
     <comment>0 is event name, 1 is type name</comment>
   </data>
+  <data name="EventTriggerTargetTypeNotResolvedTitle" xml:space="preserve">
+    <value>EventTrigger target type not resolved</value>
+  </data>
+  <data name="EventTriggerTargetTypeNotResolvedMessage" xml:space="preserve">
+    <value>Could not determine the target type for EventTrigger with Event='{0}'. The trigger will use reflection at runtime and will not be AOT-safe. Ensure the EventTrigger is nested directly inside an element's Triggers collection.</value>
+    <comment>0 is event name</comment>
+  </data>
 </root>

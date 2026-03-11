@@ -32,3 +32,4 @@ MAUIX2012 | XamlParsing | Error | CSharpExpressionsRequirePreviewFeatures
 MAUIX2013 | XamlParsing | Error | AsyncLambdaNotSupported
 MAUIX2015 | XamlInflation | Warning | DuplicatePropertyAssignment
 MAUIX2016 | XamlInflation | Error | EventTriggerEventNotFound
+MAUIX2017 | XamlInflation | Warning | EventTriggerTargetTypeNotResolved
