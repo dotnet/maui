@@ -1,8 +1,10 @@
+using System;
 using Android.Content;
 using Android.Content.Res;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Platform;
 using static AndroidX.AppCompat.Widget.SearchView;
 using AView = Android.Views.View;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -25,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 			return _platformSearchView;
 		}
 
+		QueryEditorTouchListener? _queryEditorTouchListener;
+		QueryEditorKeyListener? _queryEditorKeyListener;
+
 		protected override void ConnectHandler(SearchView platformView)
 		{
 			FocusListener.Handler = this;
@@ -32,6 +37,20 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.QueryTextChange += OnQueryTextChange;
 			platformView.QueryTextSubmit += OnQueryTextSubmit;
+
+			// QueryEditor is SearchView.SearchAutoComplete (not MauiAppCompatEditText), so there is
+			// no SelectionChanged event available. Track cursor/selection via three hooks:
+			//   1. OnQueryTextChange: fires on every keystroke (typing)
+			//   2. QueryEditorTouchListener (ACTION_UP): tap-to-reposition / drag-to-select
+			//   3. QueryEditorKeyListener (ACTION_UP): hardware keyboard navigation (Shift+Arrow, etc.)
+			if (QueryEditor is EditText queryEditor)
+			{
+				_queryEditorTouchListener = new QueryEditorTouchListener(this);
+				queryEditor.SetOnTouchListener(_queryEditorTouchListener);
+
+				_queryEditorKeyListener = new QueryEditorKeyListener(this);
+				queryEditor.SetOnKeyListener(_queryEditorKeyListener);
+			}
 		}
 
 		protected override void DisconnectHandler(SearchView platformView)
@@ -41,6 +60,17 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.QueryTextChange -= OnQueryTextChange;
 			platformView.QueryTextSubmit -= OnQueryTextSubmit;
+
+			if (QueryEditor is EditText queryEditor)
+			{
+				queryEditor.SetOnTouchListener(null);
+				_queryEditorTouchListener?.Dispose();
+				_queryEditorTouchListener = null;
+
+				queryEditor.SetOnKeyListener(null);
+				_queryEditorKeyListener?.Dispose();
+				_queryEditorKeyListener = null;
+			}
 		}
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
@@ -135,6 +165,16 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateIsReadOnly(searchBar);
 		}
 
+		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateCursorPosition(searchBar);
+		}
+
+		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateSelectionLength(searchBar);
+		}
+
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
@@ -173,6 +213,83 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView.UpdateText(e.NewText);
 			e.Handled = true;
+			// Typing always repositions the cursor; schedule a deferred cursor/selection read.
+			OnQueryEditorSelectionChanged();
+		}
+
+		internal void OnQueryEditorSelectionChanged()
+		{
+			QueryEditor?.Post(() =>
+			{
+				if (VirtualView is ISearchBar searchBar && QueryEditor is EditText queryEditor)
+				{
+					var cursorPosition = queryEditor.GetCursorPosition();
+					var selectedTextLength = queryEditor.GetSelectedTextLength();
+
+					if (searchBar.CursorPosition != cursorPosition)
+					{
+						searchBar.CursorPosition = cursorPosition;
+					}
+
+					if (searchBar.SelectionLength != selectedTextLength)
+					{
+						searchBar.SelectionLength = selectedTextLength;
+					}
+				}
+			});
+		}
+
+		class QueryEditorTouchListener : Java.Lang.Object, AView.IOnTouchListener
+		{
+			readonly SearchBarHandler _handler;
+
+			public QueryEditorTouchListener(SearchBarHandler handler)
+			{
+				_handler = handler;
+			}
+
+			public bool OnTouch(AView? v, MotionEvent? e)
+			{
+				// After ACTION_UP the gesture is complete and the cursor/selection is finalized.
+				if (e?.Action == MotionEventActions.Up)
+					_handler.OnQueryEditorSelectionChanged();
+				return false;
+			}
+		}
+
+		class QueryEditorKeyListener : Java.Lang.Object, AView.IOnKeyListener
+		{
+			readonly SearchBarHandler _handler;
+
+			public QueryEditorKeyListener(SearchBarHandler handler)
+			{
+				_handler = handler;
+			}
+
+			public bool OnKey(AView? v, Keycode keyCode, KeyEvent? e)
+			{
+				// Only fire for navigation keys (arrow, Home, End, PageUp/Down) that can
+				// reposition the cursor. Text-modifying keys are already handled by
+				// OnQueryTextChange; modifier-only keys (Shift, Ctrl, …) cannot move the cursor.
+				if (e?.Action == KeyEventActions.Up && IsNavigationKey(keyCode))
+				{
+					_handler.OnQueryEditorSelectionChanged();
+				}
+
+				return false;
+			}
+
+			// Returns true for keys that can reposition the cursor or change the
+			// selection range without altering the text content.
+			static bool IsNavigationKey(Keycode keyCode) =>
+				keyCode == Keycode.DpadLeft ||
+				keyCode == Keycode.DpadRight ||
+				keyCode == Keycode.DpadUp ||
+				keyCode == Keycode.DpadDown ||
+				keyCode == Keycode.MoveHome ||
+				keyCode == Keycode.MoveEnd ||
+				keyCode == Keycode.PageUp ||
+				keyCode == Keycode.PageDown;
 		}
 
 		class FocusChangeListener : Java.Lang.Object, SearchView.IOnFocusChangeListener
