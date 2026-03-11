@@ -79,19 +79,7 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			intent.SetType(contentType);
 			intent.SetFlags(ActivityFlags.GrantReadUriPermission);
 
-			if (contentUris.Count == 1)
-			{
-				intent.PutExtra(Intent.ExtraStream, contentUris[0]);
-
-				// Set ClipData so the system grants URI read permission to the receiving app.
-				// Without this, Android 10+ logs a SecurityException when the share sheet
-				// or target app tries to read the FileProvider content URI.
-				if (OperatingSystem.IsAndroidVersionAtLeast(29))
-				{
-					intent.ClipData = ClipData.NewRawUri(request.Title ?? string.Empty, (AndroidUri)contentUris[0]);
-				}
-			}
-			else if (contentUris.Count > 1)
+			if (contentUris.Count > 1)
 			{
 				intent.PutParcelableArrayListExtra(Intent.ExtraStream, contentUris);
 
@@ -111,6 +99,18 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 					}
 
 					intent.ClipData = clipData;
+				}
+			}
+			else if (contentUris.Count == 1)
+			{
+				intent.PutExtra(Intent.ExtraStream, contentUris[0]);
+
+				// Set ClipData so the system grants URI read permission to the receiving app.
+				// Without this, Android 10+ logs a SecurityException when the share sheet
+				// or target app tries to read the FileProvider content URI.
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					intent.ClipData = ClipData.NewRawUri(request.Title ?? string.Empty, (AndroidUri)contentUris[0]);
 				}
 			}
 
