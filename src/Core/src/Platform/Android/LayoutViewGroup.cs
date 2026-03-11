@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Platform
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
+		ViewOutlineProvider? _originalOutlineProvider;
+		bool _outlineProviderSaved;
 
 		public bool InputTransparent { get; set; }
 
@@ -171,12 +173,22 @@ namespace Microsoft.Maui.Platform
 				
 				if (HasChildrenOutsideBounds(contentWidthPx, contentHeightPx))
 				{
-    				OutlineProvider = null;  // Prevent elevation shadow from background
-    				TranslationZ = 1f;
+					if (!_outlineProviderSaved)
+					{
+						_originalOutlineProvider = OutlineProvider;
+						_outlineProviderSaved = true;
+					}
+					OutlineProvider = null;  // Prevent elevation shadow from background
+					TranslationZ = 1f;
 				}
 				else
 				{
-    				TranslationZ = 0f;
+					if (_outlineProviderSaved)
+					{
+						OutlineProvider = _originalOutlineProvider;
+						_outlineProviderSaved = false;
+					}
+					TranslationZ = 0f;
 				}
 			}
 
