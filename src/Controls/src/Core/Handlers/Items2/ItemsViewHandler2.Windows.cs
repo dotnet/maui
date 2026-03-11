@@ -341,7 +341,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				};
 			}
 
-			if (itemTemplate is not null && itemsSource is not null)
+			else
 			{
 				var flattenedSource = itemsSource;
 				if (itemsSource is not null && IsItemsSourceGrouped(itemsSource))
