@@ -247,4 +247,11 @@
     <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
     <comment>0 is a property name (e.g., "Border.Content", "Label.Text")</comment>
   </data>
+  <data name="EventTriggerEventNotFoundTitle" xml:space="preserve">
+    <value>Event not found</value>
+  </data>
+  <data name="EventTriggerEventNotFoundMessage" xml:space="preserve">
+    <value>Event '{0}' not found on type '{1}'. The EventTrigger will not fire.</value>
+    <comment>0 is event name, 1 is type name</comment>
+  </data>
 </root>
