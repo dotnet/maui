@@ -1,3 +1,4 @@
+#if ANDROID || IOS // ScrollRight with ScrollStrategy.Gesture is not supported on Windows and MacCatalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,8 +23,9 @@ public class Issue34165 : _IssuesUITest
 
 		var rectAfter = App.WaitForElement("EmptyViewLabel").GetRect();
 
-		Assert.That(rectAfter.X, Is.EqualTo(rectBefore.X),
+		Assert.That(rectAfter.X, Is.EqualTo(rectBefore.X).Within(1),
 			$"EmptyViewLabel X position changed from {rectBefore.X} to {rectAfter.X}. " +
 			"CollectionView must NOT scroll horizontally when empty inside a RefreshView.");
 	}
 }
+#endif

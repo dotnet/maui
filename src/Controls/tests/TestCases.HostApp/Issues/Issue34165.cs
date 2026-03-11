@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34165, "CollectionView is scrolling left/right when the collection is empty and inside a RefreshView", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 34165, "CollectionView is scrolling left/right when the collection is empty and inside a RefreshView", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue34165 : ContentPage
 {
 	public const string CollectionViewId = "CollectionView";
