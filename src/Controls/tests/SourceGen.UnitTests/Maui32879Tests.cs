@@ -48,6 +48,7 @@ public partial class TestPage : ContentPage
 }
 """;
 
+
 		var testXamlFilePath = Path.Combine(Environment.CurrentDirectory, "Test.xaml");
 		var expected =
 $$"""
