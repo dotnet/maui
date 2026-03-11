@@ -89,7 +89,6 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 			}
 		});
 
-	[Theory]
 	[RequiresUnreferencedCode("Test uses JSON serialization which may require unreferenced code")]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2

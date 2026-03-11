@@ -5,7 +5,7 @@ namespace Samples.Model
 {
 	public class SampleItem
 	{
-		public SampleItem(string icon, string name, Type pageType, string description, params string[] tags)
+		public SampleItem(string icon, string name, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type pageType, string description, params string[] tags)
 		{
 			Icon = icon;
 			Name = name;

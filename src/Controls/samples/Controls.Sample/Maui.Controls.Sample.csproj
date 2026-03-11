@@ -23,12 +23,11 @@
   <!-- Add trimming configuration for the sample app -->
   <PropertyGroup>
     <!-- This is a sample app, so we're using partial trimming mode for better compatibility -->
-    <PublishTrimmed>false</PublishTrimmed>
     <TrimMode>partial</TrimMode>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <!-- Add warnings to NoWarn for trimming issues in this sample app -->
-    <NoWarn>$(NoWarn);IL2026;IL2091;IL2072;IL2112;IL2046;IL2114;IL2111;IL2097</NoWarn>
+    <NoWarn>$(NoWarn);IL2026;IL2067;IL2069;IL2091;IL2072;IL2112;IL2046;IL2114;IL2111;IL2097</NoWarn>
     <!-- Reference the trimming configuration file -->
     <RootAllApplicationAssemblies>false</RootAllApplicationAssemblies>
     <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
@@ -36,7 +35,6 @@
     <IlcTrimMetadata>true</IlcTrimMetadata>
     <!-- Add specific Blazor-related suppressions -->
     <BlazorWebViewEnableSourceGeneratorForListOfComponents>false</BlazorWebViewEnableSourceGeneratorForListOfComponents>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <ItemGroup>
