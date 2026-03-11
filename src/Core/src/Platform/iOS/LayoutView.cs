@@ -25,11 +25,15 @@ namespace Microsoft.Maui.Platform
 			var width = Bounds.Width;
 			var height = Bounds.Height;
 
+			// Use a small tolerance (1.0 DIU) to absorb sub-pixel rounding
+			// differences from layout calculations, consistent with Android/Windows.
+			const double tolerance = 1.0;
+
 			for (int i = 0; i < layout.Count; i++)
 			{
 				var frame = layout[i].Frame;
-				if (frame.Right > width || frame.Bottom > height
-					|| frame.Left < 0 || frame.Top < 0)
+				if (frame.Right > width + tolerance || frame.Bottom > height + tolerance
+					|| frame.Left < -tolerance || frame.Top < -tolerance)
 				{
 					return true;
 				}
