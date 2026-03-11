@@ -104,13 +104,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isRedChecked = value;
 				if (value)
-				{
-					Color = Colors.Red;
-					_isBlueChecked = false;
-					OnPropertyChanged(nameof(IsBlueChecked));
-					_isGreenChecked = false;
-					OnPropertyChanged(nameof(IsGreenChecked));
-				}
+					SelectColor(Colors.Red, ref _isBlueChecked, nameof(IsBlueChecked), ref _isGreenChecked, nameof(IsGreenChecked));
 				OnPropertyChanged();
 			}
 		}
@@ -125,13 +119,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isBlueChecked = value;
 				if (value)
-				{
-					Color = Colors.Blue;
-					_isRedChecked = false;
-					OnPropertyChanged(nameof(IsRedChecked));
-					_isGreenChecked = false;
-					OnPropertyChanged(nameof(IsGreenChecked));
-				}
+					SelectColor(Colors.Blue, ref _isRedChecked, nameof(IsRedChecked), ref _isGreenChecked, nameof(IsGreenChecked));
 				OnPropertyChanged();
 			}
 		}
@@ -146,16 +134,19 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isGreenChecked = value;
 				if (value)
-				{
-					Color = Colors.Green;
-					_isRedChecked = false;
-					OnPropertyChanged(nameof(IsRedChecked));
-					_isBlueChecked = false;
-					OnPropertyChanged(nameof(IsBlueChecked));
-				}
+					SelectColor(Colors.Green, ref _isRedChecked, nameof(IsRedChecked), ref _isBlueChecked, nameof(IsBlueChecked));
 				OnPropertyChanged();
 			}
 		}
+	}
+
+	private void SelectColor(Color color, ref bool other1, string other1Name, ref bool other2, string other2Name)
+	{
+		Color = color;
+		other1 = false;
+		OnPropertyChanged(other1Name);
+		other2 = false;
+		OnPropertyChanged(other2Name);
 	}
 	public double Opacity
 	{
@@ -269,6 +260,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 	public bool IsRTL
 	{
 		get => _isRTL;

@@ -57,22 +57,37 @@ namespace Maui.Controls.Sample
 
 		private void OnOpacityChanged(object sender, TextChangedEventArgs e)
 		{
-			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+			if (string.IsNullOrWhiteSpace(e.NewTextValue))
 			{
-				if (value >= 0 && value <= 1)
-					_viewModel.Opacity = value;
+				_viewModel.Opacity = 1.0;
+				return;
 			}
+
+			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value >= 0 && value <= 1)
+				_viewModel.Opacity = value;
 		}
 
 		private void OnWidthChanged(object sender, TextChangedEventArgs e)
 		{
-			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value > 0)
+			if (string.IsNullOrWhiteSpace(e.NewTextValue))
+			{
+				_viewModel.Width = 200;
+				return;
+			}
+
+			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value >= 0)
 				_viewModel.Width = value;
 		}
 
 		private void OnHeightChanged(object sender, TextChangedEventArgs e)
 		{
-			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value > 0)
+			if (string.IsNullOrWhiteSpace(e.NewTextValue))
+			{
+				_viewModel.Height = 100;
+				return;
+			}
+
+			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value >= 0)
 				_viewModel.Height = value;
 		}
 	}

@@ -138,7 +138,7 @@
                                                           AutomationId="FlowDirectionRTLCheckBox"
                                                           IsChecked="{Binding IsRTL, Mode=TwoWay}"/>
                                                 <Label Text="RTL"
-                                                                VerticalOptions="Center"/>
+                                                       VerticalOptions="Center"/>
                                         </StackLayout>
 
                                 </VerticalStackLayout>
