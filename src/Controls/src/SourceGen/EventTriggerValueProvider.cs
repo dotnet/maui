@@ -65,7 +65,12 @@ internal class EventTriggerValueProvider : IKnownMarkupValueProvider
 		
 		if (eventName != null && targetType != null)
 		{
-			// Look up event on target type
+			// Look up event on target type.
+			// GetAllMembers walks from most-derived to base, so .First() returns the
+			// most-derived event declaration — matching runtime GetRuntimeEvent() behavior.
+			// This is also consistent with ConnectEvent in SetPropertyHelpers.cs.
+			// If a derived class shadows a base event (new event Foo), we correctly pick
+			// the derived version since it appears first in the member walk.
 			var eventSymbols = targetType.GetAllEvents(eventName, context).ToList();
 			if (eventSymbols.Count > 0)
 			{
