@@ -4,10 +4,16 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that returns an object by its x:Name from the current XAML namescope.
+	/// </summary>
 	[ContentProperty(nameof(Name))]
 	[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
 	public class ReferenceExtension : IMarkupExtension
 	{
+		/// <summary>
+		/// Gets or sets the x:Name of the element to reference.
+		/// </summary>
 		public string Name { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)

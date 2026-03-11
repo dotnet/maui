@@ -3,20 +3,22 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ValueChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ValueChangedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for numeric value changes.</summary>
 	public class ValueChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ValueChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ValueChangedEventArgs"/> with the old and new values.</summary>
+		/// <param name="oldValue">The previous value.</param>
+		/// <param name="newValue">The new value.</param>
 		public ValueChangedEventArgs(double oldValue, double newValue)
 		{
 			OldValue = oldValue;
 			NewValue = newValue;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ValueChangedEventArgs.xml" path="//Member[@MemberName='NewValue']/Docs/*" />
+		/// <summary>Gets the new value.</summary>
 		public double NewValue { get; private set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ValueChangedEventArgs.xml" path="//Member[@MemberName='OldValue']/Docs/*" />
+		/// <summary>Gets the previous value.</summary>
 		public double OldValue { get; private set; }
 	}
 }

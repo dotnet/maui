@@ -1,17 +1,29 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindingMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindingMode']/Docs/*" />
+	/// <summary>
+	/// Specifies the direction of data flow in a binding.
+	/// </summary>
 	public enum BindingMode
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindingMode.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>
+		/// Uses the default binding mode for the target property.
+		/// </summary>
 		Default,
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindingMode.xml" path="//Member[@MemberName='TwoWay']/Docs/*" />
+		/// <summary>
+		/// Updates both the target and source when either changes.
+		/// </summary>
 		TwoWay,
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindingMode.xml" path="//Member[@MemberName='OneWay']/Docs/*" />
+		/// <summary>
+		/// Updates the target when the source changes.
+		/// </summary>
 		OneWay,
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindingMode.xml" path="//Member[@MemberName='OneWayToSource']/Docs/*" />
+		/// <summary>
+		/// Updates the source when the target changes.
+		/// </summary>
 		OneWayToSource,
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindingMode.xml" path="//Member[@MemberName='OneTime']/Docs/*" />
+		/// <summary>
+		/// Updates the target only once when the binding is created.
+		/// </summary>
 		OneTime,
 	}
 }
