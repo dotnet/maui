@@ -695,7 +695,11 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyBindings(bool fromBindingContextChanged)
 		{
-			foreach (var context in _properties.Values)
+			// Snapshot the property contexts — ApplyBinding can trigger re-entrant
+			// property changes (via callbacks) that modify _properties mid-iteration.
+			var contexts = _properties.Values.ToArray();
+
+			foreach (var context in contexts)
 			{
 				if (ReferenceEquals(context.Property, BindingContextProperty))
 				{
