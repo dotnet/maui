@@ -361,6 +361,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ListViewBase.Items.Count > 0)
 			{
+				// Loop centering is no longer needed here: UpdateCurrentItem and UpdatePosition
+				// now use _lastScrolledToPosition to guard against re-entry and scroll to the
+				// correct centered position programmatically, making the explicit CenterMode block redundant.
 				if (ItemsView.CurrentItem != null)
 					UpdateCurrentItem();
 				else
