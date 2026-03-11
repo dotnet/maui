@@ -53,10 +53,8 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		{
 			handler.UpdateItemsLayout();
 		}
-		else
-		{
+	
 			handler.UpdateItemsSource();
-		}
 	}
 
 	public static void MapGroupHeaderTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)
