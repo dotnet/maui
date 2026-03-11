@@ -59,9 +59,9 @@ You can override the inflator for individual XAML files using item metadata:
 
 When this feature is disabled, CSS stylesheets cannot be parsed or applied to UI elements. Any attempt to use CSS will throw a `NotSupportedException`.
 
-**Default behavior**: This feature is automatically disabled when your project has no `MauiCss` items (CSS files). If your project includes any CSS files, the feature is automatically enabled.
+**Default behavior**: In optimized builds (`PublishAot=true` or `TrimMode=full`), this feature is automatically disabled when your project has no `MauiCss` items (CSS files), and automatically enabled when CSS files are present. In development builds, CSS is always enabled regardless of whether `MauiCss` items are present.
 
-**When to enable manually**: If your app loads CSS stylesheets dynamically at runtime (e.g., from a network source or embedded resources) rather than including them as `MauiCss` build items, you need to explicitly enable this feature:
+**When to enable manually**: If your app loads CSS stylesheets dynamically at runtime (e.g., from a network source or embedded resources) rather than including them as `MauiCss` build items, you need to explicitly enable this feature in your optimized builds:
 
 ```xml
 <PropertyGroup>

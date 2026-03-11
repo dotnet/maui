@@ -160,10 +160,10 @@ namespace Microsoft.Maui
 #pragma warning restore IL4000
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsCssEnabled")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}")]
 #endif
 		internal static bool IsCssEnabled =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", out bool isEnabled)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
 	}
