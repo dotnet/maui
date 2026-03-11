@@ -334,7 +334,6 @@
                               Background="{TemplateBinding Background}"
                               BorderBrush="{TemplateBinding BorderBrush}"
                               BorderThickness="{TemplateBinding BorderThickness}"
-                              CornerRadius="{TemplateBinding CornerRadius}"
                               TabNavigation="{TemplateBinding TabNavigation}"
                               HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                               HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
@@ -343,7 +342,7 @@
                               IsHorizontalScrollChainingEnabled="True"
                               IsVerticalScrollChainingEnabled="True"
                               AutomationProperties.AccessibilityView="Raw">
-                        <controls:StackPanel x:Name="PART_ContainerStack">
+                        <items2:ItemsSnapPointsPanel x:Name="PART_ContainerStack">
                                 <ContentControl x:Name="HeaderContentControl"
                                                 HorizontalContentAlignment="Stretch"
                                                 VerticalContentAlignment="Stretch"/>
@@ -368,7 +367,7 @@
                                 <ContentControl x:Name="FooterContentControl"
                                                 HorizontalContentAlignment="Stretch"
                                                 VerticalContentAlignment="Stretch"/>
-                        </controls:StackPanel>
+                        </items2:ItemsSnapPointsPanel>
                 </ScrollViewer>
 
         </ControlTemplate>
