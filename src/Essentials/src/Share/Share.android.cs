@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.App;
@@ -85,25 +86,38 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 				// Set ClipData so the system grants URI read permission to the receiving app.
 				// Without this, Android 10+ logs a SecurityException when the share sheet
 				// or target app tries to read the FileProvider content URI.
-				intent.ClipData = ClipData.NewRawUri(request.Title ?? string.Empty, (AndroidUri)contentUris[0]);
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					intent.ClipData = ClipData.NewRawUri(request.Title ?? string.Empty, (AndroidUri)contentUris[0]);
+				}
 			}
 			else if (contentUris.Count > 1)
 			{
 				intent.PutParcelableArrayListExtra(Intent.ExtraStream, contentUris);
 
-				var clipData = new ClipData(
-					request.Title ?? string.Empty,
-					new[] { contentType },
-					new ClipData.Item((AndroidUri)contentUris[0]));
+				// Set ClipData so the system grants URI read permission to the receiving app.
+				// Without this, Android 10+ logs a SecurityException when the share sheet
+				// or target app tries to read the FileProvider content URI.
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					var clipData = new ClipData(
+						request.Title ?? string.Empty,
+						new[] { contentType },
+						new ClipData.Item((AndroidUri)contentUris[0]));
 
-				for (int i = 1; i < contentUris.Count; i++)
-					clipData.AddItem(new ClipData.Item((AndroidUri)contentUris[i]));
+					for (int i = 1; i < contentUris.Count; i++)
+					{
+						clipData.AddItem(new ClipData.Item((AndroidUri)contentUris[i]));
+					}
 
-				intent.ClipData = clipData;
+					intent.ClipData = clipData;
+				}
 			}
 
 			if (!string.IsNullOrEmpty(request.Title))
+			{
 				intent.PutExtra(Intent.ExtraTitle, request.Title);
+			}
 
 			return intent;
 		}
