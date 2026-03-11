@@ -208,11 +208,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// so the layout can compute actual content size from its items.
 				if (collectionView.Window == null)
 				{
+					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
+					nfloat ClampConstraint(double constraint, nfloat fallback)
+					{
+						// Treat NaN, infinity, and negative values as invalid and fall back.
+						if (double.IsNaN(constraint) || double.IsInfinity(constraint) || constraint < 0)
+							return fallback;
+
+						var value = (nfloat)constraint;
+
+						// Guard against overflow to infinity/NaN or negative after casting.
+						var valueAsDouble = (double)value;
+						if (double.IsNaN(valueAsDouble) || double.IsInfinity(valueAsDouble) || value < 0)
+							return fallback;
+
+						return value;
+					}
+
 					var previousFrame = collectionView.Frame;
 					try
 					{
-						// Give the CollectionView the available size so the layout calculates correctly
-						collectionView.Frame = new CoreGraphics.CGRect(0, 0, (nfloat)widthConstraint, (nfloat)heightConstraint);
+						// Give the CollectionView a finite available size so the layout calculates correctly
+						var frameWidth = ClampConstraint(widthConstraint, UIView.UILayoutFittingExpandedSize.Width);
+						var frameHeight = ClampConstraint(heightConstraint, UIView.UILayoutFittingExpandedSize.Height);
+
+						collectionView.Frame = new CoreGraphics.CGRect(0, 0, frameWidth, frameHeight);
 						collectionView.SetNeedsLayout();
 						collectionView.LayoutIfNeeded();
 
