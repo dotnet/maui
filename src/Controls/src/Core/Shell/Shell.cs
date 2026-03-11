@@ -997,7 +997,7 @@ namespace Microsoft.Maui.Controls
 
 				// Fire NavigatingFrom after state is updated so CurrentPage is the destination.
 				// _previousPage was captured in SendNavigating before navigation started.
-				if (_previousPage != null)
+				if (_previousPage is not null)
 				{
 					NavigationType navigationType = NavigationType.Replace;
 
@@ -1014,6 +1014,14 @@ namespace Microsoft.Maui.Controls
 							break;
 						case ShellNavigationSource.Insert:
 							navigationType = NavigationType.Insert;
+							break;
+						case ShellNavigationSource.Remove:
+							navigationType = NavigationType.Remove;
+							break;
+						case ShellNavigationSource.ShellItemChanged:
+						case ShellNavigationSource.ShellSectionChanged:
+						case ShellNavigationSource.ShellContentChanged:
+							navigationType = NavigationType.Replace;
 							break;
 					}
 
