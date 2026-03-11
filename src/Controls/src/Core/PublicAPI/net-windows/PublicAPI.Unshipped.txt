@@ -44,6 +44,5 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
 ~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
-*REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 ~Microsoft.Maui.Controls.Style.LazyInitialization.set -> void
 ~Microsoft.Maui.Controls.Style.Style(string assemblyQualifiedTargetTypeName) -> void
