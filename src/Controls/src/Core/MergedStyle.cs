@@ -30,10 +30,12 @@ namespace Microsoft.Maui.Controls
 
 		IList<string> _styleClass;
 
+		readonly Type _targetType;
+
 		public MergedStyle(Type targetType, BindableObject target)
 		{
 			Target = target;
-			TargetType = targetType;
+			_targetType = targetType;
 			// RegisterImplicitStyles handles the initial apply via OnImplicitStyleChanged -> SetStyle.
 			// An explicit Apply(Target) call here would double-attach event handlers when
 			// Application.Current.Resources already contains the implicit style (#24152).
@@ -47,8 +49,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_style == value)
 					return;
-				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
-					MauiLogger<Style>.Log(LogLevel.Warning, $"Style TargetType {value.TargetType.FullName} is not compatible with element target type {TargetType}");
+				if (value?.TargetType is Type styleTargetType && !styleTargetType.IsAssignableFrom(_targetType))
+				{
+					MauiLogger<Style>.Log(LogLevel.Warning, $"Style TargetType {styleTargetType.FullName} is not compatible with element target type {_targetType}");
+				}
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}
@@ -116,7 +120,7 @@ namespace Microsoft.Maui.Controls
 			Style?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 
-		public Type TargetType { get; }
+		public Type TargetType => _targetType;
 
 		public void UnApply(BindableObject bindable)
 		{
@@ -129,7 +133,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnClassStyleChanged()
 		{
-			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();
+			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(_targetType))).ToList();
 		}
 
 		void OnImplicitStyleChanged()
@@ -155,7 +159,7 @@ namespace Microsoft.Maui.Controls
 
 		void RegisterImplicitStyles()
 		{
-			Type type = TargetType;
+			Type type = _targetType;
 			while (true)
 			{
 				BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),
