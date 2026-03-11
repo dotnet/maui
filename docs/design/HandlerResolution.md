@@ -47,6 +47,11 @@ How a handler instance is created depends on how it was resolved:
 - **`[ElementHandler]` attribute** (step 2): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
 - **Fallback in `ElementExtensions.ToHandler()`**: When `Activator.CreateInstance` fails with a `MissingMethodException` (e.g., the handler requires constructor parameters), `ActivatorUtilities.CreateInstance` is used instead, which supports constructor injection from the DI container.
 
+> **Note:** Handlers registered via `[ElementHandler]` must have a public parameterless constructor.
+> They are instantiated with `Activator.CreateInstance()`, not through the DI container.
+> The `ActivatorUtilities.CreateInstance()` fallback only applies to DI-registered handlers
+> resolved through `ElementExtensions.ToHandler()`.
+
 ## Types used in the resolution of Handlers to Views
 
 ### `MauiFactory`
