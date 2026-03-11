@@ -1,0 +1,6 @@
+{
+  "extraKnownMarketplaces": [
+    { "url": "https://github.com/dotnet/arcade-skills" }
+  ],
+  "enabledPlugins": ["dotnet-dnceng@dotnet-arcade-skills"]
+}
