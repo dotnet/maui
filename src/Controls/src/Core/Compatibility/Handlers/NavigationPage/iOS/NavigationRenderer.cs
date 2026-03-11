@@ -1608,6 +1608,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
 					UpdateLeftBarButtonItem();
+
+				// On Mac Catalyst, window maximize/restore triggers ViewWillTransitionToSize
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(13))
+				{
+					coordinator?.AnimateAlongsideTransition((context) =>
+					{
+						UpdateTitleViewFrameForOrientation();
+					}, null);
+				}
 			}
 
 			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
