@@ -238,13 +238,6 @@ namespace Microsoft.Maui.Controls.Internals
 			_skipConvert = false;
 			_isTSource = false;
 
-			_isSubscribed = false;
-			_cachedMode = BindingMode.Default;
-			_hasDefaultValue = false;
-			_cachedDefaultValue = null;
-			_skipConvert = false;
-			_isTSource = false;
-
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
 			_weakSource.SetTarget(null);
 			_weakTarget.SetTarget(null);
