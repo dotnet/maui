@@ -26,7 +26,8 @@ parameters:
   - name: pool
     type: object
     default:
-      name: AcesShared
+      name: Azure Pipelines
+      vmImage: ubuntu-22.04
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -34,6 +35,10 @@ variables:
     value: false
   - name: Codeql.SkipTaskAutoInjection
     value: true
+  - name: APPIUM_HOME
+    value: $(System.DefaultWorkingDirectory)/.appium/
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)/logs
 
 stages:
   - stage: ReviewPR
@@ -42,7 +47,7 @@ stages:
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
         pool: ${{ parameters.pool }}
-        timeoutInMinutes: 180
+        timeoutInMinutes: 360
         steps:
           - checkout: self
             fetchDepth: 0
@@ -61,135 +66,24 @@ stages:
               echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
 
-          # Provision environment (Xcode, .NET SDK, Android SDK, etc.)
+          # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - template: common/enable-kvm.yml
+
+          # Provision SDKs (same parameters as ui-tests-steps.yml)
           - template: common/provision.yml
             parameters:
-              skipXcode: false
-              skipProvisionator: false
-              skipAndroidCommonSdks: ${{ eq(parameters.Platform, 'ios') }}
-              skipAndroidPlatformApis: ${{ eq(parameters.Platform, 'ios') }}
-              skipJdk: ${{ eq(parameters.Platform, 'ios') }}
-              skipSimulatorSetup: false
-              skipCertificates: true
-              # Android emulator setup (skip for iOS)
-              skipAndroidEmulatorImages: ${{ eq(parameters.Platform, 'ios') }}
-              skipAndroidCreateAvds: ${{ eq(parameters.Platform, 'ios') }}
+              skipXcode: ${{ eq(parameters.Platform, 'android') }}
+              skipProvisionator: true
+              skipJdk: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidPlatformApis: true
+              onlyAndroidPlatformDefaultApis: true
+              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
-
-          # Configure AVD for hardware acceleration (AcesShared ARM64 macOS agents have HVF)
-          # Match maui-pr Cake script: no GPU override on macOS (uses default hw GPU)
-          - script: |
-              echo "=== Configuring AVD for hardware-accelerated emulation ==="
-              AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
-              if [ -f "$AVD_CONFIG" ]; then
-                echo "Found AVD config: $AVD_CONFIG"
-                cat "$AVD_CONFIG"
-              else
-                echo "##vso[task.logissue type=warning]AVD config not found at: $AVD_CONFIG"
-                ls -la "$HOME/.android/avd/" 2>/dev/null || echo "AVD directory not found"
-              fi
-            displayName: 'Configure AVD'
-            condition: eq('${{ parameters.Platform }}', 'android')
-
-          # Set up Android SDK PATH (required on self-hosted agents)
-          - pwsh: |
-              if ($env:ANDROID_SDK_ROOT) {
-                $platformTools = Join-Path $env:ANDROID_SDK_ROOT "platform-tools"
-                $emulatorPath = Join-Path $env:ANDROID_SDK_ROOT "emulator"
-                $cmdlineTools = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/latest/bin"
-                
-                # Use Azure Pipelines' prependpath command to persist across steps
-                Write-Host "##vso[task.prependpath]$platformTools"
-                Write-Host "##vso[task.prependpath]$emulatorPath"
-                Write-Host "##vso[task.prependpath]$cmdlineTools"
-                
-                Write-Host "Added to PATH (will apply to subsequent steps):"
-                Write-Host "  platform-tools: $platformTools"
-                Write-Host "  emulator: $emulatorPath"
-                Write-Host "  cmdline-tools: $cmdlineTools"
-                
-                # Verify the tools exist
-                if (Test-Path (Join-Path $platformTools "adb")) {
-                  Write-Host "✅ adb found at: $platformTools/adb"
-                } else {
-                  Write-Host "⚠️ adb NOT found at expected location"
-                }
-                if (Test-Path (Join-Path $emulatorPath "emulator")) {
-                  Write-Host "✅ emulator found at: $emulatorPath/emulator"
-                } else {
-                  Write-Host "⚠️ emulator NOT found at expected location"
-                }
-              } else {
-                Write-Host "##vso[task.logissue type=warning]ANDROID_SDK_ROOT not set, skipping PATH setup"
-              }
-              
-              # Auto-detect and set JAVA_HOME if not already set
-              if (-not $env:JAVA_HOME) {
-                $jvmDir = "/Library/Java/JavaVirtualMachines"
-                $msJdk = Get-ChildItem "$jvmDir/microsoft-*.jdk" -ErrorAction SilentlyContinue | Select-Object -First 1
-                if ($msJdk) {
-                  $javaHome = "$($msJdk.FullName)/Contents/Home"
-                  Write-Host "##vso[task.setvariable variable=JAVA_HOME]$javaHome"
-                  Write-Host "Set JAVA_HOME to: $javaHome"
-                }
-              }
-            displayName: 'Configure Android SDK PATH'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-
-          # Start Android Emulator EARLY (using Start-Emulator.ps1 script)
-          - pwsh: |
-              Write-Host "=== Starting Android Emulator ==="
-              Write-Host "Working directory: $(Get-Location)"
-              Write-Host "ANDROID_SDK_ROOT: $env:ANDROID_SDK_ROOT"
-              Write-Host "JAVA_HOME: $env:JAVA_HOME"
-              Write-Host "PATH (first 500 chars): $($env:PATH.Substring(0, [Math]::Min(500, $env:PATH.Length)))"
-              
-              # Verify adb is in path
-              $adbPath = Get-Command adb -ErrorAction SilentlyContinue
-              if ($adbPath) {
-                Write-Host "adb found at: $($adbPath.Source)"
-              } else {
-                Write-Host "adb NOT in PATH, checking manually..."
-                $manualAdb = Join-Path $env:ANDROID_SDK_ROOT "platform-tools/adb"
-                if (Test-Path $manualAdb) {
-                  Write-Host "adb exists at $manualAdb but not in PATH"
-                }
-              }
-              
-              $scriptPath = ".github/scripts/shared/Start-Emulator.ps1"
-              Write-Host "Script path: $scriptPath"
-              
-              if (-not (Test-Path $scriptPath)) {
-                Write-Host "##vso[task.logissue type=error]Script not found: $scriptPath"
-                exit 1
-              }
-              Write-Host "Script exists: OK"
-              
-              $ErrorActionPreference = "Continue"
-              try {
-                Write-Host "Invoking Start-Emulator.ps1 -Platform android -DeviceUdid Emulator_30..."
-                & "./$scriptPath" -Platform android -DeviceUdid Emulator_30 2>&1 | ForEach-Object { Write-Host $_ }
-                $exitCode = $LASTEXITCODE
-                Write-Host "Script returned exit code: $exitCode"
-              } catch {
-                Write-Host "##vso[task.logissue type=error]Exception: $_"
-                Write-Host $_.ScriptStackTrace
-                $exitCode = 1
-              }
-              
-              if ($exitCode -ne 0) {
-                Write-Host "##vso[task.logissue type=error]Start-Emulator failed with code $exitCode"
-                exit $exitCode
-              }
-              
-              Write-Host "=== Android Emulator Started Successfully ==="
-            displayName: 'Start Android Emulator'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            timeoutInMinutes: 35
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
+              skipSimulatorSetup: ${{ eq(parameters.Platform, 'android') }}
+              skipCertificates: true
 
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -210,214 +104,186 @@ stages:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
             
-          # Verify environment is ready
-          - script: |
-              echo "=== Verifying Build Environment ==="
-              ERRORS=""
-              
-              # Check .NET SDK
-              echo "Checking .NET SDK..."
-              if ! dotnet --version; then
-                ERRORS="${ERRORS}\n- .NET SDK not available"
-              else
-                echo "✓ .NET SDK: $(dotnet --version)"
-              fi
-              
-              # Check Android SDK (only for Android platform)
-              if [ "${{ parameters.Platform }}" = "android" ]; then
-                echo "Checking Android SDK..."
-                if [ -z "$ANDROID_HOME" ] && [ -z "$ANDROID_SDK_ROOT" ]; then
-                  ERRORS="${ERRORS}\n- ANDROID_HOME/ANDROID_SDK_ROOT not set"
-                else
-                  SDK_PATH="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
-                  if [ ! -d "$SDK_PATH" ]; then
-                    ERRORS="${ERRORS}\n- Android SDK directory not found: $SDK_PATH"
-                  else
-                    echo "✓ Android SDK: $SDK_PATH"
-                  fi
-                fi
-              fi
-              
-              # Check Xcode (macOS only)
-              if [ "$(uname)" = "Darwin" ]; then
-                echo "Checking Xcode..."
-                if ! xcodebuild -version; then
-                  ERRORS="${ERRORS}\n- Xcode not available"
-                else
-                  echo "✓ Xcode available"
-                fi
-                
-                # Check iOS simulators
-                echo "Checking iOS simulators..."
-                if ! xcrun simctl list devices available | grep -q "iPhone"; then
-                  ERRORS="${ERRORS}\n- No iOS simulators available"
-                else
-                  echo "✓ iOS simulators available"
-                fi
-              fi
-              
-              # Check Java/JDK (only for Android platform)
-              if [ "${{ parameters.Platform }}" = "android" ]; then
-                echo "Checking JDK..."
-                if ! java -version 2>&1; then
-                  ERRORS="${ERRORS}\n- JDK not available"
-                else
-                  echo "✓ JDK available"
-                fi
-              fi
-              
-              # Report errors
-              if [ -n "$ERRORS" ]; then
-                echo ""
-                echo "##vso[task.logissue type=error]=== Environment Verification FAILED ==="
-                echo -e "Missing dependencies:$ERRORS"
-                echo "##vso[task.logissue type=error]Build environment is not properly configured. See above for details."
-                exit 1
-              fi
-              
-              echo ""
-              echo "=== Environment Verification PASSED ==="
-            displayName: 'Verify Build Environment'
-
-
           # Restore .NET tools (includes xharness)
-          - script: |
-              echo "Restoring .NET tools..."
-              dotnet tool restore
-              echo "Tools restored successfully"
+          - script: dotnet tool restore
             displayName: 'Restore .NET Tools'
 
-          # Boot Android emulator for UI tests
-          - script: |
-              echo "=== Booting Android Emulator ==="
-              
-              # Match maui-pr Cake script: on macOS use default GPU (hardware-accelerated),
-              # only use swiftshader on Linux. AcesShared agents are ARM64 macOS with HVF.
-              # Start emulator in background with logging for debugging
-              EMULATOR_LOG="/tmp/emulator-boot.log"
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim > "$EMULATOR_LOG" 2>&1 &
-              EMULATOR_PID=$!
-              echo "Emulator started with PID: $EMULATOR_PID"
-              
-              # Give emulator a moment to start and verify process is running
-              sleep 3
-              if ! pgrep -f 'qemu-system' > /dev/null; then
-                echo "##vso[task.logissue type=error]Emulator process did not start"
-                echo "=== Emulator Log ==="
-                cat "$EMULATOR_LOG" 2>/dev/null || echo "No log available"
-                exit 1
-              fi
-              echo "Emulator process verified running"
-              
-              # Wait for device to appear with timeout (don't use adb wait-for-device - can hang forever)
-              echo "Waiting for emulator device..."
-              device_timeout=60
-              device_waited=0
-              while ! adb devices | grep -q "emulator.*device"; do
-                sleep 2
-                device_waited=$((device_waited + 2))
-                if [ $device_waited -ge $device_timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator device did not appear in time"
-                  echo "=== Emulator Log (last 50 lines) ==="
-                  tail -50 "$EMULATOR_LOG" 2>/dev/null || echo "No log available"
-                  adb devices -l
-                  exit 1
-                fi
-              done
-              echo "Emulator device detected"
-              
-              # Wait for boot_completed
-              echo "Waiting for emulator to finish booting..."
-              timeout=600
-              waited=0
-              while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
-                sleep 2
-                waited=$((waited + 2))
-                echo "Waiting for boot... ($waited/$timeout seconds)"
-                if [ $waited -ge $timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
-                  echo "=== Emulator Log (last 50 lines) ==="
-                  tail -50 "$EMULATOR_LOG" 2>/dev/null || echo "No log available"
-                  adb devices -l
-                  exit 1
-                fi
-              done
-              echo "Boot completed flag set"
-              
-              # Wait for package manager service to be available (critical for app installation)
-              echo "Waiting for package manager service..."
-              pm_timeout=120
-              pm_waited=0
-              while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
-                sleep 3
-                pm_waited=$((pm_waited + 3))
-                echo "Waiting for package manager... ($pm_waited/$pm_timeout seconds)"
-                if [ $pm_waited -ge $pm_timeout ]; then
-                  echo "##vso[task.logissue type=error]Package manager service did not start"
-                  echo "=== Checking services ==="
-                  adb shell service list 2>/dev/null | head -20 || echo "Cannot list services"
-                  exit 1
-                fi
-              done
-              echo "Package manager service is ready"
-              
-              echo "=== Emulator booted successfully! ==="
-              adb devices -l
-            displayName: 'Boot Android Emulator'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            continueOnError: true
-            timeoutInMinutes: 15
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
-              JAVA_HOME: $(JAVA_HOME_17_X64)
+          # Create AVD and boot Android Emulator
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            # Free disk space on hosted agents (emulator needs ~7GB for userdata partition)
+            - script: |
+                echo "=== Disk space before cleanup ==="
+                df -h /home
+                echo "Removing unnecessary tools to free space..."
+                sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium 2>/dev/null || true
+                sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/Python 2>/dev/null || true
+                sudo rm -rf /usr/share/swift 2>/dev/null || true
+                echo "=== Disk space after cleanup ==="
+                df -h /home
+              displayName: 'Free Disk Space for Emulator'
 
-          - script: |
-              echo "Installing Node.js 22..."
-              brew install node@22
-              brew link --overwrite node@22
-              if ! node --version; then
-                echo "##vso[task.logissue type=error]Failed to install Node.js"
-                exit 1
-              fi
-              npm --version
-              echo "Node.js installed successfully"
+            - script: |
+                export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+                echo "=== Creating AVD ==="
+                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                
+                # Reduce userdata partition to fit on hosted agents (~4.2GB free)
+                AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
+                if [ -f "$AVD_CONFIG" ]; then
+                  sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
+                  echo "Updated disk.dataPartition.size to 2048m"
+                fi
+
+                # Pre-authorize ADB keys (mirrors android.cake HandleVirtualDevice)
+                echo "=== Pre-authorizing ADB keys ==="
+                mkdir -p "$HOME/.android"
+                if [ ! -f "$HOME/.android/adbkey" ]; then
+                  adb keygen "$HOME/.android/adbkey" 2>/dev/null || true
+                fi
+                ADB_KEY_PUB="$HOME/.android/adbkey.pub"
+                AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
+                if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+                  cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+                  echo "ADB key pre-authorized for emulator"
+                fi
+                
+                echo "=== Starting Emulator ==="
+                # Kill any stale adb server and restart
+                adb kill-server 2>/dev/null || true
+                sleep 1
+                adb start-server
+                
+                # Retry loop: emulator sometimes fails to connect ADB on first launch
+                MAX_LAUNCH_ATTEMPTS=2
+                EMULATOR_PID=""
+                for LAUNCH_ATTEMPT in $(seq 1 $MAX_LAUNCH_ATTEMPTS); do
+                  echo "--- Emulator launch attempt $LAUNCH_ATTEMPT of $MAX_LAUNCH_ATTEMPTS ---"
+
+                  if [ $LAUNCH_ATTEMPT -gt 1 ]; then
+                    echo "Cleaning up before retry..."
+                    if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                      kill "$EMULATOR_PID" 2>/dev/null || true
+                      sleep 2
+                      kill -0 "$EMULATOR_PID" 2>/dev/null && kill -9 "$EMULATOR_PID" 2>/dev/null || true
+                    fi
+                    sleep 3
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server
+                    sleep 2
+                  fi
+
+                  nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+                  EMULATOR_PID=$!
+                  echo "Emulator PID: $EMULATOR_PID"
+                  
+                  echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
+                  timeout 120 adb wait-for-device
+                  if [ $? -eq 0 ]; then
+                    echo "Device detected: $(adb devices -l | grep emulator)"
+                    break
+                  fi
+
+                  echo "##vso[task.logissue type=warning]adb wait-for-device timed out (attempt $LAUNCH_ATTEMPT)"
+                  adb devices -l
+                  tail -30 /tmp/emulator.log
+
+                  if [ $LAUNCH_ATTEMPT -eq $MAX_LAUNCH_ATTEMPTS ]; then
+                    echo "##vso[task.logissue type=error]Emulator failed to connect after $MAX_LAUNCH_ATTEMPTS attempts"
+                    exit 1
+                  fi
+                done
+
+                timeout=300
+                waited=0
+                while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Emulator did not finish booting after ${timeout}s"
+                    exit 1
+                  fi
+                  # At 90 seconds, restart ADB server to recover from auth issues (mirrors android.cake)
+                  if [ $waited -eq 90 ]; then
+                    echo "Boot taking longer than expected (90/${timeout}s). Restarting ADB server..."
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server
+                    sleep 2
+                    echo "ADB server restarted. Continuing to wait..."
+                  fi
+                  # Re-ensure ADB keys every 60s during boot (mirrors android.cake PrepareDevice)
+                  if [ $((waited % 60)) -eq 0 ] && [ $waited -gt 0 ]; then
+                    if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+                      cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub" 2>/dev/null || true
+                    fi
+                  fi
+                done
+                echo "Boot completed, waiting for package manager..."
+
+                timeout=120
+                waited=0
+                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Package manager not ready after ${timeout}s"
+                    exit 1
+                  fi
+                done
+
+                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                echo "✅ Emulator fully booted: $DEVICE_ID"
+
+                # Prepare emulator for CI use — keeps device responsive during idle period
+                echo "=== Preparing emulator for CI ==="
+                # Wait for device to stabilize after boot (transient offline state)
+                for i in $(seq 1 10); do
+                  if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                    break
+                  fi
+                  echo "Device offline, retrying ($i/10)..."
+                  sleep 3
+                done
+                # Disable all animations (reduces CPU load and flakiness)
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0
+                # Prevent screen from turning off (emulator simulates AC charging)
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647
+                adb -s $DEVICE_ID shell svc power stayon true
+                # Wake screen and dismiss any lock screen
+                adb -s $DEVICE_ID shell input keyevent 82
+                sleep 1
+                # Dismiss any "System UI has stopped" or crash dialogs
+                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                # Clear logcat buffer so agent sees only fresh logs
+                adb -s $DEVICE_ID logcat -c 2>/dev/null || true
+                echo "Emulator preparation complete"
+
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+              displayName: 'Create AVD and Boot Android Emulator'
+              retryCountOnTaskFailure: 1
+              timeoutInMinutes: 15
+
+          # Install Node.js and Appium (same as ui-tests-steps.yml)
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
             displayName: 'Install Node.js'
 
-          - script: |
-              echo "Installing Appium and platform driver..."
-              
-              # Get npm global bin directory and add to PATH
-              NPM_BIN=$(npm config get prefix)/bin
-              echo "NPM global bin directory: $NPM_BIN"
-              export PATH="$NPM_BIN:$PATH"
-              
-              # Install Appium globally
-              npm install -g appium
-              
-              # Install both drivers — the agent may switch platforms if the bug
-              # only affects one platform (e.g., iOS bug triggered via Android run)
-              echo "Installing UiAutomator2 driver for Android..."
-              appium driver install uiautomator2
-              echo "Installing XCUITest driver for iOS..."
-              appium driver install xcuitest
-              
-              # Verify installation
-              if ! which appium; then
-                echo "##vso[task.logissue type=error]Failed to install Appium"
-                exit 1
-              fi
-              
-              APPIUM_PATH=$(which appium)
-              echo "Appium path: $APPIUM_PATH"
-              echo "Appium version: $(appium --version)"
-              echo "Appium drivers installed:"
-              appium driver list --installed
-              
-              # Export PATH for subsequent steps (Azure DevOps specific)
-              echo "##vso[task.prependpath]$NPM_BIN"
-              
-              echo "Appium installed successfully"
+          - pwsh: |
+              $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+              dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
             displayName: 'Install Appium'
+            retryCountOnTaskFailure: 2
+            timeoutInMinutes: 10
+            env:
+              APPIUM_HOME: $(APPIUM_HOME)
 
           - script: |
               echo "Installing GitHub CLI..."
@@ -435,11 +301,18 @@ stages:
                 echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
                 exit 1
               fi
-              echo "$(GH_CLI_TOKEN)" | gh auth login --with-token
-              if ! gh auth status; then
-                echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
-                exit 1
+              # Use GH_TOKEN env var to avoid scope validation issues with newer gh versions
+              export GH_TOKEN="$(GH_CLI_TOKEN)"
+              gh auth status
+              if [ $? -ne 0 ]; then
+                # Fallback: try direct login
+                echo "$(GH_CLI_TOKEN)" | gh auth login --with-token 2>/dev/null || true
+                if ! gh auth status; then
+                  echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
+                  exit 1
+                fi
               fi
+              echo "GitHub CLI authenticated successfully"
             displayName: 'Authenticate GitHub CLI'
             env:
               GH_CLI_TOKEN: $(GH_CLI_TOKEN)
@@ -447,89 +320,14 @@ stages:
           - script: |
               echo "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
-              if ! which copilot; then
-                echo "##vso[task.logissue type=error]Failed to install GitHub Copilot CLI"
-                exit 1
-              fi
+              # Ensure npm global bin is on PATH for subsequent steps (Linux UseNode installs to toolcache)
+              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
+              echo "Copilot binary at: $COPILOT_BIN_DIR/copilot"
+              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
+              copilot --version || true
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
-          # Restart Android emulator to ensure it's fresh before PR Reviewer runs
-          # The emulator can become unstable after running for a long time
-          - script: |
-              echo "=== Restarting Android Emulator for PR Reviewer ==="
-              
-              # Kill any existing emulator
-              echo "Killing existing emulator..."
-              pkill -f 'qemu-system' 2>/dev/null || true
-              sleep 5
-              
-              # Restart ADB server
-              echo "Restarting ADB server..."
-              adb kill-server
-              sleep 2
-              adb start-server
-              sleep 2
-              
-              # Start fresh emulator
-              EMULATOR_LOG="/tmp/emulator-fresh.log"
-              echo "Starting fresh emulator..."
-              nohup $ANDROID_SDK_ROOT/emulator/emulator -avd Emulator_30 -no-window -no-snapshot -no-audio -no-boot-anim > "$EMULATOR_LOG" 2>&1 &
-              EMULATOR_PID=$!
-              echo "Emulator started with PID: $EMULATOR_PID"
-              
-              # Wait for device to appear
-              echo "Waiting for emulator device..."
-              device_timeout=300
-              device_waited=0
-              while ! adb devices | grep -q "emulator.*device"; do
-                sleep 5
-                device_waited=$((device_waited + 5))
-                if [ $device_waited -ge $device_timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator device did not appear in time"
-                  cat "$EMULATOR_LOG" 2>/dev/null | tail -30
-                  exit 1
-                fi
-                echo "Waiting for device... ($device_waited/$device_timeout seconds)"
-              done
-              echo "Emulator device detected"
-              
-              # Wait for boot_completed
-              echo "Waiting for boot_completed..."
-              boot_timeout=600
-              boot_waited=0
-              while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
-                sleep 5
-                boot_waited=$((boot_waited + 5))
-                if [ $boot_waited -ge $boot_timeout ]; then
-                  echo "##vso[task.logissue type=error]Emulator did not boot in time"
-                  exit 1
-                fi
-              done
-              echo "Boot completed"
-              
-              # Wait for package manager
-              echo "Waiting for package manager service..."
-              pm_timeout=120
-              pm_waited=0
-              while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
-                sleep 5
-                pm_waited=$((pm_waited + 5))
-                if [ $pm_waited -ge $pm_timeout ]; then
-                  echo "##vso[task.logissue type=error]Package manager service did not start"
-                  adb shell service list 2>/dev/null | head -20
-                  exit 1
-                fi
-                echo "Waiting for package manager... ($pm_waited/$pm_timeout seconds)"
-              done
-              
-              echo "=== Fresh Android Emulator Ready! ==="
-              adb devices -l
-            displayName: 'Restart Android Emulator (Fresh)'
-            condition: eq('${{ parameters.Platform }}', 'android')
-            timeoutInMinutes: 15
-            env:
-              ANDROID_SDK_ROOT: $(ANDROID_SDK_ROOT)
 
           # Boot iOS Simulator (only for iOS platform)
           # UI test baseline screenshots are captured on iPhone Xs - must use same device
@@ -623,9 +421,85 @@ stages:
             condition: eq('${{ parameters.Platform }}', 'ios')
             timeoutInMinutes: 5
 
+          # Warm up the emulator right before the agent runs.
+          # The emulator may have been idle for 15-30 min while Appium/Node/CLI were installed.
+          # Without this, SystemUI can ANR when the agent first touches it.
+          - script: |
+              set -e
+              DEVICE_ID="$(DEVICE_UDID)"
+              if [ -z "$DEVICE_ID" ]; then
+                echo "No DEVICE_UDID set — skipping warmup"
+                exit 0
+              fi
+
+              echo "=== Emulator warmup before agent ==="
+              # Verify device is still connected
+              if ! adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                echo "Device not responding. Restarting ADB server..."
+                adb kill-server 2>/dev/null || true
+                sleep 2
+                adb start-server
+                sleep 2
+                timeout 60 adb wait-for-device
+              fi
+
+              # Dismiss ANR dialogs and wake screen — run twice for reliability
+              for PASS in 1 2; do
+                echo "--- Warmup pass $PASS ---"
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_MENU 2>/dev/null || true
+                sleep 1
+
+                # Dismiss system dialogs (ANR, crash, etc.)
+                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_ENTER 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                sleep 1
+              done
+
+              # Check for lingering ANR in window state
+              if adb -s "$DEVICE_ID" shell dumpsys window 2>/dev/null | grep -qi "Application Not Responding\|ANR"; then
+                echo "⚠️  ANR dialog still present — force-dismissing with HOME + BACK"
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME 2>/dev/null || true
+                sleep 2
+                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                sleep 1
+              fi
+
+              # Open and close Settings to exercise the system and confirm responsiveness
+              adb -s "$DEVICE_ID" shell am start -a android.settings.SETTINGS 2>/dev/null || true
+              sleep 3
+              adb -s "$DEVICE_ID" shell am force-stop com.android.settings 2>/dev/null || true
+
+              # Final dialog sweep
+              adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+
+              # Clear logcat so agent gets clean logs
+              adb -s "$DEVICE_ID" logcat -c 2>/dev/null || true
+
+              echo "✅ Emulator warmed up and responsive"
+            displayName: 'Warm Up Android Emulator'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            timeoutInMinutes: 3
+
           - script: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              
+              # Ensure copilot CLI is accessible to pwsh subprocess.
+              # npm global install on Linux goes to UseNode@1 toolcache path which may not
+              # be on PATH inside pwsh even when exported from bash. Create a symlink in
+              # /usr/local/bin which is universally on PATH for all shells.
+              COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
+              if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
+                sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
+                echo "Symlinked copilot to /usr/local/bin/copilot"
+              fi
+              echo "copilot location: $(which copilot 2>/dev/null || echo 'not found')"
+              # Verify pwsh can find it
+              pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
               
               # Configure git identity (required for merge operations on self-hosted agents)
               git config user.email "copilot-ci@microsoft.com"
@@ -636,7 +510,12 @@ stages:
               # AcesShared agents may have a newer Xcode than the .NET iOS SDK expects
               cp Directory.Build.Override.props.in Directory.Build.Override.props
               # Insert ValidateXcodeVersion before closing </Project> tag
-              sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              # GNU sed (Linux) uses -i without suffix; BSD sed (macOS) uses -i ''
+              if [[ "$(uname)" == "Linux" ]]; then
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              else
+                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              fi
               
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
@@ -645,7 +524,7 @@ stages:
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
               set +e
-              pwsh .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
