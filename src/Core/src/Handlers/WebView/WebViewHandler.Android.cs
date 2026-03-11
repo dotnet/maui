@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal string? UrlCanceled { get; set; }
 
+		MauiWebViewClient? _webViewClient;
+		MauiWebChromeClient? _webChromeClient;
+
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiWebView(this, Context!)
@@ -33,6 +36,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				platformView.SetLayerType(global::Android.Views.LayerType.Software, null);
 			}
+
+			// Create web clients once and store references
+			_webViewClient = new MauiWebViewClient(this);
+			platformView.SetWebViewClient(_webViewClient);
+
+			_webChromeClient = new MauiWebChromeClient(this);
+			platformView.SetWebChromeClient(_webChromeClient);
 
 			return platformView;
 		}
@@ -56,12 +66,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				if (platformView.WebViewClient is MauiWebViewClient webViewClient)
-					webViewClient.Disconnect();
-
-				if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
-					webChromeClient.Disconnect();
+				_webViewClient?.Disconnect();
+				_webChromeClient?.Disconnect();
 			}
+
+			_webViewClient?.Dispose();
+			_webChromeClient?.Dispose();
 
 			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
@@ -79,18 +89,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
 		{
 			handler.PlatformView.UpdateUserAgent(webView);
-		}
-
-		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
-		{
-			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebViewClient(new MauiWebViewClient(platformHandler));
-		}
-
-		public static void MapWebChromeClient(IWebViewHandler handler, IWebView webView)
-		{
-			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebChromeClient(new MauiWebChromeClient(platformHandler));
 		}
 
 		public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
