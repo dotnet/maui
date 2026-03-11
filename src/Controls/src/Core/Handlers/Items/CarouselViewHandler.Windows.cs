@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int _gotoPosition = -1;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+		int _lastScrolledToPosition = -1; // tracks last position we issued ScrollTo for, to avoid re-entry
 
 		~CarouselViewHandler() => _proxy.Unsubscribe();
 
@@ -387,6 +388,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ListViewBase.Items.Count > 0)
 			{
+				// Loop centering is no longer needed here: UpdateCurrentItem and UpdatePosition
+				// now use _lastScrolledToPosition to guard against re-entry and scroll to the
+				// correct centered position programmatically, making the explicit CenterMode block redundant.
 				if (ItemsView.CurrentItem != null)
 					UpdateCurrentItem();
 				else
@@ -413,12 +417,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Disable animation during collection changes to prevent cascading scroll events
-			var animate = ItemsView.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
-			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: animate);
-			if (ItemsView.Position != currentItemPosition)
+			if (ItemsView.Position != currentItemPosition && _lastScrolledToPosition != currentItemPosition)
 			{
-				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+				_lastScrolledToPosition = currentItemPosition;
+				// Disable animation during collection changes to prevent cascading scroll events
+				var animate = ItemsView.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
+				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: animate);
 			}
 		}
 
@@ -432,8 +436,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (carouselPosition < 0 || carouselPosition >= ItemCount)
 				return;
 
-			if (!ItemsView.IsDragging && !ItemsView.IsScrolling)
+			if (!ItemsView.IsDragging && !ItemsView.IsScrolling && carouselPosition != _lastScrolledToPosition)
 			{
+				_lastScrolledToPosition = carouselPosition;
 				ItemsView.ScrollTo(carouselPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
 			}
 
@@ -541,6 +546,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// User scrolled to this position — reset tracker so a future programmatic scroll to same index still fires
+			if (position != _lastScrolledToPosition)
+			{
+				_lastScrolledToPosition = -1;
+			}
+
 			if (position == Element.Position)
 			{
 				return;
@@ -577,6 +588,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			try
 			{
+				_lastScrolledToPosition = -1;
 				var carouselPosition = ItemsView.Position;
 				var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 				var count = (sender as IList).Count;
