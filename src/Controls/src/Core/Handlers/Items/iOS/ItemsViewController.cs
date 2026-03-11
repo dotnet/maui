@@ -414,6 +414,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
+			// iOS/MacCatalyst: ReloadData does not reset ContentOffset (unlike Android/Windows).
+			// Explicitly reset it so the Scrolled event reports VerticalOffset = 0 after a source change.
+			// LayoutIfNeeded() forces a synchronous layout pass so visible cells are ready before Scrolled fires.
+			CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
+			CollectionView.LayoutIfNeeded();
+			Delegator?.Scrolled(CollectionView);
+
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
 

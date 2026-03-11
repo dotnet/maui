@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In MacCatalyst, the DragCoordinates is not supported. On the iOS platform, scroll position is not reset while update the itemsource. Issue: https://github.com/dotnet/maui/issues/26366
+﻿#if TEST_FAILS_ON_CATALYST //In MacCatalyst, the DragCoordinates is not supported.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
