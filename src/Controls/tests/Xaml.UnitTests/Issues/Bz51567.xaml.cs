@@ -18,6 +18,11 @@ public partial class Bz51567 : ContentPage
 		{
 			var page = new Bz51567(inflator);
 			var style = page.Resources["ListText"] as Style;
+			
+			// For SourceGen, styles are lazy - force initialization before inspecting Setters
+			if (inflator == XamlInflator.SourceGen)
+				style.InitializeIfNeeded(new Label());
+			
 			var setter = style.Setters[1];
 			Assert.NotNull(setter);
 		}
