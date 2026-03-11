@@ -21,12 +21,15 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/shellsection_appbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:stateListAnimator="@null"
+        app:elevation="0dp">
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/shellsection_tablayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="bottom"
             android:visibility="gone"
             app:tabMode="scrollable"
             style="@style/MauiShellTabLayout" />

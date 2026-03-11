@@ -795,6 +795,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Create the platform toolbar
             _toolbar = (AToolbar)_shellToolbar.ToPlatform(shell.Handler.MauiContext);
 
+            // Add toolbar to AppBarLayout BEFORE creating the tracker.
+            // The tracker constructor resolves _appBar via _platformToolbar.Parent.GetParentOfType<AppBarLayout>(),
+            // so the toolbar must already be in the view hierarchy.
+            _appBarLayout.AddView(_toolbar);
+
             // Set up toolbar tracker and appearance tracker
             _toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
             _toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
@@ -804,9 +809,6 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 _toolbarTracker.SetToolbar(_shellToolbar);
             }
-
-            // Add toolbar to AppBarLayout
-            _appBarLayout.AddView(_toolbar);
         }
 
         /// <summary>
@@ -1003,15 +1005,21 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handler._appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.shellitem_appbar);
                 _bottomContainer = rootView.FindViewById<LinearLayout>(Resource.Id.shellitem_content);
 
-                // Get ViewPager2 and BottomNavigationView from the inflated layout
-                // and assign them to the handler so it can manage adapters and selection
+                // Get ViewPager2 from the inflated layout
                 _handler._viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager);
-                _handler._bottomNavigationView = rootView.FindViewById<BottomNavigationView>(Resource.Id.shellitem_bottomnavigation);
 
-                // Set initial background to WHITE to match old ShellItemRenderer behavior.
-                // PlatformInterop.createNavigationBar() explicitly calls setBackgroundColor(WHITE).
-                // The appearance tracker will override this when Shell appearance is applied.
-                _handler._bottomNavigationView?.SetBackgroundColor(global::Android.Graphics.Color.White);
+                // Create BottomNavigationView programmatically using the 3-arg constructor
+                // (context, null, defStyleAttr) to match the old renderer's
+                // PlatformInterop.createNavigationBar(). The defStyleAttr constructor resolves
+                // styles through the Material Components theme chain, ensuring correct icon/text sizing.
+                var bottomNav = new BottomNavigationView(inflater.Context, null, Resource.Attribute.bottomNavigationViewStyle)
+                {
+                    Id = AView.GenerateViewId(),
+                    LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+                };
+                bottomNav.SetBackgroundColor(global::Android.Graphics.Color.White);
+                _bottomContainer.AddView(bottomNav);
+                _handler._bottomNavigationView = bottomNav;
 
                 // Setup window insets for safe area handling
                 MauiWindowInsetListener.SetupViewWithLocalListener(_rootLayout);
