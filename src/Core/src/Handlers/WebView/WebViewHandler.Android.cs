@@ -165,8 +165,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void ProcessSourceWhenReady(IWebViewHandler handler, IWebView webView)
 		{
-			//We want to load the source after making sure the mapper for webclients
-			//and settings were called already
+			//We want to load the source after making sure the mapper for settings was called already
 			var platformHandler = handler as WebViewHandler;
 			if (platformHandler == null || platformHandler._firstRun)
 				return;
