@@ -189,8 +189,8 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				// If we have the type already, use it
-				if (_targetType is not null)
+				// If we have the type already, use it (FullName may be null for special/generic types)
+				if (_targetType?.FullName is not null)
 					return _targetType.FullName.AsSpan();
 
 				// Extract FullName from AQN: "Namespace.TypeName, AssemblyName, ..."
@@ -227,12 +227,14 @@ namespace Microsoft.Maui.Controls
 				return true;
 			if (!ApplyToDerivedTypes)
 				return false;
-			do
+			while (targetType != typeof(Element))
 			{
 				targetType = targetType.BaseType;
+				if (targetType is null)
+					return false;
 				if (TargetTypeFullName.SequenceEqual(targetType.FullName))
 					return true;
-			} while (targetType != typeof(Element));
+			}
 			return false;
 		}
 
