@@ -9,11 +9,11 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
-		static Label() => RemapForControls();
-
-		private new static void RemapForControls()
+		static Label()
 		{
-			VisualElement.RemapIfNeeded();
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Label), typeof(VisualElement));
 
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text

@@ -7,8 +7,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Window
 	{
-		internal static new void RemapForControls()
+		static Window()
 		{
+			// Force Element's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Window), typeof(Element));
+
 #if ANDROID
 			// This property is also on the Application Mapper since that's where the attached property exists
 			WindowHandler.Mapper.ReplaceMapping<IWindow, IWindowHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);

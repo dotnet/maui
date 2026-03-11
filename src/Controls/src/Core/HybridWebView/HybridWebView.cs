@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,6 +13,8 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
+	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "HybridWebViewHandler is only instantiated when RuntimeFeature.IsHybridWebViewSupported is true.")]
+	[ElementHandler(typeof(HybridWebViewHandler))]
 	public class HybridWebView : View, IHybridWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>

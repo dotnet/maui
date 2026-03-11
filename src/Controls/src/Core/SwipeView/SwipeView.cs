@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 	/// Represents a view that provides context-specific swipe interactions.
 	/// </summary>
 	[ContentProperty(nameof(Content))]
+	[ElementHandler(typeof(SwipeViewHandler))]
 	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;

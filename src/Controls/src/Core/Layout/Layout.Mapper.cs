@@ -9,8 +9,11 @@ namespace Microsoft.Maui.Controls
 {
 	public abstract partial class Layout
 	{
-		internal static new void RemapForControls()
+		static Layout()
 		{
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(Layout), typeof(VisualElement));
 		}
 	}
 }

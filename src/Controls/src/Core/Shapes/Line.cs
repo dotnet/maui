@@ -1,12 +1,14 @@
 #nullable disable
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <summary>
 	/// A shape that draws a straight line between two points.
 	/// </summary>
+	[ElementHandler(typeof(LineHandler))]
 	public sealed partial class Line : Shape, IShape
 	{
 		/// <summary>

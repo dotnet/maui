@@ -2,9 +2,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
+	[ElementHandler(typeof(RoundRectangleHandler))]
 	public sealed partial class RoundRectangle : Shape, IShape, IRoundRectangle
 	{
 		public RoundRectangle() : base()

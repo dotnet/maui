@@ -13,11 +13,14 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
+using Microsoft.Maui.Handlers;
+
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Represents the main application class that provides lifecycle management, resources, and theming.
 	/// </summary>
+	[ElementHandler(typeof(ApplicationHandler))]
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();

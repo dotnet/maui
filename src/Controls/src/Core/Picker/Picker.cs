@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.Controls
 	/// The visual representation is similar to an <see cref="Entry"/>, but displays a picker interface instead of a keyboard.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler(typeof(PickerHandler))]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
