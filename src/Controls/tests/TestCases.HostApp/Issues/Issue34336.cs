@@ -35,7 +35,7 @@ public class Issue34336 : ContentPage
             cardGrid.ColumnDefinitions.Add(new ColumnDefinition(150));
             cardGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             cardGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            cardGrid.Children.Add(new BoxView { Color = Colors.Red, HeightRequest = 150, WidthRequest = 150 });
+            cardGrid.Children.Add(new BoxView { Color = Colors.LightGreen, HeightRequest = 150, WidthRequest = 150 });
             cardGrid.Children.Add(textStack);
 
             return new Border
