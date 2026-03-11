@@ -3,6 +3,8 @@ using System;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using AndroidX.Core.Widget;
+using AndroidX.RecyclerView.Widget;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -35,6 +37,75 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			get => _retrieveStaticSize?.Target as Func<Size?>;
 			set => _retrieveStaticSize = new WeakReference(value);
+		}
+
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (IsHeaderOrFooterContent())
+			{
+
+				if (e.Action == MotionEventActions.Up || e.Action == MotionEventActions.Cancel)
+				{
+					Parent?.RequestDisallowInterceptTouchEvent(false);
+				}
+			}
+
+			return base.DispatchTouchEvent(e);
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent ev)
+		{
+			if (IsHeaderOrFooterContent())
+			{
+				if (ev.Action == MotionEventActions.Down)
+				{
+					Parent?.RequestDisallowInterceptTouchEvent(true);
+					return false;
+				}
+			}
+
+			return base.OnInterceptTouchEvent(ev);
+		}
+
+		/// <summary>
+		/// Determines if this ItemContentView is being used for header or footer content
+		/// by checking if the contained View is the same as the ItemsView's Header or Footer
+		/// </summary>
+		bool IsHeaderOrFooterContent()
+		{
+			if (View == null)
+			{
+				return false;
+			}
+
+			// Find the parent ItemsView by traversing up the view hierarchy
+			var itemsView = FindParentItemsView();
+			if (itemsView is StructuredItemsView structuredItemsView)
+			{
+				// Check if our View is the same object reference as the header or footer
+				return ReferenceEquals(View, structuredItemsView.Header) ||
+					   ReferenceEquals(View, structuredItemsView.Footer);
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Finds the parent StructuredItemsView by traversing the logical parent chain
+		/// </summary>
+		StructuredItemsView FindParentItemsView()
+		{
+			var current = View?.Parent;
+			while (current != null)
+			{
+				if (current is StructuredItemsView itemsView)
+				{
+					return itemsView;
+				}
+
+				current = current.Parent;
+			}
+			return null;
 		}
 
 		internal void RealizeContent(View view, ItemsView itemsView)
