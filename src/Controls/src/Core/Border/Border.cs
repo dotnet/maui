@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// background, shape, padding, and more to create visually rich containers.
 	/// </remarks>
 	[ContentProperty(nameof(Content))]
+	[ElementHandler(typeof(BorderHandler))]
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;

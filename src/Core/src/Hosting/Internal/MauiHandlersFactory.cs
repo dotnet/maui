@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
@@ -20,15 +21,30 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IElementHandler? GetHandler(Type type)
 		{
-			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler handler)
+			// 1. Exact DI registration (allows overriding attribute-based defaults)
+			if (InternalCollection.TryGetService(type, out _)
+				&& GetService(type) is IElementHandler exactHandler)
 			{
-				return handler;
+				return exactHandler;
 			}
 
+			// 2. ElementHandler attribute (no DI, just Activator.CreateInstance)
 			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
-				return elementHandlerAttribute.CreateHandler();
+				return (IElementHandler?)Activator.CreateInstance(elementHandlerAttribute.HandlerType);
+			}
+
+			// 3. Interface-based DI registration (e.g., handler registered for IScrollView)
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler interfaceHandler)
+			{
+				return interfaceHandler;
+			}
+
+			// 4. ContentView fallback
+			if (typeof(IContentView).IsAssignableFrom(type))
+			{
+				return new ContentViewHandler();
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
@@ -40,34 +56,65 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
-				&& serviceDescriptor?.ImplementationType is Type type)
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (TryGetRegisteredHandlerType(iview, out Type? type))
 			{
 				return type;
 			}
 
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
-				return GetHandlerType(elementHandlerAttribute);
+				return elementHandlerAttribute.HandlerType;
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& TryGetRegisteredHandlerType(serviceType, out type))
+			{
+				return type;
+			}
+
+			// ContentViewHandler is the default/fallback handler for any IContentView
+			if (typeof(IContentView).IsAssignableFrom(iview))
+			{
+				return typeof(ContentViewHandler);
 			}
 
 			return null;
+		}
 
-			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2073",
-				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
-					+ "We intentionally avoid annotating these handler types with DAM.")]
-			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
-				=> elementHandlerAttribute.HandlerType;
+		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true)] out Type? handlerType)
+		{
+			if (InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
+				&& serviceDescriptor?.ImplementationType is Type type)
+			{
+				handlerType = type;
+				return true;
+			}
+
+			handlerType = null;
+			return false;
 		}
 
 		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			elementHandlerAttribute = viewType.GetCustomAttribute<ElementHandlerAttribute>();
-			return elementHandlerAttribute is not null;
+			elementHandlerAttribute = null;
+			Type? type = viewType;
+
+			while (type is not null)
+			{
+				elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				if (elementHandlerAttribute is not null)
+				{
+					return true;
+				}
+
+				type = type.BaseType;
+			}
+
+			return false;
 		}
 
+		[Obsolete("The handlers collection no longer contains all registered handlers. Use GetHandlerType instead.")]
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
