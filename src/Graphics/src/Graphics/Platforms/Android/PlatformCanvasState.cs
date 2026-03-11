@@ -443,7 +443,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (_shadowed)
 			{
-				SetShadow(_shadowBlur, _shadowX, _shadowY, _shadowColor);
+				ApplyShadow(FillPaint, FillColor.Alpha);
+				ApplyShadow(StrokePaint, StrokeColor.Alpha);
+				ApplyShadow(FontPaint, FontColor.Alpha);
 			}
 		}
 	}
