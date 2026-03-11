@@ -21,7 +21,7 @@ public partial class Bz51567 : ContentPage
 			
 			// For SourceGen, styles are lazy - force initialization before inspecting Setters
 			if (inflator == XamlInflator.SourceGen)
-				style.InitializeIfNeeded(new Label());
+				((IStyle)style).Apply(new Label(), new SetterSpecificity());
 			
 			var setter = style.Setters[1];
 			Assert.NotNull(setter);

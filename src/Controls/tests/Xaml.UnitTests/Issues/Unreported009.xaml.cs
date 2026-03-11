@@ -18,7 +18,7 @@ public partial class Unreported009 : ContentPage
 			
 			// For SourceGen, styles are lazy - force initialization before inspecting Setters
 			if (inflator == XamlInflator.SourceGen)
-				s.InitializeIfNeeded(new ContentView());
+				((IStyle)s).Apply(new ContentView(), new SetterSpecificity());
 			
 			Assert.Equal("Bananas!", (s.Setters[0].Value as Label).Text);
 		}

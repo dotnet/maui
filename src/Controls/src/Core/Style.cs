@@ -141,7 +141,14 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.Apply(BindableObject bindable, SetterSpecificity specificity)
 		{
-			InitializeIfNeeded(bindable);
+			lock (_initializerLock)
+			{
+				if (LazyInitialization is not null)
+				{
+					LazyInitialization(this, bindable);
+					LazyInitialization = null;
+				}
+			}
 
 			lock (_targets)
 			{
@@ -200,24 +207,6 @@ namespace Microsoft.Maui.Controls
 				return commaIndex > 0
 					? _assemblyQualifiedTargetTypeName.AsSpan(0, commaIndex)
 					: _assemblyQualifiedTargetTypeName.AsSpan();
-			}
-		}
-
-		/// <summary>
-		/// Initializes the lazy style if it hasn't been initialized yet.
-		/// This is primarily intended for testing scenarios where setters need to be inspected
-		/// before the style is applied to any element.
-		/// </summary>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal void InitializeIfNeeded(BindableObject target)
-		{
-			lock (_initializerLock)
-			{
-				if (LazyInitialization is null)
-					return;
-
-				LazyInitialization(this, target);
-				LazyInitialization = null;
 			}
 		}
 

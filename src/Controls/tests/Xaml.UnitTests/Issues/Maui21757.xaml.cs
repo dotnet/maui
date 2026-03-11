@@ -39,7 +39,7 @@ public partial class Maui21757
 			
 			// For SourceGen, styles are lazy - force initialization before inspecting Setters
 			if (inflator == XamlInflator.SourceGen)
-				styleA.InitializeIfNeeded(new BoxView());
+				((IStyle)styleA).Apply(new BoxView(), new SetterSpecificity());
 			
 			Assert.Equal(typeof(BoxView), styleA.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleA.Setters[0].Property);
@@ -50,7 +50,7 @@ public partial class Maui21757
 			
 			// For SourceGen, styles are lazy - force initialization before inspecting Setters
 			if (inflator == XamlInflator.SourceGen)
-				styleB.InitializeIfNeeded(new BoxView());
+				((IStyle)styleB).Apply(new BoxView(), new SetterSpecificity());
 			
 			Assert.Equal(typeof(BoxView), styleB.TargetType);
 			Assert.Equal(BoxView.ColorProperty, styleB.Setters[0].Property);
