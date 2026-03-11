@@ -169,7 +169,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 	{
 		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (n, type) => 
 		{
-			if (!context.Variables.TryGetValue(n, out var val))
+			if (!Context.Variables.TryGetValue(n, out var val))
 			{
 				var nodeName = n is ElementNode en ? en.XmlType.Name : n?.GetType().Name ?? "null";
 				var nodeKey = n is ElementNode en2 && en2.Properties.TryGetValue(XmlName.xKey, out var kn) && kn is ValueNode vn ? vn.Value?.ToString() : "(none)";
@@ -177,7 +177,6 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			}
 			return val;
 		};
-		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (node, type) => Context.Variables[node];
 		XmlName propertyName = XmlName.Empty;
 
 		// Store original parentNode for lazy resource check

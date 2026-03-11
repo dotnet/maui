@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls
 		internal bool CanBeAppliedTo(Type targetType)
 		{
 			// Use FullName comparison to avoid resolving the type (which may have been trimmed)
-			if (TargetTypeFullName.SequenceEqual(targetType.FullName))
+			if (targetType.FullName is not null && TargetTypeFullName.SequenceEqual(targetType.FullName))
 				return true;
 			if (!ApplyToDerivedTypes)
 				return false;
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls
 				targetType = targetType.BaseType;
 				if (targetType is null)
 					return false;
-				if (TargetTypeFullName.SequenceEqual(targetType.FullName))
+				if (targetType.FullName is not null && TargetTypeFullName.SequenceEqual(targetType.FullName))
 					return true;
 			}
 			return false;

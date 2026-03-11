@@ -83,7 +83,6 @@ public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en
 			return;
 		}
 
-		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 		// Check if node exists in Variables before accessing
 		if (!Context.Variables.TryGetValue(node, out var nodeVariable))
 		{
