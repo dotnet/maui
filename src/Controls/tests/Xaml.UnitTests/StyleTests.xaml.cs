@@ -36,7 +36,7 @@ public partial class StyleTests : ContentPage
 			
 			// For SourceGen, styles are lazy - force initialization before inspecting Setters
 			if (inflator == XamlInflator.SourceGen)
-				((IStyle)style).Apply(new Label(), new SetterSpecificity());
+				style.ForceInitialize(new Label());
 			
 			Setter setter;
 
@@ -73,7 +73,7 @@ public partial class StyleTests : ContentPage
 			
 			// For SourceGen, styles are lazy - force initialization before inspecting Setters
 			if (inflator == XamlInflator.SourceGen)
-				((IStyle)style2).Apply(new Label(), new SetterSpecificity());
+				style2.ForceInitialize(new Label());
 			
 			var s0 = style2.Setters[0];
 			var s1 = style2.Setters[1];
