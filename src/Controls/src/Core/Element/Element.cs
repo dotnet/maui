@@ -1041,26 +1041,32 @@ namespace Microsoft.Maui.Controls
 
 		void OnDescendantAdded(Element child)
 		{
-			var args = new ElementEventArgs(child);
-			OnDescendantAdded(args);
+			OnDescendantAddedCore(child, null);
 		}
 
-		void OnDescendantAdded(ElementEventArgs args)
+		void OnDescendantAddedCore(Element child, ElementEventArgs? args)
 		{
-			DescendantAdded?.Invoke(this, args);
-			RealParent?.OnDescendantAdded(args);
+			if (DescendantAdded is not null)
+			{
+				args ??= new ElementEventArgs(child);
+				DescendantAdded.Invoke(this, args);
+			}
+			RealParent?.OnDescendantAddedCore(child, args);
 		}
 
 		void OnDescendantRemoved(Element child)
 		{
-			var args = new ElementEventArgs(child);
-			OnDescendantRemoved(args);
+			OnDescendantRemovedCore(child, null);
 		}
 
-		void OnDescendantRemoved(ElementEventArgs args)
+		void OnDescendantRemovedCore(Element child, ElementEventArgs? args)
 		{
-			DescendantRemoved?.Invoke(this, args);
-			RealParent?.OnDescendantRemoved(args);
+			if (DescendantRemoved is not null)
+			{
+				args ??= new ElementEventArgs(child);
+				DescendantRemoved.Invoke(this, args);
+			}
+			RealParent?.OnDescendantRemovedCore(child, args);
 		}
 
 		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
