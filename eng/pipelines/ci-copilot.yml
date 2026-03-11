@@ -155,19 +155,46 @@ stages:
                 sleep 1
                 adb start-server
                 
-                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
-                EMULATOR_PID=$!
-                echo "Emulator PID: $EMULATOR_PID"
-                
-                echo "Waiting for emulator device (adb wait-for-device)..."
-                timeout 120 adb wait-for-device
-                if [ $? -ne 0 ]; then
-                  echo "##vso[task.logissue type=error]adb wait-for-device timed out after 120s"
+                # Retry loop: emulator sometimes fails to connect ADB on first launch
+                MAX_LAUNCH_ATTEMPTS=2
+                EMULATOR_PID=""
+                for LAUNCH_ATTEMPT in $(seq 1 $MAX_LAUNCH_ATTEMPTS); do
+                  echo "--- Emulator launch attempt $LAUNCH_ATTEMPT of $MAX_LAUNCH_ATTEMPTS ---"
+
+                  if [ $LAUNCH_ATTEMPT -gt 1 ]; then
+                    echo "Cleaning up before retry..."
+                    if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                      kill "$EMULATOR_PID" 2>/dev/null || true
+                      sleep 2
+                      kill -0 "$EMULATOR_PID" 2>/dev/null && kill -9 "$EMULATOR_PID" 2>/dev/null || true
+                    fi
+                    sleep 3
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server
+                    sleep 2
+                  fi
+
+                  nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+                  EMULATOR_PID=$!
+                  echo "Emulator PID: $EMULATOR_PID"
+                  
+                  echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
+                  timeout 120 adb wait-for-device
+                  if [ $? -eq 0 ]; then
+                    echo "Device detected: $(adb devices -l | grep emulator)"
+                    break
+                  fi
+
+                  echo "##vso[task.logissue type=warning]adb wait-for-device timed out (attempt $LAUNCH_ATTEMPT)"
                   adb devices -l
-                  cat /tmp/emulator.log | tail -30
-                  exit 1
-                fi
-                echo "Device detected: $(adb devices -l | grep emulator)"
+                  tail -30 /tmp/emulator.log
+
+                  if [ $LAUNCH_ATTEMPT -eq $MAX_LAUNCH_ATTEMPTS ]; then
+                    echo "##vso[task.logissue type=error]Emulator failed to connect after $MAX_LAUNCH_ATTEMPTS attempts"
+                    exit 1
+                  fi
+                done
 
                 timeout=300
                 waited=0
@@ -186,6 +213,12 @@ stages:
                     adb start-server
                     sleep 2
                     echo "ADB server restarted. Continuing to wait..."
+                  fi
+                  # Re-ensure ADB keys every 60s during boot (mirrors android.cake PrepareDevice)
+                  if [ $((waited % 60)) -eq 0 ] && [ $waited -gt 0 ]; then
+                    if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+                      cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub" 2>/dev/null || true
+                    fi
                   fi
                 done
                 echo "Boot completed, waiting for package manager..."
@@ -234,6 +267,7 @@ stages:
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
               displayName: 'Create AVD and Boot Android Emulator'
+              retryCountOnTaskFailure: 1
               timeoutInMinutes: 15
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
