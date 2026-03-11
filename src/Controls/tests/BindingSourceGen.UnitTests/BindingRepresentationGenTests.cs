@@ -1100,7 +1100,8 @@ public class BindingRepresentationGenTests
 					MemberType: new TypeDescription("int", IsValueType: true),
 					Kind: AccessorKind.Field,
 					IsGetterAccessible: false,
-					IsSetterAccessible: false
+					IsSetterAccessible: false,
+					MaybeImplementsINPC: true
 				)
 			]),
 			SetterOptions: new(IsWritable: true),
@@ -1144,7 +1145,8 @@ public class BindingRepresentationGenTests
 					MemberType: new TypeDescription("int", IsValueType: true),
 					Kind: AccessorKind.Property,
 					IsGetterAccessible: false,
-					IsSetterAccessible: false
+					IsSetterAccessible: false,
+					MaybeImplementsINPC: true
 				)
 			]),
 			SetterOptions: new(IsWritable: true),
