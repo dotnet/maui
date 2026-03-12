@@ -124,12 +124,14 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			public override void ContactPickerDidCancel(CNContactPickerViewController picker)
 			{
-				picker.DismissViewController(true, () => DidSelectContactHandler?.Invoke(default));
+				DidSelectContactHandler?.Invoke(default);
+				picker.DismissViewController(true, null);
 			}
 
 			public override void DidSelectContact(CNContactPickerViewController picker, CNContact contact)
 			{
-				picker.DismissViewController(true, () => DidSelectContactHandler?.Invoke(contact));
+				DidSelectContactHandler?.Invoke(contact);
+				picker.DismissViewController(true, null);
 			}
 
 			public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
