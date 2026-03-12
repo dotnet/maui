@@ -1,6 +1,13 @@
 {
-  "extraKnownMarketplaces": [
-    { "url": "https://github.com/dotnet/arcade-skills" }
-  ],
-  "enabledPlugins": ["dotnet-dnceng@dotnet-arcade-skills"]
+  "extraKnownMarketplaces": {
+    "dotnet-arcade-skills": {
+      "source": {
+        "source": "github",
+        "repo": "dotnet/arcade-skills"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "dotnet-dnceng@dotnet-arcade-skills": true
+  }
 }

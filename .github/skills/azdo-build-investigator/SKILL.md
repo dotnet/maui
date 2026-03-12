@@ -8,9 +8,20 @@ metadata:
 
 # dotnet/maui CI Investigation Context
 
-This skill provides MAUI-specific context for CI investigation. Use it together with the `ci-analysis` skill which is vendored locally in `.github/skills/ci-analysis/`.
+This skill provides MAUI-specific context for CI investigation. Use it together with the `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` plugin via `.github/copilot/settings.json`).
 
 > **First**: invoke the `ci-analysis` skill — it handles the core investigation workflow using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if available). This skill provides MAUI-specific corrections and context on top of that.
+
+## Script Location
+
+The `ci-analysis` skill is loaded from the remote `dotnet/arcade-skills` plugin. Its `Get-CIStatus.ps1` script is **not stored locally** — download it on demand before first use in a session:
+
+```bash
+mkdir -p /tmp/ci-analysis-scripts
+curl -sL "https://raw.githubusercontent.com/dotnet/arcade-skills/main/plugins/dotnet-dnceng/skills/ci-analysis/scripts/Get-CIStatus.ps1" -o /tmp/ci-analysis-scripts/Get-CIStatus.ps1
+```
+
+Then use `/tmp/ci-analysis-scripts/Get-CIStatus.ps1` wherever the `ci-analysis` SKILL.md references `./scripts/Get-CIStatus.ps1`.
 
 ## MAUI CI Pipelines
 
