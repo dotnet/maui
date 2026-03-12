@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml;
 internal readonly struct XmlName(string namespaceUri, string localName)
 {
 	public static readonly XmlName _CreateContent = new("_", "CreateContent");
+	public static readonly XmlName _StyleContent = new("_", "StyleContent");
 	public static readonly XmlName xArguments = new("x", "Arguments");
 	public static readonly XmlName xClass = new("x", "Class");
 	public static readonly XmlName xClassModifier = new("x", "ClassModifier");
