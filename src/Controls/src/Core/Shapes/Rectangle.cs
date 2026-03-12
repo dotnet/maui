@@ -2,12 +2,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <summary>
 	/// A <see cref="Shape"/> that draws a rectangle, optionally with rounded corners via <see cref="RadiusX"/> and <see cref="RadiusY"/>.
 	/// </summary>
+	[ElementHandler(typeof(RectangleHandler))]
 	public sealed partial class Rectangle : Shape, IShape
 	{
 		/// <summary>

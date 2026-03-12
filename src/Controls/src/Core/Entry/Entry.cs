@@ -3,12 +3,14 @@ using System;
 using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
 	/// </summary>
+	[ElementHandler(typeof(EntryHandler))]
 	public partial class Entry : InputView, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
 		/// <summary>
@@ -199,6 +201,12 @@ namespace Microsoft.Maui.Controls
 		void IEntry.Completed()
 		{
 			(this as IEntryController).SendCompleted();
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
 		}
 	}
 }
