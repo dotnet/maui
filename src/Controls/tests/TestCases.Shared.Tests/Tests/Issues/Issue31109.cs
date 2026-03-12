@@ -33,9 +33,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ChangeWidthsButton");
 			App.Tap("ChangeWidthsButton");
 
-			// Wait for status label to update confirming the click happened
-			App.WaitForElement("StatusLabel");
+			// Wait until Item1 width has actually changed to ensure the layout update completed
+			var timeout = System.TimeSpan.FromSeconds(5);
+			var pollDelay = System.TimeSpan.FromMilliseconds(100);
+			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
+			while (stopwatch.Elapsed < timeout)
+			{
+				var currentRect = App.WaitForElement("Item1").GetRect();
+				if (System.Math.Abs(currentRect.Width - item1Before.Width) > 1)
+				{
+					break;
+				}
+
+				System.Threading.Tasks.Task.Delay(pollDelay).Wait();
+			}
 			// After changing widths, all items should have equal width
 			var item1After = App.WaitForElement("Item1").GetRect();
 			var item2After = App.WaitForElement("Item2").GetRect();
