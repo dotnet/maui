@@ -151,7 +151,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandling();
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
 
@@ -699,7 +699,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandling();
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 #if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/26968
