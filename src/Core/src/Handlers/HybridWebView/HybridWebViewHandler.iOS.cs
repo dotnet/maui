@@ -125,6 +125,7 @@ namespace Microsoft.Maui.Handlers
 			private HybridWebViewHandler? Handler => _webViewHandler is not null && _webViewHandler.TryGetTarget(out var h) ? h : null;
 
 			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Trim safety is managed by the parent HybridWebViewHandler and its feature switches.")]
+			[UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic code safety is managed by the parent HybridWebViewHandler and its feature switches.")]
 			public void DidReceiveScriptMessage(WKUserContentController userContentController, WKScriptMessage message)
 			{
 				ArgumentNullException.ThrowIfNull(message);
@@ -152,6 +153,7 @@ namespace Microsoft.Maui.Handlers
 			[Export("webView:startURLSchemeTask:")]
 			[SupportedOSPlatform("ios11.0")]
 			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Trim safety is managed by the parent HybridWebViewHandler and its feature switches.")]
+			[UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic code safety is managed by the parent HybridWebViewHandler and its feature switches.")]
 			public async void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
 				if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
@@ -217,6 +219,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Trim safety is managed by the parent HybridWebViewHandler and its feature switches.")]
+			[UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Dynamic code safety is managed by the parent HybridWebViewHandler and its feature switches.")]
 			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
 			{
 				if (Handler is null)
