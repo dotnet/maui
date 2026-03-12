@@ -44,13 +44,25 @@ namespace VisualTestUtils
         /// <param name="environmentName">Optional name for the test environment (e.g. device type, like
         /// "android"). If present it's used as the parent directory for the images. It not present, all images are stored directly in the "snapshots" directory.</param>
         /// <param name="testContext">Optional client provided test context, used to attach screenshots/diff images to failed tests if supported by client test framework</param>
+        /// <param name="fallbackEnvironmentName">Optional fallback environment to check when <paramref name="environmentName"/> baseline is missing.</param>
         public virtual void VerifyMatchesSnapshot(string name, ImageSnapshot actualImage, string environmentName = null,
-            ITestContext testContext = null)
+            ITestContext testContext = null, string fallbackEnvironmentName = null)
         {
             string imageFileName = $"{name}{actualImage.Format.GetFileExtension()}";
 
             string snapshotsEnvironmentDirectory = GetEnvironmentDirectory(_snapshotsDirectory, environmentName);
             string baselineImagePath = Path.Combine(snapshotsEnvironmentDirectory, imageFileName);
+
+            if (!File.Exists(baselineImagePath) && !string.IsNullOrWhiteSpace(fallbackEnvironmentName))
+            {
+                string fallbackSnapshotsEnvironmentDirectory = GetEnvironmentDirectory(_snapshotsDirectory, fallbackEnvironmentName);
+                string fallbackBaselineImagePath = Path.Combine(fallbackSnapshotsEnvironmentDirectory, imageFileName);
+
+                if (File.Exists(fallbackBaselineImagePath))
+                {
+                    baselineImagePath = fallbackBaselineImagePath;
+                }
+            }
 
             string diffEnvironmentDirectory = GetEnvironmentDirectory(this._snapshotsDiffDirectory, environmentName);
             string diffDirectoryImagePath = Path.Combine(diffEnvironmentDirectory, imageFileName);
