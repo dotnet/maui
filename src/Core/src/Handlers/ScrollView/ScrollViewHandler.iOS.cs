@@ -163,6 +163,17 @@ namespace Microsoft.Maui.Handlers
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
 			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
 
+			// Expand the ScrollView to fill the available constraint if the content requests it (e.g., Fill alignment).
+			if (scrollView.PresentedContent is { } presentedContent)
+			{
+				var fillWidth = double.IsInfinity(widthConstraint) ? width : widthConstraint;
+				var fillHeight = double.IsInfinity(heightConstraint) ? height : heightConstraint;
+				var adjustedSize = new Size(width, height).AdjustForFill(
+					new Rect(0, 0, fillWidth, fillHeight), presentedContent);
+				width = adjustedSize.Width;
+				height = adjustedSize.Height;
+			}
+
 			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
 			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
 
