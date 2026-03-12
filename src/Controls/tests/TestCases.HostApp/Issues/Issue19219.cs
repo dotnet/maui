@@ -2,7 +2,7 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 19219, "[Android, iOS, macOS] Shell SearchHandler Command Not Executed on Item Selection", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 19219, "[Android, iOS, macOS] Shell SearchHandler Command Not Executed on Item Selection", PlatformAffected.All)]
 public class Issue19219Shell : Shell
 {
 	public Issue19219Shell()
@@ -29,7 +29,7 @@ public class Issue19219Shell : Shell
 				AutomationId = "SearchHandlerLabel"
 			};
 
-			var fruits = new List<string> { "Los Angeles", "New York", "London", "Sydney", "Toronto", "Chicago", "Melbourne", "Vancouver",
+			var cities = new List<string> { "Los Angeles", "New York", "London", "Sydney", "Toronto", "Chicago", "Melbourne", "Vancouver",
   			"Manchester", "Birmingham", "San Francisco", "Dublin", "Auckland", "Glasgow", "Perth", "Houston",
   			"Seattle", "Cape Town", "Ottawa", "Brisbane", "Boston", "Phoenix", "Washington", "Edinburgh" };
 			var searchHandler = new SearchHandler
@@ -44,7 +44,7 @@ public class Issue19219Shell : Shell
 			};
 			searchHandler.SetBinding(SearchHandler.ItemsSourceProperty, new Binding
 			{
-				Source = fruits,
+				Source = cities,
 				Mode = BindingMode.OneWay
 			});
 

@@ -14,7 +14,6 @@ public class Issue19219 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.SearchBar)]
 	public void ShouldExecuteCommandWhenTappingShellSearchItem()
 	{
 		App.WaitForElement("SearchHandlerLabel");
