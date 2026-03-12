@@ -20,7 +20,7 @@ public class Issue34336 : ContentPage
         {
             var nameLabel = new Label { FontSize = 14, TextTransform = TextTransform.Uppercase };
             nameLabel.SetBinding(Label.TextProperty, "Name");
-            // AutomationId bound to Name so the test can wait for "Item 0" to appear
+            // AutomationId is bound to Name so the test can reliably wait for "ITEM 0" on all platforms
             nameLabel.SetBinding(Label.AutomationIdProperty, "Name");
 
             var descLabel = new Label { LineBreakMode = LineBreakMode.WordWrap };
@@ -95,7 +95,7 @@ public class Issue34336 : ContentPage
         for (int i = 0; i < 10; i++)
         {
             _items.Add(new Issue34336Item(
-                $"Item {i}",
+                $"ITEM {i}",
                 $"This is the description for item {i}."));
         }
     }
