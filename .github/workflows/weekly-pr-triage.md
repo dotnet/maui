@@ -70,6 +70,24 @@ Iterate over every open PR and check ALL of the following criteria. A single PR 
 
 ---
 
+#### 📌 TIER 0 — Milestoned PR Dashboard (always shown first)
+
+**Milestoned PRs are the team's top priority.** This section ALWAYS appears first in the report, regardless of whether other tiers have items.
+
+**0. All Milestoned Open PRs — Status Dashboard**
+- **Check**: PR has a milestone assigned (any milestone)
+- **Why**: Milestoned PRs represent committed release work. Every milestoned PR must be actively tracked.
+- **Report**: Show ALL milestoned PRs grouped by milestone (lowest SR number first), each with:
+  - Current state: approved/changes-requested/needs-review/draft
+  - CI status: passing/failing/pending
+  - Blocking issue: conflicts, stale review, waiting on author, waiting on reviewer
+  - Days since last activity
+  - Author type (team/partner/community)
+- **Format**: One table per milestone. Flag any milestoned PR that is blocked or has had no activity in 7+ days.
+- **Action**: Specific per-PR recommendation to unblock (e.g., "needs re-review", "has conflicts", "CI failing on [platform]")
+
+---
+
 #### 🔴 TIER 1 — Immediate Action (merge or close today)
 
 **1. Approved + CI Green + Not Merged**
@@ -217,10 +235,24 @@ Create a **single GitHub issue** with this structure. Use collapsible sections. 
 
 | Category | Count | Effort |
 |----------|-------|--------|
+| 📌 Milestoned PRs needing attention | X | Varies |
 | 🔴 Merge/close immediately | X | < 5 min each |
 | 🟠 Quick review wins | X | < 30 min each |
 | 🟡 Queue hygiene | X | 5-15 min each |
 | 🔵 Pattern insights | X | Varies |
+
+---
+
+## 📌 Milestoned PRs — [Milestone Name]
+
+| PR | Title | Author | State | CI | Blocker | Idle |
+|----|-------|--------|-------|-----|---------|------|
+| #XXXXX | Title | @user | Approved | ✅ | None — merge ready | 3d |
+| #XXXXX | Title | @user | Changes Req | ✅ | Author pushed fix, needs re-review | 5d |
+
+**Recommended action**: [Per-PR action]
+
+[Repeat table for each milestone, sorted by SR number ascending]
 
 ---
 
