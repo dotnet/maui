@@ -2,7 +2,7 @@
 
 ## The Problem
 
-When the PR agent posts review comments to GitHub, those comments are viewed by:
+When the agent posts review comments to GitHub, those comments are viewed by:
 - PR authors
 - Other reviewers  
 - Future contributors searching issue history
@@ -95,7 +95,7 @@ When running `pr-finalize` skill, you create output:
    - Audience: You and local CLI users
    - **MUST be self-contained** - no external references
 
-### PR Agent Phase 4 (Report)
+### Agent Phase 4 (Report)
 
 When completing Phase 4:
 - Include ALL pr-finalize findings inline
