@@ -43,6 +43,10 @@
   
   <PropertyGroup>
     <NoWarn>$(NoWarn);CS0618;CS0672;MVVMTK0045</NoWarn>
+    <!-- XC0618 (obsolete warning) and XC0619 (obsolete error) are suppressed here because this project
+         intentionally uses deprecated APIs. XC0619 uses raw LogError (not the warning-promotion path),
+         so WarningsNotAsErrors is defensive only. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0619</WarningsNotAsErrors>
   </PropertyGroup>
   
 	<ItemGroup>
