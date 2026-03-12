@@ -10,7 +10,7 @@
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA1416;CS0618;XC0618;XC0022</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS0618;XC0618;XC0022;IL2026;IL2046;IL2067;IL2069;IL2072;IL2091;IL2097;IL2111;IL2112;IL2114</NoWarn>
     <Nullable>enable</Nullable>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
@@ -19,30 +19,6 @@
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
     <UseMaterial3>false</UseMaterial3>
   </PropertyGroup>
-
-  <!-- Add trimming configuration for the sample app -->
-  <PropertyGroup>
-    <!-- This is a sample app, so we're using partial trimming mode for better compatibility -->
-    <TrimMode>partial</TrimMode>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <!-- Add warnings to NoWarn for trimming issues in this sample app -->
-    <NoWarn>$(NoWarn);IL2026;IL2067;IL2069;IL2091;IL2072;IL2112;IL2046;IL2114;IL2111;IL2097</NoWarn>
-    <!-- Reference the trimming configuration file -->
-    <RootAllApplicationAssemblies>false</RootAllApplicationAssemblies>
-    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
-    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
-    <IlcTrimMetadata>true</IlcTrimMetadata>
-    <!-- Add specific Blazor-related suppressions -->
-    <BlazorWebViewEnableSourceGeneratorForListOfComponents>false</BlazorWebViewEnableSourceGeneratorForListOfComponents>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <TrimmerRootAssembly Include="Maui.Controls.Sample" />
-    <TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebView.Maui" />
-    <TrimmerRootAssembly Include="MauiRazorClassLibrarySample" />
-    <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)Properties\rd.xml" />
-  </ItemGroup>
 
   <PropertyGroup>
     <ApplicationTitle>.NET MAUI</ApplicationTitle>
@@ -66,10 +42,6 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <NoWarn>$(NoWarn);CS8305</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-    <NoWarn>$(NoWarn);IL2067;IL2026;IL2111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
