@@ -310,6 +310,11 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
 			}
 
+			if (_fragmentManager is not null)
+			{
+				CleanUpFragments(_fragmentManager);
+			}
+
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
 
@@ -496,7 +501,10 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (_navHost is MauiNavHostFragment oldHost)
+			{
 				oldHost.StackNavigationManager = null;
+				oldHost.Dispose();
+			}
 
 			if (navHost is MauiNavHostFragment newHost)
 				newHost.StackNavigationManager = this;
