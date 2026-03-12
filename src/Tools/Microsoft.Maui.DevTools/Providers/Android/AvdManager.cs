@@ -15,23 +15,25 @@ namespace Microsoft.Maui.DevTools.Providers.Android;
 public class AvdManager
 {
 	private readonly AvdManagerRunner? _runner;
-	private readonly EmulatorRunner _emulatorRunner;
+	private readonly EmulatorRunner? _emulatorRunner;
 
 	public AvdManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
 	{
 		var sdkPath = getSdkPath();
+		var env = BuildEnvironmentVariables(sdkPath, getJdkPath());
+
 		var avdManagerPath = ResolveAvdManagerPath(sdkPath);
 		if (avdManagerPath != null)
-		{
-			var env = BuildEnvironmentVariables(sdkPath, getJdkPath());
 			_runner = new AvdManagerRunner(avdManagerPath, env);
-		}
-		_emulatorRunner = new EmulatorRunner(getSdkPath, getJdkPath);
+
+		var emulatorPath = ResolveEmulatorPath(sdkPath);
+		if (emulatorPath != null)
+			_emulatorRunner = new EmulatorRunner(emulatorPath, env);
 	}
 
 	public bool IsAvailable => _runner != null;
 
-	public string? EmulatorPath => _emulatorRunner.EmulatorPath;
+	public string? EmulatorPath => _emulatorRunner != null ? "emulator" : null;
 
 	private static string? ResolveAvdManagerPath(string? sdkPath)
 	{
@@ -68,6 +70,16 @@ public class AvdManager
 
 		var legacyPath = Path.Combine(sdkPath, "tools", "bin", "avdmanager" + ext);
 		return File.Exists(legacyPath) ? legacyPath : null;
+	}
+
+	private static string? ResolveEmulatorPath(string? sdkPath)
+	{
+		if (string.IsNullOrEmpty(sdkPath))
+			return null;
+
+		var ext = OperatingSystem.IsWindows() ? ".exe" : "";
+		var emulatorPath = Path.Combine(sdkPath, "emulator", "emulator" + ext);
+		return File.Exists(emulatorPath) ? emulatorPath : null;
 	}
 
 	private static Dictionary<string, string> BuildEnvironmentVariables(string? sdkPath, string? jdkPath)
@@ -166,7 +178,7 @@ public class AvdManager
 
 		try
 		{
-			await _runner!.CreateAvdAsync(name, systemImage, deviceProfile, force, cancellationToken);
+			await _runner!.GetOrCreateAvdAsync(name, systemImage, deviceProfile, force, cancellationToken);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -185,7 +197,7 @@ public class AvdManager
 	public async Task StartAvdAsync(string name, bool coldBoot = false, bool wait = false,
 		CancellationToken cancellationToken = default)
 	{
-		if (!_emulatorRunner.IsAvailable)
+		if (_emulatorRunner == null)
 			throw MauiToolException.AutoFixable(
 				ErrorCodes.AndroidEmulatorNotFound,
 				"Android emulator not installed",
