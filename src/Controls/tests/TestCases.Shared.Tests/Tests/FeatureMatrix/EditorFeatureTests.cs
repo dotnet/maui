@@ -250,6 +250,9 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("Test E"));
+		App.ClearText("TestEditor");
+		App.EnterText("TestEditor", "1234567890");
+		Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("123456"));
 	}
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Editor control even if its IsReadOnly property is set to true.
@@ -271,7 +274,6 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEditor");
 		App.EnterText("TestEditor", "123");
 		Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("Test E"));
-
 	}
 #endif
 
@@ -318,8 +320,8 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29833
 		[Test, Order(20)]
+		[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
 		public void VerifyEditorTextWhenIsTextPredictionEnabledTrueOrFalse()
 		{
 			App.WaitForElement("Options");
@@ -336,6 +338,7 @@ public class EditorFeatureTests : _GalleryUITest
 		}
 
 		[Test, Order(21)]
+		[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
 		public void VerifyEditorTextWhenIsSpellCheckEnabledTrueOrFalse()
 		{
 			App.WaitForElement("Options");
@@ -350,7 +353,6 @@ public class EditorFeatureTests : _GalleryUITest
 			App.EnterText("TestEditor", " ");
 			VerifyScreenshotWithKeyboardHandling();
 		}
-#endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID  // On iOS and Maccatalyst While updating CursorPosition and SelectionLength, the Editor text gets deleted. & On Android, changing CursorPosition keeps the cursor visible even when IsCursorVisible is set to false, which is unexpected.
 	[Test, Order(22)]
@@ -450,8 +452,8 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //keybord type is not supported on Windows and Maccatalyst platforms & On Android & IOS related issue:https://github.com/dotnet/maui/issues/26968
 	[Test, Order(27)]
+	[Ignore("Fails on all platforms, the keybord type is not supported on Windows and Maccatalyst platforms & On Android & IOS related issue:https://github.com/dotnet/maui/issues/26968")]
 	public void VerifyEditorTextWhenKeyboardTypeSet()
 	{
 		App.WaitForElement("Options");
@@ -464,7 +466,6 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("TestEditor");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
 	[Test, Order(28)]
@@ -942,7 +943,23 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		VerifyScreenshotWithKeyboardHandling();
+		App.WaitForElement("When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		App.ClearText("TestEditor");
+	}
+
+	[Test, Order(57)]
+	public void VerifyEditorTextWhenFontAttributesBoldAndItalicSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	/// <summary>

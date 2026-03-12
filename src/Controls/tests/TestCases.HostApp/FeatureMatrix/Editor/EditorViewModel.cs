@@ -271,19 +271,13 @@ public class EditorViewModel : INotifyPropertyChanged
 
 	public void Reset()
 	{
-		Text = "Test Editor";
 		TextColor = Colors.Black;
-		Placeholder = "Enter text here";
 		PlaceholderColor = Colors.Gray;
 		FontSize = 14;
-		HeightRequest = -1;
-		WidthRequest = -1;
 		HorizontalTextAlignment = TextAlignment.Start;
 		VerticalTextAlignment = TextAlignment.End;
 		CharacterSpacing = 0;
 		MaxLength = -1;
-		CursorPosition = 0;
-		SelectionLength = 0;
 		IsReadOnly = false;
 		IsTextPredictionEnabled = false;
 		IsSpellCheckEnabled = false;
@@ -301,6 +295,12 @@ public class EditorViewModel : INotifyPropertyChanged
 		CompletedText = "Completed: Not triggered";
 		FocusedText = "Focused: Not triggered";
 		UnfocusedText = "Unfocused: Not triggered";
+		HeightRequest = -1;
+		WidthRequest = -1;
+		Placeholder = "Enter text here";
+		Text = "Test Editor";
+		CursorPosition = 0;
+		SelectionLength = 0;
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
