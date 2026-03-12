@@ -437,6 +437,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static Bitmap Downsize(this Bitmap target, int maxWidth, int maxHeight, bool dispose = true)
 		{
+			// Invalid dimensions: return original without resizing or disposing.
 			if (maxWidth <= 0 || maxHeight <= 0)
 			{
 				return target;

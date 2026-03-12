@@ -67,6 +67,7 @@ public class Issue30803 : ContentPage
 
 	bool TryAccessImage(IImage downsizedImage)
 	{
+		// royals.png is 512x384 (4:3 ratio); Downsize(10, 10) should produce 10x8 preserving aspect ratio.
 		if (downsizedImage.Width == 10 && downsizedImage.Height == 8)
 		{
 			return true;
