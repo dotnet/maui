@@ -309,6 +309,15 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		//CSS parsing
+		public static DiagnosticDescriptor CssParserDiagnostic = new DiagnosticDescriptor(
+			id: "MAUIG1050",
+			title: "CSS parsing issue",
+			messageFormat: "CSS {0}: {1}",
+			category: "CssParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor AsyncLambdaNotSupported = new DiagnosticDescriptor(
 			id: "MAUIX2013",
 			title: "Async lambda event handlers are not supported",

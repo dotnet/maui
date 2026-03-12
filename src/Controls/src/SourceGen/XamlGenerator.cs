@@ -227,6 +227,15 @@ public class XamlGenerator : IIncrementalGenerator
 			GenerateCssCodeBehind(cssItem, sourceProductionContext);
 		});
 
+		// Register the compiled CSS pipeline
+		initContext.RegisterSourceOutput(cssProjectItemProvider, static (sourceProductionContext, cssItem) =>
+		{
+			if (cssItem == null)
+				return;
+
+			GenerateCompiledCss(cssItem, sourceProductionContext);
+		});
+
 
 		// This could have been in the template, but having it here ensure it's never removed
 		initContext.RegisterPostInitializationOutput(static context =>
@@ -357,6 +366,41 @@ $"""
 		}
 
 		sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+	}
+
+	static void GenerateCompiledCss(ProjectItem projItem, SourceProductionContext sourceProductionContext)
+	{
+		var cssText = projItem.AdditionalText.GetText()?.ToString();
+		if (string.IsNullOrEmpty(cssText))
+			return;
+
+		var (rules, mediaGroups, diagnostics) = Css.CssParser.Parse(cssText!);
+
+		// Report diagnostics
+		foreach (var diag in diagnostics)
+		{
+			var severity = diag.Severity == Css.CssDiagnosticSeverity.Error
+				? DiagnosticSeverity.Error
+				: DiagnosticSeverity.Warning;
+
+			var location = Location.Create(
+				projItem.RelativePath ?? projItem.AdditionalText.Path,
+				Microsoft.CodeAnalysis.Text.TextSpan.FromBounds(0, 0),
+				new Microsoft.CodeAnalysis.Text.LinePositionSpan(
+					new Microsoft.CodeAnalysis.Text.LinePosition(Math.Max(0, diag.Line - 1), Math.Max(0, diag.Column - 1)),
+					new Microsoft.CodeAnalysis.Text.LinePosition(Math.Max(0, diag.Line - 1), Math.Max(0, diag.Column))));
+
+			sourceProductionContext.ReportDiagnostic(Diagnostic.Create(
+				Descriptors.CssParserDiagnostic,
+				location,
+				severity == DiagnosticSeverity.Error ? "error" : "warning",
+				diag.Message));
+		}
+
+		var source = Css.CssCodeGenerator.Generate(rules, mediaGroups, projItem.ManifestResourceName, projItem.TargetPath);
+		var hintName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(projItem.TargetPath)) ? "" : Path.GetDirectoryName(projItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(projItem.TargetPath)}.compiled.css.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+
+		sourceProductionContext.AddSource(hintName, SourceText.From(source, Encoding.UTF8));
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)

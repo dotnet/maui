@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Maui.Controls.StyleSheets
 {
@@ -8,6 +9,14 @@ namespace Microsoft.Maui.Controls.StyleSheets
 	{
 		Selector()
 		{
+		}
+
+		/// <summary>Parses a selector from a pre-cleaned text string (no comments). Used by compiled path.</summary>
+		internal static Selector Parse(string selectorText)
+		{
+			using var reader = new StringReader(selectorText);
+			using var cssReader = new CssReader(reader);
+			return Parse(cssReader);
 		}
 
 		public static Selector Parse(CssReader reader, char stopChar = '\0')
@@ -40,8 +49,87 @@ namespace Microsoft.Maui.Controls.StyleSheets
 							return Invalid;
 						setCurrentSelector(new And(), new Id(id));
 						break;
+					case ':':
+						reader.Read();
+						// Check for :: (pseudo-elements — not supported)
+						if (reader.Peek() == ':')
+							return Invalid;
+						var pseudoClass = reader.ReadIdent();
+						if (string.Equals(pseudoClass, "root", StringComparison.OrdinalIgnoreCase))
+							setCurrentSelector(new And(), new Root());
+						else if (string.Equals(pseudoClass, "first-child", StringComparison.OrdinalIgnoreCase))
+							setCurrentSelector(new And(), new FirstChild());
+						else if (string.Equals(pseudoClass, "last-child", StringComparison.OrdinalIgnoreCase))
+							setCurrentSelector(new And(), new LastChild());
+						else if (string.Equals(pseudoClass, "hover", StringComparison.OrdinalIgnoreCase))
+							setCurrentSelector(new And(), new Hover());
+						else if (string.Equals(pseudoClass, "focus", StringComparison.OrdinalIgnoreCase))
+							setCurrentSelector(new And(), new Focused());
+						else if (string.Equals(pseudoClass, "disabled", StringComparison.OrdinalIgnoreCase))
+							setCurrentSelector(new And(), new Disabled());
+						else if (string.Equals(pseudoClass, "not", StringComparison.OrdinalIgnoreCase))
+						{
+							// Parse :not(inner-selector)
+							if (reader.Peek() != '(')
+								return Invalid;
+							reader.Read(); // consume '('
+							var inner = Parse(reader, ')');
+							if (reader.Peek() == ')')
+								reader.Read(); // consume ')'
+							setCurrentSelector(new And(), new Not(inner));
+						}
+						else
+							return Invalid; // Unsupported pseudo-class
+						break;
 					case '[':
-						throw new NotImplementedException("Attributes not implemented");
+						reader.Read(); // consume '['
+						reader.SkipWhiteSpaces();
+						var attrName = reader.ReadIdent();
+						if (string.IsNullOrEmpty(attrName))
+							return Invalid;
+						reader.SkipWhiteSpaces();
+						var next = reader.Peek();
+						if (next == ']')
+						{
+							reader.Read();
+							// [attr] — presence check, not supported meaningfully in MAUI
+							setCurrentSelector(new And(), Invalid);
+						}
+						else if (next == '=')
+						{
+							reader.Read(); // consume '='
+							reader.SkipWhiteSpaces();
+							var attrValue = ReadAttributeValue(reader);
+							reader.SkipWhiteSpaces();
+							if (reader.Peek() == ']')
+								reader.Read();
+							setCurrentSelector(new And(), new AttributeEquals(attrName, attrValue));
+						}
+						else if (next == '~')
+						{
+							reader.Read(); // consume '~'
+							if (reader.Peek() == '=')
+								reader.Read(); // consume '='
+							reader.SkipWhiteSpaces();
+							var attrValue = ReadAttributeValue(reader);
+							reader.SkipWhiteSpaces();
+							if (reader.Peek() == ']')
+								reader.Read();
+							// [attr~=value] on class → class contains
+							if (string.Equals(attrName, "class", StringComparison.OrdinalIgnoreCase))
+								setCurrentSelector(new And(), new Class(attrValue));
+							else
+								setCurrentSelector(new And(), new AttributeEquals(attrName, attrValue));
+						}
+						else
+						{
+							// Skip to closing ]
+							reader.ReadUntil(']');
+							if (reader.Peek() == ']')
+								reader.Read();
+							setCurrentSelector(new And(), Invalid);
+						}
+						break;
 					case ',':
 						reader.Read();
 						setCurrentSelector(new Or(), All);
@@ -110,6 +198,21 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			return root;
 		}
 
+		static string ReadAttributeValue(TextReader reader)
+		{
+			reader.SkipWhiteSpaces();
+			int p = reader.Peek();
+			if (p == '"' || p == '\'')
+			{
+				var quote = (char)reader.Read();
+				var val = reader.ReadUntil(quote);
+				if (reader.Peek() == quote)
+					reader.Read();
+				return val;
+			}
+			return reader.ReadUntil(']', ' ', '\t');
+		}
+
 		static void SetCurrentSelector(ref Selector root, ref Selector workingRoot, ref Operator workingRootParent, Operator op, Selector sel)
 		{
 			var updateRoot = root == workingRoot;
@@ -117,8 +220,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			op.Left = workingRoot;
 			op.Right = sel;
 			workingRoot = op;
-			if (workingRootParent != null)
-				workingRootParent.Right = workingRoot;
+			workingRootParent?.Right = workingRoot;
 
 			if (updateRoot)
 				root = workingRoot;
@@ -214,6 +316,81 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				for (var i = 0; i < styleable.NameAndBases.Length; i++)
 					if (string.Equals(styleable.NameAndBases[i], ElementName, StringComparison.OrdinalIgnoreCase))
 						return true;
+				return false;
+			}
+		}
+
+		sealed class Root : UnarySelector
+		{
+			public override bool Matches(IStyleSelectable styleable) => styleable.Parent == null;
+		}
+
+		sealed class FirstChild : UnarySelector
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (styleable.Parent == null)
+					return false;
+				foreach (var child in styleable.Parent.Children)
+					return child == styleable;
+				return false;
+			}
+		}
+
+		sealed class LastChild : UnarySelector
+		{
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				if (styleable.Parent == null)
+					return false;
+				IStyleSelectable last = null;
+				foreach (var child in styleable.Parent.Children)
+					last = child;
+				return last == styleable;
+			}
+		}
+
+		sealed class Not : UnarySelector
+		{
+			readonly Selector _inner;
+			public Not(Selector inner) => _inner = inner;
+			internal Selector Inner => _inner;
+			public override bool Matches(IStyleSelectable styleable) => !_inner.Matches(styleable);
+		}
+
+		sealed class Hover : UnarySelector
+		{
+			public override bool Matches(IStyleSelectable styleable) => false;
+		}
+
+		sealed class Focused : UnarySelector
+		{
+			public override bool Matches(IStyleSelectable styleable) => false;
+		}
+
+		sealed class Disabled : UnarySelector
+		{
+			public override bool Matches(IStyleSelectable styleable) => false;
+		}
+
+		sealed class AttributeEquals : UnarySelector
+		{
+			readonly string _attrName;
+			readonly string _attrValue;
+
+			public AttributeEquals(string attrName, string attrValue)
+			{
+				_attrName = attrName;
+				_attrValue = attrValue;
+			}
+
+			public override bool Matches(IStyleSelectable styleable)
+			{
+				// Map CSS attribute names to IStyleSelectable properties
+				if (string.Equals(_attrName, "id", StringComparison.OrdinalIgnoreCase))
+					return string.Equals(styleable.Id, _attrValue, StringComparison.OrdinalIgnoreCase);
+				if (string.Equals(_attrName, "class", StringComparison.OrdinalIgnoreCase))
+					return styleable.Classes != null && styleable.Classes.Contains(_attrValue);
 				return false;
 			}
 		}
@@ -332,6 +509,16 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				{
 					case Selector.Class c:
 						return new SelectorSpecificity { @class = 1 };
+					case Selector.Root r:
+						return new SelectorSpecificity { @class = 1 };
+					case Selector.FirstChild fc:
+						return new SelectorSpecificity { @class = 1 };
+					case Selector.LastChild lc:
+						return new SelectorSpecificity { @class = 1 };
+					case Selector.Not n:
+						return FromSelector(n.Inner);
+					case Selector.AttributeEquals ae:
+						return new SelectorSpecificity { @class = 1 };
 					case Selector.Id i:
 						return new SelectorSpecificity { id = 1 };
 					case Selector.Element e:
@@ -373,6 +560,6 @@ namespace Microsoft.Maui.Controls.StyleSheets
 					type = type + other.type
 				};
 			}
-		}
 	}
 }
+

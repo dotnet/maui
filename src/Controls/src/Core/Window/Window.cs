@@ -251,7 +251,17 @@ namespace Microsoft.Maui.Controls
 			if (_batchFrameUpdate == 0 && shouldTriggerSizeChanged)
 			{
 				SizeChanged?.Invoke(this, EventArgs.Empty);
+				EvaluateMediaQueries();
 			}
+		}
+
+		void EvaluateMediaQueries()
+		{
+			if (Page == null || Width <= 0 || Height <= 0)
+				return;
+
+			var appTheme = Application.Current?.RequestedTheme ?? ApplicationModel.AppTheme.Unspecified;
+			Page.EvaluateMediaQueriesAndReapply(Width, Height, appTheme);
 		}
 
 		private protected override void UpdateHandlerValue(string property, bool valueChanged)
