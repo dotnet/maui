@@ -8,9 +8,9 @@ metadata:
 
 # dotnet/maui CI Investigation Context
 
-This skill provides MAUI-specific context for CI investigation. Use it together with the `ci-analysis` skill from the `dotnet-dnceng` plugin (auto-installed via `.github/copilot/settings.json`).
+This skill provides MAUI-specific context for CI investigation. Use it together with the `ci-analysis` skill which is vendored locally in `.github/skills/ci-analysis/`.
 
-> **First**: invoke the `ci-analysis` skill — it handles the core investigation workflow using native MCP tools (ADO, Helix, binlog). This skill provides MAUI-specific corrections and context on top of that.
+> **First**: invoke the `ci-analysis` skill — it handles the core investigation workflow using `Get-CIStatus.ps1` and `gh` CLI (with MCP tools as optional enhancements if available). This skill provides MAUI-specific corrections and context on top of that.
 
 ## MAUI CI Pipelines
 
@@ -53,7 +53,7 @@ MAUI build artifacts are **Container type**, not `PipelineArtifact`. This means:
 - Download requires a Bearer token from `az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798`
 - Use the ADO File Container API: `/_apis/resources/Containers/{id}?api-version=5.0-preview&$format=OctetStream`
 
-Use the `mcp-binlog-tool` MCP server (provided by `dotnet-dnceng` plugin) to analyze downloaded `.binlog` files.
+If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlog` files. This is optional — the core investigation workflow works without it via `gh` CLI and REST APIs.
 
 ## Common MAUI Failure Patterns
 
