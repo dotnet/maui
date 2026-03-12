@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 [nameof(Shell.FlyoutIsPresented)] = MapFlyoutIsPresented,
                 [nameof(Shell.FlyoutBehavior)] = MapFlyoutBehavior,
                 [nameof(Shell.FlyoutWidth)] = MapFlyoutWidth,
+                [nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
                 [nameof(Shell.FlowDirection)] = MapFlowDirection,
                 [nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
                 [nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _flyoutContentView = null;
 
             // Clean up deferred switch listener
-            PlatformView?.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+            platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
             _pendingSwitchItem = null;
 
@@ -367,6 +368,28 @@ namespace Microsoft.Maui.Controls.Handlers
                     handler._flyoutContentView.RequestLayout();
                 }
             }
+        }
+
+        public static void MapFlyoutHeight(ShellHandler handler, Shell shell)
+        {
+            if (handler._flyoutContentView?.LayoutParameters is null)
+            {
+                return;
+            }
+
+            var height = shell.FlyoutHeight;
+            int heightPixels;
+            if (height == -1)
+            {
+                heightPixels = LP.MatchParent;
+            }
+            else
+            {
+                heightPixels = (int)handler.Context.ToPixels(height);
+            }
+
+            handler._flyoutContentView.LayoutParameters.Height = heightPixels;
+            handler._flyoutContentView.RequestLayout();
         }
 
         public static void MapFlowDirection(ShellHandler handler, Shell shell)
