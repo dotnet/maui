@@ -8,7 +8,9 @@
 //
 using System;
 using System.Collections;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Layouts.Flex
 {
@@ -225,6 +227,14 @@ namespace Microsoft.Maui.Layouts.Flex
 		}
 	}
 
+#if NET8_0_OR_GREATER
+	[InlineArray(4)]
+	struct FrameBuffer
+	{
+		float _element0;
+	}
+#endif
+
 	/// <summary>
 	/// An item with flexbox properties. Items can also contain other items and be enumerated.
 	/// </summary>
@@ -234,7 +244,11 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// Gets the frame (x, y, w, h).
 		/// </summary>
 		/// <value>The frame.</value>
+#if NET8_0_OR_GREATER
+		public FrameBuffer Frame;
+#else
 		public float[] Frame { get; } = new float[4];
+#endif
 
 		/// <summary>The parent item.</summary>
 		/// <value>The parent item, or null if the item is a root item.</value>
@@ -456,6 +470,9 @@ namespace Microsoft.Maui.Layouts.Flex
 
 			var layout = new flex_layout();
 			layout.init(item, width, height);
+
+			try
+			{
 			layout.reset();
 
 			int last_layout_child = 0;
@@ -505,19 +522,17 @@ namespace Microsoft.Maui.Layouts.Flex
 				// is set to stretch, ignore the value returned by the callback.
 				if (child.SelfSizing != null)
 				{
-					float[] size = { child.Frame[2], child.Frame[3] };
+					float sizeWidth = child.Frame[2];
+					float sizeHeight = child.Frame[3];
 
-					child.SelfSizing(child, ref size[0], ref size[1], inMeasureMode);
+					child.SelfSizing(child, ref sizeWidth, ref sizeHeight, inMeasureMode);
 
-					for (int j = 0; j < 2; j++)
-					{
-						int size_off = j + 2;
-						if (size_off == layout.frame_size2_i && child_align(child, item) == AlignItems.Stretch && layout.align_dim > 0)
-							continue;
-						float val = size[j];
-						if (!float.IsNaN(val))
-							child.Frame[size_off] = val;
-					}
+					bool skipCrossAxis = layout.align_dim > 0 && child_align(child, item) == AlignItems.Stretch;
+
+					if (!(skipCrossAxis && layout.frame_size2_i == 2) && !float.IsNaN(sizeWidth))
+						child.Frame[2] = sizeWidth;
+					if (!(skipCrossAxis && layout.frame_size2_i == 3) && !float.IsNaN(sizeHeight))
+						child.Frame[3] = sizeHeight;
 				}
 
 				// Honor the `basis' property which overrides the main-axis size.
@@ -583,13 +598,13 @@ namespace Microsoft.Maui.Layouts.Flex
 			// In wrap mode we may need to tweak the position of each line according to
 			// the align_content property as well as the cross-axis size of items that
 			// haven't been set yet.
-			if (layout.need_lines && (layout.lines?.Length ?? 0) > 0)
+			if (layout.need_lines && layout.lines_count > 0)
 			{
 				float pos = 0;
 				float spacing = 0;
 				float flex_dim = layout.align_dim - layout.lines_sizes;
 				if (flex_dim > 0)
-					layout_align(item.AlignContent, flex_dim, (uint)(layout.lines?.Length ?? 0), ref pos, ref spacing);
+					layout_align(item.AlignContent, flex_dim, (uint)layout.lines_count, ref pos, ref spacing);
 
 				float old_pos = 0;
 				if (layout.reverse2)
@@ -598,7 +613,7 @@ namespace Microsoft.Maui.Layouts.Flex
 					old_pos = layout.align_dim;
 				}
 
-				for (uint i = 0; i < (layout.lines?.Length ?? 0); i++)
+				for (uint i = 0; i < layout.lines_count; i++)
 				{
 
 					flex_layout.flex_layout_line line = layout.lines![i];
@@ -639,8 +654,11 @@ namespace Microsoft.Maui.Layouts.Flex
 					}
 				}
 			}
-
-			layout.cleanup();
+			}
+			finally
+			{
+				layout.cleanup();
+			}
 		}
 
 		float MarginThickness(bool vertical) =>
@@ -860,9 +878,20 @@ namespace Microsoft.Maui.Layouts.Flex
 
 			if (layout.need_lines)
 			{
-				Array.Resize(ref layout.lines, (layout.lines?.Length ?? 0) + 1);
+				if (layout.lines == null || layout.lines_count >= layout.lines.Length)
+				{
+					int newCapacity = layout.lines == null ? 4 : layout.lines.Length * 2;
+					var newLines = ArrayPool<flex_layout.flex_layout_line>.Shared.Rent(newCapacity);
+					if (layout.lines is not null)
+					{
+						Array.Copy(layout.lines, newLines, layout.lines_count);
+						ArrayPool<flex_layout.flex_layout_line>.Shared.Return(layout.lines);
+					}
+					layout.lines = newLines;
+				}
 
-				ref flex_layout.flex_layout_line line = ref layout.lines[layout.lines.Length - 1];
+				ref flex_layout.flex_layout_line line = ref layout.lines[layout.lines_count];
+				layout.lines_count++;
 
 				line.child_begin = child_begin;
 				line.child_end = child_end;
@@ -912,11 +941,12 @@ namespace Microsoft.Maui.Layouts.Flex
 			public bool vertical;
 			public float size_dim;              // main axis parent size
 			public float align_dim;             // cross axis parent size
-			public uint frame_pos_i;            // main axis position
-			public uint frame_pos2_i;           // cross axis position
-			public uint frame_size_i;           // main axis size
-			public uint frame_size2_i;          // cross axis size
+			public int frame_pos_i;            // main axis position
+			public int frame_pos2_i;           // cross axis position
+			public int frame_size_i;           // main axis size
+			public int frame_size2_i;          // cross axis size
 			int[]? ordered_indices;
+			int ordered_indices_count;
 
 			// Set for each line layout.
 			public float line_dim;              // the cross axis size
@@ -938,6 +968,7 @@ namespace Microsoft.Maui.Layouts.Flex
 			};
 
 			public flex_layout_line[]? lines;
+			public int lines_count;
 			public float lines_sizes;
 
 			//LAYOUT_RESET
@@ -988,9 +1019,11 @@ namespace Microsoft.Maui.Layouts.Flex
 				}
 
 				ordered_indices = null;
+				ordered_indices_count = 0;
 				if (item.ShouldOrderChildren && item.Count > 0)
 				{
-					var indices = new int[item.Count];
+					var indices = ArrayPool<int>.Shared.Rent(item.Count);
+					ordered_indices_count = item.Count;
 					// Creating a list of item indices sorted using the children's `order'
 					// attribute values. We are using a simple insertion sort as we need
 					// stability (insertion order must be preserved) and cross-platform
@@ -1043,8 +1076,16 @@ namespace Microsoft.Maui.Layouts.Flex
 
 			public void cleanup()
 			{
-				ordered_indices = null;
-				lines = null;
+				if (ordered_indices is not null)
+				{
+					ArrayPool<int>.Shared.Return(ordered_indices);
+					ordered_indices = null;
+				}
+				if (lines is not null)
+				{
+					ArrayPool<flex_layout_line>.Shared.Return(lines);
+					lines = null;
+				}
 			}
 		}
 	}
