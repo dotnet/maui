@@ -1,13 +1,6 @@
----
-name: pr-gate
-description: "Phase 2 of pr-review: Verifies PR tests actually catch the bug — tests must FAIL without fix and PASS with fix. Uses verify-tests-fail-without-fix skill via task agent. Gate MUST pass before Try-Fix phase."
----
-
 # PR Gate — Test Verification
 
 > **⛔ This phase MUST pass before continuing to Try-Fix. If it fails, stop and inform user.**
-
-**Trigger phrases:** "verify PR tests", "gate PR #XXXXX", "check if tests catch the bug"
 
 > 🚨 Gate verification MUST run via task agent — never inline.
 

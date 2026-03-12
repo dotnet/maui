@@ -267,15 +267,15 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 #### User-Facing Skills
 
 1. **pr-review** (`.github/skills/pr-review/SKILL.md`)
-   - **Purpose**: End-to-end PR review orchestrator — invokes phase skills: pr-preflight, pr-gate, try-fix, pr-report
+   - **Purpose**: End-to-end PR review orchestrator — follows phase instructions: pr-preflight, pr-gate, try-fix, pr-report
    - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
    - **Capabilities**: Multi-model fix exploration, test verification, alternative comparison, PR review recommendation
    - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
-   - **Phase skills** (can also be invoked independently):
-     - `pr-preflight` — Context gathering from issue/PR
-     - `pr-gate` — Verify tests FAIL without fix, PASS with fix
-     - `try-fix` — Multi-model fix exploration (already existed)
-     - `pr-report` — Final recommendation + AI summary
+   - **Phase instructions** (in `.github/pr-review/`):
+     - `pr-preflight.md` — Context gathering from issue/PR
+     - `pr-gate.md` — Verify tests FAIL without fix, PASS with fix
+     - `pr-report.md` — Final recommendation
+   - **Phase skill**: `try-fix` — Multi-model fix exploration
 
 3. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
    - **Purpose**: Query and triage open issues that need milestones, labels, or investigation

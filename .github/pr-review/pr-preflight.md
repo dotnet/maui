@@ -1,13 +1,6 @@
----
-name: pr-preflight
-description: "Phase 1 of pr-review: Gathers context from issue, PR description, comments, inline feedback, and classifies changed files. Documents findings without analysis or testing. Use standalone for quick PR context or as part of pr-review orchestration."
----
-
 # PR Pre-Flight — Context Gathering
 
 > **SCOPE:** Document only. No code analysis. No fix opinions. No running tests.
-
-**Trigger phrases:** "gather PR context", "pre-flight PR #XXXXX", "what does PR #XXXXX do"
 
 ---
 

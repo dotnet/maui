@@ -133,6 +133,14 @@ if ($DryRun) {
     }
     Write-Host "[DRY RUN] Would fetch and cherry-pick PR #$PRNumber (squashed)" -ForegroundColor Magenta
 } else {
+    # In CI pipelines, prior steps (Build MSBuild Tasks, Install Appium) may leave
+    # modified tracked files (e.g. HybridWebView.js) or untracked dirs (e.g. .appium/).
+    # Clean them so the dirty-tree check doesn't fail on build artifacts.
+    if ($env:TF_BUILD) {
+        git checkout -- . 2>$null
+        git clean -fd -e CustomAgentLogsTmp/ 2>$null
+    }
+
     # Check for dirty working tree
     $dirtyFiles = git status --porcelain 2>$null
     if ($dirtyFiles) {
@@ -145,6 +153,13 @@ if ($DryRun) {
     if ($existingBranch) {
         Write-Host "  ⚠️ Removing leftover branch '$reviewBranch' from previous run" -ForegroundColor Yellow
         git branch -D $reviewBranch 2>$null
+    }
+
+    # Auto-detect CI environment — in CI, always use current branch
+    $isCI = $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS -or $env:BUILD_BUILDID
+    if ($isCI -and -not $UseCurrentBranch) {
+        Write-Host "  🤖 CI environment detected — using current branch instead of main" -ForegroundColor Cyan
+        $UseCurrentBranch = $true
     }
 
     if (-not $UseCurrentBranch) {
