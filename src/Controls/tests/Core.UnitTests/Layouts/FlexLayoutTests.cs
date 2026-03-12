@@ -315,5 +315,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var afterFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
 			Assert.Equal(150, afterFrame.Width);
 		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/31109
+		// Verifies that clearing WidthRequest (setting to -1) falls back to DesiredSize during arrange.
+		[Fact]
+		public void ArrangeOnlyPassFallsBackToDesiredSizeWhenWidthRequestCleared()
+		{
+			var root = new Grid();
+			var flexLayout = new FlexLayout() { Direction = FlexDirection.Row };
+			var view = new FlexTestView { WidthRequest = 200 };
+
+			root.Add(flexLayout);
+			(flexLayout as IFlexLayout).Add(view as IView);
+
+			// Initial measure + arrange with explicit WidthRequest
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var initialFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(200, initialFrame.Width);
+
+			// Clear WidthRequest and re-measure so DesiredSize reflects auto-sizing
+			view.WidthRequest = -1;
+			flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 1000, 1000));
+
+			// Should fall back to the auto-sized DesiredSize (100 from FlexTestView default)
+			var clearedFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(100, clearedFrame.Width);
+		}
 	}
 }
