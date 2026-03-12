@@ -98,9 +98,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				var intent = ShareImplementation.CreateShareFileIntent((ShareMultipleFilesRequest)request);
 
-				Assert.NotNull(intent.ClipData);
-				Assert.Equal(1, intent.ClipData.ItemCount);
-				Assert.NotNull(intent.ClipData.GetItemAt(0)?.Uri);
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					Assert.NotNull(intent.ClipData);
+					Assert.Equal(1, intent.ClipData.ItemCount);
+					Assert.NotNull(intent.ClipData.GetItemAt(0)?.Uri);
+				}
+				else
+				{
+					Assert.Null(intent.ClipData);
+				}
 			}
 			finally
 			{
@@ -130,10 +137,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				var intent = ShareImplementation.CreateShareFileIntent(request);
 
-				Assert.NotNull(intent.ClipData);
-				Assert.Equal(2, intent.ClipData.ItemCount);
-				Assert.NotNull(intent.ClipData.GetItemAt(0)?.Uri);
-				Assert.NotNull(intent.ClipData.GetItemAt(1)?.Uri);
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					Assert.NotNull(intent.ClipData);
+					Assert.Equal(2, intent.ClipData.ItemCount);
+					Assert.NotNull(intent.ClipData.GetItemAt(0)?.Uri);
+					Assert.NotNull(intent.ClipData.GetItemAt(1)?.Uri);
+				}
+				else
+				{
+					Assert.Null(intent.ClipData);
+				}
 			}
 			finally
 			{
