@@ -14,14 +14,7 @@ This skill provides MAUI-specific context for CI investigation. Use it together 
 
 ## Script Location
 
-The `ci-analysis` skill is loaded from the remote `dotnet/arcade-skills` plugin. Its `Get-CIStatus.ps1` script is **not stored locally** — download it on demand before first use in a session:
-
-```bash
-mkdir -p /tmp/ci-analysis-scripts
-curl -sL "https://raw.githubusercontent.com/dotnet/arcade-skills/main/plugins/dotnet-dnceng/skills/ci-analysis/scripts/Get-CIStatus.ps1" -o /tmp/ci-analysis-scripts/Get-CIStatus.ps1
-```
-
-Then use `/tmp/ci-analysis-scripts/Get-CIStatus.ps1` wherever the `ci-analysis` SKILL.md references `./scripts/Get-CIStatus.ps1`.
+The `ci-analysis` skill and its `Get-CIStatus.ps1` script are loaded automatically from the `dotnet/arcade-skills` plugin (configured in `.github/copilot/settings.json` via `enabledPlugins`). The CLI caches scripts to `~/.copilot/installed-plugins/dotnet-arcade-skills/`. No manual download is needed.
 
 ## MAUI CI Pipelines
 
