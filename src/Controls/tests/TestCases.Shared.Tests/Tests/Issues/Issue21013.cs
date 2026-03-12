@@ -13,7 +13,7 @@ public class Issue21013 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
-	public void EntryShoudLoseFocusWhenBackButtonDismissesKeyboard()
+	public void EntryShouldLoseFocusWhenBackButtonDismissesKeyboard()
 	{
 		App.WaitForElement("TestEntry");
 
