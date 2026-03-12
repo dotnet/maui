@@ -46,7 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 					break;
 				}
 
-				System.Threading.Tasks.Task.Delay(pollDelay).Wait();
+				System.Threading.Thread.Sleep(pollDelay);
 			}
 			// After changing widths, all items should have equal width
 			var item1After = App.WaitForElement("Item1").GetRect();
