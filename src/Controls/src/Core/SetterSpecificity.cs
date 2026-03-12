@@ -188,7 +188,9 @@ namespace Microsoft.Maui.Controls
 		internal SetterSpecificity WithFullVsmPriority()
 		{
 			if (!IsVsmImplicit)
+			{
 				return this;
+			}
 
 			// Clear the implicitVsm bit (0x04 at byte offset 24) and set the full vsm bit (0x01 at byte offset 56)
 			var newValue = (_value & ~(0x04UL << 24)) | (0x01UL << 56);

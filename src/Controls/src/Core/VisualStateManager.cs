@@ -44,7 +44,9 @@ namespace Microsoft.Maui.Controls
 							? baseSpecificity.WithFullVsmPriority()
 							: baseSpecificity;
 						foreach (var setter in state.Setters)
+						{
 							setter.UnApply(oldElement, unapplySpecificity);
+						}
 					}
 				}
 				oldVisualStateGroupList.VisualElement = null;
