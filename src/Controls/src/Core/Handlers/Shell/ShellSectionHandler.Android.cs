@@ -10,11 +10,9 @@ using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
-using Google.Android.Material.AppBar;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -42,10 +40,9 @@ namespace Microsoft.Maui.Controls.Handlers
         IShellContext _shellContext;
         IShellSectionController SectionController => (IShellSectionController)VirtualView;
         IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
-        CoordinatorLayout _rootLayout;
+        LinearLayout _rootLayout;
         ViewPager2 _viewPager;
         TabLayout _contentTabLayout;
-        AppBarLayout _tabAppBarLayout;
         ShellContentFragmentAdapter _adapter;
         TabLayoutMediator _tabLayoutMediator;
 
@@ -137,8 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var rootView = li.Inflate(Resource.Layout.shellsectionlayout, null)
                 ?? throw new InvalidOperationException("shellsectionlayout inflation failed");
 
-            _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellsection_coordinator);
-            _tabAppBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.shellsection_appbar);
+            _rootLayout = rootView.FindViewById<LinearLayout>(Resource.Id.shellsection_coordinator);
             _contentTabLayout = rootView.FindViewById<TabLayout>(Resource.Id.shellsection_tablayout);
             _viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellsection_viewpager);
 
@@ -194,6 +190,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 Handler = this
             };
             _viewPager.Adapter = _adapter;
+
+            // Disable ViewPager2 instance state saving/restoring.
+            // When tabs are hidden (0 items) and shown again, FragmentStateAdapter.restoreState()
+            // crashes with "Expected the adapter to be 'fresh'" because it tries to restore saved
+            // fragment state into an adapter that already has fragments registered.
+            // Shell manages its own state, so we don't need ViewPager2's state restoration.
+            ((AView)_viewPager).SaveEnabled = false;
 
             // Keep ALL content fragments alive to prevent FragmentStateAdapter from
             // saving/restoring fragment state. Restored fragments lose MAUI-specific state
@@ -269,11 +272,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Hide TabLayout if only 1 visible content
+            // Hide TabLayout when 0 or 1 visible content
             var visibleCount = SectionController.GetItems().Count;
             bool showTabs = visibleCount > 1;
             _contentTabLayout.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
-            _tabAppBarLayout.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
         }
 
         void UpdateViewPagerUserInput()
@@ -315,7 +317,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Cleanup TabLayout
             _contentTabLayout = null;
-            _tabAppBarLayout = null;
 
             // Unregister appearance observer
             var shell = VirtualView?.FindParentOfType<Shell>();
@@ -380,8 +381,37 @@ namespace Microsoft.Maui.Controls.Handlers
                 HookShellContentEvents();
             }
 
+            // When items go from 0 → N, we must create a fresh adapter because
+            // FragmentStateAdapter saves internal fragment state when items are removed.
+            // Reusing the same adapter with new items that have matching IDs triggers
+            // "Expected the adapter to be 'fresh' while restoring state" crash.
+            var previousCount = _adapter.ItemCount;
             _adapter.OnItemsCollectionChanged();
-            _adapter.NotifyDataSetChanged();
+            var newCount = _adapter.ItemCount;
+
+            if (previousCount == 0 && newCount > 0)
+            {
+                // Replace with a fresh adapter to avoid stale state restoration
+                _tabLayoutMediator?.Detach();
+                _viewPager.Adapter = null;
+
+                _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment, MauiContext.MakeScoped(fragmentManager: _parentFragment.ChildFragmentManager))
+                {
+                    Handler = this
+                };
+                _viewPager.Adapter = _adapter;
+                ((AView)_viewPager).SaveEnabled = false;
+
+                _tabLayoutMediator = new TabLayoutMediator(
+                    _contentTabLayout,
+                    _viewPager,
+                    new ShellTabConfigurationStrategy(VirtualView));
+                _tabLayoutMediator.Attach();
+            }
+            else
+            {
+                _adapter.NotifyDataSetChanged();
+            }
 
             // Update OffscreenPageLimit for new visible count
             var visibleCount = SectionController.GetItems().Count;
@@ -904,11 +934,33 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        public override void OnDestroyView()
+        {
+            // Disconnect StackNavigationManager IMMEDIATELY when the fragment view is destroyed.
+            // This removes the ViewAttachedToWindow listener before ViewPager2 can recycle/re-attach
+            // the view, preventing IllegalStateException from accessing Fragment on a destroyed view.
+            _navigationContainer?.ViewAttachedToWindow -= OnNavigationContainerAttached;
+
+            _stackNavigationManager?.Disconnect();
+
+            if (_subscribedToNavigationRequested)
+            {
+                var shellSection = _shellContent?.Parent as ShellSection;
+                if (shellSection is not null)
+                {
+                    ((IShellSectionController)shellSection).NavigationRequested -= OnNavigationRequested;
+                }
+                _subscribedToNavigationRequested = false;
+            }
+
+            base.OnDestroyView();
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _navigationContainer.ViewAttachedToWindow -= OnNavigationContainerAttached;
+                _navigationContainer?.ViewAttachedToWindow -= OnNavigationContainerAttached;
 
                 if (_subscribedToNavigationRequested)
                 {

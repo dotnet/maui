@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
-			if (holder is ElementViewHolder evh)
+			if (holder is ElementViewHolder evh && _listItems is not null)
 			{
 				// only clear out the Element if the item has been removed
 				bool found = false;
@@ -208,7 +208,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -222,8 +224,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			if (_shellContext is null)
+			{
+				return;
+			}
+
 			if (Shell is IShellController scc)
+			{
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
+			}
 
 			_listItems = null;
 			_selectedCallback = null;

@@ -269,28 +269,48 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			// When using the new ShellHandler (not the compatibility ShellRenderer),
+			// all these properties are already handled by the handler's property mapper.
+			// Responding to PropertyChanged here would cause double updates.
+			if (_shellContext.Shell.Handler is Handlers.ShellHandler)
+			{
+				return;
+			}
+
 			if (e.PropertyName == Shell.FlyoutHeaderBehaviorProperty.PropertyName)
+			{
 				UpdateFlyoutHeaderBehavior();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutBackgroundColorProperty,
 				Shell.FlyoutBackgroundProperty,
 				Shell.FlyoutBackgroundImageProperty,
 				Shell.FlyoutBackgroundImageAspectProperty))
+			{
 				UpdateFlyoutBackground();
+			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+			{
 				UpdateVerticalScrollMode();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutHeaderProperty,
 				Shell.FlyoutHeaderTemplateProperty))
+			{
 				UpdateFlyoutHeader();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutFooterProperty,
 				Shell.FlyoutFooterTemplateProperty))
+			{
 				UpdateFlyoutFooter();
+			}
 			else if (e.IsOneOf(
 				Shell.FlyoutContentProperty,
 				Shell.FlyoutContentTemplateProperty))
+			{
 				UpdateFlyoutContent();
+			}
 		}
 
 		public virtual void UpdateFlyoutContent()

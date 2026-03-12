@@ -150,6 +150,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _viewPager.Adapter = _adapter;
 
+            // Disable ViewPager2 instance state saving/restoring.
+            // Shell manages its own state; letting ViewPager2 save/restore fragment state
+            // causes "Expected the adapter to be 'fresh'" crashes when sections are
+            // hidden and shown again (FragmentStateAdapter tries to restore stale state).
+            ((AView)_viewPager).SaveEnabled = false;
+
             // Disable swipe on the ShellItem ViewPager2. Bottom tabs should only switch
             // via BottomNavigationView tapping (matching Shell renderer behavior). This also
             // fixes nested ViewPager2 conflict: without this, the outer ViewPager2 captures
@@ -289,7 +295,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (selectedSection != VirtualView.CurrentItem)
             {
-                VirtualView.CurrentItem = selectedSection;
+                ((IShellItemController)VirtualView).ProposeSection(selectedSection);
             }
         }
 
@@ -316,12 +322,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Update bottom navigation selection
             _bottomNavigationManager?.SetSelectedItem(position);
 
-            // CRITICAL: Update CurrentItem BEFORE updating toolbar
-            // This ensures Shell.Navigation.NavigationStack returns the NEW section's stack
-            // when ShellToolbar.ApplyChanges() calculates BackButtonVisible
+            // CRITICAL: Use ProposeSection instead of direct property set to fire Shell.Navigating event
+            // and support navigation cancellation (matches old ShellItemRenderer.ChangeSection behavior)
             if (selectedSection != VirtualView.CurrentItem)
             {
-                VirtualView.CurrentItem = selectedSection;
+                ((IShellItemController)VirtualView).ProposeSection(selectedSection);
             }
 
             // Track the current section
@@ -462,7 +467,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         void UpdateDisplayedPage(Page page)
         {
-            if (page is null || _displayedPage == page)
+            if (page is null || _displayedPage == page || ((ElementHandler)this).VirtualView is null)
                 return;
 
             _displayedPage = page;
@@ -480,7 +485,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabBarVisibility()
         {
-            if (_bottomNavigationView is null || _displayedPage is null || VirtualView is null)
+            if (_bottomNavigationView is null || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
             {
                 return;
             }
