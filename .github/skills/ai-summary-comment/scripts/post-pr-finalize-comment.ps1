@@ -4,13 +4,12 @@
     Posts or updates a PR finalize comment on a GitHub Pull Request.
 
 .DESCRIPTION
-    Creates ONE comment for PR finalization with three collapsible sections: Title, Description, and Code Review.
-    Uses HTML marker <!-- PR-FINALIZE-COMMENT --> for identification.
+    By default, injects a PR Finalization section into the unified AI Summary comment
+    (<!-- AI Summary -->). Use -Standalone to post as a separate comment instead.
     
     **Auto-loads from CustomAgentLogsTmp/PRState/{PRNumber}/pr-finalize/**
     
-    If an existing finalize comment exists, it will be REPLACED with the new content.
-    Otherwise, a new comment will be created.
+    Provides three collapsible sections: Title, Description, and Code Review.
     
     Format:
     ## 📋 PR Finalization Review
@@ -110,7 +109,7 @@ param(
     [string]$TitleIssues,
 
     [Parameter(Mandatory=$false)]
-    [ValidateSet("Excellent", "Good", "NeedsUpdate", "NeedsRewrite", "")]
+    [ValidateSet("Good", "NeedsUpdate", "")]
     [string]$DescriptionStatus,
 
     [Parameter(Mandatory=$false)]
@@ -133,7 +132,7 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Unified,
+    [switch]$Standalone,
 
     [Parameter(Mandatory=$false)]
     [string]$PreviewFile
@@ -236,13 +235,7 @@ if (-not [string]::IsNullOrWhiteSpace($SummaryFile)) {
     
     # Extract Description assessment
     if ([string]::IsNullOrWhiteSpace($DescriptionStatus)) {
-        if ($content -match 'Description.*?Excellent|Excellent.*?description') {
-            $DescriptionStatus = "Excellent"
-        } elseif ($content -match 'Description.*?Good|Good.*?description') {
-            $DescriptionStatus = "Good"
-        } elseif ($content -match 'Needs\s*Rewrite|NeedsRewrite') {
-            $DescriptionStatus = "NeedsRewrite"
-        } elseif ($content -match 'Needs\s*Update|NeedsUpdate') {
+        if ($content -match 'Needs\s*Rewrite|NeedsRewrite|Needs\s*Update|NeedsUpdate|Missing') {
             $DescriptionStatus = "NeedsUpdate"
         } else {
             $DescriptionStatus = "Good"
@@ -266,38 +259,19 @@ if (-not [string]::IsNullOrWhiteSpace($SummaryFile)) {
     
     # Extract Description Assessment text
     if ([string]::IsNullOrWhiteSpace($DescriptionAssessment)) {
+        # Try to extract from our standard summary format (### ⚠️ Description: ... or ### ✅ Description: ...)
+        if ($content -match '(?s)###\s*[⚠️✅❌]*\s*Description[:\s].*?\n(.+?)(?=###\s|## |---|\z)') {
+            $DescriptionAssessment = $Matches[1].Trim()
+        }
         # Try to extract detailed issues from the summary
-        $issuesSection = ""
-        if ($content -match '(?s)### 📝 Description Quality Assessment(.+?)(?=###|---|\z)') {
+        elseif ($content -match '(?s)### 📝 Description Quality Assessment(.+?)(?=###|---|\z)') {
             $issuesSection = $Matches[1].Trim()
-            # Remove the Status line since we already show it in the header
             $issuesSection = $issuesSection -replace '(?m)^\*\*Status:\*\*.*$\n?', ''
-            $issuesSection = $issuesSection.Trim()
-        } elseif ($content -match '(?s)\*\*Issues:\*\*(.+?)(?=\*\*Recommended|\*\*Action|###|---|\z)') {
-            $issuesSection = $Matches[1].Trim()
+            $DescriptionAssessment = $issuesSection.Trim()
         }
-        
-        # Try to extract what works
-        $worksSection = ""
-        if ($content -match '(?s)### ❌ Issues Found(.+?)(?=###|---|\z)') {
-            $worksSection = $Matches[1].Trim()
-        } elseif ($content -match '(?s)\| Issue \| Severity \| Details \|(.+?)(?=###|---|\z)') {
-            # Extract table content
-            $worksSection = "**Issues:**`n" + $Matches[1].Trim()
-        }
-        
-        # Combine into assessment
-        if (-not [string]::IsNullOrWhiteSpace($issuesSection) -or -not [string]::IsNullOrWhiteSpace($worksSection)) {
-            $DescriptionAssessment = ""
-            if ($worksSection) { $DescriptionAssessment += $worksSection + "`n`n" }
-            if ($issuesSection) { $DescriptionAssessment += $issuesSection }
-        } else {
-            # Fallback - try to get the verdict section
-            if ($content -match '(?s)## ⚠️ Verdict:(.+?)(?=###|$)') {
-                $DescriptionAssessment = $Matches[1].Trim()
-            } else {
-                $DescriptionAssessment = "Description needs updates. See details below."
-            }
+        # Fallback
+        if ([string]::IsNullOrWhiteSpace($DescriptionAssessment)) {
+            $DescriptionAssessment = "No issues found."
         }
     }
     
@@ -454,10 +428,8 @@ $titleEmoji = switch ($TitleStatus) {
 }
 
 $descEmoji = switch ($DescriptionStatus) {
-    "Excellent" { "✅" }
     "Good" { "✅" }
     "NeedsUpdate" { "⚠️" }
-    "NeedsRewrite" { "❌" }
     default { "" }
 }
 
@@ -469,7 +441,6 @@ $titleStatusDisplay = switch ($TitleStatus) {
 
 $descStatusDisplay = switch ($DescriptionStatus) {
     "NeedsUpdate" { "Needs Update" }
-    "NeedsRewrite" { "Needs Rewrite" }
     default { $DescriptionStatus }
 }
 
@@ -584,10 +555,10 @@ if ($CodeReviewStatus -ne "Skipped" -or -not [string]::IsNullOrWhiteSpace($CodeR
 
 # ============================================================================
 # COMMENT POSTING
-# Two modes: -Unified (inject into AI Summary comment) or standalone (default)
+# Default: unified (inject into AI Summary comment). Use -Standalone for separate comment.
 # ============================================================================
 
-if ($Unified) {
+if (-not $Standalone) {
     # ========================================================================
     # UNIFIED MODE: Inject into the <!-- AI Summary --> comment
     # ========================================================================
