@@ -53,8 +53,7 @@ public partial class TestPage : ContentPage
 		// When <Setter.Value> is a property element, GetValueNode() must find it
 		// regardless of the namespace URI on the property element.
 		var compilation = CreateMauiCompilation()
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(TestCode))
-			.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(TestCode));
 
 		var workingDirectory = Environment.CurrentDirectory;
 		var xamlFile = new AdditionalXamlFile(
