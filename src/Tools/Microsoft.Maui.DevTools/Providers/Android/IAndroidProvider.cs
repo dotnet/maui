@@ -31,6 +31,11 @@ public interface IAndroidProvider
 	bool IsJdkInstalled { get; }
 
 	/// <summary>
+	/// Checks if the SDK is in a protected location that requires administrator access.
+	/// </summary>
+	bool SdkPathRequiresElevation { get; }
+
+	/// <summary>
 	/// Gets the health status of Android tooling.
 	/// </summary>
 	Task<List<HealthCheck>> CheckHealthAsync(CancellationToken cancellationToken = default);

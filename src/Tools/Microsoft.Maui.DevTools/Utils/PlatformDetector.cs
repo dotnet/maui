@@ -102,6 +102,19 @@ public static class PlatformDetector
 					"Android", "Sdk");
 				if (Directory.Exists(androidStudioPath))
 					return androidStudioPath;
+
+				// Check Visual Studio installed SDK locations
+				var vsAndroidSdkPaths = new[]
+				{
+					Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk"),
+					Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Android", "android-sdk"),
+				};
+
+				foreach (var vsPath in vsAndroidSdkPaths)
+				{
+					if (Directory.Exists(vsPath))
+						return vsPath;
+				}
 			}
 
 			return null;

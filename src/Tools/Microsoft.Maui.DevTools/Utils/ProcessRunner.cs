@@ -271,6 +271,10 @@ public static class ProcessRunner
 		if (!PlatformDetector.IsWindows)
 			return false;
 
+		// Don't try to elevate if already running as admin — prevents infinite loop
+		if (IsRunningElevated())
+			return false;
+
 		var processPath = Environment.ProcessPath;
 		if (string.IsNullOrEmpty(processPath))
 			return false;
@@ -296,6 +300,26 @@ public static class ProcessRunner
 		catch (System.ComponentModel.Win32Exception)
 		{
 			// User cancelled the UAC prompt
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Checks whether the current process is running with administrator privileges.
+	/// </summary>
+	public static bool IsRunningElevated()
+	{
+		if (!OperatingSystem.IsWindows())
+			return false;
+
+		try
+		{
+			using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+			var principal = new System.Security.Principal.WindowsPrincipal(identity);
+			return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+		}
+		catch
+		{
 			return false;
 		}
 	}

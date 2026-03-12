@@ -86,6 +86,23 @@ public static class AndroidCommands
 
 				if (!useJson && formatter is SpectreOutputFormatter spectre)
 				{
+					// Proactively detect if SDK is in a protected location and request elevation
+					if (androidProvider.IsSdkInstalled && androidProvider.SdkPathRequiresElevation && !ProcessRunner.IsRunningElevated())
+					{
+						spectre.WriteWarning($"Android SDK is in a protected location ({androidProvider.SdkPath}). Administrator access is required to install packages.");
+						if (ProcessRunner.RelaunchElevated())
+						{
+							formatter.WriteSuccess("Android environment installed successfully (elevated)");
+							return;
+						}
+						else
+						{
+							formatter.WriteError(new Exception("Elevation was cancelled or failed. Run this command from an administrator terminal."));
+							context.ExitCode = 1;
+							return;
+						}
+					}
+
 					// Resolve package list: explicit --packages or interactive selection
 					var pkgList = await ResolveInstallPackagesAsync(packages, spectre, androidProvider, context.GetCancellationToken());
 
@@ -481,6 +498,27 @@ public static class AndroidCommands
 				{
 					throw new InvalidOperationException(
 						"No packages specified. Provide package names or run interactively.");
+				}
+
+				// Proactively detect if SDK is in a protected location and request elevation
+				if (PlatformDetector.IsWindows && androidProvider.SdkPathRequiresElevation && !ProcessRunner.IsRunningElevated())
+				{
+					if (!useJson)
+						formatter.WriteWarning($"Android SDK is in a protected location ({androidProvider.SdkPath}). Administrator access required.");
+
+					if (ProcessRunner.RelaunchElevated())
+					{
+						if (useJson)
+							formatter.Write(new { success = true, installed = packages, elevated = true });
+						else
+							formatter.WriteSuccess("Packages installed successfully (elevated)");
+						return;
+					}
+					else
+					{
+						throw new UnauthorizedAccessException(
+							$"Administrator access is required to install packages to {androidProvider.SdkPath}. Run this command from an administrator terminal, or set ANDROID_HOME to a user-writable location.");
+					}
 				}
 
 				if (dryRun)
