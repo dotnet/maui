@@ -289,6 +289,15 @@
   <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
+      <!-- MAUI uses [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))] which references the attribute type.
+           MobileAggressiveAttributeTrimming=true (the default on iOS) strips RequiresUnreferencedCodeAttribute,
+           causing IL2045 conflict. Disable aggressive attribute trimming so FeatureGuard works correctly.
+           FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
+      <MobileAggressiveAttributeTrimming Condition="'$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
+      <!-- Suppress IL2121 (unused UnconditionalSuppressMessage) from MAUI assemblies and the .NET runtime.
+           These suppressions may be needed in some build configurations but unused in others (e.g., TrimMode=full
+           trims code paths that would otherwise trigger the suppressed warning). Not actionable by app developers. -->
+      <NoWarn>$(NoWarn);IL2121</NoWarn>
     </PropertyGroup>
     
     <!-- Validate _EnableMauiAspire usage - warn when user manually sets it in optimized builds where it conflicts with intended behavior -->
@@ -303,10 +312,8 @@
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
-      <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
-      <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
       
-      <!-- Set _EnableMauiAspire based on whether optimizations are enabled when not already set -->
+      <!-- Set _EnableMauiAspirebased on whether optimizations are enabled when not already set -->
       <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
       <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
     </PropertyGroup>

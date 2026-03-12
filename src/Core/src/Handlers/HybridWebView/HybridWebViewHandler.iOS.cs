@@ -110,10 +110,9 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
+		// Not annotated with [RequiresUnreferencedCode] because the iOS Registrar generates
+		// __Registrar_Callbacks__ that call protocol methods, and the generated code cannot
+		// propagate trim annotations — causing IL2026. Instead, suppress on individual methods.
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -125,6 +124,7 @@ namespace Microsoft.Maui.Handlers
 
 			private HybridWebViewHandler? Handler => _webViewHandler is not null && _webViewHandler.TryGetTarget(out var h) ? h : null;
 
+			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Trim safety is managed by the parent HybridWebViewHandler and its feature switches.")]
 			public void DidReceiveScriptMessage(WKUserContentController userContentController, WKScriptMessage message)
 			{
 				ArgumentNullException.ThrowIfNull(message);
@@ -132,10 +132,9 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
+		// Not annotated with [RequiresUnreferencedCode] because the iOS Registrar generates
+		// __Registrar_Callbacks__ that call protocol methods, and the generated code cannot
+		// propagate trim annotations — causing IL2026. Instead, suppress on individual methods.
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -152,6 +151,7 @@ namespace Microsoft.Maui.Handlers
 			// object is used to send the response back to the webview.
 			[Export("webView:startURLSchemeTask:")]
 			[SupportedOSPlatform("ios11.0")]
+			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Trim safety is managed by the parent HybridWebViewHandler and its feature switches.")]
 			public async void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
 				if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
@@ -216,6 +216,7 @@ namespace Microsoft.Maui.Handlers
 				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
+			[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Trim safety is managed by the parent HybridWebViewHandler and its feature switches.")]
 			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
 			{
 				if (Handler is null)
