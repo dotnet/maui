@@ -5,7 +5,7 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>50</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel>meaipreview</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <!-- Essentials.AI preview versioning — bump this for new AI previews -->
