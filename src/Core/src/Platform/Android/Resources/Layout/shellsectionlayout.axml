@@ -1,46 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Shell Section Layout - Used by ShellSectionHandler
-    Matches the programmatic view hierarchy built in ShellSectionHandler.CreatePlatformElement().
     
     Structure:
-      CoordinatorLayout (root - enables AppBarLayout scrolling for TabLayout)
-        ├── AppBarLayout
-        │   └── TabLayout (content tabs - visibility controlled by Items.Count)
-        └── ViewPager2 (ScrollingViewBehavior - hosts ShellContent fragments)
+      LinearLayout (root - vertical)
+        ├── TabLayout (content tabs - visibility controlled by Items.Count)
+        └── ViewPager2 (fills remaining space - hosts ShellContent fragments)
     
     NOTE: Toolbar is NOT in this layout. It lives at ShellItem level (shellitemlayout.axml).
+    NOTE: Uses LinearLayout instead of CoordinatorLayout/AppBarLayout because we don't need
+    scroll-collapsing behavior for content tabs. LinearLayout correctly reclaims space when
+    TabLayout visibility is set to GONE (CoordinatorLayout's ScrollingViewBehavior doesn't).
 -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/shellsection_coordinator"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/shellsection_appbar"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/shellsection_tablayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stateListAnimator="@null"
-        app:elevation="0dp">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/shellsection_tablayout"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_gravity="bottom"
-            android:visibility="gone"
-            app:tabMode="scrollable"
-            style="@style/MauiShellTabLayout" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="?attr/actionBarSize"
+        android:visibility="gone"
+        app:tabMode="scrollable"
+        style="@style/MauiShellTabLayout" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/shellsection_viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:overScrollMode="never"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>
