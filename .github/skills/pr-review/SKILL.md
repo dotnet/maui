@@ -17,7 +17,6 @@ End-to-end PR review workflow that orchestrates phase skills to verify tests, ex
 ## Overview
 
 ```
-Phase 0: Setup        → Checkout PR branch, verify environment         (inline)
 Phase 1: Pre-Flight   → Gather context, classify files                 → invoke pr-preflight skill
 Phase 2: Gate         → ⛔ MUST PASS — verify tests FAIL/PASS          → invoke pr-gate skill
 Phase 3: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
@@ -30,7 +29,7 @@ Phase 4: Report       → Write review recommendation                     → in
 
 ## Critical Rules
 
-- ❌ Never run `git checkout` or `git switch` after Phase 0 — stay on the PR branch
+- ❌ Never run `git checkout` or `git switch` to change branches — stay on the review branch set up by the caller
 - ❌ Never stop and ask the user — use best judgment to skip blocked phases and continue
 - ❌ Never mark a phase complete with pending fields
 - ❌ **Never skip Phase 3 multi-model exploration — it is MANDATORY for every review, no exceptions**
@@ -57,73 +56,6 @@ Phase 3 uses these 2 AI models (run SEQUENTIALLY — they modify the same files)
 | Port conflicts | 1 (kill process) | Skip phase, continue |
 | Build failures in try-fix | 2 attempts | Skip remaining models, proceed to Report |
 | Configuration issues | 1 fix attempt | Skip phase, continue |
-
----
-
-## Phase 0: Setup (Inline — Create Review Branch & Cherry-Pick PR)
-
-> **SCOPE:** Create an isolated review branch from the current branch and cherry-pick the PR commits (squashed) into it.
-
-### Why Not `gh pr checkout`?
-
-`gh pr checkout` switches to the PR's remote branch, which loses local uncommitted files and any local branch state (including the skill files themselves). Instead, we create a review branch from the current branch and cherry-pick the PR commits **into** it, preserving everything.
-
-### Why Cherry-Pick + Squash Instead of Merge?
-
-A `git merge` creates a merge commit that mixes the PR's base branch history with the review branch. This pollutes the commit log and makes it harder to isolate, revert, or reason about the PR's actual changes. Cherry-picking with `--no-commit` and then committing once produces a single clean commit containing only the PR's diff.
-
-### Steps
-
-1. **Verify not on a protected branch:**
-   ```bash
-   git branch --show-current
-   # Must NOT be: main, master, release/*, net*.0
-   ```
-   If on a protected branch → **Stop.** Tell user: `git checkout -b pr-review-{PRNumber}`
-
-2. **Create a review branch from the current branch:**
-   ```bash
-   git checkout -b pr-review-{PRNumber}
-   ```
-
-3. **Fetch and cherry-pick the PR (squashed):**
-   ```bash
-   # Try fetching from origin first (same-repo PRs)
-   git fetch origin pull/{PRNumber}/head:temp-pr-{PRNumber}
-
-   # If that fails (fork PRs), get fork info from gh:
-   # gh pr view {PRNumber} --json headRepositoryOwner,headRefName
-   # git fetch https://github.com/{forkOwner}/maui.git {headRef}:temp-pr-{PRNumber}
-
-   # Identify PR-only commits (commits on temp branch not on current branch)
-   # List them in chronological order (oldest first) for correct cherry-pick order
-   git log --oneline --reverse temp-pr-{PRNumber} --not HEAD
-
-   # Cherry-pick all PR commits squashed into one
-   git cherry-pick --no-commit <oldest-commit> <next-commit> ... <newest-commit>
-   git commit -m "PR #{PRNumber} squashed for review"
-
-   # Clean up temp branch
-   git branch -D temp-pr-{PRNumber}
-   ```
-
-   **Identifying PR commits:** The `git log --reverse temp-pr-{PRNumber} --not HEAD` command lists only commits that exist on the PR branch but not on the current branch. These are the PR author's commits. Pass them all (in chronological order) to `git cherry-pick --no-commit`.
-
-4. **Verify the PR's changes are present:**
-   ```bash
-   git log --oneline -3
-   # Should show a single squashed commit at HEAD
-   ```
-
-### If Setup Fails
-
-- **On protected branch** → Stop, tell user to create a working branch first.
-- **Cherry-pick conflicts** → Run `git cherry-pick --abort`, inform user. Stop.
-- **Network/fetch error** → Retry once, then stop.
-
-### After Setup
-
-**Do NOT run `git checkout` or `git switch` again for the rest of the workflow.** All file manipulation during Gate and Try-Fix is handled by skill scripts that use `git checkout HEAD -- .` to restore files (not switch branches).
 
 ---
 
@@ -297,7 +229,6 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 
 | Phase | Skill Invoked | Key Action | If Blocked |
 |-------|--------------|------------|------------|
-| 0. Setup | *(inline)* | Create review branch, merge PR | Stop — can't review without PR code |
 | 1. Pre-Flight | `pr-preflight` | Read issue + PR context | Skip missing info, continue |
 | 2. Gate | `pr-gate` | Verify tests via task agent | Document, continue to Try-Fix |
 | 3. Try-Fix | `try-fix` (×2) | **2-model exploration (MANDATORY)** | Skip failing models, continue |

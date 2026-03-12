@@ -3,21 +3,26 @@
     Runs a PR review using Copilot CLI with skill-based prompts.
 
 .DESCRIPTION
-    Orchestrates a 4-step PR review by invoking Copilot CLI with skill prompts:
+    Orchestrates a 5-step PR review by invoking Copilot CLI with skill prompts:
     
+    Step 0: Branch setup        - Create review branch from main, cherry-pick PR squashed
     Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
     Step 2: pr-finalize skill   - Verify PR title/description match implementation
     Step 3: ai-summary-comment  - Post unified AI Summary comment to the PR
     Step 4: Apply labels        - Apply agent labels based on review results
 
-    The pr-review skill handles all git operations (cherry-pick, branch setup).
-    This script only invokes Copilot CLI and applies labels.
+    By default, the script checks out main and creates a review branch from it.
+    Use -UseCurrentBranch to create the review branch from the current branch instead.
 
 .PARAMETER PRNumber
     The GitHub PR number to review
 
 .PARAMETER Platform
     Platform for testing. Valid: android, ios, windows, maccatalyst
+
+.PARAMETER UseCurrentBranch
+    Create the review branch from the current branch instead of main.
+    By default, the script checks out main before creating the review branch.
 
 .PARAMETER DryRun
     Show what would be done without making changes
@@ -28,6 +33,7 @@
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
     .\Review-PR.ps1 -PRNumber 33687 -Platform ios
+    .\Review-PR.ps1 -PRNumber 33687 -UseCurrentBranch
 #>
 
 [CmdletBinding()]
@@ -38,6 +44,9 @@ param(
     [Parameter(Mandatory = $false)]
     [ValidateSet('android', 'ios', 'windows', 'maccatalyst')]
     [string]$Platform,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
@@ -104,6 +113,121 @@ $autonomousRules = @"
 - On environment blockers: skip the blocked phase and continue
 - Always prefer CONTINUING with partial results over STOPPING
 "@
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 0: Branch Setup (Create Review Branch & Cherry-Pick PR)
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+Write-Host "║  STEP 0: BRANCH SETUP                                     ║" -ForegroundColor Yellow
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+
+$reviewBranch = "pr-review-$PRNumber"
+
+if ($DryRun) {
+    if ($UseCurrentBranch) {
+        Write-Host "[DRY RUN] Would create review branch '$reviewBranch' from current branch" -ForegroundColor Magenta
+    } else {
+        Write-Host "[DRY RUN] Would checkout main, then create review branch '$reviewBranch'" -ForegroundColor Magenta
+    }
+    Write-Host "[DRY RUN] Would fetch and cherry-pick PR #$PRNumber (squashed)" -ForegroundColor Magenta
+} else {
+    # Check for dirty working tree
+    $dirtyFiles = git status --porcelain 2>$null
+    if ($dirtyFiles) {
+        Write-Error "Working tree is dirty. Please commit or stash changes before running review.`n$dirtyFiles"
+        exit 1
+    }
+
+    # Delete leftover review branch from a previous run (if it exists)
+    $existingBranch = git branch --list $reviewBranch 2>$null
+    if ($existingBranch) {
+        Write-Host "  ⚠️ Removing leftover branch '$reviewBranch' from previous run" -ForegroundColor Yellow
+        git branch -D $reviewBranch 2>$null
+    }
+
+    if (-not $UseCurrentBranch) {
+        # Default: checkout main first
+        Write-Host "  📌 Checking out main branch..." -ForegroundColor Cyan
+        git checkout main 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Error "Failed to checkout main"; exit 1 }
+        git pull origin main --ff-only 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  ⚠️ git pull failed (non-fatal, continuing with local main)" -ForegroundColor Yellow
+        }
+    } else {
+        $currentBranch = git branch --show-current 2>$null
+        Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
+    }
+
+    # Create review branch
+    Write-Host "  🔀 Creating review branch: $reviewBranch" -ForegroundColor Cyan
+    git checkout -b $reviewBranch 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Error "Failed to create branch '$reviewBranch'"; exit 1 }
+
+    # Fetch PR commits
+    Write-Host "  📥 Fetching PR #$PRNumber..." -ForegroundColor Cyan
+    $tempBranch = "temp-pr-$PRNumber"
+
+    # Clean up any leftover temp branch
+    git branch -D $tempBranch 2>$null | Out-Null
+
+    # Try fetching from origin (same-repo PRs)
+    git fetch origin "pull/$PRNumber/head:$tempBranch" 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        # Fork PR — get fork info
+        Write-Host "  📥 Fetching from fork..." -ForegroundColor Cyan
+        $forkInfo = gh pr view $PRNumber --json headRepositoryOwner,headRefName,headRepository 2>$null | ConvertFrom-Json
+        if (-not $forkInfo -or -not $forkInfo.headRepositoryOwner) {
+            Write-Error "Failed to fetch PR #$PRNumber (not found on origin or fork)"
+            git checkout - 2>$null
+            exit 1
+        }
+        $forkUrl = "https://github.com/$($forkInfo.headRepositoryOwner.login)/$($forkInfo.headRepository.name).git"
+        git fetch $forkUrl "$($forkInfo.headRefName):$tempBranch" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to fetch from fork: $forkUrl"
+            git checkout - 2>$null
+            exit 1
+        }
+    }
+
+    # Identify PR-only commits (oldest first)
+    $prCommits = git log --oneline --reverse "$tempBranch" --not HEAD 2>$null
+    if (-not $prCommits) {
+        Write-Host "  ⚠️ No new commits found in PR (already up to date?)" -ForegroundColor Yellow
+        git branch -D $tempBranch 2>$null | Out-Null
+    } else {
+        $commitHashes = git log --format='%H' --reverse "$tempBranch" --not HEAD 2>$null
+        $commitCount = ($commitHashes -split "`n" | Where-Object { $_.Trim() }).Count
+        Write-Host "  🔀 Cherry-picking $commitCount commit(s) (squashed)..." -ForegroundColor Cyan
+
+        # Cherry-pick all commits squashed into one
+        $hashList = ($commitHashes -split "`n" | Where-Object { $_.Trim() }) -join ' '
+        Invoke-Expression "git cherry-pick --no-commit $hashList" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  ❌ Cherry-pick conflict detected. Aborting." -ForegroundColor Red
+            git cherry-pick --abort 2>$null
+            git checkout - 2>$null
+            git branch -D $reviewBranch 2>$null
+            git branch -D $tempBranch 2>$null
+            Write-Error "Cherry-pick conflicts for PR #$PRNumber. Manual resolution required."
+            exit 1
+        }
+
+        git commit -m "PR #$PRNumber squashed for review" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Error "Failed to create squashed commit"; exit 1 }
+
+        # Clean up temp branch
+        git branch -D $tempBranch 2>$null | Out-Null
+    }
+
+    # Verify
+    $headCommit = git log --oneline -1 2>$null
+    Write-Host "  ✅ Review branch ready: $reviewBranch" -ForegroundColor Green
+    Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
+}
 
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
