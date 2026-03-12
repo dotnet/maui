@@ -218,5 +218,102 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(0, flexFrame.X);
 			Assert.Equal(0, flexFrame.Y);
 		}
+
+		// Test view that respects WidthRequest/HeightRequest in MeasureOverride,
+		// simulating real controls like Grid, StackLayout, etc.
+		class FlexTestView : View
+		{
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				var w = WidthRequest >= 0 ? Math.Min(WidthRequest, widthConstraint) : Math.Min(100, widthConstraint);
+				var h = HeightRequest >= 0 ? Math.Min(HeightRequest, heightConstraint) : Math.Min(50, heightConstraint);
+				return new Size(w, h);
+			}
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/31109
+		// Verifies that dynamically changing WidthRequest on a FlexLayout child
+		// is correctly reflected during an arrange-only pass (no preceding measure).
+		[Fact]
+		public void ArrangeOnlyPassUsesUpdatedWidthRequest()
+		{
+			var root = new Grid();
+			var flexLayout = new FlexLayout() { Direction = FlexDirection.Row };
+			var view = new FlexTestView { WidthRequest = 200 };
+
+			root.Add(flexLayout);
+			(flexLayout as IFlexLayout).Add(view as IView);
+
+			// Initial measure + arrange
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var initialFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(200, initialFrame.Width);
+
+			// Change WidthRequest without re-measuring
+			view.WidthRequest = 300;
+
+			// Arrange-only pass (simulates Android arrange without preceding measure)
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 1000, 1000));
+
+			var updatedFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(300, updatedFrame.Width);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/31109
+		// Verifies that changing HeightRequest during arrange-only pass works correctly.
+		[Fact]
+		public void ArrangeOnlyPassUsesUpdatedHeightRequest()
+		{
+			var root = new Grid();
+			var flexLayout = new FlexLayout() { Direction = FlexDirection.Column };
+			var view = new FlexTestView { HeightRequest = 80 };
+
+			root.Add(flexLayout);
+			(flexLayout as IFlexLayout).Add(view as IView);
+
+			// Initial measure + arrange
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var initialFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(80, initialFrame.Height);
+
+			// Change HeightRequest without re-measuring
+			view.HeightRequest = 120;
+
+			// Arrange-only pass
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 1000, 1000));
+
+			var updatedFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(120, updatedFrame.Height);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/31109
+		// Verifies that children without explicit WidthRequest still use DesiredSize during arrange.
+		[Fact]
+		public void ArrangeOnlyPassUsesDesiredSizeWhenNoWidthRequest()
+		{
+			var root = new Grid();
+			var flexLayout = new FlexLayout() { Direction = FlexDirection.Row };
+			var view = new TestLabel(); // No WidthRequest set, MeasureOverride returns (150, 100)
+
+			root.Add(flexLayout);
+			(flexLayout as IFlexLayout).Add(view as IView);
+
+			// Initial measure + arrange
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var initialFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(150, initialFrame.Width);
+
+			// Arrange-only pass (should still use DesiredSize since no WidthRequest)
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 1000, 1000));
+
+			var afterFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
+			Assert.Equal(150, afterFrame.Width);
+		}
 	}
 }
