@@ -120,7 +120,50 @@ function Invoke-CopilotStep {
         return 0
     }
 
-    & copilot -p $Prompt --allow-all --stream on
+    # Use JSON output format to stream live progress of agent activity.
+    # Without this, -p mode shows nothing until completion.
+    & copilot -p $Prompt --allow-all --output-format json 2>&1 | ForEach-Object {
+        $line = $_.ToString()
+        try {
+            $event = $line | ConvertFrom-Json -ErrorAction Stop
+            switch ($event.type) {
+                'assistant.turn_start' {
+                    $turnId = $event.data.turnId
+                    Write-Host "  ─── Turn $turnId ───" -ForegroundColor DarkGray
+                }
+                'tool.execution_start' {
+                    $toolName = $event.data.toolName
+                    $args_ = $event.data.arguments
+                    $detail = $args_.description ?? $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.intent ?? ''
+                    if ($detail) { $detail = $detail.Substring(0, [Math]::Min($detail.Length, 80)) }
+                    if ($toolName -ne 'report_intent') {
+                        Write-Host "  🔧 $toolName" -ForegroundColor Cyan -NoNewline
+                        if ($detail) { Write-Host ": $detail" -ForegroundColor Gray } else { Write-Host "" }
+                    }
+                }
+                'tool.execution_complete' {
+                    $ok = if ($event.data.success) { "✅" } else { "❌" }
+                    # Intentionally quiet on success to reduce noise
+                    if (-not $event.data.success) {
+                        Write-Host "    $ok tool failed" -ForegroundColor Red
+                    }
+                }
+                'assistant.message' {
+                    $content = $event.data.content
+                    if ($content -and $content.Trim()) {
+                        # Show first 300 chars of agent response
+                        $preview = $content.Trim().Substring(0, [Math]::Min($content.Trim().Length, 300))
+                        Write-Host "  💬 $preview" -ForegroundColor White
+                    }
+                }
+            }
+        } catch {
+            # Non-JSON line (e.g. stats) — pass through as-is
+            if ($line.Trim()) {
+                Write-Host $line
+            }
+        }
+    }
     $exitCode = $LASTEXITCODE
 
     if ($exitCode -eq 0) {
