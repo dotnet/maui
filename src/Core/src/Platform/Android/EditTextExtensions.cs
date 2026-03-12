@@ -264,6 +264,9 @@ namespace Microsoft.Maui.Platform
 			int selectionLength = entry.SelectionLength;
 			int end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
 			int newSelectionLength = Math.Max(0, end - start);
+
+			// If 'start > editText.SelectionEnd', it indicates a reverse selection (right-to-left selection),
+			// where the user selected text starting from the right and moving to the left.
 			if (start > editText.SelectionEnd && selectionLength > 0)
 			{
 				end = editText.SelectionEnd;
