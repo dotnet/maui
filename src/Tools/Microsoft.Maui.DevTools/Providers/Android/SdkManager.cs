@@ -3,6 +3,7 @@
 
 using Microsoft.Maui.DevTools.Errors;
 using Microsoft.Maui.DevTools.Models;
+using Microsoft.Maui.DevTools.Utils;
 using System.Diagnostics;
 using XatSdkManager = Xamarin.Android.Tools.SdkManager;
 using XatSdkPackage = Xamarin.Android.Tools.SdkPackage;
@@ -130,6 +131,9 @@ public class SdkManager : IDisposable
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
+			if (IsPermissionError(ex))
+				throw new UnauthorizedAccessException($"Failed to install packages (permission denied): {ex.Message}", ex);
+
 			throw new MauiToolException(
 				ErrorCodes.AndroidPackageInstallFailed,
 				$"Failed to install packages: {ex.Message}",
@@ -160,6 +164,9 @@ public class SdkManager : IDisposable
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
+			if (IsPermissionError(ex))
+				throw new UnauthorizedAccessException($"Failed to uninstall packages (permission denied): {ex.Message}", ex);
+
 			throw new MauiToolException(
 				ErrorCodes.AndroidPackageInstallFailed,
 				$"Failed to uninstall packages: {ex.Message}",
@@ -202,5 +209,45 @@ public class SdkManager : IDisposable
 				ErrorCodes.AndroidSdkManagerNotFound,
 				"SDK Manager not found. Run 'maui android install' first.",
 				"maui android install");
+	}
+
+	/// <summary>
+	/// Checks if an exception from sdkmanager indicates a file/directory permission problem.
+	/// The Android sdkmanager process reports permission errors as text in stderr/stdout
+	/// rather than throwing UnauthorizedAccessException, so we pattern-match the message.
+	/// </summary>
+	private static bool IsPermissionError(Exception ex)
+	{
+		if (ex is UnauthorizedAccessException)
+			return true;
+
+		var message = ex.Message;
+		if (string.IsNullOrEmpty(message))
+			return false;
+
+		return message.Contains("Failed to read or create install properties file", StringComparison.OrdinalIgnoreCase)
+			|| message.Contains("access is denied", StringComparison.OrdinalIgnoreCase)
+			|| message.Contains("Permission denied", StringComparison.OrdinalIgnoreCase)
+			|| message.Contains("Access to the path", StringComparison.OrdinalIgnoreCase);
+	}
+
+	/// <summary>
+	/// Checks whether the current SDK path is in a location that typically requires
+	/// administrator privileges to write to (e.g., Program Files).
+	/// </summary>
+	public bool SdkPathRequiresElevation()
+	{
+		if (!PlatformDetector.IsWindows)
+			return false;
+
+		var sdkPath = _getSdkPath();
+		if (string.IsNullOrEmpty(sdkPath))
+			return false;
+
+		var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+		var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+		return sdkPath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase)
+			|| sdkPath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase);
 	}
 }

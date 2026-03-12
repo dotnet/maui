@@ -25,6 +25,7 @@ public class AndroidProvider : IAndroidProvider
 
 	public bool IsSdkInstalled => !string.IsNullOrEmpty(SdkPath) && Directory.Exists(SdkPath);
 	public bool IsJdkInstalled => !string.IsNullOrEmpty(JdkPath) && Directory.Exists(JdkPath);
+	public bool SdkPathRequiresElevation => _sdkManager.SdkPathRequiresElevation();
 
 	public AndroidProvider()
 	{
