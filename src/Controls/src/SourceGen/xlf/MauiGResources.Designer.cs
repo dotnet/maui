@@ -271,5 +271,9 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		// Event handler diagnostics
 		internal static string MissingEventHandlerTitle => ResourceManager.GetString("MissingEventHandlerTitle", resourceCulture);
 		internal static string MissingEventHandler => ResourceManager.GetString("MissingEventHandler", resourceCulture);
+		internal static string EventTriggerEventNotFoundTitle => ResourceManager.GetString("EventTriggerEventNotFoundTitle", resourceCulture);
+		internal static string EventTriggerEventNotFoundMessage => ResourceManager.GetString("EventTriggerEventNotFoundMessage", resourceCulture);
+		internal static string EventTriggerTargetTypeNotResolvedTitle => ResourceManager.GetString("EventTriggerTargetTypeNotResolvedTitle", resourceCulture);
+		internal static string EventTriggerTargetTypeNotResolvedMessage => ResourceManager.GetString("EventTriggerTargetTypeNotResolvedMessage", resourceCulture);
 	}
 }
