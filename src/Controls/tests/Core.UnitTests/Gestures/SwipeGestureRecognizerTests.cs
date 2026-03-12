@@ -145,6 +145,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
+		[InlineData(SwipeDirection.Up, 270.0, SwipeDirection.Left)]
+		[InlineData(SwipeDirection.Right, 270.0, SwipeDirection.Up)]
+		[InlineData(SwipeDirection.Down, 270.0, SwipeDirection.Right)]
+		[InlineData(SwipeDirection.Left, 270.0, SwipeDirection.Down)]
+		public void TransformSwipeDirectionForRotation_270DegreeClockwise_ReturnsCorrectDirection(
+			SwipeDirection direction, double rotation, SwipeDirection expected)
+		{
+			var result = Internals.SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, rotation);
+
+			Assert.Equal(expected, result);
+		}
+
+		[Theory]
 		[InlineData(SwipeDirection.Up, double.NaN, SwipeDirection.Up)]
 		[InlineData(SwipeDirection.Right, double.PositiveInfinity, SwipeDirection.Right)]
 		[InlineData(SwipeDirection.Down, double.NegativeInfinity, SwipeDirection.Down)]

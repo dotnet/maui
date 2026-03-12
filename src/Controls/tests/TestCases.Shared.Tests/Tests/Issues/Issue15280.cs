@@ -10,7 +10,7 @@ public class Issue15280 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Swipe gestures attached to rotated controls are rotated on Android";
+	public override string Issue => "Swipe gestures attached to rotated controls are rotated on iOS";
 
 	[Test]
 	[Category(UITestCategories.Gestures)]

@@ -19,6 +19,11 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal static SwipeDirection TransformSwipeDirectionForRotation(SwipeDirection direction, double rotation)
 		{
+			if (!double.IsFinite(rotation))
+			{
+				return direction;
+			}
+
 			// Normalize rotation to [0, 360) range to handle negative angles and values > 360
 			var normalizedRotation = rotation.NormalizeRotation();
 
