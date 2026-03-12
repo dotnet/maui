@@ -398,7 +398,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				string fallbackEnvironmentName = _testDevice == TestDevice.iOS && environmentName == "ios-26" ? "ios" : string.Empty;
 
 				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
 				// that need to finish before taking a screenshot.
@@ -468,13 +467,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				// Apply tolerance if specified
 				if (tolerance > 0)
 				{
-					VerifyWithTolerance(name!, actualImage, environmentName, fallbackEnvironmentName, tolerance);
+					VerifyWithTolerance(name!, actualImage, environmentName, tolerance);
 				}
 				else
 				{
 					try
 					{
-						_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext, fallbackEnvironmentName: fallbackEnvironmentName);
+						_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
 					}
 					catch (VisualTestFailedException ex) when (_testDevice == TestDevice.iOS && environmentName == "ios-26" && ex.Message.Contains("size differs", StringComparison.Ordinal))
 					{
@@ -490,7 +489,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, string fallbackEnvironmentName, double tolerance)
+		void VerifyWithTolerance(string name, ImageSnapshot actualImage, string environmentName, double tolerance)
 		{
 			if (tolerance > 15)
 			{
@@ -499,7 +498,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			try
 			{
-				_visualRegressionTester.VerifyMatchesSnapshot(name, actualImage, environmentName: environmentName, testContext: _visualTestContext, fallbackEnvironmentName: fallbackEnvironmentName);
+				_visualRegressionTester.VerifyMatchesSnapshot(name, actualImage, environmentName: environmentName, testContext: _visualTestContext);
 			}
 			catch (Exception ex) when (IsVisualDifferenceException(ex))
 			{
