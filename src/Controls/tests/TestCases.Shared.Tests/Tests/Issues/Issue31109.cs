@@ -40,7 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			while (stopwatch.Elapsed < timeout)
 			{
-				var currentRect = App.WaitForElement("Item1").GetRect();
+				var currentRect = App.FindElement("Item1").GetRect();
 				if (System.Math.Abs(currentRect.Width - item1Before.Width) > 1)
 				{
 					break;
@@ -48,6 +48,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				System.Threading.Thread.Sleep(pollDelay);
 			}
+
+			// Verify the width actually changed; fail here rather than in downstream assertions
+			var item1Check = App.FindElement("Item1").GetRect();
+			Assert.That(item1Check.Width, Is.Not.EqualTo(item1Before.Width).Within(1),
+				"Item1 width should have changed within timeout after tapping ChangeWidths");
+
 			// After changing widths, all items should have equal width
 			var item1After = App.WaitForElement("Item1").GetRect();
 			var item2After = App.WaitForElement("Item2").GetRect();
