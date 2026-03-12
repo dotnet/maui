@@ -14,6 +14,20 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	readonly ItemsView _view = view;
 	Dictionary<DataTemplate, List<ItemContainer>> _recyclePool = new();
 
+	/// <summary>
+	/// A minimal ControlTemplate for ItemContainer that contains no selection visuals
+	/// (no PART_SelectionCheckbox, no PART_SelectionVisual, no PART_CommonVisual).
+	/// Defined in ItemsViewStyles.xaml and applied to group header/footer containers
+	/// so they can never show a checkbox or selection highlight.
+	/// </summary>
+	static Microsoft.UI.Xaml.Controls.ControlTemplate NonSelectableItemContainerTemplate =>
+		(Microsoft.UI.Xaml.Controls.ControlTemplate)Microsoft.UI.Xaml.Application.Current.Resources["NonSelectableItemContainerTemplate"];
+
+	/// <summary>
+	/// Caches the default ItemContainer template so it can be restored
+	/// when a header/footer container is recycled for a regular item.
+	/// </summary>
+	static Microsoft.UI.Xaml.Controls.ControlTemplate? _defaultItemContainerTemplate;
 	internal static readonly BindableProperty OriginTemplateProperty =
 		BindableProperty.CreateAttached(
 			"OriginTemplate", typeof(DataTemplate), typeof(ItemFactory), null);
@@ -120,6 +134,29 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				HorizontalAlignment = HorizontalAlignment.Stretch
 			};
 
+			// Prevent group headers/footers from being selectable by swapping
+			// the ItemContainer's ControlTemplate to one that has no checkbox
+			// or selection visuals. This is stable across all selection modes
+			// and visual state transitions.
+			// Must be set every time to handle recycled containers correctly.
+			if (wrapper is not null)
+			{
+				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+				if (isHeaderOrFooter)
+				{
+					// Cache the default template once for later restoration
+					_defaultItemContainerTemplate ??= container.Template;
+					container.Template = NonSelectableItemContainerTemplate;
+				}
+				else
+				{
+					// Restore the default template for regular items (recycled from header/footer)
+					if (_defaultItemContainerTemplate is not null && container.Template == NonSelectableItemContainerTemplate)
+					{
+						container.Template = _defaultItemContainerTemplate;
+					}
+				}
+			}
 			return container;
 		}
 
