@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -20,8 +21,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				// Use a real MauiContext (not ContextStub) so we can call DisposeWindowScope().
-				var mauiContext = new MauiContext(ApplicationServices);
+				// Mirror production: create a window scope and assign it to MauiContext.
+				var scope = ApplicationServices.CreateScope();
+				var mauiContext = new MauiContext(scope.ServiceProvider);
+				mauiContext.SetWindowScope(scope);
 				var handler = CreateHandler<EntryHandler>(entry, mauiContext);
 
 				// Before teardown, mappers should be allowed to run.
