@@ -1,11 +1,11 @@
 ---
 name: pr-review
-description: "End-to-end PR reviewer for dotnet/maui. Orchestrates 4 phases — Pre-Flight, Gate, Try-Fix, Report — by invoking dedicated phase skills. Use when asked to 'review PR #XXXXX', 'work on PR #XXXXX', or 'fix issue #XXXXX'."
+description: "End-to-end PR reviewer for dotnet/maui. Orchestrates 4 phases — Pre-Flight, Gate, Try-Fix, Report. Use when asked to 'review PR #XXXXX', 'work on PR #XXXXX', or 'fix issue #XXXXX'."
 ---
 
 # PR Review — 4-Phase Orchestrator
 
-End-to-end PR review workflow that orchestrates phase skills to verify tests, explore independent fix alternatives, and produce a recommendation.
+End-to-end PR review workflow that orchestrates phases to verify tests, explore independent fix alternatives, and produce a recommendation.
 
 **Trigger phrases:** "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX"
 
@@ -17,11 +17,13 @@ End-to-end PR review workflow that orchestrates phase skills to verify tests, ex
 ## Overview
 
 ```
-Phase 1: Pre-Flight   → Gather context, classify files                 → invoke pr-preflight skill
-Phase 2: Gate         → ⛔ MUST PASS — verify tests FAIL/PASS          → invoke pr-gate skill
+Phase 1: Pre-Flight   → Gather context, classify files                 → .github/pr-review/pr-preflight.md
+Phase 2: Gate         → ⛔ MUST PASS — verify tests FAIL/PASS          → .github/pr-review/pr-gate.md
 Phase 3: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
-Phase 4: Report       → Write review recommendation                     → invoke pr-report skill
+Phase 4: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
+
+> **Branch setup** is handled by `Review-PR.ps1` before this skill is invoked. By the time this skill runs, the review branch already exists with the PR commits cherry-picked and squashed.
 
 **All phases write output to:** `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/{phase}/content.md`
 
@@ -59,21 +61,21 @@ Phase 3 uses these 2 AI models (run SEQUENTIALLY — they modify the same files)
 
 ---
 
-## Phase 1: Pre-Flight → Invoke `pr-preflight` Skill
+## Phase 1: Pre-Flight
 
-> Read and follow `.github/skills/pr-preflight/SKILL.md`
+> Read and follow `.github/pr-review/pr-preflight.md`
 
-Invoke the pr-preflight skill to gather context from the issue, PR, comments, and classify changed files.
+Gather context from the issue, PR, comments, and classify changed files.
 
 **Gate:** None — always runs.
 
 ---
 
-## Phase 2: Gate → Invoke `pr-gate` Skill
+## Phase 2: Gate
 
-> Read and follow `.github/skills/pr-gate/SKILL.md`
+> Read and follow `.github/pr-review/pr-gate.md`
 
-Invoke the pr-gate skill to verify that the PR's tests actually catch the bug (FAIL without fix, PASS with fix).
+Verify that the PR's tests actually catch the bug (FAIL without fix, PASS with fix).
 
 **Gate:** Pre-Flight must be ✅ COMPLETE.
 
@@ -192,11 +194,11 @@ Write `content.md`:
 
 ---
 
-## Phase 4: Report → Invoke `pr-report` Skill
+## Phase 4: Report
 
-> Read and follow `.github/skills/pr-report/SKILL.md`
+> Read and follow `.github/pr-review/pr-report.md`
 
-Invoke the pr-report skill to deliver the final review recommendation.
+Deliver the final review recommendation.
 
 > 🚨 **DO NOT post any comments.** All output goes to `CustomAgentLogsTmp/PRState/`.
 
@@ -227,12 +229,12 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 
 ## Quick Reference
 
-| Phase | Skill Invoked | Key Action | If Blocked |
+| Phase | Instructions | Key Action | If Blocked |
 |-------|--------------|------------|------------|
-| 1. Pre-Flight | `pr-preflight` | Read issue + PR context | Skip missing info, continue |
-| 2. Gate | `pr-gate` | Verify tests via task agent | Document, continue to Try-Fix |
-| 3. Try-Fix | `try-fix` (×2) | **2-model exploration (MANDATORY)** | Skip failing models, continue |
-| 4. Report | `pr-report` | Write review recommendation | Never skip |
+| 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context | Skip missing info, continue |
+| 2. Gate | `pr-gate.md` | Verify tests via task agent | Document, continue to Try-Fix |
+| 3. Try-Fix | `try-fix` skill (×2) | **2-model exploration (MANDATORY)** | Skip failing models, continue |
+| 4. Report | `pr-report.md` | Write review recommendation | Never skip |
 
 ---
 

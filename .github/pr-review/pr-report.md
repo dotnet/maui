@@ -1,13 +1,6 @@
----
-name: pr-report
-description: "Phase 4 of pr-review: Delivers the final review recommendation (APPROVE or REQUEST CHANGES). Does NOT post comments or run pr-finalize. Use after Pre-Flight, Gate, and Try-Fix phases are complete."
----
-
 # PR Report — Final Recommendation
 
 > **SCOPE:** Deliver the review recommendation. Output files only — no comments posted.
-
-**Trigger phrases:** "report on PR #XXXXX", "finalize review for PR #XXXXX"
 
 > 🚨 **DO NOT post any comments.** This phase only produces output files.
 
@@ -90,4 +83,4 @@ Standard markers in content.md: `✅ PASSED`, `❌ FAILED`, `Selected Fix: PR`, 
 
 - ❌ Rushing the report — take time for clear justification
 - ❌ Running git commands — user handles commit/push
-- ❌ Posting comments — this skill only produces output files, never posts to GitHub
+- ❌ Posting comments — this phase only produces output files, never posts to GitHub
