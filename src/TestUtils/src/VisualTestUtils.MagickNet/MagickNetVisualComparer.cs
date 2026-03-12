@@ -27,7 +27,7 @@ namespace VisualTestUtils.MagickNet
             var magickBaselineImage = new MagickImage(baselineImage.Data);
             var magickActualImage = new MagickImage(actualImage.Data);
 
-            ImageSizeDifference imageSizeDifference = ImageSizeDifference.Compare(magickBaselineImage.Width, magickBaselineImage.Height, magickActualImage.Width, magickActualImage.Height);
+            ImageSizeDifference imageSizeDifference = ImageSizeDifference.Compare((int)magickBaselineImage.Width, (int)magickBaselineImage.Height, (int)magickActualImage.Width, (int)magickActualImage.Height);
             if (imageSizeDifference != null)
                 return imageSizeDifference;
 
