@@ -7,7 +7,7 @@ description: Finalizes any PR for merge by verifying title/description match imp
 
 Ensures PR title and description accurately reflect the implementation, and performs a **code review** for best practices before merge.
 
-**Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
+**Standalone skill** - Can be used on any PR, not just PRs reviewed by the pr-review skill.
 
 ## Two-Phase Workflow
 

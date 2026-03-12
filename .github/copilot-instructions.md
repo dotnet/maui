@@ -242,24 +242,18 @@ The repository includes specialized custom agents and reusable skills for specif
 
 ### Available Custom Agents
 
-1. **pr** - Sequential 4-phase workflow for reviewing and working on PRs
-   - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
-   - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
-   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
-   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
-
-2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
+1. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
    - **Use when**: Creating new tests for issues or PRs
    - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
    - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
 
-3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
+2. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
    - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
-   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use write-tests-agent)
+   - **Do NOT use for**: Code review (use `pr-review` skill), writing automated tests (use write-tests-agent)
 
-4. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
+3. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
    - **Use when**: After complex PR, want to improve instruction files/skills based on lessons learned
    - **Capabilities**: Analyzes PR, identifies failure modes, applies improvements to instruction files, skills, code comments
    - **Trigger phrases**: "learn from PR #XXXXX and apply improvements", "improve repo based on what we learned", "update skills based on PR"
@@ -272,73 +266,84 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 
 #### User-Facing Skills
 
-1. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
+1. **pr-review** (`.github/skills/pr-review/SKILL.md`)
+   - **Purpose**: End-to-end PR review orchestrator — invokes phase skills: pr-preflight, pr-gate, try-fix, pr-report
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Capabilities**: Multi-model fix exploration, test verification, alternative comparison, PR review recommendation
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
+   - **Phase skills** (can also be invoked independently):
+     - `pr-preflight` — Context gathering from issue/PR
+     - `pr-gate` — Verify tests FAIL without fix, PASS with fix
+     - `try-fix` — Multi-model fix exploration (already existed)
+     - `pr-report` — Final recommendation + AI summary
+
+3. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
    - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
    - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention"
    - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
 
-2. **find-reviewable-pr** (`.github/skills/find-reviewable-pr/SKILL.md`)
+4. **find-reviewable-pr** (`.github/skills/find-reviewable-pr/SKILL.md`)
    - **Purpose**: Finds open PRs in dotnet/maui and dotnet/docs-maui that need review
    - **Trigger phrases**: "find PRs to review", "show milestoned PRs", "find partner PRs"
    - **Scripts**: `query-reviewable-prs.ps1`
    - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
 
-3. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
+5. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
    - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
    - **Note**: Works on any PR
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
-4. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
+6. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
    - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
    - **Trigger phrases**: "what can we learn from PR #XXXXX?", "how can we improve agents based on PR #XXXXX?"
    - **Used by**: After complex PRs, when agent struggled to find solution
    - **Output**: Prioritized recommendations for instruction files, skills, code comments
    - **Note**: For applying changes automatically, use the learn-from-pr agent instead
 
-5. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
+7. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
    - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
    - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
    - **Output**: Test files that fail without fix, pass with fix
 
-6. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+8. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
    - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
    - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
    - **Output**: Test files for Controls.Xaml.UnitTests
 
-7. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+9. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
    - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-8. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+10. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
    - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
    - **Used by**: When investigating CI failures
 
-8. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+11. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
    - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
-#### Internal Skills (Used by Agents)
+#### Internal Skills (Used by Skills/Agents)
 
-9. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
-   - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
+   - **Used by**: `pr-review` skill Phase 3 (Try-Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
    - **Output**: Reports attempt results and failure analysis
 
-### Using Custom Agents
+### Using Custom Agents and Skills
 
-**Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
+**Delegation Policy**: When user request matches skill/agent trigger phrases, **ALWAYS invoke the appropriate skill or delegate to the agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
 
 **Examples of correct delegation**:
-- User: "Review PR #12345" → Immediately invoke **pr** agent
+- User: "Review PR #12345" → Immediately invoke **pr-review** skill
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
-- User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
+- User: "Fix issue #67890" → Immediately invoke **pr-review** skill
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
 
 **When NOT to delegate**:
