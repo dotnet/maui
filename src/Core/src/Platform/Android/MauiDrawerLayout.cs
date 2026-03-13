@@ -157,6 +157,25 @@ namespace Microsoft.Maui.Platform
 
         #endregion
 
+        #region Touch Handling
+
+        /// <summary>
+        /// When the flyout is locked open, allow touch events to pass through to
+        /// the content area instead of being intercepted by the DrawerLayout.
+        /// Matches the old ShellFlyoutRenderer.OnInterceptTouchEvent behavior.
+        /// </summary>
+        public override bool OnInterceptTouchEvent(MotionEvent? ev)
+        {
+            bool result = base.OnInterceptTouchEvent(ev);
+
+            if (_flyoutView is not null && GetDrawerLockMode(_flyoutView) == LockModeLockedOpen)
+                return false;
+
+            return result;
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
