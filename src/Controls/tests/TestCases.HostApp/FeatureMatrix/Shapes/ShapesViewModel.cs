@@ -8,6 +8,7 @@ public enum ShapeType
 {
 	Line,
 	Rectangle,
+	RoundRectangle,
 	Polygon,
 	Polyline,
 	Ellipse,
@@ -22,11 +23,36 @@ public class ShapesViewModel : INotifyPropertyChanged
 	private double _strokeThickness = 1.0;
 	private double _width = 300;
 	private double _height = 150;
-	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private bool _hasShadow = false;
 	private Shadow _boxShadow = null;
-	private PathGeometryConverter _pathGeometryConverter = new PathGeometryConverter();
+	private readonly PathGeometryConverter _pathGeometryConverter = new PathGeometryConverter();
 
+	public void ResetToDefaults()
+	{
+		SelectedShapeType = ShapeType.Rectangle;
+		FillColor = null;
+		HasFillColor = false;
+		StrokeColor = Colors.Black;
+		StrokeThickness = 1.0;
+		Width = 300;
+		Height = 150;
+		HasShadow = false;
+		StrokeDashArray = "0,0";
+		StrokeDashOffset = 0;
+		Aspect = Stretch.None;
+		StrokeLineCap = PenLineCap.Flat;
+		StrokeLineJoin = PenLineJoin.Miter;
+		CornerRadius = 0;
+		RadiusX = 0;
+		RadiusY = 0;
+		X1 = 0;
+		Y1 = 0;
+		X2 = 280;
+		Y2 = 0;
+		Points = "100,50 150,100 100,150 50,100";
+		PolylinePoints = "50,100 100,50 150,100 200,50 250,100";
+		PathData = "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z";
+	}
 	public bool HasShadow
 	{
 		get => _hasShadow;
@@ -61,19 +87,6 @@ public class ShapesViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	public FlowDirection FlowDirection
-	{
-		get => _flowDirection;
-		set
-		{
-			if (_flowDirection != value)
-			{
-				_flowDirection = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
 	public ShapeType SelectedShapeType
 	{
 		get => _selectedShapeType;
@@ -95,7 +108,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 			{
 				if (!value)
 				{
-					_fillColor = null;
+					FillColor = null;
 				}
 			}
 		}
@@ -145,6 +158,34 @@ public class ShapesViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _strokeDashOffset, value);
 	}
 
+	private Stretch _aspect = Stretch.None;
+	public Stretch Aspect
+	{
+		get => _aspect;
+		set => SetProperty(ref _aspect, value);
+	}
+
+	private PenLineCap _strokeLineCap = PenLineCap.Flat;
+	public PenLineCap StrokeLineCap
+	{
+		get => _strokeLineCap;
+		set => SetProperty(ref _strokeLineCap, value);
+	}
+
+	private PenLineJoin _strokeLineJoin = PenLineJoin.Miter;
+	public PenLineJoin StrokeLineJoin
+	{
+		get => _strokeLineJoin;
+		set => SetProperty(ref _strokeLineJoin, value);
+	}
+
+	private double _cornerRadius = 0;
+	public double CornerRadius
+	{
+		get => _cornerRadius;
+		set => SetProperty(ref _cornerRadius, value);
+	}
+
 	private double _radiusX = 0;
 	public double RadiusX
 	{
@@ -173,7 +214,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _y1, value);
 	}
 
-	private double _x2 = 0;
+	private double _x2 = 280;
 	public double X2
 	{
 		get => _x2;
@@ -216,7 +257,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Path Data
-	private string _pathData = "M 10,100 L 100,100 100,50Z";
+	private string _pathData = "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z";
 
 	public string PathData
 	{
