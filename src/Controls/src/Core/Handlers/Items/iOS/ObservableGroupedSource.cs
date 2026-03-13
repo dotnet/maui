@@ -133,7 +133,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IEnumerable list && _groupSource[n] is not string)
+				var group = _groupSource[n];
+
+				if (group is INotifyCollectionChanged && group is IEnumerable list && group is not string)
 				{
 					_groups.Add(new ObservableItemsSource(list, controller, n));
 				}
