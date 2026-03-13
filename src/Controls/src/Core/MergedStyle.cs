@@ -34,8 +34,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Target = target;
 			TargetType = targetType;
+			// RegisterImplicitStyles handles the initial apply via OnImplicitStyleChanged -> SetStyle.
+			// An explicit Apply(Target) call here would double-attach event handlers when
+			// Application.Current.Resources already contains the implicit style (#24152).
 			RegisterImplicitStyles();
-			Apply(Target);
 		}
 
 		public IStyle Style
@@ -179,9 +181,8 @@ namespace Microsoft.Maui.Controls
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);
 
-			//and proceed as usual
+			//and proceed as usual - RegisterImplicitStyles handles apply via OnImplicitStyleChanged
 			RegisterImplicitStyles();
-			Apply(Target);
 		}
 
 		void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)
