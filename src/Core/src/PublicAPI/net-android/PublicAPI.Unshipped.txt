@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
@@ -9,3 +9,4 @@ override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Platform.MauiAppCompatEditText.OnKeyPreIme(Android.Views.Keycode keyCode, Android.Views.KeyEvent? e) -> bool
