@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var group = _groupSource[n];
 
-				if (group is IEnumerable list && group is not string) // Accept any IEnumerable except string (string implements IEnumerable<char>, not a group)
+				if (group is IEnumerable list && group is not string) // Exclude string: it implements IEnumerable<char> but is a scalar value, not a group
 				{
 					var source = ItemsSourceFactory.Create(list, _groupableItemsView, this);
 					source.HasFooter = _hasGroupFooters;
