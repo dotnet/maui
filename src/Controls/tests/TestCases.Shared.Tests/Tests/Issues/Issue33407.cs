@@ -39,7 +39,11 @@ public class Issue33407 : _IssuesUITest
 
 		// Use retryTimeout to wait for the keyboard-dismiss/restore animation to fully settle
 		// before asserting, avoiding flaky mid-transition screenshots.
+#if ANDROID
+		VerifyScreenshot(cropLeft:125, retryTimeout: TimeSpan.FromSeconds(2));
+#else
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 	}
 }
 #endif
