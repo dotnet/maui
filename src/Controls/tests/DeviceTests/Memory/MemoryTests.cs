@@ -89,9 +89,11 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();
+				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
+				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
 			});
 		});
@@ -147,6 +149,51 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
+
+	#if ANDROID
+	[Fact("FlyoutPage Detail Navigation Does Not Leak")]
+	public async Task FlyoutPageDetailNavigationDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+
+		var flyoutPage = new FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = new NavigationPage(new ContentPage { Title = "Initial Detail" })
+		};
+
+		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				var detailPage = new ContentPage
+				{
+					Title = $"Detail {i}",
+					Content = new Label { Text = $"Content {i}" }
+				};
+				var navPage = new NavigationPage(detailPage);
+
+				flyoutPage.Detail = navPage;
+				flyoutPage.IsPresented = false;
+
+				await OnLoadedAsync(detailPage);
+
+				references.Add(new(detailPage));
+				references.Add(new(detailPage.Handler));
+				references.Add(new(detailPage.Handler.PlatformView));
+				references.Add(new(navPage));
+				references.Add(new(navPage.Handler));
+				references.Add(new(navPage.Handler.PlatformView));
+
+				await Task.Delay(100);
+			}
+		});
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
+	}
+#endif
 
 	[Theory("Handler Does Not Leak")]
 	[InlineData(typeof(ActivityIndicator))]
