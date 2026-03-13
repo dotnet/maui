@@ -14,7 +14,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		IViewHandler? _handler;
 		Lazy<ScaleGestureDetector> _scaleDetector;
