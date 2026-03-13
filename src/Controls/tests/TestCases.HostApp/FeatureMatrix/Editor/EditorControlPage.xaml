@@ -14,7 +14,7 @@
                             <TapGestureRecognizer Tapped="OnLabelTapped"/>
                      </Label.GestureRecognizers>
               </Label>
-
+<!-- Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs. -->
               <local:UITestEditor x:Name="EditorControl"
                                   IsCursorVisible="False"
                                   Text="{Binding Text}"

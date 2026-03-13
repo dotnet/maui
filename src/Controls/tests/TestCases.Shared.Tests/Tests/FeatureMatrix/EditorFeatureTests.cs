@@ -25,7 +25,7 @@ public class EditorFeatureTests : _GalleryUITest
 		: base(device)
 	{
 	}
-
+	// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
 	[Test, Order(1)]
 	public void VerifyEditorInitialEventStates()
 	{
@@ -320,39 +320,39 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-		[Test, Order(20)]
-		[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
-		public void VerifyEditorTextWhenIsTextPredictionEnabledTrueOrFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextPredictionTrue");
-			App.Tap("TextPredictionTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("TestEditor");
-			App.ClearText("TestEditor");
-			App.EnterText("TestEditor", "Testig");
-			App.EnterText("TestEditor", " ");
-			Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("Testing "));
-		}
+	[Test, Order(20)]
+	[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyEditorTextWhenIsTextPredictionEnabledTrueOrFalse()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextPredictionTrue");
+		App.Tap("TextPredictionTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		App.ClearText("TestEditor");
+		App.EnterText("TestEditor", "Testig");
+		App.EnterText("TestEditor", " ");
+		Assert.That(App.WaitForElement("TestEditor").GetText(), Is.EqualTo("Testing "));
+	}
 
-		[Test, Order(21)]
-		[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
-		public void VerifyEditorTextWhenIsSpellCheckEnabledTrueOrFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("SpellCheckTrue");
-			App.Tap("SpellCheckTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("TestEditor");
-			App.ClearText("TestEditor");
-			App.EnterText("TestEditor", "Testig");
-			App.EnterText("TestEditor", " ");
-			VerifyScreenshotWithKeyboardHandling();
-		}
+	[Test, Order(21)]
+	[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyEditorTextWhenIsSpellCheckEnabledTrueOrFalse()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SpellCheckTrue");
+		App.Tap("SpellCheckTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		App.ClearText("TestEditor");
+		App.EnterText("TestEditor", "Testig");
+		App.EnterText("TestEditor", " ");
+		VerifyScreenshotWithKeyboardHandling();
+	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID  // On iOS and Maccatalyst While updating CursorPosition and SelectionLength, the Editor text gets deleted. & On Android, changing CursorPosition keeps the cursor visible even when IsCursorVisible is set to false, which is unexpected.
 	[Test, Order(22)]
@@ -781,10 +781,11 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.LessThan(45));
 	}
 
-	[Test, Order(54)]
+	[Test, Order(55)]
 	public void VerifyEditorPlaceholderWithAutoSizeTextChanges()
 	{
 		App.WaitForElement("Options");
@@ -799,7 +800,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.GreaterThan(45));
 	}
 #endif
 #endif
@@ -814,8 +816,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("HeightRequestEntry", "100");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.EqualTo(100).Within(2));
 	}
 
 	[Test, Order(47)]
@@ -828,8 +830,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("WidthRequestEntry", "100");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var width = GetElementWidthInDip("TestEditor");
+		Assert.That(width, Is.EqualTo(100).Within(2));
 	}
 
 	[Test, Order(48)]
@@ -844,8 +846,10 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("WidthRequestEntry", "80");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var width = GetElementWidthInDip("TestEditor");
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(width, Is.EqualTo(80).Within(2));
+		Assert.That(height, Is.EqualTo(100).Within(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link:
@@ -916,7 +920,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(55)]
+	[Test, Order(54)]
 	public void VerifyEditorTextWhenAutoSizeDisabled()
 	{
 		App.WaitForElement("Options");
@@ -926,8 +930,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshotWithKeyboardHandling();
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.LessThan(45));
 	}
 
 	[Test, Order(56)]
@@ -942,8 +946,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		App.WaitForElement("When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.GreaterThan(45));
 		App.ClearText("TestEditor");
 	}
 
@@ -978,6 +982,23 @@ public class EditorFeatureTests : _GalleryUITest
 			VerifyScreenshot(cropBottom: CropBottomValue);
 		else
 			VerifyScreenshot(screenshotName, cropBottom: CropBottomValue);
+	}
+
+	private double GetElementHeightInDip(string automationId)
+		=> GetElementSizeInDip(automationId).Height;
+
+	private double GetElementWidthInDip(string automationId)
+		=> GetElementSizeInDip(automationId).Width;
+
+	private (double Width, double Height) GetElementSizeInDip(string automationId)
+	{
+		var rect = App.WaitForElement(automationId).GetRect();
+#if ANDROID
+		var density = App.GetDisplayDensity();
+		if (density > 0)
+			return (rect.Width / density, rect.Height / density);
+#endif
+		return (rect.Width, rect.Height);
 	}
 }
 
