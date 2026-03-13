@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Media
 					speechUtterance.Volume = options.Volume.Value;
 
 				if (options.Rate.HasValue)
-					speechUtterance.Rate = options.Rate.Value;
+					speechUtterance.Rate = NormalizeRate(options.Rate.Value);
 			}
 
 			return speechUtterance;
@@ -79,6 +79,20 @@ namespace Microsoft.Maui.Media
 				if (speechUtterance == args.Utterance)
 					tcsUtterance?.TrySetResult(true);
 			}
+		}
+
+		static float NormalizeRate(float rate)
+		{
+			float iosMin = AVSpeechUtterance.MinimumSpeechRate;
+			float iosMax = AVSpeechUtterance.MaximumSpeechRate;
+			float iosNormal = AVSpeechUtterance.DefaultSpeechRate;
+
+			const float min = 0.1f, normal = 1f, max = 2f;
+
+			return rate <= min ? iosMin :
+				   rate == normal ? iosNormal :
+				   rate >= max ? iosMax :
+				   iosMin + ((rate - min) / (max - min)) * (iosMax - iosMin); // Linear interpolation (lerp) from MAUI range [0.1, 2.0] to iOS range [iosMin, iosMax]
 		}
 #pragma warning restore CA1416
 	}
