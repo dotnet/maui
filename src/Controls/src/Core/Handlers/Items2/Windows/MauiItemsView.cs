@@ -43,6 +43,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/ItemContainer/ItemContainer_themeresources.xaml
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
+		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
+		
+		// Set the control's CornerRadius property directly
+		CornerRadius = zeroCornerRadius;
+		
+		// Override theme resources that control corner radius for ItemsView and its children
+		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
 		// Background fills (PART_CommonVisual.Fill) — suppress the gray overlay
 		// that WinUI shows on PointerOver/Pressed so it doesn't interfere with
