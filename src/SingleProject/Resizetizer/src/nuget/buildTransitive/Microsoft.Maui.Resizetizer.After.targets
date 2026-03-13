@@ -128,6 +128,24 @@
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
+    <!-- Allow external backends to opt in by setting ResizetizerPlatformType -->
+    <PropertyGroup Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
+        <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
+
+        <ResizetizeDependsOnTargets>
+            $(ResizetizeDependsOnTargets);
+            ResizetizeCollectItems;
+            ProcessMauiSplashScreens;
+            _ReadResizetizeImagesOutputs;
+        </ResizetizeDependsOnTargets>
+        <ProcessMauiFontsDependsOnTargets>
+            $(ProcessMauiFontsDependsOnTargets);
+            ResizetizeCollectItems;
+            ProcessMauiAssets;
+            ProcessMauiSplashScreens;
+        </ProcessMauiFontsDependsOnTargets>
+    </PropertyGroup>
+
     <!-- iOS -->
     <PropertyGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
         <ResizetizerPlatformType>ios</ResizetizerPlatformType>
