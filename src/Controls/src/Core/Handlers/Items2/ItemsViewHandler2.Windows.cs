@@ -902,7 +902,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	void OnScrollViewerViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
 	{
 		if (_scrollViewer is null || PlatformView is null ||
-			_snapPointsType == SnapPointsType.None || _isSnapping)
+			_snapPointsType == SnapPointsType.None || _isSnapping ||
+			_isScrollingForItemsUpdate)
 		{
 			return;
 		}
