@@ -16,9 +16,11 @@ public class AvdManager
 {
 	private readonly AvdManagerRunner? _runner;
 	private readonly EmulatorRunner? _emulatorRunner;
+	private readonly Adb? _adb;
 
-	public AvdManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
+	public AvdManager(Func<string?> getSdkPath, Func<string?> getJdkPath, Adb? adb = null)
 	{
+		_adb = adb;
 		var sdkPath = getSdkPath();
 		var env = BuildEnvironmentVariables(sdkPath, getJdkPath());
 
@@ -205,9 +207,21 @@ public class AvdManager
 
 		try
 		{
-			_emulatorRunner.StartAvd(name, coldBoot);
+			if (wait && _adb?.Runner != null)
+			{
+				var result = await _emulatorRunner.BootAvdAsync(name, _adb.Runner,
+					new EmulatorBootOptions { ColdBoot = coldBoot }, cancellationToken);
+				if (!result.Success)
+					throw new MauiToolException(
+						ErrorCodes.AndroidEmulatorNotFound,
+						result.ErrorMessage ?? $"Failed to boot AVD '{name}'");
+			}
+			else
+			{
+				_emulatorRunner.LaunchAvd(name, coldBoot);
+			}
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException and not MauiToolException)
 		{
 			throw new MauiToolException(
 				ErrorCodes.AndroidEmulatorNotFound,
