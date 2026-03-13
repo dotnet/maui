@@ -16,8 +16,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.GraphicsView)]
 		public void DrawStringShouldDrawText()
 		{
+#if WINDOWS // On windows AutomationId is not working for GraphicsView, so take a screenshot directly
+			VerifyScreenshot();
+#else
 			App.WaitForElement("GraphicsView");
 			VerifyScreenshot();
+#endif
 		}
 	}
 }
