@@ -25,7 +25,11 @@
                 <Button Text="Shell Page"
                         Clicked="OnShellPageButtonClicked"
                         HorizontalOptions="Center"
-                        AutomationId="ShellPageButton"
+                        AutomationId="ShellPageButton"/> 
+                <Button Text="Shell Search"
+                        Clicked="OnShellSearchButtonClicked"
+                        HorizontalOptions="Center"
+                        AutomationId="ShellSearchButton"
                         WidthRequest="400"/>
         </VerticalStackLayout>
 </ContentPage>
