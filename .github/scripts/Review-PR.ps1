@@ -432,6 +432,9 @@ $autonomousRules
 
 Invoke-CopilotStep -StepName "STEP 1: PR REVIEW" -Prompt $step1Prompt | Out-Null
 
+# Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
+git checkout $reviewBranch 2>$null | Out-Null
+
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 2: PR Finalize
 # ═════════════════════════════════════════════════════════════════════════════
@@ -442,6 +445,9 @@ $autonomousRules
 "@
 
 Invoke-CopilotStep -StepName "STEP 2: PR FINALIZE" -Prompt $step2Prompt | Out-Null
+
+# Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
+git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 3: Post AI Summary Comment (direct script invocation)

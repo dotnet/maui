@@ -49,6 +49,8 @@ Phase 3 uses these 2 AI models (run SEQUENTIALLY — they modify the same files)
 | 1 | `claude-sonnet-4.6` |
 | 2 | `claude-opus-4.6` |
 
+**🚨 MANDATORY: Use `mode: "sync"` for ALL try-fix task invocations.** Never use `mode: "background"`. Background mode causes the orchestrator to move on before the attempt finishes, which means `try-fix/content.md` is never written and try-fix results are lost from the PR comment. Each try-fix task MUST complete and return its result before you proceed to the next attempt or to the Phase 3 completion checklist.
+
 ### Environment Blockers
 
 | Blocker Type | Max Retries | Then Do |
@@ -104,7 +106,9 @@ The purpose is NOT to re-test the PR's fix, but to:
 ### Checklist (you MUST complete ALL of these)
 
 - [ ] Attempt 1 launched with claude-sonnet-4.6
+- [ ] `try-fix/content.md` updated with attempt 1 result
 - [ ] Attempt 2 launched with claude-opus-4.6
+- [ ] `try-fix/content.md` updated with attempt 2 result
 - [ ] Cross-pollination round completed (both models queried)
 - [ ] Best fix selected with comparison table
 
@@ -134,6 +138,8 @@ prompt: |
 # Do NOT use manual git checkout/restore/reset commands.
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
+
+**📝 MANDATORY: Update `try-fix/content.md` after EVERY attempt.** Do not wait until all attempts are done. After each try-fix attempt completes (pass or fail), immediately write/update `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/try-fix/content.md` with all results so far. This ensures the PR comment always reflects the latest try-fix state, even if a later attempt times out or the agent is interrupted.
 
 ### Round 2+: Cross-Pollination (MANDATORY)
 
@@ -183,7 +189,8 @@ Write `content.md`:
 ### Common Mistakes
 
 - ❌ Looking at PR's fix before generating ideas — generate independently first
-- ❌ Running try-fix in parallel — SEQUENTIAL ONLY
+- ❌ Running try-fix in parallel — SEQUENTIAL ONLY, always `mode: "sync"`
+- ❌ Using `mode: "background"` for try-fix tasks — results will be lost
 - ❌ Skipping cleanup between attempts — ALWAYS run cleanup commands
 - ❌ Declaring exhaustion without querying all 5 models
 
