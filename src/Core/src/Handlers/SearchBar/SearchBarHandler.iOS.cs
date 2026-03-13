@@ -251,11 +251,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView is ISearchBar virtualView)
 					virtualView.IsFocused = true;
-				
-				if (Handler is SearchBarHandler handler)
-				{
-					handler.PlatformView.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text));
-				}
 			}
 
 			void OnEditingChanged(object? sender, EventArgs e)
