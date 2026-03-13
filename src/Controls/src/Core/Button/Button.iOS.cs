@@ -200,23 +200,18 @@ namespace Microsoft.Maui.Controls
 				var imageHeight = image.Size.Height;
 				var sharedSpacing = spacing / 2;
 
+				// In RTL mode, physical Left/Right offsets must be reversed.
+				// Use EffectiveFlowDirection to handle both explicit and inherited RTL.
+				nfloat dir = ((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft() ? -1 : 1;
+
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow				
 				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					// In RTL mode, physical Left/Right offsets must be reversed.
-					// Use EffectiveFlowDirection to handle both explicit and inherited RTL.
-					nfloat dir = ((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft() ? -1 : 1;
-
 					imageInsets.Left += dir * (titleWidth / 2);
 					imageInsets.Right -= dir * (titleWidth / 2);
 					titleInsets.Left -= dir * (imageWidth / 2);
 					titleInsets.Right += dir * (imageWidth / 2);
-
-					imageInsets.Left -= dir * ((titleWidth / 2) + sharedSpacing);
-					imageInsets.Right += dir * ((titleWidth / 2) + sharedSpacing);
-					titleInsets.Left += dir * ((imageWidth / 2) + sharedSpacing);
-					titleInsets.Right -= dir * ((imageWidth / 2) + sharedSpacing);
 				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
@@ -244,6 +239,23 @@ namespace Microsoft.Maui.Controls
 					titleInsets.Left -= (nfloat)(imageWidth - padding.Left);
 					titleInsets.Right += (nfloat)padding.Right;
 
+				}
+				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
+				{
+					imageInsets.Left -= dir * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right += dir * ((titleWidth / 2) + sharedSpacing);
+
+					titleInsets.Left += dir * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right -= dir * ((imageWidth / 2) + sharedSpacing);
+
+				}
+				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					imageInsets.Left += dir * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right -= dir * ((titleWidth / 2) + sharedSpacing);
+
+					titleInsets.Left -= dir * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right += dir * ((imageWidth / 2) + sharedSpacing);
 				}
 			}
 
