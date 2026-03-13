@@ -1,0 +1,82 @@
+{
+  "name": "dotnet-maui",
+  "metadata": {
+    "description": ".NET MAUI development skills — controls, navigation, platform APIs, native bindings, migration, and more",
+    "version": "1.0.0"
+  },
+  "owner": {
+    "name": "dotnet"
+  },
+  "plugins": [
+    {
+      "name": "dotnet-maui",
+      "source": "plugins/dotnet-maui",
+      "description": "46 skills and a builder agent for .NET MAUI cross-platform app development. Covers scaffolding, MVVM, Shell navigation, platform APIs, native bindings, Blazor Hybrid, theming, accessibility, performance, Xamarin migration, and more.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "keywords": [
+        "dotnet",
+        "maui",
+        "xamarin",
+        "mobile",
+        "cross-platform",
+        "ios",
+        "android",
+        "windows",
+        "macos",
+        "xaml",
+        "blazor"
+      ],
+      "agents": [
+        "agents/maui-app-builder.md"
+      ],
+      "skills": [
+        "./skills/android-slim-bindings",
+        "./skills/ios-slim-bindings",
+        "./skills/maui-accessibility",
+        "./skills/maui-animations",
+        "./skills/maui-app-icons-splash",
+        "./skills/maui-app-lifecycle",
+        "./skills/maui-aspire",
+        "./skills/maui-authentication",
+        "./skills/maui-coding-guardrails",
+        "./skills/maui-collectionview",
+        "./skills/maui-current-apis",
+        "./skills/maui-custom-handlers",
+        "./skills/maui-data-binding",
+        "./skills/maui-deep-linking",
+        "./skills/maui-dependency-injection",
+        "./skills/maui-file-handling",
+        "./skills/maui-geolocation",
+        "./skills/maui-gestures",
+        "./skills/maui-graphics-drawing",
+        "./skills/maui-hot-reload-diagnostics",
+        "./skills/maui-hybridwebview",
+        "./skills/maui-local-notifications",
+        "./skills/maui-localization",
+        "./skills/maui-maps",
+        "./skills/maui-media-picker",
+        "./skills/maui-performance",
+        "./skills/maui-permissions",
+        "./skills/maui-platform-invoke",
+        "./skills/maui-push-notifications",
+        "./skills/maui-release-notes",
+        "./skills/maui-rest-api",
+        "./skills/maui-safe-area",
+        "./skills/maui-secure-storage",
+        "./skills/maui-shell-navigation",
+        "./skills/maui-speech-to-text",
+        "./skills/maui-sqlite-database",
+        "./skills/maui-theming",
+        "./skills/maui-unit-testing",
+        "./skills/maui-workload-discovery",
+        "./skills/scaffold-content-view",
+        "./skills/scaffold-page",
+        "./skills/setup-mvvm",
+        "./skills/xamarin-android-migration",
+        "./skills/xamarin-forms-migration",
+        "./skills/xamarin-ios-migration"
+      ]
+    }
+  ]
+}

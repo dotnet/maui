@@ -1,0 +1,18 @@
+{
+  "name": "dotnet-maui",
+  "owner": {
+    "name": "dotnet"
+  },
+  "metadata": {
+    "description": ".NET MAUI development skills for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "dotnet-maui",
+      "source": "./plugins/dotnet-maui",
+      "description": "46 skills and a builder agent for .NET MAUI cross-platform app development.",
+      "version": "1.0.0",
+      "license": "MIT"
+    }
+  ]
+}

@@ -345,3 +345,13 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
 - User asks "How do I test PRs?" → Documentation query, handle yourself
 - User has follow-up questions after agent completes → Continue the conversation yourself
+
+### Customer-Facing Skills Plugin
+
+In addition to the contributor-facing skills above, this repository ships a **customer-facing Copilot skills plugin** at `plugins/dotnet-maui/`. This plugin is for **.NET MAUI app developers** — people building apps with the framework, not contributing to the framework itself.
+
+The plugin includes 46 skills and a builder agent covering scaffolding, MVVM, Shell navigation, platform APIs, native bindings, Blazor Hybrid, theming, accessibility, performance, Xamarin migration, and more. See `plugins/dotnet-maui/README.md` for the full skill catalog.
+
+**Important**: The contributor skills (`.github/skills/`) and the customer plugin (`plugins/dotnet-maui/skills/`) serve different audiences. Do not confuse them:
+- **Contributor skills**: PR review, issue triage, test writing, build status — for people working on the MAUI framework
+- **Customer skills**: Scaffolding, MVVM, navigation, platform APIs — for people building apps with MAUI
