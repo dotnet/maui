@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			Drawable = drawable;
 		}
 
-		// Overridden by subclasses to supply the density source used for draw scaling.
+		// Overridden by friend assemblies to supply the density source used for draw scaling.
 		internal virtual float GetDisplayDensity() => Resources.DisplayMetrics.Density;
 
 		public Color BackgroundColor

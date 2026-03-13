@@ -24,6 +24,8 @@ public class Issue34211 : _IssuesUITest
 			ShellHelper.ExecuteShellCommand($"adb shell wm density {(originalDensity.Contains("320", StringComparison.Ordinal) ? "280" : "320")}");
 			App.ForegroundApp();
 
+			// adb shell wm density triggers an Activity recreation because density is not listed
+			// in MAUI's android:configChanges. The app restarts at the list page, so re-navigate.
 			App.WaitForElement("SearchBar");
 			App.ClearText("SearchBar");
 			App.EnterText("SearchBar", Issue);
