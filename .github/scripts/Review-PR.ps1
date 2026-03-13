@@ -8,7 +8,7 @@
     Step 0: Branch setup        - Create review branch from main, cherry-pick PR squashed
     Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
     Step 2: pr-finalize skill   - Verify PR title/description match implementation
-    Step 3: ai-summary-comment  - Post unified AI Summary comment to the PR
+    Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize)
     Step 4: Apply labels        - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
@@ -259,56 +259,160 @@ function Invoke-CopilotStep {
         return 0
     }
 
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $toolCount = 0
+    $turnCount = 0
+    $currentIntent = ""
+    $modelName = ""
+    $failedTools = @()
+
+    # Tool icon mapping for common tools
+    $toolIcons = @{
+        'bash'    = '🖥️'; 'view'   = '📄'; 'edit'   = '✏️'; 'create' = '📝'
+        'grep'    = '🔍'; 'glob'   = '📂'; 'task'   = '🤖'; 'skill'  = '⚡'
+        'sql'     = '🗃️'; 'web_search' = '🌐'; 'ask_user' = '❓'
+        'github-mcp-server-pull_request_read' = '🔀'
+        'github-mcp-server-issue_read'        = '🐛'
+        'github-mcp-server-get_file_contents'  = '📦'
+        'github-mcp-server-search_code'        = '🔎'
+    }
+
     # Use JSON output format to stream live progress of agent activity.
-    # Without this, -p mode shows nothing until completion.
     & copilot -p $Prompt --allow-all --output-format json 2>&1 | ForEach-Object {
         $line = $_.ToString()
         try {
             $event = $line | ConvertFrom-Json -ErrorAction Stop
             switch ($event.type) {
+                'session.tools_updated' {
+                    if ($event.data.model) {
+                        $modelName = $event.data.model
+                        Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $modelName -ForegroundColor DarkCyan
+                    }
+                }
                 'assistant.turn_start' {
-                    $turnId = $event.data.turnId
-                    Write-Host "  ─── Turn $turnId ───" -ForegroundColor DarkGray
+                    $turnCount++
+                    $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
+                    Write-Host ""
+                    Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
+                    Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
+                    if ($currentIntent) {
+                        Write-Host " · $currentIntent" -ForegroundColor DarkCyan
+                    } else {
+                        Write-Host ""
+                    }
+                }
+                'assistant.turn_end' {
+                    Write-Host "  └─" -ForegroundColor DarkGray
                 }
                 'tool.execution_start' {
                     $toolName = $event.data.toolName
                     $args_ = $event.data.arguments
-                    $detail = $args_.description ?? $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.intent ?? ''
-                    if ($detail) { $detail = $detail.Substring(0, [Math]::Min($detail.Length, 80)) }
-                    if ($toolName -ne 'report_intent') {
-                        Write-Host "  🔧 $toolName" -ForegroundColor Cyan -NoNewline
-                        if ($detail) { Write-Host ": $detail" -ForegroundColor Gray } else { Write-Host "" }
+
+                    # Capture intent changes silently
+                    if ($toolName -eq 'report_intent') {
+                        $currentIntent = $args_.intent ?? $currentIntent
+                        Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $currentIntent -ForegroundColor Yellow
+                        break
+                    }
+
+                    $toolCount++
+                    $icon = $toolIcons[$toolName]
+                    if (-not $icon) {
+                        # Prefix match for github-mcp-server-* and other compound names
+                        $icon = if ($toolName -like 'github-*') { '🔀' } else { '🔧' }
+                    }
+
+                    # Build a short display name for long tool names
+                    $displayName = $toolName -replace '^github-mcp-server-', 'gh/'
+
+                    # Pick the most useful detail from arguments
+                    $detail = $args_.description ?? $args_.intent ?? ''
+                    if (-not $detail) {
+                        # Fallback: pick first informative arg
+                        $detail = $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.path ?? $args_.prompt ?? ''
+                    }
+                    if ($detail) {
+                        $detail = $detail.Substring(0, [Math]::Min($detail.Length, 90))
+                        # Truncate at last word boundary if we cut mid-word
+                        if ($detail.Length -eq 90) {
+                            $lastSpace = $detail.LastIndexOf(' ')
+                            if ($lastSpace -gt 60) { $detail = $detail.Substring(0, $lastSpace) + "…" }
+                            else { $detail += "…" }
+                        }
+                    }
+
+                    Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
+                    Write-Host $displayName -ForegroundColor Cyan -NoNewline
+                    if ($detail) {
+                        Write-Host "  $detail" -ForegroundColor DarkGray
+                    } else {
+                        Write-Host ""
                     }
                 }
                 'tool.execution_complete' {
-                    $ok = if ($event.data.success) { "✅" } else { "❌" }
-                    # Intentionally quiet on success to reduce noise
                     if (-not $event.data.success) {
-                        Write-Host "    $ok tool failed" -ForegroundColor Red
+                        $failedTool = $event.data.toolCallId
+                        $failedTools += $failedTool
+                        Write-Host "  │  ❌ Tool failed" -ForegroundColor Red
                     }
                 }
                 'assistant.message' {
                     $content = $event.data.content
+                    # Show agent text responses (skip empty tool-request-only messages)
                     if ($content -and $content.Trim()) {
-                        # Show first 300 chars of agent response
-                        $preview = $content.Trim().Substring(0, [Math]::Min($content.Trim().Length, 300))
-                        Write-Host "  💬 $preview" -ForegroundColor White
+                        $preview = $content.Trim()
+                        if ($preview.Length -gt 400) {
+                            $preview = $preview.Substring(0, 400) + "…"
+                        }
+                        Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $preview -ForegroundColor White
+                    }
+                }
+                'result' {
+                    # Final stats
+                    $usage = $event.data.usage
+                    if ($usage) {
+                        $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
+                        $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
+                        $changes = $usage.codeChanges
+                        $filesChanged = if ($changes -and $changes.filesModified) { $changes.filesModified.Count } else { 0 }
+                        $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
+                        $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
+
+                        Write-Host ""
+                        Write-Host "  ╭──────────────────────────────────────────╮" -ForegroundColor DarkGray
+                        Write-Host "  │  ⏱  $elapsed elapsed  ($($apiMs)s API)" -ForegroundColor DarkGray -NoNewline
+                        Write-Host "  │  🔧 $toolCount tools" -ForegroundColor DarkGray -NoNewline
+                        Write-Host "  │  🔄 $turnCount turns" -ForegroundColor DarkGray
+                        if ($filesChanged -gt 0 -or $linesAdded -gt 0 -or $linesRemoved -gt 0) {
+                            Write-Host "  │  📝 $filesChanged files  " -ForegroundColor DarkGray -NoNewline
+                            Write-Host "+$linesAdded" -ForegroundColor Green -NoNewline
+                            Write-Host "/" -ForegroundColor DarkGray -NoNewline
+                            Write-Host "-$linesRemoved" -ForegroundColor Red
+                        }
+                        Write-Host "  ╰──────────────────────────────────────────╯" -ForegroundColor DarkGray
                     }
                 }
             }
         } catch {
             # Non-JSON line (e.g. stats) — pass through as-is
             if ($line.Trim()) {
-                Write-Host $line
+                Write-Host "  $line" -ForegroundColor DarkGray
             }
         }
     }
     $exitCode = $LASTEXITCODE
+    $stopwatch.Stop()
 
     if ($exitCode -eq 0) {
         Write-Host "  ✅ $StepName completed" -ForegroundColor Green
     } else {
         Write-Host "  ⚠️ $StepName exited with code: $exitCode" -ForegroundColor Yellow
+    }
+    if ($failedTools.Count -gt 0) {
+        Write-Host "  ⚠️  $($failedTools.Count) tool(s) failed during execution" -ForegroundColor Yellow
     }
     return $exitCode
 }
@@ -340,15 +444,44 @@ $autonomousRules
 Invoke-CopilotStep -StepName "STEP 2: PR FINALIZE" -Prompt $step2Prompt | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 3: Post AI Summary Comment
+#  STEP 3: Post AI Summary Comment (direct script invocation)
 # ═════════════════════════════════════════════════════════════════════════════
 
-$step3Prompt = @"
-Use a skill to post an AI summary comment for PR #$PRNumber.
-$autonomousRules
-"@
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
-Invoke-CopilotStep -StepName "STEP 3: POST AI SUMMARY" -Prompt $step3Prompt | Out-Null
+$summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
+$dryRunFlag = if ($DryRun) { @('-DryRun') } else { @() }
+
+# 3a: Post PR review phases (pre-flight, gate, try-fix, report)
+$reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
+if (Test-Path $reviewScript) {
+    try {
+        Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
+        & $reviewScript -PRNumber $PRNumber @dryRunFlag
+        Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ PR review summary posting failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
+}
+
+# 3b: Post PR finalize section (title, description, code review)
+$finalizeScript = Join-Path $summaryScriptsDir "post-pr-finalize-comment.ps1"
+if (Test-Path $finalizeScript) {
+    try {
+        Write-Host "  📝 Posting PR finalize summary..." -ForegroundColor Cyan
+        & $finalizeScript -PRNumber $PRNumber @dryRunFlag
+        Write-Host "  ✅ PR finalize summary posted" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ PR finalize summary posting failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-pr-finalize-comment.ps1 not found — skipping finalize summary" -ForegroundColor Yellow
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 4: Apply Labels
