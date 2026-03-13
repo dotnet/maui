@@ -1,4 +1,5 @@
-#nullable enable
+﻿#nullable enable
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
@@ -24,7 +25,51 @@ namespace Microsoft.Maui.Platform
 				Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
 			}
 
+			var zIndexTarget = (FrameworkElement)this;
+			if (Parent is WrapperView wrapperView)
+			{
+				zIndexTarget = wrapperView;
+			}
+
+			var zIndexParent = zIndexTarget.Parent;
+			if (!(zIndexParent is ContentPanel contentParent && contentParent.BorderStroke?.Shape is not null))
+			{
+				// Raise z-order for overflow scenarios. If this layout is wrapped, raise the
+				// WrapperView instead so ordering changes relative to sibling layouts.
+				var newZIndex = !ClipsToBounds && HasChildrenOutsideBounds(finalSize.Width, finalSize.Height) ? 1 : 0;
+				if (Canvas.GetZIndex(zIndexTarget) != newZIndex)
+				{
+					Canvas.SetZIndex(zIndexTarget, newZIndex);
+				}
+			}
+
 			return actual;
+		}
+
+		bool HasChildrenOutsideBounds(double width, double height)
+		{
+			if (CrossPlatformLayout is not ILayout layout)
+				return false;
+
+			// Allow 1.0 DIU tolerance for sub-pixel rounding errors that accumulate
+			// across layout math (fractional column widths, margin subtraction, etc.).
+			// Without tolerance, benign rounding (e.g. 100.0 DIU stored as 99.997)
+			// produces false-positive overflow detection and causes unnecessary ZIndex
+			// oscillation across measure/arrange cycles.
+			// Android uses an equivalent ±1 physical-pixel guard for the same reason.
+			const double tolerance = 1.0;
+
+			for (int i = 0; i < layout.Count; i++)
+			{
+				var frame = layout[i].Frame;
+				if (frame.Right > width + tolerance || frame.Bottom > height + tolerance
+					|| frame.Left < -tolerance || frame.Top < -tolerance)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public void UpdateInputTransparent(bool inputTransparent, Brush? background)
