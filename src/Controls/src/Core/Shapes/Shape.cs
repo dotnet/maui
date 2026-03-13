@@ -413,7 +413,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
 			RectF pathBounds;
 
-			if (result.Width != 0 && result.Height != 0)
+			if (result.Width != 0 && result.Height != 0 && result.Width > Margin.HorizontalThickness && result.Height > Margin.VerticalThickness)
 			{
 				return result;
 			}
@@ -428,7 +428,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			else
 			{
-			    pathBounds = this.GetPath().GetBoundsByFlattening(1);
+				pathBounds = this.GetPath().GetBoundsByFlattening(1);
 			}
 
 			SizeF boundsByFlattening = pathBounds.Size;
@@ -487,6 +487,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			result.Height += StrokeThickness;
 			result.Width += StrokeThickness;
+			if (this is Line or Path or Polyline)
+			{
+				result.Height += Margin.VerticalThickness;
+				result.Width += Margin.HorizontalThickness;
+			}
+
 			return result;
 		}
 
