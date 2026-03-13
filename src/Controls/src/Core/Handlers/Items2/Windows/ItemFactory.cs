@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -254,6 +255,7 @@ internal partial class ElementWrapper : ContentControl
 
 			SyncMargin();
 			SubscribeToMarginChanges();
+			UpdateContainerAutomationProperties();
 		}
 	}
 
@@ -299,6 +301,63 @@ internal partial class ElementWrapper : ContentControl
 		if (e.PropertyName == View.MarginProperty.PropertyName)
 		{
 			SyncMargin();
+		}
+		else if (e.PropertyName == Element.AutomationIdProperty.PropertyName ||
+			e.IsOneOf(
+				SemanticProperties.HeadingLevelProperty,
+				SemanticProperties.HintProperty,
+				SemanticProperties.DescriptionProperty,
+				AutomationProperties.IsInAccessibleTreeProperty))
+		{
+			UpdateContainerAutomationProperties();
+		}
+	}
+
+	/// <summary>
+	/// Propagates automation and semantic properties from the MAUI virtual view
+	/// to the parent <see cref="ItemContainer"/>.
+	/// <para>
+	/// WinUI accessibility tools (Narrator, Accessibility Insights) read automation
+	/// properties from the root element of each list item, which is the
+	/// <see cref="ItemContainer"/>. Without this propagation, items are announced
+	/// only by their control type (e.g., "list item") with no accessible name or hint.
+	/// </para>
+	/// </summary>
+	void UpdateContainerAutomationProperties()
+	{
+		if (VirtualView is not IView view)
+			return;
+
+		var container = Parent as ItemContainer;
+		if (container is null)
+			return;
+
+		// Propagate AutomationId
+		if (!string.IsNullOrEmpty(view.AutomationId))
+		{
+			NativeAutomationProperties.SetAutomationId(container, view.AutomationId);
+		}
+
+		// Propagate semantic properties (Name, HelpText, HeadingLevel)
+		// If you don't set the automation properties on the root element
+		// of a list item it just reads out the class type to narrator.
+		// https://docs.microsoft.com/en-us/accessibility-tools-docs/items/uwpxaml/listitem_name
+		var semantics = view.Semantics;
+
+		NativeAutomationProperties.SetName(container, semantics?.Description ?? string.Empty);
+		NativeAutomationProperties.SetHelpText(container, semantics?.Hint ?? string.Empty);
+
+		if (semantics is not null)
+		{
+			NativeAutomationProperties.SetHeadingLevel(container,
+				(UI.Xaml.Automation.Peers.AutomationHeadingLevel)((int)semantics.HeadingLevel));
+		}
+
+		// Set AccessibilityView based on IsInAccessibleTree
+		if (VirtualView is Element element)
+		{
+			container.SetAutomationPropertiesAccessibilityView(element,
+				UI.Xaml.Automation.Peers.AccessibilityView.Content);
 		}
 	}
 
