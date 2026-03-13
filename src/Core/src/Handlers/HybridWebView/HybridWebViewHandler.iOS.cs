@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 			var scrollView = handler.PlatformView?.ScrollView;
 			if (scrollView == null)
 				return;
-				
+
 			scrollView.UpdateFlowDirectionForScrollView(hybridWebView);
 		}
 
