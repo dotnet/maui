@@ -47,10 +47,10 @@ public class Issue34122 : _IssuesUITest
 
 	void AssertEmptyViewState(string expectedEmptyViewButtonId, string unexpectedEmptyViewButtonId)
 	{
-		Assert.That(App.FindElements(expectedEmptyViewButtonId), Is.Not.Empty,
+		App.WaitForElement(expectedEmptyViewButtonId,
 			$"Expected empty view '{expectedEmptyViewButtonId}' was not visible.");
 
-		Assert.That(App.FindElements(unexpectedEmptyViewButtonId), Is.Empty,
+		App.WaitForNoElement(unexpectedEmptyViewButtonId,
 			$"'{unexpectedEmptyViewButtonId}' should not be visible while '{expectedEmptyViewButtonId}' is active.");
 	}
 }

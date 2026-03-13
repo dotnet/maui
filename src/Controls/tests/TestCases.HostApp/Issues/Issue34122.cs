@@ -117,7 +117,7 @@ public class Issue34122 : ContentPage
 		// Remove items one-by-one (matching the original ManualTests FilterCommand),
 		// which fires multiple CollectionChanged events and puts RecyclerView into
 		// the state that triggers the EmptyView-swap bug.
-		foreach (var name in _allItems.ToList())
+		foreach (var name in _allItems)
 			_items.Remove(name);
 	}
 
