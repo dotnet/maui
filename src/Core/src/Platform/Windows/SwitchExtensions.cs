@@ -91,5 +91,18 @@ namespace Microsoft.Maui.Platform
 					"ToggleSwitchKnobFillOffDisabled");
 			}
 		}
+
+		internal static void UpdateMinWidth(this ToggleSwitch toggleSwitch, ISwitch view)
+		{
+			double minWidth = view.MinimumWidth;
+			if (double.IsNaN(minWidth))
+			{
+				toggleSwitch.MinWidth = 0;
+			}
+			else
+			{
+				toggleSwitch.MinWidth = minWidth;
+			}
+		}
 	}
 }
