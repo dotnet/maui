@@ -37,7 +37,8 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 #else
 		App.EnterText(AppiumQuery.ByXPath("//android.widget.EditText"), "Hello");
 #endif
-		VerifyScreenshot();
+        // Use retryTimeout to give some time for the search results to appear and hide scrollbars before taking the screenshot.
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }
