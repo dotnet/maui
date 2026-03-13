@@ -68,6 +68,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
 	PropertyChangedEventHandler? _layoutPropertyChanged;
 	bool _isScrollingForItemsUpdate;
+	bool _isSnapping; // guard to prevent re-entrant snap
+	SnapPointsType _snapPointsType;
+	SnapPointsAlignment _snapPointsAlignment;
 	int _pendingScrollToIndex = -1;
 	RoutedEventHandler? _pendingLoadedHandler;
 	protected TItemsView ItemsView => VirtualView;
@@ -874,37 +877,96 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		var snapPointsType = itemsLayout.SnapPointsType;
-		var snapPointsAlignment = itemsLayout.SnapPointsAlignment;
+		_snapPointsType = itemsLayout.SnapPointsType;
+		_snapPointsAlignment = itemsLayout.SnapPointsAlignment;
+
+		// Do NOT set SnapPointsType on the ScrollViewer — the StackPanel's built-in
+		// IScrollSnapPointsInfo would snap to its 4 direct children (Header, ItemsRepeater,
+		// EmptyView, Footer) instead of individual items. We handle snapping manually
+		// in ScrollViewChanged by calling ChangeView after the scroll settles.
+		_scrollViewer.HorizontalSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType.None;
+		_scrollViewer.VerticalSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType.None;
+	}
+
+	/// <summary>
+	/// After the scroll settles, finds the nearest item boundary and
+	/// programmatically scrolls to it using <see cref="ScrollViewer.ChangeView"/>.
+	/// This replaces native snap points because the StackPanel's built-in
+	/// IScrollSnapPointsInfo snaps to its direct children, not individual items.
+	/// </summary>
+	void SnapToNearestItem()
+	{
+		if (_scrollViewer is null || PlatformView is null || _snapPointsType == SnapPointsType.None)
+			return;
+
 		bool isHorizontal = IsLayoutHorizontal;
+		double currentOffset = isHorizontal ? _scrollViewer.HorizontalOffset : _scrollViewer.VerticalOffset;
+		double viewportSize = isHorizontal ? _scrollViewer.ViewportWidth : _scrollViewer.ViewportHeight;
 
-		// Map MAUI enum values to WinUI equivalents
-		var winSnapType = snapPointsType switch
-		{
-			SnapPointsType.Mandatory => Microsoft.UI.Xaml.Controls.SnapPointsType.Mandatory,
-			SnapPointsType.MandatorySingle => Microsoft.UI.Xaml.Controls.SnapPointsType.MandatorySingle,
-			_ => Microsoft.UI.Xaml.Controls.SnapPointsType.None,
-		};
+		double? bestSnapOffset = null;
+		double bestDistance = double.MaxValue;
 
-		var winSnapAlignment = snapPointsAlignment switch
+		foreach (var container in PlatformView.GetChildren<ItemContainer>())
 		{
-			SnapPointsAlignment.Center => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Center,
-			SnapPointsAlignment.End => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Far,
-			_ => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Near,
-		};
+			if (container is null || container.Visibility != WVisibility.Visible)
+				continue;
 
-		// Set snap point properties on the ScrollViewer.
-		// The StackPanel (content of ScrollViewer) already implements IScrollSnapPointsInfo,
-		// so ScrollViewer will query it for snap point offsets automatically.
-		if (isHorizontal)
+			try
+			{
+				var transform = container.TransformToVisual(_scrollViewer);
+				var point = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+				double itemStart = isHorizontal ? point.X : point.Y;
+				double itemSize = isHorizontal ? container.ActualWidth : container.ActualHeight;
+
+				// Compute the snap offset based on alignment.
+				// The offset is relative to the viewport, so we add current scroll offset
+				// to get the absolute position, then that becomes the target scroll offset.
+				double snapTarget = _snapPointsAlignment switch
+				{
+					SnapPointsAlignment.Center => currentOffset + itemStart + itemSize / 2 - viewportSize / 2,
+					SnapPointsAlignment.End => currentOffset + itemStart + itemSize - viewportSize,
+					_ => currentOffset + itemStart, // Near (default)
+				};
+
+				// Clamp to valid scroll range
+				double maxOffset = isHorizontal
+					? _scrollViewer.ScrollableWidth
+					: _scrollViewer.ScrollableHeight;
+				snapTarget = Math.Max(0, Math.Min(snapTarget, maxOffset));
+
+				double distance = Math.Abs(snapTarget - currentOffset);
+				if (distance < bestDistance)
+				{
+					bestDistance = distance;
+					bestSnapOffset = snapTarget;
+				}
+			}
+			catch
+			{
+				// TransformToVisual can throw if element is not in the visual tree
+			}
+		}
+
+		if (bestSnapOffset.HasValue && bestDistance > 1.0) // > 1px threshold to avoid unnecessary micro-scrolls
 		{
-			_scrollViewer.HorizontalSnapPointsType = winSnapType;
-			_scrollViewer.HorizontalSnapPointsAlignment = winSnapAlignment;
+			_isSnapping = true;
+			if (isHorizontal)
+			{
+				_scrollViewer.ChangeView(bestSnapOffset.Value, null, null, disableAnimation: false);
+			}
+			else
+			{
+				_scrollViewer.ChangeView(null, bestSnapOffset.Value, null, disableAnimation: false);
+			}
+
+			// Reset the guard after a short delay. ChangeView triggers ViewChanged events,
+			// and we need to ignore them to prevent infinite snap loops.
+			PlatformView.DispatcherQueue.TryEnqueue(() => _isSnapping = false);
 		}
 		else
 		{
-			_scrollViewer.VerticalSnapPointsType = winSnapType;
-			_scrollViewer.VerticalSnapPointsAlignment = winSnapAlignment;
+			_isSnapping = false;
 		}
 	}
 
@@ -1240,6 +1302,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	{
 		if (_scrollViewer is null)
 			return;
+
+		// When the scroll settles (IsIntermediate == false), snap to the nearest item
+		if (!e.IsIntermediate && !_isSnapping && _snapPointsType != SnapPointsType.None)
+		{
+			SnapToNearestItem();
+		}
 
 		HandleScroll(_scrollViewer);
 	}
