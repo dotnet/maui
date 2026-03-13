@@ -17,7 +17,6 @@ using Microsoft.UI.Xaml.Input;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using WScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
@@ -68,6 +67,9 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	WeakNotifyPropertyChangedProxy? _layoutPropertyChangedProxy;
 	PropertyChangedEventHandler? _layoutPropertyChanged;
 	bool _isScrollingForItemsUpdate;
+	SnapPointsType _snapPointsType;
+	SnapPointsAlignment _snapPointsAlignment;
+	bool _isSnapping; // guard against re-entrant snap from our own ChangeView
 	int _pendingScrollToIndex = -1;
 	RoutedEventHandler? _pendingLoadedHandler;
 	protected TItemsView ItemsView => VirtualView;
@@ -231,6 +233,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (_scrollViewer is not null)
 		{
 			_scrollViewer.ViewChanged -= ScrollViewChanged;
+			_scrollViewer.ViewChanging -= OnScrollViewerViewChanging;
 			_scrollViewer = null;
 		}
 
@@ -810,10 +813,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (_scrollViewer is not null)
 		{
 			_scrollViewer.ViewChanged -= ScrollViewChanged;
+			_scrollViewer.ViewChanging -= OnScrollViewerViewChanging;
 		}
 
 		_scrollViewer = scrollViewer;
 		_scrollViewer.ViewChanged += ScrollViewChanged;
+		_scrollViewer.ViewChanging += OnScrollViewerViewChanging;
 
 		UpdateVerticalScrollBarVisibility();
 		UpdateHorizontalScrollBarVisibility();
@@ -874,37 +879,219 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		var snapPointsType = itemsLayout.SnapPointsType;
-		var snapPointsAlignment = itemsLayout.SnapPointsAlignment;
+		_snapPointsType = itemsLayout.SnapPointsType;
+		_snapPointsAlignment = itemsLayout.SnapPointsAlignment;
+
+		// Do NOT set native SnapPointsType on the ScrollViewer.
+		// The StackPanel's built-in IScrollSnapPointsInfo provides snap points
+		// at its direct children (Header, ItemsRepeater, EmptyView, Footer),
+		// not at individual items. Instead, we handle snapping manually in
+		// OnScrollViewerViewChanging, similar to how iOS/Mac uses TargetContentOffset.
+		_scrollViewer.HorizontalSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType.None;
+		_scrollViewer.VerticalSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType.None;
+	}
+
+	/// <summary>
+	/// Handles the ScrollViewer's ViewChanging event, which fires DURING deceleration
+	/// before the scroll settles. This is the Windows equivalent of iOS's
+	/// <c>TargetContentOffset(proposedContentOffset, scrollingVelocity)</c>.
+	///
+	/// We compute the nearest item to the proposed scroll destination and redirect
+	/// the scroll to snap to that item's boundary using ChangeView.
+	/// </summary>
+	void OnScrollViewerViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
+	{
+		if (_scrollViewer is null || PlatformView is null ||
+			_snapPointsType == SnapPointsType.None || _isSnapping)
+		{
+			return;
+		}
+
+		// e.NextView is where the ScrollViewer is headed.
+		// e.FinalView is where it will end up if we don't intervene.
+		// We use FinalView as the "proposed content offset" (like Mac's proposedContentOffset).
+		var finalView = e.FinalView;
 		bool isHorizontal = IsLayoutHorizontal;
+		double proposedOffset = isHorizontal ? finalView.HorizontalOffset : finalView.VerticalOffset;
+		double currentOffset = isHorizontal ? _scrollViewer.HorizontalOffset : _scrollViewer.VerticalOffset;
+		double viewportSize = isHorizontal ? _scrollViewer.ViewportWidth : _scrollViewer.ViewportHeight;
+		double maxOffset = isHorizontal ? _scrollViewer.ScrollableWidth : _scrollViewer.ScrollableHeight;
 
-		// Map MAUI enum values to WinUI equivalents
-		var winSnapType = snapPointsType switch
-		{
-			SnapPointsType.Mandatory => Microsoft.UI.Xaml.Controls.SnapPointsType.Mandatory,
-			SnapPointsType.MandatorySingle => Microsoft.UI.Xaml.Controls.SnapPointsType.MandatorySingle,
-			_ => Microsoft.UI.Xaml.Controls.SnapPointsType.None,
-		};
+		// Determine scroll direction (like Mac's scrollingVelocity)
+		double scrollDelta = proposedOffset - currentOffset;
 
-		var winSnapAlignment = snapPointsAlignment switch
-		{
-			SnapPointsAlignment.Center => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Center,
-			SnapPointsAlignment.End => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Far,
-			_ => Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment.Near,
-		};
+		// Find the best snap target among visible item containers
+		// This mirrors Mac's SnapHelpers.FindBestSnapCandidate + AdjustContentOffset
+		double? snapTarget = null;
 
-		// Set snap point properties on the ScrollViewer.
-		// The ItemsSnapPointsPanel (content of ScrollViewer) implements IScrollSnapPointsInfo
-		// with per-item snap points, so ScrollViewer will query it automatically.
-		if (isHorizontal)
+		if (_snapPointsType == SnapPointsType.MandatorySingle)
 		{
-			_scrollViewer.HorizontalSnapPointsType = winSnapType;
-			_scrollViewer.HorizontalSnapPointsAlignment = winSnapAlignment;
+			// MandatorySingle: like Mac's ScrollSingle — advance exactly one item
+			// from the CURRENT position, based on scroll direction
+			snapTarget = FindSingleSnapTarget(isHorizontal, currentOffset, viewportSize, maxOffset, scrollDelta);
 		}
 		else
 		{
-			_scrollViewer.VerticalSnapPointsType = winSnapType;
-			_scrollViewer.VerticalSnapPointsAlignment = winSnapAlignment;
+			// Mandatory: like Mac's standard TargetContentOffset —
+			// find the nearest item to the PROPOSED destination
+			snapTarget = FindNearestSnapTarget(isHorizontal, proposedOffset, viewportSize, maxOffset);
+		}
+
+		if (snapTarget.HasValue)
+		{
+			double distance = Math.Abs(snapTarget.Value - proposedOffset);
+			if (distance > 1.0) // Only intervene if snap target differs by more than 1px
+			{
+				_isSnapping = true;
+				if (isHorizontal)
+				{
+					_scrollViewer.ChangeView(snapTarget.Value, null, null, disableAnimation: false);
+				}
+				else
+				{
+					_scrollViewer.ChangeView(null, snapTarget.Value, null, disableAnimation: false);
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// Finds the item nearest to the proposed offset and returns the scroll offset
+	/// that would align it per the current SnapPointsAlignment.
+	/// Equivalent to Mac's <c>SnapHelpers.FindBestSnapCandidate + AdjustContentOffset</c>.
+	/// </summary>
+	double? FindNearestSnapTarget(bool isHorizontal, double proposedOffset, double viewportSize, double maxOffset)
+	{
+		double? bestTarget = null;
+		double bestDistance = double.MaxValue;
+
+		foreach (var container in PlatformView.GetChildren<ItemContainer>())
+		{
+			if (container is null || container.Visibility != WVisibility.Visible)
+				continue;
+
+			var target = ComputeSnapTarget(container, isHorizontal, proposedOffset, viewportSize, maxOffset);
+			if (target is null)
+				continue;
+
+			double distance = Math.Abs(target.Value - proposedOffset);
+			if (distance < bestDistance)
+			{
+				bestDistance = distance;
+				bestTarget = target;
+			}
+		}
+
+		return bestTarget;
+	}
+
+	/// <summary>
+	/// Finds the next item in the scroll direction from the current position.
+	/// Equivalent to Mac's <c>ScrollSingle</c> — only advances one item per gesture.
+	/// </summary>
+	double? FindSingleSnapTarget(bool isHorizontal, double currentOffset, double viewportSize, double maxOffset, double scrollDelta)
+	{
+		// First, find the item currently aligned to the snap position
+		double? currentAligned = FindNearestSnapTarget(isHorizontal, currentOffset, viewportSize, maxOffset);
+
+		if (currentAligned is null)
+			return null;
+
+		if (Math.Abs(scrollDelta) < 1.0)
+			return currentAligned; // No meaningful scroll, stay put
+
+		// Collect all snap targets sorted by offset
+		var allTargets = new List<double>();
+		foreach (var container in PlatformView.GetChildren<ItemContainer>())
+		{
+			if (container is null || container.Visibility != WVisibility.Visible)
+				continue;
+
+			var target = ComputeSnapTarget(container, isHorizontal, currentOffset, viewportSize, maxOffset);
+			if (target.HasValue)
+				allTargets.Add(target.Value);
+		}
+
+		allTargets.Sort();
+
+		if (allTargets.Count == 0)
+			return null;
+
+		// Find current index in sorted targets
+		int currentIndex = 0;
+		double minDist = double.MaxValue;
+		for (int i = 0; i < allTargets.Count; i++)
+		{
+			double d = Math.Abs(allTargets[i] - currentAligned.Value);
+			if (d < minDist)
+			{
+				minDist = d;
+				currentIndex = i;
+			}
+		}
+
+		// Advance exactly one step based on scroll direction (like Mac's FindNextItem)
+		int span = 1;
+		if (Layout is GridItemsLayout gridLayout)
+			span = gridLayout.Span;
+
+		int nextIndex;
+		if (scrollDelta > 0)
+			nextIndex = Math.Min(currentIndex + span, allTargets.Count - 1);
+		else
+			nextIndex = Math.Max(currentIndex - span, 0);
+
+		return allTargets[nextIndex];
+	}
+
+	/// <summary>
+	/// Computes the scroll offset that would align the given container
+	/// per the current SnapPointsAlignment. Returns null if the container
+	/// position cannot be determined.
+	///
+	/// This mirrors Mac's <c>SnapHelpers.GetViewportOffset</c> logic:
+	/// - Start: item's leading edge aligns with viewport's leading edge
+	/// - Center: item's center aligns with viewport's center
+	/// - End: item's trailing edge aligns with viewport's trailing edge
+	/// </summary>
+	double? ComputeSnapTarget(ItemContainer container, bool isHorizontal, double referenceOffset, double viewportSize, double maxOffset)
+	{
+		try
+		{
+			var transform = container.TransformToVisual(_scrollViewer);
+			var point = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+			// Container position relative to viewport
+			double itemStart = isHorizontal ? point.X : point.Y;
+			double itemSize = isHorizontal ? container.ActualWidth : container.ActualHeight;
+
+			// Convert viewport-relative position to absolute content offset,
+			// then compute the target scroll offset per alignment.
+			// currentScrollOffset + itemStart = absolute position of item's leading edge.
+			double currentScrollOffset = isHorizontal
+				? _scrollViewer!.HorizontalOffset
+				: _scrollViewer!.VerticalOffset;
+
+			double absoluteItemStart = currentScrollOffset + itemStart;
+
+			double snapTarget = _snapPointsAlignment switch
+			{
+				// Mac: viewport.Left - itemFrame.Left (delta), applied to proposed offset
+				SnapPointsAlignment.Start => absoluteItemStart,
+				// Mac: center(viewport) - center(itemFrame)
+				SnapPointsAlignment.Center => absoluteItemStart + itemSize / 2 - viewportSize / 2,
+				// Mac: viewport.Right - itemFrame.Right
+				SnapPointsAlignment.End => absoluteItemStart + itemSize - viewportSize,
+				_ => absoluteItemStart,
+			};
+
+			// Clamp to valid scroll range
+			return Math.Max(0, Math.Min(snapTarget, maxOffset));
+		}
+		catch
+		{
+			// TransformToVisual can throw if element is not in the visual tree
+			return null;
 		}
 	}
 
@@ -1241,6 +1428,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (_scrollViewer is null)
 			return;
 
+		// Reset the snapping guard when the scroll animation (including our ChangeView)
+		// fully settles. This prevents re-entrant snap during our own snap animation.
+		if (!e.IsIntermediate)
+			_isSnapping = false;
+
 		HandleScroll(_scrollViewer);
 	}
 
@@ -1332,7 +1524,8 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		// MauiItemsView uses a custom ControlTemplate with a ScrollViewer wrapping
-		// an ItemsSnapPointsPanel > ItemsRepeater (not the default ItemsView template with ScrollView).
+		// a StackPanel > ItemsRepeater (not the default ItemsView template with ScrollView).
+		// Snap points are handled manually in OnScrollViewerViewChanging (like iOS TargetContentOffset).
 		// WinUI's TryGetItemIndex relies on its internal ScrollView part (PART_ScrollView),
 		// which doesn't exist in our template — so it always returns -1.
 		// Instead, walk the realized ItemContainer children and check which ones
