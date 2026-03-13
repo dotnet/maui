@@ -23,7 +23,7 @@ public partial class ShapesControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new ShapesViewModel();
+		_viewModel.ResetToDefaults();
 		await Navigation.PushAsync(new ShapesOptionsPage(_viewModel));
 	}
 }

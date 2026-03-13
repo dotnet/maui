@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.Shape)]
 public class ShapesFeatureTests : _GalleryUITest
 {
 	public const string ShapesFeatureMatrix = "Shapes Feature Matrix";
@@ -25,8 +26,7 @@ public class ShapesFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //For more information see: https://github.com/dotnet/maui/issues/29812
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(1)]
 	public void Rectangle_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
@@ -47,8 +47,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(2)]
 	public void Ellipse_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
@@ -72,9 +71,8 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Line_FillColorWithStrokeColor_Shadow()
+	[Test, Order(3)]
+	public void Line_StrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -114,8 +112,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(4)]
 	public void Polygon_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
@@ -139,15 +136,14 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void PolyLine_FillColorWithStrokeColor_Shadow()
+	[Test, Order(5)]
+	public void Polyline_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("PolyLineRadioButton");
-		App.Tap("PolyLineRadioButton");
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
 
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
@@ -161,8 +157,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(6)]
 	public void Path_FillColorWithStrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
@@ -184,8 +179,7 @@ public class ShapesFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(7)]
 	public void Rectangle_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -212,8 +206,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(8)]
 	public void Ellipse_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -243,15 +236,14 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void PolyLine_DashArray_DashOffset_Thickness()
+	[Test, Order(9)]
+	public void Polyline_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("PolyLineRadioButton");
-		App.Tap("PolyLineRadioButton");
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
 
 		App.WaitForElement("StrokeThicknessEntry");
 		App.Tap("StrokeThicknessEntry");
@@ -274,8 +266,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(10)]
 	public void Polygon_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -305,8 +296,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(11)]
 	public void Path_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -336,8 +326,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(12)]
 	public void Line_DashArray_DashOffset_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -387,8 +376,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(13)]
 	public void Path_Points_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -413,25 +401,24 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void PolyLine_Points_Thickness()
+	[Test, Order(14)]
+	public void Polyline_Points_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("PolyLineRadioButton");
-		App.Tap("PolyLineRadioButton");
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
 
 		App.WaitForElement("StrokeThicknessEntry");
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "4");
 
-		App.WaitForElement("PolyLinePointsEntry");
-		App.Tap("PolyLinePointsEntry");
-		App.ClearText("PolyLinePointsEntry");
-		App.EnterText("PolyLinePointsEntry", "0,0 10,30 15,0 18,60 23,30 35,30 40,0 43,60 48,30 100,30");
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "0,0 10,30 15,0 18,60 23,30 35,30 40,0 43,60 48,30 100,30");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -439,9 +426,8 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Polygon_Pentagon()
+	[Test, Order(15)]
+	public void Polygon_Pentagon()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -464,9 +450,8 @@ public class ShapesFeatureTests : _GalleryUITest
 	}
 
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Rectangle_XAndYRadius()
+	[Test, Order(16)]
+	public void Rectangle_XAndYRadius()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -492,9 +477,8 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void Shape_Rectangle_HeightAndWidth()
+	[Test, Order(17)]
+	public void Rectangle_HeightAndWidth()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -515,8 +499,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(18)]
 	public void Rectangle_StrokeColor_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -536,8 +519,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(19)]
 	public void Ellipse_StrokeColor_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -562,8 +544,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(20)]
 	public void Line_StrokeColor_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -602,8 +583,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(21)]
 	public void Polygon_StrokeColor_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -628,15 +608,14 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void PolyLine_StrokeColor_Thickness()
+	[Test, Order(22)]
+	public void Polyline_StrokeColor_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("PolyLineRadioButton");
-		App.Tap("PolyLineRadioButton");
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
 
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
@@ -652,8 +631,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(23)]
 	public void Path_StrokeColor_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -676,8 +654,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(24)]
 	public void Rectangle_StrokeColor_DashArray_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -702,8 +679,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(25)]
 	public void Ellipse_StrokeColor_DashArray_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -730,8 +706,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(26)]
 	public void Line_StrokeColor_DashArray_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -778,8 +753,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(27)]
 	public void Polygon_StrokeColor_DashArray_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -806,15 +780,14 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
-	public void PolyLine_StrokeColor_DashArray_Thickness()
+	[Test, Order(28)]
+	public void Polyline_StrokeColor_DashArray_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
-		App.WaitForElement("PolyLineRadioButton");
-		App.Tap("PolyLineRadioButton");
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
 
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
@@ -834,8 +807,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
-	[Test]
-	[Category(UITestCategories.Shape)]
+	[Test, Order(29)]
 	public void Path_StrokeColor_DashArray_Thickness()
 	{
 		App.WaitForElement("Options");
@@ -856,6 +828,329 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS //For more information see: https://github.com/dotnet/maui/issues/29812
+	[Test, Order(30)]
+	public void RoundRectangle_FillColorWithStrokeColor_Shadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+#endif
+
+	[Test, Order(31)]
+	public void RoundRectangle_CornerRadius()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "3");
+
+		App.WaitForElement("CornerRadiusEntry");
+		App.Tap("CornerRadiusEntry");
+		App.ClearText("CornerRadiusEntry");
+		App.EnterText("CornerRadiusEntry", "30");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(32)]
+	public void RoundRectangle_DashArray_DashOffset_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("CornerRadiusEntry");
+		App.Tap("CornerRadiusEntry");
+		App.ClearText("CornerRadiusEntry");
+		App.EnterText("CornerRadiusEntry", "20");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeDashOffsetEntry");
+		App.Tap("StrokeDashOffsetEntry");
+		App.ClearText("StrokeDashOffsetEntry");
+		App.EnterText("StrokeDashOffsetEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(33)]
+	public void Line_StrokeLineCap_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "12");
+
+		App.WaitForElement("StrokeLineCapRoundRadioButton");
+		App.Tap("StrokeLineCapRoundRadioButton");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "100");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "250");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "100");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(34)]
+	public void Line_StrokeLineCap_Square()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "12");
+
+		App.WaitForElement("StrokeLineCapSquareRadioButton");
+		App.Tap("StrokeLineCapSquareRadioButton");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "100");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "250");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "100");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(35)]
+	public void Polyline_StrokeLineJoin_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "20");
+
+		App.WaitForElement("StrokeLineJoinRoundRadioButton");
+		App.Tap("StrokeLineJoinRoundRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(36)]
+	public void Polyline_StrokeLineJoin_Bevel()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "20");
+
+		App.WaitForElement("StrokeLineJoinBevelRadioButton");
+		App.Tap("StrokeLineJoinBevelRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(37)]
+	public void Path_Aspect_Uniform()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("AspectUniformRadioButton");
+		App.Tap("AspectUniformRadioButton");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(38)]
+	public void Path_Aspect_Fill()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("AspectFillRadioButton");
+		App.Tap("AspectFillRadioButton");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(39)]
+	public void Path_Aspect_UniformToFill()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("AspectUniformToFillRadioButton");
+		App.Tap("AspectUniformToFillRadioButton");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
