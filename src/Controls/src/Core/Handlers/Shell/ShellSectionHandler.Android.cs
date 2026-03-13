@@ -771,17 +771,30 @@ namespace Microsoft.Maui.Controls.Handlers
                 _subscribedToNavigationRequested = true;
             }
 
-            // Initialize with root page
+            // Build the initial stack from the ShellSection's current navigation stack.
+            // Pages may have been pushed (e.g., from OnNavigatedTo) before this fragment
+            // was created by ViewPager2. Those NavigationRequested events were lost because
+            // nobody was subscribed yet. Reconcile by reading the section's actual stack.
             var initialStack = new List<IView> { _rootPage };
+            if (shellSection is not null && shellSection.CurrentItem == _shellContent)
+            {
+                var sectionStack = shellSection.Stack;
+                for (int i = 1; i < sectionStack.Count; i++)
+                {
+                    if (sectionStack[i] is not null)
+                    {
+                        initialStack.Add(sectionStack[i]);
+                    }
+                }
+            }
+
             _stackNavigationManager.RequestNavigation(new NavigationRequest(initialStack, false));
 
-            // Process any pending navigation request that came before we were ready
-            if (_pendingNavigationRequest is not null)
-            {
-                var pending = _pendingNavigationRequest;
-                _pendingNavigationRequest = null;
-                OnNavigationRequested(this, pending);
-            }
+            // Clear any pending navigation requests — they are already reflected in
+            // the shellSection.Stack that we used to build the initial stack above.
+            // Processing them would re-apply pushes that are already in the stack,
+            // corrupting the navigation state (e.g., duplicate pages).
+            _pendingNavigationRequests.Clear();
         }
 
         void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
@@ -804,8 +817,25 @@ namespace Microsoft.Maui.Controls.Handlers
             if (!_stackNavigationManager.HasNavHost)
             {
                 // Queue the navigation request to be processed after initialization
-                _pendingNavigationRequest = e;
+                _pendingNavigationRequests.Enqueue(e);
                 return;
+            }
+
+            // Create a TaskCompletionSource to serialize navigation requests.
+            // ShellSection.OnPushAsync awaits e.Task — without this, multiple pushes
+            // fire in rapid succession and BuildNavigationStack reads stale NavigationStack,
+            // causing intermediate pages to be lost from the stack.
+            //
+            // Skip TCS when StackNavigationManager is already navigating (e.g., initial setup
+            // from ConnectAndInitialize). In that case, the push will be queued internally by
+            // StackNavigationManager and processed after the current navigation completes via
+            // ProcessNavigationQueue. Creating a TCS here would block Shell.GoToAsync because
+            // the initial navigation's NavigationFinished would complete the wrong TCS.
+            if (!_stackNavigationManager.IsNavigating)
+            {
+                var tcs = new System.Threading.Tasks.TaskCompletionSource<bool>();
+                _navigationTaskCompletionSource = tcs;
+                e.Task = tcs.Task;
             }
 
             var requestedStack = BuildNavigationStack(e);
@@ -813,9 +843,17 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 _stackNavigationManager.RequestNavigation(new NavigationRequest(requestedStack, e.Animated));
             }
+            else
+            {
+                // Nothing to navigate — complete immediately
+                var pendingTcs = _navigationTaskCompletionSource;
+                _navigationTaskCompletionSource = null;
+                pendingTcs?.TrySetResult(true);
+            }
         }
 
-        NavigationRequestedEventArgs _pendingNavigationRequest;
+        System.Threading.Tasks.TaskCompletionSource<bool> _navigationTaskCompletionSource;
+        readonly Queue<NavigationRequestedEventArgs> _pendingNavigationRequests = new Queue<NavigationRequestedEventArgs>();
 
         List<IView> BuildNavigationStack(NavigationRequestedEventArgs e)
         {
@@ -882,6 +920,11 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void OnNavigationFinished(IReadOnlyList<IView> newStack)
         {
+            // Complete the pending navigation task so ShellSection.OnPushAsync can proceed
+            var tcs = _navigationTaskCompletionSource;
+            _navigationTaskCompletionSource = null;
+            tcs?.TrySetResult(true);
+
             if (!IsVisible || _handler is null)
             {
                 return;
@@ -972,7 +1015,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     _subscribedToNavigationRequested = false;
                 }
 
-                _pendingNavigationRequest = null;
+                _pendingNavigationRequests.Clear();
                 _navigationViewAdapter = null;
                 _stackNavigationManager?.Disconnect();
                 _stackNavigationManager = null;
