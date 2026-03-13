@@ -554,7 +554,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SwipeComplete(true);
 
-			if (!_isPanning)
+			if (!_isPanning && !_isPinching && !_isSwiping)
 			{
 				_fingers.Remove(e.Pointer.PointerId);
 			}
