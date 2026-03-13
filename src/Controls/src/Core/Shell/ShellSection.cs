@@ -1029,7 +1029,30 @@ namespace Microsoft.Maui.Controls
 
 			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)
 			{
-				shell.UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
+				if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
+				{
+					var navigationManager = parentShell.NavigationManager;
+
+					var proposedState = ShellNavigationManager.GetNavigationState(
+						parentShell.CurrentItem,
+						shellSection,
+						(ShellContent)newValue,
+						null,
+						null);
+
+					var navArgs = new ShellNavigatingEventArgs(
+						parentShell.CurrentState,
+						proposedState,
+						ShellNavigationSource.ShellContentChanged,
+						true);
+
+					navigationManager.HandleNavigating(navArgs);
+
+					if (navArgs.Cancelled)
+						return;
+
+					((IShellController)parentShell).UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
+				}
 			}
 
 			shellSection.SendStructureChanged();
