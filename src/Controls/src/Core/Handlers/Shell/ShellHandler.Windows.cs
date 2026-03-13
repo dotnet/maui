@@ -1,5 +1,7 @@
 ﻿#nullable disable
 using System;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,6 +14,14 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class ShellHandler : ViewHandler<Shell, ShellView>
 	{
+		[DllImport("user32.dll", SetLastError = true)]
+		static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+		const int GWL_EXSTYLE = -20;
+		const int WS_EX_LAYOUTRTL = 0x00400000;
 		ScrollViewer _scrollViewer;
 		double? _topAreaHeight = null;
 		double? _headerHeight = null;
@@ -164,6 +174,23 @@ namespace Microsoft.Maui.Controls.Handlers
 		internal static void MapFlowDirection(ShellHandler handler, Shell view)
 		{
 			handler.PlatformView.UpdateFlowDirection(view);
+			var windowRootView = handler.MauiContext?.GetNavigationRootManager()?.RootView as WindowRootView;
+			var window = handler.MauiContext?.Services?.GetService<Microsoft.UI.Xaml.Window>();
+
+			if (window == null)
+				return;
+
+			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+			var isRtl = view.FlowDirection == FlowDirection.RightToLeft;
+			var exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+			// Apply or remove WS_EX_LAYOUTRTL to mirror the window including title bar buttons
+			var newExStyle = isRtl ? (exStyle | WS_EX_LAYOUTRTL) : (exStyle & ~WS_EX_LAYOUTRTL);
+			if (exStyle != newExStyle)
+				SetWindowLong(hwnd, GWL_EXSTYLE, newExStyle);
+
+			if (windowRootView != null)
+				windowRootView.FlowDirection = isRtl ? Microsoft.UI.Xaml.FlowDirection.RightToLeft : Microsoft.UI.Xaml.FlowDirection.LeftToRight;
 		}
 
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)
