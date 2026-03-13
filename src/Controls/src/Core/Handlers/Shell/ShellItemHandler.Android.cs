@@ -413,17 +413,16 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Navigation Support
 
         /// <summary>
-        /// Hook up navigation events for a shell section.
-        /// NOTE: Navigation is now handled by ShellSectionHandler's StackNavigationManager
-        /// We no longer need to subscribe to NavigationRequested at the ShellItem level
+        /// Hook up property change events for a shell section.
+        /// Listens for IsEnabled, Title, and Icon changes to update the bottom navigation tabs.
         /// </summary>
         protected virtual void HookChildEvents(ShellSection shellSection)
         {
-            // No longer needed - ShellSectionHandler handles its own navigation
+            shellSection.PropertyChanged += OnShellSectionPropertyChanged;
         }
 
         /// <summary>
-        /// Unhook navigation events for a shell section.
+        /// Unhook property change events for a shell section.
         /// </summary>
         protected virtual void UnhookChildEvents(ShellSection shellSection)
         {
@@ -432,7 +431,26 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
+            shellSection.PropertyChanged -= OnShellSectionPropertyChanged;
             ((IShellSectionController)shellSection).RemoveDisplayedPageObserver(this);
+        }
+
+        void OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (sender is not ShellSection shellSection || ((ElementHandler)this).VirtualView is null || _bottomNavigationManager is null)
+                return;
+
+            if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName ||
+                e.PropertyName == BaseShellItem.TitleProperty.PropertyName ||
+                e.PropertyName == BaseShellItem.IconProperty.PropertyName)
+            {
+                var items = ((IShellItemController)VirtualView).GetItems();
+                var index = items.IndexOf(shellSection);
+                if (index >= 0)
+                {
+                    _bottomNavigationManager.UpdateTab(index, new ShellSectionTabItem(shellSection));
+                }
+            }
         }
 
         /// <summary>
@@ -561,6 +579,12 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 VirtualView.PropertyChanged += OnShellItemPropertyChanged;
                 ((IShellItemController)VirtualView).ItemsCollectionChanged += OnShellItemsChanged;
+
+                // Hook property change events for all existing sections
+                foreach (var section in ((IShellItemController)VirtualView).GetItems())
+                {
+                    HookChildEvents(section);
+                }
             }
 
             // Initialize shell context and appearance tracker early
@@ -586,6 +610,20 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnShellItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            // Unhook removed sections
+            if (e.OldItems is not null)
+            {
+                foreach (ShellSection section in e.OldItems)
+                    UnhookChildEvents(section);
+            }
+
+            // Hook new sections
+            if (e.NewItems is not null)
+            {
+                foreach (ShellSection section in e.NewItems)
+                    HookChildEvents(section);
+            }
+
             // The adapter's _sections reference is a live ReadOnlyCollection wrapping
             // the internal ObservableCollection, so it already sees the new items.
             // Just notify the adapter of the change — do NOT recreate it, as that would
@@ -632,11 +670,17 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 VirtualView.PropertyChanged -= OnShellItemPropertyChanged;
                 ((IShellItemController)VirtualView).ItemsCollectionChanged -= OnShellItemsChanged;
+
+                // Unhook property change events for all sections
+                foreach (var section in ((IShellItemController)VirtualView).GetItems())
+                {
+                    UnhookChildEvents(section);
+                }
             }
 
             if (_shellSection is not null)
             {
-                UnhookChildEvents(_shellSection);
+                ((IShellSectionController)_shellSection).RemoveDisplayedPageObserver(this);
                 _shellSection = null;
             }
 
