@@ -534,5 +534,108 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Debug.WriteLine($">>>>> VisualStateManagerTests ValidatePerformance: {watch.ElapsedMilliseconds}ms over {iterations} iterations; average of {average}ms");
 
 		}
+
+		[Fact]
+		public void VisualStatesInheritFromParentStyle()
+		{
+			// Arrange - Create parent style with Custom visual state
+			var parentSetter = new Setter
+			{
+				Property = VisualStateManager.VisualStateGroupsProperty,
+				Value = new VisualStateGroupList
+				{
+					new VisualStateGroup
+					{
+						Name = CommonStatesGroupName,
+						States =
+						{
+							new VisualState
+							{
+								Name = "Custom",
+								Setters =
+								{
+									new Setter { Property = Label.TextColorProperty, Value = Colors.Red },
+									new Setter { Property = Label.BackgroundColorProperty, Value = Colors.Green }
+								}
+							}
+						}
+					}
+				}
+			};
+
+			var parentStyle = new Style(typeof(Label))
+			{
+				Setters = { parentSetter }
+			};
+
+			// Create derived style with Normal visual state (BasedOn parent)
+			var derivedSetter = new Setter
+			{
+				Property = VisualStateManager.VisualStateGroupsProperty,
+				Value = new VisualStateGroupList
+				{
+					new VisualStateGroup
+					{
+						Name = CommonStatesGroupName,
+						States =
+						{
+							new VisualState
+							{
+								Name = NormalStateName,
+								Setters =
+								{
+									new Setter { Property = Label.TextColorProperty, Value = Colors.White },
+									new Setter { Property = Label.BackgroundColorProperty, Value = Colors.Black }
+								}
+							}
+						}
+					}
+				}
+			};
+
+			var derivedStyle = new Style(typeof(Label))
+			{
+				BasedOn = parentStyle,
+				Setters = { derivedSetter }
+			};
+
+			var label = new Label { Style = derivedStyle };
+
+			// Act & Assert - Both Normal and Custom states should be available
+			var groups = VisualStateManager.GetVisualStateGroups(label);
+			Assert.NotNull(groups);
+			Assert.Single(groups); // Should have one group (CommonStates)
+
+			var commonStates = groups[0];
+			Assert.Equal(CommonStatesGroupName, commonStates.Name);
+
+			// WITHOUT THE FIX: Only the derived style's state (Normal) would exist
+			// WITH THE FIX: Both Normal and Custom states should exist
+			Assert.True(commonStates.States.Count >= 2, 
+				$"Expected at least 2 states (Normal + Custom), but found {commonStates.States.Count}: {string.Join(", ", commonStates.States.Select(s => s.Name))}");
+
+			// Verify Normal state from derived style exists
+			var normalState = commonStates.States.FirstOrDefault(s => s.Name == NormalStateName);
+			Assert.NotNull(normalState);
+
+			// Verify Custom state from parent style was inherited
+			var customState = commonStates.States.FirstOrDefault(s => s.Name == "Custom");
+			Assert.NotNull(customState); // THIS is the key assertion that fails without the fix
+
+			// Test that both states work
+			Assert.Equal(NormalStateName, commonStates.CurrentState.Name); // Should start in Normal
+
+			// Switch to Custom state - this should work with the fix
+			bool stateChanged = VisualStateManager.GoToState(label, "Custom");
+			Assert.True(stateChanged, "Failed to switch to Custom state");
+			Assert.Equal(Colors.Red, label.TextColor);
+			Assert.Equal(Colors.Green, label.BackgroundColor);
+
+			// Switch back to Normal state
+			stateChanged = VisualStateManager.GoToState(label, NormalStateName);
+			Assert.True(stateChanged, "Failed to switch to Normal state");
+			Assert.Equal(Colors.White, label.TextColor);
+			Assert.Equal(Colors.Black, label.BackgroundColor);
+		}
 	}
 }
