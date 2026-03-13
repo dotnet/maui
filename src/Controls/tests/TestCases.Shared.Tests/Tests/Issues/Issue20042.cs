@@ -27,8 +27,7 @@ public class Issue20042 : _IssuesUITest
 		try
 		{
 			App.SetOrientationLandscape();
-
-			Thread.Sleep(2000);
+			App.WaitForElement("InnerGrid");
 
 			var landscapeGridRect = App.WaitForElement("InnerGrid").GetRect();
 			var landscapeRefRect = App.WaitForElement("ReferenceBar").GetRect();
