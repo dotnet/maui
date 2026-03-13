@@ -310,11 +310,6 @@ namespace Microsoft.Maui.Platform
 				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
 			}
 
-			if (_fragmentManager is not null)
-			{
-				CleanUpFragments(_fragmentManager);
-			}
-
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
 
