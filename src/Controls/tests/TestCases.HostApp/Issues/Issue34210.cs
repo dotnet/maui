@@ -1,5 +1,3 @@
-using Microsoft.Maui.Devices;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 34210, "SwipeItem ignores FontImageSource rendered size on Android", PlatformAffected.Android)]
@@ -7,17 +5,15 @@ public class Issue34210 : ContentPage
 {
 	public Issue34210()
 	{
-		// FontImageSource.Size=20 — Android bug makes this render at ~50px (containerHeight/2)
 		var swipeItem = new SwipeItem
 		{
 			Text = "Action",
-			BackgroundColor = Colors.SteelBlue,
+			BackgroundColor = Colors.Red,
 			IconImageSource = new FontImageSource
 			{
-				FontFamily = "Ion",
-				Glyph = "\uf30c", // star/bookmark glyph in Ionicons
+				FontFamily = "FA",
+				Glyph = "\uf0f3",
 				Size = 20,
-				Color = Colors.White
 			}
 		};
 
@@ -33,7 +29,7 @@ public class Issue34210 : ContentPage
 				{
 					new Label
 					{
-						Text = "← Swipe right",
+						Text = "Swipe right to reveal",
 						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center,
 						AutomationId = "SwipeContent"
@@ -42,11 +38,22 @@ public class Issue34210 : ContentPage
 			}
 		};
 
+		var openButton = new Button
+		{
+			Text = "Open SwipeView",
+			AutomationId = "OpenSwipeViewButton"
+		};
+
+		openButton.Clicked += (sender, e) =>
+		{
+			swipeView.Open(OpenSwipeItem.LeftItems);
+		};
+
 		Content = new VerticalStackLayout
 		{
 			Padding = 16,
 			Spacing = 8,
-			Children = { swipeView }
+			Children = { swipeView, openButton }
 		};
 	}
 }
