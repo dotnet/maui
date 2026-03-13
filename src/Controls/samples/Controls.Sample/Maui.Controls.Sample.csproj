@@ -10,7 +10,7 @@
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA1416;CS0618;XC0618;XC0022</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS0618;XC0618;XC0022;IL2026;IL2046;IL2065;IL2067;IL2069;IL2072;IL2091;IL2097;IL2110;IL2111;IL2112;IL2114</NoWarn>
     <Nullable>enable</Nullable>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>

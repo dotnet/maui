@@ -1,10 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Samples.Model
 {
 	public class SampleItem
 	{
-		public SampleItem(string icon, string name, Type pageType, string description, params string[] tags)
+		public SampleItem(string icon, string name, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type pageType, string description, params string[] tags)
 		{
 			Icon = icon;
 			Name = name;
@@ -19,6 +20,7 @@ namespace Samples.Model
 
 		public string Description { get; }
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public Type PageType { get; }
 
 		public string[] Tags { get; }

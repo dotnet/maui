@@ -58,8 +58,10 @@ namespace Microsoft.Maui.IntegrationTests
 				// affect only C# compiler warnings).
 				buildArgs += " -warnaserror";
 
-				// However, we need to ignore specific MSBuild warnings that are acceptable in these tests:
-				var csWarningsToIgnore = new List<string>
+				// Use WarningsNotAsErrors instead of NoWarn to exempt specific warnings from -warnaserror.
+				// Using -p:NoWarn would override project-level <NoWarn> entries (MSBuild global properties
+				// take precedence), breaking template suppressions like IL2111 in Blazor templates.
+				var warningsNotAsErrors = new List<string>
 				{
 					"NETSDK1201", // Details: "For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier
 								// will no longer produce a self contained app by default. To continue building
@@ -72,11 +74,11 @@ namespace Microsoft.Maui.IntegrationTests
 
 				if (warningsToIgnore?.Length > 0)
 				{
-					csWarningsToIgnore.AddRange(warningsToIgnore);
+					warningsNotAsErrors.AddRange(warningsToIgnore);
 				}
 
-				var csWarnings = string.Join("%3B", csWarningsToIgnore);
-				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
+				var warningsStr = string.Join("%3B", warningsNotAsErrors);
+				buildArgs += $" -p:WarningsNotAsErrors=\"{warningsStr}\"";
 			}
 
 			var result = Run("build", $"{buildArgs}", output: output);
