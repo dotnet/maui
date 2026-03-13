@@ -130,14 +130,9 @@ prompt: |
 **🧹 MANDATORY: Clean up between attempts:**
 
 ```bash
-# 1. Restore any baseline state from previous attempt
+# Restore baseline from previous attempt — this is the ONLY way to restore.
+# Do NOT use manual git checkout/restore/reset commands.
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-
-# 2. Restore all tracked files to HEAD
-git checkout HEAD -- .
-
-# 3. Remove untracked files
-git clean -fd --exclude=CustomAgentLogsTmp/
 ```
 
 ### Round 2+: Cross-Pollination (MANDATORY)
