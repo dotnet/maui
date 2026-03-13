@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IEnumerable list)
+				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IEnumerable list && _groupSource[n] is not string)
 				{
 					_groups.Add(new ObservableItemsSource(list, controller, n));
 				}
@@ -240,14 +240,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Only count items that are actual groups (ICollection); flat items like strings or model objects
-			// must not increment _groupCount or trigger InsertSections on UICollectionView
+			// Only count items that are actual groups (IEnumerable but not string); flat scalar items
+			// must not increment _groupCount or trigger InsertSections on UICollectionView.
+			// string implements IEnumerable<char> but represents a scalar value, not a group.
 			int count = 0;
 
 			foreach (var item in args.NewItems)
 			{
-				// Count only ICollection items — string and plain model objects are not groups
-				if (item is ICollection)
+				if (item is IEnumerable and not string)
 				{
 					count++;
 				}
@@ -288,14 +288,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Only count items that are actual groups (ICollection); flat items must not decrement
-			// _groupCount or trigger DeleteSections for sections that were never created
+			// Only count items that are actual groups (IEnumerable but not string); flat scalar items
+			// must not decrement _groupCount or trigger DeleteSections for sections that were never created.
 			int count = 0;
 
 			foreach (var item in args.OldItems)
 			{
-				// Count only ICollection items — string and plain model objects are not groups
-				if (item is ICollection)
+				if (item is IEnumerable and not string)
 				{
 					count++;
 				}
@@ -449,7 +448,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				foreach (var group in list)
 				{
-					if (group is ICollection)
+					// Accept any IEnumerable except string (string implements IEnumerable<char>
+					// but represents a scalar value, not a group).
+					if (group is IEnumerable and not string)
 					{
 						count++;
 					}
@@ -459,7 +460,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var item in _groupSource)
 			{
-				if (item is ICollection)
+				if (item is IEnumerable and not string)
 				{
 					count++;
 				}
