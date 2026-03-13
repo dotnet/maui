@@ -31,8 +31,8 @@ public class AndroidProvider : IAndroidProvider
 	{
 		_jdkManager = new JdkManager();
 		_sdkManager = new SdkManager(() => SdkPath, () => JdkPath);
-		_avdManager = new AvdManager(() => SdkPath, () => JdkPath);
 		_adb = new Adb(() => SdkPath);
+		_avdManager = new AvdManager(() => SdkPath, () => JdkPath, _adb);
 	}
 
 	public async Task<List<HealthCheck>> CheckHealthAsync(CancellationToken cancellationToken = default)

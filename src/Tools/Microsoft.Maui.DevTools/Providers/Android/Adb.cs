@@ -29,6 +29,8 @@ public class Adb
 
 	public bool IsAvailable => _runner != null;
 
+	internal AdbRunner? Runner => _runner;
+
 	private static string? ResolveAdbPath(string? sdkPath)
 	{
 		if (string.IsNullOrEmpty(sdkPath))
