@@ -1,0 +1,206 @@
+#if MACCATALYST
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Foundation;
+using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.DependencyInjection;
+using WebKit;
+using Xunit;
+
+namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
+
+public partial class BlazorWebViewTests
+{
+	[Fact]
+	public async Task HighFrequencyUpdates_DoNotGrowRuntimeDelegateHandles()
+	{
+		var webView = await CreateCounterWebViewAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = CreateHandler<BlazorWebViewHandler>(webView);
+			await WebViewHelpers.WaitForWebViewReady(handler.PlatformView);
+			await WebViewHelpers.WaitForControlDiv(handler.PlatformView, "0");
+
+			const int warmupClickCount = 200;
+			await ClickIncrementButtonMultipleTimesAsync(handler.PlatformView, warmupClickCount, expectedCounterValue: warmupClickCount);
+
+			ForceFullGc();
+			var handlesBeforeMeasuredBatches = TryGetRuntimeDelegateHandleCount();
+			if (handlesBeforeMeasuredBatches is null)
+				return; // Runtime internals not accessible on this .NET version; nothing to measure.
+
+			const int measuredClickCount = 200;
+
+			await ClickIncrementButtonMultipleTimesAsync(
+				handler.PlatformView,
+				measuredClickCount,
+				expectedCounterValue: warmupClickCount + measuredClickCount);
+
+			ForceFullGc();
+			var handlesAfterFirstBatch = TryGetRuntimeDelegateHandleCount()!.Value;
+			var firstBatchGrowth = handlesAfterFirstBatch - handlesBeforeMeasuredBatches.Value;
+
+			await ClickIncrementButtonMultipleTimesAsync(
+				handler.PlatformView,
+				measuredClickCount,
+				expectedCounterValue: warmupClickCount + (2 * measuredClickCount));
+
+			ForceFullGc();
+			var handlesAfterSecondBatch = TryGetRuntimeDelegateHandleCount()!.Value;
+			var secondBatchGrowth = handlesAfterSecondBatch - handlesAfterFirstBatch;
+
+			Assert.True(secondBatchGrowth <= 20,
+				$"Runtime delegate handle count kept growing after warmup. " +
+				$"First batch growth={firstBatchGrowth}, second batch growth={secondBatchGrowth}, " +
+				$"before measured batches={handlesBeforeMeasuredBatches}, after first batch={handlesAfterFirstBatch}, after second batch={handlesAfterSecondBatch}.");
+		});
+	}
+
+	[Fact]
+	public async Task IdleBlazorWebView_DoesNotGrowRuntimeDelegateHandles()
+	{
+		var webView = await CreateCounterWebViewAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = CreateHandler<BlazorWebViewHandler>(webView);
+			await WebViewHelpers.WaitForWebViewReady(handler.PlatformView);
+			await WebViewHelpers.WaitForControlDiv(handler.PlatformView, "0");
+
+			ForceFullGc();
+			var handlesBefore = TryGetRuntimeDelegateHandleCount();
+			if (handlesBefore is null)
+				return; // Runtime internals not accessible on this .NET version; nothing to measure.
+
+			await Task.Delay(1000);
+
+			ForceFullGc();
+			var handlesAfter = TryGetRuntimeDelegateHandleCount()!.Value;
+			var growth = handlesAfter - handlesBefore.Value;
+
+			Assert.True(growth <= 5,
+				$"Runtime delegate handle count grew by {growth} while idle (before={handlesBefore}, after={handlesAfter}).");
+		});
+	}
+
+	[Fact]
+	public async Task HighFrequencyUpdates_StillUpdateCounterCorrectly()
+	{
+		var webView = await CreateCounterWebViewAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = CreateHandler<BlazorWebViewHandler>(webView);
+			await WebViewHelpers.WaitForWebViewReady(handler.PlatformView);
+			await WebViewHelpers.WaitForControlDiv(handler.PlatformView, "0");
+
+			const int clickCount = 50;
+			await WebViewHelpers.ExecuteScriptAsync(handler.PlatformView,
+				$"(function() {{ for (let i = 0; i < {clickCount}; i++) document.getElementById('incrementButton').click(); return true; }})()");
+			await WebViewHelpers.WaitForControlDiv(handler.PlatformView, clickCount.ToString());
+
+			var finalCounterValue = await WebViewHelpers.ExecuteScriptAsync(handler.PlatformView, "document.getElementById('counterValue').innerText");
+			finalCounterValue = finalCounterValue.Trim('"');
+
+			Assert.Equal(clickCount.ToString(), finalCounterValue);
+		});
+	}
+
+	private void EnsureBlazorHandlerCreated()
+	{
+		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
+		{
+			appBuilder.Services.AddMauiBlazorWebView();
+		});
+	}
+
+	private Task<BlazorWebViewWithCustomFiles> CreateCounterWebViewAsync()
+	{
+		EnsureBlazorHandlerCreated();
+
+		var bwv = new BlazorWebViewWithCustomFiles
+		{
+			HostPage = "wwwroot/index.html",
+			CustomFiles = new Dictionary<string, string>
+			{
+				{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
+			},
+		};
+
+		bwv.RootComponents.Add(new RootComponent
+		{
+			ComponentType = typeof(MauiBlazorWebView.DeviceTests.Components.TestComponent1),
+			Selector = "#app",
+		});
+
+		return Task.FromResult(bwv);
+	}
+
+	private static async Task ClickIncrementButtonMultipleTimesAsync(WKWebView webView, int clickCount, int expectedCounterValue)
+	{
+		await WebViewHelpers.ExecuteScriptAsync(webView,
+			$"(function() {{ for (let i = 0; i < {clickCount}; i++) document.getElementById('incrementButton').click(); return true; }})()");
+		await WebViewHelpers.WaitForControlDiv(webView, expectedCounterValue.ToString());
+	}
+
+	/// <summary>
+	/// Counts runtime delegate handles by inspecting internal ObjCRuntime.Runtime dictionaries.
+	/// Returns null if the internal structure is not accessible (e.g. future .NET versions),
+	/// allowing tests to skip gracefully.
+	/// </summary>
+	private static int? TryGetRuntimeDelegateHandleCount()
+	{
+		var runtimeType = typeof(NSObject).Assembly.GetType("ObjCRuntime.Runtime");
+		if (runtimeType is null)
+			return null;
+
+		var fields = runtimeType
+			.GetFields(BindingFlags.NonPublic | BindingFlags.Static)
+			.Where(field => IsIntPtrToGcHandleDictionary(field.FieldType))
+			.ToArray();
+
+		if (fields.Length == 0)
+			return null;
+
+		var total = 0;
+		foreach (var field in fields)
+		{
+			if (field.GetValue(null) is IDictionary dictionary)
+			{
+				total += dictionary.Count;
+			}
+		}
+
+		return total;
+	}
+
+	private static bool IsIntPtrToGcHandleDictionary(Type fieldType)
+	{
+		if (!fieldType.IsGenericType || fieldType.GetGenericTypeDefinition() != typeof(Dictionary<,>))
+		{
+			return false;
+		}
+
+		var genericArguments = fieldType.GetGenericArguments();
+		return genericArguments.Length == 2 &&
+			genericArguments[0] == typeof(IntPtr) &&
+			genericArguments[1] == typeof(GCHandle);
+	}
+
+	private static void ForceFullGc()
+	{
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+	}
+}
+
+#endif
