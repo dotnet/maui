@@ -33,13 +33,13 @@ Ensures PR title and description accurately reflect the implementation, and perf
 
 | Action | Allowed? | Why |
 |--------|----------|-----|
-| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
-| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Correct workflow:**
-1. **This skill**: Analyze PR, produce findings in your response to the user
-2. **User explicitly asks to post comment**: Then invoke `ai-summary-comment` skill
+1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
+2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
 
 **Only humans control when comments are posted.** Your job is to analyze and present findings.
 
@@ -371,13 +371,13 @@ gh pr diff XXXXX -- path/to/file.cs
 
 | Action | Allowed? | Why |
 |--------|----------|-----|
-| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
-| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Workflow:**
-1. **This skill**: Analyze PR, produce findings in your response
-2. **User asks to post**: Then invoke `ai-summary-comment` skill to post
+1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
+2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
 
 The user controls when comments are posted. Your job is to analyze and present findings.
 
