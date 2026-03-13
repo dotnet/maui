@@ -124,17 +124,21 @@ public class TabbedPageManager
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
+
 			RemoveTabs();
+			
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
 		}
 
 		Element = tabbedPage;
+		
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
 			Element.Disappearing += OnTabbedPageDisappearing;
+
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 			if (IsBottomTabPlacement)
@@ -218,7 +222,10 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		RemoveTabs();
+		// Intentionally left empty. Previously this called RemoveTabs() which
+		// destroyed tab fragments, causing them to not restore properly after
+		// modal navigation. Tabs should remain visible and intact.
+		// TODO: This method can be removed in .NET 11.
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
