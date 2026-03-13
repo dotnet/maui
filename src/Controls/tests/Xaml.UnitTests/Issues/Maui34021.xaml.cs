@@ -16,9 +16,9 @@ public class Maui34021DataObject<T> : View where T : Enum
 {
 }
 
-public partial class Maui34021Rtxc : ContentPage
+public partial class Maui34021 : ContentPage
 {
-    public Maui34021Rtxc() => InitializeComponent();
+    public Maui34021() => InitializeComponent();
 
     [Collection("Issue")]
     public class Tests : IDisposable
@@ -75,7 +75,7 @@ public partial class Maui34021SourceGenRepro : ContentPage
             }
             else
             {
-                var page = new Maui34021Rtxc(inflator);
+                var page = new Maui34021(inflator);
                 Assert.IsType<Maui34021DataObject<Maui34021MyEnum>>(page.Content);
             }
         }
