@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Versioning;
+using Android.OS;
 using Android.Webkit;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +27,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private static string AppOrigin { get; } = $"https://{BlazorWebView.AppHostAddress}/";
 		private static Uri AppOriginUri { get; } = new(AppOrigin);
 		private static AUri AndroidAppOriginUri { get; } = AUri.Parse(AppOrigin)!;
+
+		// Android API 32 (Android 12L/S_V2) and later have full ES2022+ support in WebView.
+		// Earlier versions may have outdated WebView that doesn't support ES2022 features
+		// like static{} blocks, causing blazor.webview.js to fail with syntax errors.
+		private const int MinimumSdkVersionForES2022 = (int)BuildVersionCodes.SV2; // Android 12L (API 32)
+		private static readonly bool RequiresES2019Compatibility = (int)Build.VERSION.SdkInt < MinimumSdkVersionForES2022;
+
+		private const string BlazorWebViewJsPath = "_framework/blazor.webview.js";
+		private const string ES2019JsResourceName = "blazor.webview.es2019.js";
+
 		private readonly ILogger _logger;
 		private readonly AWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
@@ -73,9 +85,46 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
 		{
+			// On older Android versions (API < 32), the default blazor.webview.js uses ES2022+ syntax
+			// (like static{} blocks) that is not supported by older WebView versions.
+			// We serve an ES2019-compatible version instead to ensure compatibility.
+			if (RequiresES2019Compatibility && uri.EndsWith(BlazorWebViewJsPath, StringComparison.OrdinalIgnoreCase))
+			{
+				return TryGetES2019BlazorWebViewJs(_logger, out statusCode, out statusMessage, out content, out headers);
+			}
+
 			var defaultResult = TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 			var hotReloadedResult = StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, uri, ref statusCode, ref content, headers);
 			return defaultResult || hotReloadedResult;
+		}
+
+		private static bool TryGetES2019BlazorWebViewJs(ILogger logger, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers)
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var resourceStream = assembly.GetManifestResourceStream(ES2019JsResourceName);
+
+			if (resourceStream is not null)
+			{
+				logger.LogDebug("Serving ES2019-compatible blazor.webview.js for older Android WebView compatibility.");
+				statusCode = 200;
+				statusMessage = "OK";
+				content = resourceStream;
+				headers = new Dictionary<string, string>
+				{
+					{ "Content-Type", "application/javascript" },
+					{ "Cache-Control", "no-cache, max-age=0, must-revalidate, no-store" }
+				};
+				return true;
+			}
+
+			// If the embedded resource is not found, log a warning and fall back to the default behavior.
+			// This should not happen in normal circumstances, but helps diagnose deployment issues.
+			logger.LogWarning("ES2019-compatible blazor.webview.js resource not found. Falling back to default version which may not work on older Android devices.");
+			statusCode = default;
+			statusMessage = default!;
+			content = default!;
+			headers = default!;
+			return false;
 		}
 
 		internal void SetUpMessageChannel()
