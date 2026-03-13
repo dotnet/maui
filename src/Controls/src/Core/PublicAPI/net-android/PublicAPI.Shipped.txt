@@ -3612,7 +3612,7 @@
 ~static readonly Microsoft.Maui.Controls.GroupableItemsView.GroupFooterTemplateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.GroupableItemsView.GroupHeaderTemplateProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.GroupableItemsView.IsGroupedProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Controls.HtmlWebViewSource.BaseUrlProperty -> Microsoft.Maui.Controls.BindableProperty
