@@ -2,16 +2,51 @@
 using System;
 using Foundation;
 using UIKit;
+#if MACCATALYST
+using CoreFoundation;
+using PlatformIOKit = Microsoft.Maui.ApplicationModel.IOKit;
+#endif
 
 namespace Microsoft.Maui.Devices
 {
 	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
+#if MACCATALYST
+		uint keepScreenOnId = 0;
+		static readonly CFString KeepScreenOnAssertionName = new CFString("KeepScreenOn");
 
+		protected override bool GetKeepScreenOn() => keepScreenOnId != 0;
+
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			if (GetKeepScreenOn() == keepScreenOn)
+			{
+				return;
+			}
+
+			if (keepScreenOn)
+			{
+				// Create an IOKit assertion to prevent the display from sleeping
+				if (!PlatformIOKit.PreventUserIdleDisplaySleep(KeepScreenOnAssertionName, out keepScreenOnId))
+				{
+					keepScreenOnId = 0; // Reset on failure
+				}
+			}
+			else
+			{
+				// Release the IOKit assertion to allow the display to sleep
+				if (PlatformIOKit.AllowUserIdleDisplaySleep(keepScreenOnId))
+				{
+					keepScreenOnId = 0;
+				}
+			}
+		}
+#else
 		protected override bool GetKeepScreenOn() => UIApplication.SharedApplication.IdleTimerDisabled;
 
 		protected override void SetKeepScreenOn(bool keepScreenOn) => UIApplication.SharedApplication.IdleTimerDisabled = keepScreenOn;
+#endif
 
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
