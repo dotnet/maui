@@ -23,6 +23,20 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
+		static async Task RotateImageInPlace(string filePath, MediaPickerOptions options)
+		{
+			using var inputStream = File.OpenRead(filePath);
+			var fileName = System.IO.Path.GetFileName(filePath);
+			using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
+			rotatedStream.Position = 0;
+			inputStream.Dispose(); // explicit close before delete
+			try
+			{ File.Delete(filePath); }
+			catch { }
+			using var outputStream = File.Create(filePath);
+			await rotatedStream.CopyToAsync(outputStream);
+		}
+
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
 
@@ -85,22 +99,10 @@ namespace Microsoft.Maui.Media
 				if (photo)
 				{
 					captureResult = await CapturePhotoAsync(captureIntent);
-							// Apply rotation if needed for photos
-				if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
-				{
-					using var inputStream = File.OpenRead(captureResult);
-					var fileName = System.IO.Path.GetFileName(captureResult);
-					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-					rotatedStream.Position = 0;
-					
-					// Delete original file
-					try { File.Delete(captureResult); } catch { }
-					
-					// Write rotated image to original path (preserves filename)
-					using var outputStream = File.Create(captureResult);
-					await rotatedStream.CopyToAsync(outputStream);
-					}
-					
+					// Apply rotation if needed for photos
+					if (captureResult is not null && ImageProcessor.IsRotationNeeded(options))
+						await RotateImageInPlace(captureResult, options);
+
 					// Apply compression/resizing if needed for photos
 					if (captureResult is not null && ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 					{
@@ -153,19 +155,7 @@ namespace Microsoft.Maui.Media
 					{
 						// Apply rotation if needed
 						if (ImageProcessor.IsRotationNeeded(options))
-						{
-							using var inputStream = File.OpenRead(path);
-							var fileName = System.IO.Path.GetFileName(path);
-							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							rotatedStream.Position = 0;
-							
-							// Delete original file
-							try { File.Delete(path); } catch { }
-							
-							// Write rotated image to original path (preserves filename)
-							using var outputStream = File.Create(path);
-							await rotatedStream.CopyToAsync(outputStream);
-						}
+							await RotateImageInPlace(path, options);
 
 						// Apply compression/resizing if needed
 						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
@@ -173,7 +163,7 @@ namespace Microsoft.Maui.Media
 							path = await CompressImageIfNeeded(path, options);
 						}
 					}
-					
+
 					return new FileResult(path);
 				}
 
@@ -204,19 +194,7 @@ namespace Microsoft.Maui.Media
 			{
 				// Apply rotation if needed
 				if (ImageProcessor.IsRotationNeeded(options))
-				{
-					using var inputStream = File.OpenRead(path);
-					var fileName = System.IO.Path.GetFileName(path);
-					using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-					rotatedStream.Position = 0;
-					
-					// Delete original file
-					try { File.Delete(path); } catch { }
-					
-					// Write rotated image to original path (preserves filename)
-					using var outputStream = File.Create(path);
-					await rotatedStream.CopyToAsync(outputStream);
-				}
+					await RotateImageInPlace(path, options);
 
 				// Apply compression/resizing if needed
 				if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
@@ -267,24 +245,12 @@ namespace Microsoft.Maui.Media
 				if (!uri?.Equals(AndroidUri.Empty) ?? false)
 				{
 					var path = FileSystemUtils.EnsurePhysicalPath(uri);
-					
+
 					if (photo)
 					{
 						// Apply rotation if needed
 						if (ImageProcessor.IsRotationNeeded(options))
-						{
-							using var inputStream = File.OpenRead(path);
-							var fileName = System.IO.Path.GetFileName(path);
-							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							rotatedStream.Position = 0;
-							
-							// Delete original file
-							try { File.Delete(path); } catch { }
-							
-							// Write rotated image to original path (preserves filename)
-							using var outputStream = File.Create(path);
-							await rotatedStream.CopyToAsync(outputStream);
-						}
+							await RotateImageInPlace(path, options);
 
 						// Apply compression/resizing if needed
 						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
@@ -351,15 +317,29 @@ namespace Microsoft.Maui.Media
 
 				if (processedStream != null)
 				{
-				// Delete original file first
-				try { originalFile.Delete(); } catch { }
-				
-				// Write processed image to original path (preserves filename)
-				using var outputStream = File.Create(imagePath);
-				processedStream.Position = 0;
-				await processedStream.CopyToAsync(outputStream);
-				
-				return imagePath;
+					// Determine the correct output extension based on the processed format
+					processedStream.Position = 0;
+					var outputExtension = ImageProcessor.DetermineOutputExtension(processedStream, options?.CompressionQuality ?? 100, inputFileName);
+					var originalExtension = System.IO.Path.GetExtension(imagePath);
+
+					// If format changed (e.g., PNG -> JPEG), use new extension
+					string outputPath = imagePath;
+					if (!string.Equals(outputExtension, originalExtension, StringComparison.OrdinalIgnoreCase))
+					{
+						outputPath = System.IO.Path.ChangeExtension(imagePath, outputExtension);
+					}
+
+					// Delete original file first
+					try
+					{ originalFile.Delete(); }
+					catch { }
+
+					// Write processed image to output path with correct extension
+					using var outputStream = File.Create(outputPath);
+					processedStream.Position = 0;
+					await processedStream.CopyToAsync(outputStream);
+
+					return outputPath;
 				}
 
 				// If ImageProcessor returns null (e.g., on .NET Standard), ImageProcessor.IsProcessingNeeded would have returned false,
@@ -458,29 +438,17 @@ namespace Microsoft.Maui.Media
 					foreach (var path in tempResultList)
 					{
 						string processedPath = path;
-						
+
 						// Apply rotation if needed
 						if (ImageProcessor.IsRotationNeeded(options))
-						{
-							using var inputStream = File.OpenRead(processedPath);
-							var fileName = System.IO.Path.GetFileName(processedPath);
-							using var rotatedStream = await ImageProcessor.RotateImageAsync(inputStream, fileName);
-							rotatedStream.Position = 0;
-							
-							// Delete original file
-							try { File.Delete(processedPath); } catch { }
-							
-							// Write rotated image to original path (preserves filename)
-							using var outputStream = File.Create(processedPath);
-							await rotatedStream.CopyToAsync(outputStream);
-						}
+							await RotateImageInPlace(processedPath, options);
 
 						// Apply compression/resizing if needed
 						if (ImageProcessor.IsProcessingNeeded(options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100))
 						{
 							processedPath = await CompressImageIfNeeded(processedPath, options);
 						}
-						
+
 						resultList.Add(new FileResult(processedPath));
 					}
 				}
