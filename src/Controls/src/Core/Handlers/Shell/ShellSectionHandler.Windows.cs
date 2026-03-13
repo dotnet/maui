@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 
 
@@ -61,6 +62,14 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					shell.RemoveAppearanceObserver(this);
 				}
+
+				foreach (var item in _shellSection.Items)
+				{
+					if (item is ShellContent shellContent)
+					{
+						shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+					}
+				}
 				_lastShell = null;
 			}
 
@@ -93,6 +102,14 @@ namespace Microsoft.Maui.Controls.Handlers
 					_lastShell = new WeakReference(shell);
 					shell.AddAppearanceObserver(this, _shellSection);
 				}
+
+				foreach (var item in _shellSection.Items)
+				{
+					if (item is ShellContent shellContent)
+					{
+						shellContent.PropertyChanged += OnShellContentPropertyChanged;
+					}
+				}
 			}
 		}
 
@@ -109,6 +126,33 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
 				shellItemHandler.MapMenuItems();
+			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (ShellContent item in e.OldItems)
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+			}
+
+			if (e.NewItems is not null)
+			{
+				foreach (ShellContent item in e.NewItems)
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+				}
+			}
+		}
+
+		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (sender is not ShellContent shellContent)
+				return;
+
+			if (e.PropertyName == nameof(ShellContent.Title))
+			{
+				shellContent.UpdateTitle();
 			}
 		}
 
