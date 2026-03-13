@@ -609,7 +609,7 @@ namespace Microsoft.Maui.Platform
 			SetNeedsLayout();
 			InvalidateConstraintsCache();
 
-			return !isPropagating;
+			return true;
 		}
 
 		/// <summary>
