@@ -534,5 +534,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Debug.WriteLine($">>>>> VisualStateManagerTests ValidatePerformance: {watch.ElapsedMilliseconds}ms over {iterations} iterations; average of {average}ms");
 
 		}
+
+		[Fact]
+		// Regression test for https://github.com/dotnet/maui/issues/34363
+		// Button with locally-set BackgroundColor/TextColor should show the Disabled visual state
+		// when IsEnabled=false, even when the VSM originates from an implicit style.
+		public void ImplicitStyleDisabledVSMOverridesLocalValue()
+		{
+			var disabledColor = Colors.Gray;
+			var normalColor = Colors.Blue;
+			var localColor = Colors.Red;
+
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = normalColor });
+
+			var disabledState = new VisualState { Name = DisabledStateName };
+			disabledState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = disabledColor });
+
+			var vsgList = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States = { normalState, disabledState }
+				}
+			};
+
+			var implicitStyle = new Style(typeof(Button))
+			{
+				Setters =
+				{
+					new Setter
+					{
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = vsgList
+					}
+				}
+			};
+
+			var button = new Button();
+
+			// Apply the implicit style (StyleImplicit = 0x080, below StyleBasedOn threshold — triggers implicit VSM downgrade)
+			((IStyle)implicitStyle).Apply(button, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+
+			// Locally set BackgroundColor — this ManualValueSetter wins over implicit VSM in Normal state
+			button.BackgroundColor = localColor;
+			Assert.Equal(localColor, button.BackgroundColor);
+
+			// Disable the button — the Disabled VSM state should override the locally-set value
+			button.IsEnabled = false;
+			Assert.Equal(disabledColor, button.BackgroundColor);
+
+			// Re-enable — Normal state does NOT override the local value (preserves #18103 behavior)
+			button.IsEnabled = true;
+			Assert.Equal(localColor, button.BackgroundColor);
+		}
 	}
 }

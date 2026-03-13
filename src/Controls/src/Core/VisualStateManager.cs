@@ -34,13 +34,20 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is VisualStateGroupList { VisualElement: { } oldElement } oldVisualStateGroupList)
 			{
 				var vsgSpecificity = oldVisualStateGroupList.Specificity;
-				var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+				var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 				foreach (var group in oldVisualStateGroupList)
 				{
 					if (group.CurrentState is { } state)
+					{
+						var unapplySpecificity = state.Name != CommonStates.Normal
+							? baseSpecificity.WithFullVsmPriority()
+							: baseSpecificity;
 						foreach (var setter in state.Setters)
-							setter.UnApply(oldElement, specificity);
+						{
+							setter.UnApply(oldElement, unapplySpecificity);
+						}
+					}
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -95,7 +102,7 @@ namespace Microsoft.Maui.Controls
 			var vsgSpecificity = vsgSpecificityValue.Key;
 			groups.Specificity = vsgSpecificity;
 
-			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+			var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -115,19 +122,30 @@ namespace Microsoft.Maui.Controls
 				// If we've got a new state to transition to, unapply the setters from the current state
 				if (group.CurrentState != null)
 				{
+					// Use promoted specificity for non-Normal states so unapply matches what was applied
+					var unapplySpecificity = group.CurrentState.Name != CommonStates.Normal
+						? baseSpecificity.WithFullVsmPriority()
+						: baseSpecificity;
 					foreach (Setter setter in group.CurrentState.Setters)
 					{
-						setter.UnApply(visualElement, specificity);
+						setter.UnApply(visualElement, unapplySpecificity);
 					}
 				}
 
 				// Update the current state
 				group.CurrentState = target;
 
+				// For non-Normal states (Disabled, Focused, etc.), promote implicit VSM
+				// to full VSM priority so it can override locally-set values.
+				// Normal state keeps downgraded priority per #18103.
+				var applySpecificity = name != CommonStates.Normal
+					? baseSpecificity.WithFullVsmPriority()
+					: baseSpecificity;
+
 				// Apply the setters from the new state
 				foreach (Setter setter in target.Setters)
 				{
-					setter.Apply(visualElement, specificity);
+					setter.Apply(visualElement, applySpecificity);
 				}
 
 				return true;
