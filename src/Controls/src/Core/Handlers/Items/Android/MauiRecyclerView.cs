@@ -197,6 +197,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				_emptyCollectionObserver.Start(ItemsViewAdapter);
 
+				// When the EmptyView swaps while _emptyViewAdapter is active, RecyclerView can
+				// reuse a stale item ViewHolder from the shared pool at the empty position.
+				// Clear the pool before refreshing the EmptyView adapter to prevent that reuse.
+				if (GetAdapter() == _emptyViewAdapter)
+				{
+					GetRecycledViewPool().Clear();
+				}
+
 				_emptyViewAdapter.NotifyDataSetChanged();
 			}
 			else
