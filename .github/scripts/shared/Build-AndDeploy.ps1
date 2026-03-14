@@ -85,19 +85,56 @@ if ($Platform -eq "android") {
     Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
+    $maxAttempts = 2
+    $buildExitCode = 1
     
-    # Build and deploy in one step (Run target handles both)
-    & dotnet build @buildArgs
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        if ($attempt -gt 1) {
+            Write-Warn "Retrying build/deploy (attempt $attempt of $maxAttempts)..."
+            
+            # Uninstall any MAUI test packages to clear bad state
+            $installedPkg = & adb shell pm list packages 2>$null | Select-String "maui" | ForEach-Object { ($_ -replace "package:", "").Trim() }
+            if ($installedPkg) {
+                foreach ($pkg in $installedPkg) {
+                    Write-Info "Uninstalling $pkg before retry..."
+                    & adb uninstall $pkg 2>$null
+                }
+            }
+            
+            # Restart ADB server to recover from broken pipe / transient errors
+            Write-Info "Restarting ADB server..."
+            & adb kill-server 2>$null
+            Start-Sleep -Seconds 2
+            & adb start-server
+            Start-Sleep -Seconds 2
+            & adb wait-for-device
+            Start-Sleep -Seconds 3
+        }
+        
+        & dotnet build @buildArgs
+        $buildExitCode = $LASTEXITCODE
+        
+        if ($buildExitCode -eq 0) {
+            break
+        }
+        
+        if ($attempt -lt $maxAttempts) {
+            Write-Warn "Build/deploy failed (attempt $attempt). ADB0010/broken-pipe errors are transient on API 30 — will retry."
+        }
+    }
     
-    $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
     
     if ($buildExitCode -ne 0) {
-        Write-Error "Build/deploy failed with exit code $buildExitCode"
+        Write-Error "Build/deploy failed after $maxAttempts attempts with exit code $buildExitCode"
         exit $buildExitCode
     }
     
-    Write-Success "Build and deploy completed in $($buildDuration.TotalSeconds) seconds"
+    if ($attempt -gt 1) {
+        Write-Success "Build and deploy succeeded on attempt $attempt in $($buildDuration.TotalSeconds) seconds"
+    } else {
+        Write-Success "Build and deploy completed in $($buildDuration.TotalSeconds) seconds"
+    }
     
     #endregion
     
