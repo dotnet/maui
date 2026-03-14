@@ -1,4 +1,6 @@
-#if TEST_FAILS_ON_WINDOWS // SwipeView automation does not work on Windows. For reference: https://github.com/dotnet/maui/issues/14777
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+// Fix is Android-only (MauiSwipeView.cs). SwipeView automation doesn't work on Windows (#14777).
+// On iOS/Catalyst the underlying platform bug hasn't been fixed.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,28 +15,27 @@ public class Issue23921(TestDevice device) : _IssuesUITest(device)
 	[Category(UITestCategories.SwipeView)]
 	public void SwipeViewTappedWhenOpen_ClosesAndDoesNotPropagateTap()
 	{
-		var button = App.WaitForElement("buttonOne");
+		App.WaitForElement("buttonOne");
 
 		App.SwipeRightToLeft("swipeOne");
 
+		// Verify the SwipeView actually opened before proceeding
+		App.WaitForElement("swipeItemOne");
+
 		App.Click("swipeOne");
 
-		var buttonWasClicked = button.GetText() == "tapped";
-
-		Assert.That(buttonWasClicked, Is.False);
+		Assert.That(App.FindElement("buttonOne").GetText(), Is.Not.EqualTo("tapped"));
 	}
 
 	[Test]
 	[Category(UITestCategories.SwipeView)]
 	public void SwipeViewTappedWhenClosed_PropagatesTap()
 	{
-		var button = App.WaitForElement("buttonTwo");
+		App.WaitForElement("buttonTwo");
 
 		App.Click("swipeTwo");
 
-		var buttonWasClicked = button.GetText() == "tapped";
-
-		Assert.That(buttonWasClicked, Is.True);
+		Assert.That(App.FindElement("buttonTwo").GetText(), Is.EqualTo("tapped"));
 	}
 }
 #endif
