@@ -114,7 +114,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
-		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
@@ -149,6 +148,18 @@ public static partial class AppHostBuilderExtensions
 		}
 #else
 		handlersCollection.AddHandler<Image, ImageHandler>();
+#endif
+#if ANDROID
+		if(RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+		}
+#else
+		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 #endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
