@@ -9,6 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Layouts.Flex
 {
@@ -990,28 +991,12 @@ namespace Microsoft.Maui.Layouts.Flex
 				ordered_indices = null;
 				if (item.ShouldOrderChildren && item.Count > 0)
 				{
-					var indices = new int[item.Count];
-					// Creating a list of item indices sorted using the children's `order'
-					// attribute values. We are using a simple insertion sort as we need
-					// stability (insertion order must be preserved) and cross-platform
-					// support. We should eventually switch to merge sort (or something
-					// else) if the number of items becomes significant enough.
-					for (int i = 0; i < item.Count; i++)
-					{
-						indices[i] = i;
-						for (int j = i; j > 0; j--)
-						{
-							int prev = indices[j - 1];
-							int curr = indices[j];
-							if (item[prev].Order <= item[curr].Order)
-							{
-								break;
-							}
-							indices[j - 1] = curr;
-							indices[j] = prev;
-						}
-					}
-					ordered_indices = indices;
+					// Sort original indices by each child's Order using a stable sort.
+					// OrderBy is guaranteed stable in .NET, preserving insertion order
+					// for children with equal Order values.
+					ordered_indices = Enumerable.Range(0, item.Count)
+						.OrderBy(i => item[i].Order)
+						.ToArray();
 				}
 
 				flex_dim = 0;

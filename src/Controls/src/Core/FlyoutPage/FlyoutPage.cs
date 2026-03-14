@@ -351,6 +351,12 @@ namespace Microsoft.Maui.Controls
 		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(FlyoutBehavior));
+
+#if ANDROID || WINDOWS
+			// Trigger toolbar re-evaluation on orientation change. iOS handles this natively
+			// via PhoneFlyoutPageRenderer.ViewWillTransitionToSize().
+			OnPropertyChanged(nameof(FlyoutLayoutBehavior));
+#endif
 		}
 
 		IView IFlyoutView.Flyout => this.Flyout;

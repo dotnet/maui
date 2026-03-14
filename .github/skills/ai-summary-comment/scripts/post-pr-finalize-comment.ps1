@@ -133,6 +133,9 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory=$false)]
+    [switch]$Unified,
+
+    [Parameter(Mandatory=$false)]
     [string]$PreviewFile
 )
 
@@ -148,11 +151,11 @@ Write-Host "╚═════════════════════�
 
 # If PRNumber provided but no SummaryFile, try to find it
 if ($PRNumber -gt 0 -and [string]::IsNullOrWhiteSpace($SummaryFile)) {
-    $summaryPath = "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md"
+    $summaryPath = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md"
     if (-not (Test-Path $summaryPath)) {
         $repoRoot = git rev-parse --show-toplevel 2>$null
         if ($repoRoot) {
-            $summaryPath = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md"
+            $summaryPath = Join-Path $repoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md"
         }
     }
     
@@ -410,7 +413,14 @@ if ([string]::IsNullOrWhiteSpace($DescriptionStatus)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($DescriptionAssessment)) {
-    throw "DescriptionAssessment is required. Provide via -DescriptionAssessment or use -SummaryFile"
+    if (-not [string]::IsNullOrWhiteSpace($SummaryFile)) {
+        # We have a summary file but couldn't extract a specific assessment section.
+        # Use the full summary content as the assessment (the whole file IS the assessment).
+        $DescriptionAssessment = $content
+        Write-Host "ℹ️  Using full summary file content as DescriptionAssessment" -ForegroundColor Cyan
+    } else {
+        throw "DescriptionAssessment is required. Provide via -DescriptionAssessment or use -SummaryFile"
+    }
 }
 
 # Warn if description needs work but no recommended description is provided
@@ -573,9 +583,152 @@ if ($CodeReviewStatus -ne "Skipped" -or -not [string]::IsNullOrWhiteSpace($CodeR
 }
 
 # ============================================================================
-# STANDALONE COMMENT HANDLING
-# Posts as separate PR Finalization comment with marker
+# COMMENT POSTING
+# Two modes: -Unified (inject into AI Summary comment) or standalone (default)
 # ============================================================================
+
+if ($Unified) {
+    # ========================================================================
+    # UNIFIED MODE: Inject into the <!-- AI Summary --> comment
+    # ========================================================================
+
+    $MAIN_MARKER = "<!-- AI Summary -->"
+    $SECTION_START = "<!-- SECTION:PR-FINALIZE -->"
+    $SECTION_END = "<!-- /SECTION:PR-FINALIZE -->"
+    $LEGACY_MARKER = "<!-- PR-FINALIZE-COMMENT -->"
+
+    # Build the finalize section wrapped in expandable details
+    $finalizeSection = @"
+$SECTION_START
+<details>
+<summary>📋 <strong>Expand PR Finalization Review</strong></summary>
+
+---
+
+$titleSection
+
+$descSection
+$codeReviewSection
+
+---
+
+</details>
+$SECTION_END
+"@
+
+    Write-Host "`nUnified mode: injecting into AI Summary comment on #$PRNumber..." -ForegroundColor Yellow
+
+    $existingUnifiedComment = $null
+    $existingLegacyComment = $null
+
+    try {
+        $commentsJson = gh api "repos/dotnet/maui/issues/$PRNumber/comments?per_page=100" 2>$null
+        $comments = $commentsJson | ConvertFrom-Json
+
+        foreach ($comment in $comments) {
+            if ($comment.body -match [regex]::Escape($MAIN_MARKER)) {
+                $existingUnifiedComment = $comment
+                Write-Host "✓ Found unified AI Summary comment (ID: $($comment.id))" -ForegroundColor Green
+            }
+            if ($comment.body -match [regex]::Escape($LEGACY_MARKER)) {
+                $existingLegacyComment = $comment
+            }
+        }
+    } catch {
+        Write-Host "⚠️ Could not fetch comments: $_" -ForegroundColor Yellow
+    }
+
+    if ($DryRun) {
+        if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
+            $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/ai-summary-comment-preview.md"
+        }
+
+        $previewDir = Split-Path $PreviewFile -Parent
+        if (-not (Test-Path $previewDir)) {
+            New-Item -ItemType Directory -Path $previewDir -Force | Out-Null
+        }
+
+        $existingPreview = ""
+        if (Test-Path $PreviewFile) {
+            $existingPreview = Get-Content $PreviewFile -Raw -Encoding UTF8
+        }
+
+        if ($existingPreview -match [regex]::Escape($SECTION_START)) {
+            $pattern = [regex]::Escape($SECTION_START) + "[\s\S]*?" + [regex]::Escape($SECTION_END)
+            $finalComment = $existingPreview -replace $pattern, $finalizeSection
+        } elseif (-not [string]::IsNullOrWhiteSpace($existingPreview)) {
+            $finalComment = $existingPreview.TrimEnd() + "`n`n" + $finalizeSection
+        } else {
+            $finalComment = @"
+$MAIN_MARKER
+
+## 🤖 AI Summary
+
+$finalizeSection
+"@
+        }
+
+        Set-Content -Path $PreviewFile -Value "$($finalComment.TrimEnd())`n" -Encoding UTF8 -NoNewline
+
+        Write-Host "`n=== COMMENT PREVIEW ===" -ForegroundColor Yellow
+        Write-Host $finalComment
+        Write-Host "`n=== END PREVIEW ===" -ForegroundColor Yellow
+        Write-Host "`n✅ Preview saved to: $PreviewFile" -ForegroundColor Green
+        exit 0
+    }
+
+    if ($existingUnifiedComment) {
+        $body = $existingUnifiedComment.body
+
+        if ($body -match [regex]::Escape($SECTION_START)) {
+            $pattern = [regex]::Escape($SECTION_START) + "[\s\S]*?" + [regex]::Escape($SECTION_END)
+            $newBody = $body -replace $pattern, $finalizeSection
+        } else {
+            $newBody = $body.TrimEnd() + "`n`n" + $finalizeSection
+        }
+
+        $newBody = $newBody -replace "`n{4,}", "`n`n`n"
+
+        Write-Host "Updating unified comment ID $($existingUnifiedComment.id) with PR finalize section..." -ForegroundColor Yellow
+        $tempFile = [System.IO.Path]::GetTempFileName()
+        @{ body = $newBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+
+        $result = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingUnifiedComment.id)" --input $tempFile --jq '.html_url'
+        Remove-Item $tempFile
+        Write-Host "✅ PR finalize section added to unified comment: $result" -ForegroundColor Green
+    } else {
+        $commentBody = @"
+$MAIN_MARKER
+
+## 🤖 AI Summary
+
+$finalizeSection
+"@
+
+        Write-Host "Creating new unified comment with PR finalize section on PR #$PRNumber..." -ForegroundColor Yellow
+        $tempFile = [System.IO.Path]::GetTempFileName()
+        @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+
+        $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile --jq '.html_url'
+        Remove-Item $tempFile
+        Write-Host "✅ Unified comment posted: $result" -ForegroundColor Green
+    }
+
+    # Clean up legacy standalone finalize comment if it exists
+    if ($existingLegacyComment) {
+        Write-Host "🧹 Removing legacy standalone PR Finalization comment (ID: $($existingLegacyComment.id))..." -ForegroundColor Yellow
+        gh api --method DELETE "repos/dotnet/maui/issues/comments/$($existingLegacyComment.id)" 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✅ Legacy comment removed" -ForegroundColor Green
+        } else {
+            Write-Host "  ⚠️ Could not remove legacy comment (non-fatal)" -ForegroundColor Yellow
+        }
+    }
+
+} else {
+    # ========================================================================
+    # STANDALONE MODE (default): Post as separate PR Finalization comment
+    # ========================================================================
 
 $FINALIZE_MARKER = "<!-- PR-FINALIZE-COMMENT -->"
 
@@ -615,7 +768,7 @@ $codeReviewSection
 if ($DryRun) {
     # File-based DryRun: uses separate preview file for finalize (separate comment from unified)
     if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize-preview.md"
+        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize-preview.md"
     }
     
     # Ensure directory exists
@@ -651,3 +804,5 @@ if ($existingComment) {
 }
 
 Remove-Item $tempFile
+
+} # end standalone mode
