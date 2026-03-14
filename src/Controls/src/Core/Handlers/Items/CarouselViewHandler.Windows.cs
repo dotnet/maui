@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _isCarouselViewReady;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+		int _lastScrolledToPosition = -1; // tracks last position we issued ScrollTo for, to avoid re-entry
 
 		~CarouselViewHandler() => _proxy.Unsubscribe();
 
@@ -360,14 +361,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ListViewBase.Items.Count > 0)
 			{
-				if (Element.Loop)
-				{
-					var item = ItemsView.CurrentItem ?? ListViewBase.Items.FirstOrDefault();
-					_loopableCollectionView.CenterMode = true;
-					ListViewBase.ScrollIntoView(item);
-					_loopableCollectionView.CenterMode = false;
-				}
-
+				// Loop centering is no longer needed here: UpdateCurrentItem and UpdatePosition
+				// now use _lastScrolledToPosition to guard against re-entry and scroll to the
+				// correct centered position programmatically, making the explicit CenterMode block redundant.
 				if (ItemsView.CurrentItem != null)
 					UpdateCurrentItem();
 				else
@@ -387,7 +383,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
 				return;
 
-			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			if (ItemsView.Position != currentItemPosition && _lastScrolledToPosition != currentItemPosition)
+			{
+				_lastScrolledToPosition = currentItemPosition;
+				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			}
 		}
 
 		void UpdatePosition()
@@ -399,6 +399,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (carouselPosition < 0 || carouselPosition >= ItemCount)
 				return;
+
+			if (!ItemsView.IsDragging && !ItemsView.IsScrolling && carouselPosition != _lastScrolledToPosition)
+			{
+				_lastScrolledToPosition = carouselPosition;
+				ItemsView.ScrollTo(carouselPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
@@ -498,6 +504,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// User scrolled to this position — reset tracker so a future programmatic scroll to same index still fires
+			if (position != _lastScrolledToPosition)
+			{
+				_lastScrolledToPosition = -1;
+			}
+
 			if (position == Element.Position)
 			{
 				return;
@@ -523,6 +535,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			_lastScrolledToPosition = -1;
 			var carouselPosition = ItemsView.Position;
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 			var count = (sender as IList).Count;
