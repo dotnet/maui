@@ -35,7 +35,20 @@ namespace Microsoft.Maui.Platform
 
 		public override void DrawText(RectangleF rect)
 		{
-			rect = TextInsets.InsetRect(rect);
+			var insets = TextInsets;
+
+			// Respect RTL (flip left/right insets)
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				insets = new UIEdgeInsets(
+					insets.Top,
+					insets.Right,
+					insets.Bottom,
+					insets.Left);
+			}
+
+			rect = insets.InsetRect(rect);
+
 
 			if (_verticalAlignment != UIControlContentVerticalAlignment.Center
 				&& _verticalAlignment != UIControlContentVerticalAlignment.Fill)
