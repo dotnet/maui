@@ -1428,55 +1428,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (_scrollViewer is null)
 			return;
 
-		// When the scroll fully settles (including our ChangeView animation),
-		// reset the snapping guard and apply snap correction if needed.
-		// This catches cases where ChangeView during ViewChanging was overridden
-		// by ongoing scroll momentum (e.g., mouse wheel scrolling).
+		// Reset the snapping guard when the scroll animation (including our ChangeView)
+		// fully settles. This prevents re-entrant snap during our own snap animation.
 		if (!e.IsIntermediate)
-		{
 			_isSnapping = false;
-			SnapToNearestIfNeeded();
-		}
 
 		HandleScroll(_scrollViewer);
-	}
-
-	/// <summary>
-	/// Checks if the current scroll position is aligned to a snap point after the scroll
-	/// fully settles. If not, performs a corrective ChangeView to the nearest snap target.
-	/// This is a fallback for when the ViewChanging snap was overridden by ongoing momentum.
-	/// </summary>
-	void SnapToNearestIfNeeded()
-	{
-		if (_scrollViewer is null || PlatformView is null ||
-			_snapPointsType == SnapPointsType.None)
-		{
-			return;
-		}
-
-		bool isHorizontal = IsLayoutHorizontal;
-		double currentOffset = isHorizontal ? _scrollViewer.HorizontalOffset : _scrollViewer.VerticalOffset;
-		double viewportSize = isHorizontal ? _scrollViewer.ViewportWidth : _scrollViewer.ViewportHeight;
-		double maxOffset = isHorizontal ? _scrollViewer.ScrollableWidth : _scrollViewer.ScrollableHeight;
-
-		double? snapTarget = FindNearestSnapTarget(isHorizontal, currentOffset, viewportSize, maxOffset);
-
-		if (snapTarget.HasValue)
-		{
-			double distance = Math.Abs(snapTarget.Value - currentOffset);
-			if (distance > 1.0)
-			{
-				_isSnapping = true;
-				if (isHorizontal)
-				{
-					_scrollViewer.ChangeView(snapTarget.Value, null, null, disableAnimation: false);
-				}
-				else
-				{
-					_scrollViewer.ChangeView(null, snapTarget.Value, null, disableAnimation: false);
-				}
-			}
-		}
 	}
 
 	void HandleScroll(ScrollViewer scrollViewer)
