@@ -1056,43 +1056,43 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	/// </summary>
 	double? ComputeSnapTarget(ItemContainer container, bool isHorizontal, double referenceOffset, double viewportSize, double maxOffset)
 	{
-		try
-		{
-			var transform = container.TransformToVisual(_scrollViewer);
-			var point = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
-
-			// Container position relative to viewport
-			double itemStart = isHorizontal ? point.X : point.Y;
-			double itemSize = isHorizontal ? container.ActualWidth : container.ActualHeight;
-
-			// Convert viewport-relative position to absolute content offset,
-			// then compute the target scroll offset per alignment.
-			// currentScrollOffset + itemStart = absolute position of item's leading edge.
-			double currentScrollOffset = isHorizontal
-				? _scrollViewer!.HorizontalOffset
-				: _scrollViewer!.VerticalOffset;
-
-			double absoluteItemStart = currentScrollOffset + itemStart;
-
-			double snapTarget = _snapPointsAlignment switch
-			{
-				// Mac: viewport.Left - itemFrame.Left (delta), applied to proposed offset
-				SnapPointsAlignment.Start => absoluteItemStart,
-				// Mac: center(viewport) - center(itemFrame)
-				SnapPointsAlignment.Center => absoluteItemStart + itemSize / 2 - viewportSize / 2,
-				// Mac: viewport.Right - itemFrame.Right
-				SnapPointsAlignment.End => absoluteItemStart + itemSize - viewportSize,
-				_ => absoluteItemStart,
-			};
-
-			// Clamp to valid scroll range
-			return Math.Max(0, Math.Min(snapTarget, maxOffset));
-		}
-		catch
-		{
-			// TransformToVisual can throw if element is not in the visual tree
+		// TransformToVisual requires the element to be in the visual tree and have a valid layout.
+		// Without these checks, TransformToVisual throws — guard instead of catching.
+		if (!container.IsLoaded || _scrollViewer is null)
 			return null;
-		}
+
+		double itemSize = isHorizontal ? container.ActualWidth : container.ActualHeight;
+		if (itemSize <= 0)
+			return null;
+
+		var transform = container.TransformToVisual(_scrollViewer);
+		var point = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+		// Container position relative to viewport
+		double itemStart = isHorizontal ? point.X : point.Y;
+
+		// Convert viewport-relative position to absolute content offset,
+		// then compute the target scroll offset per alignment.
+		// currentScrollOffset + itemStart = absolute position of item's leading edge.
+		double currentScrollOffset = isHorizontal
+			? _scrollViewer.HorizontalOffset
+			: _scrollViewer.VerticalOffset;
+
+		double absoluteItemStart = currentScrollOffset + itemStart;
+
+		double snapTarget = _snapPointsAlignment switch
+		{
+			// Mac: viewport.Left - itemFrame.Left (delta), applied to proposed offset
+			SnapPointsAlignment.Start => absoluteItemStart,
+			// Mac: center(viewport) - center(itemFrame)
+			SnapPointsAlignment.Center => absoluteItemStart + itemSize / 2 - viewportSize / 2,
+			// Mac: viewport.Right - itemFrame.Right
+			SnapPointsAlignment.End => absoluteItemStart + itemSize - viewportSize,
+			_ => absoluteItemStart,
+		};
+
+		// Clamp to valid scroll range
+		return Math.Max(0, Math.Min(snapTarget, maxOffset));
 	}
 
 	void UpdateEmptyView()
@@ -1428,12 +1428,55 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (_scrollViewer is null)
 			return;
 
-		// Reset the snapping guard when the scroll animation (including our ChangeView)
-		// fully settles. This prevents re-entrant snap during our own snap animation.
+		// When the scroll fully settles (including our ChangeView animation),
+		// reset the snapping guard and apply snap correction if needed.
+		// This catches cases where ChangeView during ViewChanging was overridden
+		// by ongoing scroll momentum (e.g., mouse wheel scrolling).
 		if (!e.IsIntermediate)
+		{
 			_isSnapping = false;
+			SnapToNearestIfNeeded();
+		}
 
 		HandleScroll(_scrollViewer);
+	}
+
+	/// <summary>
+	/// Checks if the current scroll position is aligned to a snap point after the scroll
+	/// fully settles. If not, performs a corrective ChangeView to the nearest snap target.
+	/// This is a fallback for when the ViewChanging snap was overridden by ongoing momentum.
+	/// </summary>
+	void SnapToNearestIfNeeded()
+	{
+		if (_scrollViewer is null || PlatformView is null ||
+			_snapPointsType == SnapPointsType.None)
+		{
+			return;
+		}
+
+		bool isHorizontal = IsLayoutHorizontal;
+		double currentOffset = isHorizontal ? _scrollViewer.HorizontalOffset : _scrollViewer.VerticalOffset;
+		double viewportSize = isHorizontal ? _scrollViewer.ViewportWidth : _scrollViewer.ViewportHeight;
+		double maxOffset = isHorizontal ? _scrollViewer.ScrollableWidth : _scrollViewer.ScrollableHeight;
+
+		double? snapTarget = FindNearestSnapTarget(isHorizontal, currentOffset, viewportSize, maxOffset);
+
+		if (snapTarget.HasValue)
+		{
+			double distance = Math.Abs(snapTarget.Value - currentOffset);
+			if (distance > 1.0)
+			{
+				_isSnapping = true;
+				if (isHorizontal)
+				{
+					_scrollViewer.ChangeView(snapTarget.Value, null, null, disableAnimation: false);
+				}
+				else
+				{
+					_scrollViewer.ChangeView(null, snapTarget.Value, null, disableAnimation: false);
+				}
+			}
+		}
 	}
 
 	void HandleScroll(ScrollViewer scrollViewer)
