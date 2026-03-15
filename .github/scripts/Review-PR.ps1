@@ -5,13 +5,14 @@
 .DESCRIPTION
     Orchestrates a 5-step PR review by invoking Copilot CLI with skill prompts:
     
-    Step 0: Branch setup        - Create review branch from main, cherry-pick PR squashed
+    Step 0: Branch setup        - Create review branch from main, merge PR squashed
     Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
     Step 2: pr-finalize skill   - Verify PR title/description match implementation
     Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize)
     Step 4: Apply labels        - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
+    If squash-merge conflicts, the script posts a comment on the PR and exits.
     Use -UseCurrentBranch to create the review branch from the current branch instead.
 
 .PARAMETER PRNumber
@@ -131,7 +132,7 @@ if ($DryRun) {
     } else {
         Write-Host "[DRY RUN] Would checkout main, then create review branch '$reviewBranch'" -ForegroundColor Magenta
     }
-    Write-Host "[DRY RUN] Would fetch and cherry-pick PR #$PRNumber (squashed)" -ForegroundColor Magenta
+    Write-Host "[DRY RUN] Would squash-merge PR #$PRNumber (stops on conflicts)" -ForegroundColor Magenta
 } else {
     # In CI pipelines, prior steps (Build MSBuild Tasks, Install Appium) may leave
     # modified tracked files (e.g. HybridWebView.js) or untracked dirs (e.g. .appium/).
@@ -173,6 +174,7 @@ if ($DryRun) {
         }
     } else {
         $currentBranch = git branch --show-current 2>$null
+        if (-not $currentBranch) { $currentBranch = "(detached HEAD)" }
         Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
     }
 
@@ -208,35 +210,47 @@ if ($DryRun) {
         }
     }
 
-    # Identify PR-only commits (oldest first)
-    $prCommits = git log --oneline --reverse "$tempBranch" --not HEAD 2>$null
-    if (-not $prCommits) {
-        Write-Host "  ⚠️ No new commits found in PR (already up to date?)" -ForegroundColor Yellow
-        git branch -D $tempBranch 2>$null | Out-Null
+    # ── Merge PR commits (squash) ──
+    Write-Host "  🔀 Merging PR commits (squashed)..." -ForegroundColor Cyan
+    git merge --squash $tempBranch 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        # Check if there's anything to commit (PR might already be merged)
+        $staged = git diff --cached --quiet 2>$null; $hasStagedChanges = $LASTEXITCODE -ne 0
+        if ($hasStagedChanges) {
+            git commit -m "PR #$PRNumber squashed for review" 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                git branch -D $tempBranch 2>$null
+                Write-Error "Failed to create squashed commit"; exit 1
+            }
+            Write-Host "  ✅ Squash-merge succeeded" -ForegroundColor Green
+        } else {
+            Write-Host "  ⚠️ No changes to merge (PR may already be up to date)" -ForegroundColor Yellow
+        }
     } else {
-        $commitHashes = git log --format='%H' --reverse "$tempBranch" --not HEAD 2>$null
-        $commitCount = ($commitHashes -split "`n" | Where-Object { $_.Trim() }).Count
-        Write-Host "  🔀 Cherry-picking $commitCount commit(s) (squashed)..." -ForegroundColor Cyan
+        Write-Host "  ❌ Squash-merge had conflicts." -ForegroundColor Red
+        git merge --abort 2>$null
+        git reset --hard HEAD 2>$null
 
-        # Cherry-pick all commits squashed into one
-        $hashList = ($commitHashes -split "`n" | Where-Object { $_.Trim() }) -join ' '
-        Invoke-Expression "git cherry-pick --no-commit $hashList" 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ❌ Cherry-pick conflict detected. Aborting." -ForegroundColor Red
-            git cherry-pick --abort 2>$null
-            git checkout - 2>$null
-            git branch -D $reviewBranch 2>$null
-            git branch -D $tempBranch 2>$null
-            Write-Error "Cherry-pick conflicts for PR #$PRNumber. Manual resolution required."
-            exit 1
+        # Clean up branches
+        git checkout - 2>$null
+        git branch -D $reviewBranch 2>$null
+        git branch -D $tempBranch 2>$null
+
+        # Post a comment on the PR about merge conflicts
+        $conflictBody = "⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts."
+        try {
+            gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
+            Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
+        } catch {
+            Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
         }
 
-        git commit -m "PR #$PRNumber squashed for review" 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Error "Failed to create squashed commit"; exit 1 }
-
-        # Clean up temp branch
-        git branch -D $tempBranch 2>$null | Out-Null
+        Write-Error "Merge conflicts for PR #$PRNumber. Review cannot proceed until conflicts are resolved."
+        exit 1
     }
+
+    # Clean up temp branch
+    git branch -D $tempBranch 2>$null | Out-Null
 
     # Verify
     $headCommit = git log --oneline -1 2>$null
