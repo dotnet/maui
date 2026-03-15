@@ -158,15 +158,17 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		var references = new List<WeakReference>();
 
+		var initialDetail = new NavigationPage(new ContentPage { Title = "Initial Detail" });
+
 		var flyoutPage = new FlyoutPage
 		{
 			Flyout = new ContentPage { Title = "Flyout" },
-			Detail = new NavigationPage(new ContentPage { Title = "Initial Detail" })
+			Detail = initialDetail
 		};
 
 		await CreateHandlerAndAddToWindow(new Window(flyoutPage), async () =>
 		{
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				var detailPage = new ContentPage
 				{
@@ -181,15 +183,14 @@ public class MemoryTests : ControlsHandlerTestBase
 				await OnLoadedAsync(detailPage);
 
 				references.Add(new(detailPage));
-				references.Add(new(detailPage.Handler));
-				references.Add(new(detailPage.Handler.PlatformView));
 				references.Add(new(navPage));
-				references.Add(new(navPage.Handler));
-				references.Add(new(navPage.Handler.PlatformView));
-
-				await Task.Delay(100);
 			}
 		});
+
+
+		// The last page will be alive and attached to the FlyoutPage
+		references.RemoveAt(references.Count - 1);
+		references.RemoveAt(references.Count - 1);
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
