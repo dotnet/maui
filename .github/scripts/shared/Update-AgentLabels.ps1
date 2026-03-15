@@ -4,7 +4,7 @@
     Shared functions for managing agent workflow labels on GitHub PRs.
 
 .DESCRIPTION
-    Provides idempotent label management for the PR agent review workflow.
+    Provides idempotent label management for the pr-review skill review workflow.
     Labels use the 's/agent-*' prefix convention for easy querying.
 
     Label categories:
