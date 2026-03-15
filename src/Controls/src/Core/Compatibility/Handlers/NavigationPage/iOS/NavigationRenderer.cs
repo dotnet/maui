@@ -470,9 +470,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_ = page.ToPlatform(MauiContext);
 			var renderer = (IPlatformViewHandler)page.Handler;
-			var parentViewController = renderer.ViewController.ParentViewController as ParentingViewController;
-			if (parentViewController == null)
-				throw new NotSupportedException("ParentingViewController parent could not be found. Please file a bug.");
+			// renderer or ViewController can be null if a rapid push/pop causes the handler
+            // to be torn down before this navigation completes (mirrors fix for ShellSectionRenderer #32425)
+            if (renderer?.ViewController == null)
+            {
+                CompletePendingNavigation(false);
+                return _pendingNavigationRequest.Task;
+            }
+
+            var parentViewController = renderer.ViewController.ParentViewController as ParentingViewController;
+            if (parentViewController == null)
+                throw new NotSupportedException("ParentingViewController parent could not be found. Please file a bug.");
 
 			EventHandler appearing = null, disappearing = null;
 			appearing = (s, e) =>
