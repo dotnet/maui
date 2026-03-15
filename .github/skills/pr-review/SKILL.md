@@ -19,7 +19,7 @@ End-to-end PR review workflow that orchestrates phases to verify tests, explore 
 ```
 Phase 1: Pre-Flight   → Gather context, classify files                 → .github/pr-review/pr-preflight.md
 Phase 2: Gate         → ⛔ MUST PASS — verify tests FAIL/PASS          → .github/pr-review/pr-gate.md
-Phase 3: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
+Phase 3: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×4 models)
 Phase 4: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
 
@@ -42,12 +42,14 @@ Phase 4: Report       → Write review recommendation                     → .g
 
 ### Multi-Model Configuration
 
-Phase 3 uses these 2 AI models (run SEQUENTIALLY — they modify the same files):
+Phase 3 uses these 4 AI models (run SEQUENTIALLY — they modify the same files):
 
 | Order | Model |
 |-------|-------|
-| 1 | `claude-sonnet-4.6` |
-| 2 | `claude-opus-4.6` |
+| 1 | `claude-opus-4.6-1m` |
+| 2 | `claude-sonnet-4.6` |
+| 3 | `gpt-5.3-codex` |
+| 4 | `gemini-3-pro-preview` |
 
 **🚨 MANDATORY: Use `mode: "sync"` for ALL try-fix task invocations.** Never use `mode: "background"`. Background mode causes the orchestrator to move on before the attempt finishes, which means `try-fix/content.md` is never written and try-fix results are lost from the PR comment. Each try-fix task MUST complete and return its result before you proceed to the next attempt or to the Phase 3 completion checklist.
 
@@ -87,13 +89,13 @@ Verify that the PR's tests actually catch the bug (FAIL without fix, PASS with f
 
 ---
 
-## Phase 3: Try-Fix → Invoke `try-fix` Skill (×2 Models)
+## Phase 3: Try-Fix → Invoke `try-fix` Skill (×4 Models)
 
 > Read and follow `.github/skills/try-fix/SKILL.md`
 
 > **⚠️ THIS PHASE IS MANDATORY. YOU MUST NEVER SKIP IT. NO EXCEPTIONS.**
 
-Even if the PR's fix looks correct and Gate passed, you MUST still run all 2 models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
+Even if the PR's fix looks correct and Gate passed, you MUST still run all 4 models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
@@ -105,11 +107,15 @@ The purpose is NOT to re-test the PR's fix, but to:
 
 ### Checklist (you MUST complete ALL of these)
 
-- [ ] Attempt 1 launched with claude-sonnet-4.6
+- [ ] Attempt 1 launched with claude-opus-4.6-1m
 - [ ] `try-fix/content.md` updated with attempt 1 result
-- [ ] Attempt 2 launched with claude-opus-4.6
+- [ ] Attempt 2 launched with claude-sonnet-4.6
 - [ ] `try-fix/content.md` updated with attempt 2 result
-- [ ] Cross-pollination round completed (both models queried)
+- [ ] Attempt 3 launched with gpt-5.3-codex
+- [ ] `try-fix/content.md` updated with attempt 3 result
+- [ ] Attempt 4 launched with gemini-3-pro-preview
+- [ ] `try-fix/content.md` updated with attempt 4 result
+- [ ] Cross-pollination round completed (all models queried)
 - [ ] Best fix selected with comparison table
 
 ### Round 1: Independent Exploration
@@ -152,7 +158,7 @@ After Round 1, invoke EACH model via task agent:
   Do you have any NEW fix ideas? Reply: 'NEW IDEA: {desc}' or 'NO NEW IDEAS'"
 ```
 
-Run any new ideas as additional try-fix attempts. Repeat until both say "NO NEW IDEAS" (max 3 rounds).
+Run any new ideas as additional try-fix attempts. Repeat until all say "NO NEW IDEAS" (max 3 rounds).
 
 ### Selecting the Best Fix
 
@@ -192,7 +198,7 @@ Write `content.md`:
 - ❌ Running try-fix in parallel — SEQUENTIAL ONLY, always `mode: "sync"`
 - ❌ Using `mode: "background"` for try-fix tasks — results will be lost
 - ❌ Skipping cleanup between attempts — ALWAYS run cleanup commands
-- ❌ Declaring exhaustion without querying all 5 models
+- ❌ Declaring exhaustion without querying all 4 models
 
 ---
 
