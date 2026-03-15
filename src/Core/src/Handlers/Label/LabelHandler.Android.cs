@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Handlers
 				layout.LineCount > 1 &&
 				PlatformView.Ellipsize == null)
 			{
+				// Capture original line count before narrowing to detect re-wrapping.
+				var originalLineCount = layout.LineCount;
+
 				float maxLineWidth = 0;
 				for (int i = 0; i < layout.LineCount; i++)
 				{
@@ -42,28 +45,34 @@ namespace Microsoft.Maui.Handlers
 					var actualWidth = Context.FromPixels(maxLineWidth + PlatformView.PaddingLeft + PlatformView.PaddingRight);
 					if (actualWidth < size.Width)
 					{
-						// When MaxLines is constrained, verify that narrowing doesn't cause the text
-						// to re-wrap into more lines than MaxLines allows (which would truncate text).
+						// Always verify that narrowing doesn't cause the text to re-wrap into more
+						// lines than the original measurement, which would truncate visible text.
+						// This covers both explicit MaxLines constraints and cases where layout
+						// under-reports line widths (e.g. RTL/bidi text in an RTL container).
 						// Re-measure at exactly the pixel width the view will be arranged at.
-						if (PlatformView.MaxLines != int.MaxValue)
+						var narrowedPx = (int)Context.ToPixels(actualWidth);
+
+						// AtMost mirrors how the layout pass constrains width, ensuring the
+						// re-measurement reflects the same wrapping behaviour the view will
+						// experience when arranged at actualWidth.
+						PlatformView.Measure(
+							MeasureSpecMode.AtMost.MakeMeasureSpec(narrowedPx),
+							MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
+
+						// Fail-safe: if Layout is null after re-measurement we cannot verify
+						// that truncation won't occur, so return the original size.
+						var measuredLayout = PlatformView.Layout;
+
+						// Use MaxLines as the limit when explicitly set; otherwise use the
+						// original line count so that any re-wrapping caused by the narrowed
+						// width is detected and the original size is returned instead.
+						var lineLimit = PlatformView.MaxLines != int.MaxValue
+							? PlatformView.MaxLines
+							: originalLineCount;
+
+						if (measuredLayout is null || measuredLayout.LineCount > lineLimit)
 						{
-							var narrowedPx = (int)Context.ToPixels(actualWidth);
-
-							// AtMost mirrors how the layout pass constrains width, ensuring the
-							// re-measurement reflects the same wrapping behaviour the view will
-							// experience when arranged at actualWidth.
-							PlatformView.Measure(
-								MeasureSpecMode.AtMost.MakeMeasureSpec(narrowedPx),
-								MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
-
-							// Fail-safe: if Layout is null after re-measurement we cannot verify
-							// that truncation won't occur, so return the original size.
-							var measuredLayout = PlatformView.Layout;
-
-							if (measuredLayout is null || measuredLayout.LineCount > PlatformView.MaxLines)
-							{
-								return size; // Narrowing causes truncation (or unverifiable); return original size
-							}
+							return size; // Narrowing causes truncation (or unverifiable); return original size
 						}
 
 						return new Size(actualWidth, size.Height);
