@@ -264,22 +264,26 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyoutBehavior()
 		{
 			var behavior = VirtualView.FlyoutBehavior;
-			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
-				return;
 
-			// Important to create the layout views before setting the lock mode
-			LayoutViews();
-
-			switch (behavior)
+			if (_detailViewFragment?.DetailView?.Handler?.PlatformView is not null)
 			{
-				case FlyoutBehavior.Disabled:
-				case FlyoutBehavior.Locked:
-					DrawerLayout.CloseDrawers();
-					DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
-					break;
-				case FlyoutBehavior.Flyout:
-					DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
-					break;
+				// Important to create the layout views before setting the lock mode
+				LayoutViews();
+			}
+
+			if (DrawerLayout is not null)
+			{
+				switch (behavior)
+				{
+					case FlyoutBehavior.Disabled:
+					case FlyoutBehavior.Locked:
+						DrawerLayout.CloseDrawers();
+						DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
+						break;
+					case FlyoutBehavior.Flyout:
+						DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
+						break;
+				}
 			}
 		}
 
