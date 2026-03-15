@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "10.0.106-servicing.26163.111"
+    "dotnet": "10.0.106-servicing.26163.116"
   },
   "sdk": {
     "paths": [
