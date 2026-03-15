@@ -218,6 +218,22 @@ internal partial class ElementWrapper : ContentControl
 	}
 
 	/// <summary>
+	/// Returns the string representation of the hosted MAUI view's BindingContext.
+	/// WinUI's ItemContainer automation peer falls back to calling ToString() on
+	/// its child element when no AutomationProperties.Name is set. Without this
+	/// override, screen readers announce the internal class name "ElementWrapper".
+	/// </summary>
+	public override string ToString()
+	{
+		if (VirtualView is BindableObject bo && bo.BindingContext is object ctx)
+		{
+			return ctx.ToString() ?? string.Empty;
+		}
+
+		return string.Empty;
+	}
+
+	/// <summary>
 	/// Sets the MAUI view content, converting it to a platform element.
 	/// Only sets content if not already initialized.
 	/// </summary>
@@ -328,7 +344,11 @@ internal partial class ElementWrapper : ContentControl
 		if (VirtualView is not IView view)
 			return;
 
-		var container = Parent as ItemContainer;
+		// Walk up the visual tree to find the ItemContainer ancestor.
+		// ItemContainer's template may insert internal elements (e.g.,
+		// ContentPresenter, Panel) between itself and the ElementWrapper,
+		// so Parent is not necessarily the ItemContainer directly.
+		var container = FindAncestor<ItemContainer>(this);
 		if (container is null)
 			return;
 
@@ -339,13 +359,31 @@ internal partial class ElementWrapper : ContentControl
 		}
 
 		// Propagate semantic properties (Name, HelpText, HeadingLevel)
-		// If you don't set the automation properties on the root element
-		// of a list item it just reads out the class type to narrator.
+		// Only set Name/HelpText when the user has explicitly provided values.
+		// Setting them to empty string prevents WinUI from deriving the
+		// accessible name from the content tree or data context ToString().
 		// https://docs.microsoft.com/en-us/accessibility-tools-docs/items/uwpxaml/listitem_name
 		var semantics = view.Semantics;
+		var description = semantics?.Description;
+		var hint = semantics?.Hint;
 
-		NativeAutomationProperties.SetName(container, semantics?.Description ?? string.Empty);
-		NativeAutomationProperties.SetHelpText(container, semantics?.Hint ?? string.Empty);
+		if (!string.IsNullOrWhiteSpace(description))
+		{
+			NativeAutomationProperties.SetName(container, description);
+		}
+		else
+		{
+			container.ClearValue(NativeAutomationProperties.NameProperty);
+		}
+
+		if (!string.IsNullOrWhiteSpace(hint))
+		{
+			NativeAutomationProperties.SetHelpText(container, hint);
+		}
+		else
+		{
+			container.ClearValue(NativeAutomationProperties.HelpTextProperty);
+		}
 
 		if (semantics is not null)
 		{
@@ -398,5 +436,21 @@ internal partial class ElementWrapper : ContentControl
 		}
 
 		return measuredSize;
+	}
+
+	/// <summary>
+	/// Walks up the WinUI visual tree to find the nearest ancestor of type <typeparamref name="T"/>.
+	/// </summary>
+	static T? FindAncestor<T>(DependencyObject element) where T : DependencyObject
+	{
+		var parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(element);
+		while (parent is not null)
+		{
+			if (parent is T target)
+				return target;
+			parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(parent);
+		}
+
+		return null;
 	}
 }

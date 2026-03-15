@@ -52,4 +52,13 @@ internal class ItemTemplateContext2
 		IsHeader = isHeader;
 		IsFooter = isFooter;
 	}
+
+	/// <summary>
+	/// Returns the string representation of the wrapped <see cref="Item"/>.
+	/// WinUI's ItemsView uses the data context's ToString() as the default
+	/// accessible name for each ItemContainer. Without this override, screen
+	/// readers announce the internal wrapper type name instead of the actual
+	/// data item's text.
+	/// </summary>
+	public override string? ToString() => Item?.ToString();
 }
