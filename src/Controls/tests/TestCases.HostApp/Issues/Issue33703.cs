@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 33703, "Empty space above TabBar after navigate back when TabBar visibility toggled", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 33703, "Empty space above TabBar after navigating back when TabBar visibility is toggled", PlatformAffected.Android)]
 public class Issue33703 : Shell
 {
 	public Issue33703()
