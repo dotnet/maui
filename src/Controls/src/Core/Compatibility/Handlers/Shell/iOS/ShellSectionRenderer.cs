@@ -137,10 +137,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
 			// and fire multiple times for a single user back action. Guard against multiple
 			// concurrent GoToAsync("..") dispatches to prevent navigating to the wrong page.
-			if (_sendPopPending && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
-				return false;
-
-			_sendPopPending = true;
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				if (_sendPopPending)
+				{
+					return false;
+				}
+				_sendPopPending = true;
+			}
 
 			foreach (var tracker in _trackers)
 			{
@@ -156,7 +160,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
-
+						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
