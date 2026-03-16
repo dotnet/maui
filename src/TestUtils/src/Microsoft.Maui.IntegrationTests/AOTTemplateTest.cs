@@ -123,15 +123,15 @@ public class AOTTemplateTest : BaseTemplateTests
 					<PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiVersion)" />
 				</ItemGroup>
 				<ItemGroup>
-					<TrimmerRootAssembly Include="Microsoft.Maui" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Controls" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Foldable" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Maps" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Xaml" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Essentials" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Graphics" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Graphics.Skia" />
-					<TrimmerRootAssembly Include="Microsoft.Maui.Maps" />
+					<TrimmerRootAssembly Include="Microsoft.Maui" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Controls" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Foldable" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Maps" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Controls.Xaml" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Essentials" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Graphics" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Graphics.Skia" RootMode="All" />
+					<TrimmerRootAssembly Include="Microsoft.Maui.Maps" RootMode="All" />
 				</ItemGroup>
 			</Project>
 			""");
