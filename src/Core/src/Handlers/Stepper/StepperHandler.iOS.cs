@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateIncrement(stepper);
-			
+
 			// iOS 26+ fix: Adjust stepValue for boundary handling when increment changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
 				&& NeedsStepValueAdjustment(stepper, platformView))
@@ -79,9 +79,10 @@ namespace Microsoft.Maui.Handlers
 		// Checks whether the step value needs adjustment due to boundary proximity or a previously modified step value.
 		static bool NeedsStepValueAdjustment(IStepper stepper, UIStepper platformView)
 		{
+			const double epsilon = 1e-10;
 			return stepper.Value + stepper.Interval > stepper.Maximum
 				|| stepper.Value - stepper.Interval < stepper.Minimum
-				|| platformView.StepValue != stepper.Interval;
+				|| Math.Abs(platformView.StepValue - stepper.Interval) > epsilon;
 		}
 
 		// iOS 26+ Workaround: UIStepper behavior changed to prevent button clicks when increment would exceed boundaries
