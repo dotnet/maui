@@ -740,7 +740,7 @@ namespace Microsoft.Maui.Controls
 
 			if (ControlTemplate != null)
 			{
-				string contentAsString = ContentAsString();
+				string contentAsString = GetSemanticDescriptionFromContent();
 
 				if (!string.IsNullOrWhiteSpace(contentAsString) && string.IsNullOrWhiteSpace(semantics?.Description))
 				{
@@ -750,6 +750,56 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return semantics;
+		}
+
+		string GetSemanticDescriptionFromContent()
+		{
+			if (Content is string contentText)
+				return contentText;
+
+			if (Content is IView contentView && TryGetSemanticDescription(contentView, out var semanticDescription))
+				return semanticDescription;
+
+			if (Value is string valueText && !string.IsNullOrWhiteSpace(valueText))
+				return valueText;
+
+			return ContentAsString();
+		}
+
+		static bool TryGetSemanticDescription(IView view, out string semanticDescription)
+		{
+			semanticDescription = null;
+
+			if (view == null)
+				return false;
+
+			if (!string.IsNullOrWhiteSpace(view.Semantics?.Description))
+			{
+				semanticDescription = view.Semantics.Description;
+				return true;
+			}
+
+			if (view is IText text && !string.IsNullOrWhiteSpace(text.Text))
+			{
+				semanticDescription = text.Text;
+				return true;
+			}
+
+			if (view is IContentView contentView && contentView.PresentedContent is IView presentedContent && TryGetSemanticDescription(presentedContent, out semanticDescription))
+				return true;
+
+			if (view is Microsoft.Maui.ILayout layout)
+			{
+				for (int i = 0; i < layout.Count; i++)
+				{
+					var child = layout[i];
+
+					if (TryGetSemanticDescription(child, out semanticDescription))
+						return true;
+				}
+			}
+
+			return false;
 		}
 
 		class CornerRadiusToShape : IValueConverter

@@ -90,6 +90,13 @@ namespace Microsoft.Maui.Platform
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
 
+			if (virtualView is IRadioButton radioButton)
+			{
+				info.ClassName = Java.Lang.Class.FromType(typeof(global::Android.Widget.RadioButton)).Name;
+				info.Checkable = true;
+				info.Checked = radioButton.IsChecked;
+			}
+
 			if (!string.IsNullOrWhiteSpace(virtualView.AutomationId) &&
 				platformView?.Context != null)
 			{

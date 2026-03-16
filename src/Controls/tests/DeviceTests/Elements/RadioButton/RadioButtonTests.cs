@@ -101,5 +101,60 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(radioButtonHandlerRef, layoutHandlerRef, layoutPlatformRef, radioButtonPlatformRef);
 		}
+
+		[Fact(DisplayName = "Issue 34322 - Templated RadioButton uses content label for semantics")]
+		public async Task Issue34322_TemplatedRadioButtonUsesContentLabelForSemantics()
+		{
+			EnsureTemplatedRadioButtonHandlersCreated();
+
+			var radioButton = CreateIssue34322RadioButton("Dog", isChecked: false, useSemanticDescription: false);
+
+			await CreateHandlerAndAddToWindow<RadioButtonHandler>(radioButton, _ =>
+			{
+				Assert.Equal("Dog", (radioButton as IView).Semantics.Description);
+				return Task.CompletedTask;
+			});
+		}
+
+		void EnsureTemplatedRadioButtonHandlersCreated()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Shape, ShapeViewHandler>();
+					handlers.AddHandler<ContentPresenter, ContentViewHandler>();
+					handlers.AddHandler<RadioButton, RadioButtonHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+				});
+			});
+		}
+
+		static RadioButton CreateIssue34322RadioButton(string label, bool isChecked, bool useSemanticDescription)
+		{
+			var radioButton = new RadioButton
+			{
+				ControlTemplate = RadioButton.DefaultTemplate,
+				Content = new VerticalStackLayout
+				{
+					Children =
+					{
+						new Label
+						{
+							Text = label
+						}
+					}
+				},
+				IsChecked = isChecked,
+			};
+
+			if (useSemanticDescription)
+				SemanticProperties.SetDescription(radioButton, label);
+
+			return radioButton;
+		}
 	}
 }
