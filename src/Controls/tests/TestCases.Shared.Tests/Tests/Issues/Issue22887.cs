@@ -21,7 +21,6 @@ public class Issue22887 : _IssuesUITest
 	{
 		App.WaitForElement("ImageView", timeoutMessage: "Image is not rendered in the view");
 		VerifyScreenshot();
-
 	}
 }
 #endif
