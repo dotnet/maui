@@ -179,7 +179,7 @@
       <Sha>bfbac237157e59cdbd19334325b2af80bd6e9828</Sha>
     </Dependency>
     <!-- dotnet/android-tools: Android SDK tooling (SdkManager, AdbRunner, EmulatorRunner, etc.) -->
-    <Dependency Name="Xamarin.Android.Tools.AndroidSdk" Version="1.1.76">
+    <Dependency Name="Xamarin.Android.Tools.AndroidSdk" Version="1.0.136-ci.main.214">
       <Uri>https://github.com/dotnet/android-tools</Uri>
       <Sha>091e3a66c0cfcb4fcaaaaa7bc9c5fa85947eecb6</Sha>
     </Dependency>
