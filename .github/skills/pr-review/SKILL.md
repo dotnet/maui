@@ -241,7 +241,7 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 |-------|--------------|------------|------------|
 | 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context | Skip missing info, continue |
 | 2. Gate | `pr-gate.md` | Verify tests via task agent | Document, continue to Try-Fix |
-| 3. Try-Fix | `try-fix` skill (×2) | **2-model exploration (MANDATORY)** | Skip failing models, continue |
+| 3. Try-Fix | `try-fix` skill (×4) | **4-model exploration (MANDATORY)** | Skip failing models, continue |
 | 4. Report | `pr-report.md` | Write review recommendation | Never skip |
 
 ---
