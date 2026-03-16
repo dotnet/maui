@@ -33,13 +33,11 @@ public class Issue21913 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void SecondGroupSecondToggleShouldMoveThirdHeaderBackDownOnAndroid()
 	{
-		App.WaitForElement("SecondGroupButton");
-		var thirdGroupButton = App.WaitForElement("ThirdGroupButton");
-
-		App.Tap("SecondGroupButton");
+		App.WaitForElement("ThirdGroupButton");
+		App.Tap("ThirdGroupButton");
 		Task.Delay(500).Wait(); // Allow time for the UI to update after collapsing the second group
-
-		App.Tap("SecondGroupButton");
+        
+		App.Tap("ThirdGroupButton");
 		Task.Delay(500).Wait(); // Allow time for the UI to update after expanding the second group
 		VerifyScreenshot();
 

@@ -35,6 +35,16 @@ public class Issue21913 : ContentPage
 		group2.Add(new Issue21913Item("F", "SecondGroupItemF", ExpandedSize));
 		Groups.Add(group2);
 
+		var group3 = new Issue21913Group
+		{
+			Name = "Three",
+			AutomationId = "ThirdGroupButton"
+		};
+		group3.Add(new Issue21913Item("G", "ThirdGroupItemG", ExpandedSize));
+		group3.Add(new Issue21913Item("H", "ThirdGroupItemH", ExpandedSize));
+		group3.Add(new Issue21913Item("I", "ThirdGroupItemI", ExpandedSize));
+		Groups.Add(group3);
+
 		var collectionView = new CollectionView
 		{
 			AutomationId = "Issue21913CollectionView",
