@@ -151,25 +151,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!_hasCustomBackground && backGroundColor == null)
 				return;
 
-			var backgroundView = textField.Subviews[0];
-
 			if (backGroundColor == null)
 			{
-				backgroundView.Layer.CornerRadius = 0;
-				backgroundView.ClipsToBounds = false;
-				backgroundView.BackgroundColor = _defaultBackgroundColor;
+				// Reset to defaults
+				textField.Layer.CornerRadius = 0;
+				textField.ClipsToBounds = false;
+				textField.BackgroundColor = _defaultBackgroundColor;
+				_hasCustomBackground = false;
 			}
-
-			_hasCustomBackground = true;
-
-			backgroundView.Layer.CornerRadius = 10;
-			backgroundView.ClipsToBounds = true;
-			if (_defaultBackgroundColor == null)
-				_defaultBackgroundColor = backgroundView.BackgroundColor;
-
-			UIColor backgroundColor = backGroundColor.ToPlatform();
-			backgroundView.BackgroundColor = backgroundColor;
-			textField.BackgroundColor = backgroundColor;
+			else
+			{
+				_hasCustomBackground = true;
+				textField.Layer.CornerRadius = 10;
+				textField.ClipsToBounds = true;
+				if (_defaultBackgroundColor is null)
+				{
+					_defaultBackgroundColor = backGroundColor.ToPlatform();
+				}
+				textField.BackgroundColor = backGroundColor.ToPlatform();
+			}
 		}
 
 		void UpdateCancelButtonColor(UIButton cancelButton)
