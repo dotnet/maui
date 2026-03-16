@@ -178,6 +178,16 @@
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>bfbac237157e59cdbd19334325b2af80bd6e9828</Sha>
     </Dependency>
+    <!-- dotnet/android-tools: Android SDK tooling (SdkManager, AdbRunner, EmulatorRunner, etc.) -->
+    <Dependency Name="Xamarin.Android.Tools.AndroidSdk" Version="1.1.76">
+      <Uri>https://github.com/dotnet/android-tools</Uri>
+      <Sha>091e3a66c0cfcb4fcaaaaa7bc9c5fa85947eecb6</Sha>
+    </Dependency>
+    <!-- dotnet/macios-devtools: Apple platform tooling (SimctlOutputParser, XcodeManager, etc.) -->
+    <Dependency Name="Xamarin.Apple.Tools.MaciOS" Version="1.0.11">
+      <Uri>https://github.com/dotnet/macios-devtools</Uri>
+      <Sha>5295c1f4fcadb3216af0d903b3896dea15c2d37a</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.25523.113">
