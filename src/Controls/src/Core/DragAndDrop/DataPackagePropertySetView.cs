@@ -4,38 +4,63 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataPackagePropertySetView']/Docs/*" />
+	/// <summary>
+	/// A read-only view of a <see cref="DataPackagePropertySet"/>.
+	/// </summary>
 	public class DataPackagePropertySetView : IReadOnlyDictionary<string, object>
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='_dataPackagePropertySet']/Docs/*" />
+		/// <summary>
+		/// The underlying property set.
+		/// </summary>
 		public DataPackagePropertySet _dataPackagePropertySet;
 
-		/// <param name="dataPackagePropertySet">The dataPackagePropertySet parameter.</param>
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DataPackagePropertySetView"/> class.
+		/// </summary>
+		/// <param name="dataPackagePropertySet">The property set to wrap.</param>
 		public DataPackagePropertySetView(DataPackagePropertySet dataPackagePropertySet)
 		{
 			_ = dataPackagePropertySet ?? throw new global::System.ArgumentNullException(nameof(dataPackagePropertySet));
 			_dataPackagePropertySet = dataPackagePropertySet;
 		}
 
+		/// <summary>
+		/// Gets the property value associated with the specified key.
+		/// </summary>
+		/// <param name="key">The key of the property.</param>
 		public object this[string key] => _dataPackagePropertySet[key];
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='Keys']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of property keys.
+		/// </summary>
 		public IEnumerable<string> Keys => _dataPackagePropertySet.Keys;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='Values']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of property values.
+		/// </summary>
 		public IEnumerable<object> Values => _dataPackagePropertySet.Values;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='Count']/Docs/*" />
+		/// <summary>
+		/// Gets the number of properties in the view.
+		/// </summary>
 		public int Count => _dataPackagePropertySet.Count;
 
-		/// <param name="key">The key parameter.</param>
+		/// <summary>
+		/// Determines whether the view contains a property with the specified key.
+		/// </summary>
+		/// <param name="key">The key to locate.</param>
 		public bool ContainsKey(string key) => _dataPackagePropertySet.ContainsKey(key);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySetView.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
+		/// <summary>
+		/// Returns an enumerator that iterates through the properties.
+		/// </summary>
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => _dataPackagePropertySet.GetEnumerator();
 
-		/// <param name="key">The key parameter.</param>
-		/// <param name="value">The value to set.</param>
+		/// <summary>
+		/// Gets the value associated with the specified key.
+		/// </summary>
+		/// <param name="key">The key of the value to get.</param>
+		/// <param name="value">When this method returns, contains the value if the key was found; otherwise, the default value.</param>
 		public bool TryGetValue(string key, out object value) => _dataPackagePropertySet.TryGetValue(key, out value);
 
 		IEnumerator IEnumerable.GetEnumerator() => _dataPackagePropertySet.GetEnumerator();

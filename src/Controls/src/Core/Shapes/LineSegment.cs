@@ -3,16 +3,23 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.LineSegment']/Docs/*" />
+	/// <summary>
+	/// A path segment that draws a straight line to a specified point.
+	/// </summary>
 	public class LineSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LineSegment"/> class.
+		/// </summary>
 		public LineSegment()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LineSegment"/> class with the specified endpoint.
+		/// </summary>
+		/// <param name="point">The endpoint of the line segment.</param>
 		public LineSegment(Point point)
 		{
 			Point = point;
@@ -22,7 +29,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty PointProperty =
 			BindableProperty.Create(nameof(Point), typeof(Point), typeof(LineSegment), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineSegment.xml" path="//Member[@MemberName='Point']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the endpoint of the line segment. This is a bindable property.
+		/// </summary>
 		public Point Point
 		{
 			set { SetValue(PointProperty, value); }

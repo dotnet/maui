@@ -154,7 +154,7 @@ public partial class BlazorWebViewTests
 			Assert.Equal("Hello Matthew (param1=value1, param2=value2)", responseObject.message);
 		});
 
-	[Theory]
+	[Theory(Skip = "Flaky due to external service dependency (echo.free.beeceptor.com). See https://github.com/dotnet/maui/issues/33927")]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
 	[InlineData("app://echoservice/")]

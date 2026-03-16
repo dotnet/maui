@@ -1,10 +1,14 @@
 #nullable disable
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/StateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.StateTrigger']/Docs/*" />
+	/// <summary>
+	/// A state trigger that activates a visual state when <see cref="IsActive"/> is set to <see langword="true"/>.
+	/// </summary>
 	public sealed class StateTrigger : StateTriggerBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/StateTrigger.xml" path="//Member[@MemberName='IsActive']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether this trigger is active. This is a bindable property.
+		/// </summary>
 		public new bool IsActive
 		{
 			get => (bool)GetValue(IsActiveProperty);

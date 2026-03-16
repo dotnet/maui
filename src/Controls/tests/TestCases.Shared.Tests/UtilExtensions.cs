@@ -79,5 +79,20 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw;
 			}
 		}
+
+		public static void TapFirstSearchResult(this IApp app, UITestContextBase context, IUIElement searchHandler, string searchResultIdentifier = "SearchResultName")
+		{
+			if (context.Device == TestDevice.Android)
+			{
+				// Android does not support selecting elements in SearchHandler results
+				var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
+				app.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
+			}
+			else
+			{
+				var searchResults = app.FindElements(searchResultIdentifier);
+				searchResults.First().Tap();
+			}
+		}
 	}
 }

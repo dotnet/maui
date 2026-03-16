@@ -1,11 +1,11 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UpdateMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UpdateMode']/Docs/*" />
+	/// <summary>Specifies when picker controls update their selected value during user interaction on iOS.</summary>
 	public enum UpdateMode
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UpdateMode.xml" path="//Member[@MemberName='Immediately']/Docs/*" />
+		/// <summary>Updates the value immediately as the user scrolls.</summary>
 		Immediately,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UpdateMode.xml" path="//Member[@MemberName='WhenFinished']/Docs/*" />
+		/// <summary>Updates the value only after the user finishes scrolling.</summary>
 		WhenFinished
 	}
 }

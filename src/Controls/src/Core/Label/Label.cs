@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler<LabelHandler>]
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
 	{
 		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
@@ -148,7 +147,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <summary>Gets or sets the LineBreakMode for the Label. This is a bindable property.</summary>
+		/// <summary>
+		/// Gets or sets the LineBreakMode for the Label.
+		/// The default value is <see cref="LineBreakMode.WordWrap"/>. This is a bindable property.
+		/// </summary>
 		public LineBreakMode LineBreakMode
 		{
 			get { return (LineBreakMode)GetValue(LineBreakModeProperty); }

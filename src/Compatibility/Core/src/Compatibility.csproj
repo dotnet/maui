@@ -12,7 +12,8 @@
     <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsAotCompatible>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;CS0672;CS0618</NoWarn>
+    <NoWarn>$(NoWarn);CS0672;CS0618</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <DefineConstants>$(DefineConstants);COMPATIBILITY</DefineConstants>
   </PropertyGroup>
 

@@ -4,7 +4,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSourceTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebViewSourceTypeConverter']/Docs/*" />
+	/// <summary>
+	/// A <see cref="TypeConverter"/> that converts a string to a <see cref="UrlWebViewSource"/>.
+	/// </summary>
 	public class WebViewSourceTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

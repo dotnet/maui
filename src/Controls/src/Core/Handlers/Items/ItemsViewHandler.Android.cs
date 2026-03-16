@@ -109,8 +109,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (adapter is EmptyViewAdapter emptyViewAdapter)
 			{
+				double tolerance = 0.001;
+				var widthChanged = Math.Abs(emptyViewAdapter.RecyclerViewWidth - width) > tolerance;
+				var heightChanged = Math.Abs(emptyViewAdapter.RecyclerViewHeight - height) > tolerance;
+
 				emptyViewAdapter.RecyclerViewWidth = width;
 				emptyViewAdapter.RecyclerViewHeight = height;
+
+				if (widthChanged || heightChanged)
+				{
+					// EmptyView position depends on whether the CollectionView has a header
+					var structuredItemsView = VirtualView as StructuredItemsView;
+					var hasHeader = (structuredItemsView?.Header ?? structuredItemsView?.HeaderTemplate) is not null;
+					var emptyViewPosition = hasHeader ? 1 : 0;
+
+					// Check if ViewHolder exists and is ready for immediate layout request
+					var viewHolder = PlatformView.FindViewHolderForAdapterPosition(emptyViewPosition);
+					if (viewHolder is not null)
+					{
+						// ViewHolder exists, request layout immediately to avoid frame delay
+						viewHolder.ItemView.RequestLayout();
+					}
+					else
+					{
+						// ViewHolder not created yet, defer layout request to next UI loop iteration
+						PlatformView.Post(() =>
+						{
+							var vh = PlatformView.FindViewHolderForAdapterPosition(emptyViewPosition);
+							vh?.ItemView.RequestLayout();
+						});
+					}
+				}
 			}
 		}
 	}
