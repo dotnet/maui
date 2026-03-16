@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31140, "Setting both IndicatorSize and Shadow properties on IndicatorView causes some dots to be invisible", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 31140, "Setting both IndicatorSize and Shadow properties on IndicatorView causes some dots to be invisible", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue31140 : ContentPage
 {
 	public Issue31140()
