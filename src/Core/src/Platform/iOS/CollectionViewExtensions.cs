@@ -34,13 +34,18 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// Internal scroll view may not be created yet, so retry on the main thread after layout.
+			// One deferred retry only; if the scroll view still doesn't exist at that point,
+			// the setting is not applied (acceptable: layout should always be complete by then).
 			collectionView.BeginInvokeOnMainThread(() =>
 			{
 				TryApplyToInternalScrollView(collectionView, isVertical);
 			});
 		}
 
+		// NOTE: This relies on UICollectionViewCompositionalLayout's internal implementation —
+		// it creates a UIScrollView subview to host scroll indicators. If this changes in a
+		// future iOS release, this method will return false and scrollbar visibility will fall
+		// back to the outer UICollectionView only.
 		static bool TryApplyToInternalScrollView(UICollectionView collectionView, bool isVertical)
 		{
 			foreach (var subview in collectionView.Subviews)

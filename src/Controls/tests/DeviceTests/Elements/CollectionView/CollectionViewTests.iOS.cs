@@ -350,7 +350,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Test ScrollBarVisibility.Always
 				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
 				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
-				await Task.Yield(); // Allow BeginInvokeOnMainThread callbacks to drain
+				await Task.Delay(100); // Allow BeginInvokeOnMainThread callbacks to drain
 
 				// Poll for the internal scroll view (it may not be created synchronously)
 				UIScrollView internalScrollView = null;
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Test ScrollBarVisibility.Never
 				carouselView.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
 				carouselView.VerticalScrollBarVisibility = ScrollBarVisibility.Never;
-				await Task.Yield();
+				await Task.Delay(100);
 
 				Assert.False(internalScrollView.ShowsHorizontalScrollIndicator); // Key assertion for this bug!
 				Assert.False(internalScrollView.ShowsVerticalScrollIndicator);
