@@ -226,10 +226,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, _groupableItemsView, this);
-				source.HasFooter = _hasGroupFooters;
-				source.HasHeader = _hasGroupHeaders;
-				_groups.Add(source);
+				if (_groupSource[n] is IEnumerable list)
+				{
+					var source = ItemsSourceFactory.Create(list, _groupableItemsView, this);
+					source.HasFooter = _hasGroupFooters;
+					source.HasHeader = _hasGroupHeaders;
+					_groups.Add(source);
+				}
 			}
 		}
 
