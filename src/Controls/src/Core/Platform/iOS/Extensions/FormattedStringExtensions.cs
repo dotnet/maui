@@ -29,7 +29,8 @@ namespace Microsoft.Maui.Controls.Platform
 				label.ToFont(),
 				label.TextColor,
 				label.TextTransform,
-				label.LineBreakMode);
+				label.LineBreakMode,
+				label.CharacterSpacing);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
-			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap);
+			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
 
 		internal static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -49,7 +50,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont,
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
-			LineBreakMode lineBreakMode)
+			LineBreakMode lineBreakMode,
+			double defaultCharacterSpacing = 0d)
 		{
 			if (formattedString == null)
 			{
@@ -66,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform, lineBreakMode));
+					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing));
 			}
 
 			return attributed;
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
-			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap);
+			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
 
 		internal static NSAttributedString ToNSAttributedString(
 			this Span span,
@@ -90,7 +92,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont,
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
-			LineBreakMode lineBreakMode)
+			LineBreakMode lineBreakMode,
+			double defaultCharacterSpacing = 0d)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
