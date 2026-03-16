@@ -284,6 +284,57 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 				}
 			}
+			else
+			{
+				// No visible cells found with MeasureInvalidated, but NeedsCellLayout is true.
+				// This happens when cells are at 0-height (they aren't in VisibleCells because
+				// CGRectIntersectsRect returns false for zero-height frames). Their cached size
+				// is 0, so GetSizeForItem returns 0, and UIKit never tries to display them –
+				// PreferredLayoutAttributesFittingAttributes never gets called to pick up the
+				// new MaximumHeightRequest value. Fix: clear the 0-height cache entries so that
+				// GetSizeForItem returns EstimatedItemSize (non-zero) for those items, then do
+				// a targeted layout invalidation that lets UIKit dequeue the cells and re-measure.
+				List<NSIndexPath> zeroHeightIndexPaths = null;
+
+				var groupCount = ItemsSource.GroupCount;
+				for (nint section = 0; section < groupCount; section++)
+				{
+					var itemCount = ItemsSource.ItemCountInGroup(section);
+					for (nint row = 0; row < itemCount; row++)
+					{
+						var indexPath = NSIndexPath.FromRowSection(row, section);
+						if (!ItemsSource.IsIndexPathValid(indexPath))
+							continue;
+
+						var item = ItemsSource[indexPath];
+						if (item != null
+							&& ItemsViewLayout.TryGetCachedCellSize(item, out var cachedSize)
+							&& cachedSize.Height == 0)
+						{
+							ItemsViewLayout.RemoveCachedCellSize(item);
+							zeroHeightIndexPaths ??= [];
+							zeroHeightIndexPaths.Add(indexPath);
+						}
+					}
+				}
+
+				if (zeroHeightIndexPaths?.Count > 0)
+				{
+					// Partial invalidation for just the items that had 0-height cached sizes.
+					// UIKit will now query EstimatedItemSize for them, dequeue their cells,
+					// and call PreferredLayoutAttributesFittingAttributes to get the real size.
+					if (ItemsSource.ItemCount == 1)
+					{
+						CollectionView.CollectionViewLayout.InvalidateLayout();
+					}
+					else
+					{
+						var context = new UICollectionViewFlowLayoutInvalidationContext();
+						context.InvalidateItems(zeroHeightIndexPaths.ToArray());
+						CollectionView.CollectionViewLayout.InvalidateLayout(context);
+					}
+				}
+			}
 		}
 
 		bool IsRefreshing()

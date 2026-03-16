@@ -623,6 +623,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_cellSizeCache.Clear();
 		}
 
+		internal void RemoveCachedCellSize(object item)
+		{
+			_cellSizeCache.Remove(item);
+		}
+
 		CGSize TryFindEstimatedSize(CGSize existingMeasurement)
 		{
 			if (CollectionView == null || GetPrototypeForIndexPath == null)

@@ -225,6 +225,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (invalidatedCells is not null)
 			{
+				if (ItemsView is GroupableItemsView { IsGrouped: true })
+				{
+					collectionView.CollectionViewLayout.InvalidateLayout();
+					return;
+				}
+
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
