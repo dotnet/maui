@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Controls
 				{
 					if (group.CurrentState is { } state)
 					{
-						var unapplySpecificity = state.Name != CommonStates.Normal
+						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
+						// Custom developer-defined states keep downgraded priority (#34363).
+						var unapplySpecificity = IsSystemDrivenState(state.Name)
 							? baseSpecificity.WithFullVsmPriority()
 							: baseSpecificity;
 						foreach (var setter in state.Setters)
@@ -122,8 +124,8 @@ namespace Microsoft.Maui.Controls
 				// If we've got a new state to transition to, unapply the setters from the current state
 				if (group.CurrentState != null)
 				{
-					// Use promoted specificity for non-Normal states so unapply matches what was applied
-					var unapplySpecificity = group.CurrentState.Name != CommonStates.Normal
+					// Mirror the apply logic: use the same promoted specificity for system-driven states.
+					var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
 						? baseSpecificity.WithFullVsmPriority()
 						: baseSpecificity;
 					foreach (Setter setter in group.CurrentState.Setters)
@@ -135,10 +137,10 @@ namespace Microsoft.Maui.Controls
 				// Update the current state
 				group.CurrentState = target;
 
-				// For non-Normal states (Disabled, Focused, etc.), promote implicit VSM
-				// to full VSM priority so it can override locally-set values.
-				// Normal state keeps downgraded priority per #18103.
-				var applySpecificity = name != CommonStates.Normal
+				// For system-driven states (Disabled, Focused, Selected, PointerOver, Unfocused),
+				// promote implicit VSM to full VSM priority so it can override locally-set values.
+				// Normal state and custom developer-defined states keep downgraded priority (#18103, #34363).
+				var applySpecificity = IsSystemDrivenState(name)
 					? baseSpecificity.WithFullVsmPriority()
 					: baseSpecificity;
 
@@ -153,6 +155,19 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		/// <summary>
+		/// Returns <see langword="true"/> for states that the MAUI framework drives automatically
+		/// (Disabled, Focused, Unfocused, Selected, PointerOver).
+		/// Only these states promote an implicit-style VSM setter to full VSM priority (fix for #34363),
+		/// preventing custom developer-defined states from unexpectedly overriding manually-set values.
+		/// </summary>
+		static bool IsSystemDrivenState(string stateName) =>
+			stateName == CommonStates.Disabled ||
+			stateName == CommonStates.Focused ||
+			stateName == CommonStates.Unfocused ||
+			stateName == CommonStates.Selected ||
+			stateName == CommonStates.PointerOver;
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="element"/> has any visual state groups defined.
