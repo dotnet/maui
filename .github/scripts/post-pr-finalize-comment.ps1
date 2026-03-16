@@ -43,20 +43,7 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory=$false)]
-    [string]$PreviewFile,
-
-    # Legacy parameters — accepted but ignored for backward compatibility
-    [Parameter(Mandatory=$false)][string]$TitleStatus,
-    [Parameter(Mandatory=$false)][string]$CurrentTitle,
-    [Parameter(Mandatory=$false)][string]$RecommendedTitle,
-    [Parameter(Mandatory=$false)][string]$TitleIssues,
-    [Parameter(Mandatory=$false)][string]$DescriptionStatus,
-    [Parameter(Mandatory=$false)][string]$DescriptionAssessment,
-    [Parameter(Mandatory=$false)][string]$MissingElements,
-    [Parameter(Mandatory=$false)][string]$RecommendedDescription,
-    [Parameter(Mandatory=$false)][string]$CodeReviewStatus,
-    [Parameter(Mandatory=$false)][string]$CodeReviewFindings,
-    [Parameter(Mandatory=$false)][switch]$Standalone
+    [string]$PreviewFile
 )
 
 $ErrorActionPreference = "Stop"

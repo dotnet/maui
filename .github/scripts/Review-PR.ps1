@@ -163,15 +163,21 @@ if ($DryRun) {
         $UseCurrentBranch = $true
     }
 
+    # Capture original branch so error paths can restore it (not `git checkout -` which is unreliable)
+    $originalBranch = git branch --show-current 2>$null
+    if (-not $originalBranch) { $originalBranch = git rev-parse HEAD 2>$null }
+
     if (-not $UseCurrentBranch) {
         # Default: checkout main first
         Write-Host "  📌 Checking out main branch..." -ForegroundColor Cyan
         git checkout main 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Error "Failed to checkout main"; exit 1 }
-        git pull origin main --ff-only 2>&1 | Out-Null
+        $pullOutput = git pull origin main --ff-only 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ⚠️ git pull failed (non-fatal, continuing with local main)" -ForegroundColor Yellow
+            Write-Host "  ⚠️ git pull failed (non-fatal, continuing with local main): $pullOutput" -ForegroundColor Yellow
         }
+        $baseSha = git rev-parse --short HEAD 2>$null
+        Write-Host "  📌 Review base: main @ $baseSha" -ForegroundColor Cyan
     } else {
         $currentBranch = git branch --show-current 2>$null
         if (-not $currentBranch) { $currentBranch = "(detached HEAD)" }
@@ -198,14 +204,14 @@ if ($DryRun) {
         $forkInfo = gh pr view $PRNumber --json headRepositoryOwner,headRefName,headRepository 2>$null | ConvertFrom-Json
         if (-not $forkInfo -or -not $forkInfo.headRepositoryOwner) {
             Write-Error "Failed to fetch PR #$PRNumber (not found on origin or fork)"
-            git checkout - 2>$null
+            git checkout $originalBranch 2>$null
             exit 1
         }
         $forkUrl = "https://github.com/$($forkInfo.headRepositoryOwner.login)/$($forkInfo.headRepository.name).git"
-        git fetch $forkUrl "$($forkInfo.headRefName):$tempBranch" 2>&1 | Out-Null
+        $fetchOutput = git fetch $forkUrl "$($forkInfo.headRefName):$tempBranch" 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to fetch from fork: $forkUrl"
-            git checkout - 2>$null
+            Write-Error "Failed to fetch from fork: $forkUrl`n$fetchOutput"
+            git checkout $originalBranch 2>$null
             exit 1
         }
     }
@@ -232,7 +238,7 @@ if ($DryRun) {
         git reset --hard HEAD 2>$null
 
         # Clean up branches
-        git checkout - 2>$null
+        git checkout $originalBranch 2>$null
         git branch -D $reviewBranch 2>$null
         git branch -D $tempBranch 2>$null
 
