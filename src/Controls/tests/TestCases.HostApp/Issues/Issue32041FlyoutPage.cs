@@ -97,10 +97,11 @@ public class Issue32041FlyoutPage : FlyoutPage
 		// Bottom marker with entry
 		var bottomMarker = new Border
 		{
-			AutomationId = "BottomMarker",
 			BackgroundColor = Colors.DarkGreen,
 			HeightRequest = 60,
-			Margin = new Thickness(0)
+			Margin = new Thickness(0),
+			Padding = new Thickness(0),
+			StrokeThickness = 0
 		};
 
 		var markerContent = new VerticalStackLayout
@@ -129,7 +130,17 @@ public class Issue32041FlyoutPage : FlyoutPage
 
 		markerContent.Add(markerLabel);
 		markerContent.Add(testEntry);
-		bottomMarker.Content = markerContent;
+
+		var scrollView = new ScrollView
+		{
+			AutomationId = "BottomMarker",
+			Padding = 0,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
+			VerticalScrollBarVisibility = ScrollBarVisibility.Never,
+			Content = markerContent
+		};
+
+		bottomMarker.Content = scrollView;
 
 		mainContainer.Add(fillerContent);
 		mainContainer.Add(bottomMarker);

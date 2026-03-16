@@ -48,10 +48,11 @@ public class Issue32041AdjustPan : ContentPage
 		// Bottom marker
 		var bottomMarkerPan = new Border
 		{
-			AutomationId = "BottomMarkerPan",
 			BackgroundColor = Colors.Green,
 			HeightRequest = 60,
-			Margin = new Thickness(0)
+			Margin = new Thickness(0),
+			Padding = new Thickness(0),
+			StrokeThickness = 0
 		};
 
 		var markerContent = new VerticalStackLayout
@@ -80,7 +81,17 @@ public class Issue32041AdjustPan : ContentPage
 
 		markerContent.Add(markerLabel);
 		markerContent.Add(testEntryPan);
-		bottomMarkerPan.Content = markerContent;
+
+		var scrollView = new ScrollView
+		{
+			AutomationId = "BottomMarkerPan",
+			Padding = 0,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
+			VerticalScrollBarVisibility = ScrollBarVisibility.Never,
+			Content = markerContent
+		};
+
+		bottomMarkerPan.Content = scrollView;
 
 		mainContainerPan.Add(topContent);
 		Grid.SetRow(topContent, 0);
