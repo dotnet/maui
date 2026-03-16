@@ -197,6 +197,7 @@ public static class AndroidCommands
 				if (ProcessRunner.RelaunchElevated())
 				{
 					formatter.WriteSuccess("Android environment installed successfully (elevated)");
+					return; // Exit after elevation — the elevated process handled the work
 				}
 				else
 				{

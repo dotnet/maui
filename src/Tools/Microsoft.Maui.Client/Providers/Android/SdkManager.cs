@@ -20,16 +20,28 @@ public class SdkManager : IDisposable
 	private readonly Func<string?> _getJdkPath;
 	private readonly XatSdkManager _sdkManager;
 
-	// Suppress all console output from android-tools logger.
-	// Warnings/verbose messages about invalid JDK paths, missing java_home, etc. are
-	// expected on many dev machines and should not pollute CLI output.
-	static readonly Action<TraceLevel, string> s_quietLogger = (level, msg) => { };
+	/// <summary>
+	/// Creates a logger that forwards android-tools diagnostics when verbose mode is active.
+	/// When verbose is false, only Error/Warning levels are forwarded; others are suppressed
+	/// to avoid polluting CLI output with expected warnings about missing JDK paths, etc.
+	/// </summary>
+	static Action<TraceLevel, string> CreateLogger(bool verbose = false)
+	{
+		if (verbose)
+			return (level, msg) => Console.Error.WriteLine($"[android-tools:{level}] {msg}");
 
-	public SdkManager(Func<string?> getSdkPath, Func<string?> getJdkPath)
+		return (level, msg) =>
+		{
+			if (level == TraceLevel.Error)
+				Console.Error.WriteLine($"[android-tools:error] {msg}");
+		};
+	}
+
+	public SdkManager(Func<string?> getSdkPath, Func<string?> getJdkPath, bool verbose = false)
 	{
 		_getSdkPath = getSdkPath;
 		_getJdkPath = getJdkPath;
-		_sdkManager = new XatSdkManager(logger: s_quietLogger);
+		_sdkManager = new XatSdkManager(logger: CreateLogger(verbose));
 	}
 
 	private void SyncPaths()

@@ -25,9 +25,13 @@
   
   <!-- Get git commit at build time and set version to 0.0.1-alpha.{commit} -->
   <Target Name="SetGitCommitHash" BeforeTargets="GetAssemblyVersion;GenerateNuspec;Build;Pack">
-    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low">
+    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low"
+          ContinueOnError="true" IgnoreExitCode="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
     </Exec>
+    <PropertyGroup Condition="'$(GitCommitHash)' == ''">
+      <GitCommitHash>local</GitCommitHash>
+    </PropertyGroup>
     <PropertyGroup>
       <Version>0.0.1-alpha.$(GitCommitHash)</Version>
       <PackageVersion>0.0.1-alpha.$(GitCommitHash)</PackageVersion>

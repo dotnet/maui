@@ -9,16 +9,25 @@ namespace Microsoft.Maui.Client.Providers.Android;
 
 /// <summary>
 /// Provider for Android SDK and device operations.
+/// Dependencies are injected via constructor for testability.
 /// </summary>
 public class AndroidProvider : IAndroidProvider
 {
 	private readonly SdkManager _sdkManager;
 	private readonly AvdManager _avdManager;
 	private readonly Adb _adb;
-	private readonly JdkManager _jdkManager;
+	private readonly IJdkManager _jdkManager;
 
 	private string? _sdkPath;
 	private string? _jdkPath;
+
+	// Default Android SDK target versions — update these when the minimum supported API level changes
+	internal const int DefaultAndroidApiLevel = 35;
+	internal const string DefaultBuildToolsVersion = "35.0.0";
+	internal static string DefaultPlatformPackage => $"platforms;android-{DefaultAndroidApiLevel}";
+	internal static string DefaultBuildToolsPackage => $"build-tools;{DefaultBuildToolsVersion}";
+	internal static string DefaultSystemImagePackage =>
+		$"system-images;android-{DefaultAndroidApiLevel};google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}";
 
 	public string? SdkPath => _sdkPath ??= PlatformDetector.Paths.GetAndroidSdkPath();
 	public string? JdkPath => _jdkPath ??= _jdkManager.DetectedJdkPath ?? PlatformDetector.Paths.GetJdkPath();
@@ -27,12 +36,12 @@ public class AndroidProvider : IAndroidProvider
 	public bool IsJdkInstalled => !string.IsNullOrEmpty(JdkPath) && Directory.Exists(JdkPath);
 	public bool SdkPathRequiresElevation => _sdkManager.SdkPathRequiresElevation();
 
-	public AndroidProvider()
+	public AndroidProvider(IJdkManager jdkManager, SdkManager? sdkManager = null, Adb? adb = null, AvdManager? avdManager = null)
 	{
-		_jdkManager = new JdkManager();
-		_sdkManager = new SdkManager(() => SdkPath, () => JdkPath);
-		_adb = new Adb(() => SdkPath);
-		_avdManager = new AvdManager(() => SdkPath, () => JdkPath, _adb);
+		_jdkManager = jdkManager ?? throw new ArgumentNullException(nameof(jdkManager));
+		_sdkManager = sdkManager ?? new SdkManager(() => SdkPath, () => JdkPath);
+		_adb = adb ?? new Adb(() => SdkPath);
+		_avdManager = avdManager ?? new AvdManager(() => SdkPath, () => JdkPath, _adb);
 	}
 
 	public async Task<List<HealthCheck>> CheckHealthAsync(CancellationToken cancellationToken = default)
@@ -367,9 +376,9 @@ public class AndroidProvider : IAndroidProvider
 			{
 				"platform-tools",
 				"emulator",
-				"platforms;android-35",
-				"build-tools;35.0.0",
-				$"system-images;android-35;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
+				DefaultPlatformPackage,
+				DefaultBuildToolsPackage,
+				DefaultSystemImagePackage
 			};
 		}
 

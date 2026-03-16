@@ -162,16 +162,19 @@ public class DoctorService : IDoctorService
 		if (!fix.AutoFixable)
 			return false;
 
-		// Parse the command and execute it
-		if (fix.Command != null)
+		if (fix.Command == null)
+			return false;
+
+		try
 		{
-			// For now, we just report what would need to be run
-			// In a full implementation, this would execute the fix
-			Console.WriteLine($"Would run: {fix.Command}");
+			var result = await ProcessRunner.RunAsync(fix.Command, cancellationToken: cancellationToken);
+			return result.ExitCode == 0;
+		}
+		catch (Exception)
+		{
+			// Fix attempt failed — caller will report the failure
 			return false;
 		}
-
-		return false;
 	}
 
 	private async Task<HealthCheck> CheckDotNetSdkAsync(CancellationToken cancellationToken)

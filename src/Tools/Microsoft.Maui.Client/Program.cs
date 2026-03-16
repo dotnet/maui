@@ -17,15 +17,26 @@ namespace Microsoft.Maui.Client;
 
 public class Program
 {
-	// Service provider for dependency injection
+	// Thread-safe lazy initialization of the service provider
+	private static readonly object _lock = new();
 	private static IServiceProvider? _serviceProvider;
 
 	/// <summary>
-	/// Gets or sets the service provider. Can be overridden for testing.
+	/// Gets or sets the service provider. Thread-safe initialization with lock.
+	/// Can be overridden for testing (set before first access).
 	/// </summary>
 	public static IServiceProvider Services
 	{
-		get => _serviceProvider ??= ServiceConfiguration.CreateServiceProvider();
+		get
+		{
+			if (_serviceProvider is not null)
+				return _serviceProvider;
+
+			lock (_lock)
+			{
+				return _serviceProvider ??= ServiceConfiguration.CreateServiceProvider();
+			}
+		}
 		set => _serviceProvider = value;
 	}
 
