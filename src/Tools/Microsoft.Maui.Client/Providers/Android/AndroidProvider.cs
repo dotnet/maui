@@ -44,6 +44,12 @@ public class AndroidProvider : IAndroidProvider
 		_avdManager = avdManager ?? new AvdManager(() => SdkPath, () => JdkPath, _adb);
 	}
 
+	public void Dispose()
+	{
+		_sdkManager.Dispose();
+		GC.SuppressFinalize(this);
+	}
+
 	public async Task<List<HealthCheck>> CheckHealthAsync(CancellationToken cancellationToken = default)
 	{
 		var checks = new List<HealthCheck>();

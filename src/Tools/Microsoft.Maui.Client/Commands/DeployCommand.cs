@@ -37,11 +37,7 @@ public static class DeployCommand
 			var framework = context.ParseResult.GetValueForOption(
 				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "framework"));
 			var noBuild = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "no-build"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "no-build"));				var formatter = Program.GetFormatter(context);
 
 			try
 			{

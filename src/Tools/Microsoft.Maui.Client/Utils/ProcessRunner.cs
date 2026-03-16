@@ -24,6 +24,25 @@ public record ProcessResult
 public static class ProcessRunner
 {
 	/// <summary>
+	/// Validates and quotes a process argument value to prevent command injection.
+	/// Rejects values containing shell metacharacters that could escape argument boundaries.
+	/// </summary>
+	internal static string SanitizeArg(string value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+
+		// Reject values containing shell metacharacters that could enable injection
+		char[] forbidden = [';', '&', '|', '`', '$', '\n', '\r', '\0'];
+		if (value.IndexOfAny(forbidden) >= 0)
+			throw new ArgumentException($"Argument contains forbidden characters: {value}", nameof(value));
+
+		// Quote the value if it contains spaces
+		if (value.Contains(' ', StringComparison.Ordinal))
+			return $"\"{value}\"";
+
+		return value;
+	}
+	/// <summary>
 	/// Runs a process synchronously and captures output.
 	/// </summary>
 	public static ProcessResult RunSync(

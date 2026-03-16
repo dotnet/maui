@@ -261,7 +261,7 @@ public class Simctl
 		progress?.Report($"Installing iOS {version} runtime...");
 
 		var result = await ProcessRunner.RunAsync(
-			"xcodebuild", $"-downloadPlatform iOS -buildVersion {version}",
+			"xcodebuild", $"-downloadPlatform iOS -buildVersion {ProcessRunner.SanitizeArg(version)}",
 			timeout: TimeSpan.FromMinutes(60),
 			cancellationToken: cancellationToken);
 
@@ -269,7 +269,7 @@ public class Simctl
 		{
 			// Fallback: try xcrun simctl runtime add
 			var fallback = await ProcessRunner.RunAsync(
-				"xcrun", $"simctl runtime add \"iOS {version}\"",
+				"xcrun", $"simctl runtime add \"iOS {ProcessRunner.SanitizeArg(version)}\"",
 				timeout: TimeSpan.FromMinutes(60),
 				cancellationToken: cancellationToken);
 
@@ -292,7 +292,7 @@ public class Simctl
 		CancellationToken cancellationToken = default)
 	{
 		var result = await ProcessRunner.RunAsync(
-			"xcrun", $"simctl create \"{name}\" \"{deviceType}\" \"{runtime}\"",
+			"xcrun", $"simctl create {ProcessRunner.SanitizeArg(name)} {ProcessRunner.SanitizeArg(deviceType)} {ProcessRunner.SanitizeArg(runtime)}",
 			timeout: TimeSpan.FromSeconds(30),
 			cancellationToken: cancellationToken);
 
@@ -338,7 +338,7 @@ public class Simctl
 	public async Task DeleteDeviceAsync(string udid, CancellationToken cancellationToken = default)
 	{
 		var result = await ProcessRunner.RunAsync(
-			"xcrun", $"simctl delete \"{udid}\"",
+			"xcrun", $"simctl delete {ProcessRunner.SanitizeArg(udid)}",
 			timeout: TimeSpan.FromSeconds(30),
 			cancellationToken: cancellationToken);
 
@@ -357,7 +357,7 @@ public class Simctl
 	public async Task BootDeviceAsync(string udid, CancellationToken cancellationToken = default)
 	{
 		var result = await ProcessRunner.RunAsync(
-			"xcrun", $"simctl boot \"{udid}\"",
+			"xcrun", $"simctl boot {ProcessRunner.SanitizeArg(udid)}",
 			timeout: TimeSpan.FromSeconds(60),
 			cancellationToken: cancellationToken);
 
@@ -377,7 +377,7 @@ public class Simctl
 	public async Task ShutdownDeviceAsync(string udid, CancellationToken cancellationToken = default)
 	{
 		var result = await ProcessRunner.RunAsync(
-			"xcrun", $"simctl shutdown \"{udid}\"",
+			"xcrun", $"simctl shutdown {ProcessRunner.SanitizeArg(udid)}",
 			timeout: TimeSpan.FromSeconds(30),
 			cancellationToken: cancellationToken);
 

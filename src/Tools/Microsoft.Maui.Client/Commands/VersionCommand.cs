@@ -28,7 +28,7 @@ public static class VersionCommand
 
 			if (useJson)
 			{
-				var formatter = new JsonOutputFormatter(Console.Out);
+				var formatter = Program.GetFormatter(context);
 				formatter.Write(new
 				{
 					version = version,
@@ -38,7 +38,7 @@ public static class VersionCommand
 			}
 			else
 			{
-				var formatter = new SpectreOutputFormatter();
+				var formatter = Program.GetFormatter(context);
 				formatter.WriteVersion(version, $".NET {Environment.Version}", Environment.OSVersion.ToString());
 			}
 		});

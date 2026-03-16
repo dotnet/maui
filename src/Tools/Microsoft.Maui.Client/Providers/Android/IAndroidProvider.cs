@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// <summary>
 /// Interface for Android SDK and device operations.
 /// </summary>
-public interface IAndroidProvider
+public interface IAndroidProvider : IDisposable
 {
 	/// <summary>
 	/// Gets the Android SDK path.

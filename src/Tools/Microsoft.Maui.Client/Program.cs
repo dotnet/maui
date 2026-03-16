@@ -55,13 +55,8 @@ public class Program
 			.UseDefaults()
 			.UseExceptionHandler((exception, context) =>
 			{
-				var useJson = context.ParseResult.FindResultFor(GlobalOptions.JsonOption) is not null &&
-							  context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+				var formatter = GetFormatter(context);
 				var isCi = context.ParseResult.GetValueForOption(GlobalOptions.CiOption);
-				
-				var formatter = useJson 
-					? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-					: new SpectreOutputFormatter();
 				
 				formatter.WriteError(exception);
 				context.ExitCode = 1;

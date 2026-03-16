@@ -31,11 +31,7 @@ public static class DoctorCommand
 			var fix = context.ParseResult.GetValueForOption(
 				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "fix"));
 			var platform = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "platform"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "platform"));				var formatter = Program.GetFormatter(context);
 
 			try
 			{

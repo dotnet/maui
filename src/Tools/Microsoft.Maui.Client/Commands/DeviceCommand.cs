@@ -28,22 +28,18 @@ public static class DeviceCommand
 
 	private static Command CreateListCommand()
 	{
+		var platformOption = new Option<string>("--platform", () => "all", "Filter by platform (android, apple, windows, all)");
 		var command = new Command("list", "List available devices")
 		{
-			new Option<string>("--platform", () => "all", "Filter by platform (android, apple, windows, all)")
+			platformOption
 		};
 
 		command.SetHandler(async (InvocationContext context) =>
 		{
 			var deviceManager = Program.DeviceManager;
-			
+			var formatter = Program.GetFormatter(context);
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var platform = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "platform"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+			var platform = context.ParseResult.GetValueForOption(platformOption);
 
 			try
 			{
@@ -78,25 +74,20 @@ public static class DeviceCommand
 
 	private static Command CreateScreenshotCommand()
 	{
+		var deviceIdArg = new Argument<string>("device-id", "Device ID to capture");
+		var outputOption = new Option<string>("--output", "Output file path");
 		var command = new Command("screenshot", "Capture device screenshot")
 		{
-			new Argument<string>("device-id", "Device ID to capture"),
-			new Option<string>("--output", "Output file path")
+			deviceIdArg, outputOption
 		};
 
 		command.SetHandler(async (InvocationContext context) =>
 		{
 			var deviceManager = Program.DeviceManager;
-			
+			var formatter = Program.GetFormatter(context);
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var deviceId = context.ParseResult.GetValueForArgument(
-				(Argument<string>)context.ParseResult.CommandResult.Command.Arguments.First());
-			var outputPath = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "output"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+			var deviceId = context.ParseResult.GetValueForArgument(deviceIdArg);
+			var outputPath = context.ParseResult.GetValueForOption(outputOption);
 
 			try
 			{

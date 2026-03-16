@@ -64,11 +64,7 @@ public static class AndroidCommands
 			// Support comma-separated packages: "pkg1,pkg2,pkg3" becomes ["pkg1", "pkg2", "pkg3"]
 			var packages = rawPackages?
 				.SelectMany(p => p.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-				.ToArray();
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				.ToArray();				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -227,9 +223,7 @@ public static class AndroidCommands
 			var jdkManager = Program.JdkManager;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				var formatter = Program.GetFormatter(context);
 
 			var healthCheck = await jdkManager.CheckHealthAsync(context.GetCancellationToken());
 
@@ -263,11 +257,7 @@ public static class AndroidCommands
 			var version = context.ParseResult.GetValueForOption(
 				(Option<int>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "version"));
 			var path = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "path"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "path"));				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -307,12 +297,12 @@ public static class AndroidCommands
 
 			if (useJson)
 			{
-				var formatter = new JsonOutputFormatter(Console.Out);
+				var formatter = Program.GetFormatter(context);
 				formatter.Write(new { versions = versions });
 			}
 			else
 			{
-				var formatter = new SpectreOutputFormatter();
+				var formatter = Program.GetFormatter(context);
 				formatter.WriteTable(
 					versions,
 					("Version", v => v.ToString()),
@@ -338,9 +328,7 @@ public static class AndroidCommands
 			var androidProvider = Program.AndroidProvider;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				var formatter = Program.GetFormatter(context);
 
 			var checks = await androidProvider.CheckHealthAsync(context.GetCancellationToken());
 			var sdkCheck = checks.FirstOrDefault(c => c.Name == "Android SDK");
@@ -377,11 +365,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var packages = context.ParseResult.GetValueForArgument(sdkInstallPkgsArg);
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+			var packages = context.ParseResult.GetValueForArgument(sdkInstallPkgsArg);				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -581,11 +565,7 @@ public static class AndroidCommands
 			var showAvailable = context.ParseResult.GetValueForOption(
 				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "available"));
 			var showAll = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "all"));
-			
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "all"));				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -701,9 +681,7 @@ public static class AndroidCommands
 			var androidProvider = Program.AndroidProvider;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -830,11 +808,7 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var packages = context.ParseResult.GetValueForArgument(
-				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());
-
-			var formatter = useJson
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out)
-				: new SpectreOutputFormatter();
+				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -876,9 +850,7 @@ public static class AndroidCommands
 			var androidProvider = Program.AndroidProvider;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -933,11 +905,7 @@ public static class AndroidCommands
 			var device = context.ParseResult.GetValueForOption(
 				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "device"));
 			var force = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "force"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "force"));				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -1081,11 +1049,7 @@ public static class AndroidCommands
 			var coldBoot = context.ParseResult.GetValueForOption(
 				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "cold-boot"));
 			var wait = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "wait"));
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "wait"));				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -1174,11 +1138,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(stopNameArg);
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+			var name = context.ParseResult.GetValueForArgument(stopNameArg);				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -1289,11 +1249,7 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(deleteNameArg);
-
-			var formatter = useJson 
-				? (IOutputFormatter)new JsonOutputFormatter(Console.Out) 
-				: new SpectreOutputFormatter();
+			var name = context.ParseResult.GetValueForArgument(deleteNameArg);				var formatter = Program.GetFormatter(context);
 
 			try
 			{

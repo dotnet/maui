@@ -80,7 +80,7 @@ public class Adb
 		// Try adb emu avd name first
 		try
 		{
-			var result = await ProcessRunner.RunAsync(AdbPath, $"-s {serial} emu avd name",
+			var result = await ProcessRunner.RunAsync(AdbPath, $"-s {ProcessRunner.SanitizeArg(serial)} emu avd name",
 				timeout: TimeSpan.FromSeconds(5), cancellationToken: cancellationToken);
 			if (result.Success && !string.IsNullOrWhiteSpace(result.StandardOutput))
 			{
@@ -216,14 +216,14 @@ public class Adb
 		var remotePath = "/sdcard/screenshot.png";
 
 		// Capture screenshot on device
-		var captureResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {deviceSerial} shell screencap -p {remotePath}", cancellationToken: cancellationToken);
+		var captureResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {ProcessRunner.SanitizeArg(deviceSerial)} shell screencap -p {remotePath}", cancellationToken: cancellationToken);
 		if (!captureResult.Success)
 			throw new MauiToolException(ErrorCodes.AndroidDeviceNotFound,
 				$"Failed to capture screenshot: {captureResult.StandardError}",
 				nativeError: captureResult.StandardError);
 
 		// Pull screenshot to local path
-		var pullResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {deviceSerial} pull {remotePath} {outputPath}", cancellationToken: cancellationToken);
+		var pullResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {ProcessRunner.SanitizeArg(deviceSerial)} pull {remotePath} {ProcessRunner.SanitizeArg(outputPath)}", cancellationToken: cancellationToken);
 		if (!pullResult.Success)
 			throw new MauiToolException(ErrorCodes.AndroidDeviceNotFound,
 				$"Failed to pull screenshot: {pullResult.StandardError}",
