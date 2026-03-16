@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using Microsoft.Maui.TestCases.Tests;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
