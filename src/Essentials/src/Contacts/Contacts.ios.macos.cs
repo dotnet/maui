@@ -22,25 +22,35 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			var source = new TaskCompletionSource<Contact>();
 
+			var contactDelegate = new ContactPickerDelegate(phoneContact =>
+			{
+				try
+				{
+					source?.TrySetResult(ConvertContact(phoneContact));
+				}
+				catch (Exception ex)
+				{
+					source?.TrySetException(ex);
+				}
+			});
+
 			var picker = new CNContactPickerViewController
 			{
-				Delegate = new ContactPickerDelegate(phoneContact =>
-				{
-					try
-					{
-						source?.TrySetResult(ConvertContact(phoneContact));
-					}
-					catch (Exception ex)
-					{
-						source?.TrySetException(ex);
-					}
-				})
+				Delegate = contactDelegate
 			};
 
-			if (picker.PresentationController != null)
+			if (picker.PresentationController is not null)
 			{
+				// Only complete with null (swipe-to-dismiss) if the delegate hasn't already
+				// handled an explicit selection or cancellation via its completion callback.
 				picker.PresentationController.Delegate =
-					new UIPresentationControllerDelegate(() => source?.TrySetResult(null));
+					new UIPresentationControllerDelegate(() =>
+					{
+						if (!contactDelegate.IsResultDelivered)
+						{
+							source?.TrySetResult(null);
+						}
+					});
 			}
 
 			vc.PresentViewController(picker, true, null);
@@ -122,16 +132,20 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			public Action<CNContact> DidSelectContactHandler { get; }
 
+			// Set to true when an explicit selection or cancellation is made, so that
+			// UIPresentationControllerDelegate.DidDismiss does not complete the TCS with null.
+			public bool IsResultDelivered { get; private set; }
+
 			public override void ContactPickerDidCancel(CNContactPickerViewController picker)
 			{
-				DidSelectContactHandler?.Invoke(default);
-				picker.DismissViewController(true, null);
+				IsResultDelivered = true;
+				picker.DismissViewController(true, () => DidSelectContactHandler?.Invoke(default));
 			}
 
 			public override void DidSelectContact(CNContactPickerViewController picker, CNContact contact)
 			{
-				DidSelectContactHandler?.Invoke(contact);
-				picker.DismissViewController(true, null);
+				IsResultDelivered = true;
+				picker.DismissViewController(true, () => DidSelectContactHandler?.Invoke(contact));
 			}
 
 			public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
