@@ -220,6 +220,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						RemoveRenderer(renderer);
 					}
 				}
+
+				// Recalculate IsInMoreTab for remaining renderers since tab positions shifted after removal.
+				UpdateIsInMoreTabForRenderers();
 			}
 
 			if (e.NewItems != null && e.NewItems.Count > 0)
@@ -321,6 +324,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
 				}
+			}
+		}
+
+		void UpdateIsInMoreTabForRenderers()
+		{
+			const int maxTabs = 5;
+			var currentViewControllers = ViewControllers;
+			if (currentViewControllers == null)
+				return;
+
+			bool willUseMore = currentViewControllers.Length > maxTabs;
+			for (int i = 0; i < currentViewControllers.Length; i++)
+			{
+				var renderer = RendererForViewController(currentViewControllers[i]);
+				if (renderer != null)
+					renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
 			}
 		}
 
@@ -455,11 +474,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
 				return;
 
+			// Shell doesn't have the property PrefersLargeTitles, so we should not update the large titles
+			// if users doen't explicitly set the LargeTitleDisplay property on the Page.
+			// todo net 11: Add PrefersLargeTitles to Shell and use that here.
+			if (!page.IsSet(PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			{
+				return;
+			}
+
 			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 
 			if (SelectedViewController is UINavigationController navigationController)
 			{
-				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
 				var top = navigationController.TopViewController;
 				if (top is not null)
 				{

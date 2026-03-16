@@ -29,12 +29,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
-			if (!visibleItems)
-				return;
-
 			var contentInset = scrollView.ContentInset;
-			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
-			var contentOffsetY = scrollView.ContentOffset.Y + contentInset.Top;
+			var contentOffsetX = !visibleItems ? 0 : scrollView.ContentOffset.X + contentInset.Left;
+			var contentOffsetY = !visibleItems ? 0 : scrollView.ContentOffset.Y + contentInset.Top;
 
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
@@ -57,6 +54,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			PreviousHorizontalOffset = (float)contentOffsetX;
 			PreviousVerticalOffset = (float)contentOffsetY;
+
+			if (!visibleItems)
+			{
+				return;
+			}
 
 			switch (itemsView.RemainingItemsThreshold)
 			{
@@ -117,7 +119,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (collectionView is null)
 				return default;
 
-			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
+			// Sort visible item index paths by section and then by row for consistent order in both grouped and ungrouped sources
+			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Section).ThenBy(x => x.Row).ToList();
 
 			var visibleItems = indexPathsForVisibleItems.Count > 0;
 			NSIndexPath firstVisibleItemIndex = null, centerItemIndex = null, lastVisibleItemIndex = null;

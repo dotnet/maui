@@ -232,6 +232,28 @@ if ($Category) {
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
+
+    # Dismiss any ANR dialogs that may have appeared during build/deploy.
+    # The emulator can sit idle during long builds, causing SystemUI ANR.
+    Write-Info "Dismissing any system dialogs before test..."
+    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_ENTER 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+    Start-Sleep -Seconds 1
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_MENU 2>$null
+    Start-Sleep -Seconds 1
+
+    # Check for lingering ANR dialogs via window dump
+    $windowDump = & adb -s $DeviceUdid shell dumpsys window 2>$null | Select-String "Application Not Responding|ANR"
+    if ($windowDump) {
+        Write-Warn "ANR dialog detected — force-dismissing..."
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+        Start-Sleep -Seconds 2
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+        Start-Sleep -Seconds 1
+    }
 }
 
 # Capture test start time for iOS logs

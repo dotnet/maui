@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
-			else if (platformView is LayoutViewGroup)
+			else if (platformView is LayoutViewGroup or ContentViewGroup)
 			{
 				platformView.Background = null;
 			}
@@ -640,9 +640,17 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				disposable?.Dispose();
+				// Store local reference to allow cancellation inside the Post callback
+				var localDisposable = disposable;
 				disposable = null;
-				action();
+				view.Post(() =>
+				{
+					if (view.IsAttachedToWindow && localDisposable is not null)
+					{
+						action();
+						localDisposable.Dispose();
+					}
+				});
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;

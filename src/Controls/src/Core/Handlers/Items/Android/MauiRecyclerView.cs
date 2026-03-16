@@ -197,6 +197,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				_emptyCollectionObserver.Start(ItemsViewAdapter);
 
+				// When the EmptyView swaps while _emptyViewAdapter is active, RecyclerView can
+				// reuse a stale item ViewHolder from the shared pool at the empty position.
+				// Clear the pool before refreshing the EmptyView adapter to prevent that reuse.
+				if (GetAdapter() == _emptyViewAdapter)
+				{
+					GetRecycledViewPool().Clear();
+				}
+
 				_emptyViewAdapter.NotifyDataSetChanged();
 			}
 			else
@@ -471,12 +479,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
-				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
-				// Horizontal & vertical spacing should only exist between items. 
-				var horizontalPadding = -spacingDecoration.HorizontalOffset;
-				var verticalPadding = -spacingDecoration.VerticalOffset;
-				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+				// SpacingItemDecoration now removes spacing on outer edges (first/last row or column),
+				// so we only need negative padding on the cross-axis for grid layouts to compensate
+				// for the spacing between columns (vertical grid) or rows (horizontal grid).
+				if (ItemsLayout is GridItemsLayout gridItemsLayout)
+				{
+					if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+					{
+						var verticalPadding = -spacingDecoration.VerticalOffset;
+						SetPadding(0, verticalPadding, 0, verticalPadding);
+					}
+					else
+					{
+						var horizontalPadding = -spacingDecoration.HorizontalOffset;
+						SetPadding(horizontalPadding, 0, horizontalPadding, 0);
+					}
+				}
+				else
+				{
+					SetPadding(0, 0, 0, 0);
+				}
 			}
 		}
 
@@ -511,6 +533,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
+					UpdateItemSpacing();
 				}
 			}
 			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
@@ -522,6 +545,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				UpdateItemSpacing();
 			}
+		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			// If ItemsView is disabled, don't handle touch events
+			if (ItemsView?.IsEnabled == false)
+			{
+				return false;
+			}
+
+			return base.OnTouchEvent(e);
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent e)
+		{
+			// If ItemsView is disabled, intercept all touch events to prevent interactions
+			if (ItemsView?.IsEnabled == false)
+			{
+				return true;
+			}
+
+			return base.OnInterceptTouchEvent(e);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
