@@ -1,12 +1,9 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<ResourceDictionary 
 <!--#if (IncludeSampleContent) -->
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit">
 <!--#endif -->
 <!--#if (!IncludeSampleContent) -->
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    >
 <!--#endif -->
 
     <Style TargetType="ActivityIndicator">

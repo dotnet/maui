@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (TrySetRuntimeName(propertyName, Context.Variables[(ElementNode)parentNode], node))
 				return;
+			if (propertyName == XmlName.xShared)
+				throw new BuildException(BuildExceptionCode.XSharedNotSupported, node as IXmlLineInfo, null);
 			if (skips.Contains(propertyName))
 				return;
 			if (parentNode is ElementNode && ((ElementNode)parentNode).SkipProperties.Contains(propertyName))
@@ -670,7 +672,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var lbIndex = p.IndexOf('[');
 				if (lbIndex != -1)
 				{
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 					var rbIndex = p.LastIndexOf(']');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 					if (rbIndex == -1)
 						throw new BuildException(BindingIndexerNotClosed, lineInfo, null);
 

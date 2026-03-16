@@ -8,5 +8,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapStroke(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
 		public static void MapStrokeThickness(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
 		public static void MapFill(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
+		public static void MapIsVisible(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
+		public static void MapZIndex(IMapElementHandler handler, IMapElement mapElement) => throw new System.NotImplementedException();
 	}
 }
