@@ -355,7 +355,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_textBlock.Text = "";
 			SearchConfirmed?.Invoke(this, EventArgs.Empty);
 			Controller.ItemSelected(item);
-			Controller.QueryConfirmed();
 		}
 
 		void UpdateClearButtonState()
