@@ -83,6 +83,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler2>();
 			handlersCollection.AddHandler<Image, ImageHandler2>();
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
+			handlersCollection.AddHandler<Slider, SliderHandler2>();
 		}
 		else
 		{
@@ -96,6 +97,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 			handlersCollection.AddHandler<Image, ImageHandler>();
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+			handlersCollection.AddHandler<Slider, SliderHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -108,6 +110,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+		handlersCollection.AddHandler<Slider, SliderHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
