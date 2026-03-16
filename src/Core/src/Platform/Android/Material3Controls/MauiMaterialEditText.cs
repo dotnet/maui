@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
+using Android.Views;
 using Google.Android.Material.TextField;
 
 namespace Microsoft.Maui.Platform;
@@ -11,7 +12,7 @@ internal class MauiMaterialEditText : TextInputEditText
 {
 	public event EventHandler? SelectionChanged;
 
-	public MauiMaterialEditText(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
+	public MauiMaterialEditText(Context context) : base(context)
 	{
 	}
 
@@ -19,11 +20,11 @@ internal class MauiMaterialEditText : TextInputEditText
 	{
 	}
 
-	public MauiMaterialEditText(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
+	public MauiMaterialEditText(Context context, IAttributeSet? attrs) : base(context, attrs)
 	{
 	}
 
-	public MauiMaterialEditText(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
+	public MauiMaterialEditText(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 	{
 	}
 

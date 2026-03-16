@@ -79,6 +79,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
 			handlersCollection.AddHandler<Switch, SwitchHandler2>();
+			handlersCollection.AddHandler<Entry, EntryHandler2>();
 		}
 		else
 		{
@@ -88,6 +89,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 			handlersCollection.AddHandler<Switch, SwitchHandler>();
+			handlersCollection.AddHandler<Entry, EntryHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -113,7 +115,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
@@ -152,7 +153,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Image, ImageHandler>();
 #endif
 #if ANDROID
-		if(RuntimeFeature.IsMaterial3Enabled)
+		if (RuntimeFeature.IsMaterial3Enabled)
 		{
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
 		}
