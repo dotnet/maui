@@ -167,7 +167,6 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForNoElement("StepperControl");
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST     //Related Issue Link : https://github.com/dotnet/maui/issues/29704
 	[Test]
 	public void Stepper_ChangeFlowDirection_RTL_VerifyVisualState()
 	{
@@ -180,7 +179,7 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Options");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
+
 	[Test]
 	public void Stepper_AtMinimumValue_DecrementButtonDisabled()
 	{
@@ -281,6 +280,10 @@ public class StepperFeatureTests : _GalleryUITest
 	[Test]
 	public void Stepper_IncrementDoesNotExceedMaximum()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to Stepper Increment issue in iOS 26."); // Issue Link: https://github.com/dotnet/maui/issues/33769
+		}
 		App.WaitForElement("Options");
 		App.Tap("Options");
 

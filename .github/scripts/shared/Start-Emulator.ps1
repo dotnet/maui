@@ -6,7 +6,7 @@
 .DESCRIPTION
     Handles device detection and startup for both Android and iOS platforms.
     - Android: Automatically selects and starts emulator with priority: API 30 Nexus > API 30 > Nexus > First available
-    - iOS: Automatically selects iPhone Xs with iOS 18.5 by default
+    - iOS: Automatically selects iPhone Xs with iOS 18.x (or iPhone 11 Pro with iOS 26.x) to match CI
 
 .PARAMETER Platform
     Target platform: "android" or "ios"
@@ -65,7 +65,8 @@ if ($Platform -eq "android") {
     # Check if DeviceUdid is an AVD name (not an emulator-XXXX format)
     if ($DeviceUdid -and $DeviceUdid -notmatch "^emulator-\d+$") {
         # DeviceUdid is likely an AVD name - check if it's in the AVD list
-        $avdList = emulator -list-avds 2>$null
+        # Force array output - single AVD returns a string which breaks -contains
+        [string[]]$avdList = @(emulator -list-avds 2>$null)
         if ($avdList -contains $DeviceUdid) {
             Write-Info "DeviceUdid '$DeviceUdid' is an AVD name. Will boot this emulator..."
             $selectedAvd = $DeviceUdid
@@ -103,7 +104,8 @@ if ($Platform -eq "android") {
             
             # Get list of available AVDs (if not already set from parameter)
             if (-not $selectedAvd) {
-                $avdList = emulator -list-avds 2>$null
+                # Force array output - single AVD returns a string which breaks indexing
+                [string[]]$avdList = @(emulator -list-avds 2>$null)
                 
                 if (-not $avdList -or $avdList.Count -eq 0) {
                     Write-Error "No Android emulators found. Please create an Android Virtual Device (AVD) using Android Studio."
@@ -119,7 +121,7 @@ if ($Platform -eq "android") {
                 # Selection priority:
                 # 1. API 34 device (matches CI provisioning)
                 # 2. API 30 Nexus device
-                # 3. Any API 30 device
+                # 3. Any API 30 device (matches names like "Emulator_30", "API_30_xxx", etc.)
                 # 4. Any Nexus device
                 # 5. First available device
                 
@@ -132,16 +134,16 @@ if ($Platform -eq "android") {
                 
                 # Try to find API 30 Nexus device
                 if (-not $selectedAvd) {
-                    $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
+                    $api30Nexus = $avdList | Where-Object { $_ -match "30" -and $_ -match "Nexus" } | Select-Object -First 1
                     if ($api30Nexus) {
                         $selectedAvd = $api30Nexus
                         Write-Info "Selected API 30 Nexus device: $selectedAvd"
                     }
                 }
                 
-                # Try to find any API 30 device
+                # Try to find any API 30 device (match "30" anywhere in name)
                 if (-not $selectedAvd) {
-                    $api30Device = $avdList | Where-Object { $_ -match "API.*30" } | Select-Object -First 1
+                    $api30Device = $avdList | Where-Object { $_ -match "30" } | Select-Object -First 1
                     if ($api30Device) {
                         $selectedAvd = $api30Device
                         Write-Info "Selected API 30 device: $selectedAvd"
@@ -339,15 +341,27 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    # Get device UDID if not provided
+    # Get device UDID if not provided - check env var first
+    if (-not $DeviceUdid -and $env:DEVICE_UDID) {
+        Write-Info "Using DEVICE_UDID from environment: $($env:DEVICE_UDID)"
+        $DeviceUdid = $env:DEVICE_UDID
+    }
+
     if (-not $DeviceUdid) {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred devices in order of priority
-        $preferredDevices = @("iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro", "iPhone Xs")
         # Preferred iOS versions in order (stable preferred, beta fallback)
         $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
+        # Preferred devices per iOS version to match CI configuration:
+        #   iOS 18.x → iPhone Xs (matches CI default in UITest.cs)
+        #   iOS 26.x → iPhone 11 Pro (matches CI visual test requirement)
+        #   iOS 17.x → iPhone Xs (fallback)
+        $preferredDevicesPerVersion = @{
+            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-26" = @("iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro")
+        }
         
         $selectedDevice = $null
         $selectedVersion = $null
@@ -356,13 +370,16 @@ if ($Platform -eq "android") {
         foreach ($version in $preferredVersions) {
             if ($selectedDevice) { break }
             
-            # Get all runtimes matching this version prefix
+            # Get all runtimes matching this version prefix, sorted by version descending
+            # so the latest minor version is preferred (e.g., iOS-18-5 before iOS-18-3)
             $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match $version }
+                Where-Object { $_.Name -match $version } |
+                Sort-Object { $_.Name } -Descending
             
             if ($matchingRuntimes) {
-                # Try each preferred device
-                foreach ($deviceName in $preferredDevices) {
+                # Try each preferred device for this version
+                $devicesForVersion = if ($preferredDevicesPerVersion.ContainsKey($version)) { $preferredDevicesPerVersion[$version] } else { @("iPhone Xs", "iPhone 16 Pro") }
+                foreach ($deviceName in $devicesForVersion) {
                     $device = $null
                     $deviceRuntime = $null
                     foreach ($rt in $matchingRuntimes) {
@@ -444,6 +461,19 @@ if ($Platform -eq "android") {
     
     Write-Success "iOS simulator: $deviceName ($DeviceUdid)"
     
+    # Shutdown any OTHER booted simulators to avoid Appium connecting to the wrong device
+    $bootedSims = xcrun simctl list devices --json | ConvertFrom-Json
+    $otherBooted = $bootedSims.devices.PSObject.Properties.Value |
+        ForEach-Object { $_ } |
+        Where-Object { $_.state -eq "Booted" -and $_.udid -ne $DeviceUdid }
+    
+    if ($otherBooted) {
+        foreach ($sim in $otherBooted) {
+            Write-Info "Shutting down other booted simulator: $($sim.name) ($($sim.udid))"
+            xcrun simctl shutdown $sim.udid 2>$null
+        }
+    }
+
     # Boot simulator if not already booted
     Write-Info "Booting simulator (if not already running)..."
     xcrun simctl boot $DeviceUdid 2>$null
@@ -460,7 +490,7 @@ if ($Platform -eq "android") {
         exit 1
     }
     
-    Write-Success "Simulator is booted and ready"
+    Write-Success "Simulator is booted and ready: $deviceName"
     
     #endregion
 }

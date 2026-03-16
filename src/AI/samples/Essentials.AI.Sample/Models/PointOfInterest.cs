@@ -11,8 +11,11 @@ public class PointOfInterest
 
 	public string Description { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Embedding vectors generated from the name and description for semantic search.
+	/// </summary>
 	[JsonIgnore]
-	public Embedding<float>? Embedding { get; set; }
+	public IReadOnlyList<Embedding<float>>? Embeddings { get; set; }
 }
 
 public enum PointOfInterestCategory

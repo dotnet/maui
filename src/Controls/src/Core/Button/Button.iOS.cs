@@ -204,10 +204,19 @@ namespace Microsoft.Maui.Controls
 				// Which makes the later math easier to follow				
 				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += titleWidth / 2;
-					imageInsets.Right -= titleWidth / 2;
-					titleInsets.Left -= imageWidth / 2;
-					titleInsets.Right += imageWidth / 2;
+					// In RTL mode, physical Left/Right offsets must be reversed.
+					// Use EffectiveFlowDirection to handle both explicit and inherited RTL.
+					nfloat dir = ((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft() ? -1 : 1;
+
+					imageInsets.Left += dir * (titleWidth / 2);
+					imageInsets.Right -= dir * (titleWidth / 2);
+					titleInsets.Left -= dir * (imageWidth / 2);
+					titleInsets.Right += dir * (imageWidth / 2);
+
+					imageInsets.Left -= dir * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right += dir * ((titleWidth / 2) + sharedSpacing);
+					titleInsets.Left += dir * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right -= dir * ((imageWidth / 2) + sharedSpacing);
 				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
@@ -235,23 +244,6 @@ namespace Microsoft.Maui.Controls
 					titleInsets.Left -= (nfloat)(imageWidth - padding.Left);
 					titleInsets.Right += (nfloat)padding.Right;
 
-				}
-				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
-				{
-					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
-
-					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
-
-				}
-				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
-				{
-					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
-
-					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
 				}
 			}
 
@@ -409,7 +401,10 @@ namespace Microsoft.Maui.Controls
 					return false;
 				}
 
-				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				// Preserve AlwaysTemplate if explicitly set (e.g., by a tint behavior),
+				// otherwise use AlwaysOriginal to prevent unwanted default tinting
+				if (image?.RenderingMode != UIImageRenderingMode.AlwaysTemplate)
+					image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				platformButton.SetImage(image, UIControlState.Normal);
 

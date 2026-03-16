@@ -90,6 +90,18 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
+### CI Pipelines (Azure DevOps)
+
+When referencing or triggering CI pipelines, use these current pipeline names:
+
+| Pipeline | Name | Purpose |
+|----------|------|---------|
+| Overall CI | `maui-pr` | Full PR validation build |
+| Device Tests | `maui-pr-devicetests` | Helix-based device tests |
+| UI Tests | `maui-pr-uitests` | Appium-based UI tests |
+
+**⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
+
 ### Code Formatting
 
 Always format code before committing:
@@ -125,6 +137,26 @@ When working with public API changes:
 - **Always add correct API entries** to PublicAPI.Unshipped.txt files
 - **Use `dotnet format analyzers`** if having trouble
 - **If files are incorrect**: Revert all changes, then add only the necessary new API entries
+
+**🚨 CRITICAL: `#nullable enable` must be line 1**
+
+Every `PublicAPI.Unshipped.txt` file starts with `#nullable enable` (often BOM-prefixed: `﻿#nullable enable`) on the **first line**. If this line is moved or removed, the analyzer treats it as a declared API symbol and emits **RS0017** errors.
+
+**Never sort these files with plain `sort`** — the BOM bytes (`0xEF 0xBB 0xBF`) sort after ASCII characters under `LC_ALL=C`, pushing `#nullable enable` to the bottom of the file.
+
+When resolving merge conflicts or adding entries, use this safe pattern that preserves line 1:
+```bash
+for f in $(git diff --name-only --diff-filter=U | grep "PublicAPI.Unshipped.txt"); do
+  # Extract and preserve the #nullable enable line (with or without BOM)
+  HEADER=$(head -1 "$f" | grep -o '.*#nullable enable' || echo '#nullable enable')
+  # Strip conflict markers, remove all #nullable lines, sort+dedup the API entries
+  grep -v '^<<<<<<\|^======\|^>>>>>>\|#nullable enable' "$f" | LC_ALL=C sort -u | sed '/^$/d' > /tmp/api_fix.txt
+  # Reassemble: header first, then sorted entries
+  printf '%s\n' "$HEADER" > "$f"
+  cat /tmp/api_fix.txt >> "$f"
+  git add "$f"
+done
+```
 
 ### Branching
 - `main` - For bug fixes without API changes
@@ -169,9 +201,16 @@ git commit -m "Fix: Description of the change"
 2. Exception: If the user's instructions explicitly include pushing, proceed without asking.
 
 ### Documentation
+
 - Update XML documentation for public APIs
 - Follow existing code documentation patterns
 - Update relevant docs in `docs/` folder when needed
+
+**Platform-Specific Documentation:**
+- `.github/instructions/safe-area-ios.instructions.md` - Safe area investigation (iOS/macCatalyst)
+- `.github/instructions/uitests.instructions.md` - UI test guidelines (includes safe area testing section)
+- `.github/instructions/android.instructions.md` - Android handler implementation
+- `.github/instructions/xaml-unittests.instructions.md` - XAML unit test guidelines
 
 ### Opening PRs
 
@@ -248,7 +287,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
-   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+   - **Note**: Works on any PR
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
 4. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
@@ -290,7 +329,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
-   - **Output**: Updates session markdown with attempt results and failure analysis
+   - **Output**: Reports attempt results and failure analysis
 
 ### Using Custom Agents
 
