@@ -943,14 +943,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			if (distance > 1.0) // Only intervene if snap target differs by more than 1px
 			{
 				_isSnapping = true;
-				if (isHorizontal)
-				{
-					_scrollViewer.ChangeView(snapTarget.Value, null, null, disableAnimation: false);
-				}
-				else
-				{
-					_scrollViewer.ChangeView(null, snapTarget.Value, null, disableAnimation: false);
-				}
+				bool changed = isHorizontal
+					? _scrollViewer.ChangeView(snapTarget.Value, null, null, disableAnimation: false)
+					: _scrollViewer.ChangeView(null, snapTarget.Value, null, disableAnimation: false);
+
+				// If ChangeView was a no-op (already at target or failed),
+				// no ViewChanged event will fire to reset _isSnapping.
+				if (!changed)
+					_isSnapping = false;
 			}
 		}
 	}
@@ -991,38 +991,50 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	/// </summary>
 	double? FindSingleSnapTarget(bool isHorizontal, double currentOffset, double viewportSize, double maxOffset, double scrollDelta)
 	{
-		// First, find the item currently aligned to the snap position
-		double? currentAligned = FindNearestSnapTarget(isHorizontal, currentOffset, viewportSize, maxOffset);
+		// Single pass: collect all snap targets and find the one closest to currentOffset.
+		// This avoids the double iteration of calling FindNearestSnapTarget separately.
+		var allTargets = new SortedSet<double>();
+		double? currentAligned = null;
+		double bestDistance = double.MaxValue;
 
-		if (currentAligned is null)
-			return null;
-
-		if (Math.Abs(scrollDelta) < 1.0)
-			return currentAligned; // No meaningful scroll, stay put
-
-		// Collect all snap targets sorted by offset
-		var allTargets = new List<double>();
 		foreach (var container in PlatformView.GetChildren<ItemContainer>())
 		{
 			if (container is null || container.Visibility != WVisibility.Visible)
 				continue;
 
 			var target = ComputeSnapTarget(container, isHorizontal, currentOffset, viewportSize, maxOffset);
-			if (target.HasValue)
-				allTargets.Add(target.Value);
+			if (!target.HasValue)
+				continue;
+
+			// SortedSet automatically deduplicates and keeps items sorted.
+			// In grid layouts, items in the same row/column compute to the same
+			// snap offset — duplicates would cause span-based advancement
+			// to land on the same visual row instead of the next one.
+			allTargets.Add(target.Value);
+
+			double distance = Math.Abs(target.Value - currentOffset);
+			if (distance < bestDistance)
+			{
+				bestDistance = distance;
+				currentAligned = target.Value;
+			}
 		}
 
-		allTargets.Sort();
-
-		if (allTargets.Count == 0)
+		if (currentAligned is null || allTargets.Count == 0)
 			return null;
+
+		if (Math.Abs(scrollDelta) < 1.0)
+			return currentAligned; // No meaningful scroll, stay put
+
+		// Convert to list for index-based access
+		var targetList = allTargets.ToList();
 
 		// Find current index in sorted targets
 		int currentIndex = 0;
 		double minDist = double.MaxValue;
-		for (int i = 0; i < allTargets.Count; i++)
+		for (int i = 0; i < targetList.Count; i++)
 		{
-			double d = Math.Abs(allTargets[i] - currentAligned.Value);
+			double d = Math.Abs(targetList[i] - currentAligned.Value);
 			if (d < minDist)
 			{
 				minDist = d;
@@ -1037,11 +1049,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		int nextIndex;
 		if (scrollDelta > 0)
-			nextIndex = Math.Min(currentIndex + span, allTargets.Count - 1);
+			nextIndex = Math.Min(currentIndex + span, targetList.Count - 1);
 		else
 			nextIndex = Math.Max(currentIndex - span, 0);
 
-		return allTargets[nextIndex];
+		return targetList[nextIndex];
 	}
 
 	/// <summary>
