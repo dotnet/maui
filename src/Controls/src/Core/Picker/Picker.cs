@@ -282,6 +282,26 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
 		{
+			// Unsubscribe all items when binding is removed or changed
+			if (ItemsSource is not null)
+			{
+				foreach (var item in ItemsSource)
+				{
+					if (item is INotifyPropertyChanged npc)
+						npc.PropertyChanged -= OnPickerItemPropertyChanged;
+				}
+			}
+
+			// Re-subscribe when a new binding is set
+			if (newValue is not null && ItemsSource is not null)
+			{
+				foreach (var item in ItemsSource)
+				{
+					if (item is INotifyPropertyChanged npc)
+						npc.PropertyChanged += OnPickerItemPropertyChanged;
+				}
+			}
+
 			ResetItems();
 		}
 
@@ -388,10 +408,13 @@ namespace Microsoft.Maui.Controls
 		{
 			if (ItemDisplayBinding is Binding binding && !string.IsNullOrEmpty(binding.Path))
 			{
-				if (e.PropertyName == binding.Path)
-				{
+				if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == binding.Path)
 					ResetItems();
-				}
+			}
+			else if (ItemDisplayBinding is MultiBinding)
+			{
+				// For MultiBinding, any property change may affect display
+				ResetItems();
 			}
 		}
 
