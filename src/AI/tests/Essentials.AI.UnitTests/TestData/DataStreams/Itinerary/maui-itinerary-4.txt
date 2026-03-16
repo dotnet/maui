@@ -1,0 +1,47 @@
+{"title":"Maui Getaway
+","rationale":"Maui is a
+ beautiful island with lots to do. You can go
+ whale watching, go to the beach, go hiking
+, and visit a museum. You can also visit
+ a cafe or a restaurant.","destinationName":"
+Maui","days":[{"title":"
+Explore the beaches and go whale watching","destination":"
+Maui","activities":[{"type":"
+HotelAndLodging","description":"
+Stay at one of the many hotels in Maui.
+","title":"Hotel 1"},{
+
+"type":"FoodAndDining","description":"Visit a restaurant for lunch.","title":"
+Restaurant 1"},{"type":"
+FoodAndDining","description":"Visit
+ a restaurant for dinner.","title":"Restaurant
+ 2
+"}],"subtitle":"Spend your first day exploring the beaches and going whale
+ watching."},{"title":"Visit the Hale
+akalā National Park","destination":"M
+aui","activities":[{"type":"
+Sightseeing","description":"Visit Haleakal
+ā National Park.","title":"Haleakal
+ā National Park"},{"type":"Food
+AndDining","description":"Visit a
+ cafe for lunch.","title":"Cafe
+ 1"},{"type":"FoodAnd
+Dining","description":"Visit a restaurant
+ for dinner.","title":"Restaurant 3
+"}],"subtitle":"Spend your
+ second day visiting Haleakalā National Park.
+"},{"title":"Visit the Road to Hana
+"
+,"destination":"Maui","activities":[{
+"type":"Sightseeing","description":"Visit the Road to Hana.","title":"
+Road to Hana"},{"type":"Food
+AndDining","description":"Visit a
+ restaurant for lunch.","title":"Restaurant 
+4"},{"type":"FoodAndD
+ining","description":"Visit a restaurant for
+ dinner.","title":"Restaurant 5
+"}],"subtitle":"Spend your third
+ day visiting the Road to Hana.
+"}],"description":"This itinerary will take you to all the best parts
+ of Maui.
+"}

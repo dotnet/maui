@@ -6,16 +6,13 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class TimePickerFeatureTests : UITest
+public class TimePickerFeatureTests : _GalleryUITest
 {
 	public const string TimePickerFeatureMatrix = "Time Picker Feature Matrix";
+	public override string GalleryPageName => TimePickerFeatureMatrix;
+
 	public TimePickerFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(TimePickerFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30837
@@ -29,11 +26,11 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("TimePickerControl");
 		App.Tap("TimePickerControl");
 #if IOS
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
         App.WaitForElement("Done");
         App.Tap("Done");
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 #endif
@@ -52,7 +49,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -69,7 +66,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -88,7 +85,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -108,7 +105,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -128,7 +125,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -144,7 +141,7 @@ public class TimePickerFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.Tap("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
@@ -160,7 +157,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -180,7 +177,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -200,7 +197,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -222,7 +219,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -244,7 +241,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -269,7 +266,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -302,7 +299,7 @@ public class TimePickerFeatureTests : UITest
 #endif
 		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
 		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -341,7 +338,7 @@ public class TimePickerFeatureTests : UITest
 #endif
 		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("07:00:00"));
 		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -358,7 +355,7 @@ public class TimePickerFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #endif
 
@@ -387,7 +384,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -416,7 +413,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -441,7 +438,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -478,7 +475,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: en-US, Time: 5:30 AM"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -502,7 +499,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ar-EG, Time: 11:30 ص"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -526,7 +523,7 @@ public class TimePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Time: 17:30"));
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

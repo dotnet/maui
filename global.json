@@ -2,6 +2,12 @@
   "tools": {
     "dotnet": "10.0.100-rtm.25523.113"
   },
+  "sdk": {
+    "paths": [
+      ".dotnet",
+      "$host$"
+    ]
+  },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.7.0",

@@ -73,9 +73,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			var actual = new Size(xPosition, height);
-
-			return actual.AdjustForFill(bounds, Stack);
+			return new Size(bounds.Width, bounds.Height);
 		}
 
 		static double ArrangeChild(IView child, double height, double top, double x)

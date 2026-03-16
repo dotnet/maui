@@ -311,10 +311,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var task = GetAppearedOrDisappearedTask(page);
 
-			PopToRootViewController(animated);
+			var poppedControllers = PopToRootViewController(animated);
 
 			_ignorePopCall = false;
 			var success = !await task;
+
+			if (poppedControllers is not null)
+			{
+				foreach (var poppedController in poppedControllers)
+				{
+					if (poppedController is ParentingViewController parentingViewController)
+					{
+						parentingViewController.Disconnect(false);
+					}
+					else
+					{
+						poppedController?.Dispose();
+					}
+				}
+			}
 
 			UpdateToolBarVisible();
 			return success;
@@ -931,6 +946,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
 				: iconColor.ToPlatform();
+
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && NavigationBar.TintColor is not null)
+			{
+				if (VisibleViewController?.NavigationItem?.RightBarButtonItems is UIBarButtonItem[] items)
+				{
+					foreach (var item in items)
+					{
+						item.TintColor = NavigationBar.TintColor;
+					}
+				}
+			}
 		}
 
 		void SetStatusBarStyle()
@@ -1049,7 +1075,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// We only check height because the navigation bar constrains vertical space (44pt height),
 				// but allows horizontal flexibility. Width can vary based on icon design and content,
 				// while height must fit within the fixed navigation bar bounds to avoid clipping.
-				
+
 				// if the image is bigger than the default available size, resize it
 				if (icon is not null)
 				{
@@ -1587,12 +1613,60 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return empty;
 			}
 
+			/// <summary>
+			/// Called when the view controller's view transitions to a new size.
+			/// On iPad iOS 26+, manually updates TitleView frame to handle Stage Manager window resizing.
+			/// </summary>
 			public override void ViewWillTransitionToSize(SizeF toSize, IUIViewControllerTransitionCoordinator coordinator)
 			{
 				base.ViewWillTransitionToSize(toSize, coordinator);
 
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+				{
 					UpdateLeftBarButtonItem();
+
+					// For iOS 26+, force TitleView to re-layout on window size changes (iPad Stage Manager, multitasking)
+					// Complements TraitCollectionDidChange handling (device rotation) added in #32815
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						coordinator.AnimateAlongsideTransition(_ =>
+						{
+							UpdateTitleViewFrameForOrientation();
+						}, null);
+					}
+				}
+			}
+
+			public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+			{
+				base.TraitCollectionDidChange(previousTraitCollection);
+
+				// Check if orientation changed (size class transition)
+				if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+					previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						UpdateTitleViewFrameForOrientation();
+					}
+				}
+			}
+
+			/// iOS 26+ requires autoresizing masks (UIViewAutoresizing.FlexibleWidth) During orientation changes, the autoresizing mask
+			/// automatically adjusts the width, but we need to explicitly update the frame to ensure the
+			/// title view uses the full available width from the navigation bar. Without this update,
+			/// the title view may not properly expand to fill the navigation bar after rotation.
+			void UpdateTitleViewFrameForOrientation()
+			{
+				if (NavigationItem?.TitleView is not UIView titleView)
+					return;
+
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return;
+
+				var navigationBarFrame = navigationRenderer.NavigationBar.Frame;
+				titleView.Frame = new RectangleF(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				titleView.LayoutIfNeeded();
 			}
 
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)
@@ -1890,6 +1964,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && primaries is not null && _navigation.TryGetTarget(out NavigationRenderer navigationRenderer)
+					  && navigationRenderer.NavigationBar?.TintColor is UIColor tintColor)
+				{
+					foreach (var item in primaries)
+					{
+						item.TintColor = tintColor;
+					}
+				}
 
 				if (_navigation.TryGetTarget(out NavigationRenderer n))
 				{

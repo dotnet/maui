@@ -8,14 +8,14 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public delegate Task<string> EvaluateJavaScriptDelegate(string script);
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EvalRequested.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.EvalRequested']/Docs/*" />
+	/// <summary>Event args for JavaScript evaluation requests in WebView.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class EvalRequested : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EvalRequested.xml" path="//Member[@MemberName='Script']/Docs/*" />
+		/// <summary>Gets the JavaScript to evaluate.</summary>
 		public string Script { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/EvalRequested.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new EvalRequested with the specified script.</summary>
 		public EvalRequested(string script)
 		{
 			Script = script;

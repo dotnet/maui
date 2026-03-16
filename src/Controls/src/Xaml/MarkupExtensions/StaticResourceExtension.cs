@@ -4,11 +4,17 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that resolves a resource from a <see cref="ResourceDictionary"/>.
+	/// </summary>
 	[ContentProperty(nameof(Key))]
 	[RequireService([typeof(IXmlLineInfoProvider), typeof(IProvideParentValues), typeof(IRootObjectProvider)])]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticResourceExtension")]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
+		/// <summary>
+		/// Gets or sets the key of the resource to retrieve.
+		/// </summary>
 		public string Key { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)

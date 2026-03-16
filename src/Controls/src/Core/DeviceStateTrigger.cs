@@ -3,15 +3,21 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.DeviceStateTrigger']/Docs/*" />
+	/// <summary>
+	/// A state trigger that activates when the app runs on a specified device platform.
+	/// </summary>
 	public sealed class DeviceStateTrigger : StateTriggerBase
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DeviceStateTrigger"/> class.
+		/// </summary>
 		public DeviceStateTrigger()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='Device']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the device platform name (e.g., "Android", "iOS", "WinUI"). This is a bindable property.
+		/// </summary>
 		public string Device
 		{
 			get => (string)GetValue(DeviceProperty);

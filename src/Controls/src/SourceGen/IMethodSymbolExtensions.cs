@@ -39,7 +39,7 @@ static class IMethodSymbolExtensions
 			// }
 
 			var argType = getNodeValue?.Invoke(nodeparameters[i], paramType)?.Type ?? context.Variables[nodeparameters[i]].Type;
-			
+
 			// Check interface implementation first (interfaces don't use inheritance)
 			if (paramType.IsInterface())
 			{
@@ -55,7 +55,7 @@ static class IMethodSymbolExtensions
 				parameters = null;
 				return false;
 			}
-			
+
 			parameters.Add((nodeparameters[i], paramType, null));
 		}
 		return true;

@@ -1,7 +1,9 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.CompositeTransform']/Docs/*" />
+	/// <summary>
+	/// A transform that combines multiple transform operations (scale, skew, rotate, translate) into a single transform.
+	/// </summary>
 	public sealed class CompositeTransform : Transform
 	{
 		/// <summary>Bindable property for <see cref="CenterX"/>.</summary>
@@ -48,63 +50,81 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(TranslateY), typeof(double), typeof(CompositeTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='CenterX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-coordinate of the center point for all transforms. This is a bindable property.
+		/// </summary>
 		public double CenterX
 		{
 			set { SetValue(CenterXProperty, value); }
 			get { return (double)GetValue(CenterXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='CenterY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-coordinate of the center point for all transforms. This is a bindable property.
+		/// </summary>
 		public double CenterY
 		{
 			set { SetValue(CenterYProperty, value); }
 			get { return (double)GetValue(CenterYProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='ScaleX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-axis scale factor. This is a bindable property.
+		/// </summary>
 		public double ScaleX
 		{
 			set { SetValue(ScaleXProperty, value); }
 			get { return (double)GetValue(ScaleXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='ScaleY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-axis scale factor. This is a bindable property.
+		/// </summary>
 		public double ScaleY
 		{
 			set { SetValue(ScaleYProperty, value); }
 			get { return (double)GetValue(ScaleYProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='SkewX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-axis skew angle, in degrees. This is a bindable property.
+		/// </summary>
 		public double SkewX
 		{
 			set { SetValue(SkewXProperty, value); }
 			get { return (double)GetValue(SkewXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='SkewY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-axis skew angle, in degrees. This is a bindable property.
+		/// </summary>
 		public double SkewY
 		{
 			set { SetValue(SkewYProperty, value); }
 			get { return (double)GetValue(SkewYProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='Rotation']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rotation angle, in degrees. This is a bindable property.
+		/// </summary>
 		public double Rotation
 		{
 			set { SetValue(RotationProperty, value); }
 			get { return (double)GetValue(RotationProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='TranslateX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-axis translation offset. This is a bindable property.
+		/// </summary>
 		public double TranslateX
 		{
 			set { SetValue(TranslateXProperty, value); }
 			get { return (double)GetValue(TranslateXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/CompositeTransform.xml" path="//Member[@MemberName='TranslateY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-axis translation offset. This is a bindable property.
+		/// </summary>
 		public double TranslateY
 		{
 			set { SetValue(TranslateYProperty, value); }

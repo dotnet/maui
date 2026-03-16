@@ -11,7 +11,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableView']/Docs/*" />
+	/// <summary>
+	/// Represents a table view control for displaying tabular data.
+	/// </summary>
 	[Obsolete("Please use CollectionView instead.")]
 	[ContentProperty(nameof(Root))]
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
@@ -30,12 +32,16 @@ namespace Microsoft.Maui.Controls
 
 		TableModel _model;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TableView"/> class.
+		/// </summary>
 		public TableView() : this(null)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TableView"/> class with the specified root.
+		/// </summary>
 		public TableView(TableRoot root)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -45,14 +51,18 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TableView>>(() => new PlatformConfigurationRegistry<TableView>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='HasUnevenRows']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the table has rows with uneven heights.
+		/// </summary>
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
 			set { SetValue(HasUnevenRowsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='Intent']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the intent of the table view.
+		/// </summary>
 		public TableIntent Intent
 		{
 			get { return _intent; }
@@ -67,7 +77,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='Root']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the root of the table view.
+		/// </summary>
 		public TableRoot Root
 		{
 			get { return _tableModel.Root; }
@@ -90,14 +102,18 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='RowHeight']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the height of each row.
+		/// </summary>
 		public int RowHeight
 		{
 			get { return (int)GetValue(RowHeightProperty); }
 			set { SetValue(RowHeightProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='Model']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the table model.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TableModel Model
 		{

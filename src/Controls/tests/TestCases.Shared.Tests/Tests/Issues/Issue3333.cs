@@ -16,8 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
 			App.WaitForElement(KSuccess);
