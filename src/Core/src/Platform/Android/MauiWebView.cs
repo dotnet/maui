@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			if (e == null)
-				return base.OnTouchEvent(e);
+				return false;
 
 			switch (e.Action)
 			{
