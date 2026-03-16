@@ -177,6 +177,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		// TODO: Make public for .NET 11.
+		internal static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateFlowDirection(stepper);
+		}
+
 		class StepperProxy
 		{
 			WeakReference<IStepper>? _virtualView;
