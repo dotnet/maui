@@ -326,7 +326,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(19)]
-	[Ignore("Fails on all platforms. Related issue: https://github.com/dotnet/maui/issues/20615 & ")]
+	[Ignore("Fails on all platforms. Related issue: https://github.com/dotnet/maui/issues/20615")]
 	public void VerifyVSM_CollectionView_SelectedWhileDisabled()
 	{
 		App.WaitForElement("CVReset");
