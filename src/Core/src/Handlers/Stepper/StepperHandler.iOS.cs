@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateValue(stepper);
 		}
 
+		// TODO: Make public for .NET 11.
 		internal static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateFlowDirection(stepper);

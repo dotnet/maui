@@ -49,22 +49,26 @@ namespace Microsoft.Maui.Platform
 			UISemanticContentAttribute contentAttribute = GetSemanticContentAttribute(stepper);
 			// iOS 26 changed UIStepper internal rendering so that SemanticContentAttribute alone
 			// is no longer sufficient to mirror the control for RTL. A horizontal transform is required.
-			bool isIOS26 = OperatingSystem.IsIOSVersionAtLeast(26);
-			CGAffineTransform transform = GetCGAffineTransform(stepper);
+			bool isIOS26 = OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
 			platformStepper.SemanticContentAttribute = contentAttribute;
 
+			// Apply transform to stepper subviews on iOS 26+.
 			if (isIOS26)
 			{
+				CGAffineTransform transform = GetCGAffineTransform(stepper);
 				platformStepper.Transform = transform;
-			}
 
-			foreach (var subview in platformStepper.Subviews)
-			{
-				subview.SemanticContentAttribute = contentAttribute;
-				// Apply transform to the stepper subviews for 26 version . 
-				if (isIOS26)
+				foreach (var subview in platformStepper.Subviews)
 				{
+					subview.SemanticContentAttribute = contentAttribute;
 					subview.Transform = transform;
+				}
+			}
+			else
+			{
+				foreach (var subview in platformStepper.Subviews)
+				{
+					subview.SemanticContentAttribute = contentAttribute;
 				}
 			}
 		}
