@@ -87,6 +87,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
+		// Prevents multiple concurrent GoToAsync("..") dispatches from SendPop().
+		// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+		// and combinations that may cause SendPop() to be called multiple times.
+		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
+		// until it completes (success or cancel).
+		bool _sendPopPending;
+
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
 		// iOS will return the previous array until the new array has been processed
@@ -132,7 +139,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
 				return true;
 
-			// Stacks out of sync = user-initiated navigation
+			// Stacks out of sync: treat as user-initiated back (e.g., swipe-back).
+			// On iOS 26+, this can also fire during ShouldPopItem and programmatic PopViewController;
+			// SendPop() contains the _sendPopPending guard to prevent any double-dispatch in those cases.
 			return SendPop();
 		}
 
@@ -141,6 +150,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// this means the pop is already done, nothing we can do
 			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
 				return true;
+
+			// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+			// and fire multiple times for a single user back action. Guard against multiple
+			// concurrent GoToAsync("..") dispatches to prevent navigating to the wrong page.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				if (_sendPopPending)
+				{
+					return false;
+				}
+				_sendPopPending = true;
+			}
 
 			topViewController ??= TopViewController;
 			foreach (var tracker in _trackers)
@@ -157,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
-
+						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
@@ -171,7 +192,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-
 			// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
 			// Shane: ^ not sure if this is true anymore because of how
 			// we now route this through "GoToAsync"
@@ -179,7 +199,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var navItemsCount = NavigationBar.Items.Length;
 
-				await _context.Shell.GoToAsync("..", true);
+				try
+				{
+					await _context.Shell.GoToAsync("..", true);
+				}
+				finally
+				{
+					_sendPopPending = false;
+				}
 
 				// This means the navigation was cancelled
 				if (NavigationBar.Items.Length == navItemsCount)
@@ -215,6 +242,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_popCompletionTask?.TrySetResult(false);
 			_popCompletionTask = null;
 
+			_sendPopPending = false;
 
 			base.ViewDidDisappear(animated);
 		}
