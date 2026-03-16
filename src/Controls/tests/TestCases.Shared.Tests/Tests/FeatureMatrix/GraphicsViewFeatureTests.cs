@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,6 +26,15 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 #endif
 	}
 
+	void AssertDimension(string? text, string name, double expected)
+	{
+		Assert.That(text, Is.Not.Null, "Dimensions text should not be null");
+		var match = Regex.Match(text!, $@"{name}:\s*([\d.]+)");
+		Assert.That(match.Success, Is.True, $"Could not find {name} in: {text}");
+		var actual = double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+		Assert.That(actual, Is.EqualTo(expected).Within(1), $"{name} was {actual}, expected approximately {expected}");
+	}
+
 	#region Default Values and Initial State Tests
 
 #if TEST_FAILS_ON_CATALYST // On MacCatalyst, when the test case is executed directly, the cursor automatically stays centered on the screen. Because of this, the cursor interacts with the GraphicsView and triggers the StartHoverInteraction event in CI. To avoid this false interaction, the test case is restricted.
@@ -38,8 +49,8 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 
 		// Verify default dimensions are displayed
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-		Assert.That(dimensionsText, Does.Contain("Height: 100"));
-		Assert.That(dimensionsText, Does.Contain("Width: 100"));
+		AssertDimension(dimensionsText, "Height", 100);
+		AssertDimension(dimensionsText, "Width", 100);
 
 		var interactionLabel = App.FindElement("InteractionEventLabel");
 		Assert.That(interactionLabel.GetText(), Is.EqualTo("No interactions yet"));
@@ -219,7 +230,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		App.Tap("DrawableTypeLabel");
 
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-		Assert.That(dimensionsText, Does.Contain("Height: 150"));
+		AssertDimension(dimensionsText, "Height", 150);
 	}
 
 	[Test]
@@ -237,7 +248,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		App.Tap("DrawableTypeLabel");
 
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-		Assert.That(dimensionsText, Does.Contain("Width: 200"));
+		AssertDimension(dimensionsText, "Width", 200);
 	}
 
 	[Test]
@@ -258,8 +269,8 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		App.Tap("DrawableTypeLabel");
 
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-		Assert.That(dimensionsText, Does.Contain("Height: 180"));
-		Assert.That(dimensionsText, Does.Contain("Width: 250"));
+		AssertDimension(dimensionsText, "Height", 180);
+		AssertDimension(dimensionsText, "Width", 250);
 	}
 
 	#endregion
@@ -423,8 +434,8 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("Triangle"));
 		var dimensionsText = App.FindElement("DrawableDimensionsLabel").GetText();
-		Assert.That(dimensionsText, Does.Contain("Height: 120"));
-		Assert.That(dimensionsText, Does.Contain("Width: 160"));
+		AssertDimension(dimensionsText, "Height", 120);
+		AssertDimension(dimensionsText, "Width", 160);
 		VerifyShapeScreenshot();
 	}
 
