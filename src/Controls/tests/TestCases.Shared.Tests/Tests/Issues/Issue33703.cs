@@ -1,4 +1,4 @@
-#if ANDROID //scrolling cannot be reliably performed in iOS UI tests for this scenario, and the issue occurs only on Android.
+ #if ANDROID // Scrolling cannot be reliably performed in iOS UI tests for this scenario, and the issue occurs only on Android.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
