@@ -755,13 +755,19 @@ namespace Microsoft.Maui.Controls
 		string GetSemanticDescriptionFromContent()
 		{
 			if (Content is string contentText)
+			{
 				return contentText;
+			}
 
 			if (Content is IView contentView && TryGetSemanticDescription(contentView, out var semanticDescription))
+			{
 				return semanticDescription;
+			}
 
 			if (Value is string valueText && !string.IsNullOrWhiteSpace(valueText))
+			{
 				return valueText;
+			}
 
 			return ContentAsString();
 		}
@@ -770,8 +776,10 @@ namespace Microsoft.Maui.Controls
 		{
 			semanticDescription = null;
 
-			if (view == null)
+			if (view is null)
+			{
 				return false;
+			}
 
 			if (!string.IsNullOrWhiteSpace(view.Semantics?.Description))
 			{
@@ -786,16 +794,20 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (view is IContentView contentView && contentView.PresentedContent is IView presentedContent && TryGetSemanticDescription(presentedContent, out semanticDescription))
+			{
 				return true;
+			}
 
 			if (view is Microsoft.Maui.ILayout layout)
 			{
-				for (int i = 0; i < layout.Count; i++)
+				for (int index = 0; index < layout.Count; index++)
 				{
-					var child = layout[i];
+					var child = layout[index];
 
 					if (TryGetSemanticDescription(child, out semanticDescription))
+					{
 						return true;
+					}
 				}
 			}
 
