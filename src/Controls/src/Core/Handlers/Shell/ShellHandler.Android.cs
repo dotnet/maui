@@ -45,9 +45,8 @@ namespace Microsoft.Maui.Controls.Handlers
         // Initialized to Brush.Transparent because the appearance observer fires with null first.
         Brush _scrimBrush = Brush.Transparent;
 
-        // Deferred item switch (when view isn't attached to window yet)
-        ShellItem _pendingSwitchItem;
-        bool _pendingSwitchAnimate;
+        // Pending fragment transaction (from RunOrWaitForResume, same as FlyoutViewHandler)
+        IDisposable _pendingFragment;
 
         public static PropertyMapper<Shell, ShellHandler> Mapper =
             new PropertyMapper<Shell, ShellHandler>(ElementMapper)
@@ -122,13 +121,16 @@ namespace Microsoft.Maui.Controls.Handlers
             // Subscribe to drawer state changes
             platformView.OnPresentedChanged += OnFlyoutPresentedChanged;
 
+            // Handle initial item switch when view is attached to the window.
+            // MapCurrentItem fires during SetVirtualView before the view is in the
+            // Activity's hierarchy, so we defer the initial load to ViewAttachedToWindow
+            // (same pattern as FlyoutViewHandler.DrawerLayoutAttached).
+            platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+
             // Initialize flyout behavior
             var behavior = (VirtualView as IFlyoutView)?.FlyoutBehavior ?? FlyoutBehavior.Flyout;
             _currentBehavior = behavior;
             UpdateFlyoutBehaviorInternal(behavior);
-
-            // MapCurrentItem mapper will handle initial item switching.
-            // If the view isn't attached yet, SwitchToItem defers automatically via Post().
         }
 
         protected override void DisconnectHandler(MauiDrawerLayout platformView)
@@ -151,10 +153,12 @@ namespace Microsoft.Maui.Controls.Handlers
             _flyoutContentRenderer = null;
             _flyoutContentView = null;
 
-            // Clean up deferred switch listener
-            platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+            // Clean up pending fragment transaction
+            _pendingFragment?.Dispose();
+            _pendingFragment = null;
 
-            _pendingSwitchItem = null;
+            // Clean up ViewAttachedToWindow listener
+            platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
             // Disconnect MauiDrawerLayout
             platformView.Disconnect();
@@ -183,26 +187,16 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            var fragmentManager = VirtualView.FindMauiContext()?.GetFragmentManager();
-            if (fragmentManager is null || _contentFrame is null)
+            _pendingFragment?.Dispose();
+            _pendingFragment = null;
+
+            var context = MauiContext?.Context;
+            if (context is null || _contentFrame is null)
             {
                 return;
             }
 
-            // If MauiDrawerLayout isn't attached to the window yet (e.g., during initial property mapping),
-            // defer until it's in the Activity's hierarchy. We check PlatformView (not _contentFrame)
-            // because ViewAttachedToWindow dispatches parent-first — when the callback fires,
-            // PlatformView.IsAttachedToWindow is true but children haven't been dispatched yet.
-            // The FragmentManager finds containers by searching from the Activity, so once the parent
-            // is attached, children are reachable via findViewById.
-            if (!PlatformView.IsAttachedToWindow)
-            {
-                _pendingSwitchItem = newItem;
-                _pendingSwitchAnimate = animate;
-                PlatformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
-                PlatformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
-                return;
-            }
+            var fragmentManager = MauiContext.GetFragmentManager();
 
             var previousRenderer = _currentShellItemRenderer;
 
@@ -210,19 +204,25 @@ namespace Microsoft.Maui.Controls.Handlers
             _currentShellItemRenderer.ShellItem = newItem;
 
             var fragment = _currentShellItemRenderer.Fragment;
-            var transaction = fragmentManager.BeginTransactionEx();
 
-            if (animate)
+            // Use RunOrWaitForResume for state-saved safety (same as FlyoutViewHandler),
+            // but CommitNow() instead of Commit() because Shell's navigation flow requires
+            // the fragment to be immediately in the hierarchy — page Appearing events
+            // and NavigationRequested handlers fire synchronously after this returns.
+            _pendingFragment = fragmentManager.RunOrWaitForResume(context, (fm) =>
             {
-                transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
-            }
+                var transaction = fm.BeginTransaction();
 
-            transaction.ReplaceEx(_contentFrame.Id, fragment);
-            transaction.SetReorderingAllowedEx(true);
-            transaction.CommitAllowingStateLossEx();
+                if (animate)
+                {
+                    transaction.SetTransition((int)global::Android.App.FragmentTransit.FragmentOpen);
+                }
 
-            // Force the fragment transaction to complete synchronously
-            fragmentManager.ExecutePendingTransactions();
+                transaction
+                    .Replace(_contentFrame.Id, fragment)
+                    .SetReorderingAllowed(true)
+                    .CommitNow();
+            });
 
             if (previousRenderer is not null)
             {
@@ -239,18 +239,24 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             PlatformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
-            var item = _pendingSwitchItem;
-            var animate = _pendingSwitchAnimate;
-            _pendingSwitchItem = null;
-
-            if (item is not null && VirtualView is not null && _contentFrame is not null)
+            // Initial load: now that the view is in the Activity's hierarchy,
+            // the FragmentManager can find _contentFrame by ID.
+            if (VirtualView?.CurrentItem is not null && _contentFrame is not null)
             {
-                SwitchToItem(item, animate);
+                SwitchToItem(VirtualView.CurrentItem, animate: false);
             }
         }
 
         public static void MapCurrentItem(ShellHandler handler, Shell shell)
         {
+            // During initial SetVirtualView, MapCurrentItem fires before the view is
+            // in the Activity's hierarchy — skip it. The initial load is handled by
+            // OnPlatformViewAttachedToWindow (same pattern as FlyoutViewHandler.DrawerLayoutAttached).
+            if (!handler.PlatformView.IsAttachedToWindow)
+            {
+                return;
+            }
+
             handler.SwitchToItem(shell.CurrentItem, animate: true);
         }
 
