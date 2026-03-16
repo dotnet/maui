@@ -19,8 +19,6 @@ public class Issue26864 : _IssuesUITest
 	{
 		App.WaitForElement("Settings");
 		App.EnterFullScreen();
-		// Wait a little bit to complete the system animation moving the App Window to FullScreen.
-        Thread.Sleep(500);
 		VerifyScreenshot();
 	}
 }

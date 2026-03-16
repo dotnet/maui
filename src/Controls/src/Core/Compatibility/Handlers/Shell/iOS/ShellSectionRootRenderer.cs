@@ -571,7 +571,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (frame.Width != _previousFrameHeader.Width || frame.Height != _previousFrameHeader.Height)
 				{
 					_previousFrameHeader = frame;
-					(_header.ViewController as ShellSectionRootHeader).CollectionView.CollectionViewLayout.InvalidateLayout();
+					if (_header.ViewController is ShellSectionRootHeader rootHeader)
+					{
+    					rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+					}
 				}
 #endif
 			}
