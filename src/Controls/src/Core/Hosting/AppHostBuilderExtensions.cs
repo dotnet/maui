@@ -84,6 +84,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<Image, ImageHandler2>();
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
 			handlersCollection.AddHandler<Slider, SliderHandler2>();
+			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
 		}
 		else
 		{
@@ -98,6 +99,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<Image, ImageHandler>();
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 			handlersCollection.AddHandler<Slider, SliderHandler>();
+			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -111,6 +113,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
+		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
@@ -129,18 +132,6 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
 
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
-			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		}
-#else
-		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-#endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
