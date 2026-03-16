@@ -21,6 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				Assert.Ignore("Ignored the test on iOS if it runs on macOS version less than 26 due to known visual differences");
 			}
+			else if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/32125
+			}
 #endif
 			App.WaitForElement("TestLabel");
 			App.Tap("More");

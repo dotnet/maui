@@ -70,24 +70,45 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Label, LabelHandler2>();
+			handlersCollection.AddHandler<Editor, EditorHandler2>();
+			handlersCollection.AddHandler<Picker, PickerHandler2>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Label, LabelHandler>();
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+			handlersCollection.AddHandler<Picker, PickerHandler>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Label, LabelHandler>();
+		handlersCollection.AddHandler<Editor, EditorHandler>();
+		handlersCollection.AddHandler<Picker, PickerHandler>();
+		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+#endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
-		handlersCollection.AddHandler<Picker, PickerHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
-		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
@@ -108,7 +129,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Window, WindowHandler>();
 		handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 		handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
-		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();

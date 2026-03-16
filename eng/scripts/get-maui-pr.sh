@@ -178,12 +178,32 @@ get_pr_info() {
     echo "$pr_json"
 }
 
-# Get build information from GitHub Checks API
+# Check if a build is currently in progress for this PR via Azure DevOps API
+check_build_in_progress() {
+    local pr_num="$1"
+    
+    local builds_url="https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/build/builds?api-version=7.1&branchName=refs/pull/$pr_num/merge&\$top=10"
+    local builds_json
+    builds_json=$(curl -s -H "User-Agent: MAUI-PR-Script" "$builds_url" 2>/dev/null) || return 1
+    
+    # Check if any maui-pr build is in progress
+    local in_progress
+    in_progress=$(echo "$builds_json" | jq -r '[.value[] | select(.definition.name == "maui-pr" and (.status == "inProgress" or .status == "notStarted" or .status == "postponed"))] | length' 2>/dev/null || echo "0")
+    
+    if [ "$in_progress" != "0" ] && [ -n "$in_progress" ]; then
+        return 0  # true - build is in progress
+    fi
+    return 1  # false - no build in progress
+}
+
+# Get build information from GitHub Checks API, with AzDO fallback
 get_build_info() {
     local sha="$1"
+    local pr_num="$2"
     
     info "Looking for build artifacts for commit ${sha:0:7}..."
     
+    # Strategy 1: Try GitHub Checks API
     local checks_url="https://api.github.com/repos/$GITHUB_REPO/commits/$sha/check-runs"
     local checks_json
     checks_json=$(curl -s -H "User-Agent: MAUI-PR-Script" -H "Accept: application/vnd.github.v3+json" ${GITHUB_AUTH_HEADER:+-H "$GITHUB_AUTH_HEADER"} "$checks_url")
@@ -191,37 +211,91 @@ get_build_info() {
     # Find the main MAUI build check (not uitests)
     local build_check=$(echo "$checks_json" | jq -r '.check_runs[] | select((.name | startswith("maui-pr")) and (.name | contains("uitests") | not) and .status == "completed" and (.details_url | contains("buildId="))) | @json' | head -n 1)
     
-    if [ -z "$build_check" ] || [ "$build_check" == "null" ]; then
-        error "No completed build found for this PR"
-        info "The build may still be in progress or may have failed."
-        exit 1
-    fi
-    
-    local conclusion=$(echo "$build_check" | jq -r '.conclusion')
-    if [ "$conclusion" != "success" ]; then
-        warning "Build completed with status: $conclusion"
-        if [ "$YES_FLAG" = true ]; then
-            info "Auto-accepting non-successful build (-y flag)"
-        else
-            read -p "Do you want to continue anyway? (y/N) " -n 1 -r
-            echo >&2
-            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                error "Build was not successful. Aborting."
-                exit 1
+    if [ -n "$build_check" ] && [ "$build_check" != "null" ]; then
+        local conclusion=$(echo "$build_check" | jq -r '.conclusion')
+        if [ "$conclusion" != "success" ]; then
+            warning "Build completed with status: $conclusion"
+            if [ "$YES_FLAG" = true ]; then
+                info "Auto-accepting non-successful build (-y flag)"
+            else
+                read -p "Do you want to continue anyway? (y/N) " -n 1 -r
+                echo >&2
+                if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                    error "Build was not successful. Aborting."
+                    exit 1
+                fi
             fi
+        fi
+        
+        # Extract build ID from details URL
+        local details_url=$(echo "$build_check" | jq -r '.details_url')
+        if [[ "$details_url" =~ buildId=([0-9]+) ]]; then
+            local build_id="${BASH_REMATCH[1]}"
+            success "Found build ID: $build_id (via GitHub Checks)"
+            echo "$build_id"
+            return 0
         fi
     fi
     
-    # Extract build ID from details URL
-    local details_url=$(echo "$build_check" | jq -r '.details_url')
-    if [[ "$details_url" =~ buildId=([0-9]+) ]]; then
-        local build_id="${BASH_REMATCH[1]}"
-        success "Found build ID: $build_id"
-        echo "$build_id"
-        return 0
+    # Strategy 2: Query Azure DevOps directly (handles merge commits not reported to GitHub)
+    info "Searching Azure DevOps directly for PR #$pr_num builds..."
+    local builds_url="https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/build/builds?api-version=7.1&branchName=refs/pull/$pr_num/merge&\$top=10"
+    local builds_json
+    builds_json=$(curl -s -H "User-Agent: MAUI-PR-Script" "$builds_url" 2>/dev/null)
+    
+    if [ -n "$builds_json" ]; then
+        local completed_build
+        completed_build=$(echo "$builds_json" | jq -r '[.value[] | select(.definition.name == "maui-pr" and .status == "completed")] | first | @json' 2>/dev/null || echo "")
+        
+        if [ -n "$completed_build" ] && [ "$completed_build" != "null" ]; then
+            local azdo_build_id=$(echo "$completed_build" | jq -r '.id')
+            local azdo_result=$(echo "$completed_build" | jq -r '.result')
+            
+            # Validate build ID is numeric
+            if ! [[ "$azdo_build_id" =~ ^[0-9]+$ ]]; then
+                error "Invalid build ID received from Azure DevOps API"
+                exit 1
+            fi
+            
+            # Check if a newer build is in progress (user may have pushed a new commit)
+            local in_progress_count
+            in_progress_count=$(echo "$builds_json" | jq -r '[.value[] | select(.definition.name == "maui-pr" and (.status == "inProgress" or .status == "notStarted" or .status == "postponed"))] | length' 2>/dev/null || echo "0")
+            if [ "$in_progress_count" != "0" ] && [ -n "$in_progress_count" ]; then
+                warning "A newer build is currently in progress. The available artifacts may be from a previous commit."
+                warning "If you just pushed changes, wait for the new build to complete."
+            fi
+            
+            if [ "$azdo_result" != "succeeded" ]; then
+                warning "Build completed with result: $azdo_result"
+                if [ "$YES_FLAG" = true ]; then
+                    info "Auto-accepting non-successful build (-y flag)"
+                else
+                    read -p "Do you want to continue anyway? (y/N) " -n 1 -r
+                    echo >&2
+                    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                        error "Build was not successful. Aborting."
+                        exit 1
+                    fi
+                fi
+            fi
+            
+            success "Found build ID: $azdo_build_id (via Azure DevOps)"
+            echo "$azdo_build_id"
+            return 0
+        fi
     fi
     
-    error "Could not extract build ID from check run details"
+    # No build found - check if one is in progress
+    if check_build_in_progress "$pr_num"; then
+        error "No completed build found, but a build is currently in progress for PR #$pr_num"
+        info "Please wait for it to complete and try again."
+        info "Check status: https://github.com/dotnet/maui/pull/$pr_num"
+        exit 1
+    fi
+    
+    error "No completed build found for PR #$pr_num"
+    info "The PR may not have triggered CI builds yet (draft PRs don't auto-trigger builds), or the build may have failed."
+    info "Check: https://github.com/dotnet/maui/pull/$pr_num"
     exit 1
 }
 
@@ -450,6 +524,13 @@ main() {
     fi
     
     pr_number="${positional_args[0]}"  # Global for error handler
+    
+    # Validate PR number is numeric
+    if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+        error "PR number must be a valid number, got: $pr_number"
+        exit 1
+    fi
+    
     local project_path_arg="${positional_args[1]:-}"
     
     # Check dependencies
@@ -497,7 +578,7 @@ EOF
     
     step "Finding build artifacts"
     local build_id
-    build_id=$(get_build_info "$pr_sha")
+    build_id=$(get_build_info "$pr_sha" "$pr_number")
     
     step "Downloading artifacts"
     local download_url

@@ -153,7 +153,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, UICollectionViewScrollDirection.Vertical);
+				var scrollDirection = Controller.GetScrollDirection();
+				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
 
 				Controller.CollectionView.ScrollToItem(indexPath,
 					position, args.IsAnimated);
