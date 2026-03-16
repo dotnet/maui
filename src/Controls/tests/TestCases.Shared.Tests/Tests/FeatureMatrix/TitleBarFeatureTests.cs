@@ -6,19 +6,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class TitleBarFeatureTests : UITest
+public class TitleBarFeatureTests : _GalleryUITest
 {
 	public const string TitleBarFeatureMatrix = "TitleBar Feature Matrix";
+	public override string GalleryPageName => TitleBarFeatureMatrix;
 
 	public TitleBarFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(TitleBarFeatureMatrix);
 	}
 
 	[Test]

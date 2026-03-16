@@ -90,21 +90,26 @@ class CompilationSignaturesComparer : IEqualityComparer<Compilation>
 			{
 				case IFieldSymbol f:
 					sb.Append(f.DeclaredAccessibility).Append(' ');
-					if (f.IsStatic) sb.Append("static ");
+					if (f.IsStatic)
+						sb.Append("static ");
 					sb.Append(f.Type.ToFQDisplayString()).Append(' ').Append(f.Name).Append(';');
 					break;
 
 				case IPropertySymbol p:
 					sb.Append(p.DeclaredAccessibility).Append(' ');
-					if (p.IsStatic) sb.Append("static ");
+					if (p.IsStatic)
+						sb.Append("static ");
 					sb.Append(p.Type.ToFQDisplayString()).Append(' ').Append(p.Name);
-					if (p.GetMethod != null) sb.Append("{get;}");
-					if (p.SetMethod != null) sb.Append("{set;}");
+					if (p.GetMethod != null)
+						sb.Append("{get;}");
+					if (p.SetMethod != null)
+						sb.Append("{set;}");
 					break;
 
 				case IMethodSymbol m when m.MethodKind == MethodKind.Ordinary:
 					sb.Append(m.DeclaredAccessibility).Append(' ');
-					if (m.IsStatic) sb.Append("static ");
+					if (m.IsStatic)
+						sb.Append("static ");
 					sb.Append(m.ReturnType.ToFQDisplayString()).Append(' ').Append(m.Name);
 					sb.Append('(');
 					sb.Append(string.Join(",", m.Parameters.Select(p => p.Type.ToFQDisplayString())));

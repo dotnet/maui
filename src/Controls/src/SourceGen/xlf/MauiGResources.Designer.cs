@@ -254,5 +254,22 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string AmbiguousTypeMessage => ResourceManager.GetString("AmbiguousTypeMessage", resourceCulture);
 		internal static string RequiredPropertyTitle => ResourceManager.GetString("RequiredPropertyTitle", resourceCulture);
 		internal static string RequiredPropertyMessage => ResourceManager.GetString("RequiredPropertyMessage", resourceCulture);
+
+		// Binding-related diagnostics
+		internal static string BindingCompilationFailed => ResourceManager.GetString("BindingCompilationFailed", resourceCulture);
+		internal static string BindingCompilationWarning => ResourceManager.GetString("BindingCompilationWarning", resourceCulture);
+		internal static string BindingIndexerNotClosed => ResourceManager.GetString("BindingIndexerNotClosed", resourceCulture);
+		internal static string BindingIndexerEmpty => ResourceManager.GetString("BindingIndexerEmpty", resourceCulture);
+		internal static string BindingIndexerTypeUnsupported => ResourceManager.GetString("BindingIndexerTypeUnsupported", resourceCulture);
+		internal static string BindingPropertyNotFound => ResourceManager.GetString("BindingPropertyNotFound", resourceCulture);
+		internal static string BindingWithXDataTypeFromOuterScope => ResourceManager.GetString("BindingWithXDataTypeFromOuterScope", resourceCulture);
+
+		// Namescope diagnostics
+		internal static string NamescopeError => ResourceManager.GetString("NamescopeError", resourceCulture);
+		internal static string NamescopeDuplicate => ResourceManager.GetString("NamescopeDuplicate", resourceCulture);
+
+		// Event handler diagnostics
+		internal static string MissingEventHandlerTitle => ResourceManager.GetString("MissingEventHandlerTitle", resourceCulture);
+		internal static string MissingEventHandler => ResourceManager.GetString("MissingEventHandler", resourceCulture);
 	}
 }

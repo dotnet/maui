@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Focus)]
 		public void EditorCompletedEventShouldTriggerOnFocusLost()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796

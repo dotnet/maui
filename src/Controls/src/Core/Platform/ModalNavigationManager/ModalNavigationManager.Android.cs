@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return Task.FromResult(modal);
 			}
 
-			var source = new TaskCompletionSource<Page>();
+			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			if (animated && dialogFragment.View is not null)
 			{
@@ -168,8 +168,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			TaskCompletionSource<bool> animationCompletionSource = new();
-
 			var parentView = GetModalParentView();
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
@@ -185,19 +183,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				dialogFragment!.AnimationEnded += OnAnimationEnded;
+				TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+				dialogFragment.AnimationEnded += OnAnimationEnded;
+
+				void OnAnimationEnded(object? sender, EventArgs e)
+				{
+					dialogFragment.AnimationEnded -= OnAnimationEnded;
+					animationCompletionSource.SetResult(true);
+				}
 
 				await animationCompletionSource.Task;
 			}
 			else
 			{
-				animationCompletionSource.TrySetResult(true);
-			}
+				// Non-animated modals need to wait for presentation completion to prevent race conditions
+				TaskCompletionSource<bool> presentationCompletionSource = new();
 
-			void OnAnimationEnded(object? sender, EventArgs e)
-			{
-				dialogFragment!.AnimationEnded -= OnAnimationEnded;
-				animationCompletionSource.SetResult(true);
+				dialogFragment.PresentationCompleted += OnPresentationCompleted;
+
+				void OnPresentationCompleted(object? sender, EventArgs e)
+				{
+					dialogFragment.PresentationCompleted -= OnPresentationCompleted;
+					presentationCompletionSource.SetResult(true);
+				}
+
+				await presentationCompletionSource.Task;
 			}
 		}
 
@@ -208,9 +219,10 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
+			bool _pendingNavigation = true;
 
-			public event EventHandler? AnimationEnded;
-
+			internal event EventHandler? AnimationEnded;
+			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
 
@@ -356,11 +368,23 @@ namespace Microsoft.Maui.Controls.Platform
 				var dialog = Dialog;
 
 				if (dialog is null || dialog.Window is null || View is null)
+				{
+					// SAFETY: Fire event even on early return to prevent deadlock
+					FirePresentationCompleted();
 					return;
+				}
 
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
+			}
+
+			public override void OnResume()
+			{
+				base.OnResume();
+
+				// Signal that the modal is fully presented and ready
+				FirePresentationCompleted();
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
@@ -385,6 +409,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnDestroy();
 				FireAnimationEnded();
+
+				// SAFETY: If destroyed before OnStart completed, fire PresentationCompleted to prevent deadlock
+				FirePresentationCompleted();
 			}
 
 			void FireAnimationEnded()
@@ -396,6 +423,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_pendingAnimation = false;
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
+			}
+
+			void FirePresentationCompleted()
+			{
+				if (!_pendingNavigation)
+					return;
+
+				_pendingNavigation = false;
+				PresentationCompleted?.Invoke(this, EventArgs.Empty);
 			}
 
 

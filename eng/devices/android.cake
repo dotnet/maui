@@ -5,7 +5,7 @@
 const int DefaultApiLevel = 30;
 
 const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
-const int EmulatorBootTimeoutSeconds = 2 * 60;
+const int EmulatorBootTimeoutSeconds = 10 * 60;
 const int EmulatorKillTimeoutSeconds = 1 * 60;
 const int AdbCommandTimeoutSeconds = 30;
 

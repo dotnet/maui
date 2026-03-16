@@ -7,6 +7,10 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	public class AlertsGalleryTests : CoreGalleryBasePageTest
 	{
+		const string AlertsGallery = "Alerts Gallery";
+
+		public override string GalleryPageName => AlertsGallery;
+		
 		public AlertsGalleryTests(TestDevice device)
 			: base(device)
 		{

@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Controls.Foldable
 	/// </summary>
 	public sealed class WindowSpanModeStateTrigger : StateTriggerBase
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WindowSpanModeStateTrigger"/> class.
+		/// </summary>
 		public WindowSpanModeStateTrigger()
 		{
 			UpdateState();

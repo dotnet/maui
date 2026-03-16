@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
+    x:Class="Maui.Controls.Sample.Pages.LandmarksPage"
+    x:DataType="viewModels:LandmarksViewModel"
+    Title=".NET MAUI Trip Planner">
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="20">
+
+                <!-- Featured Section -->
+                <Label 
+                    Text="Featured"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+
+                <views:LandmarkFeaturedItemView
+                    Landmark="{Binding FeaturedLandmark}"
+                    IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
+                    LandmarkTapped="OnLandmarkTapped" />
+
+                <!-- Continents -->
+                <VerticalStackLayout 
+                    BindableLayout.ItemsSource="{Binding ContinentGroups}"
+                    Spacing="25">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:ContinentGroup">
+                            <VerticalStackLayout Spacing="12">
+                                <Label
+                                    Text="{Binding Name}"
+                                    FontSize="24"
+                                    FontAttributes="Bold" />
+                                
+                                <views:LandmarkHorizontalListView
+                                    Landmarks="{Binding Landmarks}"
+                                    LandmarkTapped="OnLandmarkTapped" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <ActivityIndicator 
+                    IsVisible="{Binding IsLoading}"
+                    IsRunning="{Binding IsLoading}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Margin="0,50,0,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Floating Language Button (top right) -->
+        <Button
+            Text="🌐"
+            Clicked="OnLanguageButtonClicked"
+            VerticalOptions="Start"
+            HorizontalOptions="End"
+            Margin="0,20,20,0"
+            HeightRequest="44"
+            WidthRequest="44"
+            CornerRadius="22"
+            Padding="0"
+            FontSize="24"
+            Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+
+        <!-- Floating Chat Button (bottom right) -->
+        <Button
+            x:Name="ChatFab"
+            AutomationId="ChatFab"
+            Text="💬"
+            Clicked="OnChatButtonClicked"
+            VerticalOptions="End"
+            HorizontalOptions="End"
+            Margin="0,0,20,20"
+            HeightRequest="56"
+            WidthRequest="56"
+            CornerRadius="28"
+            Padding="0"
+            FontSize="24"
+            BackgroundColor="{StaticResource Primary}"
+            TextColor="White"
+            Shadow="{Shadow Brush=Black, Offset='0,4', Radius=8, Opacity=0.3}" />
+
+        <!-- Loading Overlay — blocks interaction until embeddings are ready -->
+        <Grid
+            IsVisible="{Binding IsGeneratingEmbeddings}"
+            BackgroundColor="{AppThemeBinding Light=#E0FFFFFF, Dark=#E0000000}"
+            InputTransparent="False"
+            CascadeInputTransparent="False">
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="16"
+                Padding="40">
+                <ActivityIndicator
+                    IsRunning="{Binding IsGeneratingEmbeddings}"
+                    Color="{StaticResource Primary}"
+                    HeightRequest="48"
+                    WidthRequest="48" />
+                <Label
+                    Text="{Binding EmbeddingStatusText}"
+                    FontSize="15"
+                    HorizontalTextAlignment="Center"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                <ProgressBar
+                    Progress="{Binding EmbeddingProgress}"
+                    ProgressColor="{StaticResource Primary}"
+                    WidthRequest="220"
+                    HeightRequest="4" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+
+</ContentPage>

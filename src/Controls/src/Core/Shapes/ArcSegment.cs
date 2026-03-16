@@ -4,16 +4,27 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.ArcSegment']/Docs/*" />
+	/// <summary>
+	/// Represents a path segment that draws an elliptical arc between two points.
+	/// </summary>
 	public class ArcSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ArcSegment"/> class.
+		/// </summary>
 		public ArcSegment()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ArcSegment"/> class with the specified arc parameters.
+		/// </summary>
+		/// <param name="point">The endpoint of the arc.</param>
+		/// <param name="size">The x- and y-radius of the arc.</param>
+		/// <param name="rotationAngle">The rotation angle of the ellipse in degrees.</param>
+		/// <param name="sweepDirection">The direction in which the arc is drawn.</param>
+		/// <param name="isLargeArc">Whether the arc should be greater than 180 degrees.</param>
 		public ArcSegment(Point point, Size size, double rotationAngle, SweepDirection sweepDirection, bool isLargeArc)
 		{
 			Point = point;
@@ -43,14 +54,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty IsLargeArcProperty =
 			BindableProperty.Create(nameof(IsLargeArc), typeof(bool), typeof(ArcSegment), false);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='Point']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the endpoint of the arc. This is a bindable property.
+		/// </summary>
 		public Point Point
 		{
 			set { SetValue(PointProperty, value); }
 			get { return (Point)GetValue(PointProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='Size']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x- and y-radius of the arc. This is a bindable property.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(SizeTypeConverter))]
 		public Size Size
 		{
@@ -58,21 +73,27 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Size)GetValue(SizeProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='RotationAngle']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rotation angle of the ellipse in degrees. This is a bindable property.
+		/// </summary>
 		public double RotationAngle
 		{
 			set { SetValue(RotationAngleProperty, value); }
 			get { return (double)GetValue(RotationAngleProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='SweepDirection']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the direction in which the arc is drawn (clockwise or counterclockwise). This is a bindable property.
+		/// </summary>
 		public SweepDirection SweepDirection
 		{
 			set { SetValue(SweepDirectionProperty, value); }
 			get { return (SweepDirection)GetValue(SweepDirectionProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='IsLargeArc']/Docs/*" />
+		/// <summary>
+		/// Gets or sets whether the arc should be greater than 180 degrees. This is a bindable property.
+		/// </summary>
 		public bool IsLargeArc
 		{
 			set { SetValue(IsLargeArcProperty, value); }
