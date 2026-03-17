@@ -32,7 +32,10 @@ param(
     [string]$Platform,
     
     [Parameter(Mandatory=$false)]
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Headless
 )
 
 # Import shared utilities
@@ -194,17 +197,26 @@ if ($Platform -eq "android") {
             # Redirect output to a log file for debugging
             $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
             
+            # Use -no-window only when explicitly headless or running in CI
+            $useHeadless = $Headless -or $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS
+            
             if ($IsWindows) {
-                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
+                $windowStyle = if ($useHeadless) { "Hidden" } else { "Normal" }
+                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle $windowStyle
             }
             else {
                 # macOS/Linux: Use nohup to detach from terminal
                 # Use -no-snapshot (not -no-snapshot-load) to ensure clean emulator state for CI/testing.
                 # This disables both snapshot load and save, so each boot is a cold boot.
                 # Trade-off: slower boots, but guarantees no stale state between test runs.
-                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+                $windowFlag = if ($useHeadless) { "-no-window" } else { "" }
+                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' $windowFlag -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
                 bash -c $startScript
-                Write-Info "Emulator started in background. Log file: $emulatorLog"
+                if ($useHeadless) {
+                    Write-Info "Emulator started headless (no window). Log file: $emulatorLog"
+                } else {
+                    Write-Info "Emulator started with window. Log file: $emulatorLog"
+                }
             }
             
             # Give the emulator process time to start

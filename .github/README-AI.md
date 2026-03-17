@@ -4,8 +4,8 @@ This folder contains instructions and configurations for AI coding assistants wo
 
 ## Available Agents
 
-### PR Agent
-The PR agent is a unified 4-phase workflow for investigating issues and reviewing/working on PRs. It handles everything from context gathering through test verification, fix exploration, and creating PRs or review reports.
+### PR Review Agent
+The pr-review skill is a 4-phase orchestrator for investigating issues and reviewing/working on PRs. It invokes dedicated phase skills (pr-preflight, pr-gate, try-fix, pr-report) for context gathering, test verification, fix exploration, and review reports.
 
 ### Sandbox Agent
 The sandbox agent is your general-purpose tool for working with the .NET MAUI Sandbox app. Use it for manual testing, PR validation, issue reproduction, and experimentation with MAUI features.
@@ -84,13 +84,13 @@ copilot
 please write UI tests for issue #12345
 ```
 
-**PR Agent:**
+**Try-Fix-Validate Agent:**
 ```bash
 # Start GitHub Copilot CLI with agent support
 copilot
 
-# Invoke the pr agent
-/agent pr
+# Invoke the pr-review skill
+/skill pr-review
 
 # Fix an issue or review a PR
 please fix issue #12345
@@ -112,7 +112,7 @@ please review https://github.com/dotnet/maui/pull/XXXXX
 3. **Choose your agent** from the dropdown:
    - `sandbox-agent` for manual testing and experimentation
    - `write-tests-agent` for writing tests (invokes appropriate skill)
-   - `pr` for reviewing and working on existing PRs
+   - `pr-review skill` for reviewing and working on existing PRs
 
 4. **Enter a task** in the text box:
    - For sandbox testing: `Please test PR #32479`
@@ -146,9 +146,9 @@ Automated testing specialist for the .NET MAUI test suite:
 4. **Cross-Platform** - Tests on iOS, Android, Windows, and MacCatalyst
 5. **Automated Workflow** - Uses `BuildAndRunHostApp.ps1` to handle building, deployment, and logging to `CustomAgentLogsTmp/UITests/`
 
-### PR Agent
+### PR Review Agent
 
-Unified 4-phase workflow for issue investigation and PR work:
+Unified 4-phase orchestrator for issue investigation and PR work:
 
 1. **Pre-Flight** - Context gathering from issues/PRs
 2. **Gate** - Verify tests exist and catch the issue (mandatory checkpoint)
@@ -199,9 +199,11 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 
 ## File Structure
 
-### Agent Definitions
-- **`agents/pr.md`** - PR workflow phases 1-2 (Pre-Flight, Gate)
-- **`agents/pr/post-gate.md`** - PR workflow phases 3-4 (Fix, Report)
+### Agent & Skill Definitions
+- **`skills/pr-review/SKILL.md`** - PR Review orchestrator (invokes phase docs and try-fix skill)
+- **`pr-review/pr-preflight.md`** - Phase 1: Context gathering (phase doc, not a standalone skill)
+- **`pr-review/pr-gate.md`** - Phase 2: Test verification (phase doc, not a standalone skill)
+- **`pr-review/pr-report.md`** - Phase 4: Final recommendation (phase doc, not a standalone skill)
 - **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
 - **`agents/write-tests-agent.md`** - Test writing agent (dispatches to skills like write-ui-tests)
 
@@ -209,8 +211,6 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 
 Agent files in the `.github/agents/` directory:
 
-- **`agents/pr.md`** - PR workflow phases 1-2 (Pre-Flight, Gate)
-- **`agents/pr/post-gate.md`** - PR workflow phases 3-4 (Fix, Report)
 - **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
 - **`agents/write-tests-agent.md`** - Test writing (invokes skills like write-ui-tests)
 
@@ -250,12 +250,12 @@ Reusable skills in `.github/skills/` that agents can invoke:
 - **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
 - **`write-ui-tests/`** - Creates UI tests for issues following MAUI conventions
 - **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
-- **`azdo-build-investigator/`** - MAUI-specific CI investigation context (works with `ci-analysis` from arcade-skills plugin)
+- **`azdo-build-investigator/`** - Investigates CI failures for PRs (build errors, Helix test logs, binlog analysis) via dotnet/arcade-skills plugin
 
 ### Recent Improvements (January 2026)
 
-**PR Agent Consolidation:**
-1. **Unified PR Agent** - Replaced separate `issue-resolver` and `pr-reviewer` agents with single 4-phase `pr` agent
+**Agent Consolidation:**
+1. **Unified PR Review Orchestrator** - Replaced separate `issue-resolver` and `pr-reviewer` agents with 4-phase `pr-review` skill that orchestrates `pr-preflight`, `pr-gate`, `try-fix`, and `pr-report` phase skills
 2. **try-fix Skill** - New skill for exploring independent fix alternatives with empirical testing
 3. **Skills Integration** - Added `verify-tests-fail-without-fix` and `write-ui-tests` skills for reusable test workflows
 4. **Agent/Skills Guidelines** - New instruction files for authoring agents and skills
@@ -364,8 +364,8 @@ For issues or questions about the AI agent instructions:
 ## Metrics
 
 **Agent Files**:
-- 4 agent files (pr.md, pr/post-gate.md, sandbox-agent.md, write-tests-agent.md)
-- 5 skills (try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator)
+- 4 agent files (pr-review skill.md, sandbox-agent.md, write-tests-agent.md)
+- 5 skills (pr-review, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator) + 3 phase docs (pr-preflight, pr-gate, pr-report)
 - All validated and consistent with consolidated structure
 
 **Automation**:
@@ -383,4 +383,4 @@ For issues or questions about the AI agent instructions:
 
 **Last Updated**: 2026-01-07
 
-**Note**: These instructions are actively being refined based on real-world usage. PR agent consolidation completed January 2026 (unified 4-phase workflow with try-fix skill). Feedback and improvements are welcome!
+**Note**: These instructions are actively being refined based on real-world usage. Agent consolidation completed January 2026 (unified 4-phase workflow with try-fix skill). Feedback and improvements are welcome!
