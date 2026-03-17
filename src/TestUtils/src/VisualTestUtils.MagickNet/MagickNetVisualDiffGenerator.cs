@@ -19,10 +19,10 @@ namespace VisualTestUtils.MagickNet
 
         public ImageSnapshot GenerateDiff(ImageSnapshot baselineImage, ImageSnapshot actualImage)
         {
-            var magickBaselineImage = new MagickImage(baselineImage.Data);
-            var magickActualImage = new MagickImage(actualImage.Data);
+            using var magickBaselineImage = new MagickImage(baselineImage.Data);
+            using var magickActualImage = new MagickImage(actualImage.Data);
 
-            MagickImage magickDiffImage = (MagickImage)magickBaselineImage.Compare(magickActualImage, _errorMetric, Channels.Red, out _);
+            using var magickDiffImage = (MagickImage)magickBaselineImage.Compare(magickActualImage, _errorMetric, Channels.Red, out _);
             magickDiffImage.Format = MagickFormat.Png;
 
             return new ImageSnapshot(magickDiffImage.ToByteArray(), ImageSnapshotFormat.PNG);

@@ -14,6 +14,10 @@ namespace VisualTestUtils.MagickNet
 
         public void Crop(int x, int y, int width, int height)
         {
+            if (width <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width), width, "Value must be greater than zero.");
+            if (height <= 0)
+                throw new ArgumentOutOfRangeException(nameof(height), height, "Value must be greater than zero.");
             _magickImage.Crop(new MagickGeometry(x, y, (uint)width, (uint)height));
             _magickImage.ResetPage();
         }

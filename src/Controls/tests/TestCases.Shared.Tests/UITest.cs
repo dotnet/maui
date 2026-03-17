@@ -669,6 +669,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Take the screenshot
 			var bytes = App.Screenshot();
 
+			if (width <= 0 || height <= 0)
+				return bytes;
+
 			// Draw a rounded rectangle with the app window bounds as mask
 			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
 			new Drawables()
