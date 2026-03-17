@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 26810, "Scroll To first item in CollectionView when updating the collection with KeepItemsInView",
 		PlatformAffected.Android)]
 public partial class Issue26810 : ContentPage
