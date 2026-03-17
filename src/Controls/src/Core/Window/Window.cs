@@ -331,6 +331,8 @@ namespace Microsoft.Maui.Controls
 
 		internal IAlertManager AlertManager { get; private set; }
 
+		bool _alertManagerResolved;
+
 		internal ModalNavigationManager ModalNavigationManager { get; }
 
 		internal IMauiContext MauiContext =>
@@ -711,13 +713,21 @@ namespace Microsoft.Maui.Controls
 
 		void TryResolveAlertManager()
 		{
-			if (AlertManager is not Platform.AlertManager)
+			if (_alertManagerResolved)
 				return;
+
+			if (AlertManager is not Platform.AlertManager)
+			{
+				_alertManagerResolved = true;
+				return;
+			}
 
 			var customManager = Handler?.MauiContext?.Services?.GetService<IAlertManager>();
 			if (customManager is not null)
 			{
+				AlertManager.Unsubscribe(); // defensive: no-op if not yet subscribed
 				AlertManager = customManager;
+				_alertManagerResolved = true;
 			}
 		}
 
