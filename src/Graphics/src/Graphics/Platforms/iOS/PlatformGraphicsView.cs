@@ -82,16 +82,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		public override void LayoutSubviews()
-		{
-			base.LayoutSubviews();
-
-			var frame = Frame;
-			var alignedFrame = PixelAlign(frame);
-			if (alignedFrame != frame)
-				Frame = alignedFrame;
-		}
-
 		public override void Draw(CGRect dirtyRect)
 		{
 			base.Draw(dirtyRect);
@@ -122,10 +112,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			set
 			{
-				var newBounds = PixelAlign(value);
+				var newBounds = value;
 				if (_lastBounds.Width != newBounds.Width || _lastBounds.Height != newBounds.Height)
 				{
-					base.Bounds = newBounds;
+					base.Bounds = value;
 
 					if (Renderer is IGraphicsRenderer renderer)
 					{
@@ -146,27 +136,6 @@ namespace Microsoft.Maui.Graphics.Platform
 				var py = Frame.Y;
 				return new CGSize(px, py);
 			}
-		}
-
-		static CGRect PixelAlign(CGRect rect)
-		{
-			// Align the rect to device pixels to avoid CoreAnimation hairline artifacts
-			// when fractional point sizes are used (e.g., 200.25pt on a 2x display).
-			var scale = UIScreen.MainScreen?.Scale ?? 1;
-			if (rect.IsEmpty || scale <= 0)
-				return rect;
-
-			var x = Math.Floor(rect.X * scale) / scale;
-			var y = Math.Floor(rect.Y * scale) / scale;
-			var maxX = Math.Ceiling((rect.X + rect.Width) * scale) / scale;
-			var maxY = Math.Ceiling((rect.Y + rect.Height) * scale) / scale;
-			var w = maxX - x;
-			var h = maxY - y;
-
-			if (w <= 0 || h <= 0)
-				return rect;
-
-			return new CGRect(x, y, w, h);
 		}
 	}
 }
