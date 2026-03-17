@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			return null;
 		}
 
-		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true)] out Type? handlerType)
+		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true), DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] out Type? handlerType)
 		{
 			if (InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
 				&& serviceDescriptor?.ImplementationType is Type type)
