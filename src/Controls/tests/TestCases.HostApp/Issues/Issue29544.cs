@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 29544,
 	"PreviousItem and PreviousPosition not updating correctly on ScrollTo or Position set",
-	PlatformAffected.Android)]
+	PlatformAffected.Android | PlatformAffected.UWP)]
 public class Issue29544 : ContentPage
 {
 	readonly CarouselView _carouselView;

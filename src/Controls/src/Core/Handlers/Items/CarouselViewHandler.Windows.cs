@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize;
 		bool _isCarouselViewReady;
+		int _gotoPosition = -1;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -188,6 +190,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.UpdateCurrentItem();
+		}
+
+		protected override async Task ScrollTo(ScrollToRequestEventArgs args)
+		{
+			if (args.IsAnimated && args.Mode == ScrollToMode.Position)
+			{
+				_gotoPosition = args.Index;
+
+				// Commit Position immediately so PositionChanged fires with the correct
+				// PreviousPosition/PreviousItem before the animation starts. The visual scroll follows
+				// asynchronously. This mirrors the Android fix and ensures the label updates
+				// without waiting for the WinUI animation to settle (which can stall in test environments).
+				SetCarouselViewPosition(_gotoPosition);
+			}
+
+			await base.ScrollTo(args);
+
+			_gotoPosition = -1;
 		}
 
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
@@ -385,7 +405,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
 			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
+			{
 				return;
+			}
+
+			if (_gotoPosition != -1)
+			{
+				return;
+			}
 
 			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
 		}
@@ -491,6 +518,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+
+			// Ignore scroll events that fire before the initial position is established.
+			// On Windows, WinUI can fire ViewChanged during initial layout with an incorrect
+			// center index, which would incorrectly override the intended initial position.
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+
 			var position = e.CenterItemIndex;
 
 			if (position == -1)
@@ -499,6 +535,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (position == Element.Position)
+			{
+				return;
+			}
+
+			// Suppress all events during a programmatic animated scroll.
+			// Position is committed immediately in ScrollTo before the animation starts.
+			if (_gotoPosition != -1)
 			{
 				return;
 			}
