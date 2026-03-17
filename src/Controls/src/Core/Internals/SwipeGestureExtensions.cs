@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal static SwipeDirection TransformSwipeDirectionForRotation(SwipeDirection direction, double rotation)
 		{
-			if (!double.IsFinite(rotation))
+			if (double.IsNaN(rotation) || double.IsInfinity(rotation))
 			{
 				return direction;
 			}
