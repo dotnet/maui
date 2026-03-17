@@ -87,8 +87,11 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnDestroy()
 		{
-			_fragmentContainerView?.RemoveView(_currentView);
-			_currentView?.RemoveFromParent();
+			if (_currentView is not null)
+			{
+				_fragmentContainerView?.RemoveView(_currentView);
+				_currentView.RemoveFromParent();
+			}
 			_currentView = null;
 			_fragmentContainerView = null;
 			_navigationManager = null;
