@@ -2,7 +2,7 @@ using Font = Microsoft.Maui.Graphics.Font;
 
 namespace Maui.Controls.Sample.Issues
 {
-    [Issue(IssueTracker.Github, 18679, "Canvas.GetStringSize() is not consistent with actual string size in GraphicsView", PlatformAffected.iOS | PlatformAffected.macOS)]
+    [Issue(IssueTracker.Github, 18679, "Canvas.GetStringSize() is not consistent with actual string size in GraphicsView", PlatformAffected.All)]
     public class Issue18679 : TestContentPage
     {
         const string ShortText = "ShortText";

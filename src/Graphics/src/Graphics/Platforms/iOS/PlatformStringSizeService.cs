@@ -15,21 +15,25 @@ namespace Microsoft.Maui.Graphics.Platform
 				return new SizeF();
 			}
 
-			var attributes = new CTStringAttributes();
-			attributes.Font = font?.ToCTFont(fontSize) ?? FontExtensions.GetDefaultCTFont(fontSize);
+			// ToCTFont creates a new CTFont instance that we own and must dispose.
+			// GetDefaultCTFont may return a shared instance, so we don't dispose it.
+			using var ownedFont = font?.ToCTFont(fontSize);
 
-			var attributedString = new NSAttributedString(value, attributes);
-			var framesetter = new CTFramesetter(attributedString);
+			var attributes = new CTStringAttributes
+			{
+				Font = ownedFont ?? FontExtensions.GetDefaultCTFont(fontSize)
+			};
 
 			// Get suggested frame size with unlimited constraints
+			using var attributedString = new NSAttributedString(value, attributes);
+			using var framesetter = new CTFramesetter(attributedString);
+
 			var measuredSize = framesetter.SuggestFrameSize(
 				new NSRange(0, attributedString.Length),
 				null,
 				new CGSize(float.MaxValue, float.MaxValue),
 				out _);
 
-			framesetter.Dispose();
-			attributedString.Dispose();
 			return new SizeF((float)measuredSize.Width, (float)measuredSize.Height);
 		}
 	}
