@@ -218,7 +218,19 @@ public class AvdManager
 			}
 			else
 			{
-				_emulatorRunner.LaunchEmulator(name, coldBoot);
+				var process = _emulatorRunner.LaunchEmulator(name, coldBoot);
+
+				// Wait briefly to detect immediate crashes (e.g. stale lock files,
+				// missing system image, HAXM issues). A healthy emulator stays alive.
+				await Task.Delay(3000, cancellationToken);
+				if (process.HasExited && process.ExitCode != 0)
+				{
+					throw new MauiToolException(
+						ErrorCodes.AndroidEmulatorNotFound,
+						$"Emulator exited immediately with code {process.ExitCode}. " +
+						$"This often means another instance of '{name}' is already running " +
+						$"or stale lock files exist. Try stopping all emulators first with: maui android emulator stop");
+				}
 			}
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException and not MauiToolException)
