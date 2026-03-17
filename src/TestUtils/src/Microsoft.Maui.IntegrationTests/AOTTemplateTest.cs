@@ -34,13 +34,6 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// For Android-only builds on Linux, modify the csproj to only target Android
-		// This avoids restore failures due to missing iOS/macCatalyst workloads
-		if (isAndroidPlatform && !TestEnvironment.IsMacOS && !TestEnvironment.IsWindows)
-		{
-			OnlyAndroid(projectFile);
-		}
-
 		var extendedBuildProps = isWindowsFramework
 			? PrepareNativeAotBuildPropsWindows(runtimeIdentifier)
 			: isAndroidPlatform
@@ -94,13 +87,6 @@ public class AOTTemplateTest : BaseTemplateTests
 
 		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// For Android-only builds on Linux, modify the csproj to only target Android
-		// This avoids restore failures due to missing iOS/macCatalyst workloads
-		if (isAndroidPlatform && !TestEnvironment.IsMacOS && !TestEnvironment.IsWindows)
-		{
-			OnlyAndroid(projectFile);
-		}
 
 		var extendedBuildProps = isWindowsFramework
 			? PrepareNativeAotBuildPropsWindows(runtimeIdentifier)
