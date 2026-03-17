@@ -75,6 +75,11 @@ public class JsonOutputFormatter : IOutputFormatter
 		WriteResult(rows.ToList());
 	}
 
+	public void WriteVersion(string version, string runtime, string os)
+	{
+		WriteResult(new { version, runtime, os });
+	}
+
 	/// <summary>
 	/// Serializes an object to JSON string.
 	/// </summary>

@@ -209,7 +209,7 @@ public class AvdManager
 		{
 			if (wait && _adb?.Runner != null)
 			{
-				var result = await _emulatorRunner.BootAvdAsync(name, _adb.Runner,
+				var result = await _emulatorRunner.BootEmulatorAsync(name, _adb.Runner,
 					new EmulatorBootOptions { ColdBoot = coldBoot }, cancellationToken);
 				if (!result.Success)
 					throw new MauiToolException(
@@ -218,7 +218,7 @@ public class AvdManager
 			}
 			else
 			{
-				_emulatorRunner.LaunchAvd(name, coldBoot);
+				_emulatorRunner.LaunchEmulator(name, coldBoot);
 			}
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException and not MauiToolException)

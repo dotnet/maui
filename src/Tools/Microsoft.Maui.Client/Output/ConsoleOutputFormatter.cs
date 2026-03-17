@@ -264,4 +264,11 @@ public class ConsoleOutputFormatter : IOutputFormatter
 			_error.Write(text);
 		}
 	}
+
+	public void WriteVersion(string version, string runtime, string os)
+	{
+		_output.WriteLine($"maui {version}");
+		_output.WriteLine($"Runtime: {runtime}");
+		_output.WriteLine($"OS: {os}");
+	}
 }

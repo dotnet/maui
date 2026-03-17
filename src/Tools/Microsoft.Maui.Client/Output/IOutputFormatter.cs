@@ -54,4 +54,9 @@ public interface IOutputFormatter
 	/// Writes a table of data.
 	/// </summary>
 	void WriteTable<T>(IEnumerable<T> items, params (string Header, Func<T, string> Selector)[] columns);
+
+	/// <summary>
+	/// Writes version information.
+	/// </summary>
+	void WriteVersion(string version, string runtime, string os);
 }
