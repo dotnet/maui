@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 17550, "Changing Shell.NavBarIsVisible does not update the nav bar on Mac / iOS",
-	PlatformAffected.UWP)]
+	PlatformAffected.All)]
 public class Issue17550 : TestShell
 {
 	Button _toggleButton;
