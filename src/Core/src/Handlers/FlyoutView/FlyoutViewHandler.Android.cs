@@ -70,8 +70,14 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
-				pvh.DisconnectHandler();
+			// Disconnect the OLD detail's handler before replacing it with the new one.
+			// This ensures the previous NavigationPage and its child pages can be
+			// garbage collected (fixes the memory leak from dotnet/maui#33355).
+			if (_detailViewFragment?.DetailView is IView previousDetail &&
+				previousDetail != VirtualView.Detail)
+			{
+				previousDetail.Handler?.DisconnectHandler();
+			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
