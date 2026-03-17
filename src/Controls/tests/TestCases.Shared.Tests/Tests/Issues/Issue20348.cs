@@ -24,8 +24,8 @@ public class Issue20348 : _IssuesUITest
 		this.Back();
 		App.WaitForElement("FirstSearchBarText");
 
-		var firstSearchBarText = App.FindElement("FirstSearchBarText").GetText();
-		Assert.That(firstSearchBarText, Is.Null.Or.Empty,
+		var result = App.FindElement("FirstSearchBarText").GetText();
+		Assert.That(result, Is.EqualTo("Pass"),
 			"First SearchBar should be empty after back navigation — Android state save/restore should not bleed text from other SearchBar instances");
 	}
 }

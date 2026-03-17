@@ -19,12 +19,14 @@ public class Issue20348 : NavigationPage
 			Label firstSearchBarTextLabel = new Label
 			{
 				AutomationId = "FirstSearchBarText",
-				Text = ""
+				Text = "Pass"
 			};
 
 			firstSearchBar.TextChanged += (s, e) =>
 			{
-				firstSearchBarTextLabel.Text = e.NewTextValue ?? "";
+				firstSearchBarTextLabel.Text = string.IsNullOrEmpty(e.NewTextValue)
+					? "Pass"
+					: "Fail";
 			};
 
 			SearchBar secondSearchBar = new SearchBar
