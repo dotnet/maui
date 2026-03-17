@@ -58,6 +58,11 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateIsEnabled();
 		}
 
+		public void SetupHandler(IViewHandler handler)
+		{
+			// Handler is already set via constructor on locally-created instances
+		}
+
 		public void Dispose()
 		{
 			Dispose(true);

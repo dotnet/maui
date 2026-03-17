@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 		object? _platformView;
 		object? _handler;
 		bool _didHaveWindow;
+		bool _gestureManagerFromDI;
 
 		public bool IsConnected => GesturePlatformManager != null;
 		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
@@ -47,8 +48,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void DisconnectGestures()
 		{
-			GesturePlatformManager?.Dispose();
+			// Only dispose if we own the instance (not DI-provided — the container manages its lifetime)
+			if (!_gestureManagerFromDI)
+				GesturePlatformManager?.Dispose();
 			GesturePlatformManager = null;
+			_gestureManagerFromDI = false;
 			_handler = null;
 			_didHaveWindow = false;
 			_containerView = null;
@@ -79,10 +83,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Try to get IGesturePlatformManager from services first, fallback to default implementation
 			var context = handler.MauiContext;
-			GesturePlatformManager =
-				context?.Services.GetService<IGesturePlatformManager>() ??
-				new GesturePlatformManager(handler);
-			
+			var customManager = context?.Services.GetService<IGesturePlatformManager>();
+			if (customManager is not null)
+			{
+				GesturePlatformManager = customManager;
+				GesturePlatformManager.SetupHandler(handler);
+				_gestureManagerFromDI = true;
+			}
+			else
+			{
+				GesturePlatformManager = new GesturePlatformManager(handler);
+				_gestureManagerFromDI = false;
+			}
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;

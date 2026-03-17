@@ -149,5 +149,68 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(gestureManager.GesturePlatformManager);
 			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
 		}
+
+		[Fact]
+		public void DIProvidedSingletonIsNotDisposedOnDisconnect()
+		{
+			var handler = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IControlsView>();
+			var mauiContext = Substitute.For<IMauiContext>();
+			var customManager = Substitute.For<IGesturePlatformManager>();
+
+			var services = new ServiceCollection()
+				.AddSingleton(customManager)
+				.BuildServiceProvider();
+
+			mauiContext.Services.Returns(services);
+			handler.MauiContext.Returns(mauiContext);
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			// Simulate a handler disconnect (e.g., navigation)
+			view.Handler.Returns((IViewHandler)null);
+			view.HandlerChanging += Raise.Event<EventHandler<HandlerChangingEventArgs>>(view, new HandlerChangingEventArgs(handler, null));
+
+			// The DI-provided singleton must NOT have been disposed
+			customManager.DidNotReceive().Dispose();
+		}
+
+		[Fact]
+		public void DIProvidedSingletonIsReusedAfterReconnect()
+		{
+			var handler = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IControlsView>();
+			var mauiContext = Substitute.For<IMauiContext>();
+			var customManager = Substitute.For<IGesturePlatformManager>();
+
+			var services = new ServiceCollection()
+				.AddSingleton(customManager)
+				.BuildServiceProvider();
+
+			mauiContext.Services.Returns(services);
+			handler.MauiContext.Returns(mauiContext);
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+
+			// Disconnect
+			view.Handler.Returns((IViewHandler)null);
+			view.HandlerChanging += Raise.Event<EventHandler<HandlerChangingEventArgs>>(view, new HandlerChangingEventArgs(handler, null));
+			Assert.False(gestureManager.IsConnected);
+
+			// Reconnect with a new handler
+			var handler2 = Substitute.For<IViewHandler>();
+			handler2.MauiContext.Returns(mauiContext);
+			view.Handler.Returns(handler2);
+			view.HandlerChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
+
+			// Same singleton instance should be used again (not disposed, not recreated)
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			customManager.DidNotReceive().Dispose();
+			// SetupHandler should have been called for the new handler
+			customManager.Received().SetupHandler(handler2);
+		}
 	}
 }
