@@ -87,8 +87,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (customManager is not null)
 			{
 				GesturePlatformManager = customManager;
+				_gestureManagerFromDI = true; // Set before SetupHandler so DisconnectGestures won't dispose the singleton on exception
 				GesturePlatformManager.SetupHandler(handler);
-				_gestureManagerFromDI = true;
 			}
 			else
 			{
