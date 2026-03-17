@@ -250,7 +250,7 @@ Reusable skills in `.github/skills/` that agents can invoke:
 - **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
 - **`write-ui-tests/`** - Creates UI tests for issues following MAUI conventions
 - **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
-- **`pr-build-status/`** - Retrieves Azure DevOps build status for PRs
+- **`azdo-build-investigator/`** - Investigates CI failures for PRs (build errors, Helix test logs, binlog analysis) via dotnet/arcade-skills plugin
 
 ### Recent Improvements (January 2026)
 
@@ -365,7 +365,7 @@ For issues or questions about the AI agent instructions:
 
 **Agent Files**:
 - 4 agent files (pr-review skill.md, sandbox-agent.md, write-tests-agent.md)
-- 8 skills (pr-review, pr-preflight, pr-gate, pr-report, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, pr-build-status)
+- 8 skills (pr-review, pr-preflight, pr-gate, pr-report, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator)
 - All validated and consistent with consolidated structure
 
 **Automation**:

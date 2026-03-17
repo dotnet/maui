@@ -317,9 +317,9 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-10. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
-   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
-   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
+10. **azdo-build-investigator** (`.github/skills/azdo-build-investigator/SKILL.md`)
+   - **Purpose**: Investigates CI failures for PRs — build errors, Helix test logs, and binlog analysis. Delegates to the `ci-analysis` skill from the dotnet/arcade-skills plugin.
+   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status", "what's failing on PR", "Helix failures"
    - **Used by**: When investigating CI failures
 
 11. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
