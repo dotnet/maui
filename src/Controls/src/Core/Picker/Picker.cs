@@ -274,6 +274,30 @@ namespace Microsoft.Maui.Controls
 			return (string)GetValue(s_displayProperty);
 		}
 
+		void SubscribeToItemPropertyChanges(IEnumerable items)
+		{
+			if (items is null)
+				return;
+
+			foreach (var item in items)
+			{
+				if (item is INotifyPropertyChanged npc)
+					npc.PropertyChanged += OnPickerItemPropertyChanged;
+			}
+		}
+
+		void UnsubscribeFromItemPropertyChanges(IEnumerable items)
+		{
+			if (items is null)
+				return;
+
+			foreach (var item in items)
+			{
+				if (item is INotifyPropertyChanged npc)
+					npc.PropertyChanged -= OnPickerItemPropertyChanged;
+			}
+		}
+
 		static object CoerceSelectedIndex(BindableObject bindable, object value)
 		{
 			var picker = (Picker)bindable;
@@ -283,24 +307,11 @@ namespace Microsoft.Maui.Controls
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
 		{
 			// Unsubscribe all items when binding is removed or changed
-			if (ItemsSource is not null)
-			{
-				foreach (var item in ItemsSource)
-				{
-					if (item is INotifyPropertyChanged npc)
-						npc.PropertyChanged -= OnPickerItemPropertyChanged;
-				}
-			}
+			UnsubscribeFromItemPropertyChanges(ItemsSource);
 
 			// Re-subscribe when a new binding is set
-			if (newValue is not null && ItemsSource is not null)
-			{
-				foreach (var item in ItemsSource)
-				{
-					if (item is INotifyPropertyChanged npc)
-						npc.PropertyChanged += OnPickerItemPropertyChanged;
-				}
-			}
+			if (newValue is not null)
+				SubscribeToItemPropertyChanges(ItemsSource);
 
 			ResetItems();
 		}
@@ -324,26 +335,10 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
-			if (oldValue is not null)
-			{
-				foreach (var item in oldValue)
-				{
-					if (item is INotifyPropertyChanged npc)
-					{
-						npc.PropertyChanged -= OnPickerItemPropertyChanged;
-					}
-				}
-			}
-			if (newValue is not null && ItemDisplayBinding is not null)
-			{
-				foreach (var item in newValue)
-				{
-					if (item is INotifyPropertyChanged npc)
-					{
-						npc.PropertyChanged += OnPickerItemPropertyChanged;
-					}
-				}
-			}
+			UnsubscribeFromItemPropertyChanges(oldValue);
+
+			if (ItemDisplayBinding is not null)
+				SubscribeToItemPropertyChanges(newValue);
 
 			var oldObservable = oldValue as INotifyCollectionChanged;
 			if (oldObservable != null)
@@ -394,6 +389,15 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChanging(args);
+
+			// Unsubscribe when being removed from visual tree to prevent memory leaks
+			if (args.NewHandler == null)
+				UnsubscribeFromItemPropertyChanges(ItemsSource);
+		}
+
 		void HandleIsOpenChanged()
 		{
 			if (Handler?.VirtualView is not Picker picker)
@@ -420,26 +424,10 @@ namespace Microsoft.Maui.Controls
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems is not null)
-			{
-				foreach (var item in e.OldItems)
-				{
-					if (item is INotifyPropertyChanged npc)
-					{
-						npc.PropertyChanged -= OnPickerItemPropertyChanged;
-					}
-				}
-			}
-			if (e.NewItems is not null && ItemDisplayBinding is not null)
-			{
-				foreach (var item in e.NewItems)
-				{
-					if (item is INotifyPropertyChanged npc)
-					{
-						npc.PropertyChanged += OnPickerItemPropertyChanged;
-					}
-				}
-			}
+			UnsubscribeFromItemPropertyChanges(e.OldItems);
+
+			if (ItemDisplayBinding is not null)
+				SubscribeToItemPropertyChanges(e.NewItems);
 			
 			switch (e.Action)
 			{
