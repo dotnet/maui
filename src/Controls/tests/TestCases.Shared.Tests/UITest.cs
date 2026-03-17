@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
+using ImageMagick.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using UITest.Appium;
