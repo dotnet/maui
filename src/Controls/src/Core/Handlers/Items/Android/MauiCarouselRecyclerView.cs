@@ -193,6 +193,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (args.IsAnimated)
 			{
+				_gotoPosition = position;
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
 			}
 			else
@@ -506,8 +507,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_gotoPosition = currentItemPosition;
 				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
 			}
-
-			_gotoPosition = -1;
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromPosition()
