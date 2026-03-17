@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.Maui.Client.Errors;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Utils;
@@ -207,6 +208,18 @@ public class AvdManager
 
 		try
 		{
+			// Check if this emulator is already running before attempting to launch
+			if (_adb != null)
+			{
+				var devices = await _adb.GetDevicesAsync(cancellationToken);
+				var alreadyRunning = devices.FirstOrDefault(d =>
+					d.IsEmulator && d.IsRunning &&
+					(string.Equals(d.Name, name, StringComparison.OrdinalIgnoreCase) ||
+					 string.Equals(d.EmulatorId, name, StringComparison.OrdinalIgnoreCase)));
+				if (alreadyRunning != null)
+					return; // Already running, nothing to do
+			}
+
 			if (wait && _adb?.Runner != null)
 			{
 				var result = await _emulatorRunner.BootEmulatorAsync(name, _adb.Runner,
@@ -228,8 +241,8 @@ public class AvdManager
 					throw new MauiToolException(
 						ErrorCodes.AndroidEmulatorNotFound,
 						$"Emulator exited immediately with code {process.ExitCode}. " +
-						$"This often means another instance of '{name}' is already running " +
-						$"or stale lock files exist. Try stopping all emulators first with: maui android emulator stop");
+						$"This often means stale lock files exist. " +
+						$"Try stopping all emulators first with: maui android emulator stop");
 				}
 			}
 		}
