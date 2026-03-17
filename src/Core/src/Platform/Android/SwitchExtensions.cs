@@ -20,12 +20,6 @@ namespace Microsoft.Maui.Platform
 			aSwitch.Checked = view.IsOn;
 		}
 
-		// TODO: material3 - make it public in .net 11
-		internal static void UpdateIsOn(this MSwitch materialSwitch, ISwitch view)
-		{
-			materialSwitch.Checked = view.IsOn;
-		}
-
 		public static void UpdateTrackColor(this ASwitch aSwitch, ISwitch view)
 		{
 			var trackColor = view.TrackColor;
@@ -43,15 +37,19 @@ namespace Microsoft.Maui.Platform
 		// TODO: material3 - make it public in .net 11
 		internal static void UpdateTrackColor(this MSwitch materialSwitch, ISwitch view)
 		{
+			// Cache the original theme tint before first modification 
+			// so it can be restored when TrackColor is cleared.
+			if (!_defaultTrackTintCache.TryGetValue(materialSwitch, out var defaultTrackTintList))
+			{
+				var currentTint = materialSwitch.TrackTintList;
+				if (currentTint is not null)
+				{
+					_defaultTrackTintCache.Add(materialSwitch, currentTint);
+					defaultTrackTintList = currentTint;
+				}
+			}
+			
 			var trackColor = view.TrackColor;
-
-			// GetValue is thread-safe: atomically stores the original theme tint on first access
-			// so that resetting TrackColor always restores the real theme value.
-			// The null-coalescing fallback satisfies ConditionalWeakTable's no-null-value constraint;
-			// in practice MaterialSwitch always has a theme-supplied tint, so the fallback is never reached.
-			var defaultTrackTintList = _defaultTrackTintCache.GetValue(
-				materialSwitch,
-				static m => m.TrackTintList ?? ColorStateList.ValueOf(global::Android.Graphics.Color.Transparent));
 
 			if (trackColor is not null)
 			{
@@ -65,16 +63,19 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateThumbColor(this MSwitch materialSwitch, ISwitch view)
 		{
+			// Cache the original theme tint before first modification 
+			// so it can be restored when ThumbColor is cleared.
+			if (!_defaultThumbTintCache.TryGetValue(materialSwitch, out var defaultThumbTintList))
+			{
+				var currentTint = materialSwitch.ThumbTintList;
+				if (currentTint is not null)
+				{
+					_defaultThumbTintCache.Add(materialSwitch, currentTint);
+					defaultThumbTintList = currentTint;
+				}
+			}
+
 			var thumbColor = view.ThumbColor;
-
-			// GetValue is thread-safe: atomically stores the original theme tint on first access
-			// so that resetting ThumbColor always restores the real theme value.
-			// The null-coalescing fallback satisfies ConditionalWeakTable's no-null-value constraint;
-			// in practice MaterialSwitch always has a theme-supplied tint, so the fallback is never reached.
-			var defaultThumbTintList = _defaultThumbTintCache.GetValue(
-				materialSwitch,
-				static m => m.ThumbTintList ?? ColorStateList.ValueOf(global::Android.Graphics.Color.Transparent));
-
 			if (thumbColor is not null)
 			{
 				materialSwitch.ThumbTintList = ColorStateList.ValueOf(thumbColor.ToPlatform());
