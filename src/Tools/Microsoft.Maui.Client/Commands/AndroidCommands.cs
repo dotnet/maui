@@ -393,7 +393,11 @@ public static class AndroidCommands
 						.OrderByDescending(p =>
 						{
 							var apiStr = p.Path.Substring("platforms;android-".Length);
-							return int.TryParse(apiStr, out var n) ? n : 0;
+							if (Version.TryParse(apiStr, out var v))
+								return v;
+							if (int.TryParse(apiStr, out var n))
+								return new Version(n, 0);
+							return new Version(0, 0);
 						})
 						.ToList();
 
@@ -1356,7 +1360,12 @@ public static class AndroidCommands
 			.OrderByDescending(p =>
 			{
 				var apiStr = p.Path.Substring("platforms;android-".Length);
-				return int.TryParse(apiStr, out var n) ? n : 0;
+				// Handle both integer (36) and dotted (36.1) API levels
+				if (Version.TryParse(apiStr, out var v))
+					return v;
+				if (int.TryParse(apiStr, out var n))
+					return new Version(n, 0);
+				return new Version(0, 0);
 			})
 			.ToList();
 
