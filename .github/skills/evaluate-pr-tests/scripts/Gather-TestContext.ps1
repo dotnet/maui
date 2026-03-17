@@ -138,7 +138,7 @@ function Test-UITestConventions {
 
     # --- Attributes ---
     $testMethods = [regex]::Matches($content, '\[Test\]')
-    $categories = [regex]::Matches($content, '\[Category\(') | ForEach-Object { $_.Value } | Select-Object -Unique
+    $categories = [regex]::Matches($content, '\[Category\([^\)]+\)\]') | ForEach-Object { $_.Value } | Select-Object -Unique
     if ($categories.Count -eq 0) {
         $issues += "Missing ``[Category]`` attribute — exactly ONE required (on class or method)"
     }
@@ -175,10 +175,6 @@ function Test-UITestConventions {
     $fluentWaits = [regex]::Matches($content, $fluentRegex) | ForEach-Object { $_.Groups[1].Value }
     $waits = @($waits) + @($fluentWaits) | Select-Object -Unique
 
-    # For fluent-chained interactions (App.WaitForElement("x").Tap()), the direct Tap/Click has no args — skip those
-    $fluentTapRegex = 'App\.WaitForElement\([^)]+\)\s*\.(Tap|Click)\(\)'
-    $fluentInteractionCount = ([regex]::Matches($content, $fluentTapRegex)).Count
-
     $missingWaits = @()
     foreach ($interaction in $interactions) {
         $targetId = if ($interaction.Groups[2].Success) { $interaction.Groups[2].Value } else { $interaction.Groups[3].Value }
@@ -203,7 +199,7 @@ function Test-UITestConventions {
                 $start = [Math]::Max(0, $i - 20)
                 $window = $lines[$start..$i] -join "`n"
                 # Only flag if in same method: stop at first closing brace boundary
-                $methodWindow = $window -replace "(?s)\}[^{]*\{.*", ""
+                $methodWindow = $window
                 if ($methodWindow -match "Task\.Delay|Thread\.Sleep") {
                     $screenshotDelay = $true
                     break
