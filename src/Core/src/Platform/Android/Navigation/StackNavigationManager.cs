@@ -496,10 +496,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (_navHost is MauiNavHostFragment oldHost)
-			{
 				oldHost.StackNavigationManager = null;
-				oldHost.Dispose();
-			}
 
 			if (navHost is MauiNavHostFragment newHost)
 				newHost.StackNavigationManager = this;
