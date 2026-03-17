@@ -653,6 +653,7 @@ namespace Microsoft.Maui.Controls
 				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
+				AlertManager.Unsubscribe();
 			}
 
 			if (oldPage is Shell shell)

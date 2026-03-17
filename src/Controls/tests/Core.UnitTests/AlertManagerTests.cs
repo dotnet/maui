@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
@@ -231,6 +232,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Page = page;
 
 			Assert.IsType<AlertManager>(window.AlertManager);
+		}
+
+		[Fact]
+		public void ReplacingPageWithHandledPageCallsUnsubscribeBeforeSubscribe()
+		{
+			// Arrange: custom IAlertManager so we can track call order
+			var callOrder = new List<string>();
+			var customAlertManager = Substitute.For<IAlertManager>();
+			customAlertManager.When(x => x.Unsubscribe()).Do(_ => callOrder.Add("Unsubscribe"));
+			customAlertManager.When(x => x.Subscribe()).Do(_ => callOrder.Add("Subscribe"));
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+			});
+
+			// First page with handler to establish subscription
+			var firstPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = firstPage;
+			callOrder.Clear(); // reset after initial subscribe
+
+			// Replace with a second page that already has a handler attached
+			var secondPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = secondPage;
+
+			// Unsubscribe must come before Subscribe
+			Assert.Equal(2, callOrder.Count);
+			Assert.Equal("Unsubscribe", callOrder[0]);
+			Assert.Equal("Subscribe", callOrder[1]);
 		}
 	}
 }
