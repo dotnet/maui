@@ -198,3 +198,80 @@ scenarios:
       - "The agent flags the absence of tests as a Fix Coverage failure"
       - "The overall verdict reflects that no tests were added"
     timeout: 120
+
+  - name: "Fix-test alignment - test exercises wrong control"
+    prompt: |
+      The PR fixes a crash in Shell navigation when popping to the root. The fix changes:
+      - src/Controls/src/Core/Shell/Shell.cs
+      - src/Controls/src/Core/Shell/ShellNavigationManager.cs
+
+      The only test added is:
+
+      ```csharp
+      [Issue(IssueTracker.Github, 99998, "Shell navigation crash on PopToRoot", PlatformAffected.All)]
+      public class Issue99998 : ContentPage
+      {
+          public Issue99998()
+          {
+              Content = new VerticalStackLayout
+              {
+                  Children =
+                  {
+                      new Label { Text = "Hello", AutomationId = "WelcomeLabel" }
+                  }
+              };
+          }
+      }
+      ```
+
+      And the NUnit test just does:
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Shell)]
+      public void ShellPageLoads()
+      {
+          App.WaitForElement("WelcomeLabel");
+          Assert.That(App.FindElement("WelcomeLabel").GetText(), Is.EqualTo("Hello"));
+      }
+      ```
+
+      Evaluate the test quality.
+    assertions:
+      - type: "output_contains"
+        value: "Fix-Test Alignment"
+      - type: "output_matches"
+        pattern: "(wrong control|Label|doesn't exercise|navigation|PopToRoot|misalign)"
+      - type: "output_matches"
+        pattern: "(⚠️|❌)"
+    rubric:
+      - "The agent identifies that the test only exercises a Label on a ContentPage, not Shell navigation or PopToRoot"
+      - "The Fix-Test Alignment criterion flags that the test doesn't trace back to the changed Shell code paths"
+      - "The agent recommends a test that actually triggers Shell navigation (e.g., pushing and popping pages)"
+    timeout: 120
+
+  - name: "Fluent chain wait pattern should not trigger missing-wait warning"
+    prompt: |
+      Evaluate this test code for convention compliance. Does it correctly use WaitForElement before interactions?
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Button)]
+      public void ButtonUpdatesLabel()
+      {
+          App.WaitForElement("TestButton").Tap();
+          App.WaitForElement("ResultLabel");
+          var text = App.FindElement("ResultLabel").GetText();
+          Assert.That(text, Is.EqualTo("Clicked"));
+      }
+      ```
+    assertions:
+      - type: "output_not_contains"
+        value: "missing WaitForElement"
+      - type: "output_not_contains"
+        value: "App.Tap without prior WaitForElement"
+      - type: "output_matches"
+        pattern: "(Convention Compliance|fluent|✅)"
+    rubric:
+      - "The agent does NOT flag the fluent App.WaitForElement().Tap() chain as a missing-wait violation"
+      - "The convention compliance check passes or has no wait-related warnings for this code"
+    timeout: 120
