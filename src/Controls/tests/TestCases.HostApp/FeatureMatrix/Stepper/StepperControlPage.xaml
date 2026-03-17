@@ -31,7 +31,8 @@
              IsEnabled="{Binding IsEnabled}"
              IsVisible="{Binding IsVisible}"
              FlowDirection="{Binding FlowDirection}"
-             AutomationId="StepperControl"/>
+             AutomationId="StepperControl"
+             x:Name="StepperControl"/>
 
     <!-- Minimum Value -->
     <Label Grid.Row="1"
