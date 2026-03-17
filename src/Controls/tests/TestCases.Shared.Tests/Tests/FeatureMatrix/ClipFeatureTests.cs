@@ -138,14 +138,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void BoxView_ClipWithColorGreen()
 	{
 		TapButtonIfOnClipControlPage("BoxViewButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BoxViewButton");
 		App.Tap("BoxViewButton");
 
@@ -212,14 +205,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Button_ClipWithImageSource()
 	{
 		TapButtonIfOnClipControlPage("ButtonId");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
@@ -286,14 +272,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithRectangleGeometry()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -477,14 +456,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Label_ClipWithLongText()
 	{
 		TapButtonIfOnClipControlPage("LabelButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("LabelButton");
 		App.Tap("LabelButton");
 
@@ -546,14 +518,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ContentView_ClipWithRectangleGeometry()
 	{
 		TapButtonIfOnClipControlPage("ContentViewButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ContentViewButton");
 		App.Tap("ContentViewButton");
 
@@ -629,14 +594,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ImageButton_ClipWithRectangleGeometry()
 	{
 		TapButtonIfOnClipControlPage("ImageButtonButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButtonButton");
 		App.Tap("ImageButtonButton");
 
@@ -712,14 +670,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -749,14 +700,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -786,14 +730,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Button_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("ButtonId");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
@@ -823,14 +760,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ContentView_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("ContentViewButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ContentViewButton");
 		App.Tap("ContentViewButton");
 
@@ -862,14 +792,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -893,14 +816,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -926,14 +842,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Label_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("LabelButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("LabelButton");
 		App.Tap("LabelButton");
 
@@ -960,14 +869,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Button_ClipWithScale()
 	{
 		TapButtonIfOnClipControlPage("ButtonId");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
@@ -995,14 +897,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithScale()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -1030,14 +925,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ImageButton_ClipWithScale()
 	{
 		TapButtonIfOnClipControlPage("ImageButtonButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButtonButton");
 		App.Tap("ImageButtonButton");
 
@@ -1067,14 +955,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ContentView_ClipWithNestedClippedContent()
 	{
 		TapButtonIfOnClipControlPage("ContentViewButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ContentViewButton");
 		App.Tap("ContentViewButton");
 
@@ -1097,14 +978,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipWithNestedContent()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -1133,14 +1007,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithComplexPolyLineGeometry()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -1165,14 +1032,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithComplexPolyBezierAndRotation()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -1199,14 +1059,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipWithRotationAndScale()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -1238,14 +1091,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void BoxView_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("BoxViewButton");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
-		}
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BoxViewButton");
 		App.Tap("BoxViewButton");
 
@@ -1271,6 +1117,18 @@ public class ClipFeatureTests : _GalleryUITest
 		{
 			App.WaitForElement(buttonAutomationId);
 			App.Tap(buttonAutomationId);
+		}
+	}
+
+	void NavigateBackToClipControlPage()
+	{
+		if (iOS26OrHigher)
+		{
+			App.TapBackArrow();
+		}
+		else
+		{
+			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
 		}
 	}
 }
