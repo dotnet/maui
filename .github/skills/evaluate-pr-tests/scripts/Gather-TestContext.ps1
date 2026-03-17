@@ -138,7 +138,7 @@ function Test-UITestConventions {
 
     # --- Attributes ---
     $testMethods = [regex]::Matches($content, '\[Test\]')
-    $categories = [regex]::Matches($content, '\[Category\(')
+    $categories = [regex]::Matches($content, '\[Category\(') | ForEach-Object { $_.Value } | Select-Object -Unique
     if ($categories.Count -eq 0) {
         $issues += "Missing ``[Category]`` attribute — exactly ONE required (on class or method)"
     }
@@ -160,6 +160,7 @@ function Test-UITestConventions {
 
     # --- Wait patterns (per-interaction check) ---
     # Extract all App.Tap/Click/FindElement calls and their target IDs (literals or identifiers)
+    # Also detects fluent chains: App.WaitForElement("Id").Tap()
     $interactionRegex = 'App\.(Tap|Click|FindElement)\(\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_.]*))'
     $interactions = [regex]::Matches($content, $interactionRegex)
     
@@ -168,6 +169,15 @@ function Test-UITestConventions {
     $waits = [regex]::Matches($content, $waitRegex) | ForEach-Object { 
         if ($_.Groups[1].Success) { $_.Groups[1].Value } else { $_.Groups[2].Value }
     }
+
+    # Also detect fluent: App.WaitForElement("Id").Tap() — extract IDs from fluent chains
+    $fluentRegex = 'App\.WaitForElement\(\s*"([^"]+)"\s*\)\s*\.(Tap|Click|FindElement)\(\)'
+    $fluentWaits = [regex]::Matches($content, $fluentRegex) | ForEach-Object { $_.Groups[1].Value }
+    $waits = @($waits) + @($fluentWaits) | Select-Object -Unique
+
+    # For fluent-chained interactions (App.WaitForElement("x").Tap()), the direct Tap/Click has no args — skip those
+    $fluentTapRegex = 'App\.WaitForElement\([^)]+\)\s*\.(Tap|Click)\(\)'
+    $fluentInteractionCount = ([regex]::Matches($content, $fluentTapRegex)).Count
 
     $missingWaits = @()
     foreach ($interaction in $interactions) {
@@ -184,7 +194,23 @@ function Test-UITestConventions {
     # --- Screenshot hygiene ---
     if ($content -match "VerifyScreenshot") {
         $info += "Uses ``VerifyScreenshot()``"
-        if ($content -match "(Task\.Delay|Thread\.Sleep)[\s\S]{0,200}VerifyScreenshot") {
+        # Tighten scope: only flag delay within the same method block (not across method boundaries)
+        # Split into lines and check for delay on a line within 20 lines before VerifyScreenshot
+        $lines = $content -split "`r?`n"
+        $screenshotDelay = $false
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match "VerifyScreenshot") {
+                $start = [Math]::Max(0, $i - 20)
+                $window = $lines[$start..$i] -join "`n"
+                # Only flag if in same method: stop at first closing brace boundary
+                $methodWindow = $window -replace "(?s)\}[^{]*\{.*", ""
+                if ($methodWindow -match "Task\.Delay|Thread\.Sleep") {
+                    $screenshotDelay = $true
+                    break
+                }
+            }
+        }
+        if ($screenshotDelay) {
             $issues += "Uses delay before ``VerifyScreenshot`` — use ``retryTimeout`` parameter instead"
         }
     }
@@ -219,10 +245,15 @@ function Test-UITestConventions {
 
         # Check for UITest controls in screenshot tests
         if ($content -match "VerifyScreenshot") {
-            if ($hostContent -match "new\s+Entry\b" -and $hostContent -notmatch "new\s+UITestEntry\b") {
+            # Detect Entry/Editor in both C# (new Entry) and XAML (<Entry ...) usage
+            $hasEntry = $hostContent -match "new\s+Entry\b" -or $hostContent -match "<Entry[\s>]"
+            $hasEditor = $hostContent -match "new\s+Editor\b" -or $hostContent -match "<Editor[\s>]"
+            $hasUITestEntry = $hostContent -match "new\s+UITestEntry\b" -or $hostContent -match "<UITestEntry[\s>]"
+            $hasUITestEditor = $hostContent -match "new\s+UITestEditor\b" -or $hostContent -match "<UITestEditor[\s>]"
+            if ($hasEntry -and -not $hasUITestEntry) {
                 $issues += "HostApp uses ``Entry`` in screenshot test — use ``UITestEntry`` to prevent cursor blink flakiness"
             }
-            if ($hostContent -match "new\s+Editor\b" -and $hostContent -notmatch "new\s+UITestEditor\b") {
+            if ($hasEditor -and -not $hasUITestEditor) {
                 $issues += "HostApp uses ``Editor`` in screenshot test — use ``UITestEditor`` to prevent cursor blink flakiness"
             }
         }
@@ -486,7 +517,7 @@ $report += ""
 $platformIndicators = @{
     "Android"      = ($fixFiles | Where-Object { $_ -match "Android|\.android\." }).Count
     "iOS"          = ($fixFiles | Where-Object { $_ -match "\.ios\." -or ($_ -match "/iOS/" -and $_ -notmatch "MacCatalyst") }).Count
-    "MacCatalyst"  = ($fixFiles | Where-Object { $_ -match "MacCatalyst|\.maccatalyst\." }).Count
+    "MacCatalyst"  = ($fixFiles | Where-Object { $_ -match "MacCatalyst|\.maccatalyst\." -or $_ -match "\.ios\." }).Count
     "Windows"      = ($fixFiles | Where-Object { $_ -match "Windows|\.windows\." }).Count
     "Cross-platform" = ($fixFiles | Where-Object { $_ -notmatch "Android|\.android\.|\.ios\.|/iOS/|MacCatalyst|\.maccatalyst\.|Windows|\.windows\." }).Count
 }

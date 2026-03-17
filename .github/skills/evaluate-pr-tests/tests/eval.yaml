@@ -1,7 +1,7 @@
 scenarios:
   - name: "Happy path - evaluate PR tests and produce structured report"
     prompt: |
-      Evaluate the tests added in PR #34329. Check their quality, coverage, and whether the test type is appropriate.
+      Evaluate the tests added in PR #34324. Check their quality, coverage, and whether the test type is appropriate.
     assertions:
       - type: "output_contains"
         value: "PR Test Evaluation Report"
@@ -170,7 +170,7 @@ scenarios:
 
   - name: "Near-miss recall - informal test quality check"
     prompt: |
-      Look at the test files in PR #34329 and tell me if they seem reasonable.
+      Look at the test files in PR #34324 and tell me if they seem reasonable.
     assertions:
       - type: "output_contains"
         value: "PR Test Evaluation Report"

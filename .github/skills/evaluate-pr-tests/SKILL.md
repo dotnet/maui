@@ -1,6 +1,6 @@
 ---
 name: evaluate-pr-tests
-description: "Evaluates tests added in a PR for coverage, quality, edge cases, and test type appropriateness. Checks if tests cover the fix, finds gaps, and recommends lighter test types when possible. Prefer unit tests over device tests over UI tests."
+description: "Evaluates tests added in a PR for coverage, quality, edge cases, and test type appropriateness. Checks if tests cover the fix, finds gaps, and recommends lighter test types when possible. Prefer unit tests over device tests over UI tests. Triggers on: 'evaluate tests in PR', 'review test quality', 'are these tests good enough', 'check test coverage', 'is this test adequate', 'assess test coverage for PR'."
 metadata:
   author: dotnet-maui
   version: "1.0"
@@ -14,6 +14,7 @@ Evaluates the quality, coverage, and appropriateness of tests added in a PR. Pro
 ## When to Use
 
 - ✅ PR has tests and you want to evaluate their quality
+- ⚠️ PR has no test files -- output a ❌ Fix Coverage verdict noting no tests were added; skip remaining criteria
 - ✅ Reviewing whether tests adequately cover the fix
 - ✅ Checking if a lighter test type could be used instead
 - ✅ Before merging a PR, as part of review
@@ -232,6 +233,10 @@ Check the "Platform Scope Analysis" from the script:
 - Map the test to the controls/features it exercises
 - Flag if test exercises a different control than the fix changes
 - Flag if test only covers one platform when fix touches multiple
+
+**Red flags:**
+- Test class is named `Issue12345` for a fix in `CollectionView` but only exercises `Label` rendering
+- Fix changes `Shell.cs` but test only navigates a `ContentPage`
 
 ---
 
