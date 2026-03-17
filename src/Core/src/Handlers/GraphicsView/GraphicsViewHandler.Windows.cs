@@ -11,10 +11,6 @@ namespace Microsoft.Maui.Handlers
 			return new PlatformTouchGraphicsView();
 		}
 
-		// A container is needed when the GraphicsView has a background to ensure proper rendering,
-		// without it the background may not be drawn correctly on WinUI.
-		public override bool NeedsContainer => VirtualView?.Background is not null || base.NeedsContainer;
-
 		private protected override void OnConnectHandler(FrameworkElement platformView)
 		{
 			base.OnConnectHandler(platformView);
@@ -31,9 +27,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.ToPlatform().UpdateBackground(graphicsView);
-			handler.PlatformView?.Invalidate();
+			if (graphicsView.Background is not null)
+			{
+				handler.PlatformView?.Invalidate();
+			}
 		}
 
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
