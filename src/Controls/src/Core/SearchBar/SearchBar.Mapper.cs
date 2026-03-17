@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Controls
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 #if IOS
 			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName, MapSearchBarStyle);
+			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(IsEnabled), MapUserInteraction);
+			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(ISearchBar.IsReadOnly), MapUserInteraction);
+			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(InputTransparent), MapUserInteraction);
 #endif
 #if ANDROID
 			if (RuntimeFeature.IsMaterial3Enabled)
