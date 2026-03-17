@@ -78,6 +78,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<Picker, PickerHandler2>();
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
+			handlersCollection.AddHandler<Switch, SwitchHandler2>();
 		}
 		else
 		{
@@ -86,6 +87,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<Picker, PickerHandler>();
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+			handlersCollection.AddHandler<Switch, SwitchHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -93,6 +95,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Picker, PickerHandler>();
 		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+		handlersCollection.AddHandler<Switch, SwitchHandler>();
 #endif
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)
@@ -116,7 +119,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
-		handlersCollection.AddHandler<Switch, SwitchHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
