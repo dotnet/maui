@@ -102,10 +102,6 @@ namespace Microsoft.Maui.Platform
 			{
 				BringSubviewToFront(_borderView);
 			}
-			else
-			{
-				this.Superview?.BringSubviewToFront(this);
-			}
 
 			var child = subviews[0];
 			child.Frame = Bounds;

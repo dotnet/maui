@@ -14,7 +14,7 @@ public class Issue33241 : _IssuesUITest
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Issue33241Test()
+		public void ClippedStackLayoutInsideBorderWithBackgroundRendersCorrectly()
 		{
 			App.WaitForElement("CustomView");
 			VerifyScreenshot();

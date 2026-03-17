@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Platform
 			{
 				var layer = control.Layer;
 
+				// Ensure the background layer always renders behind subview layers,
+				// even if UIKit reorganizes the sublayer array during layout passes.
+				backgroundLayer.ZPosition = -1;
+
 				if (index > -1)
 					layer.InsertSublayer(backgroundLayer, index);
 				else
