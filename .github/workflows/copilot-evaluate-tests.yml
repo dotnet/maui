@@ -36,6 +36,12 @@ on:
         required: true
         type: number
 
+  # Allow overriding the target PR on pull_request triggers (for testing)
+  # When the workflow self-triggers, it evaluates itself by default.
+  # Set target_pr via the API to evaluate a different PR from this branch.
+  # Example: gh api repos/dotnet/maui/actions/workflows/copilot-evaluate-tests.yml/dispatches \
+  #   -f ref=feature/copilot-evaluate-tests-workflow -f inputs[pr_number]=30450
+
 concurrency:
   group: evaluate-tests-${{ github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number }}
   cancel-in-progress: true
@@ -174,10 +180,13 @@ jobs:
         if: steps.token-check.outputs.has_token == 'true'
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+          REPO: ${{ github.repository }}
         run: |
           # Build the prompt — the skill is discovered from .github/skills/ automatically
-          PROMPT="Evaluate the tests added in PR #${PR_NUMBER}. \
+          PROMPT="Evaluate the tests added in PR #${PR_NUMBER} in the ${REPO} repository. \
+          The PR diff is available via: gh pr diff ${PR_NUMBER} --repo ${REPO}. \
           Check their quality, coverage, and whether the test type is appropriate. \
           Use the evaluate-pr-tests skill to produce a structured report."
 
