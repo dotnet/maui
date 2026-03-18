@@ -184,7 +184,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				foreach (var item in platformView.GetChildren<ItemContentControl>())
 				{
 					var element = item.GetVisualElement();
-					VirtualView.RemoveLogicalChild(element);
+
+					if (element is not null)
+					{
+						element.DisconnectHandlers();
+						VirtualView.RemoveLogicalChild(element);
+					}
 				}
 			}
 
