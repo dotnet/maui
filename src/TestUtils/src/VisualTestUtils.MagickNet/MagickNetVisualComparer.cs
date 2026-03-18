@@ -15,7 +15,7 @@ namespace VisualTestUtils.MagickNet
         /// </summary>
         /// <param name="errorMetric">Error metric.</param>
         /// <param name="differenceThreshold">The maximum percent difference that is allowed between the baseline and actual snapshot images. Default value is .005, meaning the images must be at least 99.5% the same.).</param>
-        public MagickNetVisualComparer(ErrorMetric errorMetric = ErrorMetric.Fuzz, double differenceThreshold = 0.005)
+        public MagickNetVisualComparer(ErrorMetric errorMetric = ErrorMetric.RootMeanSquared, double differenceThreshold = 0.005)
         {
             _errorMetric = errorMetric;
             _differenceThreshold = differenceThreshold;

@@ -12,7 +12,7 @@ namespace VisualTestUtils.MagickNet
     {
         private ErrorMetric _errorMetric;
 
-        public MagickNetVisualDiffGenerator(ErrorMetric error = ErrorMetric.Fuzz)
+        public MagickNetVisualDiffGenerator(ErrorMetric error = ErrorMetric.RootMeanSquared)
         {
             _errorMetric = error;
         }
