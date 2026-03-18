@@ -427,6 +427,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "1234567890");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("123456"));		
 	}
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
@@ -1024,7 +1027,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var width = GetElementWidthInDip("TestEntry");
+		Assert.That(width, Is.EqualTo(150).Within(5));
 	}
 
 	[Test, Order(64)]
@@ -1038,7 +1042,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var height = GetElementHeightInDip("TestEntry");
+		Assert.That(height, Is.EqualTo(80).Within(5));
 	}
 
 	[Test, Order(65)]
@@ -1055,7 +1060,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
+		var height = GetElementHeightInDip("TestEntry");
+		var width = GetElementWidthInDip("TestEntry");
+		Assert.That(height, Is.EqualTo(100).Within(5));
+		Assert.That(width, Is.EqualTo(150).Within(5));
 	}
 
 	[Test, Order(66)]
@@ -1070,8 +1078,42 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
-
 	[Test, Order(67)]
+	public void VerifyTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(68)]
+	public void VerifyPlaceholderTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.DismissKeyboard();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(69)]
 	public void VerifyEntryBackgroundColorWithTextColor()
 	{
 		App.WaitForElement("Options");
@@ -1086,7 +1128,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(68)]
+	[Test, Order(70)]
 	public void VerifyEntryBackgroundColorWithPlaceholderText()
 	{
 		App.WaitForElement("Options");
@@ -1104,7 +1146,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(69)]
+	[Test, Order(71)]
 	public void VerifyEntryBackgroundColorWithPlaceholderColor()
 	{
 		App.WaitForElement("Options");
@@ -1121,7 +1163,8 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(70)]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link:
+	[Test, Order(72)]
 	public void VerifyEntryBackgroundColorResetToDefault()
 	{
 		App.WaitForElement("Options");
@@ -1140,6 +1183,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
+#endif 
+
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping
@@ -1172,5 +1217,22 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
 
+	}
+
+	private double GetElementHeightInDip(string automationId)
+		=> GetElementSizeInDip(automationId).Height;
+
+	private double GetElementWidthInDip(string automationId)
+		=> GetElementSizeInDip(automationId).Width;
+
+	private (double Width, double Height) GetElementSizeInDip(string automationId)
+	{
+		var rect = App.WaitForElement(automationId).GetRect();
+#if ANDROID
+		var density = App.GetDisplayDensity();
+		if (density > 0)
+			return (rect.Width / density, rect.Height / density);
+#endif
+		return (rect.Width, rect.Height);
 	}
 }

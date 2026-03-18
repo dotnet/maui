@@ -286,22 +286,18 @@ public class EntryViewModel : INotifyPropertyChanged
 
 	public void Reset()
 	{
-		Text = "Test Entry";
 		TextColor = null;
-		Placeholder = "Enter text here";
 		PlaceholderColor = null;
 		FontSize = 14;
 		HeightRequest = -1;
 		WidthRequest = -1;
-		BackgroundColor = Colors.Transparent;
+		BackgroundColor = null;
 		HorizontalTextAlignment = TextAlignment.Start;
 		VerticalTextAlignment = TextAlignment.Center;
 		IsPassword = false;
 		CharacterSpacing = 0;
 		ReturnType = ReturnType.Default;
 		MaxLength = -1;
-		CursorPosition = 0;
-		SelectionLength = 0;
 		IsReadOnly = false;
 		IsTextPredictionEnabled = false;
 		IsSpellCheckEnabled = false;
@@ -314,10 +310,14 @@ public class EntryViewModel : INotifyPropertyChanged
 		HasShadow = false;
 		TextTransform = TextTransform.Default;
 		FontAttributes = FontAttributes.None;
+		Text = "Test Entry";
+		Placeholder = "Enter text here";
 		TextChangedText = "TextChanged: Not triggered";
 		CompletedText = "Completed: Not triggered";
 		FocusedText = "Focused: Not triggered";
 		UnfocusedText = "Unfocused: Not triggered";
+		CursorPosition = 0;
+		SelectionLength = 0;
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

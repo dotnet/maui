@@ -285,19 +285,16 @@ public partial class EntryOptionsPage : ContentPage
 		}
 	}
 
-	private void FontAttributes_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void FontAttributesCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (sender == FontAttributesBold)
-		{
-			_viewModel.FontAttributes = FontAttributes.Bold;
-		}
-		else if (sender == FontAttributesNone)
-		{
-			_viewModel.FontAttributes = FontAttributes.None;
-		}
-		else if (sender == FontAttributesItalic)
-		{
-			_viewModel.FontAttributes = FontAttributes.Italic;
-		}
+		var attributes = FontAttributes.None;
+
+		if (FontAttributesBoldCheckBox.IsChecked)
+			attributes |= FontAttributes.Bold;
+
+		if (FontAttributesItalicCheckBox.IsChecked)
+			attributes |= FontAttributes.Italic;
+
+		_viewModel.FontAttributes = attributes;
 	}
 }

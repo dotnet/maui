@@ -510,26 +510,19 @@
                      <!-- Font Attributes -->
                      <Label Text="Font Attributes:"
                             FontSize="10"/>
-                     <HorizontalStackLayout Spacing="0">
-                            <RadioButton Content="None"
-                                         x:Name="FontAttributesNone"
-                                         GroupName="FontAttributes"
-                                         IsChecked="True"
-                                         FontSize="9"
-                                         AutomationId="FontAttributesNone"
-                                         CheckedChanged="FontAttributes_CheckedChanged"/>
-                            <RadioButton Content="Bold"
-                                         x:Name="FontAttributesBold"
-                                         GroupName="FontAttributes"
-                                         FontSize="9"
-                                         AutomationId="FontAttributesBold"
-                                         CheckedChanged="FontAttributes_CheckedChanged"/>
-                            <RadioButton Content="Italic"
-                                         x:Name="FontAttributesItalic"
-                                         GroupName="FontAttributes"
-                                         FontSize="9"
-                                         AutomationId="FontAttributesItalic"
-                                         CheckedChanged="FontAttributes_CheckedChanged"/>
+                     <HorizontalStackLayout Spacing="1">
+                            <CheckBox x:Name="FontAttributesBoldCheckBox"
+                                      AutomationId="FontAttributesBold"
+                                      CheckedChanged="FontAttributesCheckBox_CheckedChanged"/>
+                            <Label Text="Bold"
+                                   FontSize="11"
+                                   VerticalOptions="Center"/>
+                            <CheckBox x:Name="FontAttributesItalicCheckBox"
+                                      AutomationId="FontAttributesItalic"
+                                      CheckedChanged="FontAttributesCheckBox_CheckedChanged"/>
+                            <Label Text="Italic"
+                                   FontSize="11"
+                                   VerticalOptions="Center"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
        </Grid>

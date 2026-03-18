@@ -37,10 +37,6 @@ public partial class EntryControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		_viewModel.Reset();
-		_viewModel.Text = "Test Entry";
-		_viewModel.Placeholder = "Enter text here";
-		_viewModel.CursorPosition = 0;
-		_viewModel.SelectionLength = 0;
 		await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 	}
 
