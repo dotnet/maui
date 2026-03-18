@@ -94,7 +94,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (v is CoordinatorLayout)
 				{
-					// The flyout overlaps the status bar so we don't really care about insetting it
+					// Apply all system bar and display-cutout insets as padding so flyout
+					// content (including the footer) stays within the safe area on all edges.
 					var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 					var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
 					var leftInset = Math.Max(systemBars?.Left ?? 0, displayCutout?.Left ?? 0);
@@ -399,7 +400,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFooterLayout(CoordinatorLayout.LayoutParams cl)
 		{
-			cl.Width = MeasureSpecMode.Exactly.MakeMeasureSpec(_flyoutWidth);
+			// Use MatchParent so the footer width is bounded by the parent's content
+			// area, which already has left/right safe-area insets applied as padding.
+			cl.Width = LP.MatchParent;
 			cl.Height = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
 		}
 
