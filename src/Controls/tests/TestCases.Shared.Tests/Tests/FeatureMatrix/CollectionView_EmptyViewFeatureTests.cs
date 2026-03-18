@@ -718,7 +718,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34522
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyEmptyViewTemplateDisplaysCorrectly_WithRightToLeftFlowDirection()
@@ -751,7 +751,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34522
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCustomSizedEmptyViewTemplateDisplaysCorrectly_WithRightToLeftFlowDirection()
