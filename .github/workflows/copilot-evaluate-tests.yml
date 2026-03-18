@@ -254,7 +254,7 @@ jobs:
           .github/scripts/Post-CopilotComment.ps1 `
             -PrNumber $env:PR_NUMBER `
             -EvaluateResult $env:EVALUATE_RESULT `
-            -OutputFile "/tmp/evaluation/copilot-output.txt" `
+            -OutputFile "/tmp/evaluation/tmp/copilot-output.txt" `
             -RunUrl $env:RUN_URL
 
       - name: Remove eyes reaction (issue_comment trigger)
