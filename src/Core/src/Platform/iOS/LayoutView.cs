@@ -1,4 +1,6 @@
+using System;
 using CoreGraphics;
+using Microsoft.Maui.Primitives;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -17,6 +19,32 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.WillRemoveSubview(uiview);
+		}
+
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			// On iOS, SizeThatFits may receive the parent's full available size.
+			// Without capping, children may be measured with that size and fail to wrap correctly
+			// (e.g., a Label ignoring the layout's WidthRequest). Android handles this via MeasureSpec.
+			if (CrossPlatformLayout is IView view)
+			{
+				var width = (double)size.Width;
+				var height = (double)size.Height;
+
+				if (Dimension.IsExplicitSet(view.Width))
+				{
+					width = Math.Min(width, view.Width);
+				}
+				
+				if (Dimension.IsExplicitSet(view.Height))
+				{
+					height = Math.Min(height, view.Height);
+				}
+
+				return base.SizeThatFits(new CGSize(width, height));
+			}
+
+			return base.SizeThatFits(size);
 		}
 
 		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
