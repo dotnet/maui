@@ -46,8 +46,17 @@ jobs:
   # ============================================================
   # Gate: Validate trigger and determine PR context
   # ============================================================
+  # Skip early for issue_comment events that aren't /evaluate-tests on a PR.
+  # This check is at the YAML level (GitHub expression engine, not shell) so
+  # the comment body is never passed to any run: block — eliminating injection risk.
   gate:
     name: Validate trigger
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/evaluate-tests'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -57,67 +66,66 @@ jobs:
       head_sha: ${{ steps.context.outputs.head_sha }}
       should_run: ${{ steps.context.outputs.should_run }}
     steps:
+      - name: Check commenter permissions (issue_comment only)
+        if: github.event_name == 'issue_comment'
+        id: perms
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
+        run: |
+          PERMISSION=$(gh api "repos/${REPO}/collaborators/${COMMENT_USER}/permission" --jq '.permission' 2>/dev/null || echo "none")
+          echo "Commenter ${COMMENT_USER} has permission: ${PERMISSION}"
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
+            echo "::error::User ${COMMENT_USER} does not have write access (has: ${PERMISSION})"
+            exit 1
+          fi
+
+      - name: Add eyes reaction (issue_comment only)
+        if: github.event_name == 'issue_comment'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions" \
+            -X POST -f content='eyes' || true
+
       - name: Resolve PR context
         id: context
         env:
           GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
+          PR_NUMBER_FROM_PR: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          REPO: ${{ github.repository }}
         run: |
-          EVENT="${{ github.event_name }}"
-
-          if [[ "$EVENT" == "pull_request" ]]; then
-            # Same-repo PR: only run for same-repo PRs (fork PRs use issue_comment)
-            HEAD_REPO="${{ github.event.pull_request.head.repo.full_name }}"
-            BASE_REPO="${{ github.event.pull_request.base.repo.full_name }}"
-            if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
-              echo "Fork PR detected — skipping automatic evaluation (use /evaluate-tests comment)"
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            if [[ "$PR_HEAD_REPO" != "$PR_BASE_REPO" ]]; then
+              echo "Fork PR detected — skipping (use /evaluate-tests comment)"
               echo "should_run=false" >> $GITHUB_OUTPUT
               exit 0
             fi
-            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+            echo "pr_number=${PR_NUMBER_FROM_PR}" >> $GITHUB_OUTPUT
+            echo "head_sha=${PR_HEAD_SHA}" >> $GITHUB_OUTPUT
             echo "should_run=true" >> $GITHUB_OUTPUT
 
-          elif [[ "$EVENT" == "issue_comment" ]]; then
-            # Must be a "/evaluate-tests" comment on a PR
-            COMMENT_BODY="${{ github.event.comment.body }}"
-            IS_PR="${{ github.event.issue.pull_request && 'true' || 'false' }}"
-
-            if [[ "$IS_PR" != "true" ]] || [[ ! "$COMMENT_BODY" == /evaluate-tests* ]]; then
-              echo "Not a /evaluate-tests command on a PR — skipping"
-              echo "should_run=false" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-
-            # Check commenter has write+ permission
-            COMMENTER="${{ github.event.comment.user.login }}"
-            PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${COMMENTER}/permission" --jq '.permission' 2>/dev/null || echo "none")
-            if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
-              echo "::error::User ${COMMENTER} does not have write access (has: ${PERMISSION})"
-              echo "should_run=false" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-
-            # Get PR details
-            PR_NUMBER="${{ github.event.issue.number }}"
-            HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.head.sha')
-            echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+          elif [[ "$EVENT_NAME" == "issue_comment" ]]; then
+            HEAD_SHA=$(gh api "repos/${REPO}/pulls/${ISSUE_NUMBER}" --jq '.head.sha')
+            echo "pr_number=${ISSUE_NUMBER}" >> $GITHUB_OUTPUT
             echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
             echo "should_run=true" >> $GITHUB_OUTPUT
 
-            # Add eyes reaction to acknowledge the command
-            gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
-              -X POST -f content='eyes' || true
-
-          elif [[ "$EVENT" == "workflow_dispatch" ]]; then
-            PR_NUMBER="${{ github.event.inputs.pr_number }}"
-            HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.head.sha')
-            echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            HEAD_SHA=$(gh api "repos/${REPO}/pulls/${DISPATCH_PR_NUMBER}" --jq '.head.sha')
+            echo "pr_number=${DISPATCH_PR_NUMBER}" >> $GITHUB_OUTPUT
             echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
             echo "should_run=true" >> $GITHUB_OUTPUT
-
-          else
-            echo "Unexpected event: $EVENT"
-            echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
   # ============================================================
@@ -230,10 +238,12 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
         run: |
-          REACTION_ID=$(gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+          REACTION_ID=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions" \
             --jq '.[] | select(.content == "eyes" and .user.login == "github-actions[bot]") | .id' | head -1 || echo "")
           if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
-            gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions/${REACTION_ID}" \
+            gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions/${REACTION_ID}" \
               -X DELETE || true
           fi
