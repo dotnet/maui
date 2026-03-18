@@ -23,6 +23,12 @@ namespace Microsoft.Maui.Controls.StyleSheets
 					sb.Append((char)reader.Read());
 					hasLeadingDash = true;
 				}
+				else if (first && hasLeadingDash && c == '-')
+				{
+					// CSS custom property: --foo-bar
+					sb.Append((char)reader.Read());
+					first = false;
+				}
 				else if (first && c.IsNmStart())
 				{
 					sb.Append((char)reader.Read());

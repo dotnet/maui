@@ -136,6 +136,52 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("letter-spacing", typeof(ITextElement), nameof(TextElement.CharacterSpacingProperty), Inherited = true)]
 [assembly: StyleProperty("line-height", typeof(Microsoft.Maui.Controls.ILineHeightElement), nameof(LineHeightElement.LineHeightProperty), Inherited = true)]
 
+//sizing
+[assembly: StyleProperty("max-height", typeof(VisualElement), nameof(VisualElement.MaximumHeightRequestProperty))]
+[assembly: StyleProperty("max-width", typeof(VisualElement), nameof(VisualElement.MaximumWidthRequestProperty))]
+
+//transforms
+[assembly: StyleProperty("rotate", typeof(VisualElement), nameof(VisualElement.RotationProperty))]
+[assembly: StyleProperty("-maui-rotate-x", typeof(VisualElement), nameof(VisualElement.RotationXProperty))]
+[assembly: StyleProperty("-maui-rotate-y", typeof(VisualElement), nameof(VisualElement.RotationYProperty))]
+[assembly: StyleProperty("scale", typeof(VisualElement), nameof(VisualElement.ScaleProperty))]
+[assembly: StyleProperty("-maui-scale-x", typeof(VisualElement), nameof(VisualElement.ScaleXProperty))]
+[assembly: StyleProperty("-maui-scale-y", typeof(VisualElement), nameof(VisualElement.ScaleYProperty))]
+[assembly: StyleProperty("-maui-anchor-x", typeof(VisualElement), nameof(VisualElement.AnchorXProperty))]
+[assembly: StyleProperty("-maui-anchor-y", typeof(VisualElement), nameof(VisualElement.AnchorYProperty))]
+
+//interactivity
+[assembly: StyleProperty("z-index", typeof(VisualElement), nameof(VisualElement.ZIndexProperty))]
+[assembly: StyleProperty("-maui-input-transparent", typeof(VisualElement), nameof(VisualElement.InputTransparentProperty))]
+[assembly: StyleProperty("-maui-is-enabled", typeof(VisualElement), nameof(VisualElement.IsEnabledProperty))]
+
+//font
+[assembly: StyleProperty("font-weight", typeof(IFontElement), nameof(FontElement.FontAttributesProperty), Inherited = true)]
+[assembly: StyleProperty("-maui-font-auto-scaling", typeof(IFontElement), nameof(FontElement.FontAutoScalingEnabledProperty), Inherited = true)]
+
+//text
+[assembly: StyleProperty("overflow-wrap", typeof(Label), nameof(Label.LineBreakModeProperty))]
+[assembly: StyleProperty("-maui-max-lines", typeof(Label), nameof(Label.MaxLinesProperty))]
+
+//input
+[assembly: StyleProperty("-maui-is-read-only", typeof(InputView), nameof(InputView.IsReadOnlyProperty))]
+
+//border/stroke (SVG-compatible)
+[assembly: StyleProperty("stroke-dasharray", typeof(Border), nameof(Border.StrokeDashArrayProperty))]
+[assembly: StyleProperty("stroke-dashoffset", typeof(Border), nameof(Border.StrokeDashOffsetProperty))]
+[assembly: StyleProperty("stroke-linecap", typeof(Border), nameof(Border.StrokeLineCapProperty))]
+[assembly: StyleProperty("stroke-linejoin", typeof(Border), nameof(Border.StrokeLineJoinProperty))]
+[assembly: StyleProperty("stroke-miterlimit", typeof(Border), nameof(Border.StrokeMiterLimitProperty))]
+
+//image
+[assembly: StyleProperty("-maui-aspect", typeof(Image), nameof(Image.AspectProperty))]
+
+//activity
+[assembly: StyleProperty("-maui-is-running", typeof(ActivityIndicator), nameof(ActivityIndicator.IsRunningProperty))]
+
+//gap (standard CSS gap shorthand maps to spacing)
+[assembly: StyleProperty("gap", typeof(StackBase), nameof(StackBase.SpacingProperty))]
+
 //flex
 [assembly: StyleProperty("align-content", typeof(FlexLayout), nameof(FlexLayout.AlignContentProperty))]
 [assembly: StyleProperty("align-items", typeof(FlexLayout), nameof(FlexLayout.AlignItemsProperty))]
