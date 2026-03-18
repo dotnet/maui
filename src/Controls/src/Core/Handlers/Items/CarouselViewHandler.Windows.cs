@@ -198,10 +198,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_gotoPosition = args.Index;
 
-				// Commit Position immediately so PositionChanged fires with the correct
-				// PreviousPosition/PreviousItem before the animation starts. The visual scroll follows
-				// asynchronously. This mirrors the Android fix and ensures the label updates
-				// without waiting for the WinUI animation to settle (which can stall in test environments).
+				// Commit position before animation so PreviousPosition/PreviousItem are correct immediately.
 				SetCarouselViewPosition(_gotoPosition);
 			}
 
@@ -211,8 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			finally
 			{
-				// Only reset if this call still owns _gotoPosition — a concurrent animated
-				// ScrollTo may have already replaced it with a different target.
+				// Conditional reset guards against a concurrent ScrollTo replacing the target.
 				if (_gotoPosition == args.Index)
 					_gotoPosition = -1;
 			}
@@ -526,9 +522,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-			// Ignore scroll events that fire before the initial position is established.
-			// On Windows, WinUI can fire ViewChanged during initial layout with an incorrect
-			// center index, which would incorrectly override the intended initial position.
+			// Ignore ViewChanged events fired before the initial position is established.
 			if (!InitialPositionSet)
 			{
 				return;
@@ -546,8 +540,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Suppress all events during a programmatic animated scroll.
-			// Position is committed immediately in ScrollTo before the animation starts.
+			// Suppress intermediate scroll events during a programmatic animated scroll.
 			if (_gotoPosition != -1)
 			{
 				return;
