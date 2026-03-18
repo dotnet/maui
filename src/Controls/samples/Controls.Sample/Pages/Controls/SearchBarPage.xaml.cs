@@ -10,21 +10,21 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnSearchBarFocused(object sender, FocusEventArgs e)
+		void OnSearchBarFocused(object? sender, FocusEventArgs e)
 		{
-			var text = ((SearchBar)sender).Text;
+			var text = ((SearchBar)sender!).Text;
 			DisplayAlertAsync("Focused", text, "Ok");
 		}
 
-		void OnSearchBarUnfocused(object sender, FocusEventArgs e)
+		void OnSearchBarUnfocused(object? sender, FocusEventArgs e)
 		{
-			var text = ((SearchBar)sender).Text;
+			var text = ((SearchBar)sender!).Text;
 			DisplayAlertAsync("Unfocused", text, "Ok");
 		}
 
-		void OnSearchBarTextChanged(object sender, TextChangedEventArgs args)
+		void OnSearchBarTextChanged(object? sender, TextChangedEventArgs args)
 		{
-			var text = ((SearchBar)sender).Text;
+			var text = ((SearchBar)sender!).Text;
 			Debug.WriteLine($"SearchBar Text changed: {text}");
 		}
 	}
