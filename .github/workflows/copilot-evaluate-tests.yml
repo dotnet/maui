@@ -1,0 +1,239 @@
+# Runs the evaluate-pr-tests skill via Copilot CLI on PRs that add or modify tests.
+#
+# Security model (modeled after dotnet/skills evaluation.yml):
+#   - COPILOT_GITHUB_TOKEN: fine-grained PAT with "Copilot Requests" permission only
+#   - github.token: used for PR comments and commit statuses (built-in, no PAT)
+#   - Fork PRs: require "/evaluate-tests" comment from user with write+ permission
+#   - File access: restricted to $GITHUB_WORKSPACE via --add-dir
+#   - Tool access: only bash, view, grep, glob, edit allowed (no git push, no network)
+#   - Workflow YAML: always from base branch (issue_comment trigger enforces this)
+#   - Pinned action SHAs: prevent supply-chain attacks
+#   - persist-credentials: false on all checkouts
+
+name: Evaluate PR Tests
+
+on:
+  # Same-repo PRs: automatic trigger on test file changes
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'src/Controls/tests/**'
+      - 'src/Core/tests/**'
+      - 'src/Essentials/test/**'
+
+  # Fork PRs: manual trigger via "/evaluate-tests" comment from maintainer
+  issue_comment:
+    types: [created]
+
+  # Manual trigger for any PR
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to evaluate'
+        required: true
+        type: number
+
+concurrency:
+  group: evaluate-tests-${{ github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number }}
+  cancel-in-progress: true
+
+# Workflow-level permissions kept minimal; jobs declare their own.
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ============================================================
+  # Gate: Validate trigger and determine PR context
+  # ============================================================
+  gate:
+    name: Validate trigger
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      pr_number: ${{ steps.context.outputs.pr_number }}
+      head_sha: ${{ steps.context.outputs.head_sha }}
+      should_run: ${{ steps.context.outputs.should_run }}
+    steps:
+      - name: Resolve PR context
+        id: context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EVENT="${{ github.event_name }}"
+
+          if [[ "$EVENT" == "pull_request" ]]; then
+            # Same-repo PR: only run for same-repo PRs (fork PRs use issue_comment)
+            HEAD_REPO="${{ github.event.pull_request.head.repo.full_name }}"
+            BASE_REPO="${{ github.event.pull_request.base.repo.full_name }}"
+            if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
+              echo "Fork PR detected — skipping automatic evaluation (use /evaluate-tests comment)"
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+            echo "should_run=true" >> $GITHUB_OUTPUT
+
+          elif [[ "$EVENT" == "issue_comment" ]]; then
+            # Must be a "/evaluate-tests" comment on a PR
+            COMMENT_BODY="${{ github.event.comment.body }}"
+            IS_PR="${{ github.event.issue.pull_request && 'true' || 'false' }}"
+
+            if [[ "$IS_PR" != "true" ]] || [[ ! "$COMMENT_BODY" == /evaluate-tests* ]]; then
+              echo "Not a /evaluate-tests command on a PR — skipping"
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # Check commenter has write+ permission
+            COMMENTER="${{ github.event.comment.user.login }}"
+            PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${COMMENTER}/permission" --jq '.permission' 2>/dev/null || echo "none")
+            if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
+              echo "::error::User ${COMMENTER} does not have write access (has: ${PERMISSION})"
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # Get PR details
+            PR_NUMBER="${{ github.event.issue.number }}"
+            HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.head.sha')
+            echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+            echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
+            echo "should_run=true" >> $GITHUB_OUTPUT
+
+            # Add eyes reaction to acknowledge the command
+            gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+              -X POST -f content='eyes' || true
+
+          elif [[ "$EVENT" == "workflow_dispatch" ]]; then
+            PR_NUMBER="${{ github.event.inputs.pr_number }}"
+            HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.head.sha')
+            echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+            echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
+            echo "should_run=true" >> $GITHUB_OUTPUT
+
+          else
+            echo "Unexpected event: $EVENT"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ============================================================
+  # Evaluate: Run Copilot CLI with evaluate-pr-tests skill
+  # ============================================================
+  evaluate:
+    name: Evaluate tests
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.gate.outputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot@latest
+
+      - name: Run evaluate-pr-tests skill
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+        run: |
+          # Build the prompt — the skill is discovered from .github/skills/ automatically
+          PROMPT="Evaluate the tests added in PR #${PR_NUMBER}. \
+          Check their quality, coverage, and whether the test type is appropriate. \
+          Use the evaluate-pr-tests skill to produce a structured report."
+
+          # Run Copilot CLI in non-interactive mode with sandboxed permissions
+          copilot \
+            -p "$PROMPT" \
+            --model claude-sonnet-4 \
+            --silent \
+            --allow-tool bash \
+            --allow-tool view \
+            --allow-tool grep \
+            --allow-tool glob \
+            --allow-tool lsp \
+            --add-dir "$GITHUB_WORKSPACE" \
+            --output-format text \
+            2>/dev/null | tee /tmp/copilot-output.txt
+
+          # Ensure we got output
+          if [[ ! -s /tmp/copilot-output.txt ]]; then
+            echo "⚠️ Copilot CLI produced no output" > /tmp/copilot-output.txt
+          fi
+
+      - name: Upload evaluation output
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evaluate-tests-output
+          path: |
+            /tmp/copilot-output.txt
+            CustomAgentLogsTmp/TestEvaluation/
+          retention-days: 14
+
+  # ============================================================
+  # Comment: Post results on the PR
+  # ============================================================
+  comment:
+    name: Post results
+    needs: [gate, evaluate]
+    if: always() && needs.gate.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout base branch (for comment script)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: Download evaluation output
+        if: needs.evaluate.result == 'success'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: evaluate-tests-output
+          path: /tmp/evaluation/
+        continue-on-error: true
+
+      - name: Post PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+          EVALUATE_RESULT: ${{ needs.evaluate.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: pwsh
+        run: |
+          .github/scripts/Post-CopilotComment.ps1 `
+            -PrNumber $env:PR_NUMBER `
+            -EvaluateResult $env:EVALUATE_RESULT `
+            -OutputFile "/tmp/evaluation/copilot-output.txt" `
+            -RunUrl $env:RUN_URL
+
+      - name: Remove eyes reaction (issue_comment trigger)
+        if: github.event_name == 'issue_comment'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REACTION_ID=$(gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            --jq '.[] | select(.content == "eyes" and .user.login == "github-actions[bot]") | .id' | head -1 || echo "")
+          if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions/${REACTION_ID}" \
+              -X DELETE || true
+          fi
