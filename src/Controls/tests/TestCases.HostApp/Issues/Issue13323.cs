@@ -21,6 +21,7 @@ public class Issue13323 : ContentPage
 			AutomationId = "CarouselView13323",
 			ItemsSource = items,
 			Loop = false,
+			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var entry = new Entry
@@ -48,9 +49,52 @@ public class Issue13323 : ContentPage
 			positionLabel.Text = $"Position:{carousel.Position}";
 		};
 
-		Content = new VerticalStackLayout
+		var loopPositionLabel = new Label
 		{
-			Children = { positionLabel, carousel }
+			AutomationId = "LoopPositionLabel",
+			Text = "LoopPosition:0",
+			HorizontalOptions = LayoutOptions.Center,
+		};
+
+		var loopCarousel = new CarouselView
+		{
+			AutomationId = "LoopCarouselView13323",
+			ItemsSource = items,
+			Loop = true,
+			HeightRequest = 250,
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var entry = new Entry
+				{
+					AutomationId = "LoopCenterEntry",
+					Placeholder = "Tap me",
+					HorizontalTextAlignment = TextAlignment.Center,
+					HorizontalOptions = LayoutOptions.FillAndExpand,
+				};
+
+				return new Border
+				{
+					HeightRequest = 200,
+					Content = new VerticalStackLayout
+					{
+						VerticalOptions = LayoutOptions.Center,
+						Children = { entry }
+					}
+				};
+			})
+		};
+
+		loopCarousel.PositionChanged += (s, e) =>
+		{
+			loopPositionLabel.Text = $"LoopPosition:{loopCarousel.Position}";
+		};
+
+		Content = new ScrollView
+		{
+			Content = new VerticalStackLayout
+			{
+				Children = { positionLabel, carousel, loopPositionLabel, loopCarousel }
+			}
 		};
 	}
 }
