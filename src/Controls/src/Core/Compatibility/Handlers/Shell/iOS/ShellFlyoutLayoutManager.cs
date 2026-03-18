@@ -221,8 +221,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 				}
 
-				// We take the measured header height without margin, since the margin is already accounted for
-				// in the positioning of the scroll view itself.
+				// We take the measured header height without margin, since the margin is already accounted for in the positioning of the scroll view itself.
 				ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
 			}
 			else
@@ -234,7 +233,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var yContentOffset = ScrollView.ContentOffset.Y;
 			ScrollView.ContentOffset =
-					new CGPoint(ScrollView.ContentOffset.X, yContentOffset + offset);
+				new CGPoint(ScrollView.ContentOffset.X, yContentOffset + offset);
 
 			UpdateVerticalScrollMode();
 		}
