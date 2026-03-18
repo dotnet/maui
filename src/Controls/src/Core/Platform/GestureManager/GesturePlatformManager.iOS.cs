@@ -406,7 +406,15 @@ namespace Microsoft.Maui.Controls.Platform
 			var result = new UISwipeGestureRecognizer();
 			result.NumberOfTouchesRequired = (uint)numFingers;
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
-			result.ShouldRecognizeSimultaneously = (g, o) => true;
+			result.ShouldRecognizeSimultaneously = (g, o) => 
+			{
+				if (o.View is UIScrollView)
+				{
+					return false;
+				}
+				
+				return true;
+			};
 			result.AddTarget(() => action(direction));
 			return result;
 		}
