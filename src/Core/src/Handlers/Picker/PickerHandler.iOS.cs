@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
@@ -49,8 +49,7 @@ namespace Microsoft.Maui.Handlers
 				paddingTitle += 25;
 
 			var pickerHeight = 240;
-			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
-            var pickerView = new UIPickerView(frame);
+            var pickerView = new UIPickerView();
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 
