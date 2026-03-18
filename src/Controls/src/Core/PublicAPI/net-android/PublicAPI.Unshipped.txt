@@ -1,4 +1,6 @@
-#nullable enable
-override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+﻿#nullable enable
+~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.RequestChildFocus(Android.Views.View! child, Android.Views.View! focused) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.RequestChildRectangleOnScreen(Android.Views.View! child, Android.Graphics.Rect! rect, bool immediate) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
