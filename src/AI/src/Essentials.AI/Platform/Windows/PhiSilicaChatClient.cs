@@ -72,86 +72,60 @@ public sealed class PhiSilicaChatClient : IChatClient
 		ChatOptions? options = null,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		// Get the model (already created in constructor or provided)
 		var model = await _modelTask;
 
 		var (systemPrompt, history) = NormalizeChatMessages(chatMessages, options);
+
+		var prompt = ConvertToPrompt(history);
+		if (history.Count == 0 && string.IsNullOrEmpty(systemPrompt))
+			throw new ArgumentException("At least one message with content is required.", nameof(chatMessages));
+
+		ValidateOptions(options);
 
 		using var context = string.IsNullOrEmpty(systemPrompt)
 			? model.CreateContext()
 			: model.CreateContext(systemPrompt, new ContentFilterOptions());
 
-		var prompt = ConvertToPrompt(history);
-
 		var modelOptions = ConvertToLanguageModelOptions(options);
 
-		var responseId = Guid.NewGuid().ToString("N");
-
-		// Use event-based API instead of await foreach
-		var tcs = new TaskCompletionSource<string>();
-		var fullResponse = new System.Text.StringBuilder();
+		// Use the shared StreamingResponseHandler + PlainTextStreamChunker
+		// to bridge the event-based Windows AI API into an async enumerable.
+		var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
+		var cumulativeText = new System.Text.StringBuilder();
 
 		var operation = model.GenerateResponseAsync(context, prompt, modelOptions);
 
-		operation.Progress = (operation, progress) =>
+		operation.Progress = (_, progress) =>
 		{
 			if (!string.IsNullOrEmpty(progress))
 			{
-				fullResponse.Append(progress);
-
-				var aiContents = ConvertToAIContent(progress);
-
-				var update = new ChatResponseUpdate
-				{
-					Contents = aiContents,
-					ModelId = options?.ModelId ?? _metadata?.DefaultModelId ?? DefaultModelId,
-					Role = ChatRole.Assistant,
-					ResponseId = responseId
-				};
-
-				// Since we can't yield from a callback, we'll need a different approach
-				// This is a limitation of the Windows AI API
+				cumulativeText.Append(progress);
+				handler.ProcessContent(cumulativeText.ToString());
 			}
 		};
 
-		operation.Completed = (operation, status) =>
+		operation.Completed = (op, status) =>
 		{
 			if (status == AsyncStatus.Completed)
 			{
-				tcs.TrySetResult(fullResponse.ToString());
+				handler.Complete();
 			}
 			else if (status == AsyncStatus.Error)
 			{
-				tcs.TrySetException(operation.ErrorCode);
+				handler.CompleteWithError(op.ErrorCode);
 			}
 			else if (status == AsyncStatus.Canceled)
 			{
-				tcs.TrySetCanceled(cancellationToken);
+				handler.CompleteWithError(new OperationCanceledException(cancellationToken));
 			}
 		};
 
 		cancellationToken.Register(() => operation.Cancel());
 
-		// Wait for completion
-		var result = await tcs.Task;
-
-		// Yield the full response as a single update
-		yield return new ChatResponseUpdate
+		await foreach (var update in handler.ReadAllAsync(cancellationToken))
 		{
-			Contents = ConvertToAIContent(result),
-			ModelId = options?.ModelId ?? _metadata?.DefaultModelId ?? DefaultModelId,
-			Role = ChatRole.Assistant,
-			ResponseId = responseId
-		};
-
-		// Final update to indicate completion
-		yield return new ChatResponseUpdate
-		{
-			FinishReason = ChatFinishReason.Stop,
-			ModelId = options?.ModelId ?? _metadata?.DefaultModelId ?? DefaultModelId,
-			Role = ChatRole.Assistant,
-			ResponseId = responseId
-		};
+			yield return update;
+		}
 	}
 
 	/// <inheritdoc />
@@ -188,9 +162,6 @@ public sealed class PhiSilicaChatClient : IChatClient
 			_modelTask.Result.Dispose();
 		}
 	}
-
-	private static AIContent[] ConvertToAIContent(string response) =>
-		[new TextContent(response ?? string.Empty)];
 
 	private static (string SystemPrompt, List<ChatMessage> History) NormalizeChatMessages(
 		IEnumerable<ChatMessage> chatMessages,
@@ -253,5 +224,14 @@ public sealed class PhiSilicaChatClient : IChatClient
 			languageModelOptions.TopP = (uint)topP;
 
 		return languageModelOptions;
+	}
+
+	private static void ValidateOptions(ChatOptions? options)
+	{
+		if (options is null)
+			return;
+
+		if (options.MaxOutputTokens is <= 0)
+			throw new ArgumentOutOfRangeException(nameof(options), "MaxOutputTokens must be greater than zero.");
 	}
 }

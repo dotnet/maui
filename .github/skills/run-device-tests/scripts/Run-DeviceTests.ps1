@@ -178,7 +178,7 @@ $PlatformConfigs = @{
     }
     "windows" = @{
         Tfm = "net10.0-windows10.0.19041.0"
-        RuntimeIdentifier = "win10-x64"
+        RuntimeIdentifier = $null
         AppExtension = ".exe"
         XHarnessTarget = $null
         UsesXHarness = $false
@@ -296,8 +296,12 @@ try {
             $buildArgs += "/p:AndroidPackageFormat=apk"
         }
         "windows" {
+            # Use _MauiDeviceTestUnpackaged to trigger WindowsAppSDKSelfContained only in
+            # the test project csproj (not transitive dependencies like Graphics.csproj).
+            # See eng/devices/windows.cake for the canonical approach.
             $buildArgs += "/p:WindowsPackageType=None"
-            $buildArgs += "/p:WindowsAppSDKSelfContained=true"
+            $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
+            $buildArgs += "/p:SelfContained=true"
         }
     }
 
