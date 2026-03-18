@@ -1,5 +1,5 @@
+﻿#nullable enable
 
-#nullable enable
 Microsoft.Maui.Maps.IMap.ClusterClicked(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> bool
 Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin pin) -> void
 Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void

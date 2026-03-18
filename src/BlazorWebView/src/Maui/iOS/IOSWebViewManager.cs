@@ -99,8 +99,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal sealed class WebViewUIDelegate : WKUIDelegate
 		{
-			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("OK") ?? "OK";
+			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Cancel") ?? "Cancel";
 			private readonly BlazorWebViewHandler _webView;
 
 			public WebViewUIDelegate(BlazorWebViewHandler webView)
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						return null;
 					}
 
-					var del = (Action<string?>)GetExistingManagedDelegate(block);
+					var del = GetExistingManagedDelegate(block) as Action<string?>;
 					return del ?? new ActionStringTrampolineBlock((BlockLiteral*)block).Invoke;
 				}
 
