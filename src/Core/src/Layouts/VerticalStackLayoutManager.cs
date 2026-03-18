@@ -18,15 +18,6 @@ namespace Microsoft.Maui.Layouts
 			double measuredWidth = 0;
 			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
 
-			// When this stack has an explicit width (WidthRequest), children should be measured
-			// within that width rather than the potentially wider parent constraint. Without this,
-			// a word-wrap label child would measure at the parent's full width and report a
-			// single-line desired size, causing it to overflow the stack's narrower arranged area.
-			if (IsExplicitSet(Stack.Width))
-			{
-				childWidthConstraint = Math.Min(childWidthConstraint, Math.Max(0, Stack.Width - padding.HorizontalThickness));
-			}
-
 			int spacingCount = 0;
 
 			for (int n = 0; n < Stack.Count; n++)
