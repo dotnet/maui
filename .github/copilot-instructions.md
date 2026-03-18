@@ -90,18 +90,6 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
-### CI Pipelines (Azure DevOps)
-
-When referencing or triggering CI pipelines, use these current pipeline names:
-
-| Pipeline | Name | Purpose |
-|----------|------|---------|
-| Overall CI | `maui-pr` | Full PR validation build |
-| Device Tests | `maui-pr-devicetests` | Helix-based device tests |
-| UI Tests | `maui-pr-uitests` | Appium-based UI tests |
-
-**⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
-
 ### Code Formatting
 
 Always format code before committing:
@@ -292,7 +280,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
-   - **Note**: Works on any PR
+   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
 6. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
@@ -328,13 +316,19 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
+12. **evaluate-pr-tests** (`.github/skills/evaluate-pr-tests/SKILL.md`)
+   - **Purpose**: Evaluates tests added in a PR for coverage, quality, edge cases, and test type appropriateness
+   - **Trigger phrases**: "evaluate tests in PR #XXXXX", "review test quality", "are these tests good enough", "check test coverage"
+   - **Scripts**: `Gather-TestContext.ps1`
+   - **Checks**: Fix coverage, edge case gaps, test type preference (unit > device > UI), conventions, flakiness risk, duplicate coverage, platform scope, assertion quality
+
 #### Internal Skills (Used by Skills/Agents)
 
 12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: `pr-review` skill Phase 3 (Try-Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
-   - **Output**: Reports attempt results and failure analysis
+   - **Output**: Updates session markdown with attempt results and failure analysis
 
 ### Using Custom Agents and Skills
 
