@@ -273,6 +273,8 @@
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     <ProduceReferenceAssemblyInOutDir>True</ProduceReferenceAssemblyInOutDir>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+    <!-- Xcode 26.2 and 26.3 are interchangeable as far as we're concerned, so ask the iOS/Mac Catalyst workloads to not validate the Xcode version (we have Xcode 26.2 on the bots, while the latest workloads require Xcode 26.3) -->
+    <ValidateXcodeVersion Condition="'$(ValidateXcodeVersion)' == ''">false</ValidateXcodeVersion>
   </PropertyGroup>
 
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
