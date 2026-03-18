@@ -59,6 +59,8 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
     pool: ${{ parameters.VM_IMAGE_HOST }}
     sdl:
       binskim:
