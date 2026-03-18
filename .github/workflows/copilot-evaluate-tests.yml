@@ -137,6 +137,15 @@ jobs:
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Checkout PR code (for static analysis)
+        if: steps.context.outputs.should_run == 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.context.outputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+          path: /tmp/pr-code
+
       - name: Pre-fetch PR context for Copilot CLI
         if: steps.context.outputs.should_run == 'true'
         env:
@@ -163,6 +172,30 @@ jobs:
           echo "PR context fetched:"
           echo "  Diff size: $(wc -c < /tmp/pr-context/pr-diff.patch) bytes"
           echo "  Files changed: $(wc -l < /tmp/pr-context/pr-files.txt)"
+
+      - name: Run Gather-TestContext.ps1 (static analysis)
+        if: steps.context.outputs.should_run == 'true'
+        env:
+          PR_NUMBER: ${{ steps.context.outputs.pr_number }}
+        working-directory: /tmp/pr-code
+        run: |
+          # Determine base branch from PR metadata
+          BASE_BRANCH=$(jq -r '.baseRefName' /tmp/pr-context/pr-metadata.json)
+          echo "Running Gather-TestContext.ps1 against base: origin/${BASE_BRANCH}"
+
+          # The script writes to CustomAgentLogsTmp/TestEvaluation/context.md
+          pwsh .github/skills/evaluate-pr-tests/scripts/Gather-TestContext.ps1 \
+            -BaseBranch "origin/${BASE_BRANCH}" 2>&1 || true
+
+          # Copy output to pr-context artifact (if generated)
+          if [[ -f "CustomAgentLogsTmp/TestEvaluation/context.md" ]]; then
+            cp CustomAgentLogsTmp/TestEvaluation/context.md /tmp/pr-context/test-context.md
+            echo "✅ Test context report generated ($(wc -l < /tmp/pr-context/test-context.md) lines)"
+          else
+            echo "⚠️ Gather-TestContext.ps1 did not produce output"
+            echo "# Test Context Report\n\nScript did not produce output. Manual analysis required." \
+              > /tmp/pr-context/test-context.md
+          fi
 
       - name: Upload PR context
         if: steps.context.outputs.should_run == 'true'
@@ -222,13 +255,16 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
         run: |
-          # Build the prompt — point CLI at the pre-fetched PR context files
+          # Build the prompt — point CLI at pre-fetched PR context + pre-generated analysis
           PROMPT="Evaluate the tests added in PR #${PR_NUMBER}. \
-          The PR metadata is at /tmp/pr-context/pr-metadata.json. \
-          The PR diff is at /tmp/pr-context/pr-diff.patch. \
-          The changed file list is at /tmp/pr-context/pr-files.txt. \
-          Read those files first, then use the evaluate-pr-tests skill to produce a structured report. \
-          Check test quality, coverage, and whether the test type is appropriate."
+          All context has been pre-fetched for you — do NOT try to run scripts or gh commands. \
+          Read these files in order: \
+          1. /tmp/pr-context/test-context.md — automated test analysis report (conventions, anti-patterns, file categorization) \
+          2. /tmp/pr-context/pr-metadata.json — PR title, description, labels, base branch \
+          3. /tmp/pr-context/pr-diff.patch — the actual code changes \
+          4. /tmp/pr-context/pr-files.txt — changed file list \
+          Then use the evaluate-pr-tests skill instructions to produce a structured 9-criteria report. \
+          Do NOT attempt to run Gather-TestContext.ps1 — its output is already in test-context.md."
 
           # Run Copilot CLI in non-interactive mode with sandboxed permissions
           copilot \
