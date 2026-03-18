@@ -13,6 +13,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		bool _disposed;
 		UILongPressGestureRecognizer _longPressGestureRecognizer;
+		nint _lastMoveSourceSection = -1;
+		nint _lastMoveDestinationSection = -1;
+
+		/// <summary>
+		/// Indicates whether the user has actively moved during the current drag gesture.
+		/// Used by the delegator to avoid redirecting to empty groups before movement has occurred.
+		/// </summary>
+		internal bool HasInteractivelyMoved { get; private set; }
 
 #if MACCATALYST
 		const double defaultMacCatalystPressDuration = 0.1;
@@ -87,25 +95,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						return;
 					}
+					HasInteractivelyMoved = false;
 					gestureRecognizer.CancelsTouchesInView = false;
 					collectionView.BeginInteractiveMovementForItem(indexPath);
 					break;
 				case UIGestureRecognizerState.Changed:
+					HasInteractivelyMoved = true;
 					gestureRecognizer.CancelsTouchesInView = true;
 					collectionView.UpdateInteractiveMovement(location);
 					break;
 				case UIGestureRecognizerState.Ended:
 					collectionView.EndInteractiveMovement();
 					// UICollectionView doesn't refresh supplementary views after interactive movement.
-					// Reload sections so group headers reflect updated data (e.g. item counts).
-					if (ItemsView?.IsGrouped == true)
+					// Reload only the affected sections so group headers reflect updated data (e.g. item counts).
+					if (ItemsView?.IsGrouped == true && _lastMoveSourceSection >= 0)
 					{
-						var sectionCount = collectionView.NumberOfSections();
-						if (sectionCount > 0)
+						var indexSet = new NSMutableIndexSet();
+						indexSet.Add((nuint)_lastMoveSourceSection);
+						if (_lastMoveDestinationSection >= 0 && _lastMoveDestinationSection != _lastMoveSourceSection)
 						{
-							UIView.PerformWithoutAnimation(() =>
-								collectionView.ReloadSections(NSIndexSet.FromNSRange(new NSRange(0, sectionCount))));
+							indexSet.Add((nuint)_lastMoveDestinationSection);
 						}
+						UIView.PerformWithoutAnimation(() =>
+							collectionView.ReloadSections(indexSet));
+						_lastMoveSourceSection = -1;
+						_lastMoveDestinationSection = -1;
 					}
 					break;
 				default:
@@ -116,6 +130,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void MoveItem(UICollectionView collectionView, NSIndexPath sourceIndexPath, NSIndexPath destinationIndexPath)
 		{
+			_lastMoveSourceSection = sourceIndexPath.Section;
+			_lastMoveDestinationSection = destinationIndexPath.Section;
+
 			var itemsSource = ItemsSource;
 			var itemsView = ItemsView;
 
