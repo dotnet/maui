@@ -144,7 +144,7 @@ jobs:
           ref: ${{ steps.context.outputs.head_sha }}
           fetch-depth: 0
           persist-credentials: false
-          path: /tmp/pr-code
+          path: pr-code
 
       - name: Pre-fetch PR context for Copilot CLI
         if: steps.context.outputs.should_run == 'true'
@@ -177,7 +177,7 @@ jobs:
         if: steps.context.outputs.should_run == 'true'
         env:
           PR_NUMBER: ${{ steps.context.outputs.pr_number }}
-        working-directory: /tmp/pr-code
+        working-directory: pr-code
         run: |
           # Determine base branch from PR metadata
           BASE_BRANCH=$(jq -r '.baseRefName' /tmp/pr-context/pr-metadata.json)
