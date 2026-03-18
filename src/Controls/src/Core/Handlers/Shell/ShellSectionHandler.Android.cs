@@ -46,6 +46,12 @@ namespace Microsoft.Maui.Controls.Handlers
         ShellContentFragmentAdapter _adapter;
         TabLayoutMediator _tabLayoutMediator;
 
+        // Top tab fragment placed into navigationlayout_toptabs via Activity FragmentManager.
+        // Same pattern as TabbedPageManager.SetTabLayout for top tab placement.
+        Fragment _topTabFragment;
+        IDisposable _pendingTopTabFragment;
+        bool _topTabsPlaced;
+
         /// <summary>
         /// Gets the toolbar tracker from the parent ShellItemHandler.
         /// The toolbar is managed at ShellItem level.
@@ -135,8 +141,20 @@ namespace Microsoft.Maui.Controls.Handlers
                 ?? throw new InvalidOperationException("shellsectionlayout inflation failed");
 
             _rootLayout = rootView.FindViewById<LinearLayout>(Resource.Id.shellsection_coordinator);
-            _contentTabLayout = rootView.FindViewById<TabLayout>(Resource.Id.shellsection_tablayout);
             _viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellsection_viewpager);
+
+            // Create TabLayout programmatically (no longer from XML layout).
+            // It will be placed into navigationlayout_toptabs via PlaceTopTabs().
+            var context = MauiContext?.Context
+                ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
+
+            _contentTabLayout = new TabLayout(context)
+            {
+                Id = AView.GenerateViewId(),
+                LayoutParameters = new LP(LP.MatchParent, LP.WrapContent),
+                Visibility = ViewStates.Gone,  // Hidden by default (shown when > 1 tab)
+                TabMode = TabLayout.ModeScrollable
+            };
 
             return rootView;
         }
@@ -189,6 +207,7 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 Handler = this
             };
+
             _viewPager.Adapter = _adapter;
 
             // Disable ViewPager2 instance state saving/restoring.
@@ -275,7 +294,15 @@ namespace Microsoft.Maui.Controls.Handlers
             // Hide TabLayout when 0 or 1 visible content
             var visibleCount = SectionController.GetItems().Count;
             bool showTabs = visibleCount > 1;
-            _contentTabLayout.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
+
+            if (showTabs)
+            {
+                PlaceTopTabs();
+            }
+            else
+            {
+                RemoveTopTabs();
+            }
         }
 
         void UpdateViewPagerUserInput()
@@ -292,10 +319,98 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Exposes the content TabLayout for toolbar tracker updates.
-        /// Used to hide tabs when navigated deeper than root page.
+        /// Exposes the content TabLayout for TabLayoutMediator and appearance updates.
         /// </summary>
         internal TabLayout ContentTabLayout => _contentTabLayout;
+
+        /// <summary>
+        /// Places the TabLayout into navigationlayout_toptabs via Activity FragmentManager.
+        /// Same pattern as ShellItemHandler.PlaceBottomTabs and TabbedPageManager.SetTabLayout.
+        /// Top tabs go to navigationlayout_toptabs (immediately after toolbar in the outer AppBarLayout).
+        /// </summary>
+        internal void PlaceTopTabs()
+        {
+            if (_contentTabLayout is null || _topTabsPlaced)
+            {
+                return;
+            }
+
+            // Only place if this section is the currently active section.
+            // ViewPager2 creates all section fragments (offscreenPageLimit = sectionCount),
+            // so without this guard, every multi-content section would call PlaceTopTabs()
+            // and the last one wins — showing wrong tabs on the initial active section.
+            if (VirtualView?.Parent is ShellItem parentItem && parentItem.CurrentItem != VirtualView)
+            {
+                return;
+            }
+
+            _pendingTopTabFragment?.Dispose();
+            _pendingTopTabFragment = null;
+
+            var context = MauiContext?.Context;
+
+            if (context is null)
+            {
+                return;
+            }
+
+            var fragmentManager = MauiContext.GetFragmentManager();
+
+            _pendingTopTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
+            {
+                _topTabFragment = new ViewFragment(_contentTabLayout);
+
+                fm
+                    .BeginTransaction()
+                    .Replace(Resource.Id.navigationlayout_toptabs, _topTabFragment)
+                    .SetReorderingAllowed(true)
+                    .Commit();
+            });
+
+            _topTabsPlaced = true;
+            _contentTabLayout.Visibility = ViewStates.Visible;
+        }
+
+        /// <summary>
+        /// Removes the TabLayout from navigationlayout_toptabs.
+        /// Called when tabs should be hidden (1 content, page pushed beyond root, or section deactivated).
+        /// </summary>
+        internal void RemoveTopTabs()
+        {
+            if (!_topTabsPlaced || _topTabFragment is null)
+            {
+                return;
+            }
+
+            _pendingTopTabFragment?.Dispose();
+            _pendingTopTabFragment = null;
+
+            var context = MauiContext?.Context;
+
+            if (context is null)
+            {
+                return;
+            }
+
+            var fragmentManager = MauiContext.GetFragmentManager();
+            var fragment = _topTabFragment;
+            _topTabFragment = null;
+            _topTabsPlaced = false;
+
+            if (!fragmentManager.IsDestroyed(context))
+            {
+                _pendingTopTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
+                {
+                    fm
+                        .BeginTransaction()
+                        .Remove(fragment)
+                        .SetReorderingAllowed(true)
+                        .Commit();
+                });
+            }
+
+            _contentTabLayout.Visibility = ViewStates.Gone;
+        }
 
         protected override void DisconnectHandler(AView platformView)
         {
@@ -305,6 +420,11 @@ namespace Microsoft.Maui.Controls.Handlers
             UnhookShellContentEvents();
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
+
+            // Remove top tabs from NRM slot
+            RemoveTopTabs();
+            _pendingTopTabFragment?.Dispose();
+            _pendingTopTabFragment = null;
 
             // Detach TabLayoutMediator
             _tabLayoutMediator?.Detach();
@@ -969,11 +1089,18 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
             }
 
-            // Hide/show content tabs based on navigation depth
-            if (_handler.ContentTabLayout is not null)
+            // Hide/show content tabs based on navigation depth.
+            // Push beyond root → hide top tabs; pop to root → show top tabs.
+            // Uses PlaceTopTabs/RemoveTopTabs (fragment add/remove in NRM slot).
+            var shouldShowTabs = newStack.Count == 1 && ((IShellSectionController)shellSection).GetItems().Count > 1;
+
+            if (shouldShowTabs)
             {
-                var shouldShowTabs = newStack.Count == 1 && ((IShellSectionController)shellSection).GetItems().Count > 1;
-                _handler.ContentTabLayout.Visibility = shouldShowTabs ? ViewStates.Visible : ViewStates.Gone;
+                _handler.PlaceTopTabs();
+            }
+            else
+            {
+                _handler.RemoveTopTabs();
             }
         }
 
@@ -1237,20 +1364,29 @@ namespace Microsoft.Maui.Controls.Handlers
                 base.OnResume();
 
                 if (_handler.VirtualView is null)
+                {
                     return;
+                }
 
                 if (!_handler.IsCurrentlyActiveSection())
+                {
                     return;
+                }
 
                 var shell = _handler.VirtualView.FindParentOfType<Shell>();
                 var currentContent = _handler.VirtualView.CurrentItem;
 
                 if (shell is null || currentContent is null)
+                {
                     return;
+                }
 
                 var page = ((IShellContentController)currentContent).GetOrCreateContent();
+
                 if (page is null)
+                {
                     return;
+                }
 
                 // Update toolbar
                 var toolbarTracker = _handler.ToolbarTracker;

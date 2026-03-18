@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
         ShellSection _shellSection;
         Page _displayedPage;
         bool _isNavigating; // Prevent recursive navigation
+        bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
 
         // Shared toolbar components (moved from ShellSectionHandler)
         internal Toolbar _shellToolbar; // Virtual Toolbar view
@@ -54,6 +55,12 @@ namespace Microsoft.Maui.Controls.Handlers
         internal IShellToolbarTracker _toolbarTracker;
         IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
         internal AppBarLayout _appBarLayout;
+
+        // Bottom tab fragment placed into navigationlayout_bottomtabs via Activity FragmentManager
+        // (same pattern as TabbedPageManager.SetTabLayout)
+        Fragment _bottomTabFragment;
+        IDisposable _pendingBottomTabFragment;
+        bool _bottomTabsPlaced;
 
         /// <summary>
         /// Property mapper for ShellItem properties.
@@ -126,51 +133,52 @@ namespace Microsoft.Maui.Controls.Handlers
         internal void SetupViewPagerAdapter()
         {
             if (_viewPager is null || VirtualView is null || _parentFragment is null)
+            {
                 return;
+            }
 
             var shellSections = ((IShellItemController)VirtualView).GetItems();
-            if (shellSections is null || shellSections.Count == 0)
-                return;
 
-            // Clean up previous callback if re-setting up (dynamic section additions)
-            if (_pageChangeCallback is not null)
+            if (shellSections is null || shellSections.Count == 0)
             {
-                _viewPager.UnregisterOnPageChangeCallback(_pageChangeCallback);
-                _pageChangeCallback = null;
+                return;
             }
 
             _shellContext ??= GetShellContext();
 
-            // Create adapter with child fragment manager
-            _adapter = new ShellSectionFragmentAdapter(
-                _parentFragment.ChildFragmentManager,
-                _parentFragment.Lifecycle,
-                shellSections,
-                _shellContext);
+            if (_adapter is not null)
+            {
+                // Reuse existing adapter — update sections for new ShellItem.
+                // GetItemId/ContainsItem ensure old fragments are removed by FragmentStateAdapter.
+                _adapter.UpdateSections(shellSections);
+            }
+            else
+            {
+                // First time: create adapter and register callback
+                if (_pageChangeCallback is not null)
+                {
+                    _viewPager.UnregisterOnPageChangeCallback(_pageChangeCallback);
+                    _pageChangeCallback = null;
+                }
 
-            _viewPager.Adapter = _adapter;
+                _adapter = new ShellSectionFragmentAdapter(
+                    _parentFragment.ChildFragmentManager,
+                    _parentFragment.Lifecycle,
+                    shellSections,
+                    _shellContext);
 
-            // Disable ViewPager2 instance state saving/restoring.
-            // Shell manages its own state; letting ViewPager2 save/restore fragment state
-            // causes "Expected the adapter to be 'fresh'" crashes when sections are
-            // hidden and shown again (FragmentStateAdapter tries to restore stale state).
+                _viewPager.Adapter = _adapter;
+
+                _pageChangeCallback = new ShellItemPageChangeCallback(this);
+                _viewPager.RegisterOnPageChangeCallback(_pageChangeCallback);
+            }
+
+            // Keep ViewPager2 configuration up to date.
+            // SaveEnabled=false prevents stale fragment state restoration.
+            // UserInputEnabled=false disables swipe (bottom tabs switch via BNV only).
             ((AView)_viewPager).SaveEnabled = false;
-
-            // Disable swipe on the ShellItem ViewPager2. Bottom tabs should only switch
-            // via BottomNavigationView tapping (matching Shell renderer behavior). This also
-            // fixes nested ViewPager2 conflict: without this, the outer ViewPager2 captures
-            // horizontal swipes before the inner ShellSection ViewPager2 (content tabs).
             _viewPager.UserInputEnabled = false;
-
-            // Keep ALL section fragments alive to prevent FragmentStateAdapter from
-            // saving/restoring fragment state. Restored fragments lose MAUI-specific state
-            // (StackNavigationManager, etc.) causing crashes. The renderer approach avoids
-            // this by using direct fragment transactions instead of ViewPager2.
             _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
-
-            // Register page change callback
-            _pageChangeCallback = new ShellItemPageChangeCallback(this);
-            _viewPager.RegisterOnPageChangeCallback(_pageChangeCallback);
         }
 
         /// <summary>
@@ -215,7 +223,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void OnMoreClicked()
         {
             if (VirtualView is null || _bottomNavigationManager is null)
+            {
                 return;
+            }
 
             var items = CreateTabList();
             _bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
@@ -228,7 +238,9 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             var shellItems = ((IShellItemController)VirtualView).GetItems();
             if (shellItems is null || shellSectionIndex < 0 || shellSectionIndex >= shellItems.Count)
+            {
                 return;
+            }
 
             // Navigate to the selected section
             OnTabSelected(shellSectionIndex);
@@ -242,8 +254,11 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 var items = ((IShellItemController)VirtualView).GetItems();
                 var currentIndex = items?.IndexOf(VirtualView.CurrentItem) ?? -1;
+
                 if (currentIndex >= 0)
+                {
                     _bottomNavigationManager?.SetSelectedItem(currentIndex);
+                }
             }
 
             if (_bottomSheetDialog is not null)
@@ -305,24 +320,34 @@ namespace Microsoft.Maui.Controls.Handlers
         internal void OnPageSelected(int position)
         {
             if (VirtualView is null)
+            {
                 return;
+            }
 
             var items = ((IShellItemController)VirtualView).GetItems();
+
             if (items is null || position < 0 || position >= items.Count)
+            {
                 return;
+            }
 
             var selectedSection = items[position];
 
             // Skip the rest if we're already navigating programmatically
             if (_isNavigating)
+            {
                 return;
+            }
 
             _isNavigating = true;
+
+            // Remember previous section for top tab cleanup
+            var previousSection = _shellSection;
 
             // Update bottom navigation selection
             _bottomNavigationManager?.SetSelectedItem(position);
 
-            // CRITICAL: Use ProposeSection instead of direct property set to fire Shell.Navigating event
+            // Use ProposeSection instead of direct property set to fire Shell.Navigating event
             // and support navigation cancellation (matches old ShellItemRenderer.ChangeSection behavior)
             if (selectedSection != VirtualView.CurrentItem)
             {
@@ -331,6 +356,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Track the current section
             _shellSection = selectedSection;
+
+            // Update top tabs: remove old section's tabs and evaluate new section's
+            NotifyTopTabsForSectionSwitch(previousSection, selectedSection);
 
             // Track displayed page changes
             ((IShellSectionController)selectedSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
@@ -382,15 +410,23 @@ namespace Microsoft.Maui.Controls.Handlers
         internal void SwitchToSection(ShellSection newSection, bool animate)
         {
             if (newSection is null || _viewPager is null || VirtualView is null)
+            {
                 return;
+            }
 
             var items = ((IShellItemController)VirtualView).GetItems();
+
             if (items is null)
+            {
                 return;
+            }
 
             var index = items.IndexOf(newSection);
+
             if (index < 0)
+            {
                 return;
+            }
 
             // Switch ViewPager2 to the new section
             if (_viewPager.CurrentItem != index)
@@ -400,6 +436,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 _isNavigating = false;
             }
 
+            // Update top tabs: remove old section's tabs and evaluate new section's
+            NotifyTopTabsForSectionSwitch(_shellSection, newSection);
+
             // Update bottom navigation
             _bottomNavigationManager?.SetSelectedItem(index);
 
@@ -408,6 +447,54 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Track displayed page changes
             ((IShellSectionController)newSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
+        }
+
+        /// <summary>
+        /// Switches to a new ShellItem without replacing the fragment.
+        /// The ViewPager2, BottomNavigationView, and toolbar stay in the layout;
+        /// only the adapter data and bottom nav items are rebuilt.
+        /// Called by ShellHandler for the permanent fragment pattern.
+        /// </summary>
+        internal void SwitchToShellItem(ShellItem newItem)
+        {
+            if (newItem is null || VirtualView == newItem)
+            {
+                return;
+            }
+
+            // Set flag to preserve fragment-level resources during disconnect/connect cycle.
+            // SetVirtualView triggers DisconnectHandler → ConnectHandler. Without this flag,
+            // DisconnectHandler would destroy toolbar, adapter, and fragment references.
+            _preserveFragmentResources = true;
+            SetVirtualView(newItem);
+            _preserveFragmentResources = false;
+
+            // Rebuild ViewPager2 adapter for new ShellItem's sections
+            SetupViewPagerAdapter();
+
+            // Rebuild bottom navigation for new ShellItem's sections
+            SetupBottomNavigation();
+
+            // Update tab visibility for new ShellItem (may need to show/hide bottom tabs)
+            var showTabs = ((IShellItemController)newItem).ShowTabs;
+
+            if (showTabs)
+            {
+                PlaceBottomTabs();
+            }
+            else
+            {
+                RemoveBottomTabs();
+            }
+
+            // Re-register appearance observer with new ShellItem
+            RegisterAppearanceObserver();
+
+            // Switch to the new item's current section
+            if (newItem.CurrentItem is not null)
+            {
+                SwitchToSection(newItem.CurrentItem, animate: false);
+            }
         }
 
         #region Navigation Support
@@ -438,7 +525,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (sender is not ShellSection shellSection || ((ElementHandler)this).VirtualView is null || _bottomNavigationManager is null)
+            {
                 return;
+            }
 
             if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName ||
                 e.PropertyName == BaseShellItem.TitleProperty.PropertyName ||
@@ -460,7 +549,9 @@ namespace Microsoft.Maui.Controls.Handlers
         static (Page topPage, bool canNavigateBack) GetStackInfo(IReadOnlyList<Page> stack)
         {
             if (stack is null || stack.Count == 0)
+            {
                 return (null, false);
+            }
 
             Page topPage = null;
             int nonNullCount = 0;
@@ -469,6 +560,7 @@ namespace Microsoft.Maui.Controls.Handlers
             for (int i = stack.Count - 1; i >= 0; i--)
             {
                 var page = stack[i];
+
                 if (page is not null)
                 {
                     nonNullCount++;
@@ -486,7 +578,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void UpdateDisplayedPage(Page page)
         {
             if (page is null || _displayedPage == page || ((ElementHandler)this).VirtualView is null)
+            {
                 return;
+            }
 
             _displayedPage = page;
 
@@ -509,12 +603,142 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var showTabs = ((IShellItemController)VirtualView).ShowTabs;
-            _bottomNavigationView.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
+
+            if (showTabs)
+            {
+                PlaceBottomTabs();
+            }
+            else
+            {
+                RemoveBottomTabs();
+            }
         }
 
         static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
         {
             handler.UpdateTabBarVisibility();
+        }
+
+        /// <summary>
+        /// Places the BottomNavigationView into navigationlayout_bottomtabs via Activity FragmentManager.
+        /// Same pattern as TabbedPageManager.SetTabLayout() — wraps the BNV in a ViewFragment
+        /// and commits it into the named slot from navigationlayout.axml.
+        /// </summary>
+        internal void PlaceBottomTabs()
+        {
+            if (_bottomNavigationView is null || _bottomTabsPlaced)
+            {
+                return;
+            }
+
+            _pendingBottomTabFragment?.Dispose();
+            _pendingBottomTabFragment = null;
+
+            var context = MauiContext?.Context;
+
+            if (context is null)
+            {
+                return;
+            }
+
+            var fragmentManager = MauiContext.GetFragmentManager();
+
+            _pendingBottomTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
+            {
+                _bottomTabFragment = new ViewFragment(_bottomNavigationView);
+
+                fm
+                    .BeginTransaction()
+                    .Replace(Resource.Id.navigationlayout_bottomtabs, _bottomTabFragment)
+                    .SetReorderingAllowed(true)
+                    .Commit();
+            });
+
+            _bottomTabsPlaced = true;
+            SetContentBottomMargin(MauiContext.Context.Resources.GetDimensionPixelSize(
+                Resource.Dimension.design_bottom_navigation_height));
+        }
+
+        /// <summary>
+        /// Removes the BottomNavigationView from navigationlayout_bottomtabs.
+        /// Called when tabs should be hidden (TabBarIsVisible=false, only 1 section, etc.)
+        /// </summary>
+        internal void RemoveBottomTabs()
+        {
+            if (!_bottomTabsPlaced || _bottomTabFragment is null)
+            {
+                return;
+            }
+
+            _pendingBottomTabFragment?.Dispose();
+            _pendingBottomTabFragment = null;
+
+            var context = MauiContext?.Context;
+
+            if (context is null)
+            {
+                return;
+            }
+
+            var fragmentManager = MauiContext.GetFragmentManager();
+            var fragment = _bottomTabFragment;
+            _bottomTabFragment = null;
+            _bottomTabsPlaced = false;
+
+            if (!fragmentManager.IsDestroyed(context))
+            {
+                _pendingBottomTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
+                {
+                    fm
+                        .BeginTransaction()
+                        .Remove(fragment)
+                        .SetReorderingAllowed(true)
+                        .Commit();
+                });
+            }
+
+            SetContentBottomMargin(0);
+        }
+
+        /// <summary>
+        /// Adjusts the bottom margin on navigationlayout_content so the ViewPager2
+        /// content doesn't overlap the bottom tabs. Same pattern as TabbedPageManager.
+        /// </summary>
+        void SetContentBottomMargin(int bottomMargin)
+        {
+            var shell = VirtualView?.FindParentOfType<Shell>();
+            var rootView = shell?.Handler?.PlatformView as AView;
+            var layoutContent = rootView?.FindViewById(Resource.Id.navigationlayout_content);
+            if (layoutContent is not null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams ml)
+            {
+                ml.BottomMargin = bottomMargin;
+            }
+        }
+
+        /// <summary>
+        /// Manages top tab transitions when switching between sections (bottom tabs).
+        /// navigationlayout_toptabs is a GLOBAL slot — only one section's TabLayout can
+        /// be there at a time. The outgoing section must remove its tabs before the
+        /// incoming section can place its own.
+        /// </summary>
+        void NotifyTopTabsForSectionSwitch(ShellSection oldSection, ShellSection newSection)
+        {
+            // Remove outgoing section's top tabs from the NRM slot
+            if (oldSection?.Handler is ShellSectionHandler oldHandler)
+            {
+                oldHandler.RemoveTopTabs();
+            }
+
+            // Evaluate incoming section's top tabs (will place if > 1 content)
+            if (newSection?.Handler is ShellSectionHandler newHandler)
+            {
+                var visibleCount = ((IShellSectionController)newSection).GetItems().Count;
+
+                if (visibleCount > 1)
+                {
+                    newHandler.PlaceTopTabs();
+                }
+            }
         }
 
         /// <summary>
@@ -614,14 +838,18 @@ namespace Microsoft.Maui.Controls.Handlers
             if (e.OldItems is not null)
             {
                 foreach (ShellSection section in e.OldItems)
+                {
                     UnhookChildEvents(section);
+                }
             }
 
             // Hook new sections
             if (e.NewItems is not null)
             {
                 foreach (ShellSection section in e.NewItems)
+                {
                     HookChildEvents(section);
+                }
             }
 
             // The adapter's _sections reference is a live ReadOnlyCollection wrapping
@@ -648,6 +876,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var items = ((IShellItemController)VirtualView).GetItems();
+
             if (items is null)
             {
                 return;
@@ -688,6 +917,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Unregister appearance observer
             var shell = VirtualView?.FindParentOfType<Shell>();
+
             if (shell is not null)
             {
                 ((IShellController)shell).RemoveAppearanceObserver(this);
@@ -703,37 +933,43 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Clear BottomNavigationManager listener
             _bottomNavigationManager?.ClearListener();
-            _bottomNavigationManager = null;
 
-            // Dispose appearance tracker (bottom navigation)
+            // Dispose per-item appearance tracker (ConnectHandler recreates for new item)
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
 
-            // Dispose toolbar resources
-            _toolbarAppearanceTracker?.Dispose();
-            _toolbarAppearanceTracker = null;
-
-            _toolbarTracker?.Dispose();
-            _toolbarTracker = null;
-
-            _toolbar = null;
-            _shellToolbar = null;
-            _appBarLayout = null;
-
-            // Unregister page change callback
-            if (_pageChangeCallback is not null)
+            if (!_preserveFragmentResources)
             {
-                platformView.UnregisterOnPageChangeCallback(_pageChangeCallback);
-                _pageChangeCallback = null;
+                // Full disconnect: fragment is being destroyed — clean everything
+                RemoveBottomTabs();
+                _bottomNavigationManager = null;
+
+                _toolbarAppearanceTracker?.Dispose();
+                _toolbarAppearanceTracker = null;
+
+                _toolbarTracker?.Dispose();
+                _toolbarTracker = null;
+
+                // Remove toolbar from outer AppBarLayout before nulling references
+                if (_toolbar?.Parent is ViewGroup toolbarParent)
+                    toolbarParent.RemoveView(_toolbar);
+
+                _toolbar = null;
+                _shellToolbar = null;
+                _appBarLayout = null;
+
+                if (_pageChangeCallback is not null)
+                {
+                    platformView.UnregisterOnPageChangeCallback(_pageChangeCallback);
+                    _pageChangeCallback = null;
+                }
+
+                platformView.Adapter = null;
+                _adapter = null;
+
+                _shellContext = null;
+                _parentFragment = null;
             }
-
-            // Clear adapter
-            platformView.Adapter = null;
-            _adapter = null;
-
-            // Clear references
-            _shellContext = null;
-            _parentFragment = null;
 
             base.DisconnectHandler(platformView);
         }
@@ -822,13 +1058,18 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void SetupToolbar()
         {
-            if (_appBarLayout is null)
+            var shell = VirtualView?.FindParentOfType<Shell>();
+
+            if (shell is null)
             {
                 return;
             }
 
-            var shell = VirtualView?.FindParentOfType<Shell>();
-            if (shell is null)
+            // Find the outer AppBarLayout from navigationlayout.axml.
+            // The toolbar is placed at the NRM level (same as ViewHandler.MapToolbar),
+            // making it persistent across ShellItem and ShellSection changes.
+            _appBarLayout = FindNavigationLayoutAppBar();
+            if (_appBarLayout is null)
             {
                 return;
             }
@@ -844,10 +1085,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Create the platform toolbar
             _toolbar = (AToolbar)_shellToolbar.ToPlatform(shell.Handler.MauiContext);
 
-            // Add toolbar to AppBarLayout BEFORE creating the tracker.
+            // Add toolbar to outer AppBarLayout at position 0 (before navigationlayout_toptabs).
+            // Same pattern as ViewHandler.MapToolbar: appbarLayout.AddView(nativeToolBar, 0).
             // The tracker constructor resolves _appBar via _platformToolbar.Parent.GetParentOfType<AppBarLayout>(),
             // so the toolbar must already be in the view hierarchy.
-            _appBarLayout.AddView(_toolbar);
+            _appBarLayout.AddView(_toolbar, 0);
 
             // Set up toolbar tracker and appearance tracker
             _toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
@@ -861,13 +1103,26 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
+        /// Finds the outer AppBarLayout (navigationlayout_appbar) from navigationlayout.axml.
+        /// Navigates from Shell's PlatformView (MauiDrawerLayout) down to the inflated layout.
+        /// </summary>
+        AppBarLayout FindNavigationLayoutAppBar()
+        {
+            var shell = VirtualView?.FindParentOfType<Shell>();
+            var rootView = shell?.Handler?.PlatformView as AView;
+            return rootView?.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+        }
+
+        /// <summary>
         /// Updates the toolbar title and items for the current section.
         /// Called when the current section changes (e.g., switching between bottom nav tabs).
         /// </summary>
         void UpdateToolbarForSection(ShellSection section)
         {
             if (_toolbarTracker is null || section is null)
+            {
                 return;
+            }
 
             Page currentPage = null;
             bool canNavigateBack = false;
@@ -910,7 +1165,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void UpdateToolbar(Page page, bool canNavigateBack)
         {
             if (_toolbarTracker is null || page is null)
+            {
                 return;
+            }
 
             // Update navigation state first
             _toolbarTracker.CanNavigateBack = canNavigateBack;
@@ -920,8 +1177,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Cache shell reference to avoid repeated FindParentOfType calls
             var shell = VirtualView?.FindParentOfType<Shell>();
+
             if (shell is null)
+            {
                 return;
+            }
 
             // Apply toolbar configuration
             if (_shellToolbar is not null)
@@ -950,7 +1210,9 @@ namespace Microsoft.Maui.Controls.Handlers
         internal void UpdateToolbarForPage(Page page)
         {
             if (page is null)
+            {
                 return;
+            }
 
             // Get navigation state from the page's section
             var section = page.FindParentOfType<ShellSection>();
@@ -989,6 +1251,8 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
+
+        internal ShellItemHandler GetHandler() => _handler;
 
         public Fragment Fragment
         {
@@ -1033,7 +1297,6 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             readonly ShellItemHandler _handler;
             CoordinatorLayout _rootLayout;
-            LinearLayout _bottomContainer;
             ShellBackPressedCallback _backPressedCallback;
 
             public ShellItemWrapperFragment(ShellItemHandler handler)
@@ -1051,8 +1314,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 // Get references from inflated layout
                 _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator);
-                _handler._appBarLayout = rootView.FindViewById<AppBarLayout>(Resource.Id.shellitem_appbar);
-                _bottomContainer = rootView.FindViewById<LinearLayout>(Resource.Id.shellitem_content);
+                // NOTE: _appBarLayout is the outer navigationlayout_appbar from
+                // navigationlayout.axml, resolved lazily in SetupToolbar().
 
                 // Get ViewPager2 from the inflated layout
                 _handler._viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager);
@@ -1061,13 +1324,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 // (context, null, defStyleAttr) to match the old renderer's
                 // PlatformInterop.createNavigationBar(). The defStyleAttr constructor resolves
                 // styles through the Material Components theme chain, ensuring correct icon/text sizing.
+                // NOTE: BNV is NOT added to shellitemlayout — it is placed into
+                // navigationlayout_bottomtabs via PlaceBottomTabs().
                 var bottomNav = new BottomNavigationView(inflater.Context, null, Resource.Attribute.bottomNavigationViewStyle)
                 {
                     Id = AView.GenerateViewId(),
-                    LayoutParameters = new LinearLayout.LayoutParams(LP.MatchParent, LP.WrapContent)
+                    LayoutParameters = new LP(LP.MatchParent, LP.WrapContent)
                 };
                 bottomNav.SetBackgroundColor(global::Android.Graphics.Color.White);
-                _bottomContainer.AddView(bottomNav);
                 _handler._bottomNavigationView = bottomNav;
 
                 // Setup window insets for safe area handling
@@ -1087,8 +1351,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Setup the shared toolbar
                 _handler.SetupToolbar();
 
-                // Setup bottom navigation (BottomNavigationView now comes from XML layout)
+                // Setup bottom navigation (BottomNavigationView created in OnCreateView)
                 _handler.SetupBottomNavigation();
+
+                // Place bottom tabs into navigationlayout_bottomtabs via Activity FragmentManager
+                // (same pattern as TabbedPageManager.SetTabLayout)
+                _handler.PlaceBottomTabs();
 
                 // Now that the fragment is attached, setup the ViewPager2 adapter
                 _handler.SetupViewPagerAdapter();
@@ -1123,7 +1391,6 @@ namespace Microsoft.Maui.Controls.Handlers
                     }
 
                     _rootLayout = null;
-                    _bottomContainer = null;
                 }
                 base.Dispose(disposing);
             }
@@ -1179,9 +1446,11 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     internal class ShellSectionFragmentAdapter : FragmentStateAdapter
     {
-        readonly IList<ShellSection> _sections;
+        IList<ShellSection> _sections;
         readonly IShellContext _shellContext;
         readonly Dictionary<int, IShellSectionRenderer> _renderers = new Dictionary<int, IShellSectionRenderer>();
+        long _itemIdCounter;
+        readonly Dictionary<ShellSection, long> _sectionIds = new Dictionary<ShellSection, long>();
 
         public ShellSectionFragmentAdapter(
             FragmentManager fragmentManager,
@@ -1195,6 +1464,56 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         public override int ItemCount => _sections.Count;
+
+        /// <summary>
+        /// Returns a stable ID for each ShellSection. FragmentStateAdapter uses this
+        /// to detect when sections change (e.g., on ShellItem switch) and automatically
+        /// removes fragments whose IDs are no longer present.
+        /// </summary>
+        public override long GetItemId(int position)
+        {
+            var section = _sections[position];
+            if (!_sectionIds.TryGetValue(section, out var id))
+            {
+                id = ++_itemIdCounter;
+                _sectionIds[section] = id;
+            }
+            return id;
+        }
+
+        public override bool ContainsItem(long itemId)
+        {
+            foreach (var kvp in _sectionIds)
+            {
+                if (kvp.Value == itemId && _sections.Contains(kvp.Key))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Updates the adapter's sections for a new ShellItem.
+        /// FragmentStateAdapter uses GetItemId/ContainsItem to detect that old sections
+        /// are gone and removes their fragments automatically.
+        /// </summary>
+        internal void UpdateSections(IList<ShellSection> newSections)
+        {
+            // Remove IDs for sections that are no longer present
+            var toRemove = new List<ShellSection>();
+            foreach (var kvp in _sectionIds)
+            {
+                if (!newSections.Contains(kvp.Key))
+                    toRemove.Add(kvp.Key);
+            }
+            foreach (var section in toRemove)
+                _sectionIds.Remove(section);
+
+            // Clear position-based renderers (positions may differ for new sections)
+            _renderers.Clear();
+
+            _sections = newSections;
+            NotifyDataSetChanged();
+        }
 
         public override Fragment CreateFragment(int position)
         {
