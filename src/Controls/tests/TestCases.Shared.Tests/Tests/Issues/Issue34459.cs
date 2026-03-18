@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_MACCATALYST
+#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_MACCATALYST // https://github.com/dotnet/maui/issues/34531
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
