@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Shell Section Layout - Used by ShellSectionHandler
+    Shell Section Layout - Used by ShellSectionHandler (ShellSectionWrapperFragment)
     
     Structure:
       LinearLayout (root - vertical)
-        ├── TabLayout (content tabs - visibility controlled by Items.Count)
         └── ViewPager2 (fills remaining space - hosts ShellContent fragments)
     
-    NOTE: Toolbar is NOT in this layout. It lives at ShellItem level (shellitemlayout.axml).
-    NOTE: Uses LinearLayout instead of CoordinatorLayout/AppBarLayout because we don't need
-    scroll-collapsing behavior for content tabs. LinearLayout correctly reclaims space when
-    TabLayout visibility is set to GONE (CoordinatorLayout's ScrollingViewBehavior doesn't).
+    NOTE: Toolbar is NOT in this layout. It lives in navigationlayout_appbar
+    (the outer AppBarLayout from navigationlayout.axml).
+    NOTE: TabLayout is NOT in this layout. It is created programmatically and placed into
+    navigationlayout_toptabs via PlaceTopTabs().
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -19,14 +18,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/shellsection_tablayout"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:visibility="gone"
-        app:tabMode="scrollable"
-        style="@style/MauiShellTabLayout" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/shellsection_viewpager"
