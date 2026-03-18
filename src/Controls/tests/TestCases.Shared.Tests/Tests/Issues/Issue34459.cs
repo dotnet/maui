@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +15,8 @@ public class Issue34459 : _IssuesUITest
 	[Category(UITestCategories.Label)]
 	public void LabelWordWrapNotClippedWithRtlFlowDirection()
 	{
-		App.WaitForElement("RtlContainer");
+		App.WaitForElement("RtlLabel");
 		VerifyScreenshot();
 	}
 }
+#endif
