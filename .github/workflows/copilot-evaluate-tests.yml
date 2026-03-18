@@ -2,7 +2,8 @@
 #
 # Security model (modeled after dotnet/skills evaluation.yml):
 #   - COPILOT_GITHUB_TOKEN: fine-grained PAT with "Copilot Requests" permission only
-#   - github.token: used for PR comments and commit statuses (built-in, no PAT)
+#   - MAUI_BOT_TOKEN: PAT from MauiBot account for posting PR comments (falls back to github.token)
+#   - github.token: used for reactions and commit statuses (built-in, no PAT)
 #   - Fork PRs: require "/evaluate-tests" comment from user with write+ permission
 #   - File access: restricted to $GITHUB_WORKSPACE via --add-dir
 #   - Tool access: only bash, view, grep, glob, edit allowed (no git push, no network)
@@ -331,7 +332,7 @@ jobs:
 
       - name: Post PR comment
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.MAUI_BOT_TOKEN || github.token }}
           PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
           EVALUATE_RESULT: ${{ needs.evaluate.result }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
