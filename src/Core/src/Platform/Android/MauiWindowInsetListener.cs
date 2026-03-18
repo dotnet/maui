@@ -286,10 +286,26 @@ namespace Microsoft.Maui.Platform
 				contentView?.SetPadding(0, 0, 0, 0);
 			}
 
-			// Pass insets through unconsumed so child views receive them intact.
-			// Bottom: BottomNavigationView needs the nav bar inset to extend its background in Edge-to-Edge mode (Issue #33344).
-			// Top: SafeAreaExtensions handles per-view overlap, avoiding double-padding.
-			return insets;
+			// Consume top inset when AppBar is visible — it already pads itself, so downstream
+			// views must not receive a top inset or SafeAreaExtensions will double-apply it.
+			// Bottom inset is passed through unconsumed so BottomNavigationView can extend its
+			// background into the system navigation bar area (issue #33344).
+			var newSystemBars = Insets.Of(
+				systemBars?.Left ?? 0,
+				appBarHasContent ? 0 : systemBars?.Top ?? 0,
+				systemBars?.Right ?? 0,
+				systemBars?.Bottom ?? 0) ?? Insets.None;
+
+			var newDisplayCutout = Insets.Of(
+				displayCutout?.Left ?? 0,
+				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
+				displayCutout?.Right ?? 0,
+				displayCutout?.Bottom ?? 0) ?? Insets.None;
+
+			return new WindowInsetsCompat.Builder(insets)
+				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
+				?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
+				?.Build() ?? insets;
 		}
 
 		public void TrackView(AView view)
