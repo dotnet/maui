@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts or updates the PR agent review comment on a GitHub Pull Request with validation.
+    Posts or updates the agent review comment on a GitHub Pull Request with validation.
 
 .DESCRIPTION
     Creates ONE comment for the entire PR review with all phases wrapped in an expandable section.
@@ -522,7 +522,7 @@ $latestCommitTitle = ($commitJson.message -split "`n")[0]
 $latestCommitSha = $commitJson.sha.Substring(0, 7)
 $latestCommitUrl = "https://github.com/dotnet/maui/commit/$($commitJson.sha)"
 
-# Helper function to create a NEW review session
+# Helper function to create content for a review session (no wrapper <details>)
 function New-ReviewSession {
     param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
     
@@ -530,16 +530,8 @@ function New-ReviewSession {
         return ""
     }
     
-    return @"
-<details>
-<summary>📝 <strong>Review Session</strong> — <strong>$CommitTitle</strong> · <a href="$CommitUrl"><code>$CommitSha</code></a></summary>
-
----
-
-$PhaseContent
-
-</details>
-"@
+    # Return raw content — the commit info is shown on the top-level summary
+    return $PhaseContent
 }
 
 # Helper function to extract existing review sessions from a phase
@@ -551,11 +543,25 @@ function Get-ExistingReviewSessions {
     }
     
     $sessions = @()
+    # Try old format first (wrapped in <details><summary>📝 ...)
     $pattern = '(?s)<details>\s*<summary>📝.*?</summary>.*?</details>'
     $matches = [regex]::Matches($PhaseContent, $pattern)
     
-    foreach ($match in $matches) {
-        $sessions += $match.Value
+    if ($matches.Count -gt 0) {
+        # Old format: extract the inner content from each session wrapper
+        foreach ($match in $matches) {
+            $inner = $match.Value
+            if ($inner -match '(?s)<summary>📝.*?</summary>\s*---\s*(.*?)\s*</details>') {
+                $sessions += ($Matches[1].Trim() -replace '(?m)^---\s*$', '').Trim()
+            } else {
+                $sessions += $inner
+            }
+        }
+    } else {
+        # New format: content is directly in the phase section (no wrapper)
+        # Strip leading/trailing --- separators that may remain from old format
+        $cleaned = ($PhaseContent.Trim() -replace '(?m)^---\s*$', '').Trim()
+        $sessions += $cleaned
     }
     
     return $sessions
@@ -728,7 +734,7 @@ $SECTION_END = "<!-- /SECTION:PR-REVIEW -->"
 $prReviewSection = @"
 $SECTION_START
 <details>
-<summary>📊 <strong>Expand Full Review</strong></summary>
+<summary>📊 <strong>Expand Full Review</strong> — <a href="$latestCommitUrl"><code>$latestCommitSha</code></a> · <strong>$latestCommitTitle</strong></summary>
 
 ---
 

@@ -524,7 +524,7 @@ stages:
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -RunFinalize -PostSummaryComment -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
