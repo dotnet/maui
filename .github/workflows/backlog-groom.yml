@@ -1,0 +1,82 @@
+name: "Backlog Groom"
+
+on:
+  schedule:
+    # Weekly on Monday at 9 AM UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      groom_type:
+        description: "Type of grooming to perform"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - stale
+          - needs-repro
+          - possibly-fixed
+          - missing-labels
+      platform:
+        description: "Filter by platform"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+          - windows
+          - maccatalyst
+      limit:
+        description: "Maximum issues to assess"
+        required: false
+        default: "25"
+        type: string
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  groom-backlog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate grooming report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GROOM_TYPE: ${{ inputs.groom_type || 'all' }}
+          PLATFORM: ${{ inputs.platform || 'all' }}
+          LIMIT: ${{ inputs.limit || '25' }}
+        run: |
+          pwsh .github/skills/backlog-groom/scripts/generate-report.ps1 \
+            -GroomType "$GROOM_TYPE" \
+            -Platform "$PLATFORM" \
+            -Limit "$LIMIT" \
+            -ReportName "groom-ci-$(date +%Y-%m-%d)"
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backlog-groom-report
+          path: CustomAgentLogsTmp/BacklogGroom/
+          retention-days: 30
+
+      - name: Post summary to workflow
+        if: always()
+        run: |
+          REPORT_FILE=$(ls CustomAgentLogsTmp/BacklogGroom/*.md 2>/dev/null | head -1)
+          if [ -f "$REPORT_FILE" ]; then
+            echo "## 📋 Backlog Grooming Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            # Include just the summary section (first ~50 lines)
+            head -60 "$REPORT_FILE" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "---" >> $GITHUB_STEP_SUMMARY
+            echo "_Full report available in workflow artifacts._" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ No report generated" >> $GITHUB_STEP_SUMMARY
+          fi
