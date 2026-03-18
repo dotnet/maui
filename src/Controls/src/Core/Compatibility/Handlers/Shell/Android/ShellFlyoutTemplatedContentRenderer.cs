@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		protected AView FooterView => _footerView?.PlatformView;
 		protected AView View => _rootView;
-		WindowsListener _windowsListener;
 
 
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
@@ -144,8 +143,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutParameters = new LP(coordinator.LayoutParameters)
 			};
 
-			_windowsListener = new WindowsListener();
-			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, _windowsListener);
+			MauiWindowInsetListener.SetupViewWithLocalListener(coordinator, new WindowsListener());
 
 			UpdateFlyoutHeaderBehavior();
 			_shellContext.Shell.PropertyChanged += OnShellPropertyChanged;
