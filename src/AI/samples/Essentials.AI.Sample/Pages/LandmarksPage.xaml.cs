@@ -50,26 +50,17 @@ public partial class LandmarksPage : ContentPage
 
 	private async void OnLandmarkTapped(object? sender, Landmark landmark)
 	{
-		var parameters = new Dictionary<string, object>
-		{
-			{ "Landmark", landmark }
-		};
-
-		await Shell.Current.GoToAsync(nameof(TripPlanningPage), parameters);
+		await NavigateToDetail(landmark);
 	}
 
-	private async void OnLanguageButtonClicked(object? sender, EventArgs e)
+	async Task NavigateToDetail(Landmark landmark)
 	{
-		string? action = await DisplayActionSheetAsync(
-			"Select Language for AI Responses",
-			"Cancel",
-			null,
-			_viewModel.AvailableLanguages);
-
-		if (!string.IsNullOrEmpty(action) && action != "Cancel")
+		var parameters = new Dictionary<string, object>
 		{
-			_viewModel.SelectedLanguage = action;
-		}
+			{ "Landmark", landmark },
+			{ "RecentSearches", _viewModel.RecentSearches }
+		};
+		await Shell.Current.GoToAsync(nameof(LandmarkDetailPage), parameters);
 	}
 
 	private async void OnChatButtonClicked(object? sender, EventArgs e)

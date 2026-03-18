@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
+    x:Class="Maui.Controls.Sample.Pages.LandmarkDetailPage"
+    x:DataType="viewModels:LandmarkDetailViewModel"
+    Shell.NavBarIsVisible="False"
+    Title="{Binding Landmark.Name}">
+
+    <Grid>
+        <!-- Full-bleed Header Image (fixed behind scroll) -->
+        <Image
+            VerticalOptions="Start" HeightRequest="380" Aspect="AspectFill"
+            Source="{Binding Landmark.BackgroundImageName, StringFormat='Images/Backgrounds/{0}.jpg'}" />
+
+        <!-- Fixed gradient at bottom of image (covers pull-down edge) -->
+        <BoxView VerticalOptions="Start" HeightRequest="380">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="Transparent" Offset="0.6" />
+                    <GradientStop Color="{AppThemeBinding Light=#60FFFFFF, Dark=#601C1C1E}" Offset="1.0" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <!-- Scrollable Content -->
+        <ScrollView>
+            <VerticalStackLayout>
+
+                <!-- Spacer to show image behind -->
+                <BoxView HeightRequest="220" Color="Transparent" />
+
+                <!-- Gradient that scrolls over image -->
+                <BoxView HeightRequest="160">
+                    <BoxView.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="Transparent" Offset="0.0" />
+                            <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </BoxView.Background>
+                </BoxView>
+
+                <!-- Content area with solid background -->
+                <VerticalStackLayout
+                    Spacing="16"
+                    Padding="20,0,20,100"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}">
+
+                    <!-- Name & Continent -->
+                    <Label
+                        Text="{Binding Landmark.Name}"
+                        FontSize="28"
+                        FontAttributes="Bold" />
+                    <Label
+                        Text="{Binding Landmark.Continent}"
+                        FontSize="14"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+
+                    <!-- Tags -->
+                    <FlexLayout
+                        BindableLayout.ItemsSource="{Binding Tags}"
+                        Wrap="Wrap"
+                        JustifyContent="Start"
+                        Direction="Row">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border
+                                    Padding="8,4"
+                                    Margin="0,0,6,6"
+                                    StrokeShape="RoundRectangle 12"
+                                    StrokeThickness="0"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                                    <Label
+                                        Text="{Binding ., StringFormat='#{0}'}"
+                                        FontSize="12"
+                                        TextColor="{StaticResource Primary}" />
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+
+                    <!-- Description -->
+                    <Label
+                        Text="{Binding Landmark.Description}"
+                        FontSize="15"
+                        LineHeight="1.5"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+
+                    <!-- AI Travel Tip — always visible, shows loading then text -->
+                    <Border
+                        Padding="16"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0"
+                        BackgroundColor="{AppThemeBinding Light=#F0F4FF, Dark=#1A1A2E}">
+                        <Grid>
+                            <!-- Loading state -->
+                            <HorizontalStackLayout
+                                IsVisible="{Binding IsLoadingTip}"
+                                Spacing="10"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Padding="0,8">
+                                <ActivityIndicator
+                                    IsRunning="{Binding IsLoadingTip}"
+                                    HeightRequest="20"
+                                    WidthRequest="20"
+                                    Color="{StaticResource Primary}" />
+                                <Label
+                                    Text="Generating travel tip…"
+                                    FontSize="13"
+                                    TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+                            </HorizontalStackLayout>
+
+                            <!-- Content state -->
+                            <VerticalStackLayout
+                                IsVisible="{Binding IsLoadingTip, Converter={StaticResource InvertedBoolConverter}}"
+                                Spacing="8">
+                                <Label
+                                    Text="✨ AI Travel Tip"
+                                    FontSize="14"
+                                    FontAttributes="Bold"
+                                    TextColor="{StaticResource Primary}" />
+                                <Label
+                                    Text="{Binding AiTravelTip}"
+                                    FontSize="14"
+                                    LineHeight="1.4"
+                                    TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray200}}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Similar Destinations -->
+                    <Label
+                        Text="Similar Destinations"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        Margin="0,8,0,0"
+                        IsVisible="{Binding SimilarDestinations.Count, Converter={StaticResource IsNotNullConverter}}" />
+
+                    <views:LandmarkHorizontalListView
+                        Landmarks="{Binding SimilarDestinations}"
+                        LandmarkTapped="OnSimilarLandmarkTapped"
+                        IsVisible="{Binding SimilarDestinations.Count, Converter={StaticResource IsNotNullConverter}}" />
+
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Floating Back Button -->
+        <Button
+            Text="←" Clicked="OnBackClicked"
+            VerticalOptions="Start" HorizontalOptions="Start" Margin="20,20,0,0"
+            HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
+            FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+
+        <!-- Bottom Bar: Language + Plan Trip -->
+        <Grid
+            VerticalOptions="End"
+            Padding="20,12"
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="12"
+            BackgroundColor="{AppThemeBinding Light=#F0FFFFFF, Dark=#F01C1C1E}">
+
+            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                <Label Text="🌐" FontSize="18" VerticalOptions="Center" />
+                <Picker
+                    Title="Language"
+                    ItemsSource="{Binding AvailableLanguages}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    FontSize="14"
+                    WidthRequest="120" />
+            </HorizontalStackLayout>
+
+            <Button
+                Grid.Column="1"
+                Text="🗺️ Plan a Trip"
+                FontSize="16"
+                Padding="16,12"
+                CornerRadius="12"
+                BackgroundColor="{StaticResource Primary}"
+                TextColor="White"
+                Clicked="OnPlanTripClicked" />
+        </Grid>
+    </Grid>
+
+</ContentPage>

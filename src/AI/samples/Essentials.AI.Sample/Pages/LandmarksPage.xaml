@@ -13,19 +13,30 @@
         <ScrollView>
             <VerticalStackLayout Padding="20" Spacing="20">
 
-                <!-- Featured Section -->
-                <Label 
-                    Text="Featured"
-                    FontSize="18"
-                    FontAttributes="Bold"
-                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                <!-- Search Bar -->
+                <SearchBar
+                    Placeholder="Search destinations..."
+                    Text="{Binding SearchQuery}"
+                    FontSize="16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}" />
 
-                <views:LandmarkFeaturedItemView
-                    Landmark="{Binding FeaturedLandmark}"
-                    IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
-                    LandmarkTapped="OnLandmarkTapped" />
+                <!-- Featured Section (hidden when searching) -->
+                <VerticalStackLayout
+                    IsVisible="{Binding IsSearching, Converter={StaticResource InvertedBoolConverter}}"
+                    Spacing="12">
+                    <Label 
+                        Text="Featured"
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
 
-                <!-- Continents -->
+                    <views:LandmarkFeaturedItemView
+                        Landmark="{Binding FeaturedLandmark}"
+                        IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
+                        LandmarkTapped="OnLandmarkTapped" />
+                </VerticalStackLayout>
+
+                <!-- Continent Groups (filtered when searching) -->
                 <VerticalStackLayout 
                     BindableLayout.ItemsSource="{Binding ContinentGroups}"
                     Spacing="25">
@@ -45,7 +56,7 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <ActivityIndicator 
+                <ActivityIndicator
                     IsVisible="{Binding IsLoading}"
                     IsRunning="{Binding IsLoading}"
                     HorizontalOptions="Center"
@@ -54,21 +65,6 @@
 
             </VerticalStackLayout>
         </ScrollView>
-
-        <!-- Floating Language Button (top right) -->
-        <Button
-            Text="🌐"
-            Clicked="OnLanguageButtonClicked"
-            VerticalOptions="Start"
-            HorizontalOptions="End"
-            Margin="0,20,20,0"
-            HeightRequest="44"
-            WidthRequest="44"
-            CornerRadius="22"
-            Padding="0"
-            FontSize="24"
-            Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
-            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
 
         <!-- Floating Chat Button (bottom right) -->
         <Button

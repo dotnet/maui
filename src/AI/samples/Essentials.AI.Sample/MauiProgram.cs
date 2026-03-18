@@ -47,10 +47,12 @@ public static class MauiProgram
 
 		// Register Pages
 		builder.Services.AddTransient<LandmarksPage>();
+		builder.Services.AddTransient<LandmarkDetailPage>();
 		builder.Services.AddTransient<TripPlanningPage>();
 
 		// Register ViewModels
 		builder.Services.AddTransient<LandmarksViewModel>();
+		builder.Services.AddTransient<LandmarkDetailViewModel>();
 		builder.Services.AddTransient<TripPlanningViewModel>();
 		builder.Services.AddSingleton<ChatViewModel>();
 
@@ -140,6 +142,10 @@ public static class MauiProgram
 				.UseLogging(loggerFactory)
 				.Build();
 		});
+
+		// Semantic search backed by NL embeddings
+		builder.Services.AddSingleton<ISemanticSearchService>(sp =>
+			new EmbeddingSearchService(sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()));
 
 		return builder;
 	}

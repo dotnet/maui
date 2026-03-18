@@ -11,6 +11,8 @@ public partial class LandmarksViewModel(
 	DataService dataService,
 	LanguagePreferenceService languagePreference) : ObservableObject
 {
+	CancellationTokenSource? _searchCts;
+
 	[ObservableProperty]
 	public partial Landmark? FeaturedLandmark { get; private set; }
 
@@ -29,7 +31,19 @@ public partial class LandmarksViewModel(
 	[ObservableProperty]
 	public partial string SelectedLanguage { get; set; } = "English";
 
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(IsSearching))]
+	public partial string? SearchQuery { get; set; }
+
+	public bool IsSearching => !string.IsNullOrWhiteSpace(SearchQuery);
+
+	/// <summary>Recent search queries for contextual AI descriptions.</summary>
+	public List<string> RecentSearches { get; } = [];
+
 	public string[] AvailableLanguages => languagePreference.SupportedLanguages.Keys.ToArray();
+
+	/// <summary>All continent groups (unfiltered).</summary>
+	List<ContinentGroup> _allGroups = [];
 
 	public ObservableCollection<ContinentGroup> ContinentGroups => field ??= [];
 
@@ -38,14 +52,61 @@ public partial class LandmarksViewModel(
 		languagePreference.SelectedLanguage = value;
 	}
 
+	partial void OnSearchQueryChanged(string? value)
+	{
+		_ = FilterLandmarksAsync(value);
+	}
+
 	public async Task InitializeAsync()
 	{
-		if (IsLoading || ContinentGroups.Count > 0)
+		if (IsLoading || _allGroups.Count > 0)
 			return;
 
 		SelectedLanguage = languagePreference.SelectedLanguage;
 		await LoadLandmarksAsync();
 		await WaitForEmbeddingsAsync();
+	}
+
+	async Task FilterLandmarksAsync(string? query)
+	{
+		_searchCts?.Cancel();
+		_searchCts = new CancellationTokenSource();
+		var ct = _searchCts.Token;
+
+		if (string.IsNullOrWhiteSpace(query))
+		{
+			ContinentGroups.Clear();
+			foreach (var group in _allGroups)
+				ContinentGroups.Add(group);
+			return;
+		}
+
+		try { await Task.Delay(300, ct); }
+		catch (OperationCanceledException) { return; }
+
+		try
+		{
+			var results = await dataService.SearchLandmarksAsync(query, 15);
+			if (ct.IsCancellationRequested) return;
+
+			var matchedIds = results.DistinctBy(l => l.Id).Select(l => l.Id).ToHashSet();
+
+			if (query.Length > 2 && !RecentSearches.Contains(query))
+			{
+				RecentSearches.Add(query);
+				if (RecentSearches.Count > 5)
+					RecentSearches.RemoveAt(0);
+			}
+
+			ContinentGroups.Clear();
+			foreach (var group in _allGroups)
+			{
+				var filtered = group.Landmarks.Where(l => matchedIds.Contains(l.Id)).ToList();
+				if (filtered.Count > 0)
+					ContinentGroups.Add(new ContinentGroup(group.Name, filtered));
+			}
+		}
+		catch (OperationCanceledException) { }
 	}
 
 	private async Task LoadLandmarksAsync()
@@ -55,12 +116,15 @@ public partial class LandmarksViewModel(
 		{
 			FeaturedLandmark = await dataService.GetFeaturedLandmarkAsync();
 
+			_allGroups.Clear();
 			ContinentGroups.Clear();
 
 			var landmarksByContinent = await dataService.GetLandmarksByContinentAsync();
 			foreach (var (continent, landmarks) in landmarksByContinent.OrderBy(kvp => kvp.Key))
 			{
-				ContinentGroups.Add(new ContinentGroup(continent, [.. landmarks.OrderBy(l => l.Name)]));
+				var group = new ContinentGroup(continent, [.. landmarks.OrderBy(l => l.Name)]);
+				_allGroups.Add(group);
+				ContinentGroups.Add(group);
 			}
 		}
 		finally

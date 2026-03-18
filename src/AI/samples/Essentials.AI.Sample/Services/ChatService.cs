@@ -57,9 +57,6 @@ public class ChatService
 			AIFunctionFactory.Create(PlanTripAsync),
 		];
 
-		// Don't use FunctionInvokingChatClient here — Apple Intelligence handles
-		// tool calling natively at the Swift layer. The tools are passed via ChatOptions
-		// and invoked directly by FoundationModels through AIFunctionToolAdapter.
 		_toolClient = chatClient;
 	}
 
