@@ -186,6 +186,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SetObserveChanges(fromItemsSource, false);
 				SetObserveChanges(toItemsSource, false);
 				fromList.RemoveAt(fromItemIndex);
+
+				// When moving within the same group, removing the source item
+				// shrinks the list, so the destination index may now be out of range.
+				// Adjust it to stay within bounds of the post-removal list.
+				if (ReferenceEquals(fromList, toList) && toItemIndex > fromItemIndex)
+				{
+					toItemIndex--;
+				}
+
+				// Final safety clamp against the (possibly shrunk) destination list
+				toItemIndex = Math.Max(0, Math.Min(toItemIndex, toList.Count));
+
 				toList.Insert(toItemIndex, fromItem);
 				SetObserveChanges(fromItemsSource, true);
 				SetObserveChanges(toItemsSource, true);
