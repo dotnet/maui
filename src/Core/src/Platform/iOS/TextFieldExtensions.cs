@@ -215,8 +215,8 @@ namespace Microsoft.Maui.Platform
 
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
+					clearButton.TintColor = null;
 				}
 				else
 				{
