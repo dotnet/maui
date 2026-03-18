@@ -85,6 +85,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
 			handlersCollection.AddHandler<Slider, SliderHandler2>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
+            handlersCollection.AddHandler<Entry, EntryHandler2>();
 		}
 		else
 		{
@@ -100,6 +101,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 			handlersCollection.AddHandler<Slider, SliderHandler>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+            handlersCollection.AddHandler<Entry, EntryHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -114,11 +116,11 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+        handlersCollection.AddHandler<Entry, EntryHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
