@@ -55,8 +55,8 @@
     <MicrosoftExtensionsLoggingDebugVersion>11.0.0-preview.3.26166.111</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>11.0.0-preview.3.26166.111</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>11.0.0-preview.3.26166.111</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsAIVersion>10.0.1</MicrosoftExtensionsAIVersion>
-    <MicrosoftExtensionsAIAbstractionsVersion>10.0.1</MicrosoftExtensionsAIAbstractionsVersion>
+    <MicrosoftExtensionsAIVersion>10.3.0</MicrosoftExtensionsAIVersion>
+    <MicrosoftExtensionsAIAbstractionsVersion>10.3.0</MicrosoftExtensionsAIAbstractionsVersion>
     <MicrosoftExtensionsHttpVersion>11.0.0-preview.2.26103.111</MicrosoftExtensionsHttpVersion>
     <!-- Microsoft Agent Framework -->
     <MicrosoftAgentsAIVersion>1.0.0-preview.251204.1</MicrosoftAgentsAIVersion>
