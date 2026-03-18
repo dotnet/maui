@@ -4,6 +4,7 @@ using System;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Platform;
@@ -28,8 +29,9 @@ namespace Microsoft.Maui.Controls.Handlers
         // MauiDrawerLayout is now the PlatformView (same as FlyoutViewHandler)
         MauiDrawerLayout MauiDrawerLayout => PlatformView;
 
-        // Content frame that hosts ShellItem views
-        FrameLayout _contentFrame;
+        // Navigation root (inflated navigationlayout.axml) — provides named slots
+        // for content, toolbar, bottom tabs, and top tabs (same as FlyoutViewHandler).
+        AView _navigationRoot;
 
         // Flyout content view (Shell's flyout menu)
         AView _flyoutContentView;
@@ -37,6 +39,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         // Current shell item renderer
         IShellItemRenderer _currentShellItemRenderer;
+
+        // ShellItem handler — placed once in navigationlayout_content, reused
+        // across ShellItem switches via SwitchToShellItem() (no fragment replacement).
+        ShellItemHandler _shellItemHandler;
 
         // Track flyout behavior for IShellContext
         FlyoutBehavior _currentBehavior = FlyoutBehavior.Flyout;
@@ -89,22 +95,21 @@ namespace Microsoft.Maui.Controls.Handlers
             // (the drawer stays open and content shifts right).
             drawerLayout.FlyoutLayoutModeValue = MauiDrawerLayout.FlyoutLayoutMode.Padding;
 
-            // Create the content frame that will host shell items
-            _contentFrame = new FrameLayout(Context)
-            {
-                LayoutParameters = new LP(LP.MatchParent, LP.MatchParent),
-                Id = AView.GenerateViewId(),
-            };
+            // Inflate navigationlayout.axml — provides named slots for content,
+            // toolbar, bottom tabs, and top tabs (same as FlyoutViewHandler pattern).
+            // This enables Shell to use the same NRM infrastructure as non-Shell.
+            var layoutInflater = MauiContext?.GetLayoutInflater()
+                ?? throw new InvalidOperationException("LayoutInflater missing");
+            _navigationRoot = layoutInflater.Inflate(Resource.Layout.navigationlayout, null)
+                ?? throw new InvalidOperationException("navigationlayout inflation failed");
 
-            // Add _contentFrame directly as a child so it's in the view hierarchy
-            // immediately. MauiDrawerLayout.SetContentView + UpdateLayout requires both
-            // content AND flyout views to be set before it parents the content frame.
-            // But we need the content frame to be a child now so fragment transactions
-            // can find it by ID when the FragmentManager processes them.
-            drawerLayout.AddView(_contentFrame, new LP(LP.MatchParent, LP.MatchParent));
+            // Add navigation root as content inside MauiDrawerLayout.
+            // Fragment transactions target Resource.Id.navigationlayout_content
+            // (a static ID from the layout) instead of a dynamic GenerateViewId().
+            drawerLayout.AddView(_navigationRoot, new LP(LP.MatchParent, LP.MatchParent));
 
-            // Also set it as the content view for MauiDrawerLayout's internal tracking
-            drawerLayout.SetContentView(_contentFrame);
+            // Set as content view for MauiDrawerLayout's internal tracking
+            drawerLayout.SetContentView(_navigationRoot);
 
             return drawerLayout;
         }
@@ -112,6 +117,12 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void ConnectHandler(MauiDrawerLayout platformView)
         {
             base.ConnectHandler(platformView);
+
+            // Window insets setup for the CoordinatorLayout (same as FlyoutViewHandler)
+            if (_navigationRoot is CoordinatorLayout cl)
+            {
+                MauiWindowInsetListener.SetupViewWithLocalListener(cl);
+            }
 
             VirtualView.PropertyChanged += OnShellPropertyChanged;
 
@@ -145,6 +156,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _currentShellItemRenderer?.Dispose();
             _currentShellItemRenderer = null;
+            _shellItemHandler = null;
 
             if (_flyoutContentRenderer is IDisposable disposable)
             {
@@ -159,6 +171,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Clean up ViewAttachedToWindow listener
             platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+
+            // Clean up window insets and navigation root
+            if (_navigationRoot is CoordinatorLayout cl)
+            {
+                MauiWindowInsetListener.RemoveViewWithLocalListener(cl);
+            }
+            _navigationRoot = null;
 
             // Disconnect MauiDrawerLayout
             platformView.Disconnect();
@@ -187,23 +206,40 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
+            // Subsequent switches: reuse the permanent fragment, update handler data.
+            // No fragment transaction — the wrapper fragment stays in navigationlayout_content.
+            if (_shellItemHandler is not null)
+            {
+                _shellItemHandler.SwitchToShellItem(newItem);
+                return;
+            }
+
+            // First switch: create handler + fragment, add to layout
             _pendingFragment?.Dispose();
             _pendingFragment = null;
 
             var context = MauiContext?.Context;
-            if (context is null || _contentFrame is null)
+
+            if (context is null || _navigationRoot is null)
             {
                 return;
             }
 
             var fragmentManager = MauiContext.GetFragmentManager();
 
-            var previousRenderer = _currentShellItemRenderer;
-
             _currentShellItemRenderer = CreateShellItemRenderer(newItem);
             _currentShellItemRenderer.ShellItem = newItem;
 
             var fragment = _currentShellItemRenderer.Fragment;
+
+            // Store handler reference for future switches.
+            // After this fragment transaction, the wrapper fragment stays in
+            // navigationlayout_content — subsequent ShellItem switches update
+            // the handler's data instead of replacing the fragment.
+            if (_currentShellItemRenderer is ShellItemHandlerAdapter adapter)
+            {
+                _shellItemHandler = adapter.GetHandler();
+            }
 
             // Use RunOrWaitForResume for state-saved safety (same as FlyoutViewHandler),
             // but CommitNow() instead of Commit() because Shell's navigation flow requires
@@ -219,20 +255,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
 
                 transaction
-                    .Replace(_contentFrame.Id, fragment)
+                    .Replace(Resource.Id.navigationlayout_content, fragment)
                     .SetReorderingAllowed(true)
                     .CommitNow();
             });
-
-            if (previousRenderer is not null)
-            {
-                void OnDestroyed(object sender, EventArgs args)
-                {
-                    previousRenderer.Destroyed -= OnDestroyed;
-                    previousRenderer = null;
-                }
-                previousRenderer.Destroyed += OnDestroyed;
-            }
         }
 
         void OnPlatformViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
@@ -240,8 +266,8 @@ namespace Microsoft.Maui.Controls.Handlers
             PlatformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
             // Initial load: now that the view is in the Activity's hierarchy,
-            // the FragmentManager can find _contentFrame by ID.
-            if (VirtualView?.CurrentItem is not null && _contentFrame is not null)
+            // the FragmentManager can find navigationlayout_content by ID.
+            if (VirtualView?.CurrentItem is not null && _navigationRoot is not null)
             {
                 SwitchToItem(VirtualView.CurrentItem, animate: false);
             }
@@ -296,14 +322,14 @@ namespace Microsoft.Maui.Controls.Handlers
             MauiDrawerLayout?.SetBehavior(behavior);
 
             // Update content padding for locked mode
-            if (behavior == FlyoutBehavior.Locked && _contentFrame is not null)
+            if (behavior == FlyoutBehavior.Locked && _navigationRoot is not null)
             {
                 var padding = MauiDrawerLayout?.GetLockedContentPadding() ?? 0;
-                _contentFrame.SetPadding(padding, _contentFrame.PaddingTop, _contentFrame.PaddingRight, _contentFrame.PaddingBottom);
+                _navigationRoot.SetPadding(padding, _navigationRoot.PaddingTop, _navigationRoot.PaddingRight, _navigationRoot.PaddingBottom);
             }
             else
             {
-                _contentFrame?.SetPadding(0, _contentFrame.PaddingTop, _contentFrame.PaddingRight, _contentFrame.PaddingBottom);
+                _navigationRoot?.SetPadding(0, _navigationRoot.PaddingTop, _navigationRoot.PaddingRight, _navigationRoot.PaddingBottom);
             }
 
             // Sync Shell property

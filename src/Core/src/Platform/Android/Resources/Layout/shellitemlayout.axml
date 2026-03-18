@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Shell Item Layout - Used by ShellItemHandler (ShellItemWrapperFragment)
-    Matches the programmatic view hierarchy built in ShellItemWrapperFragment.OnCreateView().
     
     Structure:
-      CoordinatorLayout (root - enables AppBarLayout scrolling behavior)
-        ├── AppBarLayout (toolbar container - toolbar added programmatically via SetupToolbar())
-        └── LinearLayout (ScrollingViewBehavior - content area)
-            ├── ViewPager2 (weight=1 - hosts ShellSection fragments)
-            └── BottomNavigationView (added programmatically - bottom tabs for ShellSections)
+      CoordinatorLayout (root - enables window insets handling)
+        └── ViewPager2 (fills space - hosts ShellSection fragments)
+    
+    NOTE: Toolbar is NOT in this layout. It lives in navigationlayout_appbar
+    (the outer AppBarLayout from navigationlayout.axml) at the NRM level.
+    NOTE: Top tabs are NOT in this layout. They are placed into navigationlayout_toptabs
+    (NRM slot in the same outer AppBarLayout, after toolbar) via PlaceTopTabs().
+    NOTE: BottomNavigationView is NOT in this layout. It is placed into
+    navigationlayout_bottomtabs via PlaceBottomTabs().
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -17,37 +20,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/shellitem_appbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/MauiAppBarLayout"
-        app:liftOnScroll="true"
-        app:liftOnScrollTargetViewId="@id/shellitem_viewpager">
-
-        <!-- Toolbar is added programmatically via ShellItemHandler.SetupToolbar() -->
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <LinearLayout
-        android:id="@+id/shellitem_content"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/shellitem_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:overScrollMode="never" />
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/shellitem_viewpager"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:overScrollMode="never" />
-
-        <!-- BottomNavigationView is added programmatically via ShellItemHandler
-             to match the old renderer's 3-arg constructor style resolution.
-             XML style="?attr/..." resolves styles differently than the defStyleAttr
-             constructor parameter, causing icon/text size differences. -->
-
-    </LinearLayout>
+    <!-- BottomNavigationView is created programmatically (not from XML) using the
+         3-arg constructor (context, null, defStyleAttr) to match Material Components
+         theme style resolution. XML style="?attr/..." resolves differently than the
+         defStyleAttr constructor parameter, causing icon/text size differences. -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
