@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 33614, "CollectionView Scrolled event reports incorrect FirstVisibleItemIndex after programmatic ScrollTo", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 33614, "CollectionView Scrolled event reports incorrect FirstVisibleItemIndex after programmatic ScrollTo", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue33614 : ContentPage
 {
     public ObservableCollection<string> Items { get; set; }
@@ -19,7 +19,8 @@ public class Issue33614 : ContentPage
         _firstIndexLabel = new Label
         {
             AutomationId = "FirstIndexLabel",
-            Text = "FirstVisibleItemIndex: 0"
+            Text = "FirstVisibleItemIndex: 0",
+            IsVisible = false,
         };
 
         var scrollToButton = new Button
@@ -65,6 +66,7 @@ public class Issue33614 : ContentPage
     private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
     {
         _firstIndexLabel.Text = $"FirstVisibleItemIndex: {e.FirstVisibleItemIndex}";
+        _firstIndexLabel.IsVisible = true;
     }
 
     private void OnScrollToButtonClicked(object sender, EventArgs e)
