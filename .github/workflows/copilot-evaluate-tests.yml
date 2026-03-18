@@ -137,6 +137,41 @@ jobs:
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Pre-fetch PR context for Copilot CLI
+        if: steps.context.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.context.outputs.pr_number }}
+        run: |
+          mkdir -p /tmp/pr-context
+
+          # PR metadata (title, description, labels, base branch)
+          gh pr view "$PR_NUMBER" --repo "$REPO" \
+            --json title,body,labels,baseRefName,headRefName,files,additions,deletions \
+            > /tmp/pr-context/pr-metadata.json
+
+          # PR diff (the actual code changes)
+          gh pr diff "$PR_NUMBER" --repo "$REPO" \
+            > /tmp/pr-context/pr-diff.patch
+
+          # PR file list with status
+          gh pr view "$PR_NUMBER" --repo "$REPO" \
+            --json files --jq '.files[] | "\(.path)\t\(.additions)+\t\(.deletions)-"' \
+            > /tmp/pr-context/pr-files.txt
+
+          echo "PR context fetched:"
+          echo "  Diff size: $(wc -c < /tmp/pr-context/pr-diff.patch) bytes"
+          echo "  Files changed: $(wc -l < /tmp/pr-context/pr-files.txt)"
+
+      - name: Upload PR context
+        if: steps.context.outputs.should_run == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr-context
+          path: /tmp/pr-context/
+          retention-days: 1
+
   # ============================================================
   # Evaluate: Run Copilot CLI with evaluate-pr-tests skill
   # ============================================================
@@ -149,12 +184,17 @@ jobs:
       contents: read
     timeout-minutes: 30
     steps:
-      - name: Checkout PR
+      - name: Checkout workflow branch (has skills + scripts)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ needs.gate.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
           persist-credentials: false
+
+      - name: Download PR context from gate job
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: pr-context
+          path: /tmp/pr-context/
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -180,15 +220,15 @@ jobs:
         if: steps.token-check.outputs.has_token == 'true'
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
-          REPO: ${{ github.repository }}
         run: |
-          # Build the prompt — the skill is discovered from .github/skills/ automatically
-          PROMPT="Evaluate the tests added in PR #${PR_NUMBER} in the ${REPO} repository. \
-          The PR diff is available via: gh pr diff ${PR_NUMBER} --repo ${REPO}. \
-          Check their quality, coverage, and whether the test type is appropriate. \
-          Use the evaluate-pr-tests skill to produce a structured report."
+          # Build the prompt — point CLI at the pre-fetched PR context files
+          PROMPT="Evaluate the tests added in PR #${PR_NUMBER}. \
+          The PR metadata is at /tmp/pr-context/pr-metadata.json. \
+          The PR diff is at /tmp/pr-context/pr-diff.patch. \
+          The changed file list is at /tmp/pr-context/pr-files.txt. \
+          Read those files first, then use the evaluate-pr-tests skill to produce a structured report. \
+          Check test quality, coverage, and whether the test type is appropriate."
 
           # Run Copilot CLI in non-interactive mode with sandboxed permissions
           copilot \
@@ -201,6 +241,7 @@ jobs:
             --allow-tool glob \
             --allow-tool lsp \
             --add-dir "$GITHUB_WORKSPACE" \
+            --add-dir "/tmp/pr-context" \
             --output-format text \
             2>/dev/null | tee /tmp/copilot-output.txt
 
