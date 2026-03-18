@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 			// to prevent query text from being incorrectly restored across multiple
 			// SearchView instances during navigation. The EditText shares a fixed
 			// resource ID (search_src_text) across all SearchViews, causing state
-			// to bleed between instances. MAUI handles text via its own property mapping.
+			// to bleed between instances.
 			if (_queryEditor is not null)
 			{
 				_queryEditor.SaveEnabled = false;
