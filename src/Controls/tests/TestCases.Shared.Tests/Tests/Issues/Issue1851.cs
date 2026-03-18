@@ -14,7 +14,6 @@ public class Issue1851 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[Category(UITestCategories.Compatibility)]
 	public void Issue1851Test()
 	{
 		App.WaitForElement("btn");

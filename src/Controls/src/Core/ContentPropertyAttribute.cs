@@ -12,16 +12,16 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPropertyAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPropertyAttribute']/Docs/*" />
+	/// <summary>Indicates the property used as the content property in XAML.</summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 	public sealed class ContentPropertyAttribute : Attribute
 	{
 		internal static string[] ContentPropertyTypes = { "Microsoft.Maui.Controls.ContentPropertyAttribute", "System.Windows.Markup.ContentPropertyAttribute" };
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPropertyAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ContentPropertyAttribute"/> with the specified property name.</summary>
 		public ContentPropertyAttribute(string name) => Name = name;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPropertyAttribute.xml" path="//Member[@MemberName='Name']/Docs/*" />
+		/// <summary>Gets the name of the content property.</summary>
 		public string Name { get; }
 	}
 }

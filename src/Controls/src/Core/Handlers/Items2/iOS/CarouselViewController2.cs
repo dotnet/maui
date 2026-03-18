@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isRotating = false;
 		bool _isUpdating = false;
 		int _section = 0;
+		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 
 		// We need to keep track of the old views to update the visual states
@@ -159,12 +160,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
+			// Refresh the current visible items after setup to catch any ItemsSource changes that occurred on other pages
+			// This ensures that updates made on other pages are reflected when navigating back
+			if (_wasDetachedFromWindow)
+			{
+				RefreshVisibleItems();
+			}
+			_wasDetachedFromWindow = false;
 			// if we navigate back on NavigationController LayoutSubviews might not fire.
 			await UpdateInitialPosition();
 		}
 
+		void RefreshVisibleItems()
+		{
+			if (CollectionView is null || ItemsSource?.ItemCount == 0)
+			{
+				return;
+			}
+
+			// Get current visible item index paths to ensure proper refresh of carousel items
+			var indexPaths = CollectionView.IndexPathsForVisibleItems;
+			if (indexPaths?.Length > 0)
+			{
+				CollectionView.ReloadItems(indexPaths);
+			}
+		}
+
 		private protected override void DetachingFromWindow()
 		{
+			_wasDetachedFromWindow = true;
 			base.DetachingFromWindow();
 			TearDown(ItemsView);
 		}

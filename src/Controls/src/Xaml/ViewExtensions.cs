@@ -31,18 +31,35 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides extension methods for loading XAML into objects.
+	/// </summary>
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
 	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
 	public static class Extensions
 	{
+		/// <summary>
+		/// Loads the XAML associated with the specified type into the view.
+		/// </summary>
+		/// <typeparam name="TXaml">The type of the view.</typeparam>
+		/// <param name="view">The view to load XAML into.</param>
+		/// <param name="callingType">The type used to locate the XAML resource.</param>
+		/// <returns>The view with XAML loaded.</returns>
 		public static TXaml LoadFromXaml<TXaml>(this TXaml view, Type callingType)
 		{
 			XamlLoader.Load(view, callingType);
 			return view;
 		}
 
+		/// <summary>
+		/// Loads the specified XAML string into the view.
+		/// </summary>
+		/// <typeparam name="TXaml">The type of the view.</typeparam>
+		/// <param name="view">The view to load XAML into.</param>
+		/// <param name="xaml">The XAML string to load.</param>
+		/// <returns>The view with XAML loaded.</returns>
 		public static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml)
 		{
 			XamlLoader.Load(view, xaml);

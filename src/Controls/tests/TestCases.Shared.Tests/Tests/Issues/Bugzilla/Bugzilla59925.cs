@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla59925Test()
 		{
 			App.WaitForElement(BiggerButton);

@@ -7,16 +7,27 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="Type[@FullName='Microsoft.Maui.Controls.CheckBox']/Docs/*" />
+	/// <summary>
+	/// Represents a control that a user can select or clear.
+	/// </summary>
+	/// <remarks>
+	/// A <see cref="CheckBox"/> is a type of button that can either be checked or not. 
+	/// When a user taps a checkbox, it toggles between checked and unchecked states.
+	/// Use the <see cref="IsChecked"/> property to determine or set the state.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	[ElementHandler<CheckBoxHandler>]
 	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='IsCheckedVisualState']/Docs/*" />
+		
+		/// <summary>
+		/// The visual state name for the checked state of the <see cref="CheckBox"/>.
+		/// </summary>
+		/// <value>The string "IsChecked".</value>
 		public const string IsCheckedVisualState = "IsChecked";
 
-		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
+		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty =
 			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
 				propertyChanged: (bindable, oldValue, newValue) =>
@@ -60,20 +71,30 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(CommandParameterProperty, value);
 		}
 
-		/// <summary>Bindable property for <see cref="Color"/>.</summary>
+		/// <summary>Bindable property for <see cref="Color"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='Color']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the checkbox.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value>The <see cref="Graphics.Color"/> of the checkbox. The default is platform-specific.</value>
 		public Color Color
 		{
 			get => (Color)GetValue(ColorProperty);
 			set => SetValue(ColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="CheckBox"/> class.
+		/// </summary>
 		public CheckBox() => _platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CheckBox>>(() => new PlatformConfigurationRegistry<CheckBox>(this));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='IsChecked']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the <see cref="CheckBox"/> is checked.
+		/// This is a bindable property.
+		/// </summary>
+		/// <value><see langword="true"/> if the checkbox is checked; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
 		public bool IsChecked
 		{
 			get => (bool)GetValue(IsCheckedProperty);
@@ -118,6 +139,9 @@ namespace Microsoft.Maui.Controls
 				base.ChangeVisualState();
 		}
 
+		/// <summary>
+		/// Occurs when the <see cref="IsChecked"/> property changes.
+		/// </summary>
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
 		/// <inheritdoc/>
@@ -145,7 +169,7 @@ namespace Microsoft.Maui.Controls
 			RefreshIsEnabledProperty();
 
 		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
 		public Paint Foreground => Color?.AsPaint();
 
 		bool ICheckBox.IsChecked

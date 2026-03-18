@@ -14,7 +14,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> control for picking an element in a list.</summary>
+	/// <summary>
+	/// A view control for picking an element from a list.
+	/// </summary>
+	/// <remarks>
+	/// The Picker displays a list of items for the user to select from. 
+	/// Users can select a single item, which is stored in the <see cref="SelectedItem"/> property with its index in <see cref="SelectedIndex"/>.
+	/// The visual representation is similar to an <see cref="Entry"/>, but displays a picker interface instead of a keyboard.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
@@ -86,13 +93,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets the font family for the picker text. This is a bindable property.</summary>
+		/// <value>The name of the font family.</value>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <summary>Gets or sets the size of the font for the text in the picker.</summary>
+		/// <summary>Gets or sets the size of the font for the text in the picker. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the font size.</value>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -100,6 +109,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		/// <summary>Gets or sets a value indicating whether font auto-scaling is enabled. This is a bindable property.</summary>
+		/// <value><see langword="true"/> if font auto-scaling is enabled; otherwise, <see langword="false"/>.</value>
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -174,7 +185,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>Gets or sets the character spacing for the picker text. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the spacing between characters.</value>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
@@ -189,21 +201,24 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TitleColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the title text. This is a bindable property.</summary>
+		/// <value>The <see cref="Color"/> of the title text.</value>
 		public Color TitleColor
 		{
 			get { return (Color)GetValue(TitleColorProperty); }
 			set { SetValue(TitleColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the horizontal text alignment. This is a bindable property.</summary>
+		/// <value>A <see cref="TextAlignment"/> value representing the horizontal alignment.</value>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the vertical text alignment. This is a bindable property.</summary>
+		/// <value>A <see cref="TextAlignment"/> value representing the vertical alignment.</value>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }
@@ -229,6 +244,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>Gets or sets a value indicating whether the picker is open. This is a bindable property.</summary>
+		/// <value><see langword="true"/> if the picker is open; otherwise, <see langword="false"/>.</value>
 		public bool IsOpen
 		{
 			get => (bool)GetValue(IsOpenProperty);

@@ -281,4 +281,125 @@ public class TestViewModel
 		Assert.Contains("RelativeBindingSource", generated, StringComparison.Ordinal);
 		Assert.Contains("FindAncestorBindingContext", generated, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void SelfPathWithFindAncestorGeneratesValidCode()
+	{
+		// Test for regression: RelativeSource AncestorType with Path=. should return the ancestor itself
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<Grid>
+		<Grid.GestureRecognizers>
+			<TapGestureRecognizer Command="{Binding Navigate}"
+				CommandParameter="{Binding Path=., Source={RelativeSource AncestorType={x:Type ContentPage}}}" />
+		</Grid.GestureRecognizers>
+	</Grid>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System.Windows.Input;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+		BindingContext = this;
+	}
+
+	public ICommand Navigate => new Command((param) => { });
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		// Verify no diagnostics
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error),
+			$"Generator produced errors: {string.Join(", ", result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Select(d => d.GetMessage()))}");
+
+		// Verify generated code exists
+		Assert.NotNull(generated);
+
+		// Verify RelativeBindingSource is generated correctly with FindAncestor mode (ContentPage is an Element)
+		Assert.Contains("RelativeBindingSource", generated, StringComparison.Ordinal);
+		Assert.Contains("FindAncestor", generated, StringComparison.Ordinal);
+		Assert.Contains("ContentPage", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SelfPathWithFindAncestorCustomTypeGeneratesValidCode()
+	{
+		// Test for regression: RelativeSource AncestorType with Path=. and custom page type
+		// This replicates the user's scenario where MainPage is a custom type
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.ChildView"
+	x:DataType="test:ChildView">
+	<Grid>
+		<Grid.GestureRecognizers>
+			<TapGestureRecognizer Command="{Binding Navigate}"
+				CommandParameter="{Binding Path=., Source={RelativeSource AncestorType={x:Type test:MainPage}}}" />
+		</Grid.GestureRecognizers>
+	</Grid>
+</ContentView>
+""";
+
+		var code =
+"""
+#nullable enable
+using System.Windows.Input;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class ChildView : ContentView
+{
+	public ChildView()
+	{
+		InitializeComponent();
+		BindingContext = this;
+	}
+
+	public ICommand Navigate => new Command((param) => { });
+}
+
+public class MainPage : ContentPage
+{
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		// Verify no diagnostics
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error),
+			$"Generator produced errors: {string.Join(", ", result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Select(d => d.GetMessage()))}");
+
+		// Verify generated code exists
+		Assert.NotNull(generated);
+
+		// Verify RelativeBindingSource is generated correctly with FindAncestor mode and custom type
+		Assert.Contains("RelativeBindingSource", generated, StringComparison.Ordinal);
+		Assert.Contains("FindAncestor", generated, StringComparison.Ordinal);
+		Assert.Contains("Test.MainPage", generated, StringComparison.Ordinal);
+	}
 }

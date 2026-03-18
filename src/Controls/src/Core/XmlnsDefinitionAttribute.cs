@@ -4,23 +4,27 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls;
 
-/// <include file="../../docs/Microsoft.Maui.Controls/XmlnsDefinitionAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.XmlnsDefinitionAttribute']/Docs/*" />
+/// <summary>Specifies the mapping between an XML namespace and a CLR namespace.</summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 [DebuggerDisplay("{XmlNamespace}, {Target}, {AssemblyName}")]
 public sealed class XmlnsDefinitionAttribute : Attribute
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/XmlnsDefinitionAttribute.xml" path="//Member[@MemberName='XmlNamespace']/Docs/*" />
+	/// <summary>Gets the XML namespace being mapped.</summary>
 	public string XmlNamespace { get; }
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/XmlnsDefinitionAttribute.xml" path="//Member[@MemberName='Target']/Docs/*" />
+	/// <summary>Gets the target CLR namespace or xmlns.</summary>
 	public string Target { get; }
-	/// <include file="../../docs/Microsoft.Maui.Controls/XmlnsDefinitionAttribute.xml" path="//Member[@MemberName='ClrNamespace']/Docs/*" />
+
+	/// <summary>Gets the CLR namespace.</summary>
 	[Obsolete("Use Target for ClrNamespace or other xmlns")]
 	public string ClrNamespace => Target;
-	/// <include file="../../docs/Microsoft.Maui.Controls/XmlnsDefinitionAttribute.xml" path="//Member[@MemberName='AssemblyName']/Docs/*" />
+
+	/// <summary>Gets or sets the assembly name containing the target namespace.</summary>
 	public string AssemblyName { get; set; }
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/XmlnsDefinitionAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+	/// <summary>Creates a new <see cref="XmlnsDefinitionAttribute"/>.</summary>
+	/// <param name="xmlNamespace">The XML namespace.</param>
+	/// <param name="target">The target CLR namespace or xmlns.</param>
 	public XmlnsDefinitionAttribute(string xmlNamespace, string target)
 	{
 		//TODO we need an analyzer to check before runtime

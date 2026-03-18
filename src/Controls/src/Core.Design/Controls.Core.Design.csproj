@@ -5,6 +5,8 @@
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 		<IsPackable>False</IsPackable>
 		<IsTrimmable>false</IsTrimmable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
@@ -33,6 +35,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RectTypeDesignConverter.cs" />
     <Compile Include="RegisterMetadata.cs" />
+    <Compile Include="SafeAreaEdgesTypeDesignConverter.cs" />
     <Compile Include="ThicknessTypeDesignConverter.cs" />
     <Compile Include="VisibilityDesignTypeConverter.cs" />
     <Compile Include="VisualDesignTypeConverter.cs" />
