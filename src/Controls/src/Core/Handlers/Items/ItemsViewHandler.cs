@@ -29,9 +29,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
 			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
-#if IOS || MACCATALYST
-			[Controls.VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled,
-#endif
 		};
 	}
 }

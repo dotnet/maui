@@ -679,15 +679,5 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ClearOnScrollListeners();
 			RecyclerViewScrollListener = null;
 		}
-
-		public override bool OnInterceptTouchEvent(MotionEvent ev)
-		{
-			if (!Enabled)
-			{
-				return false;
-			}
-
-			return base.OnInterceptTouchEvent(ev);
-		}
 	}
 }

@@ -1,12 +1,10 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 32791, "Setting the IsEnabled property of the CarouselView to false does not prevent swiping through items", PlatformAffected.Android | PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 32791, "Setting the IsEnabled property of the CarouselView to false does not prevent swiping through items", PlatformAffected.iOS)]
 public class Issue32791 : ContentPage
 {
 	CarouselView _carouselView;
 	Label _statusLabel;
-	CollectionView _collectionView;
-	Label _collectionViewStatusLabel;
 
 	public Issue32791()
 	{
@@ -41,34 +39,6 @@ public class Issue32791 : ContentPage
 			Text = "Success",
 		};
 
-		_collectionView = new CollectionView
-		{
-			AutomationId = "DisabledCollectionView",
-			HeightRequest = 200,
-			IsEnabled = false,
-			ItemsSource = Enumerable.Range(1, 8).Select(i => $"Item {i}").ToList(),
-			ItemTemplate = new DataTemplate(() =>
-			{
-				Label label = new Label
-				{
-					FontSize = 24,
-					BackgroundColor = Colors.LightBlue,
-					Padding = 20,
-				};
-				label.SetBinding(Label.TextProperty, ".");
-
-				return label;
-			})
-		};
-
-		_collectionView.Scrolled += OnCollectionViewScrolled;
-
-		_collectionViewStatusLabel = new Label
-		{
-			AutomationId = "Issue32791CollectionViewStatusLabel",
-			Text = "Success",
-		};
-
 		Grid grid = new Grid
 		{
 			Padding = 20,
@@ -77,15 +47,11 @@ public class Issue32791 : ContentPage
 			{
 				new RowDefinition { Height = new GridLength(200) },
 				new RowDefinition { Height = new GridLength(60) },
-				new RowDefinition { Height = new GridLength(200) },
-				new RowDefinition { Height = new GridLength(60) }
 			}
 		};
 
 		grid.Add(_carouselView, 0, 0);
 		grid.Add(_statusLabel, 0, 1);
-		grid.Add(_collectionView, 0, 2);
-		grid.Add(_collectionViewStatusLabel, 0, 3);
 
 		Content = grid;
 	}
@@ -95,16 +61,6 @@ public class Issue32791 : ContentPage
 		if (e.CurrentItem?.ToString() != "Item 1")
 		{
 			_statusLabel.Text = "Failure";
-		}
-	}
-
-	void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
-	{
-		// Android fires OnScrolled with dx=0, dy=0 during initial layout.
-		// Only flag as failure when actual movement occurs (non-zero deltas).
-		if (e.HorizontalDelta != 0 || e.VerticalDelta != 0)
-		{
-			_collectionViewStatusLabel.Text = "Failure";
 		}
 	}
 }

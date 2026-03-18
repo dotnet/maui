@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
-			if (!IsSwipeEnabled || !Enabled)
+			if (!IsSwipeEnabled)
 			{
 				return false;
 			}
