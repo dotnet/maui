@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue3413Test()
 		{
 			App.WaitForElement("srb_vertical");

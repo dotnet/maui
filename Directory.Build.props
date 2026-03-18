@@ -26,6 +26,7 @@
     <IncludePreviousTfms>false</IncludePreviousTfms>
     <IncludePreviousTfmsEssentials>false</IncludePreviousTfmsEssentials>
     <IncludePreviousTfmsGraphics>false</IncludePreviousTfmsGraphics>
+    <IncludePreviousTfmsEssentialsAI>false</IncludePreviousTfmsEssentialsAI>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -147,6 +148,7 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <AppxBundle>Never</AppxBundle>
   </PropertyGroup>
 
   <!-- TypeScript compilation -->
@@ -240,10 +242,10 @@
     <MauiEmbeddingPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiEmbeddingPlatforms)</MauiEmbeddingPlatforms>
 
     <!-- App: Manual Test Sample TFMs (no Tizen yet) -->
-    <MauiManualTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
-    <MauiManualTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
-    <MauiManualTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
-    <MauiManualTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiDeviceTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPlatforms);$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-android;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeMacCatalystTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-maccatalyst;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
+    <MauiManualTestsPlatforms Condition="'$(IncludeIosTargetFrameworks)' == 'true'">net$(_MauiDotNetVersion)-ios;$(MauiManualTestsPlatforms)</MauiManualTestsPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-tizen;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(WindowsMauiPreviousPlatforms);$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
     <MauiManualTestsPreviousPlatforms Condition="'$(IncludeAndroidTargetFrameworks)' == 'true'">net$(_MauiPreviousDotNetVersion)-android;$(MauiManualTestsPreviousPlatforms)</MauiManualTestsPreviousPlatforms>
@@ -256,6 +258,13 @@
     <!-- Library: Previous .NET Graphics TFMs -->
     <MauiGraphicsPreviousPlatforms>$(MauiPreviousPlatforms)</MauiGraphicsPreviousPlatforms>
     <MauiGraphicsPreviousPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiGraphicsPreviousPlatforms);net$(_MauiPreviousDotNetVersion)-macos$(MacosPreviousTargetFrameworkVersion)</MauiGraphicsPreviousPlatforms>
+
+    <!-- Library: Essentials AI TFMs -->
+    <MauiEssentialsAIPlatforms>$(MauiPlatforms)</MauiEssentialsAIPlatforms>
+    <MauiEssentialsAIPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiEssentialsAIPlatforms);net$(_MauiDotNetVersion)-macos$(MacosTargetFrameworkVersion)</MauiEssentialsAIPlatforms>
+    <!-- Library: Previous .NET EssentialsAI TFMs -->
+    <MauiEssentialsAIPreviousPlatforms>$(MauiPreviousPlatforms)</MauiEssentialsAIPreviousPlatforms>
+    <MauiEssentialsAIPreviousPlatforms Condition="'$(IncludeMacOSTargetFrameworks)' == 'true'">$(MauiEssentialsAIPreviousPlatforms);net$(_MauiPreviousDotNetVersion)-macos$(MacosPreviousTargetFrameworkVersion)</MauiEssentialsAIPreviousPlatforms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -285,5 +294,10 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <!-- Disables the transitive restore of packages like Microsoft.AspNetCore.App.Ref, Microsoft.WindowsDesktop.App.Ref -->
     <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
+  </PropertyGroup>
+
+   <!-- Workaround for EmitCompilerGeneratedFiles issue https://microsoft.visualstudio.com/OS/_workitems/edit/57204991 -->
+  <PropertyGroup>
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);CreateCompilerGeneratedFilesOutputPath</CoreCompileDependsOn>
   </PropertyGroup>
 </Project>

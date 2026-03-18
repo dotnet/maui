@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "The iOS platform page cannot scroll to the bottom";
 
 		[Test]
-		[Category(UITestCategories.Shape)]
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollToBottom()
 		{

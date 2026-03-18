@@ -40,7 +40,7 @@ class FlexBasisConverter : ISGTypeConverter
 			}
 		}
 
-		context.ReportConversionFailed( xmlLineInfo, value, Descriptors.FlexBasisConversionFailed);
+		context.ReportConversionFailed(xmlLineInfo, value, Descriptors.FlexBasisConversionFailed);
 		return "default";
 	}
 }

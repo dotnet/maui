@@ -105,6 +105,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewControlPage(), "ScrollView Feature Matrix"),
 			new GalleryPageFactory(() => new GraphicsViewControlPage(), "GraphicsView Feature Matrix"),
 			new GalleryPageFactory(() => new EditorControlPage(), "Editor Feature Matrix"),
+			new GalleryPageFactory(() => new Material3_EditorControlPage(), "Editor Material3 Feature Matrix"),
 			new GalleryPageFactory(() => new ToolbarFeaturePage(), "Toolbar Feature Matrix"),
 			new GalleryPageFactory(() => new StackLayoutControlPage(), "StackLayout Feature Matrix"),
 			new GalleryPageFactory(() => new AbsoluteLayoutControlPage(), "AbsoluteLayout Feature Matrix"),
@@ -119,6 +120,9 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new IndicatorViewControlPage(), "IndicatorView Feature Matrix"),
 			new GalleryPageFactory(() => new GridControlPage(), "Grid Feature Matrix"),
 			new GalleryPageFactory(() => new LayoutFeaturePage(), "ScrollView With LayoutOptions Feature Matrix"),
+			new GalleryPageFactory(() => new ShellFeaturePage(), "Shell Feature Matrix"),
+			new GalleryPageFactory(() => new BrushesControlPage(), "Brushes Feature Matrix"),
+			new GalleryPageFactory(() => new BindableLayoutControlPage(), "BindableLayout Feature Matrix")
 		};
 
 
@@ -191,6 +195,25 @@ namespace Maui.Controls.Sample
 			}
 
 			return Task.FromResult(false);
+		}
+
+		/// <summary>
+		/// Attempts to retrieve a gallery page by title.
+		/// </summary>
+		/// <param name="pageTitle">The title of the gallery page to find.</param>
+		/// <returns>The Page instance if found; otherwise, null.</returns>
+		/// <remarks>
+		/// This method searches for a matching gallery page by title (case-insensitive).
+		/// If a match is found, it invokes the associated Realize factory to create the page.
+		/// </remarks>
+		public Page TryToGetGalleryPage(string pageTitle)
+		{
+			if (_titleToPage.TryGetValue(pageTitle.ToLowerInvariant(), out GalleryPageFactory pageFactory))
+			{
+				return pageFactory.Realize();
+			}
+
+			return null;
 		}
 
 		public async Task<bool> NavigateToTest(string pageTitle)

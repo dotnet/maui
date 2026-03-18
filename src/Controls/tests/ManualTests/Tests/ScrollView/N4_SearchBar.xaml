@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Microsoft.Maui.ManualTests.ViewModels"
+             x:Class="Microsoft.Maui.ManualTests.Tests.ScrollView.N4_SearchBar"
+             x:DataType="viewmodels:MonkeysViewModel"
+             Title="N4_SearchBar">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="20">
+        
+        <!-- Instructions -->
+        <VerticalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,15">
+            <Label Text="1. Use the search bar to filter monkeys by name." />
+            <Label Text="2. Verify that enter values the 'x' button display." />
+            <Label Text="3. Verify that clearing the input causes the 'x' button to disappear." />
+        </VerticalStackLayout>
+        
+        <!-- Search Bar Section -->
+        <SearchBar x:Name="searchBar"
+                   Grid.Row="1"
+                   Placeholder="Search monkeys..."
+                   SearchCommand="{Binding FilterCommand}"
+                   SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"
+                   TextChanged="OnSearchTextChanged"
+                   BackgroundColor="White"
+                   Margin="0,0,0,15" />
+        
+        <!-- Monkeys Collection -->
+        <ScrollView Grid.Row="2">
+            <CollectionView x:Name="monkeysCollection"
+                           ItemsSource="{Binding Monkeys}"
+                           Margin="0,0,0,0">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical"
+                                        Span="2"
+                                        HorizontalItemSpacing="10"
+                                        VerticalItemSpacing="10" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="{x:Null}">
+                            <VerticalStackLayout Spacing="10"
+                                               Padding="10">
+                                <Border Stroke="LightGray"
+                                        StrokeThickness="2"
+                                        StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="White"
+                                        Padding="5">
+                                    <Image Source="{Binding ImageUrl}"
+                                           Aspect="AspectFit"
+                                           HeightRequest="120"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                                </Border>
+                                
+                                <Label Text="{Binding Name}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       LineBreakMode="WordWrap"
+                                       MaxLines="2" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+        </ScrollView>
+    </Grid>
+</ContentPage>

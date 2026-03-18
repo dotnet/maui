@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
 	using FormsElement = Maui.Controls.FlyoutPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.FlyoutPage']/Docs/*" />
+	/// <summary>Provides Windows-specific configuration for flyout page collapse behavior and pane width.</summary>
 	public static class FlyoutPage
 	{
 		#region CollapsedStyle
@@ -15,25 +15,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("CollapseStyle", typeof(CollapseStyle),
 				typeof(FlyoutPage), CollapseStyle.Full);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle'][1]/Docs/*" />
+		/// <summary>Gets the collapse style for the flyout pane on Windows.</summary>
+		/// <param name="element">The element to get the collapse style from.</param>
+		/// <returns>The collapse style.</returns>
 		public static CollapseStyle GetCollapseStyle(BindableObject element)
 		{
 			return (CollapseStyle)element.GetValue(CollapseStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle'][1]/Docs/*" />
+		/// <summary>Sets the collapse style for the flyout pane on Windows.</summary>
+		/// <param name="element">The element to set the collapse style on.</param>
+		/// <param name="collapseStyle">The collapse style to set.</param>
 		public static void SetCollapseStyle(BindableObject element, CollapseStyle collapseStyle)
 		{
 			element.SetValue(CollapseStyleProperty, collapseStyle);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle'][2]/Docs/*" />
+		/// <summary>Gets the collapse style for the flyout pane on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The collapse style.</returns>
 		public static CollapseStyle GetCollapseStyle(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (CollapseStyle)config.Element.GetValue(CollapseStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='SetCollapseStyle'][2]/Docs/*" />
+		/// <summary>Sets the collapse style for the flyout pane on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The collapse style to set.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetCollapseStyle(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, CollapseStyle value)
 		{
@@ -41,7 +50,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return config;
 		}
 
-		/// <param name="config">The config parameter.</param>
+		/// <summary>Configures the flyout to use partial collapse mode on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> UsePartialCollapse(
 			this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
@@ -58,26 +69,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.CreateAttached("CollapsedPaneWidth", typeof(double),
 				typeof(FlyoutPage), 48d, validateValue: (bindable, value) => (double)value >= 0);
 
-		/// <param name="element">The element parameter.</param>
+		/// <summary>Gets the width of the collapsed flyout pane on Windows.</summary>
+		/// <param name="element">The element to get the collapsed pane width from.</param>
+		/// <returns>The collapsed pane width in device-independent units.</returns>
 		public static double GetCollapsedPaneWidth(BindableObject element)
 		{
 			return (double)element.GetValue(CollapsedPaneWidthProperty);
 		}
 
-		/// <param name="element">The element parameter.</param>
-		/// <param name="collapsedPaneWidth">The collapsedPaneWidth parameter.</param>
+		/// <summary>Sets the width of the collapsed flyout pane on Windows.</summary>
+		/// <param name="element">The element to set the collapsed pane width on.</param>
+		/// <param name="collapsedPaneWidth">The collapsed pane width in device-independent units.</param>
 		public static void SetCollapsedPaneWidth(BindableObject element, double collapsedPaneWidth)
 		{
 			element.SetValue(CollapsedPaneWidthProperty, collapsedPaneWidth);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth'][1]/Docs/*" />
+		/// <summary>Gets the width of the collapsed flyout pane on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The collapsed pane width in device-independent units.</returns>
 		public static double CollapsedPaneWidth(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (double)config.Element.GetValue(CollapsedPaneWidthProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidth'][2]/Docs/*" />
+		/// <summary>Sets the width of the collapsed flyout pane on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The collapsed pane width in device-independent units.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> CollapsedPaneWidth(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, double value)
 		{

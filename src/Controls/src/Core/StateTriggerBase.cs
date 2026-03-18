@@ -3,19 +3,25 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/StateTriggerBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.StateTriggerBase']/Docs/*" />
+	/// <summary>
+	/// Base class for state triggers that activate visual states based on conditions.
+	/// </summary>
 	public abstract class StateTriggerBase : BindableObject
 	{
 		bool _isActive;
 		public event EventHandler IsActiveChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/StateTriggerBase.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="StateTriggerBase"/> class.
+		/// </summary>
 		public StateTriggerBase()
 		{
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/StateTriggerBase.xml" path="//Member[@MemberName='IsActive']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this trigger is currently active.
+		/// </summary>
 		public bool IsActive
 		{
 			get => _isActive;
@@ -31,7 +37,9 @@ namespace Microsoft.Maui.Controls
 
 		internal VisualState VisualState { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/StateTriggerBase.xml" path="//Member[@MemberName='IsAttached']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this trigger is attached to a visual state.
+		/// </summary>
 		public bool IsAttached { get; private set; }
 
 		protected void SetActive(bool active)

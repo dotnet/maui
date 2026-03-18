@@ -21,7 +21,30 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void TryToResetTestState()
 		{
+#if !MACCATALYST
 			NavigateToIssue(Issue);
+#endif
+		}
+
+		public override IConfig GetTestConfig()
+		{
+			var config = base.GetTestConfig();
+
+#if MACCATALYST
+			// For Catalyst, pass the test name as a startup argument
+			// If the UITestContext is not null we can directly pass the Issue via LaunchAppWithTest
+			if (UITestContext is null)
+			{
+				config.SetTestConfigurationArg("test", Issue);
+			}
+#endif
+
+			return config;
+		}
+
+		public override void LaunchAppWithTest()
+		{
+			App.LaunchApp(Issue, ResetAfterEachTest);
 		}
 
 		public abstract string Issue { get; }

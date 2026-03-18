@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
@@ -69,6 +70,10 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		if (!IsRegistered)
 		{
+			Trace.WriteLine("""
+			                ActivityForResultRequest is not registered; cancelling the request. 
+			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
+			                """);
 			tcs.SetCanceled();
 			return tcs.Task;
 		}

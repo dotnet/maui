@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void GitHub1648Test()
 		{

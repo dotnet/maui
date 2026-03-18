@@ -5,9 +5,12 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <summary>A generic implementation of <see cref="ICommand"/> with strongly-typed parameter.</summary>
+	/// <typeparam name="T">The type of the command parameter.</typeparam>
 	public sealed class Command<T> : Command
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a new command with the specified execute action.</summary>
+		/// <param name="execute">The action to execute when the command is invoked.</param>
 		public Command(Action<T> execute)
 			: base(o =>
 			{
@@ -23,7 +26,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
+		/// <summary>Creates a new command with the specified execute and canExecute delegates.</summary>
+		/// <param name="execute">The action to execute when the command is invoked.</param>
+		/// <param name="canExecute">A function that determines if the command can execute.</param>
 		public Command(Action<T> execute, Func<T, bool> canExecute)
 			: base(o =>
 			{
@@ -67,7 +72,8 @@ namespace Microsoft.Maui.Controls
 		readonly Action<object> _execute;
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a new command with the specified execute action.</summary>
+		/// <param name="execute">The action to execute when the command is invoked.</param>
 		public Command(Action<object> execute)
 		{
 			if (execute == null)
@@ -76,14 +82,17 @@ namespace Microsoft.Maui.Controls
 			_execute = execute;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a new command with the specified parameterless execute action.</summary>
+		/// <param name="execute">The action to execute when the command is invoked.</param>
 		public Command(Action execute) : this(o => execute())
 		{
 			if (execute == null)
 				throw new ArgumentNullException(nameof(execute));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
+		/// <summary>Creates a new command with the specified execute and canExecute delegates.</summary>
+		/// <param name="execute">The action to execute when the command is invoked.</param>
+		/// <param name="canExecute">A function that determines if the command can execute.</param>
 		public Command(Action<object> execute, Func<object, bool> canExecute) : this(execute)
 		{
 			if (canExecute == null)
@@ -92,7 +101,9 @@ namespace Microsoft.Maui.Controls
 			_canExecute = canExecute;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Command.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>Creates a new command with the specified parameterless execute and canExecute delegates.</summary>
+		/// <param name="execute">The action to execute when the command is invoked.</param>
+		/// <param name="canExecute">A function that determines if the command can execute.</param>
 		public Command(Action execute, Func<bool> canExecute) : this(o => execute(), o => canExecute())
 		{
 			if (execute == null)

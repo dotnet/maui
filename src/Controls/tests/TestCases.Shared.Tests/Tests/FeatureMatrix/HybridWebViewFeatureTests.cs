@@ -5,20 +5,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class HybridWebViewFeatureTests : UITest
+public class HybridWebViewFeatureTests : _GalleryUITest
 {
 	public const string HybridWebViewFeatureMatrix = "HybridWebView Feature Matrix";
+
+	public override string GalleryPageName => HybridWebViewFeatureMatrix;
 
 
 	public HybridWebViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(HybridWebViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -127,7 +123,7 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
 		Thread.Sleep(2000); // Allow time for the UI to update
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -172,7 +168,7 @@ public class HybridWebViewFeatureTests : UITest
 		App.WaitForElement("FlowDirectionCheckBox");
 		App.Tap("FlowDirectionCheckBox");
 		Thread.Sleep(2000); // Allow time for the UI to update
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

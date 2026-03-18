@@ -293,6 +293,16 @@ namespace Microsoft.Maui.Controls
 					return pi;
 			}
 
+			//try to find an indexer taking an enum that matches the content
+			foreach (var pi in sourceType.DeclaredProperties)
+			{
+				if (pi.Name != indexerName)
+					continue;
+				var paramType = pi.CanRead ? pi.GetMethod.GetParameters()[0].ParameterType : null;
+				if (paramType != null && paramType.IsEnum && Enum.IsDefined(paramType, content))
+					return pi;
+			}
+
 			//try to fallback to an object indexer
 			foreach (var pi in sourceType.DeclaredProperties)
 			{
@@ -313,6 +323,28 @@ namespace Microsoft.Maui.Controls
 			{
 				if (GetIndexer(face.GetTypeInfo(), indexerName, content) is PropertyInfo pi)
 					return pi;
+			}
+
+			return null;
+		}
+
+		PropertyInfo GetProperty(TypeInfo sourceType, string propertyName)
+		{
+			// First, check the type and its base classes
+			TypeInfo type = sourceType;
+			do
+			{
+				var property = type.GetDeclaredProperty(propertyName);
+				if (property != null)
+					return property;
+			} while ((type = type.BaseType?.GetTypeInfo()) != null);
+
+			// If not found, check implemented interfaces (for interface-inherited properties like IReadOnlyList<T>.Count)
+			foreach (var iface in sourceType.ImplementedInterfaces)
+			{
+				var property = GetProperty(iface.GetTypeInfo(), propertyName);
+				if (property != null)
+					return property;
 			}
 
 			return null;
@@ -365,7 +397,16 @@ namespace Microsoft.Maui.Controls
 					{
 						try
 						{
-							object arg = Convert.ChangeType(part.Content, parameter.ParameterType, CultureInfo.InvariantCulture);
+							object arg;
+							if (parameter.ParameterType.IsEnum)
+							{
+								// Handle enum types - parse the string to enum
+								arg = Enum.Parse(parameter.ParameterType, part.Content);
+							}
+							else
+							{
+								arg = Convert.ChangeType(part.Content, parameter.ParameterType, CultureInfo.InvariantCulture);
+							}
 							part.Arguments = new[] { arg };
 						}
 						catch (FormatException)
@@ -377,16 +418,16 @@ namespace Microsoft.Maui.Controls
 						catch (OverflowException)
 						{
 						}
+						catch (ArgumentException)
+						{
+							// Enum.Parse throws ArgumentException for invalid enum values
+						}
 					}
 				}
 			}
 			else
 			{
-				TypeInfo type = sourceType;
-				do
-				{
-					property = type.GetDeclaredProperty(part.Content);
-				} while (property == null && (type = type.BaseType?.GetTypeInfo()) != null);
+				property = GetProperty(sourceType, part.Content);
 			}
 			if (property != null)
 			{
