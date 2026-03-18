@@ -26,7 +26,7 @@ class Issue15806 : ContentPage
 									Name = "Normal",
 									Setters =
 									{
-										new Setter { Property = RadioButton.BorderColorProperty, Value = Colors.Red },
+										new Setter { Property = RadioButton.BorderColorProperty, Value = Colors.Purple },
 										new Setter { Property = RadioButton.BorderWidthProperty, Value = 2 } 
 									}
 								},

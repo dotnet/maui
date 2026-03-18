@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // RadioButton Focused/Unfocused events not firing on Android and iOS, Issue Link: https://github.com/dotnet/maui/issues/28163
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,4 +20,4 @@ internal class Issue15806 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-
+#endif
