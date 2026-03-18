@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -17,7 +16,6 @@ namespace Microsoft.Maui.Layouts
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
-
 			int spacingCount = 0;
 
 			for (int n = 0; n < Stack.Count; n++)
