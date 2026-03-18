@@ -79,6 +79,11 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
 			handlersCollection.AddHandler<Switch, SwitchHandler2>();
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler2>();
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler2>();
+			handlersCollection.AddHandler<Image, ImageHandler2>();
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
+			handlersCollection.AddHandler<Slider, SliderHandler2>();
 		}
 		else
 		{
@@ -88,6 +93,11 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 			handlersCollection.AddHandler<Switch, SwitchHandler>();
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+			handlersCollection.AddHandler<Image, ImageHandler>();
+			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+			handlersCollection.AddHandler<Slider, SliderHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -96,18 +106,11 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
-#endif
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
-			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
-		}
-#else
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
+		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+		handlersCollection.AddHandler<Image, ImageHandler>();
+		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
+		handlersCollection.AddHandler<Slider, SliderHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
@@ -117,7 +120,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
-		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
@@ -126,43 +128,6 @@ public static partial class AppHostBuilderExtensions
 			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
-
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
-			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
-		}
-#else
-		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
-#endif
-#if ANDROID
-		if (RuntimeFeature.IsMaterial3Enabled)
-		{
-			handlersCollection.AddHandler<Image, ImageHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<Image, ImageHandler>();
-		}
-#else
-		handlersCollection.AddHandler<Image, ImageHandler>();
-#endif
-#if ANDROID
-		if(RuntimeFeature.IsMaterial3Enabled)
-		{
-			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
-		}
-#else
-		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
-#endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
