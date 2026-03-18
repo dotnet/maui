@@ -20,6 +20,9 @@ on:
       - 'src/Controls/tests/**'
       - 'src/Core/tests/**'
       - 'src/Essentials/test/**'
+      # Self-trigger: allows testing the workflow from its own PR
+      - '.github/workflows/copilot-evaluate-tests.yml'
+      - '.github/scripts/Post-CopilotComment.ps1'
 
   # Fork PRs: manual trigger via "/evaluate-tests" comment from maintainer
   issue_comment:
@@ -155,7 +158,20 @@ jobs:
       - name: Install Copilot CLI
         run: npm install -g @github/copilot@latest
 
+      - name: Check for Copilot token
+        id: token-check
+        env:
+          HAS_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN != '' }}
+        run: |
+          if [[ "$HAS_TOKEN" != "true" ]]; then
+            echo "::warning::COPILOT_GITHUB_TOKEN secret is not configured. Skipping evaluation."
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run evaluate-pr-tests skill
+        if: steps.token-check.outputs.has_token == 'true'
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
@@ -183,6 +199,14 @@ jobs:
           if [[ ! -s /tmp/copilot-output.txt ]]; then
             echo "⚠️ Copilot CLI produced no output" > /tmp/copilot-output.txt
           fi
+
+      - name: Write token-missing notice
+        if: steps.token-check.outputs.has_token == 'false'
+        run: |
+          echo "⚠️ **COPILOT_GITHUB_TOKEN** secret is not configured." > /tmp/copilot-output.txt
+          echo "" >> /tmp/copilot-output.txt
+          echo "The evaluate-pr-tests workflow requires a fine-grained PAT with **Copilot Requests** permission." >> /tmp/copilot-output.txt
+          echo "Add it as a repository secret named \`COPILOT_GITHUB_TOKEN\` to enable this workflow." >> /tmp/copilot-output.txt
 
       - name: Upload evaluation output
         if: always()
