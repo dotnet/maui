@@ -205,9 +205,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SetCarouselViewPosition(_gotoPosition);
 			}
 
-			await base.ScrollTo(args);
-
-			_gotoPosition = -1;
+			try
+			{
+				await base.ScrollTo(args);
+			}
+			finally
+			{
+				// Only reset if this call still owns _gotoPosition — a concurrent animated
+				// ScrollTo may have already replaced it with a different target.
+				if (_gotoPosition == args.Index)
+					_gotoPosition = -1;
+			}
 		}
 
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
@@ -518,7 +526,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-
 			// Ignore scroll events that fire before the initial position is established.
 			// On Windows, WinUI can fire ViewChanged during initial layout with an incorrect
 			// center index, which would incorrectly override the intended initial position.
