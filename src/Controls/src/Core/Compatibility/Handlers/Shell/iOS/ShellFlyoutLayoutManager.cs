@@ -212,6 +212,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ScrollView is null)
 				return;
 
+			var offset = ScrollView.ContentInset.Top;
+
+			if (HeaderView is not null)
+			{
+				if (double.IsNaN(MeasuredHeaderViewHeightWithNoMargin))
+				{
+					return;
+				}
+
+				// We take the measured header height without margin, since the margin is already accounted for
+				// in the positioning of the scroll view itself.
+				ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
+			}
+			else
+			{
+				ScrollView.ContentInset = new UIEdgeInsets(UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top, 0, 0, 0);
+			}
+
+			offset -= ScrollView.ContentInset.Top;
+
+			var yContentOffset = ScrollView.ContentOffset.Y;
+			ScrollView.ContentOffset =
+					new CGPoint(ScrollView.ContentOffset.X, yContentOffset + offset);
+
 			UpdateVerticalScrollMode();
 		}
 
@@ -302,8 +326,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (HeaderView is not null)
 			{
-				contentY += HeaderView.Frame.Height;
-				contentHeight -= HeaderView.Frame.Height;
+				if (ScrollView is null)
+				{
+					// The margin is already managed by MAUI's layout system, so we don't need to add it here
+					// and we just offset the content by the header's height.
+					contentY += HeaderView.Frame.Height;
+					contentHeight -= HeaderView.Frame.Height;
+				}
+				else
+				{
+					// For ScrollView, we should not offset by the full header height since the scroll view
+					// overlaps with the header (FlyoutHeaderBehavior.Scroll / CollapseOnScroll parallax).
+					// The top content inset is managed by SetHeaderContentInset; only account for margin here.
+					var marginOffset = (nfloat)HeaderView.View.Margin.VerticalThickness;
+					contentY += marginOffset;
+					contentHeight -= marginOffset;
+				}
 			}
 
 			var contentFrame = new Rect(parentBounds.X, contentY, parentBounds.Width, contentHeight);
