@@ -356,8 +356,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					contentY += marginOffset;
 					contentHeight -= marginOffset;
 				}
-				contentY += HeaderView.Frame.Height;
-				contentHeight -= HeaderView.Frame.Height;
 			}
 
 			var contentFrame = new Rect(parentBounds.X, contentY, parentBounds.Width, contentHeight);
