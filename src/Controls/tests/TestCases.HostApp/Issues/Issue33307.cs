@@ -21,8 +21,6 @@ public class Issue33307ContentPage : ContentPage
 	{
 		mainData = new Issue33307ClassA();
 
-		Title = "MainPage";
-
 		var stackLayout = new HorizontalStackLayout
 		{
 			Spacing = 100,
