@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 26158, "SelectionLength property not applied when an entry is focused", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 26158, "SelectionLength property not applied when an entry is focused", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Issue26158 : ContentPage
 	{
 		public Issue26158()
