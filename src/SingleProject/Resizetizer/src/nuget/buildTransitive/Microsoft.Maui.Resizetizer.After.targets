@@ -76,7 +76,6 @@
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
-        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
         <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
 
         <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
@@ -401,9 +400,7 @@
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"
-        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
-        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
-        Outputs="$(_MauiSplashStampFile)">
+        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
@@ -509,13 +506,9 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
-        <!-- Stamp file for Outputs -->
-        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
-        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
-
+        <!-- Include splash assets as filewrites so they don't get rm'd -->
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
-            <FileWrites Include="$(_MauiSplashStampFile)" />
         </ItemGroup>
 
     </Target>
