@@ -75,7 +75,6 @@
         <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
-        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
         <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
         <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
@@ -175,6 +174,11 @@
             $(ProcessMauiFontsAfterTargets);
             ResizetizeCollectItems;
         </ProcessMauiFontsAfterTargets>
+
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            _ComputeAndroidAssetsPaths;
+        </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
     <!-- Windows App SDK -->
@@ -518,8 +522,6 @@
 
     <Target Name="ProcessMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
-        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
-        Outputs="$(_MauiFontStampFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
         BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
         DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
@@ -595,12 +597,8 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
         </ItemGroup>
 
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
-
-        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
+        <!-- Include our fonts as filewrites so they don't get rm'd -->
         <ItemGroup>
-            <FileWrites Include="$(_MauiFontStampFile)" />
             <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
     </Target>
