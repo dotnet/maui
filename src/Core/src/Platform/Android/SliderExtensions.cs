@@ -107,8 +107,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: Make this public in NET 11.
-		internal static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
+		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
 			if (context is null)
