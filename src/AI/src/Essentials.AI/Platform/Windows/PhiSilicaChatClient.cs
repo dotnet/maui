@@ -88,10 +88,9 @@ public sealed class PhiSilicaChatClient : IChatClient
 
 		var modelOptions = ConvertToLanguageModelOptions(options);
 
-		// Use the shared StreamingResponseHandler + PlainTextStreamChunker
-		// to bridge the event-based Windows AI API into an async enumerable.
-		var handler = new StreamingResponseHandler(new PlainTextStreamChunker());
-		var cumulativeText = new System.Text.StringBuilder();
+		// Use StreamingResponseHandler without a chunker — the Windows AI API
+		// already provides incremental deltas via the Progress callback.
+		var handler = new StreamingResponseHandler();
 
 		var operation = model.GenerateResponseAsync(context, prompt, modelOptions);
 
@@ -99,8 +98,7 @@ public sealed class PhiSilicaChatClient : IChatClient
 		{
 			if (!string.IsNullOrEmpty(progress))
 			{
-				cumulativeText.Append(progress);
-				handler.ProcessContent(cumulativeText.ToString());
+				handler.ProcessContent(progress);
 			}
 		};
 

@@ -60,7 +60,6 @@ public static class MauiProgram
 
 		// Register Services
 		builder.Services.AddSingleton<DataService>();
-		builder.Services.AddSingleton<LanguagePreferenceService>();
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
@@ -168,6 +167,7 @@ public static class MauiProgram
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
 				.AsBuilder()
+				.Use(cc => new PromptBasedSchemaClient(cc))
 				.UseLogging(loggerFactory)
 				.Build();
 		});
@@ -179,6 +179,7 @@ public static class MauiProgram
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
 				.AsBuilder()
+				.Use(cc => new PromptBasedSchemaClient(cc))
 				.UseLogging(loggerFactory)
 				.Build();
 		});
@@ -190,8 +191,9 @@ public static class MauiProgram
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
 				.AsBuilder()
-				.UseLogging(loggerFactory)
+				.Use(cc => new PromptBasedSchemaClient(cc))
 				.Use(cc => new BufferedChatClient(cc))
+				.UseLogging(loggerFactory)
 				.Build();
 		});
 

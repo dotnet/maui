@@ -46,17 +46,21 @@ public sealed class AppContentIndexerSearchService : ISemanticSearchService, IDi
 		// Run on background thread — GetNextMatches can block while the indexer processes
 		return await Task.Run(() =>
 		{
+			// Request extra matches since multiple regions can match per item
 			var textQuery = indexer.CreateTextQuery(query);
-			var matches = textQuery.GetNextMatches(maxResults);
+			var matches = textQuery.GetNextMatches(maxResults * 4);
 
-			var results = new List<SemanticSearchResult>();
-			for (int i = 0; i < matches.Count; i++)
-			{
-				var score = (float)(matches.Count - i) / matches.Count;
-				results.Add(new SemanticSearchResult(matches[i].ContentId, score));
-			}
-
-			return (IReadOnlyList<SemanticSearchResult>)results;
+			// Group by ContentId, take the best rank (lowest index = highest relevance)
+			return matches
+				.Select((m, i) => (Id: m.ContentId, Rank: i))
+				.GroupBy(m => m.Id)
+				.Select(g => new SemanticSearchResult(
+					g.Key,
+					// Best rank score + small boost for multiple matches
+					(float)(matches.Count - g.Min(m => m.Rank)) / matches.Count + g.Count() * 0.01f))
+				.OrderByDescending(r => r.Score)
+				.Take(maxResults)
+				.ToList() as IReadOnlyList<SemanticSearchResult>;
 		}, cancellationToken);
 	}
 
