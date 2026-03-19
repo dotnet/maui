@@ -22,11 +22,12 @@ public class Issue31145 : ContentPage
 
 		indicatorView.IndicatorTemplate = new DataTemplate(() =>
 		{
-			return new Label
+			return new BoxView
 			{
-				Text = "\uf30c",
-				FontFamily = "ionicons",
-				FontSize = 12
+				WidthRequest = 10,
+				HeightRequest = 10,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
 			};
 		});
 
