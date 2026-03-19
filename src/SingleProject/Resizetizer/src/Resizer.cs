@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Resizetizer
 		public SKSize? BaseSize => Info.BaseSize;
 
 		protected SkiaSharpTools Tools =>
-			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Logger);
+			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Info.FilterQuality, Logger);
 
 		public string GetRasterFileDestination(DpiPath dpi, bool includeIntermediate = true, bool includeScale = true)
 			=> GetRasterFileDestination(Info, dpi, includeIntermediate ? IntermediateOutputPath : null, includeScale);

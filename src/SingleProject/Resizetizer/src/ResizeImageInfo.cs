@@ -10,6 +10,10 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
+		public static readonly SKFilterQuality DefaultFilterQuality = SKFilterQuality.High;
+#pragma warning restore CS0618 // Type or member is obsolete
+
 		public string? ItemSpec { get; set; }
 
 		public string? Alias { get; set; }
@@ -53,6 +57,10 @@ namespace Microsoft.Maui.Resizetizer
 		public string? MonochromeFilename { get; set; }
 
 		public bool MonochromeIsVector => IsVectorFilename(MonochromeFilename);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+		public SKFilterQuality FilterQuality { get; set; } = DefaultFilterQuality;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		private static bool IsVectorFilename(string? filename)
 			=> IsVectorExtension(Path.GetExtension(filename));
@@ -117,6 +125,11 @@ namespace Microsoft.Maui.Resizetizer
 
 			if (float.TryParse(image.GetMetadata("ForegroundScale"), NumberStyles.Number, CultureInfo.InvariantCulture, out var fsc))
 				info.ForegroundScale = fsc;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (Enum.TryParse<SKFilterQuality>(image.GetMetadata("FilterQuality"), out var filterQuality))
+				info.FilterQuality = filterQuality;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var fgFile = image.GetMetadata("ForegroundFile");
 			if (!string.IsNullOrEmpty(fgFile))

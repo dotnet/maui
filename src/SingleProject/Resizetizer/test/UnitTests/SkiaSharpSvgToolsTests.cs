@@ -333,5 +333,65 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal((SKColor)0xffe26b00, pixmap.GetPixelColor(20, 34));
 			}
 		}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+		public class FilterQualityTests : IDisposable
+		{
+			readonly string DestinationFilename;
+			readonly TestLogger Logger;
+
+			public FilterQualityTests()
+			{
+				DestinationFilename = Path.GetTempFileName();
+				Logger = new TestLogger();
+			}
+
+			public void Dispose()
+			{
+				File.Delete(DestinationFilename);
+			}
+
+			[Fact]
+			public void DefaultFilterQualityIsHigh()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(SKFilterQuality.High, tools.Paint.FilterQuality);
+			}
+
+			[Theory]
+			[InlineData(SKFilterQuality.None)]
+			[InlineData(SKFilterQuality.Low)]
+			[InlineData(SKFilterQuality.Medium)]
+			[InlineData(SKFilterQuality.High)]
+			public void FilterQualityIsAppliedFromInfo(SKFilterQuality quality)
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.FilterQuality = quality;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(quality, tools.Paint.FilterQuality);
+			}
+
+			[Fact]
+			public void ResizeWithNoneFilterQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.FilterQuality = SKFilterQuality.None;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.True(resultImage.Width > 0);
+				Assert.True(resultImage.Height > 0);
+			}
+		}
+#pragma warning restore CS0618 // Type or member is obsolete
 	}
 }
