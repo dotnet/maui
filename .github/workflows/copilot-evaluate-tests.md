@@ -37,6 +37,7 @@ engine:
 safe-outputs:
   add-comment:
     max: 1
+    target: "*"
   noop:
   messages:
     footer: "> 🧪 *Test evaluation by [{workflow_name}]({run_url})*"
@@ -103,6 +104,8 @@ Follow SKILL.md to evaluate:
 ### Step 4: Post Results
 
 Call `add_comment` with your structured evaluation report. Use the exact output format specified in SKILL.md, starting with `## PR Test Evaluation Report`.
+
+**Important:** Always pass the `item_number` parameter explicitly with the PR number when calling `add_comment`. This ensures the comment is posted to the correct PR even when triggered via `workflow_dispatch`.
 
 If the PR has **no test files at all**, post a short comment noting that no tests were added and skip the remaining criteria.
 
