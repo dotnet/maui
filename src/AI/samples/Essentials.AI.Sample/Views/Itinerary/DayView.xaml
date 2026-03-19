@@ -9,7 +9,7 @@
     x:DataType="viewModels:DayPlanViewModel">
 
     <Border Padding="0" StrokeShape="RoundRectangle 16" StrokeThickness="0"
-            BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray900}}"
+            Background="{AppThemeBinding Light=White, Dark={StaticResource Gray900}}"
             Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.2}">
         <VerticalStackLayout Spacing="0">
             <Border HeightRequest="300" StrokeShape="RoundRectangle 12" StrokeThickness="0" Margin="4">

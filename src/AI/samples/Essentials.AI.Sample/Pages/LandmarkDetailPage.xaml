@@ -7,21 +7,22 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
     x:Class="Maui.Controls.Sample.Pages.LandmarkDetailPage"
     x:DataType="viewModels:LandmarkDetailViewModel"
+    SafeAreaEdges="None"
     Shell.NavBarIsVisible="False"
     Title="{Binding Landmark.Name}">
 
-    <Grid>
+    <Grid SafeAreaEdges="None">
         <!-- Full-bleed Header Image (fixed behind scroll) -->
         <Image
             VerticalOptions="Start" HeightRequest="380" Aspect="AspectFill"
             Source="{Binding Landmark.BackgroundImageName, StringFormat='Images/Backgrounds/{0}.jpg'}" />
 
-        <!-- Fixed gradient at bottom of image (covers pull-down edge) -->
+        <!-- Fixed fade overlay at bottom of image (hides image edge on overscroll) -->
         <BoxView VerticalOptions="Start" HeightRequest="380">
             <BoxView.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="Transparent" Offset="0.6" />
-                    <GradientStop Color="{AppThemeBinding Light=#60FFFFFF, Dark=#601C1C1E}" Offset="1.0" />
+                    <GradientStop Color="{AppThemeBinding Light=#00FFFFFF, Dark=#001C1C1E}" Offset="0.5" />
+                    <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="1.0" />
                 </LinearGradientBrush>
             </BoxView.Background>
         </BoxView>
@@ -30,28 +31,26 @@
         <ScrollView>
             <VerticalStackLayout>
 
-                <!-- Spacer to show image behind -->
-                <BoxView HeightRequest="220" Color="Transparent" />
-
-                <!-- Gradient that scrolls over image -->
-                <BoxView HeightRequest="160">
+                <!-- Gradient that scrolls over image into content -->
+                <BoxView HeightRequest="120" Margin="0,180,0,0">
                     <BoxView.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="Transparent" Offset="0.0" />
+                            <GradientStop Color="{AppThemeBinding Light=#00FFFFFF, Dark=#001C1C1E}" Offset="0.0" />
                             <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="1.0" />
                         </LinearGradientBrush>
                     </BoxView.Background>
                 </BoxView>
 
-                <!-- Content area with solid background -->
+                <!-- Content area -->
                 <VerticalStackLayout
                     Spacing="16"
-                    Padding="20,0,20,100"
-                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}">
+                    Padding="20,0,20,0"
+                    Background="{AppThemeBinding Light=White, Dark=#1C1C1E}">
 
                     <!-- Name & Continent -->
                     <Label
                         Text="{Binding Landmark.Name}"
+                        Margin="0,-80,0,0"
                         FontSize="28"
                         FontAttributes="Bold" />
                     <Label
@@ -72,7 +71,7 @@
                                     Margin="0,0,6,6"
                                     StrokeShape="RoundRectangle 12"
                                     StrokeThickness="0"
-                                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                                    Background="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
                                     <Label
                                         Text="{Binding ., StringFormat='#{0}'}"
                                         FontSize="12"
@@ -94,7 +93,7 @@
                         Padding="16"
                         StrokeShape="RoundRectangle 12"
                         StrokeThickness="0"
-                        BackgroundColor="{AppThemeBinding Light=#F0F4FF, Dark=#1A1A2E}">
+                        Background="{AppThemeBinding Light=#F0F4FF, Dark=#1A1A2E}">
                         <Grid>
                             <!-- Loading state -->
                             <HorizontalStackLayout
@@ -140,22 +139,30 @@
                         Margin="0,8,0,0"
                         IsVisible="{Binding SimilarDestinations.Count, Converter={StaticResource IsNotNullConverter}}" />
 
-                    <views:LandmarkHorizontalListView
-                        Landmarks="{Binding SimilarDestinations}"
-                        LandmarkTapped="OnSimilarLandmarkTapped"
-                        IsVisible="{Binding SimilarDestinations.Count, Converter={StaticResource IsNotNullConverter}}" />
-
                 </VerticalStackLayout>
+
+                <!-- Similar destinations — outside padded content for edge-to-edge scroll -->
+                <views:LandmarkHorizontalListView
+                    Landmarks="{Binding SimilarDestinations}"
+                    LandmarkTapped="OnSimilarLandmarkTapped"
+                    Background="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                    IsVisible="{Binding SimilarDestinations.Count, Converter={StaticResource IsNotNullConverter}}" />
+
+                <!-- Bottom spacer with matching background -->
+                <BoxView HeightRequest="100" Background="{AppThemeBinding Light=White, Dark=#1C1C1E}" />
+
             </VerticalStackLayout>
         </ScrollView>
 
         <!-- Floating Back Button -->
-        <Button
-            Text="←" Clicked="OnBackClicked"
-            VerticalOptions="Start" HorizontalOptions="Start" Margin="20,20,0,0"
-            HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
-            FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
-            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+        <Grid SafeAreaEdges="Container" VerticalOptions="Start" HorizontalOptions="Start">
+            <Button
+                Text="←" Clicked="OnBackClicked"
+                VerticalOptions="Start" HorizontalOptions="Start" Margin="20,8,0,0"
+                HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
+                FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+                TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+        </Grid>
 
         <!-- Bottom Bar: Language + Plan Trip -->
         <Grid
@@ -163,7 +170,7 @@
             Padding="20,12"
             ColumnDefinitions="Auto,*"
             ColumnSpacing="12"
-            BackgroundColor="{AppThemeBinding Light=#F0FFFFFF, Dark=#F01C1C1E}">
+            Background="{AppThemeBinding Light=#F0FFFFFF, Dark=#F01C1C1E}">
 
             <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                 <Label Text="🌐" FontSize="18" VerticalOptions="Center" />
@@ -181,7 +188,7 @@
                 FontSize="16"
                 Padding="16,12"
                 CornerRadius="12"
-                BackgroundColor="{StaticResource Primary}"
+                Background="{StaticResource Primary}"
                 TextColor="White"
                 Clicked="OnPlanTripClicked" />
         </Grid>

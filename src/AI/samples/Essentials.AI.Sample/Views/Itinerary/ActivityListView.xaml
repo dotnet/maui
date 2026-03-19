@@ -17,7 +17,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" StrokeThickness="0"
-                            BackgroundColor="{StaticResource Primary}" VerticalOptions="Start">
+                            Background="{StaticResource Primary}" VerticalOptions="Start">
                         <Label Text="●" FontSize="16" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                     

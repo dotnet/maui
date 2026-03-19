@@ -16,6 +16,7 @@ public partial class LandmarkDetailViewModel(
 	LanguagePreferenceService languagePreference) : ObservableObject
 {
 	CancellationTokenSource _cts = new();
+	bool _initialized;
 
 	[ObservableProperty]
 	public partial Landmark Landmark { get; set; }
@@ -45,9 +46,10 @@ public partial class LandmarkDetailViewModel(
 
 	public async Task InitializeAsync()
 	{
-		if (Landmark is null)
+		if (Landmark is null || _initialized)
 			return;
 
+		_initialized = true;
 		SelectedLanguage = languagePreference.SelectedLanguage;
 		_cts = new CancellationTokenSource();
 		var ct = _cts.Token;

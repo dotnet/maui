@@ -9,9 +9,11 @@ public record ContinentGroup(string Name, List<Landmark> Landmarks);
 
 public partial class LandmarksViewModel(
 	DataService dataService,
-	LanguagePreferenceService languagePreference) : ObservableObject
+	LanguagePreferenceService languagePreference,
+	IDispatcher dispatcher) : ObservableObject
 {
 	CancellationTokenSource? _searchCts;
+	Timer? _debounceTimer;
 
 	[ObservableProperty]
 	public partial Landmark? FeaturedLandmark { get; private set; }
@@ -32,7 +34,6 @@ public partial class LandmarksViewModel(
 	public partial string SelectedLanguage { get; set; } = "English";
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(IsSearching))]
 	public partial string? SearchQuery { get; set; }
 
 	public bool IsSearching => !string.IsNullOrWhiteSpace(SearchQuery);
@@ -54,7 +55,9 @@ public partial class LandmarksViewModel(
 
 	partial void OnSearchQueryChanged(string? value)
 	{
-		_ = FilterLandmarksAsync(value);
+		OnPropertyChanged(nameof(IsSearching));
+		_debounceTimer?.Dispose();
+		_debounceTimer = new Timer(_ => dispatcher.Dispatch(() => _ = FilterLandmarksAsync(value)), null, 300, Timeout.Infinite);
 	}
 
 	public async Task InitializeAsync()
@@ -80,9 +83,6 @@ public partial class LandmarksViewModel(
 				ContinentGroups.Add(group);
 			return;
 		}
-
-		try { await Task.Delay(300, ct); }
-		catch (OperationCanceledException) { return; }
 
 		try
 		{
@@ -153,7 +153,7 @@ public partial class LandmarksViewModel(
 
 	private void OnEmbeddingProgress(int current, int total)
 	{
-		MainThread.BeginInvokeOnMainThread(() =>
+		dispatcher.Dispatch(() =>
 		{
 			EmbeddingProgress = (double)current / total;
 			EmbeddingStatusText = $"Generating search embeddings… {current}/{total}";

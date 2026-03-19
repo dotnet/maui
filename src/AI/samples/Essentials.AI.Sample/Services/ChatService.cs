@@ -29,6 +29,7 @@ public class ChatService
 	readonly WeatherService _weatherService;
 	readonly TaggingService _taggingService;
 	readonly LanguagePreferenceService _languageService;
+	readonly IDispatcher _dispatcher;
 	readonly IList<AITool> _tools;
 
 	public event Action<Landmark>? NavigateToTripRequested;
@@ -38,12 +39,14 @@ public class ChatService
 		DataService dataService,
 		WeatherService weatherService,
 		TaggingService taggingService,
-		LanguagePreferenceService languageService)
+		LanguagePreferenceService languageService,
+		IDispatcher dispatcher)
 	{
 		_dataService = dataService;
 		_weatherService = weatherService;
 		_taggingService = taggingService;
 		_languageService = languageService;
+		_dispatcher = dispatcher;
 
 		_tools =
 		[
@@ -213,7 +216,7 @@ public class ChatService
 		if (landmark is null)
 			return $"Landmark '{landmarkName}' not found. Try searching with search_landmarks first.";
 
-		MainThread.BeginInvokeOnMainThread(() => NavigateToTripRequested?.Invoke(landmark));
+		_dispatcher.Dispatch(() => NavigateToTripRequested?.Invoke(landmark));
 		return $"Navigating to trip planner for {landmark.Name}! A multi-day itinerary will be generated for you.";
 	}
 

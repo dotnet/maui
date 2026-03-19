@@ -12,7 +12,7 @@
         <!-- User bubble: right-aligned, blue -->
         <DataTemplate x:Key="UserBubbleTemplate" x:DataType="models:ChatBubbleViewModel">
             <Border
-                BackgroundColor="#512BD4"
+                Background="#512BD4"
                 StrokeThickness="0"
                 StrokeShape="RoundRectangle 16,16,4,16"
                 Padding="14,10"
@@ -32,7 +32,7 @@
         <DataTemplate x:Key="AssistantBubbleTemplate" x:DataType="models:ChatBubbleViewModel">
             <Grid Margin="16,4,60,4" HorizontalOptions="Start" MaximumWidthRequest="400">
                 <Border
-                    BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2D2D2D}"
+                    Background="{AppThemeBinding Light=#F0F0F0, Dark=#2D2D2D}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 16,16,16,4"
                     Padding="14,10">
@@ -59,7 +59,7 @@
                 Stroke="#E6A817"
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 12"
-                BackgroundColor="{AppThemeBinding Light=#FFF8E1, Dark=#3D3520}"
+                Background="{AppThemeBinding Light=#FFF8E1, Dark=#3D3520}"
                 Padding="12,8"
                 Margin="16,4,60,4"
                 HorizontalOptions="Start"
@@ -100,7 +100,7 @@
                 Stroke="#4CAF50"
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 12"
-                BackgroundColor="{AppThemeBinding Light=#E8F5E9, Dark=#1B3D1E}"
+                Background="{AppThemeBinding Light=#E8F5E9, Dark=#1B3D1E}"
                 Padding="12,8"
                 Margin="16,4,60,4"
                 HorizontalOptions="Start"
@@ -161,7 +161,7 @@
             Margin="8"
             StrokeShape="RoundRectangle 20"
             StrokeThickness="0"
-            BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}"
+            Background="{AppThemeBinding Light=White, Dark=#1F1F1F}"
             Shadow="{Shadow Brush=Black, Offset='0,-4', Radius=16, Opacity=0.3}"
             TranslationY="800">
 
@@ -170,7 +170,7 @@
                 <Border
                     Grid.Row="0"
                     StrokeThickness="0"
-                    BackgroundColor="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
+                    Background="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
                     Padding="16,12">
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
                         <Label
@@ -218,7 +218,7 @@
                 <Border
                     Grid.Row="2"
                     StrokeThickness="0"
-                    BackgroundColor="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
+                    Background="{AppThemeBinding Light=#F8F8F8, Dark=#2D2D2D}"
                     Padding="12,8">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <Entry
@@ -236,7 +236,7 @@
                             Text="▶"
                             Command="{Binding SendMessageCommand}"
                             FontSize="16"
-                            BackgroundColor="{StaticResource Primary}"
+                            Background="{StaticResource Primary}"
                             TextColor="White"
                             Padding="12,8"
                             CornerRadius="20"

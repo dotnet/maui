@@ -21,6 +21,19 @@ public partial class LandmarksPage : ContentPage
 		_chatOverlay = new ChatOverlayView();
 		_chatOverlay.Initialize(chatViewModel);
 
+		// Remove native border and focus ring from the search entry
+		SearchEntry.HandlerChanged += (s, _) =>
+		{
+#if MACCATALYST || IOS
+			if (SearchEntry.Handler?.PlatformView is UIKit.UITextField textField)
+			{
+				textField.BorderStyle = UIKit.UITextBorderStyle.None;
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
+					textField.FocusEffect = null;
+			}
+#endif
+		};
+
 		Loaded += async (_, _) => await viewModel.InitializeAsync();
 	}
 

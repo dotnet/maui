@@ -87,7 +87,7 @@ public partial class DataService
 	{
 		await _readyTask;
 
-		var results = await _searchService.SearchAsync("landmarks", query, maxResults);
+		var results = await _searchService!.SearchAsync("landmarks", query, maxResults);
 
 		return results
 			.Select(r => int.TryParse(r.Id, out var id) ? _landmarksById?.GetValueOrDefault(id) : null)
@@ -101,7 +101,7 @@ public partial class DataService
 		await _readyTask;
 
 		var searchQuery = category == PointOfInterestCategory.None ? query : $"{category}: {query}";
-		var results = await _searchService.SearchAsync("pois", searchQuery, maxResults * 2);
+		var results = await _searchService!.SearchAsync("pois", searchQuery, maxResults * 2);
 
 		return results
 			.Select(r => _poisByName?.GetValueOrDefault(r.Id))
