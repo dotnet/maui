@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
+		// Cached once to avoid repeated JNI/type lookups on every accessibility traversal.
+		static readonly string s_radioButtonClassName = Java.Lang.Class.FromType(typeof(global::Android.Widget.RadioButton)).Name;
 		public static void UpdateSemanticNodeInfo(this View platformView, IView virtualView, AccessibilityNodeInfoCompat? info)
 		{
 			if (info == null || virtualView == null)
@@ -92,7 +94,7 @@ namespace Microsoft.Maui.Platform
 
 			if (virtualView is IRadioButton radioButton)
 			{
-				info.ClassName = Java.Lang.Class.FromType(typeof(global::Android.Widget.RadioButton)).Name;
+				info.ClassName = s_radioButtonClassName;
 				info.Checkable = true;
 				info.Checked = radioButton.IsChecked;
 			}

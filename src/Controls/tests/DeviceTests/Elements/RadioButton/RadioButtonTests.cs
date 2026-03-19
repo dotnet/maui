@@ -116,6 +116,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Issue 34322 - Explicit SemanticDescription is not overwritten by content-derived semantics")]
+		public async Task Issue34322_ExplicitSemanticDescriptionNotOverwrittenByContent()
+		{
+			EnsureTemplatedRadioButtonHandlersCreated();
+
+			var radioButton = new RadioButton
+			{
+				ControlTemplate = RadioButton.DefaultTemplate,
+				Content = new VerticalStackLayout
+				{
+					Children =
+					{
+						new Label
+						{
+							Text = "Dog"
+						}
+					}
+				},
+				IsChecked = false,
+			};
+			SemanticProperties.SetDescription(radioButton, "Custom Description");
+
+			await CreateHandlerAndAddToWindow<RadioButtonHandler>(radioButton, _ =>
+			{
+				Assert.Equal("Custom Description", (radioButton as IView).Semantics.Description);
+				return Task.CompletedTask;
+			});
+		}
+
 		void EnsureTemplatedRadioButtonHandlersCreated()
 		{
 			EnsureHandlerCreated(builder =>

@@ -759,8 +759,11 @@ namespace Microsoft.Maui.Controls
 				return contentText;
 			}
 
-			if (Content is IView contentView && TryGetSemanticDescription(contentView, out var semanticDescription))
+			if (Content is IView contentView)
 			{
+				// Don't fall back to ContentAsString() for view-based content — it calls ToString()
+				// on the view and returns a type name rather than meaningful text.
+				TryGetSemanticDescription(contentView, out var semanticDescription);
 				return semanticDescription;
 			}
 
