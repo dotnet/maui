@@ -411,7 +411,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
-
+#if TEST_FAILS_ON_IOS //In iOS 26, related test cases: https://github.com/dotnet/maui/issues/32016
 	[Test, Order(27)]
 	public void VerifyTextWhenMaxLengthSetValue()
 	{
@@ -431,6 +431,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.EnterText("TestEntry", "1234567890");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("123456"));		
 	}
+#endif
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
 	[Test, Order(28)]
