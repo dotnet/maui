@@ -434,12 +434,16 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (Element is View view)
 				{
-					IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>();
+					IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer =>
+						recognizer.NumberOfTapsRequired == 1 &&
+						(recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
 
 					if (tapGestures is null)
 					{
 						return;
 					}
+
+					bool handled = false;
 
 					foreach (var recognizer in tapGestures)
 					{
@@ -447,6 +451,12 @@ namespace Microsoft.Maui.Controls.Platform
 						{
 							return new Point(view.X, view.Y);
 						});
+						handled = true;
+					}
+
+					if (handled)
+					{
+						e.Handled = true;
 					}
 				}
 			}

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Keyboard Focusable: Allows border to receive keyboard focus
-		protected override bool IsKeyboardFocusableCore() => true;
+		protected override bool IsKeyboardFocusableCore() => (Owner as ContentPanel)?.IsTabStop == true;
 
 		// Control View: Contains user-interactive borders (with gesture recognizers)
 		protected override bool IsControlElementCore() => true;
