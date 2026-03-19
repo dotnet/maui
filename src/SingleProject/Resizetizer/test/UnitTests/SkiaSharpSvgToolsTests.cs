@@ -354,13 +354,41 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
-			public void DefaultQualityIsAuto()
+			public void DefaultQualityMapsToLinearMipmapSampling()
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				var tools = new SkiaSharpSvgTools(info, Logger);
 
-				Assert.True(tools.Paint.IsAntialias);
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void BestQualityMapsToMitchellCubicSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Best;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKCubicResampler.Mitchell),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void FastestQualityMapsToNearestNeighborSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Fastest;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+					tools.SamplingOptions);
 			}
 
 			[Fact]
@@ -369,14 +397,32 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				info.Quality = ResizeQuality.Fastest;
+				info.BaseSize = new SKSize(100, 100);
 				var tools = new SkiaSharpSvgTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
 
 				using var resultImage = SKBitmap.Decode(DestinationFilename);
-				Assert.True(resultImage.Width > 0);
-				Assert.True(resultImage.Height > 0);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+
+			[Fact]
+			public void ResizeWithBestQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.Quality = ResizeQuality.Best;
+				info.BaseSize = new SKSize(100, 100);
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
 			}
 
 			[Fact]
@@ -386,11 +432,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				var infoDefault = new ResizeImageInfo();
 				infoDefault.Filename = "images/camera.svg";
+				infoDefault.BaseSize = new SKSize(100, 100);
 				var toolsDefault = new SkiaSharpSvgTools(infoDefault, Logger);
 				toolsDefault.Resize(dpiPath, DestinationFilename);
 
 				var infoAuto = new ResizeImageInfo();
 				infoAuto.Filename = "images/camera.svg";
+				infoAuto.BaseSize = new SKSize(100, 100);
 				infoAuto.Quality = ResizeQuality.Auto;
 				var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
 				toolsAuto.Resize(dpiPath, DestinationFilename2);
@@ -408,6 +456,46 @@ namespace Microsoft.Maui.Resizetizer.Tests
 						Assert.Equal(bmpDefault.GetPixel(x, y), bmpAuto.GetPixel(x, y));
 					}
 				}
+			}
+
+			[Fact]
+			public void DifferentQualitiesProduceDifferentPixelOutput()
+			{
+				// SVG downscaling: Fastest (nearest) vs Auto (bilinear+mipmaps)
+				var dpiPath = new DpiPath("", 1);
+
+				var infoFastest = new ResizeImageInfo();
+				infoFastest.Filename = "images/camera.svg";
+				infoFastest.BaseSize = new SKSize(100, 100);
+				infoFastest.Quality = ResizeQuality.Fastest;
+				var toolsFastest = new SkiaSharpSvgTools(infoFastest, Logger);
+				toolsFastest.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.svg";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
+
+				int differentPixels = 0;
+				for (int y = 0; y < bmpFastest.Height; y++)
+				{
+					for (int x = 0; x < bmpFastest.Width; x++)
+					{
+						if (bmpFastest.GetPixel(x, y) != bmpAuto.GetPixel(x, y))
+							differentPixels++;
+					}
+				}
+
+				Assert.True(differentPixels > 0,
+					"SVG: Fastest and Auto should produce different pixel output when downscaling");
 			}
 
 			[Theory]

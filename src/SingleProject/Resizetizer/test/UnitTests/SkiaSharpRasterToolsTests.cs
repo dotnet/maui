@@ -273,13 +273,54 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
-			public void DefaultQualityIsAuto()
+			public void DefaultQualityMapsToLinearMipmapSampling()
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				var tools = new SkiaSharpRasterTools(info, Logger);
 
-				Assert.True(tools.Paint.IsAntialias);
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void AutoQualityMapsToLinearMipmapSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Auto;
+				var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void BestQualityMapsToMitchellCubicSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Best;
+				var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKCubicResampler.Mitchell),
+					tools.SamplingOptions);
+			}
+
+			[Fact]
+			public void FastestQualityMapsToNearestNeighborSampling()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Fastest;
+				var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(
+					new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+					tools.SamplingOptions);
 			}
 
 			[Fact]
@@ -288,6 +329,23 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.Quality = ResizeQuality.Fastest;
+				info.BaseSize = new SKSize(100, 100);
+				var tools = new SkiaSharpRasterTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+
+			[Fact]
+			public void ResizeWithBestQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.Quality = ResizeQuality.Best;
 				info.BaseSize = new SKSize(100, 100);
 				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
