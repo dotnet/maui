@@ -1306,6 +1306,34 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("Pumpkin");
 	}
 
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFlowDirectionRTLAndKeepScrollOffsetWithGroupedList()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList3);
+		App.Tap(ItemsSourceGroupedList3);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsUpdatingKeepScrollOffset);
+		App.Tap(ItemsUpdatingKeepScrollOffset);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("CollectionViewControl");
+		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement(AddButton);
+		App.Tap(AddButton);
+		App.WaitForNoElement("WaterMelon");
+		App.WaitForElement(AddButton);
+		App.Tap(AddButton);
+		App.WaitForNoElement("Mango");
+		App.WaitForElement("Pumpkin");
+	}
+
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
 //CollectionView Fails to Preserve Scroll Offset with GridItemsLayout Using KeepScrollOffset Issue Link: https://github.com/dotnet/maui/issues/29202
 //CollectionView ItemsLayout does not update while switch from LinearItemsLayout to GridItemsLayout Issue Link: https://github.com/dotnet/maui/issues/27946
