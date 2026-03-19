@@ -75,8 +75,9 @@ namespace Microsoft.Maui.Platform
 		// Cached UICollectionView parent detection to avoid repeated hierarchy checks.
 		bool? _collectionViewDescendant;
 
-		// Cached Window safe area insets for CollectionView children to detect changes.
-		UIEdgeInsets _lastWindowSafeAreaInsets;
+		// Cached Window safe area padding for CollectionView children to detect changes.
+		// Uses SafeAreaPadding with EqualsAtPixelLevel() to absorb sub-pixel animation noise.
+		SafeAreaPadding _lastWindowSafeAreaPadding;
 
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
@@ -316,7 +317,6 @@ namespace Microsoft.Maui.Platform
 				? Window.SafeAreaInsets.ToSafeAreaInsets()
 				: SafeAreaInsets.ToSafeAreaInsets();
 
-
 			// Check if keyboard-aware safe area adjustments are needed
 			if (View is ISafeAreaView2 safeAreaPage && _isKeyboardShowing)
 			{
@@ -548,10 +548,10 @@ namespace Microsoft.Maui.Platform
 			// Force safe area revalidation for CollectionView cells when Window safe area changes.
 			if (View is ISafeAreaView or ISafeAreaView2 && _collectionViewDescendant == true && Window is not null)
 			{
-				var currentWindowInsets = Window.SafeAreaInsets;
-				if (!currentWindowInsets.Equals(_lastWindowSafeAreaInsets))
+				var currentWindowPadding = Window.SafeAreaInsets.ToSafeAreaInsets();
+				if (!currentWindowPadding.EqualsAtPixelLevel(_lastWindowSafeAreaPadding))
 				{
-					_lastWindowSafeAreaInsets = currentWindowInsets;
+					_lastWindowSafeAreaPadding = currentWindowPadding;
 					_safeAreaInvalidated = true;
 					ValidateSafeArea();
 				}
@@ -802,7 +802,7 @@ namespace Microsoft.Maui.Platform
 			_scrollViewDescendant = null;
 			_parentHandlesSafeArea = null;
 			_collectionViewDescendant = null;
-			_lastWindowSafeAreaInsets = UIEdgeInsets.Zero;
+			_lastWindowSafeAreaPadding = SafeAreaPadding.Empty;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
