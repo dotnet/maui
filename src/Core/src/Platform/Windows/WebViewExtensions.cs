@@ -1,5 +1,7 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,6 +19,23 @@ namespace Microsoft.Maui.Platform
 				webView.Source?.Load(webViewDelegate);
 
 				platformWebView.UpdateCanGoBackForward(webView);
+			}
+		}
+
+		internal static void UpdateBackground(this WebView2 platformWebView, IWebView webView)
+		{
+			if (webView.Background is SolidPaint solidPaint)
+			{
+				platformWebView.DefaultBackgroundColor = solidPaint.Color.ToWindowsColor();
+
+				if (platformWebView.CoreWebView2 is not null)
+				{
+					platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Light;
+				}
+			}
+			else if (platformWebView.CoreWebView2 is not null)
+			{
+				platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Auto;
 			}
 		}
 
