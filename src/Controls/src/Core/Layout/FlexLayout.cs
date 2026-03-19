@@ -543,10 +543,15 @@ namespace Microsoft.Maui.Controls
 					else
 					{
 						// Arrange pass, do not ever run a measure here!
+						// When WidthRequest/HeightRequest is explicitly set, the Flex.Item already
+						// has the correct value from EnsureFlexItemPropertiesUpdated(). Return NaN
+						// so layout_item preserves that value instead of overwriting it with a
+						// potentially stale DesiredSize from a previous measure pass. This fixes
+						// dynamic WidthRequest not updating on Android (see #31109).
 						request = child.DesiredSize;
 					}
-					w = (float)request.Width;
-					h = (float)request.Height;
+					w = (!inMeasureMode && !float.IsNaN(it.Width)) ? float.NaN : (float)request.Width;
+					h = (!inMeasureMode && !float.IsNaN(it.Height)) ? float.NaN : (float)request.Height;
 				};
 			}
 
