@@ -196,7 +196,6 @@ stages:
           desc: Controls
           androidApiLevelsExclude: [ 27, 25 ] # Ignore for now API25 since the runs's are not stable
           androidApiLevelsCoreClrExclude: [ 27, 25, 23]
-          # Re-enabled CoreCLR tests for iOS and Catalyst (tracking issue: https://github.com/dotnet/runtime/issues/122219)
           androidConfiguration: 'Debug'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
