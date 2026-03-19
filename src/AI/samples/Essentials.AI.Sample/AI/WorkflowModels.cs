@@ -22,10 +22,10 @@ public record TravelPlanResult(
 /// Result from the Researcher Agent - the best matching destination (for JSON schema).
 /// </summary>
 internal record DestinationMatchResult(
-	[property: DisplayName("dest")]
+	[property: JsonPropertyName("dest")]
 	[property: Description("The exact name of the best matching destination from the available list.")]
 	string MatchedDestinationName,
-	[property: DisplayName("desc")]
+	[property: JsonPropertyName("desc")]
 	[property: Description("A brief description of the matched destination, based on the information provided in the additional context.")]
 	string MatchedDestinationDescription);
 
