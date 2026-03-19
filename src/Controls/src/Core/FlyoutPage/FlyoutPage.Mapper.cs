@@ -58,10 +58,7 @@ namespace Microsoft.Maui.Controls
 		{
 			{
 				var collapsedPaneWidth = PlatformConfiguration.WindowsSpecific.FlyoutPage.GetCollapsedPaneWidth(bindable);
-				if (collapsedPaneWidth > 0)
-				{
-					navigationView.CompactPaneLength = collapsedPaneWidth;
-				}
+				navigationView.CompactPaneLength = collapsedPaneWidth;
 			}
 		}
 	}
