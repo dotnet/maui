@@ -8,7 +8,7 @@ public class Issue34210 : ContentPage
 		var swipeItem = new SwipeItem
 		{
 			Text = "Action",
-			BackgroundColor = Colors.Red,
+			BackgroundColor = Colors.Blue,
 			IconImageSource = new FontImageSource
 			{
 				FontFamily = "FA",

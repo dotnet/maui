@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // Cannot open programatically a SwipeView on Windows.
+#if TEST_FAILS_ON_WINDOWS // Cannot open programmatically a SwipeView on Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
