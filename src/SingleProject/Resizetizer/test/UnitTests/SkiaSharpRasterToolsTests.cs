@@ -253,14 +253,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public class FilterQualityTests : IDisposable
+		public class ResizeQualityTests : IDisposable
 		{
 			readonly string DestinationFilename;
 			readonly string DestinationFilename2;
 			readonly TestLogger Logger;
 
-			public FilterQualityTests()
+			public ResizeQualityTests()
 			{
 				DestinationFilename = Path.GetTempFileName();
 				DestinationFilename2 = Path.GetTempFileName();
@@ -274,36 +273,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
-			public void DefaultFilterQualityIsHigh()
+			public void DefaultQualityIsAuto()
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				var tools = new SkiaSharpRasterTools(info, Logger);
 
-				Assert.Equal(SKFilterQuality.High, tools.Paint.FilterQuality);
-			}
-
-			[Theory]
-			[InlineData(SKFilterQuality.None)]
-			[InlineData(SKFilterQuality.Low)]
-			[InlineData(SKFilterQuality.Medium)]
-			[InlineData(SKFilterQuality.High)]
-			public void FilterQualityIsAppliedFromInfo(SKFilterQuality quality)
-			{
-				var info = new ResizeImageInfo();
-				info.Filename = "images/camera.png";
-				info.FilterQuality = quality;
-				var tools = new SkiaSharpRasterTools(info, Logger);
-
-				Assert.Equal(quality, tools.Paint.FilterQuality);
+				Assert.True(tools.Paint.IsAntialias);
 			}
 
 			[Fact]
-			public void ResizeWithNoneFilterQualityProducesValidImage()
+			public void ResizeWithFastestQualityProducesValidImage()
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				info.FilterQuality = SKFilterQuality.None;
+				info.Quality = ResizeQuality.Fastest;
 				info.BaseSize = new SKSize(100, 100);
 				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
@@ -316,9 +300,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
-			public void DefaultFilterQualityProducesIdenticalOutputToHardcodedHigh()
+			public void DefaultQualityProducesIdenticalOutputToExplicitAuto()
 			{
-				// Resize with default (should be High)
+				// Resize with default (no Quality set)
 				var infoDefault = new ResizeImageInfo();
 				infoDefault.Filename = "images/camera.png";
 				infoDefault.BaseSize = new SKSize(200, 200);
@@ -326,85 +310,82 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var dpiPath = new DpiPath("", 1);
 				toolsDefault.Resize(dpiPath, DestinationFilename);
 
-				// Resize with explicit High
-				var infoHigh = new ResizeImageInfo();
-				infoHigh.Filename = "images/camera.png";
-				infoHigh.BaseSize = new SKSize(200, 200);
-				infoHigh.FilterQuality = SKFilterQuality.High;
-				var toolsHigh = new SkiaSharpRasterTools(infoHigh, Logger);
-				toolsHigh.Resize(dpiPath, DestinationFilename2);
+				// Resize with explicit Auto
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.png";
+				infoAuto.BaseSize = new SKSize(200, 200);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpRasterTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
 
 				// Pixel-by-pixel comparison: must be identical
 				using var bmpDefault = SKBitmap.Decode(DestinationFilename);
-				using var bmpHigh = SKBitmap.Decode(DestinationFilename2);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
 
-				Assert.Equal(bmpDefault.Width, bmpHigh.Width);
-				Assert.Equal(bmpDefault.Height, bmpHigh.Height);
+				Assert.Equal(bmpDefault.Width, bmpAuto.Width);
+				Assert.Equal(bmpDefault.Height, bmpAuto.Height);
 
 				for (int y = 0; y < bmpDefault.Height; y++)
 				{
 					for (int x = 0; x < bmpDefault.Width; x++)
 					{
-						Assert.Equal(bmpDefault.GetPixel(x, y), bmpHigh.GetPixel(x, y));
+						Assert.Equal(bmpDefault.GetPixel(x, y), bmpAuto.GetPixel(x, y));
 					}
 				}
 			}
 
 			[Fact]
-			public void DifferentFilterQualitiesProduceDifferentPixelOutput()
+			public void DifferentQualitiesProduceDifferentPixelOutput()
 			{
-				// When downscaling a large image, None (nearest neighbor) vs High (bicubic)
+				// When downscaling, Fastest (nearest neighbor) vs Auto (bilinear+mipmaps)
 				// should produce measurably different pixel data
 				var dpiPath = new DpiPath("", 1);
 
-				var infoNone = new ResizeImageInfo();
-				infoNone.Filename = "images/camera.png";
-				infoNone.BaseSize = new SKSize(100, 100);
-				infoNone.FilterQuality = SKFilterQuality.None;
-				var toolsNone = new SkiaSharpRasterTools(infoNone, Logger);
-				toolsNone.Resize(dpiPath, DestinationFilename);
+				var infoFastest = new ResizeImageInfo();
+				infoFastest.Filename = "images/camera.png";
+				infoFastest.BaseSize = new SKSize(100, 100);
+				infoFastest.Quality = ResizeQuality.Fastest;
+				var toolsFastest = new SkiaSharpRasterTools(infoFastest, Logger);
+				toolsFastest.Resize(dpiPath, DestinationFilename);
 
-				var infoHigh = new ResizeImageInfo();
-				infoHigh.Filename = "images/camera.png";
-				infoHigh.BaseSize = new SKSize(100, 100);
-				infoHigh.FilterQuality = SKFilterQuality.High;
-				var toolsHigh = new SkiaSharpRasterTools(infoHigh, Logger);
-				toolsHigh.Resize(dpiPath, DestinationFilename2);
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.png";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpRasterTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
 
-				using var bmpNone = SKBitmap.Decode(DestinationFilename);
-				using var bmpHigh = SKBitmap.Decode(DestinationFilename2);
+				using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
 
-				// Same dimensions
-				Assert.Equal(bmpNone.Width, bmpHigh.Width);
-				Assert.Equal(bmpNone.Height, bmpHigh.Height);
+				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
 
-				// Count pixels that differ between None and High quality
 				int differentPixels = 0;
-				for (int y = 0; y < bmpNone.Height; y++)
+				for (int y = 0; y < bmpFastest.Height; y++)
 				{
-					for (int x = 0; x < bmpNone.Width; x++)
+					for (int x = 0; x < bmpFastest.Width; x++)
 					{
-						if (bmpNone.GetPixel(x, y) != bmpHigh.GetPixel(x, y))
+						if (bmpFastest.GetPixel(x, y) != bmpAuto.GetPixel(x, y))
 							differentPixels++;
 					}
 				}
 
-				// The outputs MUST differ - this proves FilterQuality actually affects rendering
 				Assert.True(differentPixels > 0,
-					"FilterQuality.None and FilterQuality.High should produce different pixel output when downscaling");
+					"Fastest and Auto should produce different pixel output when downscaling");
 			}
 
 			[Theory]
-			[InlineData(SKFilterQuality.None)]
-			[InlineData(SKFilterQuality.Low)]
-			[InlineData(SKFilterQuality.Medium)]
-			[InlineData(SKFilterQuality.High)]
-			public void AllFilterQualitiesProduceCorrectlySizedOutput(SKFilterQuality quality)
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void AllQualitiesProduceCorrectlySizedOutput(string qualityName)
 			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.BaseSize = new SKSize(256, 256);
-				info.FilterQuality = quality;
+				info.Quality = quality;
 				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -415,6 +396,5 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(256, resultImage.Height);
 			}
 		}
-#pragma warning restore CS0618 // Type or member is obsolete
 	}
 }

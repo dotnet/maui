@@ -9,14 +9,12 @@ namespace Microsoft.Maui.Resizetizer
 		SKImage img;
 
 		public SkiaSharpRasterTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.FilterQuality, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.Quality, logger)
 		{
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public SkiaSharpRasterTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality filterQuality, ILogger logger)
-#pragma warning restore CS0618 // Type or member is obsolete
-			: base(filename, baseSize, backgroundColor, tintColor, filterQuality, logger)
+		public SkiaSharpRasterTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
+			: base(filename, baseSize, backgroundColor, tintColor, quality, logger)
 		{
 			var sw = new Stopwatch();
 			sw.Start();

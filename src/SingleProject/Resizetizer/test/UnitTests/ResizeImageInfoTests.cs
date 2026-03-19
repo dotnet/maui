@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Utilities;
-using SkiaSharp;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
@@ -60,77 +60,75 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public class FilterQualityTests
+		public class ResizeQualityTests
 		{
 			[Fact]
-			public void DefaultFilterQualityIsHigh()
+			public void DefaultQualityIsAuto()
 			{
 				var info = new ResizeImageInfo();
-				Assert.Equal(SKFilterQuality.High, info.FilterQuality);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 
 			[Fact]
-			public void DefaultFilterQualityConstantIsHigh()
+			public void DefaultQualityConstantIsAuto()
 			{
-				Assert.Equal(SKFilterQuality.High, ResizeImageInfo.DefaultFilterQuality);
+				Assert.Equal(ResizeQuality.Auto, ResizeImageInfo.DefaultResizeQuality);
 			}
 
 			[Theory]
-			[InlineData(SKFilterQuality.None)]
-			[InlineData(SKFilterQuality.Low)]
-			[InlineData(SKFilterQuality.Medium)]
-			[InlineData(SKFilterQuality.High)]
-			public void FilterQualityCanBeSet(SKFilterQuality quality)
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void QualityCanBeSet(string qualityName)
 			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
 				var info = new ResizeImageInfo
 				{
-					FilterQuality = quality
+					Quality = quality
 				};
 
-				Assert.Equal(quality, info.FilterQuality);
+				Assert.Equal(quality, info.Quality);
 			}
 
 			[Theory]
-			[InlineData("None", SKFilterQuality.None)]
-			[InlineData("Low", SKFilterQuality.Low)]
-			[InlineData("Medium", SKFilterQuality.Medium)]
-			[InlineData("High", SKFilterQuality.High)]
-			public void FilterQualityParsedFromTaskItem(string metadataValue, SKFilterQuality expected)
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void QualityParsedFromTaskItem(string metadataValue)
 			{
+				var expected = Enum.Parse<ResizeQuality>(metadataValue);
 				var path = Path.GetFullPath("images/camera.png");
 				var item = new TaskItem(path, new Dictionary<string, string>
 				{
-					["FilterQuality"] = metadataValue
+					["ResizeQuality"] = metadataValue
 				});
 
 				var info = ResizeImageInfo.Parse(item);
-				Assert.Equal(expected, info.FilterQuality);
+				Assert.Equal(expected, info.Quality);
 			}
 
 			[Fact]
-			public void FilterQualityDefaultsToHighWhenNotSpecified()
+			public void QualityDefaultsToAutoWhenNotSpecified()
 			{
 				var path = Path.GetFullPath("images/camera.png");
 				var item = new TaskItem(path);
 
 				var info = ResizeImageInfo.Parse(item);
-				Assert.Equal(SKFilterQuality.High, info.FilterQuality);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 
 			[Fact]
-			public void FilterQualityDefaultsToHighForInvalidValue()
+			public void QualityDefaultsToAutoForInvalidValue()
 			{
 				var path = Path.GetFullPath("images/camera.png");
 				var item = new TaskItem(path, new Dictionary<string, string>
 				{
-					["FilterQuality"] = "InvalidValue"
+					["ResizeQuality"] = "InvalidValue"
 				});
 
 				var info = ResizeImageInfo.Parse(item);
-				Assert.Equal(SKFilterQuality.High, info.FilterQuality);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
 		}
-#pragma warning restore CS0618 // Type or member is obsolete
 	}
 }
