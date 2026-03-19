@@ -129,6 +129,23 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = ResizeImageInfo.Parse(item);
 				Assert.Equal(ResizeQuality.Auto, info.Quality);
 			}
+
+			[Theory]
+			[InlineData("auto")]
+			[InlineData("FASTEST")]
+			[InlineData("best")]
+			public void QualityParsingIsCaseInsensitive(string metadataValue)
+			{
+				var expected = Enum.Parse<ResizeQuality>(metadataValue, ignoreCase: true);
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = metadataValue
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(expected, info.Quality);
+			}
 		}
 	}
 }
