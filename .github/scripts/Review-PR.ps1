@@ -1,64 +1,40 @@
 <#
 .SYNOPSIS
-    Runs a PR review using Copilot CLI and the PR Agent workflow.
+    Runs a PR review using Copilot CLI with skill-based prompts.
 
 .DESCRIPTION
-    This script invokes Copilot CLI to perform a comprehensive 4-phase PR review:
+    Orchestrates a 5-step PR review by invoking Copilot CLI with skill prompts:
     
-    Phase 1: Pre-Flight - Context gathering
-    Phase 2: Gate - Verify tests catch the bug
-    Phase 3: Fix - Multi-model exploration of alternatives
-    Phase 4: Report - Final recommendation
-    
-    The script:
-    - Validates prerequisites (gh CLI, PR exists)
-    - Validates current branch is not protected (main, release/*, net*.0)
-    - Merges the PR into the current branch (for isolated testing)
-    - Creates the state directory
-    - Invokes Copilot CLI with the pr agent
+    Step 0: Branch setup        - Create review branch from main, merge PR squashed
+    Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
+    Step 2: pr-finalize skill   - Verify PR title/description match implementation
+    Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize)
+    Step 4: Apply labels        - Apply agent labels based on review results
+
+    By default, the script checks out main and creates a review branch from it.
+    If squash-merge conflicts, the script posts a comment on the PR and exits.
+    Use -UseCurrentBranch to create the review branch from the current branch instead.
 
 .PARAMETER PRNumber
-    The GitHub PR number to review (e.g., 33687)
+    The GitHub PR number to review
 
 .PARAMETER Platform
-    The platform to use for testing. Default is 'android'.
-    Valid values: android, ios, windows, maccatalyst
+    Platform for testing. Valid: android, ios, windows, maccatalyst
 
-.PARAMETER SkipMerge
-    If specified, skips merging the PR into the current branch (useful if already merged)
-
-.PARAMETER Interactive
-    If specified, starts Copilot in interactive mode with the prompt.
-    Default is non-interactive mode (exits after completion).
+.PARAMETER UseCurrentBranch
+    Create the review branch from the current branch instead of main.
+    By default, the script checks out main before creating the review branch.
 
 .PARAMETER DryRun
-    If specified, shows what would be done without making changes
+    Show what would be done without making changes
 
-.PARAMETER RunFinalize
-    If specified, runs the pr-finalize skill after the PR agent completes
-    to verify PR title/description match the implementation.
-
-.PARAMETER PostSummaryComment
-    If specified, runs the ai-summary-comment skill after all other phases complete
-    to post a combined summary comment on the PR from all phases.
+.PARAMETER LogFile
+    Capture all output via Start-Transcript
 
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
-    Reviews PR #33687 in non-interactive mode (default) using auto-detected platform
-
-.EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -Platform ios -SkipMerge
-    Reviews PR #33687 on iOS without merging (assumes already merged)
-
-.EXAMPLE
-    .\Review-PR.ps1 -PRNumber 33687 -Interactive
-    Reviews PR #33687 in interactive mode (stays open for follow-up questions)
-
-.NOTES
-    Prerequisites:
-    - GitHub CLI (gh) installed and authenticated
-    - Copilot CLI (copilot) installed
-    - For testing: Appropriate platform tools (Appium, emulators, etc.)
+    .\Review-PR.ps1 -PRNumber 33687 -Platform ios
+    .\Review-PR.ps1 -PRNumber 33687 -UseCurrentBranch
 #>
 
 [CmdletBinding()]
@@ -68,30 +44,20 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateSet('android', 'ios', 'windows', 'maccatalyst')]
-    [string]$Platform,  # Optional - agent will determine appropriate platform if not specified
+    [string]$Platform,
 
     [Parameter(Mandatory = $false)]
-    [switch]$SkipMerge,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$Interactive,
+    [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
-    [switch]$PostSummaryComment,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$RunFinalize,
-
-    [Parameter(Mandatory = $false)]
-    [string]$LogFile  # If provided, captures all output via Start-Transcript
+    [string]$LogFile
 )
 
 $ErrorActionPreference = 'Stop'
 
-# Start transcript logging if LogFile specified (replaces external tee pipe)
 if ($LogFile) {
     $logDir = Split-Path $LogFile -Parent
     if ($logDir -and -not (Test-Path $logDir)) {
@@ -100,13 +66,10 @@ if ($LogFile) {
     Start-Transcript -Path $LogFile -Force | Out-Null
 }
 
-# Get repository root
 $RepoRoot = git rev-parse --show-toplevel 2>$null
-if (-not $RepoRoot) {
-    Write-Error "Not in a git repository"
-    exit 1
-}
+if (-not $RepoRoot) { Write-Error "Not in a git repository"; exit 1 }
 
+# ─── Banner ───────────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║           PR Review with Copilot CLI                      ║" -ForegroundColor Cyan
@@ -120,402 +83,478 @@ if ($Platform) {
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-# Step 1: Verify prerequisites
+# ─── Prerequisites ────────────────────────────────────────────────────────────
 Write-Host "📋 Checking prerequisites..." -ForegroundColor Yellow
 
-# Check GitHub CLI
 $ghVersion = gh --version 2>$null | Select-Object -First 1
-if (-not $ghVersion) {
-    Write-Error "GitHub CLI (gh) is not installed. Install from: https://cli.github.com/"
-    exit 1
-}
+if (-not $ghVersion) { Write-Error "GitHub CLI (gh) not installed"; exit 1 }
 Write-Host "  ✅ GitHub CLI: $ghVersion" -ForegroundColor Green
 
-# Check Copilot CLI
-$copilotVersion = copilot --version 2>$null
-if (-not $copilotVersion) {
-    Write-Error "Copilot CLI is not installed. Install with: npm install -g @github/copilot"
-    exit 1
-}
+$copilotCmd = Get-Command copilot -ErrorAction SilentlyContinue
+if (-not $copilotCmd) { Write-Error "Copilot CLI not installed"; exit 1 }
+$copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
+if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
 Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
-# Check PR exists
-Write-Host "  🔍 Verifying PR #$PRNumber exists..." -ForegroundColor Gray
-$prInfo = gh pr view $PRNumber --json title,state,url 2>$null | ConvertFrom-Json
-if (-not $prInfo) {
-    Write-Error "PR #$PRNumber not found or not accessible"
-    exit 1
-}
+$prInfo = gh pr view $PRNumber --json title,state 2>$null | ConvertFrom-Json
+if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
 Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
-Write-Host "  ✅ State: $($prInfo.state)" -ForegroundColor Green
 
-# Step 2: Validate current branch and merge PR
-Write-Host ""
-$currentBranch = git branch --show-current
-Write-Host "📍 Current branch: $currentBranch" -ForegroundColor Yellow
-
-# Check if on a protected branch (main, release/*, net*.0)
-$protectedBranches = @('main', 'master')
-$isProtected = $protectedBranches -contains $currentBranch -or 
-               $currentBranch -match '^release/' -or 
-               $currentBranch -match '^net\d+\.0$'
-
-if ($isProtected) {
-    Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║  ERROR: Cannot run on protected branch!                   ║" -ForegroundColor Red
-    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-    Write-Host "║  Current branch: $currentBranch" -ForegroundColor Red
-    Write-Host "║                                                           ║" -ForegroundColor Red
-    Write-Host "║  This script merges the PR into the current branch.      ║" -ForegroundColor Red
-    Write-Host "║  Protected branches: main, release/*, net*.0             ║" -ForegroundColor Red
-    Write-Host "║                                                           ║" -ForegroundColor Red
-    Write-Host "║  Please checkout a working branch first:                  ║" -ForegroundColor Red
-    Write-Host "║    git checkout -b pr-review-$PRNumber                        ║" -ForegroundColor Red
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    exit 1
-}
-
-Write-Host "  ✅ Branch '$currentBranch' is not protected" -ForegroundColor Green
-
-# Merge the PR into the current branch (unless skipped)
-if (-not $SkipMerge) {
-    Write-Host ""
-    Write-Host "🔀 Merging PR #$PRNumber into current branch..." -ForegroundColor Yellow
-    
-    if ($DryRun) {
-        Write-Host "  [DRY RUN] Would fetch and merge PR #$PRNumber" -ForegroundColor Magenta
-    } else {
-        # Fetch the PR ref and merge it
-        Write-Host "  📥 Fetching PR #$PRNumber..." -ForegroundColor Gray
-        git fetch origin pull/$PRNumber/head:temp-pr-$PRNumber 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            # Try fetching from the PR's head repository (for fork PRs)
-            $prDetails = gh pr view $PRNumber --json headRepositoryOwner,headRefName 2>$null | ConvertFrom-Json
-            if ($prDetails) {
-                $forkOwner = $prDetails.headRepositoryOwner.login
-                $headRef = $prDetails.headRefName
-                Write-Host "  📥 PR is from fork: $forkOwner, fetching..." -ForegroundColor Gray
-                git fetch "https://github.com/$forkOwner/maui.git" "${headRef}:temp-pr-$PRNumber"
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Error "Failed to fetch PR #$PRNumber from fork"
-                    exit 1
-                }
-            } else {
-                Write-Error "Failed to fetch PR #$PRNumber"
-                exit 1
-            }
-        }
-        
-        Write-Host "  🔀 Merging into '$currentBranch'..." -ForegroundColor Gray
-        git merge "temp-pr-$PRNumber" --no-edit
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host ""
-            Write-Host "⚠️  Merge conflict detected!" -ForegroundColor Red
-            Write-Host "  Please resolve conflicts manually and re-run the script with -SkipMerge" -ForegroundColor Yellow
-            git merge --abort 2>$null
-            git branch -D "temp-pr-$PRNumber" 2>$null
-            exit 1
-        }
-        
-        # Clean up temp branch
-        git branch -D "temp-pr-$PRNumber" 2>$null
-        
-        Write-Host "  ✅ PR #$PRNumber merged into '$currentBranch'" -ForegroundColor Green
-    }
-} else {
-    Write-Host ""
-    Write-Host "⏭️  Skipping merge (assuming PR is already merged)" -ForegroundColor Yellow
-}
-
-# Step 3: Ensure state directory exists
-$stateDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState"
-if (-not (Test-Path $stateDir)) {
-    New-Item -ItemType Directory -Path $stateDir -Force | Out-Null
-    Write-Host "  📁 Created state directory: $stateDir" -ForegroundColor Gray
-}
-
-# Step 4: Build the prompt for Copilot CLI
-$planTemplatePath = ".github/agents/pr/PLAN-TEMPLATE.md"
-
-# Build platform instruction
+# ─── Shared prompt rules ─────────────────────────────────────────────────────
 $platformInstruction = if ($Platform) {
     "**Platform for testing:** $Platform"
 } else {
-    "**Platform for testing:** Determine the appropriate platform(s) based on the PR's affected code paths and the current host OS."
+    "**Platform for testing:** Determine from PR's affected code paths and current host OS."
 }
 
-$prompt = @"
-Review PR #$PRNumber using the pr agent workflow.
+$autonomousRules = @"
 
-$platformInstruction
-
-🚨 **CRITICAL - NEVER MODIFY GIT STATE:**
-- NEVER run ``git checkout``, ``git switch``, ``git fetch``, ``git stash``, or ``git reset``
-- NEVER run ``git push`` - you do NOT have permission to push anything
-- You are ALWAYS on the correct branch already - the script handles this
-- If the state file says "wrong branch", that's stale state - delete it and start fresh
-- If you think you need to switch branches or push changes, you are WRONG - ask the user instead
-
-**Instructions:**
-1. Read the plan template at ``$planTemplatePath`` for the 4-phase workflow
-2. Read ``.github/agents/pr.md`` for Phases 1-2 instructions
-3. Follow ALL critical rules, especially:
-   - STOP on environment blockers and ask before continuing
-   - Use task agent for Gate verification
-   - Run multi-model try-fix in Phase 3
-
-**Start with Phase 1: Pre-Flight**
-- Create state file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md
-- Gather context from PR #$PRNumber
-- Proceed through all 4 phases
-
-Begin the review now.
+🚨 **AUTONOMOUS EXECUTION:**
+- There is NO human operator - NEVER stop and ask for input
+- On environment blockers: skip the blocked phase and continue
+- Always prefer CONTINUING with partial results over STOPPING
 "@
 
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 0: Branch Setup (Create Review Branch & Cherry-Pick PR)
+# ═════════════════════════════════════════════════════════════════════════════
+
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor DarkGray
-Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+Write-Host "║  STEP 0: BRANCH SETUP                                     ║" -ForegroundColor Yellow
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+
+$reviewBranch = "pr-review-$PRNumber"
 
 if ($DryRun) {
-    Write-Host "[DRY RUN] Would invoke Copilot CLI with:" -ForegroundColor Magenta
-    Write-Host ""
-    Write-Host "  Agent: pr" -ForegroundColor Gray
-    Write-Host "  Mode: $(if ($Interactive) { 'Interactive (-i)' } else { 'Non-interactive (-p)' })" -ForegroundColor Gray
-    Write-Host "  PR: #$PRNumber" -ForegroundColor Gray
-    Write-Host "  Platform: $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor Gray
-    Write-Host ""
-    Write-Host "Prompt:" -ForegroundColor Gray
-    Write-Host $prompt -ForegroundColor DarkGray
-    Write-Host ""
-    Write-Host "To run for real, remove the -DryRun flag" -ForegroundColor Yellow
+    if ($UseCurrentBranch) {
+        Write-Host "[DRY RUN] Would create review branch '$reviewBranch' from current branch" -ForegroundColor Magenta
+    } else {
+        Write-Host "[DRY RUN] Would checkout main, then create review branch '$reviewBranch'" -ForegroundColor Magenta
+    }
+    Write-Host "[DRY RUN] Would squash-merge PR #$PRNumber (stops on conflicts)" -ForegroundColor Magenta
 } else {
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║  PHASE 1: PR AGENT REVIEW                                 ║" -ForegroundColor Green
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "PR Review Context:" -ForegroundColor Cyan
-    Write-Host "  PR_NUMBER:      $PRNumber" -ForegroundColor White
-    Write-Host "  PLATFORM:       $(if ($Platform) { $Platform } else { '(agent will determine)' })" -ForegroundColor White
-    Write-Host "  STATE_FILE:     CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor White
-    Write-Host "  PLAN_TEMPLATE:  $planTemplatePath" -ForegroundColor White
-    Write-Host "  CURRENT_BRANCH: $(git branch --show-current)" -ForegroundColor White
-    Write-Host "  PR_TITLE:       $($prInfo.title)" -ForegroundColor White
-    Write-Host "  MODE:           $(if ($Interactive) { 'Interactive' } else { 'Non-interactive' })" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Workflow:" -ForegroundColor Cyan
-    Write-Host "  1. PR Agent Review (this phase)" -ForegroundColor White
-    if ($RunFinalize) {
-        Write-Host "  2. pr-finalize skill (queued)" -ForegroundColor White
+    # In CI pipelines, prior steps (Build MSBuild Tasks, Install Appium) may leave
+    # modified tracked files (e.g. HybridWebView.js) or untracked dirs (e.g. .appium/).
+    # Clean them so the dirty-tree check doesn't fail on build artifacts.
+    if ($env:TF_BUILD) {
+        git checkout -- . 2>$null
+        git clean -fd -e CustomAgentLogsTmp/ 2>$null
     }
-    if ($PostSummaryComment) {
-        $phase3Label = "3. Post comments: agent summary"
-        if ($RunFinalize) {
-            $phase3Label += " + finalize"
+
+    # Check for dirty working tree
+    $dirtyFiles = git status --porcelain 2>$null
+    if ($dirtyFiles) {
+        Write-Error "Working tree is dirty. Please commit or stash changes before running review.`n$dirtyFiles"
+        exit 1
+    }
+
+    # Delete leftover review branch from a previous run (if it exists)
+    $existingBranch = git branch --list $reviewBranch 2>$null
+    if ($existingBranch) {
+        Write-Host "  ⚠️ Removing leftover branch '$reviewBranch' from previous run" -ForegroundColor Yellow
+        git branch -D $reviewBranch 2>$null
+    }
+
+    # Auto-detect CI environment — in CI, always use current branch
+    $isCI = $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS -or $env:BUILD_BUILDID
+    if ($isCI -and -not $UseCurrentBranch) {
+        Write-Host "  🤖 CI environment detected — using current branch instead of main" -ForegroundColor Cyan
+        $UseCurrentBranch = $true
+    }
+
+    # Capture original branch so error paths can restore it (not `git checkout -` which is unreliable)
+    $originalBranch = git branch --show-current 2>$null
+    if (-not $originalBranch) { $originalBranch = git rev-parse HEAD 2>$null }
+
+    if (-not $UseCurrentBranch) {
+        # Default: checkout main first
+        Write-Host "  📌 Checking out main branch..." -ForegroundColor Cyan
+        git checkout main 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { Write-Error "Failed to checkout main"; exit 1 }
+        $pullOutput = git pull origin main --ff-only 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  ⚠️ git pull failed (non-fatal, continuing with local main): $pullOutput" -ForegroundColor Yellow
         }
-        Write-Host "  $phase3Label (queued)" -ForegroundColor White
-    }
-    Write-Host ""
-    Write-Host "─────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
-    Write-Host ""
-    
-    # Build the copilot command arguments
-    $copilotArgs = @(
-        "--agent", "pr",
-        "--stream", "on"  # Enable streaming for real-time output
-    )
-    
-    # NOTE: --deny-tool does NOT work with --allow-all (allow-all takes precedence)
-    # Branch switching prevention relies on agent instructions in pr.md only
-    
-    # Create log directory for this PR
-    $prLogDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs"
-    if (-not (Test-Path $prLogDir)) {
-        New-Item -ItemType Directory -Path $prLogDir -Force | Out-Null
-    }
-    
-    # Add logging options
-    $copilotArgs += @("--log-dir", $prLogDir, "--log-level", "info")
-    
-    if ($Interactive) {
-        # Interactive mode: -i to start with prompt
-        $copilotArgs += @("-i", $prompt)
+        $baseSha = git rev-parse --short HEAD 2>$null
+        Write-Host "  📌 Review base: main @ $baseSha" -ForegroundColor Cyan
     } else {
-        # Non-interactive mode (default): -p with --allow-all
-        # Also save session to markdown for review
-        $sessionFile = Join-Path $prLogDir "session-$(Get-Date -Format 'yyyyMMdd-HHmmss').md"
-        $copilotArgs += @("-p", $prompt, "--allow-all", "--share", $sessionFile)
+        $currentBranch = git branch --show-current 2>$null
+        if (-not $currentBranch) { $currentBranch = "(detached HEAD)" }
+        Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
     }
-    
-    Write-Host "🚀 Starting Copilot CLI..." -ForegroundColor Yellow
-    Write-Host ""
-    
-    # Invoke Copilot CLI
-    & copilot @copilotArgs
-    
-    $exitCode = $LASTEXITCODE
-    
-    Write-Host ""
-    Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor DarkGray
-    if ($exitCode -eq 0) {
-        Write-Host "✅ Copilot CLI completed successfully" -ForegroundColor Green
-    } else {
-        Write-Host "⚠️ Copilot CLI exited with code: $exitCode" -ForegroundColor Yellow
-    }
-    
-    # Post-completion skills (only run if main agent completed successfully)
-    if ($exitCode -eq 0) {
-        
-        # Restore tracked files to clean state before running post-completion skills.
-        # Phase 1 (PR Agent) may have left the working tree dirty from try-fix attempts,
-        # which can cause skill files to be missing or modified in subsequent phases.
-        # NOTE: State files in CustomAgentLogsTmp/ are .gitignore'd and untracked,
-        # so this won't touch them. Using HEAD to also restore deleted files.
-        Write-Host ""
-        Write-Host "🧹 Restoring working tree to clean state between phases..." -ForegroundColor Yellow
-        git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase1-exit-git-status.log" -ErrorAction SilentlyContinue
-        git checkout HEAD -- . 2>&1 | Out-Null
-        Write-Host "  ✅ Working tree restored" -ForegroundColor Green
-        
-        # Phase 2: Run pr-finalize skill if requested
-        if ($RunFinalize) {
-            Write-Host ""
-            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-            Write-Host "║  PHASE 2: PR-FINALIZE SKILL                               ║" -ForegroundColor Magenta
-            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
-            Write-Host ""
-            
-            # Ensure output directory exists for finalize results
-            $finalizeDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize"
-            if (-not (Test-Path $finalizeDir)) {
-                New-Item -ItemType Directory -Path $finalizeDir -Force | Out-Null
-            }
-            
-            $finalizePrompt = "Run the pr-finalize skill for PR #$PRNumber. Verify the PR title and description match the actual implementation. Do NOT post a comment. Write your findings to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/pr-finalize-summary.md (NOT the main state file pr-$PRNumber.md which contains phase data that must not be overwritten). If you recommend a new description, also write it to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/recommended-description.md. If you have code review findings, also write them to CustomAgentLogsTmp/PRState/$PRNumber/pr-finalize/code-review.md."
-            
-            $finalizeArgs = @(
-                "-p", $finalizePrompt,
-                "--allow-all",
-                "--stream", "on"
-            )
-            
-            Write-Host "🔍 Running pr-finalize..." -ForegroundColor Yellow
-            & copilot @finalizeArgs
-            
-            $finalizeExit = $LASTEXITCODE
-            if ($finalizeExit -eq 0) {
-                Write-Host "✅ pr-finalize completed" -ForegroundColor Green
-            } else {
-                Write-Host "⚠️ pr-finalize exited with code: $finalizeExit" -ForegroundColor Yellow
-            }
+
+    # Create review branch
+    Write-Host "  🔀 Creating review branch: $reviewBranch" -ForegroundColor Cyan
+    git checkout -b $reviewBranch 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { Write-Error "Failed to create branch '$reviewBranch'"; exit 1 }
+
+    # Fetch PR commits
+    Write-Host "  📥 Fetching PR #$PRNumber..." -ForegroundColor Cyan
+    $tempBranch = "temp-pr-$PRNumber"
+
+    # Clean up any leftover temp branch
+    git branch -D $tempBranch 2>$null | Out-Null
+
+    # Try fetching from origin (same-repo PRs)
+    git fetch origin "pull/$PRNumber/head:$tempBranch" 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        # Fork PR — get fork info
+        Write-Host "  📥 Fetching from fork..." -ForegroundColor Cyan
+        $forkInfo = gh pr view $PRNumber --json headRepositoryOwner,headRefName,headRepository 2>$null | ConvertFrom-Json
+        if (-not $forkInfo -or -not $forkInfo.headRepositoryOwner) {
+            Write-Error "Failed to fetch PR #$PRNumber (not found on origin or fork)"
+            git checkout $originalBranch 2>$null
+            exit 1
         }
-        
-        # Phase 3: Post comments if requested
-        # Runs scripts directly instead of via Copilot CLI to avoid:
-        # - LLM creating its own broken version if skill files are missing
-        # - Dirty tree from Phase 2 corrupting script files
-        if ($PostSummaryComment) {
-            Write-Host ""
-            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-            Write-Host "║  PHASE 3: POST COMMENTS                                   ║" -ForegroundColor Magenta
-            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
-            Write-Host ""
-            
-            # Restore tracked files (including deleted ones) to clean state.
-            Write-Host "🧹 Restoring working tree to clean state..." -ForegroundColor Yellow
-            git status --porcelain 2>$null | Set-Content "CustomAgentLogsTmp/PRState/phase2-exit-git-status.log" -ErrorAction SilentlyContinue
-            git checkout HEAD -- . 2>&1 | Out-Null
-            Write-Host "  ✅ Working tree restored" -ForegroundColor Green
-            
-            # 3a: Post PR agent summary comment (from Phase 1 state file)
-            $scriptPath = ".github/skills/ai-summary-comment/scripts/post-ai-summary-comment.ps1"
-            if (-not (Test-Path $scriptPath)) {
-                Write-Host "⚠️ Script missing after checkout, attempting targeted recovery..." -ForegroundColor Yellow
-                git checkout HEAD -- $scriptPath 2>&1 | Out-Null
+        $forkUrl = "https://github.com/$($forkInfo.headRepositoryOwner.login)/$($forkInfo.headRepository.name).git"
+        $fetchOutput = git fetch $forkUrl "$($forkInfo.headRefName):$tempBranch" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to fetch from fork: $forkUrl`n$fetchOutput"
+            git checkout $originalBranch 2>$null
+            exit 1
+        }
+    }
+
+    # ── Merge PR commits (squash) ──
+    Write-Host "  🔀 Merging PR commits (squashed)..." -ForegroundColor Cyan
+    git merge --squash $tempBranch 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        # Check if there's anything to commit (PR might already be merged)
+        $staged = git diff --cached --quiet 2>$null; $hasStagedChanges = $LASTEXITCODE -ne 0
+        if ($hasStagedChanges) {
+            git commit -m "PR #$PRNumber squashed for review" 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                git branch -D $tempBranch 2>$null
+                Write-Error "Failed to create squashed commit"; exit 1
             }
-            if (Test-Path $scriptPath) {
-                Write-Host "💬 Running post-ai-summary-comment.ps1 directly..." -ForegroundColor Yellow
-                & $scriptPath -PRNumber $PRNumber
-                
-                $commentExit = $LASTEXITCODE
-                if ($commentExit -eq 0) {
-                    Write-Host "✅ Agent summary comment posted" -ForegroundColor Green
-                } else {
-                    Write-Host "⚠️ post-ai-summary-comment.ps1 exited with code: $commentExit" -ForegroundColor Yellow
-                }
-            } else {
-                Write-Host "⚠️ Script not found at: $scriptPath" -ForegroundColor Yellow
-                Write-Host "   Current directory: $(Get-Location)" -ForegroundColor Gray
-                Write-Host "   Skipping agent summary comment." -ForegroundColor Gray
-            }
-            
-            # 3b: Post PR finalize comment (from Phase 2 finalize results)
-            if ($RunFinalize) {
-                $finalizeScriptPath = ".github/skills/ai-summary-comment/scripts/post-pr-finalize-comment.ps1"
-                if (-not (Test-Path $finalizeScriptPath)) {
-                    Write-Host "⚠️ Finalize script missing, attempting targeted recovery..." -ForegroundColor Yellow
-                    git checkout HEAD -- $finalizeScriptPath 2>&1 | Out-Null
-                }
-                if (Test-Path $finalizeScriptPath) {
-                    Write-Host "💬 Running post-pr-finalize-comment.ps1 directly..." -ForegroundColor Yellow
-                    & $finalizeScriptPath -PRNumber $PRNumber
-                    
-                    $finalizeCommentExit = $LASTEXITCODE
-                    if ($finalizeCommentExit -eq 0) {
-                        Write-Host "✅ Finalize comment posted" -ForegroundColor Green
-                    } else {
-                        Write-Host "⚠️ post-pr-finalize-comment.ps1 exited with code: $finalizeCommentExit" -ForegroundColor Yellow
+            Write-Host "  ✅ Squash-merge succeeded" -ForegroundColor Green
+        } else {
+            Write-Host "  ⚠️ No changes to merge (PR may already be up to date)" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  ❌ Squash-merge had conflicts." -ForegroundColor Red
+        git merge --abort 2>$null
+        git reset --hard HEAD 2>$null
+
+        # Clean up branches
+        git checkout $originalBranch 2>$null
+        git branch -D $reviewBranch 2>$null
+        git branch -D $tempBranch 2>$null
+
+        # Post a comment on the PR about merge conflicts
+        $conflictBody = "⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts."
+        try {
+            gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
+            Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
+        } catch {
+            Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
+        }
+
+        Write-Error "Merge conflicts for PR #$PRNumber. Review cannot proceed until conflicts are resolved."
+        exit 1
+    }
+
+    # Clean up temp branch
+    git branch -D $tempBranch 2>$null | Out-Null
+
+    # Verify
+    $headCommit = git log --oneline -1 2>$null
+    Write-Host "  ✅ Review branch ready: $reviewBranch" -ForegroundColor Green
+    Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
+}
+
+# ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
+function Invoke-CopilotStep {
+    param([string]$StepName, [string]$Prompt)
+
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+    Write-Host "║  $($StepName.PadRight(55))║" -ForegroundColor Magenta
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+    if ($DryRun) {
+        Write-Host "[DRY RUN] Prompt:" -ForegroundColor Magenta
+        Write-Host $Prompt -ForegroundColor Gray
+        return 0
+    }
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $toolCount = 0
+    $turnCount = 0
+    $currentIntent = ""
+    $modelName = ""
+    $failedTools = @()
+
+    # Tool icon mapping for common tools
+    $toolIcons = @{
+        'bash'    = '🖥️'; 'view'   = '📄'; 'edit'   = '✏️'; 'create' = '📝'
+        'grep'    = '🔍'; 'glob'   = '📂'; 'task'   = '🤖'; 'skill'  = '⚡'
+        'sql'     = '🗃️'; 'web_search' = '🌐'; 'ask_user' = '❓'
+        'github-mcp-server-pull_request_read' = '🔀'
+        'github-mcp-server-issue_read'        = '🐛'
+        'github-mcp-server-get_file_contents'  = '📦'
+        'github-mcp-server-search_code'        = '🔎'
+    }
+
+    # Use JSON output format to stream live progress of agent activity.
+    & copilot -p $Prompt --allow-all --output-format json 2>&1 | ForEach-Object {
+        $line = $_.ToString()
+        try {
+            $event = $line | ConvertFrom-Json -ErrorAction Stop
+            switch ($event.type) {
+                'session.tools_updated' {
+                    if ($event.data.model) {
+                        $modelName = $event.data.model
+                        Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $modelName -ForegroundColor DarkCyan
                     }
-                } else {
-                    Write-Host "⚠️ Script not found at: $finalizeScriptPath" -ForegroundColor Yellow
-                    Write-Host "   Skipping finalize comment." -ForegroundColor Gray
                 }
+                'assistant.turn_start' {
+                    $turnCount++
+                    $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
+                    Write-Host ""
+                    Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
+                    Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
+                    if ($currentIntent) {
+                        Write-Host " · $currentIntent" -ForegroundColor DarkCyan
+                    } else {
+                        Write-Host ""
+                    }
+                }
+                'assistant.turn_end' {
+                    Write-Host "  └─" -ForegroundColor DarkGray
+                }
+                'tool.execution_start' {
+                    $toolName = $event.data.toolName
+                    $args_ = $event.data.arguments
+
+                    # Capture intent changes silently
+                    if ($toolName -eq 'report_intent') {
+                        $currentIntent = $args_.intent ?? $currentIntent
+                        Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $currentIntent -ForegroundColor Yellow
+                        break
+                    }
+
+                    $toolCount++
+                    $icon = $toolIcons[$toolName]
+                    if (-not $icon) {
+                        # Prefix match for github-mcp-server-* and other compound names
+                        $icon = if ($toolName -like 'github-*') { '🔀' } else { '🔧' }
+                    }
+
+                    # Build a short display name for long tool names
+                    $displayName = $toolName -replace '^github-mcp-server-', 'gh/'
+
+                    # Pick the most useful detail from arguments
+                    $detail = $args_.description ?? $args_.intent ?? ''
+                    if (-not $detail) {
+                        # Fallback: pick first informative arg
+                        $detail = $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.path ?? $args_.prompt ?? ''
+                    }
+                    if ($detail) {
+                        $detail = $detail.Substring(0, [Math]::Min($detail.Length, 90))
+                        # Truncate at last word boundary if we cut mid-word
+                        if ($detail.Length -eq 90) {
+                            $lastSpace = $detail.LastIndexOf(' ')
+                            if ($lastSpace -gt 60) { $detail = $detail.Substring(0, $lastSpace) + "…" }
+                            else { $detail += "…" }
+                        }
+                    }
+
+                    Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
+                    Write-Host $displayName -ForegroundColor Cyan -NoNewline
+                    if ($detail) {
+                        Write-Host "  $detail" -ForegroundColor DarkGray
+                    } else {
+                        Write-Host ""
+                    }
+                }
+                'tool.execution_complete' {
+                    if (-not $event.data.success) {
+                        $failedTool = $event.data.toolCallId
+                        $failedTools += $failedTool
+                        Write-Host "  │  ❌ Tool failed" -ForegroundColor Red
+                    }
+                }
+                'assistant.message' {
+                    $content = $event.data.content
+                    # Show agent text responses (skip empty tool-request-only messages)
+                    if ($content -and $content.Trim()) {
+                        $preview = $content.Trim()
+                        if ($preview.Length -gt 400) {
+                            $preview = $preview.Substring(0, 400) + "…"
+                        }
+                        Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $preview -ForegroundColor White
+                    }
+                }
+                'result' {
+                    # Final stats
+                    $usage = $event.data.usage
+                    if ($usage) {
+                        $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
+                        $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
+                        $changes = $usage.codeChanges
+                        $filesChanged = if ($changes -and $changes.filesModified) { $changes.filesModified.Count } else { 0 }
+                        $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
+                        $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
+
+                        Write-Host ""
+                        Write-Host "  ╭──────────────────────────────────────────╮" -ForegroundColor DarkGray
+                        Write-Host "  │  ⏱  $elapsed elapsed  ($($apiMs)s API)" -ForegroundColor DarkGray -NoNewline
+                        Write-Host "  │  🔧 $toolCount tools" -ForegroundColor DarkGray -NoNewline
+                        Write-Host "  │  🔄 $turnCount turns" -ForegroundColor DarkGray
+                        if ($filesChanged -gt 0 -or $linesAdded -gt 0 -or $linesRemoved -gt 0) {
+                            Write-Host "  │  📝 $filesChanged files  " -ForegroundColor DarkGray -NoNewline
+                            Write-Host "+$linesAdded" -ForegroundColor Green -NoNewline
+                            Write-Host "/" -ForegroundColor DarkGray -NoNewline
+                            Write-Host "-$linesRemoved" -ForegroundColor Red
+                        }
+                        Write-Host "  ╰──────────────────────────────────────────╯" -ForegroundColor DarkGray
+                    }
+                }
+            }
+        } catch {
+            # Non-JSON line (e.g. stats) — pass through as-is
+            if ($line.Trim()) {
+                Write-Host "  $line" -ForegroundColor DarkGray
             }
         }
     }
-}
+    $exitCode = $LASTEXITCODE
+    $stopwatch.Stop()
 
-Write-Host ""
-Write-Host "📝 State file: CustomAgentLogsTmp/PRState/pr-$PRNumber.md" -ForegroundColor Gray
-Write-Host "📋 Plan template: $planTemplatePath" -ForegroundColor Gray
-if (-not $DryRun) {
-    Write-Host "📁 Copilot logs: CustomAgentLogsTmp/PRState/$PRNumber/copilot-logs/" -ForegroundColor Gray
-    if (-not $Interactive) {
-        Write-Host "📄 Session markdown: $sessionFile" -ForegroundColor Gray
+    if ($exitCode -eq 0) {
+        Write-Host "  ✅ $StepName completed" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠️ $StepName exited with code: $exitCode" -ForegroundColor Yellow
     }
+    if ($failedTools.Count -gt 0) {
+        Write-Host "  ⚠️  $($failedTools.Count) tool(s) failed during execution" -ForegroundColor Yellow
+    }
+    return $exitCode
 }
-Write-Host ""
 
-# NOTE: This cleanup targets CI/ADO agent environments where only this script's
-# Copilot CLI processes should exist. On developer machines, this could potentially
-# affect other Copilot processes (e.g., VS Code extension). The risk is low since
-# this runs at script end, but be aware if running locally.
-# Clean up orphaned copilot CLI processes that may hold stdout fd open
-# IMPORTANT: Only target processes whose command line contains "copilot" to avoid
-# accidentally terminating the ADO agent's own node process
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 1: PR Review (4-phase skill)
+# ═════════════════════════════════════════════════════════════════════════════
+
+$step1Prompt = @"
+Use a skill to review PR #$PRNumber.
+
+$platformInstruction
+$autonomousRules
+
+📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
+"@
+
+Invoke-CopilotStep -StepName "STEP 1: PR REVIEW" -Prompt $step1Prompt | Out-Null
+
+# Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
+git checkout $reviewBranch 2>$null | Out-Null
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 2: PR Finalize
+# ═════════════════════════════════════════════════════════════════════════════
+
+$step2Prompt = @"
+Use a skill to finalize PR #$PRNumber. Write findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md``.
+$autonomousRules
+"@
+
+Invoke-CopilotStep -StepName "STEP 2: PR FINALIZE" -Prompt $step2Prompt | Out-Null
+
+# Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
+git checkout $reviewBranch 2>$null | Out-Null
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 3: Post AI Summary Comment (direct script invocation)
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+$summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
+$dryRunFlag = if ($DryRun) { @('-DryRun') } else { @() }
+
+# 3a: Post PR review phases (pre-flight, gate, try-fix, report)
+$reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
+if (Test-Path $reviewScript) {
+    try {
+        Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
+        & $reviewScript -PRNumber $PRNumber @dryRunFlag
+        Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ PR review summary posting failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
+}
+
+# 3b: Post PR finalize section (title, description, code review)
+$finalizeScript = Join-Path $summaryScriptsDir "post-pr-finalize-comment.ps1"
+if (Test-Path $finalizeScript) {
+    try {
+        Write-Host "  📝 Posting PR finalize summary..." -ForegroundColor Cyan
+        & $finalizeScript -PRNumber $PRNumber @dryRunFlag
+        Write-Host "  ✅ PR finalize summary posted" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ PR finalize summary posting failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-pr-finalize-comment.ps1 not found — skipping finalize summary" -ForegroundColor Yellow
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 4: Apply Labels
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
+Write-Host "║  STEP 4: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
+
+$labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
+if (Test-Path $labelHelperPath) {
+    try {
+        . $labelHelperPath
+        Apply-AgentLabels -PRNumber $PRNumber -RepoRoot $RepoRoot
+        Write-Host "  ✅ Labels applied" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  Cleanup
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
 Write-Host "🧹 Cleaning up child processes..." -ForegroundColor Gray
 try {
-    $myPid = $PID
-    # Find node processes running copilot CLI (not the ADO agent's node process)
     $orphans = Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object {
-        $_.Id -ne $myPid -and
-        (($_.Path -and $_.Path -match "copilot") -or
-         ($_.CommandLine -and $_.CommandLine -match "copilot"))
+        ($_.Path -and $_.Path -match "copilot") -or
+        ($_.CommandLine -and $_.CommandLine -match "copilot")
     }
-    # Also get any process literally named "copilot"
     $copilotProcs = Get-Process -Name "copilot" -ErrorAction SilentlyContinue
     $allOrphans = @($orphans) + @($copilotProcs) | Where-Object { $_ -ne $null } | Sort-Object Id -Unique
     if ($allOrphans.Count -gt 0) {
-        Write-Host "  Stopping $($allOrphans.Count) orphaned process(es): $($allOrphans | ForEach-Object { "$($_.ProcessName)($($_.Id))" } | Join-String -Separator ', ')" -ForegroundColor Gray
+        Write-Host "  Stopping $($allOrphans.Count) orphaned process(es)" -ForegroundColor Gray
         $allOrphans | Stop-Process -Force -ErrorAction SilentlyContinue
-    } else {
-        Write-Host "  No orphaned copilot processes found" -ForegroundColor Gray
     }
 } catch {
     Write-Host "  ⚠️ Cleanup warning: $_" -ForegroundColor Yellow
 }
 
-if ($LogFile) {
-    Stop-Transcript | Out-Null
-}
+Write-Host ""
+Write-Host "✅ Review complete for PR #$PRNumber" -ForegroundColor Green
+Write-Host "📁 Output: CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/" -ForegroundColor Gray
+Write-Host ""
+
+if ($LogFile) { Stop-Transcript | Out-Null }
