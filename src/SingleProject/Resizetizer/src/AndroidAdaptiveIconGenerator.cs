@@ -202,12 +202,19 @@ namespace Microsoft.Maui.Resizetizer
 			var adaptiveIconXmlStr = (HasMonochromeFile ? AdaptiveIconDrawableWithMonochromeXml : AdaptiveIconDrawableXml)
 				.Replace("{name}", AppIconName);
 
-			// Always write XML so changes to MonochromeFile are picked up
-			File.WriteAllText(adaptiveIconDestination, adaptiveIconXmlStr);
-			File.WriteAllText(adaptiveIconRoundDestination, adaptiveIconXmlStr);
+			// Only write when content changed to avoid unnecessary timestamp updates
+			WriteFileIfChanged(adaptiveIconDestination, adaptiveIconXmlStr);
+			WriteFileIfChanged(adaptiveIconRoundDestination, adaptiveIconXmlStr);
 
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1), Filename = adaptiveIconDestination });
 			results.Add(new ResizedImageInfo { Dpi = new DpiPath("mipmap-anydpi-v26", 1, "_round"), Filename = adaptiveIconRoundDestination });
+		}
+
+		static void WriteFileIfChanged(string path, string content)
+		{
+			if (File.Exists(path) && File.ReadAllText(path) == content)
+				return;
+			File.WriteAllText(path, content);
 		}
 	}
 }
