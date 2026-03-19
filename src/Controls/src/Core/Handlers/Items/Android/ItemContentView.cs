@@ -59,16 +59,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				visualElement.MeasureInvalidated -= ElementMeasureInvalidated;
 			}
 
-			// Disconnect handlers before releasing content to break the handler circular reference
-			// (View.Handler ↔ IPlatformViewHandler.VirtualView) that prevents GC.
-			View?.DisconnectHandlers();
-
 			var platformView = PlatformView;
 
 			if (platformView != null)
 			{
 				RemoveView(platformView);
 			}
+
+			// Capture the current platform view before disconnecting handlers, because
+			// DisconnectHandlers() may null out the handler's PlatformView/ContainerView.
+			View?.DisconnectHandlers();
 
 			Content = null;
 			_pixelSize = null;
