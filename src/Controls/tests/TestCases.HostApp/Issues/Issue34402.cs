@@ -21,7 +21,8 @@ namespace Maui.Controls.Sample.Issues
 				Color = Colors.CornflowerBlue,
 				WidthRequest = 200,
 				HeightRequest = 200,
-				AutomationId = "MyBoxView"
+				AutomationId = "MyBoxView",
+				FlowDirection = FlowDirection.LeftToRight
 			};
 
 			var graphicsViewLabel = new Label
@@ -35,7 +36,8 @@ namespace Maui.Controls.Sample.Issues
 				Drawable = new TriangleDrawable(),
 				WidthRequest = 200,
 				HeightRequest = 100,
-				AutomationId = "MyGraphicsView"
+				AutomationId = "MyGraphicsView",
+				FlowDirection = FlowDirection.LeftToRight
 			};
 
 			var boxViewRtlButton = new Button

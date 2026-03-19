@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				_canvas.Session = args.DrawingSession;
 				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
 
-				if (FlowDirection == global::Microsoft.UI.Xaml.FlowDirection.RightToLeft)
+				if (FlowDirection == FlowDirection.RightToLeft)
 				{
 					_canvas.ConcatenateTransform(
 						Matrix3x2.CreateScale(-1, 1) *
