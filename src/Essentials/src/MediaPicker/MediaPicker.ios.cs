@@ -137,10 +137,9 @@ namespace Microsoft.Maui.Media
 
 				picker.Delegate = new PhotoPickerDelegate
 				{
-					CompletedHandler = async info =>
+					CompletedHandler = info =>
 					{
 						GetFileResult(info, tcs, options);
-						await picker.DismissViewControllerAsync(true);
 					}
 				};
 			}
@@ -179,7 +178,7 @@ namespace Microsoft.Maui.Media
 			// TODO throw exception?
 			if (!OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
-				return null;
+				return [];
 			}
 
 			if (!photo && !pickExisting)
@@ -240,7 +239,7 @@ namespace Microsoft.Maui.Media
 			{
 				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
 				{
-					Handler = () => tcs.TrySetResult(null)
+					Handler = () => tcs.TrySetResult([])
 				};
 			}
 
@@ -265,9 +264,13 @@ namespace Microsoft.Maui.Media
 
 		static async Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
 		{
-			var fileResults = results?
+			// Handle null or empty results (cancellation) - return empty list per API contract
+			if (results == null || results.Length == 0)
+				return [];
+
+			var fileResults = results
 				.Select(file => (FileResult)new PHPickerFileResult(file.ItemProvider))
-				.ToList() ?? [];
+				.ToList();
 
 			// Apply rotation if needed for images
 			if (ImageProcessor.IsRotationNeeded(options))
@@ -290,7 +293,12 @@ namespace Microsoft.Maui.Media
 							await rotatedStream.CopyToAsync(fileStream);
 						}
 						
-						rotatedResults.Add(new FileResult(tempFilePath, result.FileName));
+						var rotatedResult = new FileResult(tempFilePath)
+						{
+							FileName = result.FileName,
+							ContentType = result.ContentType
+						};
+						rotatedResults.Add(rotatedResult);
 					}
 					catch
 					{
@@ -476,17 +484,14 @@ namespace Microsoft.Maui.Media
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }
-
 			public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
-			{
-				picker.DismissViewController(true, null);
-				CompletedHandler?.Invoke(info);
-			}
+            {
+				picker.DismissViewController(true, () => CompletedHandler?.Invoke(info));
+            }
 
 			public override void Canceled(UIImagePickerController picker)
 			{
-				picker.DismissViewController(true, null);
-				CompletedHandler?.Invoke(null);
+				picker.DismissViewController(true, () => CompletedHandler?.Invoke(null));
 			}
 		}
 	}
@@ -497,8 +502,8 @@ namespace Microsoft.Maui.Media
 
 		public override void DidFinishPicking(PHPickerViewController picker, PHPickerResult[] results)
 		{
-			picker.DismissViewController(true, null);
-			CompletedHandler?.Invoke(results?.Length > 0 ? results : null);
+			var captured = results?.Length > 0 ? results : [];
+            picker.DismissViewController(true, () => CompletedHandler?.Invoke(captured));
 		}
 	}
 

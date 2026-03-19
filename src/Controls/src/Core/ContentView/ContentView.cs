@@ -6,7 +6,13 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs/*" />
+	/// <summary>
+	/// An element that contains a single child element.
+	/// </summary>
+	/// <remarks>
+	/// ContentView is a simple container that hosts a single <see cref="View"/> element through its <see cref="Content"/> property.
+	/// It is commonly used as a base class for custom views or to apply templates to content.
+	/// </remarks>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
@@ -14,7 +20,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="//Member[@MemberName='Content']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the content of the ContentView. This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="View"/> that contains the content.</value>
 		public View Content
 		{
 			get { return (View)GetValue(ContentProperty); }

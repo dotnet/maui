@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,28 +15,35 @@ public partial class BindingDiagnosticsInvalidTwoWayBinding : ContentPage
 {
 	public BindingDiagnosticsInvalidTwoWayBinding() => InitializeComponent();
 
-	[TestFixture]
+	[Collection("Xaml Inflation")]
 #if !DEBUG
-	[Ignore("This test runs only in debug")]
-#endif
-	class Tests
+	public class Tests
+	{
+		// Tests only run in DEBUG mode
+		[Fact(Skip = "This test runs only in debug")]
+		public void TestSourceGen() { }
+		[Fact(Skip = "This test runs only in debug")]
+		public void Test() { }
+	}
+#else
+	public class Tests : BaseTestFixture
 	{
 		bool enableDiagnosticsInitialState;
 
-		[SetUp]
-		public void Setup()
+		protected internal override void Setup()
 		{
+			base.Setup();
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
 			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		[TearDown]
-		public void TearDown()
+		protected internal override void TearDown()
 		{
 			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			base.TearDown();
 		}
 
-		[Test]
+		[Fact]
 		public void TestSourceGen()
 		{
 			List<BindingBaseErrorEventArgs> failures = new();
@@ -49,26 +56,26 @@ public partial class BindingDiagnosticsInvalidTwoWayBinding : ContentPage
 
 			// after the binding context is set, the Entry will try to push its value to the target through
 			// the two way binding
-			Assert.That(failures.Count, Is.EqualTo(1));
-			Assert.That(layout.Entry.Text, Is.EqualTo("Hello, World!"));
+			Assert.Single(failures);
+			Assert.Equal("Hello, World!", layout.Entry.Text);
 			var failure = failures[0] as BindingErrorEventArgs;
-			Assert.That(failure.XamlSourceInfo.LineNumber, Is.EqualTo(8));
-			Assert.That(failure.Target, Is.TypeOf<Entry>());
-			Assert.That(failure.TargetProperty, Is.EqualTo(Entry.TextProperty));
+			Assert.Equal(8, failure.XamlSourceInfo.LineNumber);
+			Assert.IsType<Entry>(failure.Target);
+			Assert.Equal(Entry.TextProperty, failure.TargetProperty);
 
 
 			layout.Entry.Text = "New Text";
 
 			// after the Entry's Text is changed, it will again try to push its value to the target through
 			// the two way binding
-			Assert.That(failures.Count, Is.EqualTo(2));
+			Assert.Equal(2, failures.Count);
 			failure = failures[1] as BindingErrorEventArgs;
-			Assert.That(failure.XamlSourceInfo.LineNumber, Is.EqualTo(8));
-			Assert.That(failure.Target, Is.TypeOf<Entry>());
-			Assert.That(failure.TargetProperty, Is.EqualTo(Entry.TextProperty));
+			Assert.Equal(8, failure.XamlSourceInfo.LineNumber);
+			Assert.IsType<Entry>(failure.Target);
+			Assert.Equal(Entry.TextProperty, failure.TargetProperty);
 		}
 
-		[Test]
+		[Fact]
 		public void Test()
 		{
 			List<BindingBaseErrorEventArgs> failures = new();
@@ -81,15 +88,16 @@ public partial class BindingDiagnosticsInvalidTwoWayBinding : ContentPage
 
 			// XamlC doesn't will not throw any exception or report any binding failures
 			// the binding will simply pull the value from the VM
-			Assert.That(failures.Count, Is.EqualTo(0));
-			Assert.That(layout.Entry.Text, Is.EqualTo("Hello, World!"));
+			Assert.Empty(failures);
+			Assert.Equal("Hello, World!", layout.Entry.Text);
 
 			layout.Entry.Text = "New Text";
 
 			// after the Entry's Text is changed, it will again try to push its value to the target through
 			// the two way binding - but nothing will happen
-			Assert.That(failures.Count, Is.EqualTo(0));
-			Assert.That(layout.Entry.Text, Is.EqualTo("New Text"));
+			Assert.Empty(failures);
+			Assert.Equal("New Text", layout.Entry.Text);
 		}
 	}
+#endif
 }

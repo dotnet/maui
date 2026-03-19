@@ -122,10 +122,6 @@ namespace Microsoft.Maui.Platform
 			{
 				case WKNavigationType.LinkActivated:
 					navEvent = WebNavigationEvent.NewPage;
-
-					if (navigationAction.TargetFrame == null)
-						webView?.LoadRequest(navigationAction.Request);
-
 					break;
 				case WKNavigationType.FormSubmitted:
 					navEvent = WebNavigationEvent.NewPage;
@@ -151,7 +147,21 @@ namespace Microsoft.Maui.Platform
 
 			bool cancel = virtualView.Navigating(navEvent, lastUrl);
 			platformView.UpdateCanGoBackForward(virtualView);
-			decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
+
+			// Handle target="_blank" links - when TargetFrame is null, the link is meant to open in a new window
+			if (navigationAction.TargetFrame == null)
+			{
+				// If navigation was not cancelled, load the request in the same WebView
+				if (!cancel)
+					webView?.LoadRequest(navigationAction.Request);
+
+				// Always cancel the original navigation since we're handling it ourselves
+				decisionHandler(WKNavigationActionPolicy.Cancel);
+			}
+			else
+			{
+				decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
+			}
 		}
 
 		string GetCurrentUrl()

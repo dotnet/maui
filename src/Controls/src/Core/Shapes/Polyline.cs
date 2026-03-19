@@ -4,10 +4,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polyline']/Docs/*" />
+	/// <summary>
+	/// A shape that draws a series of connected straight lines. Unlike <see cref="Polygon"/>, a polyline is not automatically closed.
+	/// </summary>
 	public sealed partial class Polyline : Shape, IShape
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Polyline"/> class.
+		/// </summary>
 		public Polyline() : base()
 		{
 		}
@@ -25,14 +29,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(Polyline), FillRule.EvenOdd);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='Points']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of <see cref="Point"/> values that define the vertices of the polyline. This is a bindable property.
+		/// </summary>
 		public PointCollection Points
 		{
 			set { SetValue(PointsProperty, value); }
 			get { return (PointCollection)GetValue(PointsProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='FillRule']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that specifies how the interior of the polyline is determined. This is a bindable property.
+		/// </summary>
 		public FillRule FillRule
 		{
 			set { SetValue(FillRuleProperty, value); }

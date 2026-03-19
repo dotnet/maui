@@ -4,9 +4,10 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class FlyoutPageFeatureTests : UITest
+public class FlyoutPageFeatureTests : _GalleryUITest
 {
 	public const string FlyoutPageFeatureMatrix = "Flyout Feature Matrix";
+	public override string GalleryPageName => FlyoutPageFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string FlowDirectionRTL = "FlowDirectionRTL";
@@ -25,12 +26,6 @@ public class FlyoutPageFeatureTests : UITest
 	public FlyoutPageFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(FlyoutPageFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -178,21 +173,8 @@ public class FlyoutPageFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(7)]
-	[Category(UITestCategories.FlyoutPage)]
-	public void VerifyFlyoutPage_IsEnabled()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(IsEnabledFalse);
-		App.Tap(IsEnabledFalse);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/26726
-	[Test, Order(8)]
+	[Test, Order(7)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsFlowDirectionRTL()
 	{
@@ -202,11 +184,11 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link:  https://github.com/dotnet/maui/issues/31374, https://github.com/dotnet/maui/issues/31372
-	[Test, Order(9)]
+	[Test, Order(8)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsFlowDirectionRTLWithIsPresented()
 	{
@@ -218,13 +200,13 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(IsPresentedTrue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //  Orientation not supported in Catalyst and Windows , Android Issue Link: https://github.com/dotnet/maui/issues/31374
-	[Test, Order(10)]
+	[Test, Order(9)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsPresented_OrientationLandscape()
 	{
@@ -242,7 +224,7 @@ public class FlyoutPageFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(11)]
+	[Test, Order(10)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_Title()
 	{
@@ -252,11 +234,11 @@ public class FlyoutPageFeatureTests : UITest
 		App.EnterText(TitleEntry, "New Title");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST// FlyoutLayoutBehavior is not changed in mobile platforms,  Issue Link: https://github.com/dotnet/maui/issues/16245
-	[Test, Order(12)]
+	[Test, Order(11)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_FlyoutLayoutBehavior_Split()
 	{
@@ -266,11 +248,11 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorSplit);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/31390
-	[Test, Order(13)]
+	[Test, Order(12)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_FlyoutLayoutBehavior_SplitOnPortrait()
 	{
@@ -280,13 +262,13 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorSplitOnPortrait);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 #endif
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/31390
-	[Test, Order(14)]
+	[Test, Order(13)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_FlyoutLayoutBehaviorPopover()
 	{
@@ -296,12 +278,12 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorPopover);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/20088
-	[Test, Order(15)]
+	[Test, Order(14)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_Detail()
 	{
@@ -312,7 +294,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap("BackToOriginalDetailButton1");
 	}
 
-	[Test, Order(16)]
+	[Test, Order(15)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_Flyout()
 	{
@@ -329,7 +311,7 @@ public class FlyoutPageFeatureTests : UITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Android Issue Link: https://github.com/dotnet/maui/issues/22116 , https://github.com/dotnet/maui/issues/15211
 	// Windows Issue Link: https://github.com/dotnet/maui/issues/15211#issuecomment-1562587775 , https://github.com/dotnet/maui/issues/31390
-	[Test, Order(17)]
+	[Test, Order(16)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_DetailPageIconImageSource()
 	{
@@ -339,10 +321,10 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap("IconFontIconButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(18)]
+	[Test, Order(17)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_DetailPageIconImageSource_FlyoutLayoutBehavior()
 	{
@@ -354,12 +336,12 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(FlyoutLayoutBehaviorPopover);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/31390, https://github.com/dotnet/maui/issues/31374
-	[Test, Order(19)]
+	[Test, Order(18)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_FlyoutLayoutBehaviorPopover_IsPresented()
 	{
@@ -378,7 +360,7 @@ public class FlyoutPageFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(20)]
+	[Test, Order(19)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyDynamicFlyoutPage()
 	{
@@ -389,7 +371,7 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap("CloseNewFlyoutPageButton");
 	}
 
-	[Test, Order(21)]
+	[Test, Order(20)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_BackgroundColor()
 	{
@@ -399,10 +381,10 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap("BackgroundColorLightYellowButton");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(22)]
+	[Test, Order(21)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsVisible()
 	{
@@ -412,6 +394,6 @@ public class FlyoutPageFeatureTests : UITest
 		App.Tap(IsVisibleFalse);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

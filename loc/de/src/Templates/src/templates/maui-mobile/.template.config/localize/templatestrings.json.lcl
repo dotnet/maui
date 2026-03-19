@@ -47,7 +47,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens MainPage.xaml in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Öffnet MainPage.xaml im Editor.]]></Val>
+            <Val><![CDATA[Öffnet "MainPage.xaml" im Editor.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

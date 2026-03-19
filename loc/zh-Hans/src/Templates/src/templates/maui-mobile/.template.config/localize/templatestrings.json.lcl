@@ -101,7 +101,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Include sample content]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[包含示例内容(_I)]]></Val>
+            <Val><![CDATA[_Include 示例内容]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -119,7 +119,7 @@
         <Str Cat="Text">
           <Val><![CDATA[If specified, skips the automatic restore of the project on create.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[如果已指定，则在创建时跳过项目的自动还原。]]></Val>
+            <Val><![CDATA[如果指定，则在创建时跳过项目的自动还原。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

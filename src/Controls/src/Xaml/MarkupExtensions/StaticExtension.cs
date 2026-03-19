@@ -6,12 +6,18 @@ using System.Xml;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that returns the value of a static field or property.
+	/// </summary>
 	[ContentProperty(nameof(Member))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticExtension")]
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 	[RequireService([typeof(IXamlTypeResolver)])]
 	public class StaticExtension : IMarkupExtension
 	{
+		/// <summary>
+		/// Gets or sets the name of the static member in the form [prefix:]typeName.memberName.
+		/// </summary>
 		public string Member { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)
@@ -23,19 +29,28 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (string.IsNullOrEmpty(Member) || Member.IndexOf(".", StringComparison.Ordinal) == -1)
 				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", serviceProvider);
 
-			var dotIdx = Member.LastIndexOf('.');
+#pragma warning disable CA1865 // Use 'string.LastIndexOf(char)' - CA1307 requires StringComparison
+			var dotIdx = Member.LastIndexOf(".", StringComparison.Ordinal);
+#pragma warning restore CA1865
 			var typename = Member.Substring(0, dotIdx);
 			var membername = Member.Substring(dotIdx + 1);
 
 			var type = typeResolver.Resolve(typename, serviceProvider, expandToExtension: false);
 
-			var pinfo = type.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == membername && pi.GetMethod.IsStatic);
-			if (pinfo != null)
-				return pinfo.GetMethod.Invoke(null, Array.Empty<object>());
+			// Search for static property in the type hierarchy
+			var currentType = type.GetTypeInfo();
+			while (currentType != null)
+			{
+				var pinfo = currentType.DeclaredProperties.FirstOrDefault(pi => pi.Name == membername && pi.GetMethod?.IsStatic == true);
+				if (pinfo != null)
+					return pinfo.GetMethod.Invoke(null, Array.Empty<object>());
 
-			var finfo = type.GetRuntimeFields().FirstOrDefault(fi => fi.Name == membername && fi.IsStatic);
-			if (finfo != null)
-				return finfo.GetValue(null);
+				var finfo = currentType.DeclaredFields.FirstOrDefault(fi => fi.Name == membername && fi.IsStatic);
+				if (finfo != null)
+					return finfo.GetValue(null);
+
+				currentType = currentType.BaseType?.GetTypeInfo();
+			}
 
 			throw new XamlParseException($"No static member found for {Member}", serviceProvider);
 		}

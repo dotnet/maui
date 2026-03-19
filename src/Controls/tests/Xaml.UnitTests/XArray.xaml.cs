@@ -1,7 +1,7 @@
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -16,11 +16,12 @@ public partial class XArray : MockBindableForArray
 {
 	public XArray() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void SupportsXArray([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void SupportsXArray(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -29,7 +30,7 @@ public partial class XArray : MockBindableForArray
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -40,30 +41,30 @@ public class MockBindableForArray : View
 	public object Content { get; set; }
 }
 
-[XamlProcessing(XamlInflator.Default, true)]
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class XArray : MockBindableForArray
 {
 	public XArray() => InitializeComponent();
 }
 """).RunMauiSourceGenerator(typeof(XArray));
-				Assert.That(result.Diagnostics, Is.Empty, "No diagnostics expected for XArray");
+				Assert.Empty(result.Diagnostics);
 				return;
 			}
 			var layout = new XArray(inflator);
 			var array = layout.Content;
 			Assert.NotNull(array);
-			Assert.That(array, Is.TypeOf<string[]>());
-			Assert.AreEqual(2, ((string[])layout.Content).Length);
-			Assert.AreEqual("Hello", ((string[])layout.Content)[0]);
-			Assert.AreEqual("World", ((string[])layout.Content)[1]);
+			Assert.IsType<string[]>(array);
+			Assert.Equal(2, ((string[])layout.Content).Length);
+			Assert.Equal("Hello", ((string[])layout.Content)[0]);
+			Assert.Equal("World", ((string[])layout.Content)[1]);
 		}
 
-		[Test]
+		[Fact]
 		public void ArrayExtensionNotPresentInGeneratedCode()
 		{
 			MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
-			Assert.That(!hasLoggedErrors);
-			Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
+			Assert.False(hasLoggedErrors);
+			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
 		}
 
 		static bool InstructionIsArrayExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)

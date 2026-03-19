@@ -5,19 +5,15 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Stepper)]
-public class StepperFeatureTests : UITest
+public class StepperFeatureTests : _GalleryUITest
 {
 	public const string StepperFeatureMatrix = "Stepper Feature Matrix";
+
+	public override string GalleryPageName => StepperFeatureMatrix;
 
 	public StepperFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(StepperFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -182,7 +178,7 @@ public class StepperFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 	[Test]
@@ -285,6 +281,10 @@ public class StepperFeatureTests : UITest
 	[Test]
 	public void Stepper_IncrementDoesNotExceedMaximum()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to Stepper Increment issue in iOS 26."); // Issue Link: https://github.com/dotnet/maui/issues/33769
+		}
 		App.WaitForElement("Options");
 		App.Tap("Options");
 

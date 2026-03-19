@@ -13,50 +13,68 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <summary>Bindable property for attached property <c>File</c>.</summary>
 		public static readonly BindableProperty FileProperty = BindableProperty.Create("File", typeof(string), typeof(FormsElement), default(string));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor'][1]/Docs/*" />
+		/// <summary>Gets the blend color for the image.</summary>
+		/// <param name="element">The image element whose blend color to get.</param>
+		/// <returns>The blend color.</returns>
 		public static Color GetBlendColor(BindableObject element)
 		{
 			return (Color)element.GetValue(BlendColorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetBlendColor'][1]/Docs/*" />
+		/// <summary>Sets the blend color for the image.</summary>
+		/// <param name="element">The image element whose blend color to set.</param>
+		/// <param name="color">The blend color.</param>
 		public static void SetBlendColor(BindableObject element, Color color)
 		{
 			element.SetValue(BlendColorProperty, color);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor'][2]/Docs/*" />
+		/// <summary>Gets the blend color for the image.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The blend color.</returns>
 		public static Color GetBlendColor(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetBlendColor(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetBlendColor'][2]/Docs/*" />
+		/// <summary>Sets the blend color for the image.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="color">The blend color.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetBlendColor(this IPlatformElementConfiguration<Tizen, FormsElement> config, Color color)
 		{
 			SetBlendColor(config.Element, color);
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetFile'][1]/Docs/*" />
+		/// <summary>Gets the file path for the image.</summary>
+		/// <param name="element">The image element whose file path to get.</param>
+		/// <returns>The file path.</returns>
 		public static string GetFile(BindableObject element)
 		{
 			return (string)element.GetValue(FileProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetFile'][1]/Docs/*" />
+		/// <summary>Sets the file path for the image.</summary>
+		/// <param name="element">The image element whose file path to set.</param>
+		/// <param name="file">The file path.</param>
 		public static void SetFile(BindableObject element, string file)
 		{
 			element.SetValue(FileProperty, file);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetFile'][2]/Docs/*" />
+		/// <summary>Gets the file path for the image.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The file path.</returns>
 		public static string GetFile(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetFile(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='SetFile'][2]/Docs/*" />
+		/// <summary>Sets the file path for the image.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="file">The file path.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetFile(this IPlatformElementConfiguration<Tizen, FormsElement> config, string file)
 		{
 			SetFile(config.Element, file);

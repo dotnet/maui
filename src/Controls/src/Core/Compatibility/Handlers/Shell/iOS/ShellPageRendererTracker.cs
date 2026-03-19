@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
-			else if (e.Is(Shell.FlyoutIconProperty))
+			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
 				UpdateLeftToolbarItems();
 		}
 
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
 			{
-				SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+				SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			}
 			else if (e.PropertyName == Shell.SearchHandlerProperty.PropertyName)
 			{
@@ -150,6 +151,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
 				UpdateTabBarVisible();
+			}
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftToolbarItems();
 			}
 		}
 
@@ -213,7 +218,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+			SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			SearchHandler = Shell.GetSearchHandler(Page);
 			UpdateTitleView();
 			UpdateTitle();
@@ -271,11 +276,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
+		
+		internal void UpdateTitleViewInternal()
+		{
+			UpdateTitleView();
+		}
 
 		protected virtual void UpdateTitleView()
 		{
 			if (!ToolbarReady() || NavigationItem is null)
 			{
+				return;
+			}
+
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && ViewController?.NavigationController is null)
+			{
+				// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+				// we cannot set the TitleView yet as it would not layout correctly.
 				return;
 			}
 
@@ -306,7 +323,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (titleView.Parent != null)
 				{
-					var view = new TitleViewContainer(titleView);
+					var view = CreateTitleViewContainer(titleView);
 					NavigationItem.TitleView = view;
 				}
 				else
@@ -314,6 +331,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					titleView.ParentSet += OnTitleViewParentSet;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Creates a TitleViewContainer with the appropriate configuration for the current iOS version.
+		/// For iOS 26+, uses autoresizing masks and sets frame from navigation bar to prevent layout issues.
+		/// </summary>
+		TitleViewContainer CreateTitleViewContainer(View titleView)
+		{
+			// iOS 26+ requires autoresizing masks and explicit frame sizing to prevent TitleView from covering content
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				var navigationBarFrame = ViewController?.NavigationController?.NavigationBar.Frame;
+				if (navigationBarFrame.HasValue)
+				{
+					return new TitleViewContainer(titleView, navigationBarFrame.Value);
+				}
+				// Fallback: If navigation bar frame isn't available, use standard constructor
+				// The view will still use autoresizing masks (configured in constructor)
+			}
+
+			return new TitleViewContainer(titleView);
 		}
 
 		void OnTitleViewParentSet(object? sender, EventArgs e)
@@ -461,9 +499,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
+				var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) as Color ??
+					_context?.Shell.GetValue(Shell.ForegroundColorProperty) as Color;
+
 				if (image is not null)
 				{
 					icon = result?.Value;
+
+					if (foregroundColor is null)
+					{
+						icon = icon?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					}
+
 					var originalImageSize = icon?.Size ?? CGSize.Empty;
 
 					// The largest height you can use for navigation bar icons in iOS.
@@ -476,7 +523,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// We only check height because the navigation bar constrains vertical space (44pt height),
 					// but allows horizontal flexibility. Width can vary based on icon design and content,
 					// while height must fit within the fixed navigation bar bounds to avoid clipping.
-					
+
 					// if the image is bigger than the default available size, resize it
 
 					if (icon is not null && originalImageSize.Height - defaultIconHeight > buffer)
@@ -496,6 +543,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+						
+					// For iOS 26+, explicitly set the tint color on the bar button item
+					// because the navigation bar's tint color is not automatically inherited
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						if (foregroundColor is not null)
+						{
+							NavigationItem.LeftBarButtonItem.TintColor = foregroundColor.ToPlatform();
+						}
+					}
 				}
 				else
 				{
@@ -684,15 +741,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				MatchHeight = true;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+				// iOS 26+ and MacCatalyst 26+ require autoresizing masks instead of constraints
+				// to prevent TitleView from expanding beyond navigation bar bounds and covering content.
+				// This is a workaround for layout behavior changes in iOS 26.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					TranslatesAutoresizingMaskIntoConstraints = true;
+					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
 				{
 					TranslatesAutoresizingMaskIntoConstraints = false;
 				}
 				else
 				{
+					// Pre-iOS 11 also uses autoresizing masks
 					TranslatesAutoresizingMaskIntoConstraints = true;
 					AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth;
 				}
+			}
+
+			/// <summary>
+			/// Creates a TitleViewContainer with an explicitly set frame from the navigation bar.
+			/// Used on iOS 26+ to ensure proper sizing when using autoresizing masks.
+			/// </summary>
+			/// <param name="view">The MAUI view to display in the title</param>
+			/// <param name="navigationBarFrame">The navigation bar frame to use for sizing</param>
+			internal TitleViewContainer(View view, CGRect navigationBarFrame) : this(view)
+			{
+				// Set frame to match navigation bar dimensions, starting at origin (0,0)
+				// The X and Y are set to 0 because this view will be positioned by the navigation bar
+				Frame = new CGRect(0, 0, navigationBarFrame.Width, navigationBarFrame.Height);
+				Height = navigationBarFrame.Height;  // Set Height for MatchHeight logic
 			}
 
 			public override CGRect Frame
@@ -908,6 +988,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
+			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
 			UpdateSearchIsEnabled(_searchController);
@@ -941,6 +1022,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateAutomationId();
 		}
 
+		void OnSearchBarEditingStopped(object? sender, EventArgs e)
+		{
+			if (_searchController is not null)
+			{
+				_searchController.Active = false;
+			}
+		}
+
 		void BookmarkButtonClicked(object? sender, EventArgs e)
 		{
 			(SearchHandler as ISearchHandlerController)?.ClearPlaceholderClicked();
@@ -951,6 +1040,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_searchHandlerAppearanceTracker?.Dispose();
 			_searchHandlerAppearanceTracker = null;
+			if (_searchController?.SearchBar is UISearchBar searchBar)
+			{
+				searchBar.BookmarkButtonClicked -= BookmarkButtonClicked;
+				searchBar.OnEditingStopped -= OnSearchBarEditingStopped;
+			}
 
 			if (NavigationItem is not null)
 			{
@@ -975,8 +1069,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			_searchController.Active = false;
 			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
+			_searchController.Active = false;
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)

@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls
 			RefreshIsEnabledProperty();
 
 		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
 
 		bool _wasImageLoading;
 

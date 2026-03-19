@@ -5,10 +5,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Rectangle']/Docs/*" />
+	/// <summary>
+	/// A <see cref="Shape"/> that draws a rectangle, optionally with rounded corners via <see cref="RadiusX"/> and <see cref="RadiusY"/>.
+	/// </summary>
 	public sealed partial class Rectangle : Shape, IShape
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Rectangle"/> class.
+		/// </summary>
 		public Rectangle() : base()
 		{
 			Aspect = Stretch.Fill;
@@ -22,14 +26,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty RadiusYProperty =
 			BindableProperty.Create(nameof(RadiusY), typeof(double), typeof(Rectangle), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="//Member[@MemberName='RadiusX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the x-axis radius used to round the corners of the rectangle. This is a bindable property.
+		/// </summary>
 		public double RadiusX
 		{
 			set { SetValue(RadiusXProperty, value); }
 			get { return (double)GetValue(RadiusXProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Rectangle.xml" path="//Member[@MemberName='RadiusY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the y-axis radius used to round the corners of the rectangle. This is a bindable property.
+		/// </summary>
 		public double RadiusY
 		{
 			set { SetValue(RadiusYProperty, value); }

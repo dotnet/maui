@@ -108,35 +108,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			// Check for null references
 			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
 				return true;
 
-			// Check if stacks are in sync
+			// If stacks are in sync, nothing to do
 			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
 				return true;
 
-			var pages = _shellSection.Stack.ToList();
-
-			// Ensure we have enough pages and navigation items
-			if (pages.Count == 0 || NavigationBar.Items.Length == 0)
-				return true;
-
-			// Bounds check: ensure we have a valid index for pages array
-			int targetIndex = NavigationBar.Items.Length - 1;
-			if (targetIndex < 0 || targetIndex >= pages.Count)
-				return true;
-
-			_shellSection.SyncStackDownTo(pages[targetIndex]);
-
-			for (int i = pages.Count - 1; i >= NavigationBar.Items.Length; i--)
-			{
-				var page = pages[i];
-				if (page != null)
-					DisposePage(page);
-			}
-
-			return true;
+			// Stacks out of sync = user-initiated navigation
+			return SendPop();
 		}
 
 		internal bool SendPop()
@@ -149,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (tracker.Value.ViewController == TopViewController)
 				{
-					var behavior = Shell.GetBackButtonBehavior(tracker.Value.Page);
+					var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Value.Page);
 					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 					var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
 
@@ -577,10 +557,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			foreach (var child in ShellSection.Stack)
 			{
-				if (child == null)
-					continue;
-				var renderer = (IPlatformViewHandler)child.Handler;
-				if (viewController == renderer.ViewController)
+				if (child?.Handler is IPlatformViewHandler handler && viewController == handler.ViewController)
 					return child;
 			}
 
@@ -805,6 +782,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						navBarVisible = _self._renderer.ShowNavBar;
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
+
+					// Update navigation bar visibility during the transition
+					// This ensures the correct nav bar state is applied as part of the navigation animation
+					bool animateVisibilityChange = animated && Shell.GetNavBarVisibilityAnimationEnabled(element);
+					navigationController.SetNavigationBarHidden(!navBarVisible, animateVisibilityChange);
 				}
 
 				var coordinator = viewController.GetTransitionCoordinator();
@@ -824,6 +806,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tracker is ShellPageRendererTracker shellRendererTracker)
 				{
 					shellRendererTracker.UpdateToolbarItemsInternal(false);
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+						// we cannot set the TitleView yet as it would not layout correctly.
+						// So we update it later when the ViewController is added to the NavigationController
+						shellRendererTracker.UpdateTitleViewInternal();
+					}
 				}
 			}
 

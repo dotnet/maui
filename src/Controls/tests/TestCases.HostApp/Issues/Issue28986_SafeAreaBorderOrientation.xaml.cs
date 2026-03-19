@@ -1,3 +1,7 @@
+#if ANDROID
+using Android.Views;
+#endif
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 28986, "Test SafeArea per-edge safe area control", PlatformAffected.Android | PlatformAffected.iOS, issueTestNumber: 5)]
@@ -18,6 +22,12 @@ public partial class Issue28986_SafeAreaBorderOrientation : ContentPage
 
 		// Update dimensions when the page appears
 		this.Appearing += OnPageAppearing;
+
+#if ANDROID
+		// Set SoftInput.AdjustNothing - we have full control over insets (iOS-like behavior)
+		var window = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window;
+		window?.SetSoftInputMode(SoftInput.AdjustNothing | SoftInput.StateUnspecified);
+#endif
 	}
 
 	private void OnPageAppearing(object sender, EventArgs e)

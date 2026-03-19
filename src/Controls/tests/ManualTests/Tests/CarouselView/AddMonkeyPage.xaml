@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Tests.CarouselView.AddMonkeyPage"
+             Title="Add New Monkey"
+             BackgroundColor="White">
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="15">
+            <Label Text="Add New Monkey"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="#176515"
+                   Margin="0,0,0,20" />
+            
+            <!-- Name -->
+            <Label Text="Name *"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="Black" />
+            <Entry x:Name="nameEntry"
+                   Placeholder="Enter monkey name"
+                   FontSize="16" />
+            
+            <!-- Location -->
+            <Label Text="Location"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="Black"
+                   Margin="0,10,0,0" />
+            <Entry x:Name="locationEntry"
+                   Placeholder="Enter location"
+                   FontSize="16" />
+            
+            <!-- Details -->
+            <Label Text="Details"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="Black"
+                   Margin="0,10,0,0" />
+            <Editor x:Name="detailsEditor"
+                    Placeholder="Enter details"
+                    FontSize="16"
+                    HeightRequest="120" />
+            
+            <!-- Image URL -->
+            <Label Text="Image URL (optional)"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="Black"
+                   Margin="0,10,0,0" />
+            <Entry x:Name="imageUrlEntry"
+                   Placeholder="Enter image URL or leave blank for default"
+                   FontSize="16" />
+            
+            <!-- Buttons -->
+            <HorizontalStackLayout Spacing="10"
+                                   HorizontalOptions="Center"
+                                   Margin="0,20,0,0">
+                <Button Text="Save"
+                        BackgroundColor="#176515"
+                        TextColor="White"
+                        Clicked="OnSaveClicked"
+                        WidthRequest="120" />
+                
+                <Button Text="Cancel"
+                        BackgroundColor="#808080"
+                        TextColor="White"
+                        Clicked="OnCancelClicked"
+                        WidthRequest="120" />
+            </HorizontalStackLayout>
+            
+            <Label Text="* Required fields"
+                   FontSize="12"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   Margin="0,10,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

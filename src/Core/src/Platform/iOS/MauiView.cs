@@ -68,6 +68,10 @@ namespace Microsoft.Maui.Platform
 		// otherwise, false. Null means not yet determined.
 		bool? _scrollViewDescendant;
 
+		// Cached result of whether a parent MauiView is already handling safe area.
+		// Null means not yet determined. Invalidated when view hierarchy changes.
+		bool? _parentHandlesSafeArea;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -357,13 +361,14 @@ namespace Microsoft.Maui.Platform
 				return new SafeAreaPadding(left, right, top, bottom);
 			}
 
-			// Fallback to legacy behavior
-			if (View is ISafeAreaView sav && sav.IgnoreSafeArea)
+			// Fallback to legacy ISafeAreaView behavior
+			if (View is ISafeAreaView sav)
 			{
-				return SafeAreaPadding.Empty;
+				return sav.IgnoreSafeArea ? SafeAreaPadding.Empty : baseSafeArea;
 			}
 
-			return baseSafeArea;
+			// Non-safe-area views pass through to parent
+			return SafeAreaPadding.Empty;
 		}
 
 		/// <summary>
@@ -380,6 +385,42 @@ namespace Microsoft.Maui.Platform
 				&& SafeAreaEdges.IsSoftInput(safeAreaView2.GetSafeAreaRegionsForEdge(3))) is not null;
 		}
 
+
+		/// <summary>
+		/// Returns whether this view is currently applying safe area adjustments to its layout.
+		/// Used by descendant views to avoid double-applying safe area when a parent already handles it.
+		/// </summary>
+		internal bool AppliesSafeAreaAdjustments => _appliesSafeAreaAdjustments;
+
+		/// <summary>
+		/// Checks if any ancestor MauiView is already applying safe area adjustments for the same edges
+		/// that this view handles. When a parent already handles a specific safe area edge, this view
+		/// should not double-apply insets for that edge — but it may still handle OTHER edges independently.
+		/// This prevents double-padding when parent and child handle the same edges (#33595, #32586),
+		/// while allowing parent and child to handle DIFFERENT edges without conflict (#28986).
+		/// </summary>
+		bool IsParentHandlingSafeArea()
+		{
+			if (_parentHandlesSafeArea.HasValue)
+				return _parentHandlesSafeArea.Value;
+
+			// Check if any ancestor MauiView handles any of the SAME edges we handle.
+			// Edge-aware check: parent handling only TOP doesn't block child handling BOTTOM.
+			_parentHandlesSafeArea = this.FindParent(x =>
+			{
+				if (x is not MauiView mv || !mv._appliesSafeAreaAdjustments)
+					return false;
+				// Return true only if parent handles any edge that this view also handles
+				for (int edge = 0; edge < 4; edge++)
+				{
+					if (GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None &&
+						mv.GetSafeAreaRegionForEdge(edge) != SafeAreaRegions.None)
+						return true;
+				}
+				return false;
+			}) is not null;
+			return _parentHandlesSafeArea.Value;
+		}
 
 		/// <summary>
 		/// Checks if the current measure information is still valid for the given constraints.
@@ -609,11 +650,13 @@ namespace Microsoft.Maui.Platform
 			_safeArea = GetAdjustedSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
+			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
 
-			// Return whether the way safe area interacts with our view has changed
+			// Return whether the way safe area interacts with our view has changed.
+			// Compare at device-pixel resolution to filter sub-pixel noise from animations
+			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
-				   (oldSafeArea == _safeArea || !_appliesSafeAreaAdjustments);
+				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
 		}
 
 		/// <summary>
@@ -701,7 +744,18 @@ namespace Microsoft.Maui.Platform
 		public override void SafeAreaInsetsDidChange()
 		{
 			_safeAreaInvalidated = true;
+			_parentHandlesSafeArea = null;
 			base.SafeAreaInsetsDidChange();
+		}
+
+		/// <summary>
+		/// Directly invalidates this view's safe area, forcing re-evaluation on next layout pass.
+		/// </summary>
+		internal void InvalidateSafeArea()
+		{
+			_safeAreaInvalidated = true;
+			_parentHandlesSafeArea = null;
+			SetNeedsLayout();
 		}
 
 		/// <summary>
@@ -713,6 +767,7 @@ namespace Microsoft.Maui.Platform
 			base.MovedToWindow();
 
 			_scrollViewDescendant = null;
+			_parentHandlesSafeArea = null;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
@@ -728,6 +783,33 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdateKeyboardSubscription();
+		}
+
+		/// <summary>
+		/// Called when the focus environment updates. This method propagates native iOS focus
+		/// changes to the cross-platform layer by updating the IsFocused property of the
+		/// associated IView when this MauiView gains or loses focus.
+		/// </summary>
+		/// <param name="context">Information about the focus update</param>
+		/// <param name="coordinator">Coordinator for focus animations</param>
+		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
+		{
+			base.DidUpdateFocus(context, coordinator);
+
+			if (context.NextFocusedView == this)
+			{
+				if (CrossPlatformLayout is IView view)
+				{
+					view.IsFocused = true;
+				}
+			}
+			else
+			{
+				if (CrossPlatformLayout is IView view)
+				{
+					view.IsFocused = false;
+				}
+			}
 		}
 	}
 }

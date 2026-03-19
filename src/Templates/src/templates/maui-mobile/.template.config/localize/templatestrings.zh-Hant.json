@@ -6,7 +6,7 @@
   "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
   "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'",
   "symbols/applicationId/description": "覆寫專案中的 $(ApplicationId)",
-  "symbols/Framework/description": "專案的目標架構。",
+  "symbols/Framework/description": "專案的目標 Framework。",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目標 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "包含範例內容(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和功能，以示範基本使用模式。",

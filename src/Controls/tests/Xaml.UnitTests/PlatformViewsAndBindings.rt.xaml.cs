@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Internals;
-using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -227,22 +227,21 @@ public partial class PlatformViewsAndBindings : ContentPage
 {
 	public PlatformViewsAndBindings() => InitializeComponent();
 
-	[TestFixture]
-	[Ignore("fails for now")]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		protected internal override void Setup()
 		{
+			base.Setup();
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[TearDown]
-		public void TearDown()
+		protected internal override void TearDown()
 		{
 			DeviceInfo.SetCurrent(null);
+			base.TearDown();
 		}
 
 		DevicePlatform SetUpPlatform(string platform)
@@ -264,10 +263,14 @@ public partial class PlatformViewsAndBindings : ContentPage
 			return p;
 		}
 
-		[Test]
-		[Ignore("fails for now")]
-		//[TestCase(true)]
-		public void PlatformInContentView([Values] XamlInflator inflator, [Values("iOS", "Android")] string platform)
+		[Theory(Skip = "fails for now")]
+		[InlineData(XamlInflator.Runtime, "iOS")]
+		[InlineData(XamlInflator.Runtime, "Android")]
+		[InlineData(XamlInflator.XamlC, "iOS")]
+		[InlineData(XamlInflator.XamlC, "Android")]
+		[InlineData(XamlInflator.SourceGen, "iOS")]
+		[InlineData(XamlInflator.SourceGen, "Android")]
+		internal void PlatformInContentView(XamlInflator inflator, string platform)
 		{
 			var realPlatform = SetUpPlatform(platform);
 
@@ -283,22 +286,22 @@ public partial class PlatformViewsAndBindings : ContentPage
 			MockPlatformView platformView = null;
 			if (realPlatform == DevicePlatform.iOS)
 			{
-				Assert.That(view.Content, Is.TypeOf<MockUIViewWrapper>());
-				Assert.That(((MockUIViewWrapper)view.Content).PlatformView, Is.TypeOf<MockUIView>());
+				Assert.IsType<MockUIViewWrapper>(view.Content);
+				Assert.IsType<MockUIView>(((MockUIViewWrapper)view.Content).PlatformView);
 				platformView = ((MockUIViewWrapper)view.Content).PlatformView;
 			}
 			else if (realPlatform == DevicePlatform.Android)
 			{
-				Assert.That(view.Content, Is.TypeOf<MockAndroidViewWrapper>());
-				Assert.That(((MockAndroidViewWrapper)view.Content).PlatformView, Is.TypeOf<MockAndroidView>());
+				Assert.IsType<MockAndroidViewWrapper>(view.Content);
+				Assert.IsType<MockAndroidView>(((MockAndroidViewWrapper)view.Content).PlatformView);
 				platformView = ((MockAndroidViewWrapper)view.Content).PlatformView;
 			}
 
-			Assert.AreEqual("foo", platformView.Foo);
-			Assert.AreEqual(42, platformView.Bar);
-			Assert.AreEqual("Bound Value", platformView.Baz);
-			Assert.AreEqual(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
-			Assert.AreEqual(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
+			Assert.Equal("foo", platformView.Foo);
+			Assert.Equal(42, platformView.Bar);
+			Assert.Equal("Bound Value", platformView.Baz);
+			Assert.Equal(LayoutOptions.End, view.Content.GetValue(View.HorizontalOptionsProperty));
+			Assert.Equal(LayoutOptions.EndAndExpand, view.Content.GetValue(View.VerticalOptionsProperty));
 		}
 	}
 }

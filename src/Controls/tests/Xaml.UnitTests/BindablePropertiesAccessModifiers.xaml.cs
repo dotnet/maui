@@ -1,5 +1,6 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -39,18 +40,19 @@ public partial class BindablePropertiesAccessModifiers : ContentPage
 
 	public BindablePropertiesAccessModifiers() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => Application.Current = new MockApplication();
-		[TearDown] public void TearDown() => Application.Current = null;
+		public Tests() => Application.Current = new MockApplication();
+		public void Dispose() => Application.Current = null;
 
-		[Test]
-		public void BindProperties([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindProperties(XamlInflator inflator)
 		{
 			var page = new BindablePropertiesAccessModifiers(inflator) { BindingContext = new BindablePropertiesAccessModifiersVM() };
-			Assert.AreEqual("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));
-			Assert.AreEqual("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty));
+			Assert.Equal("Bar", page.AMC.GetValue(AccessModifiersControl.InternalBarProperty));
+			Assert.Equal("Foo", page.AMC.GetValue(AccessModifiersControl.PublicFooProperty));
 		}
 	}
 }

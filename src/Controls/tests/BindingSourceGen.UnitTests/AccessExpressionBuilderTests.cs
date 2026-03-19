@@ -49,7 +49,7 @@ public class AccessExpressionBuilderTests
 	{
 		var generatedCode = Build("source",
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Field, "Y")
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterInaccessible: true, IsSetterInaccessible: true)
 			]);
 
 		Assert.Equal("GetUnsafeField_Y(source)", generatedCode);
@@ -60,7 +60,7 @@ public class AccessExpressionBuilderTests
 	{
 		var generatedCode = Build("source",
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y")
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: true)
 			]);
 
 		Assert.Equal("GetUnsafeProperty_Y(source)", generatedCode);

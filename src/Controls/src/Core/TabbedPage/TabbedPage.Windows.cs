@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls
 		NavigationRootManager? _navigationRootManager;
 		WFrame? _navigationFrame;
 		bool _connectedToHandler;
+		Page? _displayedPage;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
 		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
@@ -177,6 +178,7 @@ namespace Microsoft.Maui.Controls
 			_navigationView = null;
 			_navigationRootManager = null;
 			_navigationFrame = null;
+			_displayedPage = null;
 		}
 
 		void OnTabbedPageAppearing(object? sender, EventArgs e)
@@ -255,8 +257,15 @@ namespace Microsoft.Maui.Controls
 
 		void NavigateToPage(Page page)
 		{
-			FrameNavigationOptions navOptions = new FrameNavigationOptions();
+			if (_displayedPage == page)
+				return;
+
+			// Detach content from old page to prevent "Element is already the child of another element" error
+			if (NavigationFrame.Content is WPage oldPage && oldPage.Content is WContentPresenter oldPresenter)
+				oldPresenter.Content = null;
+
 			CurrentPage = page;
+			FrameNavigationOptions navOptions = new FrameNavigationOptions();
 			navOptions.IsNavigationStackEnabled = false;
 			NavigationFrame.NavigateToType(typeof(WPage), null, navOptions);
 		}
@@ -270,7 +279,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateCurrentPageContent(WPage page)
 		{
-			if (MauiContext == null)
+			if (MauiContext == null || _displayedPage == CurrentPage)
 				return;
 
 			WContentPresenter? presenter;
@@ -300,6 +309,8 @@ namespace Microsoft.Maui.Controls
 			{
 				presenter.Content = _currentPage.ToPlatform(MauiContext);
 			}
+      
+			_displayedPage = CurrentPage;
 		}
 
 		void OnNavigated(object sender, UI.Xaml.Navigation.NavigationEventArgs e)
@@ -372,6 +383,7 @@ namespace Microsoft.Maui.Controls
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
 						vm.IsSelected = page == view.CurrentPage;
+						vm.IsEnabled = page.IsEnabled;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));

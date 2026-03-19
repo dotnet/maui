@@ -13,6 +13,7 @@ jobs:
     name: Rebase
     runs-on: ubuntu-latest
     if: >-
+      github.repository_owner == 'dotnet' &&
       github.event.issue.pull_request != '' && 
       (
         startsWith(github.event.comment.body, '/rebase') || 

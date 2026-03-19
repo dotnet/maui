@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,14 +6,15 @@ public partial class Gh2574 : ContentPage
 {
 	public Gh2574() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void xNameOnRoot([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void xNameOnRoot(XamlInflator inflator)
 		{
 			var layout = new Gh2574(inflator);
-			Assert.That(layout.page, Is.EqualTo(layout));
+			Assert.Equal(layout, layout.page);
 		}
 	}
 }

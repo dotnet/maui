@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,14 +7,15 @@ public partial class ImplicitResourceDictionaries : ContentPage
 {
 	public ImplicitResourceDictionaries() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void ImplicitRDonContentViews([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ImplicitRDonContentViews(XamlInflator inflator)
 		{
 			var layout = new ImplicitResourceDictionaries(inflator);
-			Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));
+			Assert.Equal(Colors.Purple, layout.label.TextColor);
 		}
 	}
 }

@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
-		[Category(UITestCategories.Compatibility)]
 		public void SwipeItemNoTextWindows()
 		{
 			App.WaitForElement(SwipeViewId);

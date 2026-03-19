@@ -1,19 +1,19 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+	[Collection("Issue")]
 	public partial class Gh4238
 	{
 		public Gh4238() => InitializeComponent();
 		
 		public System.Collections.ArrayList Property { get; set; }
 
-		[Test]
+		[Fact]
 		public void Test()
 		{
 			InitializeComponent();
-			Assert.AreEqual(0f, Property[0]);
+			Assert.Equal(0f, Property[0]);
 		}
 	}
 }

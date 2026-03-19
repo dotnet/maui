@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -52,22 +52,23 @@ public partial class ServiceProviderTests : ContentPage
 {
 	public ServiceProviderTests() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void TestServiceProviders([Values(XamlInflator.XamlC)] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.XamlC)]
+		internal void TestServiceProviders(XamlInflator inflator)
 		{
 			var page = new ServiceProviderTests(inflator);
 			MockCompiler.Compile(typeof(ServiceProviderTests));
 
-			Assert.AreEqual(null, page.label0.Text);
-			Assert.That(page.label1.Text, Does.Contain("IProvideValueTarget"));
-			Assert.That(page.label3.Text, Does.Contain("IXmlLineInfoProvider"));
-			Assert.That(page.label4.Text, Does.Contain("IRootObjectProvider(ServiceProviderTests)")); //https://github.com/dotnet/maui/issues/16881
+			Assert.Null(page.label0.Text);
+			Assert.Contains("IProvideValueTarget", page.label1.Text, StringComparison.Ordinal);
+			Assert.Contains("IXmlLineInfoProvider", page.label3.Text, StringComparison.Ordinal);
+			Assert.Contains("IRootObjectProvider(ServiceProviderTests)", page.label4.Text, StringComparison.Ordinal); //https://github.com/dotnet/maui/issues/16881
 		}
 	}
 }

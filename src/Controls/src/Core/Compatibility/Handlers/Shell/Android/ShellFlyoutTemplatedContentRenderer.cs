@@ -310,6 +310,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_rootView.AddView(_flyoutContentView, index);
 			UpdateContentPadding();
+			UpdateVerticalScrollMode();
 		}
 
 
@@ -427,7 +428,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var footer = ((IShellController)_shellContext.Shell).FlyoutFooter;
 
 			if (footer == null)
+			{
+				UpdateContentPadding();
 				return;
+			}
 
 			if (_flyoutWidth == 0)
 				return;
@@ -929,7 +933,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			SetClipToPadding(false);
 			SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
-			SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
 		}
 
 		protected override void Dispose(bool disposing)

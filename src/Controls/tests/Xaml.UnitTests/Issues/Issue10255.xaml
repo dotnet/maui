@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Issue10255">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:Issue10255BoolToObjectConverter x:Key="FailedConverter" x:TypeArguments="GridLength" TrueObject="*" FalseObject="80"/>
+            <local:Issue10255BoolToObjectConverter x:Key="StarConverter" x:TypeArguments="GridLength" TrueObject="2*" FalseObject="auto"/>
+            <local:Issue10255BoolToObjectConverter x:Key="WorkingConverter" x:TypeArguments="x:Int32" TrueObject="10" FalseObject="80"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid RowDefinitions="Auto,*">
+        <Label x:Name="label1" Text="Test Label 1" Grid.Row="0"/>
+        <Label x:Name="label2" Text="Test Label 2" Grid.Row="1"/>
+    </Grid>
+</ContentPage>

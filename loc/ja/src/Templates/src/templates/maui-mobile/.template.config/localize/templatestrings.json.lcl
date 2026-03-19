@@ -65,7 +65,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Run 'dotnet restore']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA['dotnet restore' を実行する]]></Val>
+            <Val><![CDATA['dotnet restore' を実行します]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プロジェクトのターゲット フレームワーク。]]></Val>
+            <Val><![CDATA[プロジェクトのターゲット フレームワークです。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -101,7 +101,7 @@
         <Str Cat="Text">
           <Val><![CDATA[_Include sample content]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[サンプル コンテンツを含める(_I)]]></Val>
+            <Val><![CDATA[_サンプル コンテンツを含める]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -110,7 +110,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Overrides the $(ApplicationId) in the project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プロジェクト内の $(ApplicationId) をオーバーライドする]]></Val>
+            <Val><![CDATA[プロジェクト内の $(ApplicationId) をオーバーライドします]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

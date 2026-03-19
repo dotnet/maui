@@ -5,11 +5,10 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 class XamlProjectItemForIC
 {
-	public XamlProjectItemForIC(ProjectItem projectItem, SGRootNode? root/*, XmlNamespaceManager nsmgr*/)
+	public XamlProjectItemForIC(ProjectItem projectItem, string? xaml)
 	{
 		ProjectItem = projectItem;
-		Root = root;
-		// Nsmgr = nsmgr;
+		Xaml = xaml;
 	}
 
 	public XamlProjectItemForIC(ProjectItem projectItem, Exception exception)
@@ -19,7 +18,6 @@ class XamlProjectItemForIC
 	}
 
 	public ProjectItem ProjectItem { get; }
-	public SGRootNode? Root { get; }
-	// public XmlNamespaceManager? Nsmgr { get; }
+	public string? Xaml { get; }
 	public Exception? Exception { get; }
 }

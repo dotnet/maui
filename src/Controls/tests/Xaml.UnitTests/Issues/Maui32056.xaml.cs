@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -19,28 +20,28 @@ public partial class Maui32056 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void ByteEnum([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ByteEnum(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 			{
 				MockCompiler.Compile(typeof(Maui32056), out var methodDef, out var hasLoggedErrors);
-				Assert.IsFalse(hasLoggedErrors);
+				Assert.False(hasLoggedErrors);
 			}
 			var page = new Maui32056(inflator);
-			Assert.AreEqual(Maui32056Enum.A.ToString(), page.label0.Text);			
+			Assert.Equal(Maui32056Enum.A.ToString(), page.label0.Text);			
 		}
 	}
 }

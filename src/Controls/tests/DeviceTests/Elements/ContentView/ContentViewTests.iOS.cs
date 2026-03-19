@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(100, updatedSize.Height);
 		}
 
-		[Fact(Skip="Failing https://github.com/dotnet/maui/issues/32368"), Category(TestCategory.Layout)]
+		[Fact, Category(TestCategory.Layout)]
 		public async Task ContentViewRespondsWhenViewRemoved()
 		{
 			var contentView = new ContentView();

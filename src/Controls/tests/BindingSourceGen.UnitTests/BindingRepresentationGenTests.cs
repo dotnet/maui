@@ -1093,12 +1093,14 @@ public class BindingRepresentationGenTests
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true),
 			new EquatableArray<IPathPart>([
-				new InaccessibleMemberAccess(
-					new TypeDescription("global::Foo"),
-					new TypeDescription("int", IsValueType: true),
-					AccessorKind.Field,
+				new MemberAccess(
 					"_value",
-					IsValueType: true
+					IsValueType: true,
+					ContainingType: new TypeDescription("global::Foo"),
+					MemberType: new TypeDescription("int", IsValueType: true),
+					Kind: AccessorKind.Field,
+					IsGetterInaccessible: true,
+					IsSetterInaccessible: true
 				)
 			]),
 			SetterOptions: new(IsWritable: true),
@@ -1135,12 +1137,14 @@ public class BindingRepresentationGenTests
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true),
 			new EquatableArray<IPathPart>([
-				new InaccessibleMemberAccess(
-					new TypeDescription("global::Foo"),
-					new TypeDescription("int", IsValueType: true),
-					AccessorKind.Property,
+				new MemberAccess(
 					"Value",
-					IsValueType: true
+					IsValueType: true,
+					ContainingType: new TypeDescription("global::Foo"),
+					MemberType: new TypeDescription("int", IsValueType: true),
+					Kind: AccessorKind.Property,
+					IsGetterInaccessible: true,
+					IsSetterInaccessible: true
 				)
 			]),
 			SetterOptions: new(IsWritable: true),

@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SliderHandler : ViewHandler<ISlider, UISlider>
 	{
 		readonly SliderProxy _proxy = new();
+		UITapGestureRecognizer? _sliderTapRecognizer;
 
 		protected override UISlider CreatePlatformView()
 		{
@@ -28,6 +29,51 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 			_proxy.Disconnect(platformView);
+			if (_sliderTapRecognizer is not null)
+			{
+				_sliderTapRecognizer.ShouldReceiveTouch = null;
+				platformView.RemoveGestureRecognizer(_sliderTapRecognizer);
+				_sliderTapRecognizer.Dispose();
+				_sliderTapRecognizer = null;
+			}
+		}
+
+		internal void MapUpdateOnTap(bool isMapUpdateOnTapEnabled)
+		{
+			if (isMapUpdateOnTapEnabled)
+			{
+				if (_sliderTapRecognizer is null)
+				{
+					var weakPlatformSlider = new WeakReference<UISlider>(PlatformView);
+					var weakVirtualSlider = new WeakReference<ISlider>(VirtualView);
+					_sliderTapRecognizer = new UITapGestureRecognizer((recognizer) =>
+					{
+						if (weakPlatformSlider.TryGetTarget(out var platformSlider) && weakVirtualSlider.TryGetTarget(out var slider))
+						{
+							var tappedLocation = recognizer.LocationInView(platformSlider);
+							if (tappedLocation != default)
+							{
+								var val = tappedLocation.X * platformSlider.MaxValue / platformSlider.Frame.Size.Width;
+								slider.Value = val;
+							}
+						}
+					})
+                    {
+      					CancelsTouchesInView = false,
+      					ShouldRecognizeSimultaneously = (gesture, otherGesture) => true
+                    };
+					
+					PlatformView.AddGestureRecognizer(_sliderTapRecognizer);
+				}
+			}
+			else
+			{
+				if (_sliderTapRecognizer != null)
+				{
+					PlatformView.RemoveGestureRecognizer(_sliderTapRecognizer);
+					_sliderTapRecognizer = null;
+				}
+			}
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)

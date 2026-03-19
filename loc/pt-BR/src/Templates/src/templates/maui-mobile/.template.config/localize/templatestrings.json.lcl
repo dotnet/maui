@@ -35,7 +35,7 @@
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aplicativo .NET MAUI]]></Val>
+            <Val><![CDATA[.NET MAUI App]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[.NET MAUI App (Preview)]]></Val>
@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A estrutura de destino para o projeto.]]></Val>
+            <Val><![CDATA[A estrutura de destino do projeto.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -119,7 +119,7 @@
         <Str Cat="Text">
           <Val><![CDATA[If specified, skips the automatic restore of the project on create.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Se especificado, ignora a restauração automática do projeto que está sendo criado.]]></Val>
+            <Val><![CDATA[Se especificado, ignora a restauração automática do projeto na criação.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
