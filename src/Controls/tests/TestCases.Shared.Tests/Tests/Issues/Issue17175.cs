@@ -15,8 +15,20 @@ public class Issue17175 : _IssuesUITest
     public void VisualStateManagerCanSetStyleProperty()
     {
         App.WaitForElement("GoToDisabledButton");
+
+        // Normal → Disabled
         App.Tap("GoToDisabledButton");
         var stateLabel = App.FindElement("StateLabel").GetText();
+        Assert.That(stateLabel, Is.EqualTo("State: Disabled"));
+
+        // Disabled → Normal (verifies UnApply restores correctly)
+        App.Tap("GoToDisabledButton");
+        stateLabel = App.FindElement("StateLabel").GetText();
+        Assert.That(stateLabel, Is.EqualTo("State: Normal"));
+
+        // Normal → Disabled again (verifies second cycle works)
+        App.Tap("GoToDisabledButton");
+        stateLabel = App.FindElement("StateLabel").GetText();
         Assert.That(stateLabel, Is.EqualTo("State: Disabled"));
     }
 }

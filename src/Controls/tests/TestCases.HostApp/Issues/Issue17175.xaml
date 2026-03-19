@@ -57,6 +57,8 @@
                         <VisualState.Setters>
                             <Setter Property="Style"
                                     Value="{StaticResource BaseButtonStyle}"/>
+                            <Setter Property="Text"
+                                    Value="State: Normal"/>
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState Name="Selected">

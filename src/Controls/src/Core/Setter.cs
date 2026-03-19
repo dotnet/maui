@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Controls
 				// When un-applying a Style that was set through a Setter,
 				// we need to call the Style's UnApply method to properly clean up
 				((IStyle)style).UnApply(targetObject);
+				return;
 			}
 			targetObject.ClearValue(Property, specificity);
 		}
