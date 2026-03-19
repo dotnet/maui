@@ -375,6 +375,46 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					"Fastest and Auto should produce different pixel output when downscaling");
 			}
 
+			[Fact]
+			public void BestQualityProducesDifferentPixelOutputThanAuto()
+			{
+				// Best uses Mitchell cubic vs Auto uses bilinear+mipmaps
+				var dpiPath = new DpiPath("", 1);
+
+				var infoBest = new ResizeImageInfo();
+				infoBest.Filename = "images/camera.png";
+				infoBest.BaseSize = new SKSize(100, 100);
+				infoBest.Quality = ResizeQuality.Best;
+				var toolsBest = new SkiaSharpRasterTools(infoBest, Logger);
+				toolsBest.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.png";
+				infoAuto.BaseSize = new SKSize(100, 100);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpRasterTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpBest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpBest.Width, bmpAuto.Width);
+				Assert.Equal(bmpBest.Height, bmpAuto.Height);
+
+				int differentPixels = 0;
+				for (int y = 0; y < bmpBest.Height; y++)
+				{
+					for (int x = 0; x < bmpBest.Width; x++)
+					{
+						if (bmpBest.GetPixel(x, y) != bmpAuto.GetPixel(x, y))
+							differentPixels++;
+					}
+				}
+
+				Assert.True(differentPixels > 0,
+					"Best (Mitchell cubic) and Auto (bilinear) should produce different pixel output");
+			}
+
 			[Theory]
 			[InlineData("Auto")]
 			[InlineData("Best")]
