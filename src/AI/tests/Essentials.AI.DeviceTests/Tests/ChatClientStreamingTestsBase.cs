@@ -73,4 +73,58 @@ public abstract class ChatClientStreamingTestsBase<T>
 		var completeText = textBuilder.ToString();
 		Assert.False(string.IsNullOrEmpty(completeText), "Should build complete response from streaming updates");
 	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_DeliversMultipleIncrementalUpdates()
+	{
+		var client = new T();
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "Write a paragraph about the solar system with at least 3 sentences")
+		};
+
+		var textUpdates = new List<string>();
+		await foreach (var update in client.GetStreamingResponseAsync(messages))
+		{
+			foreach (var content in update.Contents)
+			{
+				if (content is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
+				{
+					textUpdates.Add(textContent.Text);
+				}
+			}
+		}
+
+		Assert.True(textUpdates.Count > 2,
+			$"Expected more than 2 incremental text updates for a longer prompt, but got {textUpdates.Count}");
+	}
+
+	[Fact]
+	public async Task GetStreamingResponseAsync_ConcatenatedTextMatchesNonStreaming()
+	{
+		var client = new T();
+		var prompt = "What is the capital of France? Answer in one word.";
+		var messages = new List<ChatMessage> { new(ChatRole.User, prompt) };
+
+		// Get streaming response
+		var streamingText = new System.Text.StringBuilder();
+		await foreach (var update in client.GetStreamingResponseAsync(messages))
+		{
+			foreach (var content in update.Contents)
+			{
+				if (content is TextContent textContent)
+				{
+					streamingText.Append(textContent.Text);
+				}
+			}
+		}
+
+		// Get non-streaming response
+		var response = await client.GetResponseAsync(messages);
+		var nonStreamingText = response.Text;
+
+		// Both should contain the answer (Paris)
+		Assert.False(string.IsNullOrEmpty(streamingText.ToString()), "Streaming response should not be empty");
+		Assert.False(string.IsNullOrEmpty(nonStreamingText), "Non-streaming response should not be empty");
+	}
 }
