@@ -157,6 +157,11 @@ namespace Microsoft.Maui.Platform
 			bool orientationChanged = _scrollOrientation != orientation;
 			_scrollOrientation = orientation;
 
+			// Horizontal-only MauiScrollView should not participate in vertical nested scrolling.
+			// Without this, NestedScrollView starts a spurious vertical nested-scroll session that
+			// locks the outer vertical ScrollView after horizontal gestures complete. (Issue #29862)
+			NestedScrollingEnabled = orientation != ScrollOrientation.Horizontal;
+
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
 			{
 				if (_hScrollView == null)
@@ -227,9 +232,7 @@ namespace Microsoft.Maui.Platform
 
 			if (ShouldSkipOnTouch)
 			{
-				if (ev.Action == MotionEventActions.Cancel || ev.Action == MotionEventActions.Up)
-					ShouldSkipOnTouch = false;
-
+				ShouldSkipOnTouch = false;
 				return false;
 			}
 
