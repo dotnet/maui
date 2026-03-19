@@ -98,9 +98,19 @@ namespace Microsoft.Maui.Resizetizer
 				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
 
-			// Typically the Mitchell cubic resampler is for upsampling
-			// and the bilinear with mipmaps is for downsampling.
-			SamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+			// Map FilterQuality to SamplingOptions (SKFilterQuality on Paint is deprecated
+			// and ignored by newer SkiaSharp; SamplingOptions controls actual resampling).
+			// Default (High) preserves the original bilinear+mipmaps behavior.
+#pragma warning disable CS0618 // Type or member is obsolete
+			SamplingOptions = filterQuality switch
+			{
+				SKFilterQuality.None => new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+				SKFilterQuality.Low => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None),
+				SKFilterQuality.Medium => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+				// High and default preserve the original hardcoded behavior
+				_ => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+			};
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public string Filename { get; }
