@@ -338,17 +338,20 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public class FilterQualityTests : IDisposable
 		{
 			readonly string DestinationFilename;
+			readonly string DestinationFilename2;
 			readonly TestLogger Logger;
 
 			public FilterQualityTests()
 			{
 				DestinationFilename = Path.GetTempFileName();
+				DestinationFilename2 = Path.GetTempFileName();
 				Logger = new TestLogger();
 			}
 
 			public void Dispose()
 			{
 				File.Delete(DestinationFilename);
+				File.Delete(DestinationFilename2);
 			}
 
 			[Fact]
@@ -390,6 +393,58 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				using var resultImage = SKBitmap.Decode(DestinationFilename);
 				Assert.True(resultImage.Width > 0);
 				Assert.True(resultImage.Height > 0);
+			}
+
+			[Fact]
+			public void DefaultFilterQualityProducesIdenticalOutputToHardcodedHigh()
+			{
+				var dpiPath = new DpiPath("", 1);
+
+				var infoDefault = new ResizeImageInfo();
+				infoDefault.Filename = "images/camera.svg";
+				var toolsDefault = new SkiaSharpSvgTools(infoDefault, Logger);
+				toolsDefault.Resize(dpiPath, DestinationFilename);
+
+				var infoHigh = new ResizeImageInfo();
+				infoHigh.Filename = "images/camera.svg";
+				infoHigh.FilterQuality = SKFilterQuality.High;
+				var toolsHigh = new SkiaSharpSvgTools(infoHigh, Logger);
+				toolsHigh.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpDefault = SKBitmap.Decode(DestinationFilename);
+				using var bmpHigh = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpDefault.Width, bmpHigh.Width);
+				Assert.Equal(bmpDefault.Height, bmpHigh.Height);
+
+				for (int y = 0; y < bmpDefault.Height; y++)
+				{
+					for (int x = 0; x < bmpDefault.Width; x++)
+					{
+						Assert.Equal(bmpDefault.GetPixel(x, y), bmpHigh.GetPixel(x, y));
+					}
+				}
+			}
+
+			[Theory]
+			[InlineData(SKFilterQuality.None)]
+			[InlineData(SKFilterQuality.Low)]
+			[InlineData(SKFilterQuality.Medium)]
+			[InlineData(SKFilterQuality.High)]
+			public void AllFilterQualitiesProduceCorrectlySizedOutput(SKFilterQuality quality)
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.svg";
+				info.BaseSize = new SKSize(256, 256);
+				info.FilterQuality = quality;
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(256, resultImage.Width);
+				Assert.Equal(256, resultImage.Height);
 			}
 		}
 #pragma warning restore CS0618 // Type or member is obsolete
