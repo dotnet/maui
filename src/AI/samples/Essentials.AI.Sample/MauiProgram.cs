@@ -60,6 +60,7 @@ public static class MauiProgram
 
 		// Register Services
 		builder.Services.AddSingleton<DataService>();
+		builder.Services.AddSingleton<LanguagePreferenceService>();
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();
@@ -179,16 +180,12 @@ public static class MauiProgram
 			return phiClient
 				.AsBuilder()
 				.UseLogging(loggerFactory)
-				// This prevents double tool invocation when using Microsoft Agent Framework
-				// TODO: workaround for https://github.com/dotnet/extensions/issues/7204
-				.Use(cc => new NonFunctionInvokingChatClient(cc, loggerFactory, sp))
 				.Build();
 		});
 
 		// Register "cloud-model" with buffering
 		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
 		{
-			// TODO: Add OpenAI/Azure support for better translation quality
 			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
@@ -198,18 +195,8 @@ public static class MauiProgram
 				.Build();
 		});
 
-		// Register the Phi Silica Embedding generator
-		builder.Services.AddSingleton<PhiSilicaEmbeddingGenerator>();
-
-		// Register embedding generator
-		builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
-		{
-			var embeddings = sp.GetRequiredService<PhiSilicaEmbeddingGenerator>();
-			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-			return embeddings.AsBuilder()
-				.UseLogging(loggerFactory)
-				.Build();
-		});
+		// Semantic search using AppContentIndexer — OS handles embeddings internally.
+		builder.Services.AddSingleton<ISemanticSearchService, AppContentIndexerSearchService>();
 
 		return builder;
 	}
