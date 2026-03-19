@@ -58,6 +58,12 @@
                         FontSize="14"
                         TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
 
+                    <!-- Current Weather -->
+                    <Label
+                        Text="{Binding CurrentWeather}"
+                        FontSize="16"
+                        IsVisible="{Binding CurrentWeather, Converter={StaticResource IsNotNullConverter}}" />
+
                     <!-- Tags -->
                     <FlexLayout
                         BindableLayout.ItemsSource="{Binding Tags}"

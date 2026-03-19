@@ -12,8 +12,8 @@ namespace Maui.Controls.Sample.ViewModels;
 public partial class LandmarkDetailViewModel(
 	DataService dataService,
 	TaggingService taggingService,
-	IChatClient chatClient,
-	LanguagePreferenceService languagePreference) : ObservableObject
+	WeatherService weatherService,
+	IChatClient chatClient) : ObservableObject
 {
 	CancellationTokenSource _cts = new();
 	bool _initialized;
@@ -31,14 +31,16 @@ public partial class LandmarkDetailViewModel(
 	public partial bool IsLoadingTip { get; set; }
 
 	[ObservableProperty]
+	public partial string? CurrentWeather { get; set; }
+
+	[ObservableProperty]
 	public partial string SelectedLanguage { get; set; } = "English";
 
-	public string[] AvailableLanguages => languagePreference.SupportedLanguages.Keys.ToArray();
-
-	partial void OnSelectedLanguageChanged(string value)
-	{
-		languagePreference.SelectedLanguage = value;
-	}
+	public string[] AvailableLanguages => [
+		"English", "Chinese", "French", "German",
+		"Indonesian", "Italian", "Japanese", "Korean",
+		"Portuguese", "Spanish"
+	];
 
 	public ObservableCollection<Landmark> SimilarDestinations => field ??= [];
 
@@ -50,18 +52,30 @@ public partial class LandmarkDetailViewModel(
 			return;
 
 		_initialized = true;
-		SelectedLanguage = languagePreference.SelectedLanguage;
 		_cts = new CancellationTokenSource();
 		var ct = _cts.Token;
 
-		// Run all AI tasks in parallel
 		await Task.WhenAll(
 			LoadSimilarDestinationsAsync(ct),
 			GenerateTagsAsync(ct),
-			GenerateAiTravelTipAsync(ct));
+			GenerateAiTravelTipAsync(ct),
+			LoadWeatherAsync(ct));
 	}
 
 	public void Cancel() => _cts.Cancel();
+
+	async Task LoadWeatherAsync(CancellationToken ct)
+	{
+		try
+		{
+			CurrentWeather = await weatherService.GetWeatherForecastAsync(
+				Landmark.Latitude, Landmark.Longitude, DateOnly.FromDateTime(DateTime.Now));
+		}
+		catch
+		{
+			CurrentWeather = "☁️ Weather unavailable";
+		}
+	}
 
 	async Task LoadSimilarDestinationsAsync(CancellationToken ct)
 	{
@@ -124,7 +138,7 @@ public partial class LandmarkDetailViewModel(
 				new(ChatRole.User, prompt)
 			};
 
-			var response = await chatClient.GetResponseAsync(messages, cancellationToken: ct);
+			var response = await chatClient.GetResponseAsync(messages, new ChatOptions { Temperature = 0.75f }, ct);
 			if (!ct.IsCancellationRequested)
 				AiTravelTip = response.Text;
 		}

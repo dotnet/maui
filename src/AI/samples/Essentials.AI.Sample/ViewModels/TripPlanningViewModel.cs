@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
@@ -6,19 +5,27 @@ using Maui.Controls.Sample.Services;
 namespace Maui.Controls.Sample.ViewModels;
 
 [QueryProperty(nameof(Landmark), "Landmark")]
-public partial class TripPlanningViewModel(ItineraryService itineraryService, WeatherService weatherService, IDispatcher dispatcher) : ObservableObject
+[QueryProperty(nameof(Language), "Language")]
+public partial class TripPlanningViewModel(
+	ItineraryService itineraryService,
+	WeatherService weatherService,
+	IDispatcher dispatcher)
+	: ObservableObject
 {
 	public enum TripPlanningState
 	{
-		Generating,     // Show planning view with status messages
-		Complete,       // Show full itinerary
-		Error           // Show error message
+		Generating,
+		Complete,
+		Error
 	}
 
 	private CancellationTokenSource _cancellationTokenSource = new();
 
 	[ObservableProperty]
 	public partial Landmark Landmark { get; set; }
+
+	[ObservableProperty]
+	public partial string Language { get; set; } = "English";
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(IsGeneratingState))]
@@ -109,7 +116,11 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, We
 
 	private async Task BuildItineraryAsync(CancellationToken cancellationToken)
 	{
-		await foreach (var update in itineraryService.StreamItineraryAsync(Landmark, 3, cancellationToken))
+		var userRequest = Language.Equals("English", StringComparison.OrdinalIgnoreCase)
+			? $"Create a {3}-day itinerary for {Landmark.Name}"
+			: $"Create a {3}-day itinerary for {Landmark.Name} in {Language}";
+
+		await foreach (var update in itineraryService.StreamItineraryAsync(userRequest, cancellationToken))
 		{
 			if (cancellationToken.IsCancellationRequested)
 				break;

@@ -26,7 +26,8 @@ public partial class LandmarkDetailPage : ContentPage
 	{
 		var parameters = new Dictionary<string, object>
 		{
-			{ "Landmark", _viewModel.Landmark }
+			{ "Landmark", _viewModel.Landmark },
+			{ "Language", _viewModel.SelectedLanguage }
 		};
 		await Shell.Current.GoToAsync(nameof(TripPlanningPage), parameters);
 	}

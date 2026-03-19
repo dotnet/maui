@@ -9,7 +9,6 @@ public record ContinentGroup(string Name, List<Landmark> Landmarks);
 
 public partial class LandmarksViewModel(
 	DataService dataService,
-	LanguagePreferenceService languagePreference,
 	IDispatcher dispatcher) : ObservableObject
 {
 	CancellationTokenSource? _searchCts;
@@ -31,9 +30,6 @@ public partial class LandmarksViewModel(
 	public partial string? EmbeddingStatusText { get; set; }
 
 	[ObservableProperty]
-	public partial string SelectedLanguage { get; set; } = "English";
-
-	[ObservableProperty]
 	public partial string? SearchQuery { get; set; }
 
 	public bool IsSearching => !string.IsNullOrWhiteSpace(SearchQuery);
@@ -41,17 +37,10 @@ public partial class LandmarksViewModel(
 	/// <summary>Recent search queries for contextual AI descriptions.</summary>
 	public List<string> RecentSearches { get; } = [];
 
-	public string[] AvailableLanguages => languagePreference.SupportedLanguages.Keys.ToArray();
-
 	/// <summary>All continent groups (unfiltered).</summary>
 	List<ContinentGroup> _allGroups = [];
 
 	public ObservableCollection<ContinentGroup> ContinentGroups => field ??= [];
-
-	partial void OnSelectedLanguageChanged(string value)
-	{
-		languagePreference.SelectedLanguage = value;
-	}
 
 	partial void OnSearchQueryChanged(string? value)
 	{
@@ -65,7 +54,6 @@ public partial class LandmarksViewModel(
 		if (IsLoading || _allGroups.Count > 0)
 			return;
 
-		SelectedLanguage = languagePreference.SelectedLanguage;
 		await LoadLandmarksAsync();
 		await WaitForEmbeddingsAsync();
 	}

@@ -58,7 +58,6 @@ public static class MauiProgram
 
 		// Register Services
 		builder.Services.AddSingleton<DataService>();
-		builder.Services.AddSingleton<LanguagePreferenceService>();
 		builder.Services.AddTransient<ItineraryService>();
 		builder.Services.AddTransient<TaggingService>();
 		builder.Services.AddHttpClient<WeatherService>();

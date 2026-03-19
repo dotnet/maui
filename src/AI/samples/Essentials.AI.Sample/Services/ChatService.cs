@@ -14,7 +14,6 @@ public class ChatService
 		- Find nearby hotels, restaurants, cafes, and museums
 		- Check weather forecasts
 		- Generate social media hashtags for trips
-		- Change the AI response language
 		- Start planning a trip by navigating to the trip planner
 
 		Today's date is {DateTime.Now:yyyy-MM-dd} ({DateTime.Now:dddd}).
@@ -28,7 +27,6 @@ public class ChatService
 	readonly DataService _dataService;
 	readonly WeatherService _weatherService;
 	readonly TaggingService _taggingService;
-	readonly LanguagePreferenceService _languageService;
 	readonly IDispatcher _dispatcher;
 	readonly IList<AITool> _tools;
 
@@ -39,13 +37,11 @@ public class ChatService
 		DataService dataService,
 		WeatherService weatherService,
 		TaggingService taggingService,
-		LanguagePreferenceService languageService,
 		IDispatcher dispatcher)
 	{
 		_dataService = dataService;
 		_weatherService = weatherService;
 		_taggingService = taggingService;
-		_languageService = languageService;
 		_dispatcher = dispatcher;
 
 		_tools =
@@ -56,7 +52,6 @@ public class ChatService
 			AIFunctionFactory.Create(SearchPointsOfInterestAsync),
 			AIFunctionFactory.Create(GetWeatherAsync),
 			AIFunctionFactory.Create(GenerateTagsAsync),
-			AIFunctionFactory.Create(SetLanguage),
 			AIFunctionFactory.Create(PlanTripAsync),
 		];
 
@@ -191,20 +186,6 @@ public class ChatService
 		{
 			return "Unable to generate tags at this time.";
 		}
-	}
-
-	[Description("Change the language for AI-generated responses. Supported: English, French, Spanish, German, Chinese, Japanese, Korean, Arabic, Indonesian, Italian, Portuguese.")]
-	string SetLanguage(
-		[Description("The language name to switch to, e.g. 'Spanish', 'French', 'Japanese'")] string language)
-	{
-		var match = _languageService.SupportedLanguages.Keys.FirstOrDefault(k =>
-			k.Equals(language, StringComparison.OrdinalIgnoreCase));
-
-		if (match is null)
-			return $"Language '{language}' is not supported. Available: {string.Join(", ", _languageService.SupportedLanguages.Keys)}";
-
-		_languageService.SelectedLanguage = match;
-		return $"Language changed to {match}. AI-generated itineraries will now be in {match}.";
 	}
 
 	[Description("Navigate the user to the trip planning page to generate a detailed multi-day itinerary for a landmark. Use this when the user wants to plan or start a trip.")]

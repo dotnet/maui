@@ -9,7 +9,7 @@ public class WeatherService(HttpClient httpClient)
 	{
 		try
 		{
-			var url = $"https://api.open-meteo.com/v1/forecast?latitude={latitude:F4}&longitude={longitude:F4}&daily=temperature_2m_mean,weather_code&timezone=auto";
+			var url = $"https://api.open-meteo.com/v1/forecast?latitude={latitude.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)}&longitude={longitude.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)}&daily=temperature_2m_mean,weather_code&timezone=auto";
 
 			var response = await httpClient.GetStringAsync(url);
 			var forecast = JsonSerializer.Deserialize<WeatherForecast>(response);
