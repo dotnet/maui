@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"7fb9d75024d5af7cfea256bca36c63afd619cf09e5670d39d19e8994f7d31056","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"80e6a296cae29d73db47368a836608711438679c1ab329a961ef708231379083","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -40,6 +40,11 @@ name: "Evaluate PR Tests"
     - opened
     - synchronize
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to evaluate
+        required: true
+        type: number
 
 permissions: {}
 

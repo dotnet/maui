@@ -12,6 +12,11 @@ on:
   issue_comment:
     types: [created]
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to evaluate'
+        required: true
+        type: number
 
 if: >-
   github.event_name == 'pull_request' ||
@@ -56,6 +61,8 @@ You are a test-quality evaluator for the dotnet/maui repository. Your job is to 
 
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+
+When triggered via `workflow_dispatch`, use the PR number from the input above. Fetch the PR details using `gh pr view <number>` and `gh pr diff <number>` to get the context you need.
 
 ## Instructions
 
