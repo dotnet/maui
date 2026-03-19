@@ -334,14 +334,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public class FilterQualityTests : IDisposable
+		public class ResizeQualityTests : IDisposable
 		{
 			readonly string DestinationFilename;
 			readonly string DestinationFilename2;
 			readonly TestLogger Logger;
 
-			public FilterQualityTests()
+			public ResizeQualityTests()
 			{
 				DestinationFilename = Path.GetTempFileName();
 				DestinationFilename2 = Path.GetTempFileName();
@@ -355,36 +354,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
-			public void DefaultFilterQualityIsHigh()
+			public void DefaultQualityIsAuto()
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				var tools = new SkiaSharpSvgTools(info, Logger);
 
-				Assert.Equal(SKFilterQuality.High, tools.Paint.FilterQuality);
-			}
-
-			[Theory]
-			[InlineData(SKFilterQuality.None)]
-			[InlineData(SKFilterQuality.Low)]
-			[InlineData(SKFilterQuality.Medium)]
-			[InlineData(SKFilterQuality.High)]
-			public void FilterQualityIsAppliedFromInfo(SKFilterQuality quality)
-			{
-				var info = new ResizeImageInfo();
-				info.Filename = "images/camera.svg";
-				info.FilterQuality = quality;
-				var tools = new SkiaSharpSvgTools(info, Logger);
-
-				Assert.Equal(quality, tools.Paint.FilterQuality);
+				Assert.True(tools.Paint.IsAntialias);
 			}
 
 			[Fact]
-			public void ResizeWithNoneFilterQualityProducesValidImage()
+			public void ResizeWithFastestQualityProducesValidImage()
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
-				info.FilterQuality = SKFilterQuality.None;
+				info.Quality = ResizeQuality.Fastest;
 				var tools = new SkiaSharpSvgTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -396,7 +380,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
-			public void DefaultFilterQualityProducesIdenticalOutputToHardcodedHigh()
+			public void DefaultQualityProducesIdenticalOutputToExplicitAuto()
 			{
 				var dpiPath = new DpiPath("", 1);
 
@@ -405,38 +389,38 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var toolsDefault = new SkiaSharpSvgTools(infoDefault, Logger);
 				toolsDefault.Resize(dpiPath, DestinationFilename);
 
-				var infoHigh = new ResizeImageInfo();
-				infoHigh.Filename = "images/camera.svg";
-				infoHigh.FilterQuality = SKFilterQuality.High;
-				var toolsHigh = new SkiaSharpSvgTools(infoHigh, Logger);
-				toolsHigh.Resize(dpiPath, DestinationFilename2);
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.svg";
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
 
 				using var bmpDefault = SKBitmap.Decode(DestinationFilename);
-				using var bmpHigh = SKBitmap.Decode(DestinationFilename2);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
 
-				Assert.Equal(bmpDefault.Width, bmpHigh.Width);
-				Assert.Equal(bmpDefault.Height, bmpHigh.Height);
+				Assert.Equal(bmpDefault.Width, bmpAuto.Width);
+				Assert.Equal(bmpDefault.Height, bmpAuto.Height);
 
 				for (int y = 0; y < bmpDefault.Height; y++)
 				{
 					for (int x = 0; x < bmpDefault.Width; x++)
 					{
-						Assert.Equal(bmpDefault.GetPixel(x, y), bmpHigh.GetPixel(x, y));
+						Assert.Equal(bmpDefault.GetPixel(x, y), bmpAuto.GetPixel(x, y));
 					}
 				}
 			}
 
 			[Theory]
-			[InlineData(SKFilterQuality.None)]
-			[InlineData(SKFilterQuality.Low)]
-			[InlineData(SKFilterQuality.Medium)]
-			[InlineData(SKFilterQuality.High)]
-			public void AllFilterQualitiesProduceCorrectlySizedOutput(SKFilterQuality quality)
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void AllQualitiesProduceCorrectlySizedOutput(string qualityName)
 			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.svg";
 				info.BaseSize = new SKSize(256, 256);
-				info.FilterQuality = quality;
+				info.Quality = quality;
 				var tools = new SkiaSharpSvgTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
@@ -447,6 +431,5 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(256, resultImage.Height);
 			}
 		}
-#pragma warning restore CS0618 // Type or member is obsolete
 	}
 }

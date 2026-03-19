@@ -508,67 +508,66 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"drawable-xhdpi/{outputName}.png", 88, 88);
 			}
 
-#pragma warning disable CS0618 // Type or member is obsolete
 			[Fact]
-			public void FilterQualityMetadataIsRespectedEndToEnd()
+			public void ResizeQualityMetadataIsRespectedEndToEnd()
 			{
-				// Run the full MSBuild task pipeline with FilterQuality=None
-				var itemsNone = new[]
+				// Run the full MSBuild task pipeline with ResizeQuality=Fastest
+				var itemsFastest = new[]
 				{
 					new TaskItem("images/camera.png", new Dictionary<string, string>
 					{
 						["BaseSize"] = "100",
-						["Link"] = "camera_none",
-						["FilterQuality"] = "None",
+						["Link"] = "camera_fastest",
+						["ResizeQuality"] = "Fastest",
 					}),
 				};
 
-				var taskNone = GetNewTask(itemsNone);
-				var successNone = taskNone.Execute();
-				Assert.True(successNone, LogErrorEvents.FirstOrDefault()?.Message);
-				AssertFileSize("drawable-mdpi/camera_none.png", 100, 100);
+				var taskFastest = GetNewTask(itemsFastest);
+				var successFastest = taskFastest.Execute();
+				Assert.True(successFastest, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_fastest.png", 100, 100);
 
-				// Save the None output pixels
-				var noneFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_none.png");
-				using var bmpNone = SKBitmap.Decode(noneFile);
-				var nonePixels = bmpNone.Pixels.ToArray();
+				// Save the Fastest output pixels
+				var fastestFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_fastest.png");
+				using var bmpFastest = SKBitmap.Decode(fastestFile);
+				var fastestPixels = bmpFastest.Pixels.ToArray();
 
-				// Run again with FilterQuality=High
-				var itemsHigh = new[]
+				// Run again with ResizeQuality=Auto (default)
+				var itemsAuto = new[]
 				{
 					new TaskItem("images/camera.png", new Dictionary<string, string>
 					{
 						["BaseSize"] = "100",
-						["Link"] = "camera_high",
-						["FilterQuality"] = "High",
+						["Link"] = "camera_auto",
+						["ResizeQuality"] = "Auto",
 					}),
 				};
 
-				var taskHigh = GetNewTask(itemsHigh);
-				var successHigh = taskHigh.Execute();
-				Assert.True(successHigh, LogErrorEvents.FirstOrDefault()?.Message);
-				AssertFileSize("drawable-mdpi/camera_high.png", 100, 100);
+				var taskAuto = GetNewTask(itemsAuto);
+				var successAuto = taskAuto.Execute();
+				Assert.True(successAuto, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("drawable-mdpi/camera_auto.png", 100, 100);
 
-				// Compare: None vs High should differ when downscaling
-				var highFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_high.png");
-				using var bmpHigh = SKBitmap.Decode(highFile);
-				var highPixels = bmpHigh.Pixels.ToArray();
+				// Compare: Fastest vs Auto should differ when downscaling
+				var autoFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_auto.png");
+				using var bmpAuto = SKBitmap.Decode(autoFile);
+				var autoPixels = bmpAuto.Pixels.ToArray();
 
 				int differentPixels = 0;
-				for (int i = 0; i < nonePixels.Length; i++)
+				for (int i = 0; i < fastestPixels.Length; i++)
 				{
-					if (nonePixels[i] != highPixels[i])
+					if (fastestPixels[i] != autoPixels[i])
 						differentPixels++;
 				}
 
 				Assert.True(differentPixels > 0,
-					"End-to-end: FilterQuality.None and FilterQuality.High must produce different pixel output");
+					"End-to-end: Fastest and Auto must produce different pixel output");
 			}
 
 			[Fact]
-			public void DefaultFilterQualityPreservesBaselineBehavior()
+			public void DefaultResizeQualityPreservesBaselineBehavior()
 			{
-				// No FilterQuality metadata = default (High) behavior
+				// No ResizeQuality metadata = default (Auto) behavior
 				var itemsDefault = new[]
 				{
 					new TaskItem("images/camera.png", new Dictionary<string, string>
@@ -587,33 +586,32 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				using var bmpDefault = SKBitmap.Decode(defaultFile);
 				var defaultPixels = bmpDefault.Pixels.ToArray();
 
-				// Explicit High should produce identical results
-				var itemsHigh = new[]
+				// Explicit Auto should produce identical results
+				var itemsAuto = new[]
 				{
 					new TaskItem("images/camera.png", new Dictionary<string, string>
 					{
 						["BaseSize"] = "100",
-						["Link"] = "camera_explicit_high",
-						["FilterQuality"] = "High",
+						["Link"] = "camera_explicit_auto",
+						["ResizeQuality"] = "Auto",
 					}),
 				};
 
-				var taskHigh = GetNewTask(itemsHigh);
-				var successHigh = taskHigh.Execute();
-				Assert.True(successHigh, LogErrorEvents.FirstOrDefault()?.Message);
+				var taskAuto = GetNewTask(itemsAuto);
+				var successAuto = taskAuto.Execute();
+				Assert.True(successAuto, LogErrorEvents.FirstOrDefault()?.Message);
 
-				var highFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_explicit_high.png");
-				using var bmpHigh = SKBitmap.Decode(highFile);
-				var highPixels = bmpHigh.Pixels.ToArray();
+				var autoFile = Path.Combine(DestinationDirectory, "drawable-mdpi/camera_explicit_auto.png");
+				using var bmpAuto = SKBitmap.Decode(autoFile);
+				var autoPixels = bmpAuto.Pixels.ToArray();
 
-				// Every single pixel must match: default == explicit High
-				Assert.Equal(defaultPixels.Length, highPixels.Length);
+				// Every single pixel must match: default == explicit Auto
+				Assert.Equal(defaultPixels.Length, autoPixels.Length);
 				for (int i = 0; i < defaultPixels.Length; i++)
 				{
-					Assert.Equal(defaultPixels[i], highPixels[i]);
+					Assert.Equal(defaultPixels[i], autoPixels[i]);
 				}
 			}
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			[Theory]
 			[InlineData("camera", null, "camera")]
