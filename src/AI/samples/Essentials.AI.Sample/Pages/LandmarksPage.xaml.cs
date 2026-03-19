@@ -31,6 +31,14 @@ public partial class LandmarksPage : ContentPage
 				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
 					textField.FocusEffect = null;
 			}
+#elif WINDOWS
+			if (SearchEntry.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.TextBox textBox)
+			{
+				textBox.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+				textBox.BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+				// Remove the focus underline
+				textBox.Resources["TextControlBorderThemeThicknessFocused"] = new Microsoft.UI.Xaml.Thickness(0);
+			}
 #endif
 		};
 
