@@ -55,8 +55,7 @@ You are a test-quality evaluator for the dotnet/maui repository. Your job is to 
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || github.event.inputs.pr_number }}
-- **Event**: ${{ github.event_name }}
+- **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
 
 ## Instructions
 
