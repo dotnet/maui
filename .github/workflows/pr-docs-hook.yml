@@ -1,0 +1,341 @@
+name: PR Documentation Check
+
+on:
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze'
+        required: true
+        type: number
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+jobs:
+  # Cheap filter job — skips expensive Copilot analysis for PRs that clearly don't need docs
+  filter:
+    if: (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch') && github.repository_owner == 'dotnet'
+    runs-on: ubuntu-latest
+    outputs:
+      should_analyze: ${{ steps.filter.outputs.should_analyze }}
+      pr_number: ${{ steps.pr.outputs.number }}
+      pr_title: ${{ steps.filter.outputs.pr_title }}
+      pr_author: ${{ steps.filter.outputs.pr_author }}
+    steps:
+      - name: Set PR number
+        id: pr
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "number=${{ inputs.pr_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if analysis is needed
+        id: filter
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.pr.outputs.number }};
+
+            // Fetch PR metadata
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const author = pr.user.login;
+            const title = pr.title;
+            const labels = pr.labels.map(l => l.name);
+
+            core.setOutput('pr_title', title);
+            core.setOutput('pr_author', author);
+
+            // --- TIER 1: Hard exclusions ---
+
+            // 1a. Bot authors (dependency updates, backports, CI automation)
+            const botUsers = [
+              'dotnet-maestro[bot]',
+              'dotnet-maestro-bot',
+              'dependabot[bot]',
+              'github-actions[bot]'
+            ];
+            if (botUsers.includes(author)) {
+              core.info(`Skipping: bot author '${author}'`);
+              core.setOutput('should_analyze', 'false');
+              return;
+            }
+
+            // 1b. Backport PRs (original PR already evaluated)
+            if (labels.some(l => l === 'backport' || l.startsWith('backport/'))) {
+              core.info('Skipping: backport PR');
+              core.setOutput('should_analyze', 'false');
+              return;
+            }
+
+            // --- Fetch changed files ---
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber }
+            );
+            const paths = files.map(f => f.filename);
+
+            if (paths.length === 0) {
+              core.info('Skipping: no changed files');
+              core.setOutput('should_analyze', 'false');
+              return;
+            }
+
+            // --- TIER 1: High-signal inclusion (PublicAPI changes) ---
+            const hasPublicApiChange = paths.some(p => p.includes('PublicAPI.Unshipped.txt'));
+            if (hasPublicApiChange) {
+              core.info('Including: PublicAPI.Unshipped.txt changed (high signal)');
+              core.setOutput('should_analyze', 'true');
+              return;
+            }
+
+            // --- TIER 2: Path-based exclusions (only if ALL files match) ---
+
+            const infraPatterns = [
+              /^eng\//,
+              /^\.github\//,
+              /^build\./,
+              /^\.editorconfig$/,
+              /^\.gitignore$/,
+              /^NuGet\.config$/,
+              /^global\.json$/,
+              /^Directory\.Build\./,
+              /^tools\//,
+              /\.(yml|yaml)$/,
+              /\.(props|targets)$/
+            ];
+
+            const testPatterns = [
+              /\/tests?\//i,
+              /\/TestUtils\//,
+              /\/TestCases\./,
+              /\/DeviceTests\//,
+              /\.Tests?\./,
+              /\.UnitTests\./,
+              /\.DeviceTests\./
+            ];
+
+            const docsPatterns = [
+              /\.md$/,
+              /^docs\//,
+              /^LICENSE/,
+              /^THIRD-PARTY/
+            ];
+
+            const nonDocPatterns = [...infraPatterns, ...testPatterns, ...docsPatterns];
+
+            const allNonDoc = paths.every(p =>
+              nonDocPatterns.some(pattern => pattern.test(p))
+            );
+
+            if (allNonDoc) {
+              core.info('Skipping: all changed files are infra/test/docs only');
+              core.setOutput('should_analyze', 'false');
+              return;
+            }
+
+            // --- TIER 2: Template changes (always analyze) ---
+            const hasTemplateChange = paths.some(p => p.startsWith('src/Templates/'));
+            if (hasTemplateChange) {
+              core.info('Including: template files changed');
+              core.setOutput('should_analyze', 'true');
+              return;
+            }
+
+            // --- TIER 2: Core source paths (analyze if touched) ---
+            const coreSourcePatterns = [
+              /^src\/Controls\/src\//,
+              /^src\/Core\/src\//,
+              /^src\/Essentials\/src\//,
+              /^src\/Graphics\/src\//,
+              /^src\/BlazorWebView\/src\//
+            ];
+
+            const touchesCoreSource = paths.some(p =>
+              coreSourcePatterns.some(pattern => pattern.test(p))
+            );
+
+            if (touchesCoreSource) {
+              core.info('Including: core source files changed');
+              core.setOutput('should_analyze', 'true');
+              return;
+            }
+
+            // Default: skip analysis
+            core.info('Skipping: no documentation-relevant changes detected');
+            core.setOutput('should_analyze', 'false');
+
+  # Expensive analysis job — only runs when filter says so
+  analyze:
+    needs: filter
+    if: needs.filter.outputs.should_analyze == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install GitHub Copilot CLI
+        run: |
+          npm install -g @github/copilot || {
+            echo "Error: Failed to install GitHub Copilot CLI"
+            exit 1
+          }
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          if ! gh pr diff ${{ needs.filter.outputs.pr_number }} > pr-diff.txt; then
+            echo "Error: Failed to fetch diff for PR #${{ needs.filter.outputs.pr_number }}"
+            exit 1
+          fi
+
+          if [ ! -s pr-diff.txt ]; then
+            echo "Warning: PR diff is empty, no changes to analyze"
+            echo "NO_DOCS_NEEDED" > pr-diff.txt
+          fi
+
+          # Truncate very large diffs to avoid token limits
+          if [ $(wc -c < pr-diff.txt) -gt 100000 ]; then
+            echo "Warning: Diff is very large, truncating to 100KB"
+            head -c 100000 pr-diff.txt > pr-diff-truncated.txt
+            mv pr-diff-truncated.txt pr-diff.txt
+            echo -e "\n\n[TRUNCATED - diff exceeded 100KB]" >> pr-diff.txt
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Generate documentation requirements with Copilot
+        id: analyze
+        run: |
+          if [ ! -f .github/prompts/docs-audit-prompt.md ]; then
+            echo "Error: Prompt file .github/prompts/docs-audit-prompt.md not found"
+            exit 1
+          fi
+
+          cat .github/prompts/docs-audit-prompt.md > prompt.txt
+          echo "" >> prompt.txt
+          echo "PR #${{ needs.filter.outputs.pr_number }}: ${{ needs.filter.outputs.pr_title }}" >> prompt.txt
+          echo "" >> prompt.txt
+          echo "PR Diff:" >> prompt.txt
+          cat pr-diff.txt >> prompt.txt
+
+          if ! copilot -p "$(cat prompt.txt)" > analysis.txt 2>copilot-error.log; then
+            echo "Error: Copilot CLI failed"
+            echo "Error details:"
+            cat copilot-error.log
+            exit 1
+          fi
+
+          if [ ! -s analysis.txt ]; then
+            echo "Error: Copilot produced no output"
+            exit 1
+          fi
+
+          cat analysis.txt
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Check if docs needed
+        id: docs_check
+        run: |
+          if grep -q "NO_DOCS_NEEDED" analysis.txt; then
+            echo "docs_needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "docs_needed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Output documentation analysis results
+        run: |
+          if [ ! -f analysis.txt ]; then
+            echo "Error: Analysis file not found"
+            exit 1
+          fi
+
+          echo "============================================"
+          echo "Documentation Analysis for PR #${{ needs.filter.outputs.pr_number }}"
+          echo "PR Title: ${{ needs.filter.outputs.pr_title }}"
+          echo "PR Author: ${{ needs.filter.outputs.pr_author }}"
+          echo "============================================"
+          echo ""
+
+          if [ "${{ steps.docs_check.outputs.docs_needed }}" == "false" ]; then
+            echo "✅ No documentation updates required"
+          else
+            echo "📝 Documentation updates recommended:"
+            echo ""
+            cat analysis.txt
+          fi
+
+          echo ""
+          echo "============================================"
+
+      - name: Create issue on docs-maui repo
+        if: steps.docs_check.outputs.docs_needed == 'true'
+        id: create_issue
+        run: |
+          ISSUE_BODY="## Documentation Update Required
+
+          This issue was automatically created based on changes from dotnet/maui PR #${{ needs.filter.outputs.pr_number }}.
+
+          **PR Title:** ${{ needs.filter.outputs.pr_title }}
+          **PR Author:** @${{ needs.filter.outputs.pr_author }}
+          **PR Link:** https://github.com/${{ github.repository }}/pull/${{ needs.filter.outputs.pr_number }}
+
+          ## Recommended Documentation Updates
+
+          $(cat analysis.txt)
+          "
+
+          ISSUE_URL=$(gh issue create \
+            --repo dotnet/docs-maui \
+            --title "Docs update for dotnet/maui#${{ needs.filter.outputs.pr_number }}: ${{ needs.filter.outputs.pr_title }}" \
+            --body "$ISSUE_BODY" \
+            --label "docs-from-code")
+
+          echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Comment on PR
+        run: |
+          if [ "${{ steps.docs_check.outputs.docs_needed }}" == "true" ]; then
+            COMMENT="## 📝 Documentation Update Needed
+
+          Hey @${{ needs.filter.outputs.pr_author }}! This PR may require documentation updates.
+
+          An issue has been created to track the documentation work: ${{ steps.create_issue.outputs.issue_url }}
+
+          <details>
+          <summary>Recommended Updates</summary>
+
+          $(cat analysis.txt)
+
+          </details>"
+          else
+            COMMENT="## ✅ No Documentation Updates Needed
+
+          Hey @${{ needs.filter.outputs.pr_author }}! This PR does not appear to require documentation updates.
+
+          For more details, check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+          fi
+
+          gh pr comment ${{ needs.filter.outputs.pr_number }} --body "$COMMENT"
+        env:
+          GH_TOKEN: ${{ github.token }}
