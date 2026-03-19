@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Resizetizer
 		}
 
 		public SkiaSharpImaginaryTools(SKColor? backgroundColor, ILogger logger)
-			: base(null, new SKSize(1, 1), backgroundColor, null, logger)
+			: base(null, new SKSize(1, 1), backgroundColor, null, ResizeImageInfo.DefaultFilterQuality, logger)
 		{
 		}
 

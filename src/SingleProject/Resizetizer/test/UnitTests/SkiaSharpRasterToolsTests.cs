@@ -252,5 +252,66 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(SKColors.Red.WithAlpha(127), pixmap.GetPixelColor(125, 137));
 			}
 		}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+		public class FilterQualityTests : IDisposable
+		{
+			readonly string DestinationFilename;
+			readonly TestLogger Logger;
+
+			public FilterQualityTests()
+			{
+				DestinationFilename = Path.GetTempFileName();
+				Logger = new TestLogger();
+			}
+
+			public void Dispose()
+			{
+				File.Delete(DestinationFilename);
+			}
+
+			[Fact]
+			public void DefaultFilterQualityIsHigh()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(SKFilterQuality.High, tools.Paint.FilterQuality);
+			}
+
+			[Theory]
+			[InlineData(SKFilterQuality.None)]
+			[InlineData(SKFilterQuality.Low)]
+			[InlineData(SKFilterQuality.Medium)]
+			[InlineData(SKFilterQuality.High)]
+			public void FilterQualityIsAppliedFromInfo(SKFilterQuality quality)
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.FilterQuality = quality;
+				var tools = new SkiaSharpRasterTools(info, Logger);
+
+				Assert.Equal(quality, tools.Paint.FilterQuality);
+			}
+
+			[Fact]
+			public void ResizeWithNoneFilterQualityProducesValidImage()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/camera.png";
+				info.FilterQuality = SKFilterQuality.None;
+				info.BaseSize = new SKSize(100, 100);
+				var tools = new SkiaSharpRasterTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(100, resultImage.Width);
+				Assert.Equal(100, resultImage.Height);
+			}
+		}
+#pragma warning restore CS0618 // Type or member is obsolete
 	}
 }
