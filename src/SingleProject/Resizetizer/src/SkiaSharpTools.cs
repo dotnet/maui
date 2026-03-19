@@ -61,24 +61,20 @@ namespace Microsoft.Maui.Resizetizer
 			span[0] = new SKPoint();
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality filterQuality, ILogger logger)
-#pragma warning restore CS0618 // Type or member is obsolete
+		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
 			=> isVector
-				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, filterQuality, logger) as SkiaSharpTools
-				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, filterQuality, logger);
+				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, quality, logger) as SkiaSharpTools
+				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, quality, logger);
 
 		public static SkiaSharpTools CreateImaginary(SKColor? backgroundColor, ILogger logger)
 			=> new SkiaSharpImaginaryTools(backgroundColor, logger);
 
 		public SkiaSharpTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.FilterQuality, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.Quality, logger)
 		{
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality filterQuality, ILogger logger)
-#pragma warning restore CS0618 // Type or member is obsolete
+		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
 		{
 			Logger = logger;
 			Filename = filename;
@@ -87,9 +83,6 @@ namespace Microsoft.Maui.Resizetizer
 			Paint = new SKPaint
 			{
 				IsAntialias = true,
-#pragma warning disable CS0618 // Type or member is obsolete
-				FilterQuality = filterQuality,
-#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			if (tintColor is SKColor tint)
@@ -98,19 +91,15 @@ namespace Microsoft.Maui.Resizetizer
 				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
 
-			// Map FilterQuality to SamplingOptions (SKFilterQuality on Paint is deprecated
-			// and ignored by newer SkiaSharp; SamplingOptions controls actual resampling).
-			// Default (High) preserves the original bilinear+mipmaps behavior.
-#pragma warning disable CS0618 // Type or member is obsolete
-			SamplingOptions = filterQuality switch
+			// Map ResizeQuality to SKSamplingOptions which controls actual resampling.
+			// Auto preserves the original bilinear+mipmaps behavior for backward compatibility.
+			SamplingOptions = quality switch
 			{
-				SKFilterQuality.None => new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
-				SKFilterQuality.Low => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None),
-				SKFilterQuality.Medium => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
-				// High and default preserve the original hardcoded behavior
+				ResizeQuality.Best => new SKSamplingOptions(SKCubicResampler.Mitchell),
+				ResizeQuality.Fastest => new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+				// Auto and default preserve the original hardcoded behavior
 				_ => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
 			};
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public string Filename { get; }
