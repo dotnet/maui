@@ -553,6 +553,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				using var bmpAuto = SKBitmap.Decode(autoFile);
 				var autoPixels = bmpAuto.Pixels.ToArray();
 
+				Assert.Equal(fastestPixels.Length, autoPixels.Length);
+
 				int differentPixels = 0;
 				for (int i = 0; i < fastestPixels.Length; i++)
 				{
