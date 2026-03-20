@@ -209,33 +209,38 @@ if ($DryRun) {
 $tempFile = [System.IO.Path]::GetTempFileName()
 @{ body = $finalComment } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
 
-if ($existingUnifiedComment) {
-    Write-Host "Updating unified comment ID $($existingUnifiedComment.id)..." -ForegroundColor Yellow
-    $patchResult = $null
-    try {
-        $patchResult = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingUnifiedComment.id)" --input $tempFile --jq '.html_url' 2>&1
-        if ($LASTEXITCODE -ne 0) { throw "PATCH failed (exit code $LASTEXITCODE): $patchResult" }
-        Write-Host "✅ PR finalize section updated: $patchResult" -ForegroundColor Green
-    } catch {
-        Write-Host "⚠️ Could not update comment (no edit permission?) — creating new comment instead: $_" -ForegroundColor Yellow
-        # Rebuild the comment body as a standalone new comment (not an injection into existing)
-        $standaloneBody = @"
+try {
+    if ($existingUnifiedComment) {
+        Write-Host "Updating unified comment ID $($existingUnifiedComment.id)..." -ForegroundColor Yellow
+        $patchResult = $null
+        try {
+            $patchResult = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingUnifiedComment.id)" --input $tempFile --jq '.html_url' 2>&1
+            if ($LASTEXITCODE -ne 0) { throw "PATCH failed (exit code $LASTEXITCODE): $patchResult" }
+            Write-Host "✅ PR finalize section updated: $patchResult" -ForegroundColor Green
+        } catch {
+            Write-Host "⚠️ Could not update comment (no edit permission?) — creating new comment instead: $_" -ForegroundColor Yellow
+            # Rebuild the comment body as a standalone new comment (not an injection into existing)
+            $standaloneBody = @"
 $MAIN_MARKER
 
 ## 🤖 AI Summary
 
 $finalizeSection
 "@
-        $standaloneTempFile = [System.IO.Path]::GetTempFileName()
-        @{ body = $standaloneBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $standaloneTempFile -Encoding UTF8
-        $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $standaloneTempFile --jq '.html_url'
-        Remove-Item $standaloneTempFile
-        Write-Host "✅ Unified comment posted (new): $result" -ForegroundColor Green
+            $standaloneTempFile = [System.IO.Path]::GetTempFileName()
+            try {
+                @{ body = $standaloneBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $standaloneTempFile -Encoding UTF8
+                $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $standaloneTempFile --jq '.html_url'
+                Write-Host "✅ Unified comment posted (new): $result" -ForegroundColor Green
+            } finally {
+                Remove-Item $standaloneTempFile -ErrorAction SilentlyContinue
+            }
+        }
+    } else {
+        Write-Host "Creating new unified comment on PR #$PRNumber..." -ForegroundColor Yellow
+        $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile --jq '.html_url'
+        Write-Host "✅ Unified comment posted: $result" -ForegroundColor Green
     }
-} else {
-    Write-Host "Creating new unified comment on PR #$PRNumber..." -ForegroundColor Yellow
-    $result = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile --jq '.html_url'
-    Write-Host "✅ Unified comment posted: $result" -ForegroundColor Green
+} finally {
+    Remove-Item $tempFile -ErrorAction SilentlyContinue
 }
-
-Remove-Item $tempFile

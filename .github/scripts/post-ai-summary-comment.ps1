@@ -836,18 +836,21 @@ if ($existingComment) {
     try {
         $patchResult = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingComment.id)" --input $tempFile 2>&1
         if ($LASTEXITCODE -ne 0) { throw "PATCH failed (exit code $LASTEXITCODE): $patchResult" }
-        Remove-Item $tempFile
         Write-Host "✅ Review comment updated successfully" -ForegroundColor Green
     } catch {
-        Remove-Item $tempFile
         Write-Host "⚠️ Could not update comment (no edit permission?) — creating new comment instead: $_" -ForegroundColor Yellow
 
         $newTempFile = [System.IO.Path]::GetTempFileName()
-        @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $newTempFile -Encoding UTF8
-        $newCommentJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $newTempFile
-        Remove-Item $newTempFile
-        $commentId = ($newCommentJson | ConvertFrom-Json).id
-        Write-Host "✅ Review comment posted as new (ID: $commentId)" -ForegroundColor Green
+        try {
+            @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $newTempFile -Encoding UTF8
+            $newCommentJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $newTempFile
+            $commentId = ($newCommentJson | ConvertFrom-Json).id
+            Write-Host "✅ Review comment posted as new (ID: $commentId)" -ForegroundColor Green
+        } finally {
+            Remove-Item $newTempFile -ErrorAction SilentlyContinue
+        }
+    } finally {
+        Remove-Item $tempFile -ErrorAction SilentlyContinue
     }
 
     # Output the comment ID so callers can pass it to subsequent scripts

@@ -70,8 +70,10 @@ stages:
           pool: ${{ parameters.iosPool }}
         ${{ elseif eq(parameters.Platform, 'catalyst') }}:
           pool: ${{ parameters.macPool }}
-        ${{ else }}:
+        ${{ elseif eq(parameters.Platform, 'windows') }}:
           pool: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          pool: ${{ parameters.windowsPool }}  # fallback — should not be reached; AzDO parameter validation prevents unknown values
         timeoutInMinutes: 360
         steps:
           - checkout: self
@@ -99,7 +101,7 @@ stages:
           # Provision SDKs (same parameters as ui-tests-steps.yml)
           - template: common/provision.yml
             parameters:
-              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
               skipProvisionator: true
               skipJdk: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
@@ -536,6 +538,10 @@ stages:
                 echo "Windows detected — verifying copilot is on PATH..."
                 COPILOT_PATH=$(which copilot 2>/dev/null || true)
                 echo "copilot location: ${COPILOT_PATH:-not found}"
+                if [ -z "$COPILOT_PATH" ]; then
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  exit 1
+                fi
               else
                 # Linux/macOS: symlink to /usr/local/bin
                 COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
@@ -543,7 +549,12 @@ stages:
                   sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
                   echo "Symlinked copilot to /usr/local/bin/copilot"
                 fi
-                echo "copilot location: $(which copilot 2>/dev/null || echo 'not found')"
+                COPILOT_PATH=$(which copilot 2>/dev/null || true)
+                echo "copilot location: ${COPILOT_PATH:-not found}"
+                if [ -z "$COPILOT_PATH" ]; then
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  exit 1
+                fi
               fi
               # Verify pwsh can find it
               pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
