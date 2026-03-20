@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"9b9a10d2a93ebb08a0d53932029f1cfbe9f4b1413e10c5b1729475c999cb0aa2","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"3a1205d483766aafa3b744c0da7acc27214f152191663d65ea52f8c145856513","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -317,6 +317,12 @@ jobs:
         run: bash ${RUNNER_TEMP}/gh-aw/actions/configure_gh_for_ghe.sh
         env:
           GH_TOKEN: ${{ github.token }}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+        name: Checkout PR branch
+        run: "if [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  echo \"Checking out PR #$PR_NUMBER...\"\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
+
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}

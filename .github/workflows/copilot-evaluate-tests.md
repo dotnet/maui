@@ -52,6 +52,21 @@ tools:
 network: defaults
 
 timeout-minutes: 15
+
+steps:
+  - name: Checkout PR branch
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+    run: |
+      if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
+        echo "Checking out PR #$PR_NUMBER..."
+        gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
+        echo "✅ Checked out PR #$PR_NUMBER"
+        git log --oneline -1
+      else
+        echo "No PR number available, using default checkout"
+      fi
 ---
 
 # Evaluate PR Tests
@@ -63,15 +78,14 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
 
+The PR branch has been checked out for you. All files from the PR are available locally.
+
 ## Running the skill
 
-1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch)
-2. Run `Gather-TestContext.ps1 -PrNumber <number>` to gather automated context — the script will fetch the PR's changed files and their contents via the GitHub API automatically
-3. Use `gh pr diff <number>` to read the actual code changes if you need more detail
-4. Read the context report and evaluate per SKILL.md criteria
-5. Post results using `add_comment` with `item_number` set to the PR number
-
-**Important**: Do NOT use `gh pr checkout` — git credentials are not available. Use `gh pr view`, `gh pr diff`, and `gh api` for all PR data access.
+1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). If `gh` CLI is unavailable, use the GitHub MCP tools instead.
+2. Run `pwsh .github/skills/evaluate-pr-tests/scripts/Gather-TestContext.ps1` to gather automated context
+3. Read the context report and the actual changed files, then evaluate per SKILL.md criteria
+4. Post results using `add_comment` with `item_number` set to the PR number
 
 ## Posting Results
 
