@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 				paddingTitle += 25;
 
 			var pickerHeight = 240;
-			var pickerView = new UIPickerView();
+            var pickerView = new UIPickerView();
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 

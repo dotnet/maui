@@ -36,8 +36,10 @@ namespace Microsoft.Maui.Handlers
 			// If this value changes in a future iOS release, update iOSLiquidGlassStepperOverflow
 			// and re-verify on the new OS version. See: https://github.com/dotnet/maui/issues/34273
 			// This workaround targets iOS 26+ only; UIStepper on MacCatalyst has not shown the
-			// same glass pill overflow behavior in testing.
-			if (OperatingSystem.IsIOS() && OperatingSystem.IsIOSVersionAtLeast(26))
+			// same glass pill overflow behavior in testing. !IsMacCatalyst() is checked first
+			// to short-circuit on Mac, since IsIOSVersionAtLeast(26) returns true on both
+			// iOS 26+ and Mac Catalyst (macOS 26) — it alone does not distinguish the two.
+			if (!OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(26))
 			{
 				var screen = UIKit.UIScreen.MainScreen;
 				bool isLandscape = screen.Bounds.Width > screen.Bounds.Height;

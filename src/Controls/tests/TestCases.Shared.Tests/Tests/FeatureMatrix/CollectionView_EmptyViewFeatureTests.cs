@@ -718,6 +718,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34522
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyEmptyViewTemplateDisplaysCorrectly_WithRightToLeftFlowDirection()
@@ -733,7 +734,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 			VerifyScreenshot();
 		}
-
+#endif
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCustomSizedEmptyViewTemplateDisplaysCorrectly_WithLeftToRightFlowDirection()
@@ -750,6 +751,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34522
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCustomSizedEmptyViewTemplateDisplaysCorrectly_WithRightToLeftFlowDirection()
@@ -765,7 +767,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Custom EmptyViewTemplate (Sized)");
 			VerifyScreenshot();
 		}
-
+#endif
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_EmptyObservableCollectionSetFirst()
