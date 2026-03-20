@@ -16,6 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/24482")]
 		public void CarouselViewShouldScrollToRightPosition()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp)) // iOS 26 has issues with CarouselView scrolling items. Issue Link: https://github.com/dotnet/maui/issues/33770
+			{
+				Assert.Ignore("Ignored due to CarouselView scroll item issue in iOS 26.");
+			}
 			App.WaitForElement("goToLastItemButton");
 			App.Click("goToLastItemButton");
 			App.WaitForElement("5");
