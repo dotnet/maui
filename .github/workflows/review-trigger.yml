@@ -10,12 +10,14 @@ on:
         required: true
         type: number
       platform:
-        description: 'Platform to review (android, ios, or both)'
+        description: 'Platform to review'
         required: true
         type: choice
         options:
           - android
           - ios
+          - catalyst
+          - windows
 
 permissions:
   contents: read
@@ -41,9 +43,9 @@ jobs:
               repo: context.repo.repo,
               username: context.payload.comment.user.login
             });
-            const allowed = ['admin', 'write'];
+            const allowed = ['admin'];
             if (!allowed.includes(data.permission)) {
-              core.setFailed(`User @${context.payload.comment.user.login} does not have write access. Permission: ${data.permission}`);
+              core.setFailed(`User @${context.payload.comment.user.login} does not have admin access. Permission: ${data.permission}`);
             }
 
       - name: Parse inputs
@@ -77,8 +79,8 @@ jobs:
         env:
           PLATFORM: ${{ steps.parse.outputs.platform }}
         run: |
-          if [[ "$PLATFORM" != "android" && "$PLATFORM" != "ios" ]]; then
-            echo "::error::Invalid platform '$PLATFORM'. Must be 'android' or 'ios'."
+          if [[ "$PLATFORM" != "android" && "$PLATFORM" != "ios" && "$PLATFORM" != "catalyst" && "$PLATFORM" != "windows" ]]; then
+            echo "::error::Invalid platform '$PLATFORM'. Must be 'android', 'ios', 'catalyst', or 'windows'."
             exit 1
           fi
 
@@ -89,12 +91,6 @@ jobs:
           PR_NUMBER: ${{ steps.parse.outputs.pr_number }}
           PLATFORM: ${{ steps.parse.outputs.platform }}
         run: |
-          if [ "$PLATFORM" = "ios" ]; then
-            POOL_STR='{"name": "AcesShared"}'
-          else
-            POOL_STR='{"name": "Azure Pipelines", "vmImage": "ubuntu-22.04"}'
-          fi
-
           AUTH=$(printf ':%s' "$REVIEW_PR_AZDO_PAT" | base64 -w0)
 
           echo "Queuing review pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM})"
@@ -102,14 +98,12 @@ jobs:
           jq -n \
             --arg pr "$PR_NUMBER" \
             --arg plat "$PLATFORM" \
-            --arg pool "$POOL_STR" \
             '{
               definition: {id: 27723},
               sourceBranch: "refs/heads/main",
               templateParameters: {
                 PRNumber: $pr,
-                Platform: $plat,
-                pool: $pool
+                Platform: $plat
               }
             }' > /tmp/request.json
 
