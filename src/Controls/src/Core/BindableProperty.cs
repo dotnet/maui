@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -252,11 +253,14 @@ namespace Microsoft.Maui.Controls
 
 		internal ValidateValueDelegate ValidateValue { get; private set; }
 
-		internal PropertyChangedEventArgs CachedPropertyChangedEventArgs
-			=> field ??= new PropertyChangedEventArgs(PropertyName);
+		private static readonly ConcurrentDictionary<string, PropertyChangedEventArgs> s_changedArgsCache = new();
+		private static readonly ConcurrentDictionary<string, PropertyChangingEventArgs> s_changingArgsCache = new();
 
-		internal PropertyChangingEventArgs CachedPropertyChangingEventArgs
-			=> field ??= new PropertyChangingEventArgs(PropertyName);
+		internal static PropertyChangedEventArgs GetCachedPropertyChangedEventArgs(string propertyName)
+			=> s_changedArgsCache.GetOrAdd(propertyName, static name => new PropertyChangedEventArgs(name));
+
+		internal static PropertyChangingEventArgs GetCachedPropertyChangingEventArgs(string propertyName)
+			=> s_changingArgsCache.GetOrAdd(propertyName, static name => new PropertyChangingEventArgs(name));
 
 		// Properties that this property depends on - when getting this property's value,
 		// if the dependency has a pending binding, return the default value instead.
