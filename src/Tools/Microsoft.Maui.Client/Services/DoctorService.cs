@@ -192,7 +192,7 @@ public class DoctorService : IDoctorService
 			};
 		}
 
-		var result = await ProcessRunner.RunAsync("dotnet", "--version", 
+		var result = await ProcessRunner.RunAsync("dotnet", "--version",
 			timeout: TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
 
 		if (!result.Success)

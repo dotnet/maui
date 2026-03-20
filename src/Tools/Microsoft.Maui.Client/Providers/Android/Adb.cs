@@ -75,7 +75,8 @@ public class Adb
 	/// </summary>
 	private async Task<string?> QueryAvdNameAsync(string serial, CancellationToken cancellationToken)
 	{
-		if (AdbPath == null) return null;
+		if (AdbPath == null)
+			return null;
 
 		// Try adb emu avd name first
 		try

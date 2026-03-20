@@ -22,9 +22,9 @@ public static partial class AndroidCommands
 		checkCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-				var formatter = Program.GetFormatter(context);
+			var formatter = Program.GetFormatter(context);
 
 			var checks = await androidProvider.CheckHealthAsync(context.GetCancellationToken());
 			var sdkCheck = checks.FirstOrDefault(c => c.Name == "Android SDK");
@@ -37,10 +37,10 @@ public static partial class AndroidCommands
 				}
 				else
 				{
-					var statusIcon = sdkCheck.Status == Models.CheckStatus.Ok ? "✓" : 
+					var statusIcon = sdkCheck.Status == Models.CheckStatus.Ok ? "✓" :
 									 sdkCheck.Status == Models.CheckStatus.Warning ? "⚠" : "✗";
 					formatter.WriteInfo($"{statusIcon} {sdkCheck.Message ?? "Android SDK"}");
-					
+
 					if (sdkCheck.Details?.TryGetValue("path", out var path) == true)
 						formatter.WriteProgress($"Path: {path}");
 				}
@@ -58,10 +58,11 @@ public static partial class AndroidCommands
 		installCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var packages = context.ParseResult.GetValueForArgument(sdkInstallPkgsArg);				var formatter = Program.GetFormatter(context);
+			var packages = context.ParseResult.GetValueForArgument(sdkInstallPkgsArg);
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -249,15 +250,16 @@ public static partial class AndroidCommands
 		listCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var showAvailable = context.GetOption<bool>("available");
-			var showAll = context.GetOption<bool>("all");				var formatter = Program.GetFormatter(context);
+			var showAll = context.GetOption<bool>("all");
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
 				var packages = new List<SdkPackage>();
-				
+
 				if (showAll)
 				{
 					// Get both installed and available
@@ -366,9 +368,9 @@ public static partial class AndroidCommands
 		acceptLicensesCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-				var formatter = Program.GetFormatter(context);
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -378,10 +380,11 @@ public static partial class AndroidCommands
 				{
 					if (useJson)
 					{
-						formatter.Write(new { 
-							success = true, 
+						formatter.Write(new
+						{
+							success = true,
 							status = "already_accepted",
-							message = "SDK licenses are already accepted" 
+							message = "SDK licenses are already accepted"
 						});
 					}
 					else
@@ -397,10 +400,11 @@ public static partial class AndroidCommands
 				{
 					if (useJson)
 					{
-						formatter.Write(new { 
-							success = false, 
+						formatter.Write(new
+						{
+							success = false,
 							status = "sdk_not_found",
-							message = "Android SDK not found. Run 'maui android install' first." 
+							message = "Android SDK not found. Run 'maui android install' first."
 						});
 					}
 					else
@@ -414,8 +418,9 @@ public static partial class AndroidCommands
 				if (useJson)
 				{
 					// For IDE integration: return the command to run in a terminal
-					formatter.Write(new { 
-						success = true, 
+					formatter.Write(new
+					{
+						success = true,
 						status = "requires_interaction",
 						message = "Run the following command in a terminal to accept licenses interactively",
 						command = licenseCommand.Value.Command,
@@ -428,7 +433,7 @@ public static partial class AndroidCommands
 					// For CLI: run interactively
 					formatter.WriteInfo("Starting interactive license acceptance...");
 					formatter.WriteInfo("Review each license and type 'y' to accept.\n");
-					
+
 					// Run sdkmanager --licenses interactively (inherits stdin/stdout)
 					var processInfo = new System.Diagnostics.ProcessStartInfo
 					{
@@ -439,21 +444,16 @@ public static partial class AndroidCommands
 						RedirectStandardOutput = false,
 						RedirectStandardError = false
 					};
-					
-					// Set environment variables for JDK
-					var jdkPath = androidProvider.JdkPath;
-					if (!string.IsNullOrEmpty(jdkPath))
-					{
-						processInfo.Environment["JAVA_HOME"] = jdkPath;
-						var currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
-						processInfo.Environment["PATH"] = $"{Path.Combine(jdkPath, "bin")}{Path.PathSeparator}{currentPath}";
-					}
-					
+
+					// Set environment variables for JDK/SDK
+					foreach (var kvp in AndroidEnvironment.BuildEnvironmentVariables(androidProvider.SdkPath, androidProvider.JdkPath))
+						processInfo.Environment[kvp.Key] = kvp.Value;
+
 					using var process = System.Diagnostics.Process.Start(processInfo);
 					if (process != null)
 					{
 						await process.WaitForExitAsync(context.GetCancellationToken());
-						
+
 						if (process.ExitCode == 0)
 						{
 							formatter.WriteSuccess("License acceptance completed");
@@ -495,7 +495,8 @@ public static partial class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var packages = context.ParseResult.GetValueForArgument(
-				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());				var formatter = Program.GetFormatter(context);
+				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{

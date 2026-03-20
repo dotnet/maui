@@ -8,21 +8,31 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 internal static class AndroidEnvironment
 {
-	static readonly Dictionary<string, string> AbiToArchMap = new(StringComparer.OrdinalIgnoreCase) {
+	static readonly Dictionary<string, string> AbiToArchMap = new(StringComparer.OrdinalIgnoreCase)
+	{
 		["armeabi-v7a"] = "arm",
 		["arm64-v8a"] = "aarch64",
 		["x86"] = "x86",
 		["x86_64"] = "x86_64",
 	};
 
-	public static Dictionary<string, string>? GetEnvironment(string? sdkPath, string? jdkPath)
+	/// <summary>
+	/// Builds environment variables needed to run Android SDK tools.
+	/// Sets ANDROID_HOME, JAVA_HOME, and prepends JDK bin to PATH.
+	/// </summary>
+	public static Dictionary<string, string> BuildEnvironmentVariables(string? sdkPath, string? jdkPath)
 	{
 		var env = new Dictionary<string, string>();
 		if (!string.IsNullOrEmpty(sdkPath))
 			env["ANDROID_HOME"] = sdkPath!;
 		if (!string.IsNullOrEmpty(jdkPath))
+		{
 			env["JAVA_HOME"] = jdkPath!;
-		return env.Count > 0 ? env : null;
+			var jdkBin = Path.Combine(jdkPath!, "bin");
+			var currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+			env["PATH"] = string.IsNullOrEmpty(currentPath) ? jdkBin : jdkBin + Path.PathSeparator + currentPath;
+		}
+		return env;
 	}
 
 	public static string? MapAbiToArchitecture(string? abi)
@@ -34,7 +44,8 @@ internal static class AndroidEnvironment
 
 	public static string[]? GetRuntimeIdentifiers(string? architecture)
 	{
-		return architecture switch {
+		return architecture switch
+		{
 			"aarch64" or "arm64" => ["android-arm64"],
 			"x86_64" => ["android-x64"],
 			"x86" => ["android-x86"],
@@ -47,7 +58,8 @@ internal static class AndroidEnvironment
 	{
 		if (string.IsNullOrEmpty(apiLevel))
 			return null;
-		return apiLevel switch {
+		return apiLevel switch
+		{
 			"35" => "15",
 			"34" => "14",
 			"33" => "13",
@@ -65,7 +77,8 @@ internal static class AndroidEnvironment
 			return null;
 		if (playStoreEnabled)
 			return "Google Play";
-		return tagId switch {
+		return tagId switch
+		{
 			"google_apis" => "Google APIs",
 			"google_apis_playstore" => "Google Play",
 			"android-wear" => "Wear OS",

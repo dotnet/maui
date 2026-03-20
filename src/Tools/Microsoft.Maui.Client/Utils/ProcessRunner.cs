@@ -100,7 +100,9 @@ public static class ProcessRunner
 
 			if (!completed)
 			{
-				try { process.Kill(entireProcessTree: true); } catch { }
+				try
+				{ process.Kill(entireProcessTree: true); }
+				catch { }
 				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
 			}
 
@@ -193,7 +195,7 @@ public static class ProcessRunner
 			process.BeginErrorReadLine();
 
 			var effectiveTimeout = timeout ?? TimeSpan.FromMinutes(5);
-			
+
 			using var timeoutCts = new CancellationTokenSource(effectiveTimeout);
 			using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
 				cancellationToken, timeoutCts.Token);
@@ -226,14 +228,18 @@ public static class ProcessRunner
 			}
 			catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
 			{
-				try { process.Kill(entireProcessTree: true); } catch { }
+				try
+				{ process.Kill(entireProcessTree: true); }
+				catch { }
 				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
 			}
 
 			// Wait for input task to complete if present
 			if (inputTask != null)
 			{
-				try { await inputTask.WaitAsync(TimeSpan.FromSeconds(2)); } catch { }
+				try
+				{ await inputTask.WaitAsync(TimeSpan.FromSeconds(2)); }
+				catch { }
 			}
 
 			// Wait for output streams to complete

@@ -22,9 +22,9 @@ public static partial class AndroidCommands
 		listCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-				var formatter = Program.GetFormatter(context);
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -70,13 +70,14 @@ public static partial class AndroidCommands
 		createCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var name = context.ParseResult.GetValueForArgument(nameArg);
 			var package = context.GetOption<string>("package");
 			var device = context.GetOption<string>("device");
-			var force = context.GetOption<bool>("force");				var formatter = Program.GetFormatter(context);
+			var force = context.GetOption<bool>("force");
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -213,12 +214,13 @@ public static partial class AndroidCommands
 		startCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var name = context.ParseResult.GetValueForArgument(startNameArg);
 			var coldBoot = context.GetOption<bool>("cold-boot");
-			var wait = context.GetOption<bool>("wait");				var formatter = Program.GetFormatter(context);
+			var wait = context.GetOption<bool>("wait");
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -304,10 +306,11 @@ public static partial class AndroidCommands
 		stopCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(stopNameArg);				var formatter = Program.GetFormatter(context);
+			var name = context.ParseResult.GetValueForArgument(stopNameArg);
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -415,10 +418,11 @@ public static partial class AndroidCommands
 		deleteCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(deleteNameArg);				var formatter = Program.GetFormatter(context);
+			var name = context.ParseResult.GetValueForArgument(deleteNameArg);
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -476,7 +480,7 @@ public static partial class AndroidCommands
 				formatter.WriteError(ex);
 				context.ExitCode = 1;
 			}
-			});
+		});
 		command.AddCommand(deleteCommand);
 
 		return command;

@@ -22,9 +22,9 @@ public static partial class AndroidCommands
 		checkCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var jdkManager = Program.JdkManager;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-				var formatter = Program.GetFormatter(context);
+			var formatter = Program.GetFormatter(context);
 
 			var healthCheck = await jdkManager.CheckHealthAsync(context.GetCancellationToken());
 
@@ -34,10 +34,10 @@ public static partial class AndroidCommands
 			}
 			else
 			{
-				var statusIcon = healthCheck.Status == Models.CheckStatus.Ok ? "✓" : 
+				var statusIcon = healthCheck.Status == Models.CheckStatus.Ok ? "✓" :
 								 healthCheck.Status == Models.CheckStatus.Warning ? "⚠" : "✗";
 				formatter.WriteInfo($"{statusIcon} {healthCheck.Message}");
-				
+
 				if (healthCheck.Details?.TryGetValue("path", out var path) == true)
 					formatter.WriteProgress($"Path: {path}");
 			}
@@ -52,11 +52,12 @@ public static partial class AndroidCommands
 		installCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var jdkManager = Program.JdkManager;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var version = context.GetOption<int>("version");
-			var path = context.GetOption<string>("path");				var formatter = Program.GetFormatter(context);
+			var path = context.GetOption<string>("path");
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{

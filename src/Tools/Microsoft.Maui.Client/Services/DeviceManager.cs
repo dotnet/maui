@@ -39,12 +39,12 @@ public class DeviceManager : IDeviceManager
 			{
 				// Check if this AVD is already in the running devices list
 				// Match by AVD name in details dict or by EmulatorId
-				var runningIndex = devices.FindIndex(d => 
-					d.Platforms.Contains("android") && 
+				var runningIndex = devices.FindIndex(d =>
+					d.Platforms.Contains("android") &&
 					d.IsEmulator &&
 					(
 						(d.Details != null &&
-						 d.Details.TryGetValue("avd", out var avdName) && 
+						 d.Details.TryGetValue("avd", out var avdName) &&
 						 string.Equals(avdName?.ToString(), avd.Name, StringComparison.OrdinalIgnoreCase))
 						||
 						string.Equals(d.EmulatorId, avd.Name, StringComparison.OrdinalIgnoreCase)

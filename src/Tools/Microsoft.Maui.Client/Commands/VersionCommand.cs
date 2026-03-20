@@ -22,8 +22,8 @@ public static class VersionCommand
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 
 			var assembly = Assembly.GetExecutingAssembly();
-			var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion 
-				?? assembly.GetName().Version?.ToString() 
+			var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+				?? assembly.GetName().Version?.ToString()
 				?? "0.0.0";
 
 			if (useJson)

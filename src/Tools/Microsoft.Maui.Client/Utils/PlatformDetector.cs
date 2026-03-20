@@ -146,12 +146,12 @@ public static class PlatformDetector
 				if (Directory.Exists(javaVirtualMachines))
 				{
 					var jdks = Directory.GetDirectories(javaVirtualMachines)
-						.Where(d => d.Contains("jdk", StringComparison.OrdinalIgnoreCase) || 
-						            d.Contains("temurin", StringComparison.OrdinalIgnoreCase) || 
-						            d.Contains("zulu", StringComparison.OrdinalIgnoreCase))
+						.Where(d => d.Contains("jdk", StringComparison.OrdinalIgnoreCase) ||
+									d.Contains("temurin", StringComparison.OrdinalIgnoreCase) ||
+									d.Contains("zulu", StringComparison.OrdinalIgnoreCase))
 						.OrderByDescending(d => d)
 						.FirstOrDefault();
-					
+
 					if (jdks != null)
 					{
 						var contentsHome = Path.Combine(jdks, "Contents", "Home");

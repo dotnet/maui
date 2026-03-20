@@ -92,19 +92,26 @@ public class Simctl
 	private static string DetermineIdiomFromName(string name)
 	{
 		var lowerName = name.ToLowerInvariant();
-		if (lowerName.Contains("ipad", StringComparison.Ordinal)) return DeviceIdiom.Tablet;
-		if (lowerName.Contains("watch", StringComparison.Ordinal)) return DeviceIdiom.Watch;
-		if (lowerName.Contains("tv", StringComparison.Ordinal)) return DeviceIdiom.TV;
-		if (lowerName.Contains("vision", StringComparison.Ordinal)) return DeviceIdiom.Desktop; // visionOS
+		if (lowerName.Contains("ipad", StringComparison.Ordinal))
+			return DeviceIdiom.Tablet;
+		if (lowerName.Contains("watch", StringComparison.Ordinal))
+			return DeviceIdiom.Watch;
+		if (lowerName.Contains("tv", StringComparison.Ordinal))
+			return DeviceIdiom.TV;
+		if (lowerName.Contains("vision", StringComparison.Ordinal))
+			return DeviceIdiom.Desktop; // visionOS
 		return DeviceIdiom.Phone; // iPhone, default
 	}
 
 	private static string ExtractPlatformFromRuntime(string runtimeIdentifier)
 	{
-		if (runtimeIdentifier.Contains("tvOS", StringComparison.OrdinalIgnoreCase)) return "tvos";
-		if (runtimeIdentifier.Contains("watchOS", StringComparison.OrdinalIgnoreCase)) return "watchos";
-		if (runtimeIdentifier.Contains("xrOS", StringComparison.OrdinalIgnoreCase) || 
-		    runtimeIdentifier.Contains("visionOS", StringComparison.OrdinalIgnoreCase)) return "visionos";
+		if (runtimeIdentifier.Contains("tvOS", StringComparison.OrdinalIgnoreCase))
+			return "tvos";
+		if (runtimeIdentifier.Contains("watchOS", StringComparison.OrdinalIgnoreCase))
+			return "watchos";
+		if (runtimeIdentifier.Contains("xrOS", StringComparison.OrdinalIgnoreCase) ||
+			runtimeIdentifier.Contains("visionOS", StringComparison.OrdinalIgnoreCase))
+			return "visionos";
 		return "ios"; // Default to iOS
 	}
 

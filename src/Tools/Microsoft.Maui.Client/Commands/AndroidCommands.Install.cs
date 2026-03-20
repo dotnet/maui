@@ -32,7 +32,7 @@ public static partial class AndroidCommands
 		command.SetHandler(async (InvocationContext context) =>
 		{
 			var androidProvider = Program.AndroidProvider;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var sdkPath = context.GetOption<string>("sdk-path");
@@ -40,11 +40,12 @@ public static partial class AndroidCommands
 			var jdkVersion = context.GetOption<int>("jdk-version");
 			var rawPackages = context.GetOption<string[]>("packages");
 			var acceptLicenses = context.GetOption<bool>("accept-licenses");
-			
+
 			// Support comma-separated packages: "pkg1,pkg2,pkg3" becomes ["pkg1", "pkg2", "pkg3"]
 			var packages = rawPackages?
 				.SelectMany(p => p.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-				.ToArray();				var formatter = Program.GetFormatter(context);
+				.ToArray();
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{

@@ -25,7 +25,7 @@ public class MauiToolException : Exception
 		Code = code;
 	}
 
-	public MauiToolException(string code, string message, RemediationInfo? remediation = null, 
+	public MauiToolException(string code, string message, RemediationInfo? remediation = null,
 		Dictionary<string, object>? context = null, string? nativeError = null)
 		: base(message)
 	{
@@ -38,10 +38,10 @@ public class MauiToolException : Exception
 	/// <summary>
 	/// Creates an auto-fixable exception with a remediation command.
 	/// </summary>
-	public static MauiToolException AutoFixable(string code, string message, string fixCommand, 
+	public static MauiToolException AutoFixable(string code, string message, string fixCommand,
 		Dictionary<string, object>? context = null, string? nativeError = null)
 	{
-		return new MauiToolException(code, message, 
+		return new MauiToolException(code, message,
 			new RemediationInfo(RemediationType.AutoFixable, fixCommand),
 			context, nativeError);
 	}

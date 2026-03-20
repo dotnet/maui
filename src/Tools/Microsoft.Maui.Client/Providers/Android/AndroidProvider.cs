@@ -219,7 +219,7 @@ public class AndroidProvider : IAndroidProvider
 		return await _avdManager.GetAvdsAsync(cancellationToken);
 	}
 
-	public async Task<AvdInfo> CreateAvdAsync(string name, string deviceProfile, string systemImage, 
+	public async Task<AvdInfo> CreateAvdAsync(string name, string deviceProfile, string systemImage,
 		bool force = false, CancellationToken cancellationToken = default)
 	{
 		return await _avdManager.CreateAvdAsync(name, deviceProfile, systemImage, force, cancellationToken);
@@ -230,7 +230,7 @@ public class AndroidProvider : IAndroidProvider
 		await _avdManager.DeleteAvdAsync(name, cancellationToken);
 	}
 
-	public async Task StartAvdAsync(string name, bool coldBoot = false, bool wait = false, 
+	public async Task StartAvdAsync(string name, bool coldBoot = false, bool wait = false,
 		CancellationToken cancellationToken = default)
 	{
 		await _avdManager.StartAvdAsync(name, coldBoot, wait, cancellationToken);
@@ -254,7 +254,7 @@ public class AndroidProvider : IAndroidProvider
 	public async Task<string?> GetMostRecentSystemImageAsync(CancellationToken cancellationToken = default)
 	{
 		var packages = await GetInstalledPackagesAsync(cancellationToken);
-		
+
 		// Filter to system images and sort by Android API level (descending)
 		// System image format: system-images;android-XX;google_apis;arm64-v8a
 		var systemImages = packages
@@ -284,7 +284,7 @@ public class AndroidProvider : IAndroidProvider
 		return 0;
 	}
 
-	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false, 
+	public async Task InstallPackagesAsync(IEnumerable<string> packages, bool acceptLicenses = false,
 		CancellationToken cancellationToken = default)
 	{
 		await _sdkManager.InstallPackagesAsync(packages, acceptLicenses, cancellationToken);
@@ -325,7 +325,7 @@ public class AndroidProvider : IAndroidProvider
 		return (sdkManagerPath, "--licenses");
 	}
 
-	public async Task InstallJdkAsync(int version = 17, string? installPath = null, 
+	public async Task InstallJdkAsync(int version = 17, string? installPath = null,
 		IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
 		progress?.Report($"Installing OpenJDK {version}...");
@@ -334,7 +334,7 @@ public class AndroidProvider : IAndroidProvider
 		progress?.Report($"OpenJDK {version} installed to {_jdkPath}");
 	}
 
-	public async Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, 
+	public async Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17,
 		IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
 		// Step 1: Install JDK if not present
@@ -397,7 +397,7 @@ public class AndroidProvider : IAndroidProvider
 		progress?.Report("All packages installed ✓");
 	}
 
-	public async Task InstallSdkToolsAsync(string targetPath, 
+	public async Task InstallSdkToolsAsync(string targetPath,
 		Action<string, int, string>? onProgress = null, CancellationToken cancellationToken = default)
 	{
 		await _sdkManager.InstallSdkAsync(targetPath,
@@ -406,7 +406,7 @@ public class AndroidProvider : IAndroidProvider
 		_sdkPath = targetPath;
 	}
 
-	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath, 
+	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath,
 		CancellationToken cancellationToken = default)
 	{
 		return await _adb.TakeScreenshotAsync(deviceSerial, outputPath, cancellationToken);

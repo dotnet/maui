@@ -119,7 +119,7 @@ public record Device
 	public string? ConnectionType { get; init; }
 
 	// Legacy properties for backward compatibility
-	
+
 	/// <summary>
 	/// Platform identifier (legacy, use Platforms array instead).
 	/// </summary>

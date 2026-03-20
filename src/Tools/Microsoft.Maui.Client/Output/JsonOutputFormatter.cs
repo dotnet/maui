@@ -70,7 +70,7 @@ public class JsonOutputFormatter : IOutputFormatter
 
 	public void WriteTable<T>(IEnumerable<T> items, params (string Header, Func<T, string> Selector)[] columns)
 	{
-		var rows = items.Select(item => 
+		var rows = items.Select(item =>
 			columns.ToDictionary(c => c.Header.ToLowerInvariant(), c => c.Selector(item)));
 		WriteResult(rows.ToList());
 	}

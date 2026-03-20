@@ -47,8 +47,9 @@ public record ErrorResult
 	/// </summary>
 	public static string GetCategory(string code)
 	{
-		if (code.Length < 3) return "unknown";
-		
+		if (code.Length < 3)
+			return "unknown";
+
 		return code[1] switch
 		{
 			'1' => "tool",

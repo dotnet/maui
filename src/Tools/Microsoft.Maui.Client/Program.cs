@@ -57,7 +57,7 @@ public class Program
 			{
 				var formatter = GetFormatter(context);
 				var isCi = context.ParseResult.GetValueForOption(GlobalOptions.CiOption);
-				
+
 				formatter.WriteError(exception);
 				context.ExitCode = 1;
 
@@ -93,7 +93,7 @@ public class Program
 
 		// Platform-specific command groups
 		rootCommand.AddCommand(AndroidCommands.Create());
-		
+
 		// Only add Apple commands on macOS
 		if (PlatformDetector.IsMacOS)
 		{
@@ -107,9 +107,9 @@ public class Program
 	{
 		var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 		var verbose = context.ParseResult.GetValueForOption(GlobalOptions.VerboseOption);
-		
-		return useJson 
-			? new JsonOutputFormatter(Console.Out) 
+
+		return useJson
+			? new JsonOutputFormatter(Console.Out)
 			: new SpectreOutputFormatter(verbose: verbose);
 	}
 

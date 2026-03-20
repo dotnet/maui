@@ -188,12 +188,12 @@ public static class AppleCommands
 
 				// Apply filters
 				if (!string.IsNullOrEmpty(runtimeFilter))
-					devices = devices.Where(d => 
+					devices = devices.Where(d =>
 						(d.VersionName?.Contains(runtimeFilter, StringComparison.OrdinalIgnoreCase) ?? false) ||
 						(d.Version?.Contains(runtimeFilter, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 
 				if (!string.IsNullOrEmpty(deviceTypeFilter))
-					devices = devices.Where(d => 
+					devices = devices.Where(d =>
 						d.Name.Contains(deviceTypeFilter, StringComparison.OrdinalIgnoreCase) ||
 						(d.Model?.Contains(deviceTypeFilter, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 

@@ -26,10 +26,11 @@ public static class DoctorCommand
 		command.SetHandler(async (InvocationContext context) =>
 		{
 			var doctorService = Program.DoctorService;
-			
+
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var fix = context.GetOption<bool>("fix");
-			var platform = context.GetOption<string>("platform");				var formatter = Program.GetFormatter(context);
+			var platform = context.GetOption<string>("platform");
+			var formatter = Program.GetFormatter(context);
 
 			try
 			{

@@ -23,7 +23,7 @@ public class AvdManager
 	{
 		_adb = adb;
 		var sdkPath = getSdkPath();
-		var env = BuildEnvironmentVariables(sdkPath, getJdkPath());
+		var env = AndroidEnvironment.BuildEnvironmentVariables(sdkPath, getJdkPath());
 
 		var avdManagerPath = ResolveAvdManagerPath(sdkPath);
 		if (avdManagerPath != null)
@@ -83,21 +83,6 @@ public class AvdManager
 		var ext = OperatingSystem.IsWindows() ? ".exe" : "";
 		var emulatorPath = Path.Combine(sdkPath, "emulator", "emulator" + ext);
 		return File.Exists(emulatorPath) ? emulatorPath : null;
-	}
-
-	private static Dictionary<string, string> BuildEnvironmentVariables(string? sdkPath, string? jdkPath)
-	{
-		var env = new Dictionary<string, string>();
-		if (!string.IsNullOrEmpty(sdkPath))
-			env["ANDROID_HOME"] = sdkPath;
-		if (!string.IsNullOrEmpty(jdkPath))
-		{
-			env["JAVA_HOME"] = jdkPath;
-			var jdkBin = Path.Combine(jdkPath, "bin");
-			var currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
-			env["PATH"] = string.IsNullOrEmpty(currentPath) ? jdkBin : jdkBin + Path.PathSeparator + currentPath;
-		}
-		return env;
 	}
 
 	public async Task<List<AvdInfo>> GetAvdsAsync(CancellationToken cancellationToken = default)

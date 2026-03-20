@@ -68,7 +68,7 @@ public class JdkManager : IJdkManager
 			var result = ProcessRunner.RunSync(javaBin, "-version", timeout: TimeSpan.FromSeconds(10));
 			// Java version output is on stderr
 			var output = result.StandardError + result.StandardOutput;
-			
+
 			// Parse version from output like: openjdk version "17.0.1" or java version "1.8.0_292"
 			var match = System.Text.RegularExpressions.Regex.Match(output, @"version ""(\d+)");
 			if (match.Success && int.TryParse(match.Groups[1].Value, out var version))

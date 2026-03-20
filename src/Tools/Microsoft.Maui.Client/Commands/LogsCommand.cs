@@ -90,13 +90,13 @@ public static class LogsCommand
 		{
 			case Platforms.Android:
 				var sdkPath = PlatformDetector.Paths.GetAndroidSdkPath();
-				var adbPath = sdkPath != null 
+				var adbPath = sdkPath != null
 					? Path.Combine(sdkPath, "platform-tools", PlatformDetector.IsWindows ? "adb.exe" : "adb")
 					: "adb";
-				
+
 				command = adbPath;
 				args = $"-s {device.Id} logcat";
-				
+
 				if (!string.IsNullOrEmpty(filter))
 					args += $" -s {filter}";
 				if (!follow)
@@ -114,7 +114,7 @@ public static class LogsCommand
 
 				command = "xcrun";
 				args = $"simctl spawn {device.Id} log stream";
-				
+
 				if (!string.IsNullOrEmpty(filter))
 					args += $" --predicate 'subsystem CONTAINS \"{filter}\"'";
 				break;
@@ -190,7 +190,8 @@ public static class LogsCommand
 
 	private static ConsoleColor? DetectLogLevel(string line)
 	{
-		if (line.Length < 2) return null;
+		if (line.Length < 2)
+			return null;
 
 		// Android logcat long format: level letter at column ~31, or after PID/TID
 		// "06-01 12:00:00.000  1234  5678 E Tag: ..."
