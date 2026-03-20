@@ -21,6 +21,14 @@ public partial class EntryControlMainPage : ContentPage
 	public EntryControlMainPage(EntryViewModel viewModel)
 	{
 		InitializeComponent();
+		if (OperatingSystem.IsIOSVersionAtLeast(26))
+		{
+			grid.HeightRequest = 100;
+		}
+		else
+		{
+			grid.HeightRequest = 130;
+		}
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
 		EntryControl.PropertyChanged += UpdateEntryControl;

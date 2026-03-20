@@ -94,7 +94,7 @@ The script auto-detects which mode to use based on whether fix files are present
 7. Runs tests (should PASS with fix)
 8. **Generates markdown reports**:
    - `CustomAgentLogsTmp/TestValidation/verification-report.md` - Full detailed report
-   - `CustomAgentLogsTmp/PRState/verification-report.md` - Gate section for PR agent
+   - `CustomAgentLogsTmp/PRState/verification-report.md` - Validate section for agent
 9. **Updates PR labels** based on result
 10. Reports result
 
