@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Maui.Controls.Sample.Issues;
 
