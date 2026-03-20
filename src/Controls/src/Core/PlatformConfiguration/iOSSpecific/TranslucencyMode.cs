@@ -1,14 +1,14 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TranslucencyMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TranslucencyMode']/Docs/*" />
+	/// <summary>Specifies the iOS tab bar translucency mode.</summary>
 	public enum TranslucencyMode
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TranslucencyMode.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>Uses the system default translucency.</summary>
 		Default,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TranslucencyMode.xml" path="//Member[@MemberName='Translucent']/Docs/*" />
+		/// <summary>Forces the tab bar to be translucent.</summary>
 		Translucent,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TranslucencyMode.xml" path="//Member[@MemberName='Opaque']/Docs/*" />
+		/// <summary>Forces the tab bar to be opaque.</summary>
 		Opaque
 	}
 }

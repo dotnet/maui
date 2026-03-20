@@ -147,6 +147,10 @@ extends:
                   $workloadSetsChannel = ".NET 10 Workload Release"
                   $workloadSetsFeed = "dotnet10-workloads"
                 }
+                if ($manifestPack -like "*.Manifest-11.0*") {
+                  $workloadSetsChannel = ".NET 11 Workload Release"
+                  $workloadSetsFeed = "dotnet11-workloads"
+                }
                 if (!$workloadSetsChannel -or !$workloadSetsFeed) {
                   Write-Error "Could not determine the workload sets channel or feed for the manifest pack '$manifestPack'"
                   exit 1

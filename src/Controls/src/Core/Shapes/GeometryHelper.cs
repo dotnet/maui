@@ -5,10 +5,17 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.GeometryHelper']/Docs/*" />
+	/// <summary>
+	/// Provides helper methods for geometry operations such as flattening curves into polylines.
+	/// </summary>
 	public static class GeometryHelper
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][1]/Docs/*" />
+		/// <summary>
+		/// Flattens a <see cref="Geometry"/> into a <see cref="PathGeometry"/> containing only polyline segments.
+		/// </summary>
+		/// <param name="geoSrc">The source geometry to flatten.</param>
+		/// <param name="tolerance">The maximum distance between the curve and the polyline approximation.</param>
+		/// <returns>A new <see cref="PathGeometry"/> with all curves converted to line segments.</returns>
 		public static PathGeometry FlattenGeometry(Geometry geoSrc, double tolerance)
 		{
 			// Return empty PathGeometry if Geometry is null
@@ -21,7 +28,13 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pathGeoDst;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenGeometry'][2]/Docs/*" />
+		/// <summary>
+		/// Flattens a <see cref="Geometry"/> into an existing <see cref="PathGeometry"/>, applying a transformation matrix.
+		/// </summary>
+		/// <param name="pathGeoDst">The destination path geometry to add flattened figures to.</param>
+		/// <param name="geoSrc">The source geometry to flatten.</param>
+		/// <param name="tolerance">The maximum distance between the curve and the polyline approximation.</param>
+		/// <param name="matxPrevious">The transformation matrix to apply to all points.</param>
 		public static void FlattenGeometry(PathGeometry pathGeoDst, Geometry geoSrc, double tolerance, Matrix matxPrevious)
 		{
 			var points = new List<Point>();
@@ -228,7 +241,15 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenCubicBezier']/Docs/*" />
+		/// <summary>
+		/// Flattens a cubic Bezier curve into a series of line segments.
+		/// </summary>
+		/// <param name="points">The list to add the resulting points to.</param>
+		/// <param name="ptStart">The start point of the curve.</param>
+		/// <param name="ptCtrl1">The first control point.</param>
+		/// <param name="ptCtrl2">The second control point.</param>
+		/// <param name="ptEnd">The end point of the curve.</param>
+		/// <param name="tolerance">The maximum distance between the curve and the polyline approximation.</param>
 		public static void FlattenCubicBezier(List<Point> points, Point ptStart, Point ptCtrl1, Point ptCtrl2, Point ptEnd, double tolerance)
 		{
 			int max = (int)((ptCtrl1.Distance(ptStart) + ptCtrl2.Distance(ptCtrl1) + ptEnd.Distance(ptCtrl2)) / tolerance);
@@ -251,7 +272,14 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenQuadraticBezier']/Docs/*" />
+		/// <summary>
+		/// Flattens a quadratic Bezier curve into a series of line segments.
+		/// </summary>
+		/// <param name="points">The list to add the resulting points to.</param>
+		/// <param name="ptStart">The start point of the curve.</param>
+		/// <param name="ptCtrl">The control point.</param>
+		/// <param name="ptEnd">The end point of the curve.</param>
+		/// <param name="tolerance">The maximum distance between the curve and the polyline approximation.</param>
 		public static void FlattenQuadraticBezier(List<Point> points, Point ptStart, Point ptCtrl, Point ptEnd, double tolerance)
 		{
 			int max = (int)((ptCtrl.Distance(ptStart) + ptEnd.Distance(ptCtrl)) / tolerance);
@@ -272,8 +300,19 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		// More information: http://www.charlespetzold.com/blog/2008/01/Mathematics-of-ArcSegment.html
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryHelper.xml" path="//Member[@MemberName='FlattenArc']/Docs/*" />
+		/// <summary>
+		/// Flattens an elliptical arc into a series of line segments.
+		/// </summary>
+		/// <param name="points">The list to add the resulting points to.</param>
+		/// <param name="pt1">The start point of the arc.</param>
+		/// <param name="pt2">The end point of the arc.</param>
+		/// <param name="radiusX">The x-radius of the ellipse.</param>
+		/// <param name="radiusY">The y-radius of the ellipse.</param>
+		/// <param name="angleRotation">The rotation angle of the ellipse in degrees.</param>
+		/// <param name="isLargeArc">Whether to use the larger of the two possible arcs.</param>
+		/// <param name="isCounterclockwise">Whether the arc sweeps counterclockwise.</param>
+		/// <param name="tolerance">The maximum distance between the arc and the polyline approximation.</param>
+		/// <remarks>See http://www.charlespetzold.com/blog/2008/01/Mathematics-of-ArcSegment.html for more information.</remarks>
 		public static void FlattenArc(List<Point> points, Point pt1, Point pt2, double radiusX, double radiusY, double angleRotation,
 			bool isLargeArc, bool isCounterclockwise, double tolerance)
 		{

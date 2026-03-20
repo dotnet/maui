@@ -28,7 +28,7 @@ class TypeTypeConverter : ISGTypeConverter
 		if (typeRef != null)
 			return $"typeof({typeRef.ToFQDisplayString()})";
 		error:
-			context.ReportConversionFailed((IXmlLineInfo)node, value, Descriptors.TypeResolution);
-			return "default";
+		context.ReportConversionFailed((IXmlLineInfo)node, value, Descriptors.TypeResolution);
+		return "default";
 	}
 }

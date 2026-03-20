@@ -11,7 +11,7 @@
     4. Captures all device logs and test output
 
 .PARAMETER Platform
-    Target platform: "android", "ios", or "catalyst" (MacCatalyst)
+    Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345")
@@ -42,12 +42,15 @@
     
 .EXAMPLE
     ./BuildAndRunHostApp.ps1 -Platform catalyst -TestFilter "Issue12345"
+    
+.EXAMPLE
+    ./BuildAndRunHostApp.ps1 -Platform windows -TestFilter "Issue12345"
 #>
 
 [CmdletBinding(DefaultParameterSetName = "TestFilter")]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("android", "ios", "catalyst", "maccatalyst")]
+    [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
@@ -132,10 +135,13 @@ if ($Platform -eq "android") {
 } elseif ($Platform -eq "catalyst") {
     $TargetFramework = "net10.0-maccatalyst"
     $AppBundleId = "com.microsoft.maui.uitests"
+} elseif ($Platform -eq "windows") {
+    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $AppPackage = "com.microsoft.maui.uitests"
 }
 
-# Start emulator/simulator (skip for catalyst - runs on desktop)
-if ($Platform -ne "catalyst") {
+# Start emulator/simulator (skip for catalyst and windows - runs on desktop)
+if ($Platform -ne "catalyst" -and $Platform -ne "windows") {
     # Use shared Start-Emulator script to detect and start device
     $startEmulatorParams = @{
         Platform = $Platform
@@ -151,6 +157,10 @@ if ($Platform -ne "catalyst") {
         Write-Error "Failed to start or detect device"
         exit 1
     }
+} elseif ($Platform -eq "windows") {
+    # Windows runs directly on the host - use "host" as placeholder
+    $DeviceUdid = "host"
+    Write-Success "Windows will run on host (no device needed)"
 } else {
     # MacCatalyst runs directly on the Mac - use "host" as placeholder
     $DeviceUdid = "host"
@@ -194,6 +204,8 @@ if ($Platform -eq "android") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj"
 } elseif ($Platform -eq "catalyst") {
     $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj"
+} elseif ($Platform -eq "windows") {
+    $TestProject = Join-Path $RepoRoot "src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj"
 }
 
 if (-not (Test-Path $TestProject)) {
@@ -220,6 +232,28 @@ if ($Category) {
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
+
+    # Dismiss any ANR dialogs that may have appeared during build/deploy.
+    # The emulator can sit idle during long builds, causing SystemUI ANR.
+    Write-Info "Dismissing any system dialogs before test..."
+    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_ENTER 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+    Start-Sleep -Seconds 1
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_MENU 2>$null
+    Start-Sleep -Seconds 1
+
+    # Check for lingering ANR dialogs via window dump
+    $windowDump = & adb -s $DeviceUdid shell dumpsys window 2>$null | Select-String "Application Not Responding|ANR"
+    if ($windowDump) {
+        Write-Warn "ANR dialog detected — force-dismissing..."
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+        Start-Sleep -Seconds 2
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+        Start-Sleep -Seconds 1
+    }
 }
 
 # Capture test start time for iOS logs
@@ -248,10 +282,12 @@ if ($Platform -eq "catalyst") {
             & chmod +x $executablePath
         }
         
-        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
+        # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
+        $env:MAC_APP_PATH = $appPath
+        Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
     } else {
-        Write-Warning "MacCatalyst app not found at: $appPath"
-        Write-Warning "Test may use wrong app bundle if another version is registered"
+        Write-Warn "MacCatalyst app not found at: $appPath"
+        Write-Warn "Test may use wrong app bundle if another version is registered"
     }
     
     # Set log file path directly - app will write ILogger output here
@@ -260,6 +296,15 @@ if ($Platform -eq "catalyst") {
 
 Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
 Write-Host ""
+
+# Set environment variables for the test
+$env:DEVICE_UDID = $DeviceUdid
+Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
+
+# Set APPIUM_LOG_FILE so UITestBase saves screenshots/page-source to our log directory
+$appiumLogFile = Join-Path $HostAppLogsDir "appium.log"
+$env:APPIUM_LOG_FILE = $appiumLogFile
+Write-Info "Set APPIUM_LOG_FILE: $appiumLogFile (screenshots will be saved here)"
 
 try {
     # Run dotnet test and capture output
@@ -295,6 +340,37 @@ try {
 
 #endregion
 
+#region Collect Test Artifacts (screenshots, page source)
+
+Write-Step "Collecting test artifacts (screenshots, page source)..."
+
+# Collect any screenshots/page source from the test assembly output directory
+# UITestBase saves these via TestContext.AddTestAttachment to the assembly dir
+$testAssemblyDirs = @(
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net10.0"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net10.0"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net10.0")
+)
+
+$copiedCount = 0
+foreach ($dir in $testAssemblyDirs) {
+    if (Test-Path $dir) {
+        $artifacts = Get-ChildItem -Path $dir -File -Include "*.png","*.txt" -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match "ScreenShot|PageSource" }
+        foreach ($artifact in $artifacts) {
+            Copy-Item -Path $artifact.FullName -Destination $HostAppLogsDir -Force
+            $copiedCount++
+        }
+    }
+}
+
+# Also check the HostAppLogsDir itself for screenshots saved via APPIUM_LOG_FILE
+$screenshotCount = (Get-ChildItem -Path $HostAppLogsDir -Filter "*.png" -ErrorAction SilentlyContinue).Count
+$pageSourceCount = (Get-ChildItem -Path $HostAppLogsDir -Filter "*PageSource*" -ErrorAction SilentlyContinue).Count
+Write-Info "Test artifacts collected: $screenshotCount screenshot(s), $pageSourceCount page source(s) (copied $copiedCount from assembly dir)"
+
+#endregion
+
 #region Capture Device Logs
 
 Write-Step "Capturing device logs..."
@@ -307,7 +383,7 @@ if ($Platform -eq "android") {
     & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests|DOTNET" > $deviceLogFile
     
     if ((Get-Item $deviceLogFile).Length -eq 0) {
-        Write-Warning "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
+        Write-Warn "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
     }
     
@@ -338,6 +414,18 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "MacCatalyst logs saved to: $deviceLogFile"
+} elseif ($Platform -eq "windows") {
+    # Windows logs - use Event Log or console output
+    # For now, collect from test output since WinAppDriver doesn't provide separate device logs
+    Write-Info "Windows platform - logs captured from test output"
+    
+    if ((Test-Path $deviceLogFile) -and ((Get-Item $deviceLogFile).Length -gt 0)) {
+        Write-Success "Windows logs written to: $deviceLogFile"
+    } else {
+        # Create a minimal log file indicating Windows was tested
+        "Windows UI Test run at $(Get-Date)" | Out-File $deviceLogFile
+        Write-Info "Windows device log created: $deviceLogFile"
+    }
 }
 
 #endregion
@@ -369,7 +457,7 @@ if (Test-Path $deviceLogFile) {
         Write-Host ""
         Write-Info "Full device log: $deviceLogFile"
     } else {
-        Write-Warning "Could not read device log file"
+        Write-Warn "Could not read device log file"
     }
     
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan

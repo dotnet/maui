@@ -144,6 +144,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
+			// The uint cast is being used as an optimization to handle both negative numbers and out-of-bounds indices in a single comparison
+			if ((uint) groupIndex >= (uint) _groups.Count)
+			{
+				System.Diagnostics.Debug.WriteLine($"Invalid Group index: {groupIndex}, Group count: {_groups.Count}");
+				return null;
+			}
+
 			return _groups[groupIndex];
 		}
 
@@ -226,10 +233,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				var source = ItemsSourceFactory.Create(_groupSource[n] as IEnumerable, _groupableItemsView, this);
-				source.HasFooter = _hasGroupFooters;
-				source.HasHeader = _hasGroupHeaders;
-				_groups.Add(source);
+				// Use ICollection (not IEnumerable) so that flat collections whose item type
+				// implements IEnumerable (e.g. string → IEnumerable<char>) are not mistaken
+				// for groups, which would render a header/footer per item.
+				if (_groupSource[n] is ICollection list)
+				{
+					var source = ItemsSourceFactory.Create(list, _groupableItemsView, this);
+					source.HasFooter = _hasGroupFooters;
+					source.HasHeader = _hasGroupHeaders;
+					_groups.Add(source);
+				}
 			}
 		}
 
@@ -284,6 +297,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
+			var count = 0;
+
+			foreach (var item in args.NewItems)
+			{
+				// Count only real groups (ICollection); flat items like strings must not
+				// trigger a section insertion — they would cause _groups[groupIndex] to be
+				// out-of-range after UpdateGroupTracking skips non-ICollection items.
+				if (item is ICollection)
+				{
+					count++;
+				}
+			}
+
+			if (count == 0)
+			{
+				return;
+			}
+
 			var groupIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var groupCount = args.NewItems.Count;
 
@@ -304,6 +335,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Remove(NotifyCollectionChangedEventArgs args)
 		{
+			var count = 0;
+
+			foreach (var item in args.OldItems)
+			{
+				// Count only real groups (ICollection); flat items like strings must not
+				// trigger a section removal — they would cause _groups[groupIndex] to be
+				// out-of-range after UpdateGroupTracking skips non-ICollection items.
+				if (item is ICollection)
+				{
+					count++;
+				}
+			}
+
+			if (count == 0)
+			{
+				return;
+			}
+
 			var groupIndex = args.OldStartingIndex;
 
 			if (groupIndex < 0)

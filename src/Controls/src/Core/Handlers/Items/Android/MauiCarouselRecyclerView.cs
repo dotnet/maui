@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!IsSwipeEnabled)
+			{
 				return false;
+			}
 
 			return base.OnInterceptTouchEvent(ev);
 		}
@@ -489,7 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SetCurrentItem(int carouselPosition)
 		{
-			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
+			if (ItemsViewAdapter?.ItemsSource?.Count == 0 || carouselPosition < 0)
 				return;
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);

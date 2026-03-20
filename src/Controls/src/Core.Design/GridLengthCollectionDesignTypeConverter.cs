@@ -4,13 +4,16 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for GridLength collection values.
+	/// </summary>
 	public class GridLengthCollectionDesignTypeConverter : TypeConverter
 	{
-		// This tells XAML this converter can be used to process strings
-		// Without this the values won't show up as hints
+		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
 
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			if (value?.ToString() is string strValue)
