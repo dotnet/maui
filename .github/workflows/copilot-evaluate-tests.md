@@ -47,7 +47,7 @@ safe-outputs:
 
 tools:
   github:
-    toolsets: [default, pull_requests]
+    toolsets: [default]
 
 network: defaults
 
