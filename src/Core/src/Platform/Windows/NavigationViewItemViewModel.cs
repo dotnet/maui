@@ -93,6 +93,8 @@ namespace Microsoft.Maui.Platform
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 		WeakReference<object>? _data;
+		string? _badgeText;
+		WBrush? _badgeBackground;
 
 		public object? Content
 		{
@@ -245,6 +247,32 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
+
+		public string? BadgeText
+		{
+			get => _badgeText;
+			set
+			{
+				if (this.SetProperty(ref _badgeText, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(BadgeValue));
+					OnPropertyChanged(nameof(BadgeVisibility));
+				}
+			}
+		}
+
+		public WBrush? BadgeBackground
+		{
+			get => _badgeBackground;
+			set { this.SetProperty(ref _badgeBackground, value, OnPropertyChanged); }
+		}
+
+		public bool HasBadge => !string.IsNullOrEmpty(_badgeText);
+
+		public int BadgeValue => int.TryParse(_badgeText, out var v) && v >= 0 ? v : -1;
+
+		public Microsoft.UI.Xaml.Visibility BadgeVisibility =>
+			HasBadge ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
 		void OnPropertyChanged(string args) =>
 			OnPropertyChanged(new PropertyChangedEventArgs(args));
 

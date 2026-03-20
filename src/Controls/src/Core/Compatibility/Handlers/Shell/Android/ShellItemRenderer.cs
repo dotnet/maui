@@ -281,11 +281,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDisplayedPageChanged(newPage, oldPage);
 
-			if (oldPage is not null)
-				oldPage.PropertyChanged -= OnDisplayedElementPropertyChanged;
+			oldPage?.PropertyChanged -= OnDisplayedElementPropertyChanged;
 
-			if (newPage is not null)
-				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
+			newPage?.PropertyChanged += OnDisplayedElementPropertyChanged;
 
 			if (newPage is not null && !_menuSetup)
 			{
@@ -419,6 +417,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 				}
 			}
+			else if (e.IsOneOf(BaseShellItem.BadgeTextProperty, BaseShellItem.BadgeColorProperty))
+			{
+				var shellSection = (ShellSection)sender;
+				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
+
+				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
+				var maxItems = _bottomView.MaxItemCount;
+
+				if (!(itemCount > maxItems && index > maxItems - 2))
+				{
+					UpdateShellSectionBadge(shellSection, index);
+				}
+			}
 		}
 
 		protected virtual void OnTabReselected(ShellSection shellSection)
@@ -473,6 +484,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					currentIndex,
 					_bottomView,
 					MauiContext);
+
+				UpdateAllBadges();
 			}
 
 			UpdateTabBarVisibility();
@@ -495,6 +508,56 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bool tabEnabled = shellSection.IsEnabled;
 			if (menuItem.IsEnabled != tabEnabled)
 				menuItem.SetEnabled(tabEnabled);
+		}
+
+		/// <summary>
+		/// Updates the badge on a bottom navigation tab for the given shell section.
+		/// </summary>
+		protected virtual void UpdateShellSectionBadge(ShellSection shellSection, int index)
+		{
+			if (_bottomView is null || !_bottomView.IsAlive())
+				return;
+
+			var badgeText = shellSection.BadgeText;
+			var menuItemId = index;
+
+			if (string.IsNullOrEmpty(badgeText))
+			{
+				_bottomView.RemoveBadge(menuItemId);
+			}
+			else
+			{
+				var badgeColor = shellSection.BadgeColor;
+
+				// Remove and recreate badge when clearing color to reset to platform default
+				if (badgeColor is null)
+				{
+					_bottomView.RemoveBadge(menuItemId);
+				}
+
+				var badge = _bottomView.GetOrCreateBadge(menuItemId);
+				badge.Text = badgeText;
+
+				if (badgeColor is not null)
+				{
+					badge.BackgroundColor = badgeColor.ToPlatform();
+				}
+			}
+		}
+
+		void UpdateAllBadges()
+		{
+			if (_bottomView is null || !_bottomView.IsAlive())
+				return;
+
+			var items = ((IShellItemController)ShellItem).GetItems();
+			var maxItems = _bottomView.MaxItemCount;
+			var count = Math.Min(items.Count, maxItems);
+
+			for (int i = 0; i < count; i++)
+			{
+				UpdateShellSectionBadge(items[i], i);
+			}
 		}
 
 		void OnDisplayedElementPropertyChanged(object sender, PropertyChangedEventArgs e)
