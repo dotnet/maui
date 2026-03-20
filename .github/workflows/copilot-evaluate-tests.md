@@ -103,7 +103,22 @@ Follow SKILL.md to evaluate:
 
 ### Step 4: Post Results
 
-Call `add_comment` with your structured evaluation report. Use the exact output format specified in SKILL.md, starting with `## PR Test Evaluation Report`.
+Call `add_comment` with your structured evaluation report. Wrap the full report in a collapsible `<details>` block so it doesn't dominate the PR conversation. Use this exact format:
+
+```markdown
+## 🧪 PR Test Evaluation
+
+**Overall Verdict:** [✅ Tests are adequate | ⚠️ Tests need improvement | ❌ Tests are insufficient]
+
+[1-2 sentence summary of the most important finding]
+
+<details>
+<summary>📊 Expand Full Evaluation</summary>
+
+[Full 9-criteria report from SKILL.md output format here]
+
+</details>
+```
 
 **Important:** Always pass the `item_number` parameter explicitly with the PR number when calling `add_comment`. This ensures the comment is posted to the correct PR even when triggered via `workflow_dispatch`.
 
