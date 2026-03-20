@@ -147,7 +147,6 @@ static class UpdateComponentCodeWriter
 		codeWriter.WriteLine();
 		codeWriter.WriteLine($"namespace {rootType.ContainingNamespace};");
 		codeWriter.WriteLine();
-		codeWriter.WriteLine(InitializeComponentCodeWriter.GeneratedCodeAttribute);
 		codeWriter.WriteLine($"{accessModifier} partial class {rootType.Name}");
 
 		using (PrePost.NewBlock(codeWriter))
