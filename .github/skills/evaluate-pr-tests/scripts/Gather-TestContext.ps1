@@ -104,6 +104,45 @@ if ($changedFiles.Count -eq 0) {
     }
 }
 
+# --- 2b. Download missing files via GitHub API (needed when PR isn't checked out locally) ---
+if ($usePrDiff -and $changedFiles.Count -gt 0) {
+    $headSha = $null
+    try {
+        $headSha = gh pr view $PrNumber --json headRefOid --jq '.headRefOid' 2>$null
+    } catch { }
+
+    if ($headSha) {
+        $downloadCount = 0
+        $owner, $repo = ($env:GITHUB_REPOSITORY ?? "dotnet/maui") -split '/', 2
+        foreach ($file in $changedFiles) {
+            if (-not (Test-Path $file)) {
+                try {
+                    $dir = [System.IO.Path]::GetDirectoryName($file)
+                    if ($dir -and -not (Test-Path $dir)) {
+                        New-Item -ItemType Directory -Force -Path $dir | Out-Null
+                    }
+                    $apiPath = "repos/$owner/$repo/contents/$($file)?ref=$headSha"
+                    $b64 = gh api $apiPath --jq '.content' 2>$null
+                    if ($b64) {
+                        $decoded = [System.Text.Encoding]::UTF8.GetString(
+                            [System.Convert]::FromBase64String(($b64 -replace '\s', ''))
+                        )
+                        [System.IO.File]::WriteAllText(
+                            (Join-Path $RepoRoot $file), $decoded
+                        )
+                        $downloadCount++
+                    }
+                } catch {
+                    Write-Host "⚠️ Could not download $file via API: $_"
+                }
+            }
+        }
+        if ($downloadCount -gt 0) {
+            Write-Host "📥 Downloaded $downloadCount file(s) from PR #$PrNumber head ($($headSha.Substring(0,7)))"
+        }
+    }
+}
+
 if ($changedFiles.Count -eq 0) {
     Write-Host "⚠️ No changed files detected. Check your branch and base branch."
     exit 1
