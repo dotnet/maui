@@ -81,7 +81,10 @@ namespace Microsoft.Maui.Controls
 			else if (Value is Style style)
 			{
 				// When setting a Style through a Setter (e.g., in VisualStateManager),
-				// we need to call the Style's Apply method to ensure all its setters are applied
+				// we call the Style's Apply method instead of SetValue to ensure all its setters are applied.
+				// Note: avoid using the same Style instance in both a XAML Style= attribute and a VSM setter,
+				// as IStyle.Apply overwrites the per-target specificity in Style's ConditionalWeakTable,
+				// which can break DynamicResource propagation and cleanup on state transitions.
 				((IStyle)style).Apply(targetObject, specificity);
 			}
 			else

@@ -49,7 +49,6 @@
                          Spacing="10">
         <Button x:Name="TestButton"
                 Text="State: Normal"
-                Style="{StaticResource BaseButtonStyle}"
                 HorizontalOptions="Center">
             <VisualStateManager.VisualStateGroups>
                 <VisualStateGroup Name="CommonStates">
