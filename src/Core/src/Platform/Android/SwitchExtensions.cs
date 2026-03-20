@@ -32,10 +32,6 @@ namespace Microsoft.Maui.Platform
 				// SetColorFilter flattens the drawable and removes the shadow effect
 				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
 			}
-			else
-			{
-				aSwitch.ThumbTintList = null;
-			}
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>

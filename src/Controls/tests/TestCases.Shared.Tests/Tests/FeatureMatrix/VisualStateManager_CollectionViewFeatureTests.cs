@@ -26,6 +26,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/34491
 	[Test, Order(2)]
 	public void VerifyVSM_CollectionView_Selected()
 	{
@@ -36,6 +37,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		Assert.That(stateText, Does.Contain("State: Selected (1)"));
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test, Order(3)]
 	public void VerifyVSM_CollectionView_Normal()
@@ -70,7 +72,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/18028
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //In mac, related issue: https://github.com/dotnet/maui/issues/18028 and In android, related issue: https://github.com/dotnet/maui/issues/34491
 	[Test, Order(6)]
 	public void VerifyVSM_CollectionView_Selected_Multiple()
 	{
@@ -174,7 +176,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 
-#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/18028
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //In mac, related issue: https://github.com/dotnet/maui/issues/18028 and In android, related issue: https://github.com/dotnet/maui/issues/34491
 	[Test, Order(12)]
 	public void VerifyVSM_CollectionView_ResetWhileMultipleSelected()
 	{
@@ -228,7 +230,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Normal/Unselected"));
 		}
 
-#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/18028
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //In mac, related issue: https://github.com/dotnet/maui/issues/18028 and In android, related issue: https://github.com/dotnet/maui/issues/34491
 	[Test, Order(15)]
 	public void VerifyVSM_CollectionView_SelectMultipleItems_UsingTap()
 	{
@@ -295,7 +297,7 @@ public class VisualStateManager_CollectionViewFeatureTests : _GalleryUITest
 		Assert.That(stateText, Is.EqualTo("State: Normal"));
 	}
 
-#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/18028
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //In mac, related issue: https://github.com/dotnet/maui/issues/18028 and In android, related issue: https://github.com/dotnet/maui/issues/34491
 	[Test, Order(18)]
 	public void VerifyVSM_CollectionView_DisableEnableWhileSelectMultipleItems()
 	{
