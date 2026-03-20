@@ -11,6 +11,14 @@ namespace Microsoft.Maui.Layouts
 {
 	public class GridLayoutManager : LayoutManager
 	{
+		// Default single-element Definition arrays for Grids with no explicit row/column
+		// definitions. Using static cached arrays avoids per-instance allocations (and
+		// ArrayPool's minimum bucket of 16 is wasteful for a single element).
+		// These are safe to share because the contents are overwritten at the start of
+		// every measure pass via InitializeRows/InitializeColumns.
+		static readonly Definition[] s_defaultRow = [new Definition(GridLength.Star)];
+		static readonly Definition[] s_defaultColumn = [new Definition(GridLength.Star)];
+
 		// NOTE: GridStructure rents arrays from ArrayPool. They are returned at the start
 		// of each Measure() call. If this manager is discarded without a final Measure(),
 		// the arrays will be reclaimed by the GC but not returned to the pool. If
@@ -215,7 +223,7 @@ namespace Microsoft.Maui.Layouts
 				if (count == 0)
 				{
 					// Since no rows are specified, we'll create an implied row 0
-					_rows = (cached is not null && cached.Length >= 1) ? cached : new Definition[1];
+					_rows = (cached is not null && cached.Length >= 1) ? cached : s_defaultRow;
 					_rows[0] = new Definition(GridLength.Star);
 					_rowCount = 1;
 					return;
@@ -238,7 +246,7 @@ namespace Microsoft.Maui.Layouts
 				if (count == 0)
 				{
 					// Since no columns are specified, we'll create an implied column 0
-					_columns = (cached is not null && cached.Length >= 1) ? cached : new Definition[1];
+					_columns = (cached is not null && cached.Length >= 1) ? cached : s_defaultColumn;
 					_columns[0] = new Definition(GridLength.Star);
 					_columnCount = 1;
 					return;
