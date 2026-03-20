@@ -80,6 +80,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new ShadowFeaturePage(), "Shadow Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarControlPage(), "Search Bar Feature Matrix"),
+			new GalleryPageFactory(() => new Material3_SearchBarControlPage(), "Search Bar Material3 Feature Matrix"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
 			new GalleryPageFactory(() => new StepperControlPage(), "Stepper Feature Matrix"),
@@ -94,10 +95,12 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 			new GalleryPageFactory(() => new NavigationPageControlPage(), "NavigationPage Feature Matrix"),
 			new GalleryPageFactory(() => new CheckBoxControlPage(), "CheckBox Feature Matrix"),
+			new GalleryPageFactory(() => new ClipControlPage(), "Clip Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new LabelControlPage(), "Label Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
 			new GalleryPageFactory(() => new EntryControlPage(), "Entry Feature Matrix"),
+			new GalleryPageFactory(() => new Material3_EntryControlPage(), "Entry Material3 Feature Matrix"),
 			new GalleryPageFactory(() => new ImageControlPage(), "Image Feature Matrix"),
 			new GalleryPageFactory(() => new ImageButtonControlPage(), "ImageButton Feature Matrix"),
 			new GalleryPageFactory(() => new BoxViewControlPage(), "BoxView Feature Matrix"),
@@ -120,9 +123,13 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new IndicatorViewControlPage(), "IndicatorView Feature Matrix"),
 			new GalleryPageFactory(() => new GridControlPage(), "Grid Feature Matrix"),
 			new GalleryPageFactory(() => new LayoutFeaturePage(), "ScrollView With LayoutOptions Feature Matrix"),
+      new GalleryPageFactory(() => new TriggersControlPage(), "Triggers Feature Matrix"),
+			new GalleryPageFactory(() => new MapControlPage(), "Map Feature Matrix"),
+			new GalleryPageFactory(() => new VisualStateManagerFeaturePage(), "VisualStateManager Feature Matrix"),
 			new GalleryPageFactory(() => new ShellFeaturePage(), "Shell Feature Matrix"),
 			new GalleryPageFactory(() => new BrushesControlPage(), "Brushes Feature Matrix"),
-			new GalleryPageFactory(() => new BindableLayoutControlPage(), "BindableLayout Feature Matrix")
+			new GalleryPageFactory(() => new BindableLayoutControlPage(), "BindableLayout Feature Matrix"),
+   			new GalleryPageFactory(() => new VisualTransformControlPage(), "VisualTransform Feature Matrix"),
 		};
 
 

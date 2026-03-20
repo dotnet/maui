@@ -72,6 +72,13 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
+		// Cached UICollectionView parent detection to avoid repeated hierarchy checks.
+		bool? _collectionViewDescendant;
+
+		// Cached Window safe area padding for CollectionView children to detect changes.
+		// Uses SafeAreaPadding with EqualsAtPixelLevel() to absorb sub-pixel animation noise.
+		SafeAreaPadding _lastWindowSafeAreaPadding;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -125,9 +132,18 @@ namespace Microsoft.Maui.Platform
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
 			// The scrollview itself is responsible for applying the correct insets, and child views should not apply additional safe area logic.
 			//
+			// EXCEPTION: CollectionView items must handle their own safe area because UICollectionView (which inherits from UIScrollView)
+			// does not automatically apply safe area insets to individual cells. Without this exception, CollectionView content
+			// would render under the notch and home indicator.
+			//
 			// For more details and implementation specifics, see MauiScrollView.cs, which contains the logic for safe area management
 			// within scroll views and explains how this interacts with the overall layout system.
-			_scrollViewDescendant = this.GetParentOfType<UIScrollView>() is not null;
+			var scrollViewParent = this.GetParentOfType<UIScrollView>();
+			_scrollViewDescendant = scrollViewParent is not null && scrollViewParent is not UICollectionView;
+			
+			// Cache whether this view is inside a UICollectionView for use in CrossPlatformArrange()
+			_collectionViewDescendant = scrollViewParent is UICollectionView;
+			
 			return !_scrollViewDescendant.Value;
 		}
 
@@ -294,7 +310,12 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaPadding GetAdjustedSafeAreaInsets()
 		{
-			var baseSafeArea = SafeAreaInsets.ToSafeAreaInsets();
+			// CollectionView cells don't receive SafeAreaInsetsDidChange notifications, so their SafeAreaInsets
+			// property may be stale during layout (especially after rotation). Use Window.SafeAreaInsets instead,
+			// which always reflects the current device orientation and safe area state.
+			var baseSafeArea = _collectionViewDescendant == true && Window is not null
+				? Window.SafeAreaInsets.ToSafeAreaInsets()
+				: SafeAreaInsets.ToSafeAreaInsets();
 
 			// Check if keyboard-aware safe area adjustments are needed
 			if (View is ISafeAreaView2 safeAreaPage && _isKeyboardShowing)
@@ -524,6 +545,18 @@ namespace Microsoft.Maui.Platform
 		/// <param name="bounds">The bounds rectangle to arrange within</param>
 		void CrossPlatformArrange(CGRect bounds)
 		{
+			// Force safe area revalidation for CollectionView cells when Window safe area changes.
+			if (View is ISafeAreaView or ISafeAreaView2 && _collectionViewDescendant == true && Window is not null)
+			{
+				var currentWindowPadding = Window.SafeAreaInsets.ToSafeAreaInsets();
+				if (!currentWindowPadding.EqualsAtPixelLevel(_lastWindowSafeAreaPadding))
+				{
+					_lastWindowSafeAreaPadding = currentWindowPadding;
+					_safeAreaInvalidated = true;
+					ValidateSafeArea();
+				}
+			}
+			
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = AdjustForSafeArea(bounds);
@@ -768,6 +801,8 @@ namespace Microsoft.Maui.Platform
 
 			_scrollViewDescendant = null;
 			_parentHandlesSafeArea = null;
+			_collectionViewDescendant = null;
+			_lastWindowSafeAreaPadding = SafeAreaPadding.Empty;
 
 			// Notify any subscribers that this view has been moved to a window
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
