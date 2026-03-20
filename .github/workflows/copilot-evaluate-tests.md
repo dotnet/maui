@@ -63,7 +63,23 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
 
-Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). This works for both same-repo and fork PRs.
+## CRITICAL: Check out the PR branch first
+
+Before any analysis, you MUST check out the PR's actual code:
+
+```bash
+gh pr checkout <PR_NUMBER>
+```
+
+This is essential — without it, git diff and file reads will analyze the wrong branch. This also handles fork PRs by adding the fork remote automatically.
+
+## Running the skill
+
+1. Check out the PR branch with `gh pr checkout <number>`
+2. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch)
+3. Run `Gather-TestContext.ps1 -PrNumber <number>` to gather automated context
+4. Read the fix and test files, evaluate per SKILL.md criteria
+5. Post results using `add_comment` with `item_number` set to the PR number
 
 ## Posting Results
 

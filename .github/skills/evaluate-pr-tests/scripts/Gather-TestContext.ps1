@@ -12,6 +12,12 @@
     - Find existing similar tests
     - Assess platform scope
 
+.PARAMETER PrNumber
+    Explicit PR number to evaluate. When provided, the script uses
+    `gh pr view <number>` to detect the base branch and `gh pr diff <number>`
+    to get the changed files. This avoids relying on the currently checked-out
+    branch, which is critical for workflow_dispatch triggers.
+
 .PARAMETER BaseBranch
     Base branch to diff against. Auto-detected from PR if not specified.
 
@@ -19,13 +25,16 @@
     Directory to write the context report to.
 
 .EXAMPLE
-    ./Gather-TestContext.ps1
+    ./Gather-TestContext.ps1 -PrNumber 31244
 
 .EXAMPLE
     ./Gather-TestContext.ps1 -BaseBranch "origin/main"
 #>
 
 param(
+    [Parameter(Mandatory = $false)]
+    [int]$PrNumber,
+
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch,
 
@@ -42,7 +51,22 @@ New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $reportPath = Join-Path $OutputDir "context.md"
 
 # --- 1. Detect base branch ---
-if (-not $BaseBranch) {
+$usePrDiff = $false
+if ($PrNumber -gt 0) {
+    # Explicit PR number — use gh pr view/diff so we don't depend on local branch
+    Write-Host "📋 Evaluating PR #$PrNumber (explicit)"
+    if (-not $BaseBranch) {
+        try {
+            $prJson = gh pr view $PrNumber --json baseRefName 2>$null
+            if ($prJson) {
+                $prInfo = $prJson | ConvertFrom-Json
+                $BaseBranch = "origin/$($prInfo.baseRefName)"
+            }
+        } catch { }
+        if (-not $BaseBranch) { $BaseBranch = "origin/main" }
+    }
+    $usePrDiff = $true
+} elseif (-not $BaseBranch) {
     try {
         $prJson = gh pr view --json baseRefName 2>$null
         if ($prJson) {
@@ -61,13 +85,22 @@ git fetch origin --quiet 2>$null
 
 # --- 2. Get changed files ---
 $changedFiles = @()
-$diffOutput = git diff --name-only "$BaseBranch...HEAD" 2>$null
-if ($diffOutput) {
-    $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-} else {
-    $diffOutput = git diff --name-only "$BaseBranch" 2>$null
+if ($usePrDiff) {
+    # Use gh pr diff to get file list directly from GitHub API — works regardless of local checkout
+    $diffOutput = gh pr diff $PrNumber --name-only 2>$null
     if ($diffOutput) {
         $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+    }
+}
+if ($changedFiles.Count -eq 0) {
+    $diffOutput = git diff --name-only "$BaseBranch...HEAD" 2>$null
+    if ($diffOutput) {
+        $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+    } else {
+        $diffOutput = git diff --name-only "$BaseBranch" 2>$null
+        if ($diffOutput) {
+            $changedFiles = $diffOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+        }
     }
 }
 
