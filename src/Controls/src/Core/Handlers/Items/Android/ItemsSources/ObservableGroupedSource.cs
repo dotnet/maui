@@ -233,10 +233,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				// Use ICollection (not IEnumerable) so that flat collections whose item type
-				// implements IEnumerable (e.g. string → IEnumerable<char>) are not mistaken
-				// for groups, which would render a header/footer per item.
-				if (_groupSource[n] is ICollection list)
+				var group = _groupSource[n];
+
+				if (group is IEnumerable list && group is not string) // Exclude string: it implements IEnumerable<char> but is a scalar value, not a group
 				{
 					var source = ItemsSourceFactory.Create(list, _groupableItemsView, this);
 					source.HasFooter = _hasGroupFooters;
@@ -301,10 +300,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var item in args.NewItems)
 			{
-				// Count only real groups (ICollection); flat items like strings must not
-				// trigger a section insertion — they would cause _groups[groupIndex] to be
-				// out-of-range after UpdateGroupTracking skips non-ICollection items.
-				if (item is ICollection)
+				// Count only real groups (IEnumerable but not string); flat scalar items like strings
+				// must not trigger a section insertion — they would cause _groups[groupIndex] to be
+				// out-of-range after UpdateGroupTracking skips non-group items.
+				// string implements IEnumerable<char> but is a scalar value, not a group.
+				if (item is IEnumerable and not string)
 				{
 					count++;
 				}
@@ -339,10 +339,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var item in args.OldItems)
 			{
-				// Count only real groups (ICollection); flat items like strings must not
-				// trigger a section removal — they would cause _groups[groupIndex] to be
-				// out-of-range after UpdateGroupTracking skips non-ICollection items.
-				if (item is ICollection)
+				// Count only real groups (IEnumerable but not string); flat scalar items like strings
+				// must not trigger a section removal — they would cause _groups[groupIndex] to be
+				// out-of-range after UpdateGroupTracking skips non-group items.
+				if (item is IEnumerable and not string)
 				{
 					count++;
 				}

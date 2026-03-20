@@ -20,7 +20,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public const string PolyBezierSegment = "PolyBezierSegment";
 	public const string QuadraticBezierSegment = "QuadraticBezierSegment";
 	public const string PolyQuadraticBezierSegment = "PolyQuadraticBezierSegment";
-
+	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
 	public override string GalleryPageName => ClipFeatureMatrix;
 
 	public ClipFeatureTests(TestDevice device)
@@ -138,7 +138,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void BoxView_ClipWithColorGreen()
 	{
 		TapButtonIfOnClipControlPage("BoxViewButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BoxViewButton");
 		App.Tap("BoxViewButton");
 
@@ -205,7 +205,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Button_ClipWithImageSource()
 	{
 		TapButtonIfOnClipControlPage("ButtonId");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
@@ -272,7 +272,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithRectangleGeometry()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -456,7 +456,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Label_ClipWithLongText()
 	{
 		TapButtonIfOnClipControlPage("LabelButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("LabelButton");
 		App.Tap("LabelButton");
 
@@ -518,7 +518,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ContentView_ClipWithRectangleGeometry()
 	{
 		TapButtonIfOnClipControlPage("ContentViewButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ContentViewButton");
 		App.Tap("ContentViewButton");
 
@@ -594,7 +594,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ImageButton_ClipWithRectangleGeometry()
 	{
 		TapButtonIfOnClipControlPage("ImageButtonButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButtonButton");
 		App.Tap("ImageButtonButton");
 
@@ -670,7 +670,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -700,7 +700,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -730,7 +730,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Button_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("ButtonId");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
@@ -760,7 +760,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ContentView_ClipNull_NoCrash()
 	{
 		TapButtonIfOnClipControlPage("ContentViewButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ContentViewButton");
 		App.Tap("ContentViewButton");
 
@@ -792,7 +792,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -816,7 +816,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -842,7 +842,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Label_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("LabelButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("LabelButton");
 		App.Tap("LabelButton");
 
@@ -869,7 +869,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Button_ClipWithScale()
 	{
 		TapButtonIfOnClipControlPage("ButtonId");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ButtonId");
 		App.Tap("ButtonId");
 
@@ -897,7 +897,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithScale()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -925,7 +925,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ImageButton_ClipWithScale()
 	{
 		TapButtonIfOnClipControlPage("ImageButtonButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButtonButton");
 		App.Tap("ImageButtonButton");
 
@@ -955,7 +955,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void ContentView_ClipWithNestedClippedContent()
 	{
 		TapButtonIfOnClipControlPage("ContentViewButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ContentViewButton");
 		App.Tap("ContentViewButton");
 
@@ -978,7 +978,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipWithNestedContent()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -1007,7 +1007,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithComplexPolyLineGeometry()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -1032,7 +1032,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Image_ClipWithComplexPolyBezierAndRotation()
 	{
 		TapButtonIfOnClipControlPage("ImageButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("ImageButton");
 		App.Tap("ImageButton");
 
@@ -1059,7 +1059,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void Border_ClipWithRotationAndScale()
 	{
 		TapButtonIfOnClipControlPage("BorderButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BorderButton");
 		App.Tap("BorderButton");
 
@@ -1091,7 +1091,7 @@ public class ClipFeatureTests : _GalleryUITest
 	public void BoxView_ClipWithRotation()
 	{
 		TapButtonIfOnClipControlPage("BoxViewButton");
-		App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
+		NavigateBackToClipControlPage();
 		App.WaitForElement("BoxViewButton");
 		App.Tap("BoxViewButton");
 
@@ -1117,6 +1117,18 @@ public class ClipFeatureTests : _GalleryUITest
 		{
 			App.WaitForElement(buttonAutomationId);
 			App.Tap(buttonAutomationId);
+		}
+	}
+
+	void NavigateBackToClipControlPage()
+	{
+		if (iOS26OrHigher)
+		{
+			App.TapBackArrow();
+		}
+		else
+		{
+			App.TapBackArrow(Device == TestDevice.iOS || Device == TestDevice.Mac ? "ClipControlPage" : "");
 		}
 	}
 }
