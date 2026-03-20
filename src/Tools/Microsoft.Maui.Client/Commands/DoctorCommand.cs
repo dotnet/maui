@@ -28,10 +28,8 @@ public static class DoctorCommand
 			var doctorService = Program.DoctorService;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var fix = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "fix"));
-			var platform = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "platform"));				var formatter = Program.GetFormatter(context);
+			var fix = context.GetOption<bool>("fix");
+			var platform = context.GetOption<string>("platform");				var formatter = Program.GetFormatter(context);
 
 			try
 			{

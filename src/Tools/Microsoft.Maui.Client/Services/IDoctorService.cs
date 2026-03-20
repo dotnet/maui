@@ -13,6 +13,5 @@ public interface IDoctorService
 {
 	Task<DoctorReport> RunAllChecksAsync(CancellationToken cancellationToken = default);
 	Task<DoctorReport> RunCategoryChecksAsync(string category, CancellationToken cancellationToken = default);
-	Task<DoctorReport> RunChecksByCategoryAsync(string category, CancellationToken cancellationToken = default);
 	Task<bool> TryFixAsync(FixInfo fix, CancellationToken cancellationToken = default);
 }

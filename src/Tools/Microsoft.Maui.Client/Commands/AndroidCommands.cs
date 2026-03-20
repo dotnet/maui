@@ -50,16 +50,11 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var sdkPath = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "sdk-path"));
-			var jdkPath = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "jdk-path"));
-			var jdkVersion = context.ParseResult.GetValueForOption(
-				(Option<int>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "jdk-version"));
-			var rawPackages = context.ParseResult.GetValueForOption(
-				(Option<string[]>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "packages"));
-			var acceptLicenses = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "accept-licenses"));
+			var sdkPath = context.GetOption<string>("sdk-path");
+			var jdkPath = context.GetOption<string>("jdk-path");
+			var jdkVersion = context.GetOption<int>("jdk-version");
+			var rawPackages = context.GetOption<string[]>("packages");
+			var acceptLicenses = context.GetOption<bool>("accept-licenses");
 			
 			// Support comma-separated packages: "pkg1,pkg2,pkg3" becomes ["pkg1", "pkg2", "pkg3"]
 			var packages = rawPackages?
@@ -83,20 +78,10 @@ public static class AndroidCommands
 				if (!useJson && formatter is SpectreOutputFormatter spectre)
 				{
 					// Proactively detect if SDK is in a protected location and request elevation
-					if (androidProvider.IsSdkInstalled && androidProvider.SdkPathRequiresElevation && !ProcessRunner.IsRunningElevated())
+					if (TryRequestElevation(androidProvider, formatter, useJson))
 					{
-						spectre.WriteWarning($"Android SDK is in a protected location ({androidProvider.SdkPath}). Administrator access is required to install packages.");
-						if (ProcessRunner.RelaunchElevated())
-						{
-							formatter.WriteSuccess("Android environment installed successfully (elevated)");
-							return;
-						}
-						else
-						{
-							formatter.WriteError(new Exception("Elevation was cancelled or failed. Run this command from an administrator terminal."));
-							context.ExitCode = 1;
-							return;
-						}
+						formatter.WriteSuccess("Android environment installed successfully (elevated)");
+						return;
 					}
 
 					// Resolve package list: explicit --packages or interactive selection
@@ -185,7 +170,7 @@ public static class AndroidCommands
 
 				formatter.WriteSuccess("Android environment installed successfully");
 			}
-			catch (UnauthorizedAccessException) when (PlatformDetector.IsWindows)
+			catch (UnauthorizedAccessException uaEx) when (PlatformDetector.IsWindows)
 			{
 				if (!useJson)
 					formatter.WriteWarning("Administrator access required. Requesting elevation...");
@@ -193,14 +178,11 @@ public static class AndroidCommands
 				if (ProcessRunner.RelaunchElevated())
 				{
 					formatter.WriteSuccess("Android environment installed successfully (elevated)");
-					return; // Exit after elevation — the elevated process handled the work
+					return;
 				}
-				else
-				{
-					var error = new Exception("Elevation was cancelled or failed. Run this command from an administrator terminal.");
-					formatter.WriteError(error);
-					context.ExitCode = 1;
-				}
+
+				formatter.WriteError(uaEx);
+				context.ExitCode = 1;
 			}
 			catch (Exception ex)
 			{
@@ -254,10 +236,8 @@ public static class AndroidCommands
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var version = context.ParseResult.GetValueForOption(
-				(Option<int>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "version"));
-			var path = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "path"));				var formatter = Program.GetFormatter(context);
+			var version = context.GetOption<int>("version");
+			var path = context.GetOption<string>("path");				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -490,24 +470,13 @@ public static class AndroidCommands
 				}
 
 				// Proactively detect if SDK is in a protected location and request elevation
-				if (PlatformDetector.IsWindows && androidProvider.SdkPathRequiresElevation && !ProcessRunner.IsRunningElevated())
+				if (TryRequestElevation(androidProvider, formatter, useJson))
 				{
-					if (!useJson)
-						formatter.WriteWarning($"Android SDK is in a protected location ({androidProvider.SdkPath}). Administrator access required.");
-
-					if (ProcessRunner.RelaunchElevated())
-					{
-						if (useJson)
-							formatter.Write(new { success = true, installed = packages, elevated = true });
-						else
-							formatter.WriteSuccess("Packages installed successfully (elevated)");
-						return;
-					}
+					if (useJson)
+						formatter.Write(new { success = true, installed = packages, elevated = true });
 					else
-					{
-						throw new UnauthorizedAccessException(
-							$"Administrator access is required to install packages to {androidProvider.SdkPath}. Run this command from an administrator terminal, or set ANDROID_HOME to a user-writable location.");
-					}
+						formatter.WriteSuccess("Packages installed successfully (elevated)");
+					return;
 				}
 
 				if (dryRun)
@@ -566,10 +535,8 @@ public static class AndroidCommands
 			var androidProvider = Program.AndroidProvider;
 			
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var showAvailable = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "available"));
-			var showAll = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "all"));				var formatter = Program.GetFormatter(context);
+			var showAvailable = context.GetOption<bool>("available");
+			var showAll = context.GetOption<bool>("all");				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -904,12 +871,9 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var name = context.ParseResult.GetValueForArgument(nameArg);
-			var package = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "package"));
-			var device = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "device"));
-			var force = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "force"));				var formatter = Program.GetFormatter(context);
+			var package = context.GetOption<string>("package");
+			var device = context.GetOption<string>("device");
+			var force = context.GetOption<bool>("force");				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -1050,10 +1014,8 @@ public static class AndroidCommands
 			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
 			var name = context.ParseResult.GetValueForArgument(startNameArg);
-			var coldBoot = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "cold-boot"));
-			var wait = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "wait"));				var formatter = Program.GetFormatter(context);
+			var coldBoot = context.GetOption<bool>("cold-boot");
+			var wait = context.GetOption<bool>("wait");				var formatter = Program.GetFormatter(context);
 
 			try
 			{
@@ -1453,4 +1415,24 @@ public static class AndroidCommands
 
 	private record PlatformChoice(string PackagePath, string DisplayName, string Description, bool IsInstalled);
 	private record InstallScope(string Name, string Description, List<string> Packages);
+
+	/// <summary>
+	/// Checks if the SDK is in a protected location and attempts elevation if needed.
+	/// Returns true if elevation was launched (caller should return), false if no elevation needed.
+	/// Throws UnauthorizedAccessException if elevation was cancelled.
+	/// </summary>
+	private static bool TryRequestElevation(IAndroidProvider androidProvider, IOutputFormatter formatter, bool useJson)
+	{
+		if (!PlatformDetector.IsWindows || !androidProvider.SdkPathRequiresElevation || ProcessRunner.IsRunningElevated())
+			return false;
+
+		if (!useJson)
+			formatter.WriteWarning($"Android SDK is in a protected location ({androidProvider.SdkPath}). Administrator access required.");
+
+		if (ProcessRunner.RelaunchElevated())
+			return true;
+
+		throw new UnauthorizedAccessException(
+			$"Administrator access is required for {androidProvider.SdkPath}. Run this command from an administrator terminal, or set ANDROID_HOME to a user-writable location.");
+	}
 }

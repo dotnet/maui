@@ -51,40 +51,16 @@ public static class LogsCommand
 
 			try
 			{
-				// Auto-detect device if not specified
+				Device device;
 				if (string.IsNullOrWhiteSpace(deviceId))
 				{
-					var devices = await Program.DeviceManager.GetAllDevicesAsync(context.GetCancellationToken());
-					var runningDevice = devices.FirstOrDefault(d => d.State == DeviceState.Booted);
-
-					if (runningDevice == null)
-					{
-						formatter.WriteError(new ErrorResult
-						{
-							Code = ErrorCodes.DeviceNotFound,
-							Category = "tool",
-							Message = "No running device found. Start a device or specify one with --device"
-						});
-						context.ExitCode = 1;
-						return;
-					}
-
-					deviceId = runningDevice.Id;
-					formatter.WriteInfo($"Streaming logs from: {runningDevice.Name}");
+					device = await Program.DeviceManager.GetRunningDeviceOrThrowAsync(context.GetCancellationToken());
+					formatter.WriteInfo($"Streaming logs from: {device.Name}");
 				}
-
-				// Determine platform and run appropriate log command
-				var device = await Program.DeviceManager.GetDeviceByIdAsync(deviceId, context.GetCancellationToken());
-				if (device == null)
+				else
 				{
-					formatter.WriteError(new ErrorResult
-					{
-						Code = ErrorCodes.DeviceNotFound,
-						Category = "tool",
-						Message = $"Device not found: {deviceId}"
-					});
-					context.ExitCode = 1;
-					return;
+					device = await Program.DeviceManager.GetDeviceByIdAsync(deviceId, context.GetCancellationToken())
+						?? throw new MauiToolException(ErrorCodes.DeviceNotFound, $"Device not found: {deviceId}");
 				}
 
 				await StreamDeviceLogsAsync(device, filter, follow, lines, context.GetCancellationToken());

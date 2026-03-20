@@ -135,6 +135,21 @@ public class DeviceManager : IDeviceManager
 		return allDevices.FirstOrDefault(d => d.Id.Equals(deviceId, StringComparison.OrdinalIgnoreCase));
 	}
 
+	public async Task<Device> GetRunningDeviceOrThrowAsync(CancellationToken cancellationToken = default)
+	{
+		var devices = await GetAllDevicesAsync(cancellationToken);
+		var runningDevice = devices.FirstOrDefault(d => d.State == DeviceState.Booted);
+
+		if (runningDevice == null)
+		{
+			throw new MauiToolException(
+				ErrorCodes.DeviceNotFound,
+				"No running device found. Start a device or specify one with --device");
+		}
+
+		return runningDevice;
+	}
+
 	public async Task<string> TakeScreenshotAsync(string deviceId, string? outputPath = null, CancellationToken cancellationToken = default)
 	{
 		var device = await GetDeviceByIdAsync(deviceId, cancellationToken);

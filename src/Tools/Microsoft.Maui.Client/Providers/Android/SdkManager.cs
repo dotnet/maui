@@ -56,39 +56,6 @@ public class SdkManager : IDisposable
 
 	public void Dispose() => _sdkManager.Dispose();
 
-	public Task<HealthCheck> CheckHealthAsync(CancellationToken cancellationToken = default)
-	{
-		SyncPaths();
-		var sdkPath = _getSdkPath();
-
-		if (!IsAvailable || string.IsNullOrEmpty(sdkPath))
-		{
-			return Task.FromResult(new HealthCheck
-			{
-				Category = "android",
-				Name = "Android SDK",
-				Status = CheckStatus.Error,
-				Message = "Android SDK not found",
-				Fix = new FixInfo
-				{
-					IssueId = ErrorCodes.AndroidSdkNotFound,
-					Description = "Install Android SDK",
-					AutoFixable = true,
-					Command = "maui android install"
-				}
-			});
-		}
-
-		return Task.FromResult(new HealthCheck
-		{
-			Category = "android",
-			Name = "Android SDK",
-			Status = CheckStatus.Ok,
-			Message = "Android SDK installed",
-			Details = new Dictionary<string, object> { ["path"] = sdkPath }
-		});
-	}
-
 	public async Task<List<SdkPackage>> GetInstalledPackagesAsync(CancellationToken cancellationToken = default)
 	{
 		SyncPaths();

@@ -87,7 +87,6 @@ public class Program
 
 		// Top-level commands (per spec)
 		rootCommand.AddCommand(DoctorCommand.Create());
-		rootCommand.AddCommand(ScreenshotCommand.Create());  // Top-level per spec
 		rootCommand.AddCommand(LogsCommand.Create());        // Top-level per spec
 		rootCommand.AddCommand(DeviceCommand.Create());
 		rootCommand.AddCommand(VersionCommand.Create());

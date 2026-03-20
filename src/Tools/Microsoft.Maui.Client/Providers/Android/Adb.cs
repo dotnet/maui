@@ -189,24 +189,6 @@ public class Adb
 		await _runner!.StopEmulatorAsync(deviceSerial, cancellationToken);
 	}
 
-	public async Task WaitForDeviceAsync(string? deviceSerial = null, TimeSpan? timeout = null,
-		CancellationToken cancellationToken = default)
-	{
-		if (!IsAvailable)
-			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
-
-		try
-		{
-			await _runner!.WaitForDeviceAsync(deviceSerial, timeout, cancellationToken);
-		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
-		{
-			throw new MauiToolException(
-				ErrorCodes.AndroidDeviceNotFound,
-				ex.Message);
-		}
-	}
-
 	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath,
 		CancellationToken cancellationToken = default)
 	{

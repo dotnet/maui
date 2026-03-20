@@ -39,10 +39,8 @@ public static class AppleCommands
 		{
 			var formatter = getFormatter(context);
 			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var runtimeVersion = context.ParseResult.GetValueForOption(
-				(Option<string>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "runtime"));
-			var acceptLicenses = context.ParseResult.GetValueForOption(
-				(Option<bool>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "accept-licenses"));
+			var runtimeVersion = context.GetOption<string>("runtime");
+			var acceptLicenses = context.GetOption<bool>("accept-licenses");
 
 			var progress = new Progress<string>(message =>
 			{
@@ -181,12 +179,9 @@ public static class AppleCommands
 		listCommand.SetHandler(async (InvocationContext context) =>
 		{
 			var formatter = getFormatter(context);
-			var runtimeFilter = context.ParseResult.GetValueForOption(
-				(Option<string?>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "runtime"));
-			var deviceTypeFilter = context.ParseResult.GetValueForOption(
-				(Option<string?>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "device-type"));
-			var stateFilter = context.ParseResult.GetValueForOption(
-				(Option<string?>)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "state"));
+			var runtimeFilter = context.GetOption<string?>("runtime");
+			var deviceTypeFilter = context.GetOption<string?>("device-type");
+			var stateFilter = context.GetOption<string?>("state");
 			try
 			{
 				var devices = await provider.ListSimulatorsAsync(context.GetCancellationToken());

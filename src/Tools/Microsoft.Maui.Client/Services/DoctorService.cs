@@ -126,12 +126,6 @@ public class DoctorService : IDoctorService
 		return CreateReport(checks);
 	}
 
-	public Task<DoctorReport> RunChecksByCategoryAsync(string category, CancellationToken cancellationToken = default)
-	{
-		// Alias for RunCategoryChecksAsync for compatibility
-		return RunCategoryChecksAsync(category, cancellationToken);
-	}
-
 	private static DoctorReport CreateReport(List<HealthCheck> checks)
 	{
 		var errorCount = checks.Count(c => c.Status == CheckStatus.Error);
