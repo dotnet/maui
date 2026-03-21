@@ -1,15 +1,17 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Builds and deploys a .NET MAUI project to Android or iOS device/simulator.
+    Builds and deploys a .NET MAUI project to Android, iOS device/simulator, or Windows.
 
 .DESCRIPTION
-    Handles building and deployment for both Android and iOS platforms.
+    Handles building and deployment for Android, iOS, MacCatalyst, and Windows platforms.
     - Android: Uses dotnet build with -t:Run target
     - iOS: Builds app, then installs to simulator using xcrun simctl
+    - MacCatalyst: Builds app (runs on host Mac)
+    - Windows: Builds app (runs on host Windows)
 
 .PARAMETER Platform
-    Target platform: "android" or "ios"
+    Target platform: "android", "ios", "catalyst", or "windows"
 
 .PARAMETER ProjectPath
     Full path to the .csproj file to build
@@ -35,7 +37,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "catalyst", "windows")]
     [string]$Platform,
     
     [Parameter(Mandatory=$true)]
@@ -52,7 +54,10 @@ param(
     [string]$DeviceUdid,
     
     [Parameter(Mandatory=$false)]
-    [string]$BundleId
+    [string]$BundleId,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Rebuild
 )
 
 # Import shared utilities
@@ -71,22 +76,65 @@ if ($Platform -eq "android") {
     #region Android Build and Deploy
     
     Write-Step "Building and deploying $projectName for Android..."
-    Write-Info "Build command: dotnet build $ProjectPath -f $TargetFramework -c $Configuration -t:Run"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run")
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
+    $maxAttempts = 2
+    $buildExitCode = 1
     
-    # Build and deploy in one step (Run target handles both)
-    dotnet build $ProjectPath -f $TargetFramework -c $Configuration -t:Run
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        if ($attempt -gt 1) {
+            Write-Warn "Retrying build/deploy (attempt $attempt of $maxAttempts)..."
+            
+            # Uninstall any MAUI test packages to clear bad state
+            $installedPkg = & adb shell pm list packages 2>$null | Select-String "maui" | ForEach-Object { ($_ -replace "package:", "").Trim() }
+            if ($installedPkg) {
+                foreach ($pkg in $installedPkg) {
+                    Write-Info "Uninstalling $pkg before retry..."
+                    & adb uninstall $pkg 2>$null
+                }
+            }
+            
+            # Restart ADB server to recover from broken pipe / transient errors
+            Write-Info "Restarting ADB server..."
+            & adb kill-server 2>$null
+            Start-Sleep -Seconds 2
+            & adb start-server
+            Start-Sleep -Seconds 2
+            & adb wait-for-device
+            Start-Sleep -Seconds 3
+        }
+        
+        & dotnet build @buildArgs
+        $buildExitCode = $LASTEXITCODE
+        
+        if ($buildExitCode -eq 0) {
+            break
+        }
+        
+        if ($attempt -lt $maxAttempts) {
+            Write-Warn "Build/deploy failed (attempt $attempt). ADB0010/broken-pipe errors are transient on API 30 — will retry."
+        }
+    }
     
-    $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
     
     if ($buildExitCode -ne 0) {
-        Write-Error "Build/deploy failed with exit code $buildExitCode"
+        Write-Error "Build/deploy failed after $maxAttempts attempts with exit code $buildExitCode"
         exit $buildExitCode
     }
     
-    Write-Success "Build and deploy completed in $($buildDuration.TotalSeconds) seconds"
+    if ($attempt -gt 1) {
+        Write-Success "Build and deploy succeeded on attempt $attempt in $($buildDuration.TotalSeconds) seconds"
+    } else {
+        Write-Success "Build and deploy completed in $($buildDuration.TotalSeconds) seconds"
+    }
     
     #endregion
     
@@ -94,12 +142,24 @@ if ($Platform -eq "android") {
     #region iOS Build and Deploy
     
     Write-Step "Building $projectName for iOS..."
-    Write-Info "Build command: dotnet build $ProjectPath -f $TargetFramework -c $Configuration"
+    
+    # Detect host architecture for simulator builds
+    $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $runtimeId = if ($hostArch -eq "x64") { "iossimulator-x64" } else { "iossimulator-arm64" }
+    $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
+    Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
     
     # Build app
-    dotnet build $ProjectPath -f $TargetFramework -c $Configuration
+    & dotnet build @buildArgs
     
     $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
@@ -113,6 +173,20 @@ if ($Platform -eq "android") {
     
     # Deploy to iOS simulator
     Write-Step "Deploying to iOS simulator..."
+
+    # Shutdown any OTHER booted simulators to avoid Appium connecting to the wrong device
+    $bootedSims = xcrun simctl list devices --json | ConvertFrom-Json
+    $otherBooted = $bootedSims.devices.PSObject.Properties.Value |
+        ForEach-Object { $_ } |
+        Where-Object { $_.state -eq "Booted" -and $_.udid -ne $DeviceUdid }
+    
+    if ($otherBooted) {
+        foreach ($sim in $otherBooted) {
+            Write-Info "Shutting down other booted simulator: $($sim.name) ($($sim.udid))"
+            xcrun simctl shutdown $sim.udid 2>$null
+        }
+    }
+
     Write-Info "Booting simulator (if not already running)..."
     xcrun simctl boot $DeviceUdid 2>$null
     
@@ -152,13 +226,26 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "Searching for app bundle in: $artifactsDir"
+    
     $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
         Where-Object { 
-            $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+            $_.FullName -match "$Configuration.*iossimulator-$simArch.*$projectName" -and 
             $_.FullName -notmatch "\\obj\\" -and 
             $_.FullName -notmatch "/obj/"
         } |
         Select-Object -First 1
+    
+    # Fallback: try any iossimulator build if specific arch not found
+    if (-not $appPath) {
+        Write-Info "Specific arch ($simArch) not found, trying any iossimulator build..."
+        $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
+            Where-Object { 
+                $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+                $_.FullName -notmatch "\\obj\\" -and 
+                $_.FullName -notmatch "/obj/"
+            } |
+            Select-Object -First 1
+    }
     
     if (-not $appPath) {
         Write-Error "Could not find built app bundle in artifacts directory"
@@ -176,6 +263,70 @@ if ($Platform -eq "android") {
     }
     
     Write-Success "App installed successfully"
+    
+    #endregion
+} elseif ($Platform -eq "catalyst") {
+    #region MacCatalyst Build (no deploy step - runs on host)
+    
+    Write-Step "Building $projectName for MacCatalyst..."
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
+    
+    $buildStartTime = Get-Date
+    
+    # Build app
+    & dotnet build @buildArgs
+    
+    $buildExitCode = $LASTEXITCODE
+    $buildDuration = (Get-Date) - $buildStartTime
+    
+    if ($buildExitCode -ne 0) {
+        Write-Error "Build failed with exit code $buildExitCode"
+        exit $buildExitCode
+    }
+    
+    Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
+    
+    # MacCatalyst apps run directly on the Mac - no install step needed
+    # The test framework (Appium) will launch the app directly
+    Write-Success "MacCatalyst app ready (runs on host Mac)"
+    
+    #endregion
+} elseif ($Platform -eq "windows") {
+    #region Windows Build (no deploy step - runs on host)
+    
+    Write-Step "Building $projectName for Windows..."
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    if ($Rebuild) {
+        $buildArgs += "--no-incremental"
+    }
+    
+    Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
+    
+    $buildStartTime = Get-Date
+    
+    # Build app
+    & dotnet build @buildArgs
+    
+    $buildExitCode = $LASTEXITCODE
+    $buildDuration = (Get-Date) - $buildStartTime
+    
+    if ($buildExitCode -ne 0) {
+        Write-Error "Build failed with exit code $buildExitCode"
+        exit $buildExitCode
+    }
+    
+    Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
+    
+    # Windows apps run directly on the host - no install step needed
+    # The test framework (Appium/WinAppDriver) will launch the app directly
+    Write-Success "Windows app ready (runs on host Windows)"
     
     #endregion
 }

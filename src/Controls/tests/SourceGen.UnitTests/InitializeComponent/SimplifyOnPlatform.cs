@@ -342,7 +342,9 @@ public partial class TestPage : ContentPage
 	public void OnPlatformWithMissingTargetPlatformShouldUseDefault()
 	{
 		// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
-		// SourceGen should use default(T) instead of throwing an exception
+		// SourceGen should use default(T) instead of throwing an exception.
+		// The SimplifyOnPlatformVisitor marks the node as IsOnPlatformDefaultValue,
+		// and CreateValuesVisitor generates default(T) for it.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -385,11 +387,52 @@ public partial class TestPage : ContentPage
 		// Should not have any errors (no TargetInvocationException)
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		
-		// Should generate SetValue with default(double) for the WidthRequest property
-		// The generated code should look like: label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);
-		// where double1 is assigned from double0 which is: double double0 = default;
+		// Should generate default(double) for the value since no matching platform
+		// The generated code should include: double double0 = default;
 		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
-		Assert.Contains("var double1 = double0;", generated, StringComparison.Ordinal);
-		Assert.Contains("label.SetValue(global::Microsoft.Maui.Controls.VisualElement.WidthRequestProperty, double1);", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void OnPlatformViewWithMissingTargetPlatformShouldNotEmitNullabilityWarnings()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<OnPlatform x:TypeArguments="View">
+		<On Platform="WinUI">
+			<Label Text="WinUI only" />
+		</On>
+	</OnPlatform>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "CS8600" || d.Id == "CS8602");
+		Assert.Contains("global::Microsoft.Maui.Controls.View", generated, StringComparison.Ordinal);
+		Assert.Contains("default!;", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain(".transientNamescope", generated, StringComparison.Ordinal);
 	}
 }

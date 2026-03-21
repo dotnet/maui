@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void RtlScrollViewStartsScrollToRight()
 		{

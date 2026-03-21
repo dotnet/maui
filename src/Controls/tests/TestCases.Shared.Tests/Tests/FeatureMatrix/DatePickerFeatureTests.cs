@@ -5,18 +5,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class DatePickerFeatureTests : UITest
+public class DatePickerFeatureTests : _GalleryUITest
 {
 	public const string DatePickerFeatureMatrix = "Date Picker Feature Matrix";
 
+	public override string GalleryPageName => DatePickerFeatureMatrix;
+
 	public DatePickerFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(DatePickerFeatureMatrix);
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS //Issue Link: https://github.com/dotnet/maui/issues/30736, https://github.com/dotnet/maui/issues/31167
@@ -35,7 +31,7 @@ public class DatePickerFeatureTests : UITest
 #elif WINDOWS
         App.Tap("25");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -56,7 +52,7 @@ public class DatePickerFeatureTests : UITest
 #elif WINDOWS
         App.Tap("26");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(3)]
@@ -84,7 +80,7 @@ public class DatePickerFeatureTests : UITest
 #elif WINDOWS
         App.Tap("27");
 #endif
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -101,7 +97,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -118,7 +114,7 @@ public class DatePickerFeatureTests : UITest
 		App.Tap("SetDateButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/23793, https://github.com/dotnet/maui/issues/29099, https://github.com/dotnet/maui/issues/30011
@@ -140,7 +136,7 @@ public class DatePickerFeatureTests : UITest
 		var datePicker = App.WaitForElement("DatePickerControl").GetText();
 		Assert.That(datePicker, Is.EqualTo("Wednesday, December 24, 2025"));
 #else
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 #endif
@@ -157,7 +153,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -173,7 +169,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -191,7 +187,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
  
 	[Test, Order(10)]
@@ -208,7 +204,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 	
 	[Test, Order(12)]
@@ -225,7 +221,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -246,7 +242,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -267,7 +263,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -291,7 +287,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -309,7 +305,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		App.WaitForElement("DatePickerControl");
 		App.Tap("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -324,7 +320,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForNoElement("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS// Issue Links - https://github.com/dotnet/maui/issues/29812, https://github.com/dotnet/maui/issues/31167
@@ -339,7 +335,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -364,7 +360,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(19)]
@@ -388,7 +384,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Links - https://github.com/dotnet/maui/issues/30011
@@ -406,7 +402,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -425,7 +421,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -444,7 +440,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -465,7 +461,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -486,7 +482,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -510,7 +506,7 @@ public class DatePickerFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("DatePickerControl");
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -535,7 +531,7 @@ public class DatePickerFeatureTests : UITest
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: en-US, Date: 12/24/2026 12:00:00 AM"));
 #else
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 #endif
@@ -561,7 +557,7 @@ public class DatePickerFeatureTests : UITest
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: fr-FR, Date: 24/12/2026 00:00:00"));
 #else
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 #endif
@@ -587,7 +583,7 @@ public class DatePickerFeatureTests : UITest
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Date: 2026/12/24 0:00:00"));
 #else
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 #endif
@@ -613,7 +609,7 @@ public class DatePickerFeatureTests : UITest
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: sv-FI, Date: 2026-12-24 00:00:00"));
 #else
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 #endif

@@ -36,7 +36,7 @@ This guide applies when you:
 - ✅ **ALWAYS** check for errors/exceptions FIRST before claiming success
 - ✅ **ALWAYS** verify "Test completed" marker appears in output
 - ✅ **ALWAYS** verify expected test actions in logs (Tapping, Screenshot, etc.)
-- ✅ **ALWAYS** check device logs for Console.WriteLine markers
+- ✅ **ALWAYS** check device logs for Console.WriteLine markers (e.g., "SANDBOX: ...")
 - ✅ **ALWAYS** verify artifacts exist (screenshots, if test captures them)
 
 ### Rule 1: NEVER ASSUME TEST COMPLETION
@@ -161,20 +161,20 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 
 ## When NOT to Use Sandbox
 
-- ❌ User asks to "review PR #XXXXX" → Use **pr-reviewer** agent for code review
-- ❌ User asks to "write UI tests" or "create automated tests" → Use **uitest-coding-agent**
+- ❌ User asks to "review PR #XXXXX" → Use **pr** agent for code review
+- ❌ User asks to "write tests" or "create automated tests" → Use **write-tests-agent**
 - ❌ User asks to "validate the UI tests" or "verify test quality" → Review test code instead
-- ❌ User asks to "fix issue #XXXXX" → Use **issue-resolver** agent
+- ❌ User asks to "fix issue #XXXXX" (no PR exists) → Suggest `/delegate` command
 - ❌ PR only adds documentation (no code changes to test)
 - ❌ PR only modifies build scripts (no functional changes)
 
 ## Distinction: Code Review vs. Functional Testing
 
-**Code Review** (pr-reviewer agent):
+**Code Review** (pr-review skill):
 - Analyzes code quality, patterns, best practices
 - Reviews test coverage and correctness
 - Checks for potential bugs or issues in the code itself
-- Trigger: "review PR", "review pull request", "code review"
+- Trigger: "review PR", "work on PR"
 
 **Functional Testing** (sandbox-agent):
 - Builds and deploys PR to device/simulator
@@ -283,7 +283,7 @@ gh pr checkout <PR_NUMBER>
    - Check AutomationIds: `grep AutomationId MainPage.xaml`
    - Update test to use those IDs (not template defaults)
    - Add test logic: tap buttons, verify labels
-   - Add `Console.WriteLine("SANDBOX ...")` markers
+   - Add Console.WriteLine markers for debugging
 
 3. **Example**:
    ```bash
@@ -481,7 +481,7 @@ This proves the test scenario correctly reproduces the bug.
 │ 1. Update MainPage.xaml[.cs] with your test scenario       │
 │    - Add UI elements for reproduction                       │
 │    - Add AutomationIds to all interactive elements          │
-│    - Add Console.WriteLine with "SANDBOX" markers           │
+│    - Add Console.WriteLine markers for debugging            │
 ├─────────────────────────────────────────────────────────────┤
 │ 2. Update Appium test to match your MainPage               │
 │    CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs         │
@@ -677,6 +677,23 @@ grep "TEST OUTPUT" CustomAgentLogsTmp/Sandbox/android-device.log
 cat CustomAgentLogsTmp/Sandbox/appium.log
 ```
 
+### 📝 Adding Debug Logging to Your Test Scenario
+
+**Use `Console.WriteLine` for logging** - it works on all platforms.
+
+```csharp
+// Use a unique prefix for easy grep
+Console.WriteLine("SANDBOX: Button clicked");
+Console.WriteLine($"SANDBOX: Value is {myValue}");
+```
+
+**Searching logs:**
+```bash
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/android-device.log
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/ios-device.log
+grep "SANDBOX" CustomAgentLogsTmp/Sandbox/catalyst-device.log
+```
+
 ---
 
 ## 🚨 ABSOLUTE RULE: BuildAndRunSandbox.ps1 is THE ONLY Deployment Method
@@ -779,7 +796,7 @@ What should I try next?
 **Testing Tips**:
 - For layout bugs: Use `element.GetRect()` to measure positions
 - For SafeArea PRs: Measure child content position, not parent size
-- Add `Console.WriteLine("SANDBOX ...")` markers for debugging
+- Add `Console.WriteLine("SANDBOX: ...")` markers for debugging
 
 ---
 

@@ -9,8 +9,7 @@ param(
   [Parameter(Mandatory=$false)][string] $TokensFilePath,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$TokensToRedact,
   [Parameter(Mandatory=$false)][string] $runtimeSourceFeed,
-  [Parameter(Mandatory=$false)][string] $runtimeSourceFeedKey
-)
+  [Parameter(Mandatory=$false)][string] $runtimeSourceFeedKey)
 
 try {
   $ErrorActionPreference = 'Stop'

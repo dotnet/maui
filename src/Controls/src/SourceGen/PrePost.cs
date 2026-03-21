@@ -48,7 +48,7 @@ class PrePost : IDisposable
 
 	public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
 		=> new(() => codeWriter.WriteLineNoTabs($"#pragma warning disable {warning}"), () => codeWriter.WriteLineNoTabs($"#pragma warning restore {warning}"));
-		
+
 	readonly Action post;
 	PrePost(Action pre, Action post)
 	{

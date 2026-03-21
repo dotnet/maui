@@ -4,13 +4,20 @@ namespace Microsoft.Maui.Controls
 {
 	// These are copied from UWP so if you add additional values please use those
 	// https://docs.microsoft.com/en-us/uwp/api/windows.applicationmodel.datatransfer.datapackageoperation?view=winrt-19041
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageOperation.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataPackageOperation']/Docs/*" />
+	/// <summary>
+	/// Specifies the type of operation performed during a drag and drop operation.
+	/// </summary>
 	[Flags]
 	public enum DataPackageOperation
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageOperation.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>
+		/// No operation is performed.
+		/// </summary>
 		None = 0,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackageOperation.xml" path="//Member[@MemberName='Copy']/Docs/*" />
+
+		/// <summary>
+		/// The data is copied to the drop target.
+		/// </summary>
 		Copy = 1
 	}
 }

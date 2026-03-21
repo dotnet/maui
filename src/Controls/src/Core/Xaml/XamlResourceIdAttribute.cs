@@ -6,19 +6,24 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute']/Docs/*" />
+	/// <summary>Maps a XAML resource ID to its path and associated type.</summary>
 	[AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
 	public sealed class XamlResourceIdAttribute : Attribute
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="//Member[@MemberName='ResourceId']/Docs/*" />
+		/// <summary>Gets or sets the embedded resource identifier.</summary>
 		public string ResourceId { get; set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="//Member[@MemberName='Path']/Docs/*" />
+
+		/// <summary>Gets or sets the project path to the XAML file.</summary>
 		public string Path { get; set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="//Member[@MemberName='Type']/Docs/*" />
+
+		/// <summary>Gets or sets the type associated with the XAML resource.</summary>
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		public Type Type { get; set; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Xaml/XamlResourceIdAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="XamlResourceIdAttribute"/>.</summary>
+		/// <param name="resourceId">The embedded resource identifier.</param>
+		/// <param name="path">The project path to the XAML file.</param>
+		/// <param name="type">The type associated with the XAML resource.</param>
 		public XamlResourceIdAttribute(
 			string resourceId,
 			string path,

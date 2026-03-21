@@ -24,8 +24,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// On MacCatalyst, pressing the ESC key during screenshot capture clears the text.
 			// This causes the image generated in CI to differ from local runs.
 			Assert.That(App.WaitForElement("Sear").GetText(), Is.EqualTo("Sear"));
+#elif IOS
+			VerifyScreenshot(cropBottom: 1200);
 #else
-			VerifyScreenshot();
+		    VerifyScreenshot();
 #endif
 		}
 	}

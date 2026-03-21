@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Cafe 1",
+    "category": "Cafe",
+    "description": "A nice cafe."
+  },
+  {
+    "name": "Cafe 2",
+    "category": "Cafe",
+    "description": "Another nice cafe."
+  },
+  {
+    "name": "Cafe 3",
+    "category": "Cafe",
+    "description": "Yet another nice cafe."
+  },
+  {
+    "name": "Campground 1",
+    "category": "Campground",
+    "description": "A nice campground."
+  },
+  {
+    "name": "Campground 2",
+    "category": "Campground",
+    "description": "Another nice campground."
+  },
+  {
+    "name": "Campground 3",
+    "category": "Campground",
+    "description": "Yet another nice campground."
+  },
+  {
+    "name": "Hotel 1",
+    "category": "Hotel",
+    "description": "A nice hotel."
+  },
+  {
+    "name": "Hotel 2",
+    "category": "Hotel",
+    "description": "Another nice hotel."
+  },
+  {
+    "name": "Hotel 3",
+    "category": "Hotel",
+    "description": "Yet another nice hotel."
+  },
+  {
+    "name": "Marina 1",
+    "category": "Marina",
+    "description": "A nice marina."
+  },
+  {
+    "name": "Marina 2",
+    "category": "Marina",
+    "description": "Another nice marina."
+  },
+  {
+    "name": "Marina 3",
+    "category": "Marina",
+    "description": "Yet another nice marina."
+  },
+  {
+    "name": "Museum 1",
+    "category": "Museum",
+    "description": "A nice museum."
+  },
+  {
+    "name": "Museum 2",
+    "category": "Museum",
+    "description": "Another nice museum."
+  },
+  {
+    "name": "Museum 3",
+    "category": "Museum",
+    "description": "Yet another nice museum."
+  },
+  {
+    "name": "The National Rock 1",
+    "category": "NationalMonument",
+    "description": "A nice national monument."
+  },
+  {
+    "name": "The National Rock 2",
+    "category": "NationalMonument",
+    "description": "Another nice national monument."
+  },
+  {
+    "name": "The National Rock 3",
+    "category": "NationalMonument",
+    "description": "Yet another nice national monument."
+  },
+  {
+    "name": "Restaurant 1",
+    "category": "Restaurant",
+    "description": "A nice restaurant."
+  },
+  {
+    "name": "Restaurant 2",
+    "category": "Restaurant",
+    "description": "Another nice restaurant."
+  },
+  {
+    "name": "Restaurant 3",
+    "category": "Restaurant",
+    "description": "Yet another nice restaurant."
+  },
+  {
+    "name": "Fujisan Hongu Sengen Taisha",
+    "category": "Museum",
+    "description": "Refers to the Shinto shrine located at the base."
+  },
+  {
+    "name": "Highland Resort Hotel & Spa",
+    "category": "Hotel",
+    "description": "Hotel with views of Mount Fuji."
+  },
+  {
+    "name": "Hoto Fudo",
+    "category": "Restaurant",
+    "description": "Famous noodle restaurant near Fuji."
+  }
+]

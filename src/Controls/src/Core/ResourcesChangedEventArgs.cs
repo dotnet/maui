@@ -5,20 +5,21 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ResourcesChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for resource dictionary changes.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ResourcesChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ResourcesChangedEventArgs.xml" path="//Member[@MemberName='StyleSheets']/Docs/*" />
+		/// <summary>Singleton instance used for stylesheet changes.</summary>
 		public static readonly ResourcesChangedEventArgs StyleSheets = new ResourcesChangedEventArgs(null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ResourcesChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="ResourcesChangedEventArgs"/> with the specified values.</summary>
+		/// <param name="values">The changed resource values.</param>
 		public ResourcesChangedEventArgs(IEnumerable<KeyValuePair<string, object>> values)
 		{
 			Values = values;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/ResourcesChangedEventArgs.xml" path="//Member[@MemberName='Values']/Docs/*" />
+		/// <summary>Gets the changed resource values.</summary>
 		public IEnumerable<KeyValuePair<string, object>> Values { get; private set; }
 	}
 }

@@ -7,21 +7,24 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTemplate']/Docs/*" />
+	/// <summary>
+	/// Defines the visual structure for templated items. Used to display data objects with a consistent appearance.
+	/// </summary>
 	public class DataTemplate : ElementTemplate, IDataTemplateController
 	{
 		static int idCounter = 100;
 
 		int _id;
 		string _idString;
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="DataTemplate"/> class.</summary>
 		public DataTemplate()
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = GetType().FullName + _id;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="DataTemplate"/> class with the specified type.</summary>
+		/// <param name="type">The type of object to be created by the template.</param>
 		public DataTemplate(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 			: base(type)
@@ -30,17 +33,18 @@ namespace Microsoft.Maui.Controls
 			_idString = type.FullName;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance with a factory function that creates template content.</summary>
+		/// <param name="loadTemplate">A factory function that returns the template content.</param>
 		public DataTemplate(Func<object> loadTemplate) : base(loadTemplate)
 		{
 			_id = Interlocked.Increment(ref idCounter);
 			_idString = GetType().FullName + _id;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='Bindings']/Docs/*" />
+		/// <summary>Gets the dictionary of bindings to apply to templated items.</summary>
 		public IDictionary<BindableProperty, BindingBase> Bindings { get; } = new Dictionary<BindableProperty, BindingBase>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='Values']/Docs/*" />
+		/// <summary>Gets the dictionary of property values to apply to templated items.</summary>
 		public IDictionary<BindableProperty, object> Values { get; } = new Dictionary<BindableProperty, object>();
 
 		string IDataTemplateController.IdString => _idString;
@@ -49,14 +53,18 @@ namespace Microsoft.Maui.Controls
 
 		int IDataTemplateController.Id => _id;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
+		/// <summary>Sets a binding for a property on templated items.</summary>
+		/// <param name="property">The property to bind.</param>
+		/// <param name="binding">The binding to apply.</param>
 		public void SetBinding(BindableProperty property, BindingBase binding)
 		{
 			Values.Remove(property ?? throw new ArgumentNullException(nameof(property)));
 			Bindings[property] = binding ?? throw new ArgumentNullException(nameof(binding));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="//Member[@MemberName='SetValue']/Docs/*" />
+		/// <summary>Sets a static value for a property on templated items.</summary>
+		/// <param name="property">The property to set.</param>
+		/// <param name="value">The value to apply.</param>
 		public void SetValue(BindableProperty property, object value)
 		{
 			Bindings.Remove(property ?? throw new ArgumentNullException(nameof(property)));
