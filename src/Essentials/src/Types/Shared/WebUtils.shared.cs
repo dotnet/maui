@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Maui
 {
@@ -19,6 +20,22 @@ namespace Microsoft.Maui
 			return (indexOfQueryString == -1)
 				? url
 				: url.Substring(0, indexOfQueryString);
+		}
+
+		/// <summary>
+		/// Resolves a request URI against an app origin to produce a validated relative path.
+		/// </summary>
+		internal static string? ResolveRelativePath(Uri appOriginUri, Uri requestUri)
+		{
+			if (!appOriginUri.IsBaseOf(requestUri))
+				return null;
+
+			var relativePath = appOriginUri.MakeRelativeUri(requestUri).ToString();
+
+			if (!Storage.FileSystemUtils.IsValidRelativePath(relativePath))
+				return null;
+
+			return relativePath ?? string.Empty;
 		}
 #endif
 
