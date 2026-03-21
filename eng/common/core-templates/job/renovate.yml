@@ -96,6 +96,9 @@ jobs:
   - name: renovateVersion
     value: '42'
     readonly: true
+  - name: renovateLogFilePath
+    value: '$(Build.ArtifactStagingDirectory)/renovate.json'
+    readonly: true
   - name: dryRunArg
     readonly: true
     ${{ if eq(parameters.dryRun, true) }}:
@@ -175,13 +178,13 @@ jobs:
       RENOVATE_RECREATE_WHEN: $(recreateWhenArg)
       LOG_LEVEL: info
       LOG_FILE_LEVEL: debug
-      LOG_FILE: $(Build.ArtifactStagingDirectory)/renovate.json
+      LOG_FILE: $(renovateLogFilePath)
       RENOVATE_CONFIG_FILE: $(selfRepoPath)/${{parameters.renovateConfigPath}}
   
   - script: |
       echo "PRs created by Renovate:"
-      if [ -s "$(Build.ArtifactStagingDirectory)/renovate.json" ]; then
-        if ! jq -r 'select(.msg == "PR created" and .pr != null) | "https://github.com/\(.repository)/pull/\(.pr)"' "$(Build.ArtifactStagingDirectory)/renovate-log.json" | sort -u; then
+      if [ -s "$(renovateLogFilePath)" ]; then
+        if ! jq -r 'select(.msg == "PR created" and .pr != null) | "https://github.com/\(.repository)/pull/\(.pr)"' "$(renovateLogFilePath)" | sort -u; then
           echo "##vso[task.logissue type=warning]Failed to parse Renovate log file with jq."
           echo "##vso[task.complete result=SucceededWithIssues]"
         fi
