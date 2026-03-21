@@ -58,7 +58,7 @@ public class MauiToolExceptionTests
 		};
 
 		var ex = new MauiToolException(
-			ErrorCodes.AndroidPackageNotFound,
+			ErrorCodes.AndroidPackageInstallFailed,
 			"Package not found",
 			context: context);
 

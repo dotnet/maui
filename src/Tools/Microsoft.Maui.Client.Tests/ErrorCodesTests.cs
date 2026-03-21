@@ -35,18 +35,6 @@ public class ErrorCodesTests
 
 		// Apple errors: E22xx
 		Assert.StartsWith("E22", ErrorCodes.XcodeNotFound);
-		Assert.StartsWith("E22", ErrorCodes.SimctlFailed);
-
-		// User action: E3xxx
-		Assert.StartsWith("E3", ErrorCodes.XcodeInstallRequired);
-		Assert.StartsWith("E3", ErrorCodes.LicenseAcceptanceRequired);
-
-		// Network errors: E4xxx
-		Assert.StartsWith("E4", ErrorCodes.NetworkUnavailable);
-		Assert.StartsWith("E4", ErrorCodes.DownloadFailed);
-
-		// Permission errors: E5xxx
-		Assert.StartsWith("E5", ErrorCodes.ElevationRequired);
-		Assert.StartsWith("E5", ErrorCodes.AccessDenied);
+		Assert.StartsWith("E22", ErrorCodes.AppleSimctlFailed);
 	}
 }

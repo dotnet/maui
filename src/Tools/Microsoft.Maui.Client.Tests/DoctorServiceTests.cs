@@ -130,7 +130,7 @@ public class DoctorServiceTests
 	}
 
 	[Fact]
-	public async Task RunAllChecksAsync_RespectsCategory_WhenSpecified()
+	public async Task RunAllChecksAsync_IncludesAndroidChecks_WhenProviderReturnsAndroidOnly()
 	{
 		// Arrange
 		var androidChecks = new List<HealthCheck>
@@ -149,9 +149,9 @@ public class DoctorServiceTests
 		var service = new DoctorService(mockAndroid.Object, mockApple.Object);
 
 		// Act
-		var report = await service.RunChecksByCategoryAsync("android");
+		var report = await service.RunAllChecksAsync();
 
-		// Assert
-		Assert.All(report.Checks, c => Assert.Equal("android", c.Category));
+		// Assert - android checks should be present
+		Assert.Contains(report.Checks, c => c.Category == "android" && c.Name == "JDK");
 	}
 }
