@@ -1,31 +1,24 @@
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.Xaml.UnitTests;
+using Xunit;
 
-namespace Foo.Microsoft.Maui.Controls.Bar
+namespace Foo.Microsoft.Maui.Controls.Bar;
+
+public partial class Bz43301 : ContentPage
 {
-	public partial class Bz43301 : ContentPage
+	public Bz43301() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Bz43301()
+		[Theory]
+		[XamlInflatorData]
+		//No need for any actual [Test]. If this compiles, the bug is fixed.
+		internal void DoesCompile(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Bz43301(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			//No need for any actual [Test]. If this compiles, the bug is fixed.
-			public void DoesCompile(bool useCompiledXaml)
-			{
-				var layout = new Bz43301(useCompiledXaml);
-				Assert.Pass();
-			}
+			var layout = new Bz43301(inflator);
+			// Test passes if no exception is thrown
 		}
 	}
 }

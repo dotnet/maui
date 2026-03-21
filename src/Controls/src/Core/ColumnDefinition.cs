@@ -3,14 +3,14 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="Type[@FullName='Microsoft.Maui.Controls.ColumnDefinition']/Docs/*" />
+	/// <summary>An <see cref="Microsoft.Maui.Controls.IDefinition"/> that defines properties for a column in a <see cref="Microsoft.Maui.Controls.Grid"/>.</summary>
 	public sealed class ColumnDefinition : BindableObject, IDefinition, IGridColumnDefinition
 	{
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(nameof(Width), typeof(GridLength), typeof(ColumnDefinition), GridLength.Star,
 			propertyChanged: (bindable, oldValue, newValue) => ((ColumnDefinition)bindable).OnSizeChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.ColumnDefinition"/> object with default values.</summary>
 		public ColumnDefinition()
 		{
 		}
@@ -18,8 +18,8 @@ namespace Microsoft.Maui.Controls
 		public ColumnDefinition(GridLength width)
 			=> SetValue(WidthProperty, width);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ColumnDefinition.xml" path="//Member[@MemberName='Width']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
+		/// <summary>Gets or sets the width of the column.</summary>
+		[System.ComponentModel.TypeConverter(typeof(Converters.GridLengthTypeConverter))]
 		public GridLength Width
 		{
 			get { return (GridLength)GetValue(WidthProperty); }

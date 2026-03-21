@@ -13,13 +13,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shadow not updated when Clipping a View with a shadow";
 
 		[Test]
-		[Category(UITestCategories.Visual)]
+		[Category(UITestCategories.Shadow)]
 		public void ShadowShouldUpdateWhenClipping()
 		{
 			App.WaitForElement("ApplyShadowBtn");
 			App.Tap("ApplyClipBtn");
 			App.Tap("ApplyShadowBtn");
-			VerifyScreenshot();
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

@@ -401,20 +401,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 1
 			};
+			var originalSelectedItem = picker.SelectedItem;
 			items.InsertRange(insertionIndex, insertNames.Select(name => new { Name = name }));
 			Assert.Equal(3 + insertNames.Length, picker.Items.Count);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal(items[1], picker.SelectedItem);
+			// The selected item should remain the same, but the index should update
+			Assert.Equal(originalSelectedItem, picker.SelectedItem);
+			Assert.Equal(items.IndexOf(originalSelectedItem), picker.SelectedIndex);
 		}
 
 		[Theory]
-		[InlineData(0, 1)]
-		[InlineData(1, 1)]
-		[InlineData(2, 1)]
-		[InlineData(0, 2)]
-		[InlineData(1, 2)]
-		[InlineData(2, 2)]
-		public void TestItemsSourceCollectionChangedRemoveBeforeSelected(int removeIndex, int removeCount)
+		// Cases where removed items do NOT include the selected item (Paul at index 1)
+		[InlineData(0, 1, true)]  // Remove John - Paul should be preserved
+		[InlineData(2, 1, true)]  // Remove Ringo - Paul should be preserved
+		[InlineData(2, 2, true)]  // Remove Ringo and George - Paul should be preserved
+		// Cases where removed items include the selected item
+		[InlineData(1, 1, false)] // Remove Paul - selection changes
+		[InlineData(0, 2, false)] // Remove John and Paul - selection changes
+		[InlineData(1, 2, false)] // Remove Paul and Ringo - selection changes
+		public void TestItemsSourceCollectionChangedRemoveBeforeSelected(int removeIndex, int removeCount, bool selectedItemPreserved)
 		{
 			var items = new ObservableRangeCollection<object>
 			{
@@ -429,11 +433,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ItemsSource = items,
 				SelectedIndex = 1
 			};
+			var originalSelectedItem = picker.SelectedItem;
 			items.RemoveRange(removeIndex, removeCount);
 
 			Assert.Equal(4 - removeCount, picker.Items.Count);
-			Assert.Equal(1, picker.SelectedIndex);
-			Assert.Equal(items[1], picker.SelectedItem);
+			if (selectedItemPreserved)
+			{
+				// The selected item should remain the same, but the index should update
+				Assert.Equal(originalSelectedItem, picker.SelectedItem);
+				Assert.Equal(items.IndexOf(originalSelectedItem), picker.SelectedIndex);
+			}
+			else
+			{
+				// The selected item was removed, so a different item is now selected
+				Assert.NotEqual(originalSelectedItem, picker.SelectedItem);
+			}
 		}
 
 		[Theory]
@@ -791,6 +805,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var thing = (picker as IPicker).GetItem(0);
 			Assert.NotNull(thing);
+		}
+
+		// https://github.com/dotnet/maui/issues/29235
+		[Fact]
+		public void PickerPreservesSelectedItemAfterRemovingItemBeforeSelection()
+		{
+			// Arrange: Create a picker with items and select "Item2" (index 2)
+			var items = new ObservableCollection<string> { "Item0", "Item1", "Item2" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedIndex = 2 // Select "Item2"
+			};
+
+			Assert.Equal("Item2", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+
+			// Act: Remove the first item (before the selection)
+			items.RemoveAt(0);
+
+			// Assert: SelectedItem should still be "Item2", but index should now be 1
+			Assert.Equal("Item2", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/29235
+		[Fact]
+		public void PickerPreservesSelectedItemAfterInsertingItemBeforeSelection()
+		{
+			// Arrange: Create a picker with items and select "Dog" (index 1)
+			var items = new ObservableCollection<string> { "Cat", "Dog", "Rabbit" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedIndex = 1 // Select "Dog"
+			};
+
+			Assert.Equal("Dog", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Insert an item at the beginning
+			items.Insert(0, "Goat");
+
+			// Assert: SelectedItem should still be "Dog", and index should now be 2
+			Assert.Equal("Dog", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
 		}
 	}
 }

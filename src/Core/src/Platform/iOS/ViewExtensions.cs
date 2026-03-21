@@ -17,10 +17,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsEnabled(this UIView platformView, IView view)
 		{
-			if (platformView is not UIControl uiControl)
-				return;
-
-			uiControl.Enabled = view.IsEnabled;
+			if (platformView is UIControl uiControl)
+			{
+				// UIControl has native Enabled property with visual feedback
+				uiControl.Enabled = view.IsEnabled;
+			}
+			else
+			{
+				// Non-UIControl views (like UICollectionView) only get interaction disable
+				platformView.UserInteractionEnabled = view.IsEnabled;
+			}
 		}
 
 		public static void Focus(this UIView platformView, FocusRequest request)
@@ -399,6 +405,7 @@ namespace Microsoft.Maui.Platform
 			if (provider == null)
 				return;
 
+			platformView.RemoveBackgroundLayer();
 			if (imageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
@@ -410,7 +417,32 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
-				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+				var cgImage = backgroundImage.CGImage;
+				var shouldDisposeCGImage = false;
+				if (cgImage == null && backgroundImage.CIImage != null)
+				{
+					using var context = CoreImage.CIContext.Create();
+					cgImage = context.CreateCGImage(backgroundImage.CIImage, backgroundImage.CIImage.Extent);
+					shouldDisposeCGImage = true;
+				}
+
+				if (cgImage == null)
+					return;
+
+				var imageLayer = new StaticCALayer
+				{
+					Name = BackgroundLayerName,
+					Contents = cgImage,
+					Frame = platformView.Bounds,
+					ContentsGravity = CoreAnimation.CALayer.GravityResize
+				};
+
+				platformView.BackgroundColor = UIColor.Clear;
+				platformView.InsertBackgroundLayer(imageLayer, 0);
+
+				// Dispose the CGImage if we created it via CreateCGImage.
+				if (shouldDisposeCGImage)
+					cgImage?.Dispose();
 			}
 		}
 
@@ -536,6 +568,10 @@ namespace Microsoft.Maui.Platform
 
 			return (element.ToPlatform())?.GetLocationOnScreen();
 		}
+
+		internal static Rect GetViewBounds(this UIView platformView) => platformView.GetPlatformViewBounds();
+
+		internal static Rect GetViewBounds(this IView view) => view.ToPlatform().GetViewBounds();
 
 		internal static Graphics.Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();

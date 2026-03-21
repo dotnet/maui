@@ -1,16 +1,23 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PolyQuadraticBezierSegment']/Docs/*" />
+	/// <summary>
+	/// A path segment that defines one or more connected quadratic Bezier curves.
+	/// </summary>
 	public class PolyQuadraticBezierSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PolyQuadraticBezierSegment"/> class with an empty point collection.
+		/// </summary>
 		public PolyQuadraticBezierSegment()
 		{
 			Points = new PointCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PolyQuadraticBezierSegment"/> class with the specified points.
+		/// </summary>
+		/// <param name="points">The collection of control and end points defining the quadratic Bezier curves.</param>
 		public PolyQuadraticBezierSegment(PointCollection points)
 		{
 			Points = points;
@@ -20,7 +27,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(PolyQuadraticBezierSegment), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyQuadraticBezierSegment.xml" path="//Member[@MemberName='Points']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the control and end points of the quadratic Bezier curves. This is a bindable property.
+		/// </summary>
 		public PointCollection Points
 		{
 			set { SetValue(PointsProperty, value); }

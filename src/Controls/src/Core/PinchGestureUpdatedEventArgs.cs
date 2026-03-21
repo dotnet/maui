@@ -4,29 +4,33 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.PinchGestureUpdatedEventArgs']/Docs/*" />
+	/// <summary>Event arguments for the <see cref="PinchGestureRecognizer.PinchUpdated"/> event.</summary>
 	public class PinchGestureUpdatedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="PinchGestureUpdatedEventArgs"/> class with scale and origin data.</summary>
+		/// <param name="status">The gesture status.</param>
+		/// <param name="scale">The relative scale of the pinch.</param>
+		/// <param name="origin">The origin point of the pinch gesture.</param>
 		public PinchGestureUpdatedEventArgs(GestureStatus status, double scale, Point origin) : this(status)
 		{
 			ScaleOrigin = origin;
 			Scale = scale;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="PinchGestureUpdatedEventArgs"/> class.</summary>
+		/// <param name="status">The gesture status.</param>
 		public PinchGestureUpdatedEventArgs(GestureStatus status)
 		{
 			Status = status;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='Scale']/Docs/*" />
+		/// <summary>Gets the relative scale of the pinch gesture since the last update. Default is 1.</summary>
 		public double Scale { get; } = 1;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='ScaleOrigin']/Docs/*" />
+		/// <summary>Gets the origin point of the pinch gesture, which is the center between the two touch points.</summary>
 		public Point ScaleOrigin { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PinchGestureUpdatedEventArgs.xml" path="//Member[@MemberName='Status']/Docs/*" />
+		/// <summary>Gets a value indicating whether the gesture started, is running, or has finished.</summary>
 		public GestureStatus Status { get; }
 	}
 }

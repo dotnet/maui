@@ -459,13 +459,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="textTransform">The transform to apply to <paramref name="source"/>.</param>
 		/// <returns>The transformed text.</returns>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
 			RefreshIsEnabledProperty();
 
 		protected override bool IsEnabledCore =>
-			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
 
 		bool _wasImageLoading;
 

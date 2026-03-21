@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.App;
+using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Devices;
 
@@ -9,37 +10,41 @@ namespace Microsoft.Maui.Handlers
 	{
 		DatePickerDialog? _dialog;
 
+		internal DatePickerDialog? DatePickerDialog => _dialog;
+
 		protected override MauiDatePicker CreatePlatformView()
 		{
-			var mauiDatePicker = new MauiDatePicker(Context)
-			{
-				ShowPicker = ShowPickerDialog,
-				HidePicker = HidePickerDialog
-			};
+			var mauiDatePicker = new MauiDatePicker(Context);
 
 			var date = VirtualView?.Date;
 
 			if (date != null)
+			{
 				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month - 1, date.Value.Day);
+			}
 
 			return mauiDatePicker;
 		}
 
-		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
-
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
 			base.ConnectHandler(platformView);
+
+			platformView.ShowPicker = ShowPickerDialog;
+			platformView.HidePicker = HidePickerDialog;
+
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
 			if (platformView.IsAttachedToWindow)
+			{
 				OnViewAttachedToWindow();
+			}
 		}
 
 		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
 		{
-			// I tested and this is called when an activity is destroyed
+			// This is called when an activity is destroyed
 			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 		}
 
@@ -50,15 +55,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			if (_dialog != null)
-			{
-				_dialog.Hide();
-				_dialog.Dispose();
-				_dialog = null;
-			}
+			ResetDialog();
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+
+			platformView.ShowPicker = null;
+			platformView.HidePicker = null;
+
 			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);
@@ -68,11 +72,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			var dialog = new DatePickerDialog(Context!, (o, e) =>
 			{
-				if (VirtualView != null)
+				if (VirtualView is not null)
 				{
 					VirtualView.Date = e.Date;
 				}
 			}, year, month, day);
+
+			dialog.DismissEvent += OnDialogDismiss;
 
 			return dialog;
 		}
@@ -95,13 +101,47 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+			{
+				// Force dialog recreation when MinimumDate is provided.
+				// Android's DatePickerDialog caches min/max dates internally,
+				// making it unreliable to update them after the dialog is created.
+				if (datePicker.MinimumDate is not null)
+				{
+					platformHandler.ResetDialog();
+				}
+				else
+				{
+					handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
+				}
+			}
 		}
 
 		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
-				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+			{
+				// Force dialog recreation when MaximumDate is provided.
+				// Android's DatePickerDialog caches min/max dates internally,
+				// making it unreliable to update them after the dialog is created.
+				if (datePicker.MaximumDate is not null)
+				{
+					platformHandler.ResetDialog();
+				}
+				else
+				{
+					handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
+				}
+			}
+		}
+
+		void ResetDialog()
+		{
+			if (_dialog is not null)
+			{
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Dismiss();
+				_dialog = null;
+			}
 		}
 
 		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
@@ -122,27 +162,57 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
-		void ShowPickerDialog()
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			if (VirtualView == null)
-				return;
-
-			if (_dialog != null && _dialog.IsShowing)
-				return;
-
-			var date = VirtualView.Date;
-			ShowPickerDialog(date.Year, date.Month - 1, date.Day);
+			if (handler.IsConnected() && handler is DatePickerHandler platformHandler)
+			{
+				if (datePicker.IsOpen)
+					platformHandler.ShowPickerDialog(datePicker.Date);
+				else
+					platformHandler.HidePickerDialog();
+			}
 		}
 
-		void ShowPickerDialog(int year, int month, int day)
+		void ShowPickerDialog()
 		{
-			if (_dialog == null)
+			if (VirtualView is null)
+			{
+				return;
+			}
+
+			if (_dialog is not null && _dialog.IsShowing)
+			{
+				return;
+			}
+
+			var date = VirtualView.Date;
+			ShowPickerDialog(date);
+			VirtualView.IsOpen = true;
+		}
+
+		void ShowPickerDialog(DateTime? date)
+		{
+			var year = date?.Year ?? DateTime.Today.Year;
+			var month = (date?.Month ?? DateTime.Today.Month) - 1;
+			var day = date?.Day ?? DateTime.Today.Day;
+
+			if (_dialog is null)
+			{
 				_dialog = CreateDatePickerDialog(year, month, day);
+
+				// Apply min/max constraints to newly created dialog
+				if (VirtualView is not null)
+				{
+					PlatformView?.UpdateMinimumDate(VirtualView, _dialog);
+					PlatformView?.UpdateMaximumDate(VirtualView, _dialog);
+				}
+			}
 			else
 			{
 				EventHandler? setDateLater = null;
 				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
 				_dialog.ShowEvent += setDateLater;
+				_dialog.DismissEvent += OnDialogDismiss;
 			}
 
 			_dialog.Show();
@@ -150,18 +220,29 @@ namespace Microsoft.Maui.Handlers
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (_dialog != null)
+			{
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Hide();
+			}
+
+			VirtualView.IsOpen = false;
+		}
+
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			HidePickerDialog();
 		}
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
 		{
 			DatePickerDialog? currentDialog = _dialog;
 
-			if (currentDialog != null && currentDialog.IsShowing)
+			if (currentDialog is not null && currentDialog.IsShowing)
 			{
 				currentDialog.Dismiss();
 
-				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
+				ShowPickerDialog(currentDialog.DatePicker.DateTime);
 			}
 		}
 	}

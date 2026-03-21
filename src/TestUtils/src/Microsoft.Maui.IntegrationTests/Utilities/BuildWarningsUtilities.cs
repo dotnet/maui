@@ -1,6 +1,8 @@
-﻿using System.Linq;
+using System.IO;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -19,16 +21,55 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public static class BuildWarningsUtilities
 	{
-		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
-		{
-			get => expectedNativeAOTWarnings;
-		}
-
 		// We rely on the fact that expected file paths are stored as relative to the repo root (e.g., src/Core/...).
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
 		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
 
 		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
+
+		/// <summary>
+		/// Reads build errors from a binlog file and outputs them to the test output.
+		/// This makes errors visible in Azure DevOps logs instead of requiring artifact downloads.
+		/// </summary>
+		/// <param name="binLogFilePath">Path to the .binlog file</param>
+		/// <param name="maxErrors">Maximum number of errors to output (default 50)</param>
+		/// <param name="output">Optional test output helper for logging</param>
+		public static void OutputBuildErrorsFromBinLog(string binLogFilePath, int maxErrors = 50, ITestOutputHelper? output = null)
+		{
+			if (!System.IO.File.Exists(binLogFilePath))
+			{
+				output?.WriteLine($"[BuildWarningsUtilities] Binlog file not found: {binLogFilePath}");
+				return;
+			}
+
+			var errors = new List<string>();
+			foreach (var record in new BinLogReader().ReadRecords(binLogFilePath))
+			{
+				if (record.Args is BuildErrorEventArgs error)
+				{
+					var file = NormalizeFilePath(error.File ?? "");
+					var location = error.LineNumber > 0 ? $"({error.LineNumber},{error.ColumnNumber})" : "";
+					errors.Add($"{file}{location}: error {error.Code}: {error.Message}");
+				}
+			}
+
+			if (errors.Count > 0)
+			{
+				output?.WriteLine("");
+				output?.WriteLine("╔══════════════════════════════════════════════════════════════════════════════╗");
+				output?.WriteLine($"║ BUILD ERRORS FROM BINLOG ({errors.Count} total)");
+				output?.WriteLine("╚══════════════════════════════════════════════════════════════════════════════╝");
+				foreach (var err in errors.Take(maxErrors))
+				{
+					output?.WriteLine(err);
+				}
+				if (errors.Count > maxErrors)
+				{
+					output?.WriteLine($"... and {errors.Count - maxErrors} more errors (see binlog for full list)");
+				}
+				output?.WriteLine("");
+			}
+		}
 
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
@@ -84,7 +125,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static void AssertNoWarnings(this List<WarningsPerFile> actualWarnings)
 		{
-			Assert.AreEqual(0, actualWarnings.Count, $"No warnings expected, but got {actualWarnings.Count} warnings:\n{string.Join("\n", actualWarnings.Select(actualWarning => actualWarning.ToString()))}");
+			if (actualWarnings.Count != 0)
+				Assert.Fail($"No warnings expected, but got {actualWarnings.Count} warnings:\n{string.Join("\n", actualWarnings.Select(actualWarning => actualWarning.ToString()))}");
 		}
 
 		public static void AssertWarnings(this List<WarningsPerFile> actualWarnings, List<WarningsPerFile> expectedWarnings)
@@ -92,41 +134,96 @@ namespace Microsoft.Maui.IntegrationTests
 			foreach (var expectedWarningsPerFile in expectedWarnings)
 			{
 				var actualWarningsPerFile = actualWarnings.FirstOrDefault(actualWarning => actualWarning.File.CompareWarningsFilePaths(expectedWarningsPerFile.File));
-				Assert.NotNull(actualWarningsPerFile,
-					$"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
+				if (actualWarningsPerFile is null) Assert.Fail($"Expected warnings file path '{expectedWarningsPerFile.File}' was not found.");
 
 				foreach (var expectedWarningsPerCode in expectedWarningsPerFile.WarningsPerCode)
 				{
 					var actualWarningsPerCode = actualWarningsPerFile!.WarningsPerCode.FirstOrDefault(x => x.Code == expectedWarningsPerCode.Code);
-					Assert.NotNull(actualWarningsPerCode,
-						$"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
+					if (actualWarningsPerCode is null) Assert.Fail($"Expected warning code '{expectedWarningsPerCode.Code}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}'");
 
 					foreach (var expectedWarningsMessage in expectedWarningsPerCode.Messages)
 					{
-						Assert.True(actualWarningsPerCode!.Messages.Remove(expectedWarningsMessage),
-							$"Expected warning message '{expectedWarningsMessage}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'");
+						if (!actualWarningsPerCode!.Messages.Remove(expectedWarningsMessage))
+							Assert.Fail($"Expected warning message '{expectedWarningsMessage}' was not found for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'");
 					}
 
-					Assert.AreEqual(0, actualWarningsPerCode!.Messages.Count,
-						$"Unexpected warning messages detected for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'! Unexpected warning messages are: {string.Join("\n\t\t", actualWarningsPerCode.Messages)}");
+					if (actualWarningsPerCode!.Messages.Count != 0)
+						Assert.Fail($"Unexpected warning messages detected for the expected warnings file path '{expectedWarningsPerFile.File}' and warning code '{expectedWarningsPerCode.Code}'! Unexpected warning messages are: {string.Join("\n\t\t", actualWarningsPerCode.Messages)}");
 
 					actualWarningsPerFile.WarningsPerCode.Remove(actualWarningsPerCode);
 				}
 
-				Assert.AreEqual(0, actualWarningsPerFile!.WarningsPerCode.Count,
-					$"Unexpected warning codes detected for the expected warnings file path '{expectedWarningsPerFile.File}'! Unexpected warning codes are: {string.Join("\n\t\t", actualWarningsPerFile.WarningsPerCode.Select(c => c.Code).ToList())}");
+				if (actualWarningsPerFile!.WarningsPerCode.Count != 0)
+					Assert.Fail($"Unexpected warning codes detected for the expected warnings file path '{expectedWarningsPerFile.File}'! Unexpected warning codes are: {string.Join("\n\t\t", actualWarningsPerFile.WarningsPerCode.Select(c => c.Code).ToList())}");
 
 				actualWarnings.Remove(actualWarningsPerFile!);
 			}
 
-			Assert.AreEqual(0, actualWarnings.Count,
-				$"Unexpected warning files detected! Unexpected warning file paths are: {string.Join("\n\t\t", actualWarnings.Select(f => f.File).ToList())}");
+			if (actualWarnings.Count != 0)
+				Assert.Fail($"Unexpected warning files detected! Unexpected warning file paths are: {string.Join("\n\t\t", actualWarnings.Select(f => f.File).ToList())}");
 		}
 
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
 		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
+
+		// Windows-specific expected warnings (if any)
+		// These might be different from iOS/Mac warnings due to platform-specific implementations
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsWindows = new();
+
+		// Android baseline warnings to ensure no new warnings are introduced
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarningsAndroid = new()
+		{
+			new WarningsPerFile
+			{
+				File = "Xamarin.Android.Common.targets",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "XA1040",
+						Messages = new List<string>
+						{
+							"The NativeAOT runtime on Android is an experimental feature and not yet suitable for production use. File issues at: https://github.com/dotnet/android/issues",
+						}
+					},
+				}
+			},
+			new WarningsPerFile
+			{
+				File = "ILC",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "IL3050",
+						Messages = new List<string>
+						{
+							"Microsoft.Android.Runtime.ManagedTypeManager.<GetInvokerTypeCore>g__MakeGenericType|4_1(Type,Type[]): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
+							"Android.Runtime.JNIEnv.MakeArrayType(Type): Using member 'System.Type.MakeArrayType()' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The code for an array of the specified type might not be available.",
+							"Android.Runtime.JNINativeWrapper.CreateDelegate(Delegate): Using member 'System.Reflection.Emit.DynamicMethod.DynamicMethod(String,Type,Type[],Type,Boolean)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. Creating a DynamicMethod requires dynamic code.",
+							"Java.Interop.JavaConvert.<GetJniHandleConverter>g__MakeGenericType|2_0(Type,Type[]): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
+						}
+					},
+				}
+			},
+		};
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarnings
+		{
+			get => expectedNativeAOTWarnings;
+		}
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarningsWindows
+		{
+			get => expectedNativeAOTWarningsWindows;
+		}
+
+		public static List<WarningsPerFile> ExpectedNativeAOTWarningsAndroid
+		{
+			get => expectedNativeAOTWarningsAndroid;
+		}
 
 		#region Utility methods for generating the list of expected warnings
 

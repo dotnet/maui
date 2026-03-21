@@ -1,68 +1,65 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class FontImageExtension : TabBar
 {
-	public partial class FontImageExtension : TabBar
+	public FontImageExtension() => InitializeComponent();
+
+	public static string FontFamily => "MyFontFamily";
+	public static string Glyph => "MyGlyph";
+	public static Color Color => Colors.Black;
+	public static double Size = 50d;
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public FontImageExtension() => InitializeComponent();
-		public FontImageExtension(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void FontImageExtension_Positive(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var layout = new FontImageExtension(inflator);
+			var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
+
+			int i = 0;
+			foreach (var tab in tabs)
+			{
+				Tab myTab = (Tab)tab;
+				if (myTab == null)
+					continue;
+
+				Assert.IsType<FontImageSource>(myTab.Icon);
+
+				var fontImage = (FontImageSource)myTab.Icon;
+				Assert.Equal(FontFamily, fontImage.FontFamily);
+				Assert.Equal(Glyph, fontImage.Glyph);
+
+				if (i == 3)
+					Assert.Equal(30d, fontImage.Size);
+				else
+					Assert.Equal(Size, fontImage.Size);
+
+				Assert.Equal(Color, fontImage.Color);
+				i++;
+			}
 		}
 
-		public static string FontFamily => "MyFontFamily";
-		public static string Glyph => "MyGlyph";
-		public static Color Color => Colors.Black;
-		public static double Size = 50d;
-
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void FontImageExtension_Negative(XamlInflator inflator)
 		{
-			[TestCase(true), TestCase(false)]
-			public void FontImageExtension_Positive(bool useCompiledXaml)
+			var layout = new FontImageExtension(inflator);
+			var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
+
+			foreach (var tab in tabs)
 			{
-				var layout = new FontImageExtension(useCompiledXaml);
-				var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
+				Tab myTab = (Tab)tab;
+				if (myTab == null)
+					continue;
 
-				int i = 0;
-				foreach (var tab in tabs)
-				{
-					Tab myTab = (Tab)tab;
-					if (myTab == null)
-						continue;
-
-					Assert.That(myTab.Icon, Is.TypeOf<FontImageSource>());
-
-					var fontImage = (FontImageSource)myTab.Icon;
-					Assert.AreEqual(FontFamily, fontImage.FontFamily);
-					Assert.AreEqual(Glyph, fontImage.Glyph);
-
-					if (i == 3)
-						Assert.AreEqual(30d, fontImage.Size);
-					else
-						Assert.AreEqual(Size, fontImage.Size);
-
-					Assert.AreEqual(Color, fontImage.Color);
-					i++;
-				}
-			}
-
-			[TestCase(true), TestCase(false)]
-			public void FontImageExtension_Negative(bool useCompiledXaml)
-			{
-				var layout = new FontImageExtension(useCompiledXaml);
-				var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
-
-				foreach (var tab in tabs)
-				{
-					Tab myTab = (Tab)tab;
-					if (myTab == null)
-						continue;
-
-					Assert.That(myTab.Icon, Is.Not.TypeOf<ImageSource>());
-				}
+				// Check that Icon is not exactly ImageSource type (but can be a subtype like FontImageSource)
+				Assert.NotEqual(typeof(ImageSource), myTab.Icon.GetType());
 			}
 		}
 	}

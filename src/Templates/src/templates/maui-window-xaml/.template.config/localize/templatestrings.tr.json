@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (XAML)",
-  "description": "XAML kullanarak sayfa görüntüleme penceresi.",
+  "description": "XAML kullanarak bir sayfayı görüntülemek için bir pencere.",
   "postActions/openInEditor/description": "Düzenleyicide NewWindow1.xaml dosyasını açar.",
   "symbols/namespace/description": "oluşturulan kod için ad alanı"
 }

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -9,19 +8,21 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter']/Docs/*" />
+	/// <summary>
+	/// A type converter that converts path markup syntax strings to <see cref="PathFigureCollection"/> objects.
+	/// </summary>
 	public class PathFigureCollectionConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
 		const bool AllowSign = true;
 		const bool AllowComma = true;
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value?.ToString();
 			PathFigureCollection pathFigureCollection = new PathFigureCollection();
@@ -31,11 +32,15 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pathFigureCollection;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollectionConverter.xml" path="//Member[@MemberName='ParseStringToPathFigureCollection']/Docs/*" />
-		public static void ParseStringToPathFigureCollection(PathFigureCollection pathFigureCollection, string pathString)
+		/// <summary>
+		/// Parses a path markup syntax string and adds the resulting figures to the specified collection.
+		/// </summary>
+		/// <param name="pathFigureCollection">The collection to add the parsed figures to.</param>
+		/// <param name="pathString">The path markup syntax string to parse.</param>
+		public static void ParseStringToPathFigureCollection(PathFigureCollection pathFigureCollection, string? pathString)
 		{
 			bool figureStarted = default;
-			string currentPathString = default;
+			string? currentPathString = null;
 			int pathLength = default;
 			int currentIndex = default;
 			Point lastStart = default;
@@ -82,7 +87,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			void ParseToPathFigureCollection(PathFigureCollection pathFigureCollection, string pathString, int startIndex)
 			{
-				PathFigure pathFigure = null;
+				PathFigure? pathFigure = null;
 
 				currentPathString = pathString;
 				pathLength = pathString.Length;
@@ -106,7 +111,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					{
 						if ((cmd != 'M') && (cmd != 'm'))  // Path starts with M|m
 						{
-							ThrowBadToken();
+							throw GetBadTokenException();
 						}
 
 						first = false;
@@ -175,7 +180,7 @@ namespace Microsoft.Maui.Controls.Shapes
 										break;
 								}
 
-								pathFigure.Segments.Add(new LineSegment
+								EnsurePathFigure(pathFigure).Segments.Add(new LineSegment
 								{
 									Point = lastPoint
 								});
@@ -224,7 +229,7 @@ namespace Microsoft.Maui.Controls.Shapes
 									Point3 = lastPoint
 								};
 
-								pathFigure.Segments.Add(bezierSegment);
+								EnsurePathFigure(pathFigure).Segments.Add(bezierSegment);
 
 								last_cmd = 'C';
 							}
@@ -265,7 +270,8 @@ namespace Microsoft.Maui.Controls.Shapes
 									Point2 = lastPoint
 								};
 
-								pathFigure.Segments.Add(quadraticBezierSegment);
+
+								EnsurePathFigure(pathFigure).Segments.Add(quadraticBezierSegment);
 
 								last_cmd = 'Q';
 							}
@@ -297,7 +303,7 @@ namespace Microsoft.Maui.Controls.Shapes
 									Point = lastPoint
 								};
 
-								pathFigure.Segments.Add(arcSegment);
+								EnsurePathFigure(pathFigure).Segments.Add(arcSegment);
 							}
 							while (IsNumber(AllowComma));
 
@@ -307,7 +313,7 @@ namespace Microsoft.Maui.Controls.Shapes
 						case 'z':
 						case 'Z':
 							EnsureFigure();
-							pathFigure.IsClosed = true;
+							EnsurePathFigure(pathFigure).IsClosed = true;
 							figureStarted = false;
 							last_cmd = 'Z';
 
@@ -315,16 +321,29 @@ namespace Microsoft.Maui.Controls.Shapes
 							break;
 
 						default:
-							ThrowBadToken();
-							break;
+							throw GetBadTokenException();
 					}
+				}
+			}
+
+			PathFigure EnsurePathFigure(PathFigure? pathFigure)
+			{
+				if (pathFigure is null)
+				{
+					throw GetBadTokenException();
+				}
+				else
+				{
+					return pathFigure;
 				}
 			}
 
 			void EnsureFigure()
 			{
 				if (!figureStarted)
+				{
 					figureStarted = true;
+				}
 			}
 
 			Point Reflect()
@@ -333,11 +352,6 @@ namespace Microsoft.Maui.Controls.Shapes
 					2 * lastPoint.X - secondLastPoint.X,
 					2 * lastPoint.Y - secondLastPoint.Y);
 			}
-
-
-
-
-
 
 			bool More()
 			{
@@ -368,7 +382,7 @@ namespace Microsoft.Maui.Controls.Shapes
 							}
 							else
 							{
-								ThrowBadToken();
+								throw GetBadTokenException();
 							}
 							break;
 
@@ -405,9 +419,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					}
 				}
 
-				ThrowBadToken();
-
-				return false;
+				throw GetBadTokenException();
 			}
 
 			bool ReadToken()
@@ -427,9 +439,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				}
 			}
 
-			void ThrowBadToken()
+			Exception GetBadTokenException()
 			{
-				throw new FormatException(string.Format("UnexpectedToken \"{0}\" into {1}", currentPathString, currentIndex - 1));
+				return new FormatException(string.Format("UnexpectedToken \"{0}\" into {1}", currentPathString, currentIndex - 1));
 			}
 
 			Point ReadPoint(char cmd, bool allowcomma)
@@ -465,7 +477,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (commaMet) // Only allowed between numbers
 				{
-					ThrowBadToken();
+					throw GetBadTokenException();
 				}
 
 				return false;
@@ -475,7 +487,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				if (!IsNumber(allowComma))
 				{
-					ThrowBadToken();
+					throw GetBadTokenException();
 				}
 
 				bool simple = true;
@@ -674,7 +686,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return sb.ToString();
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is PathFigureCollection pathFigureCollection)
 			{

@@ -36,12 +36,23 @@ namespace Microsoft.Maui.Platform
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			if (e == null)
+			{
 				throw new ArgumentNullException(nameof(e));
+			}
+
+			// If the GraphicsView is disabled, we don't want to handle touch events.
+			// This is to prevent any interaction when the view is not interactive.
+			if (_graphicsView is null || !_graphicsView.IsEnabled)
+			{
+				return false;
+			}
 
 			int touchCount = e.PointerCount;
 			var touchPoints = new PointF[touchCount];
 			for (int i = 0; i < touchCount; i++)
+			{
 				touchPoints[i] = new PointF(e.GetX(i) / _scale, e.GetY(i) / _scale);
+			}
 
 			var actionMasked = e.Action & MotionEventActions.Mask;
 
@@ -64,6 +75,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return true;
+
 		}
 		public void TouchesBegan(PointF[] points)
 		{
@@ -77,7 +89,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!_dragStarted)
 			{
-				if (points.Length == 1)
+				if (points.Length == 1 && _lastMovedViewPoints.Length > 0)
 				{
 					float deltaX = _lastMovedViewPoints[0].X - points[0].X;
 					float deltaY = _lastMovedViewPoints[0].Y - points[0].Y;
@@ -107,12 +119,21 @@ namespace Microsoft.Maui.Platform
 		public override bool OnHoverEvent(MotionEvent? e)
 		{
 			if (e == null)
+			{
 				throw new ArgumentNullException(nameof(e));
+			}
+
+			if (_graphicsView is null || !_graphicsView.IsEnabled)
+			{
+				return false;
+			}
 
 			int touchCount = e.PointerCount;
 			var touchPoints = new PointF[touchCount];
 			for (int i = 0; i < touchCount; i++)
+			{
 				touchPoints[i] = new PointF(e.GetX(i) / _scale, e.GetY(i) / _scale);
+			}
 
 			var actionMasked = e.Action & MotionEventActions.Mask;
 

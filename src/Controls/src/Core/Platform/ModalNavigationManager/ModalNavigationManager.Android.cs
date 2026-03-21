@@ -8,6 +8,7 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return Task.FromResult(modal);
 			}
 
-			var source = new TaskCompletionSource<Page>();
+			var source = new TaskCompletionSource<Page>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			if (animated && dialogFragment.View is not null)
 			{
@@ -167,8 +168,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			TaskCompletionSource<bool> animationCompletionSource = new();
-
 			var parentView = GetModalParentView();
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
@@ -184,19 +183,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				dialogFragment!.AnimationEnded += OnAnimationEnded;
+				TaskCompletionSource<bool> animationCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+				dialogFragment.AnimationEnded += OnAnimationEnded;
+
+				void OnAnimationEnded(object? sender, EventArgs e)
+				{
+					dialogFragment.AnimationEnded -= OnAnimationEnded;
+					animationCompletionSource.SetResult(true);
+				}
 
 				await animationCompletionSource.Task;
 			}
 			else
 			{
-				animationCompletionSource.TrySetResult(true);
-			}
+				// Non-animated modals need to wait for presentation completion to prevent race conditions
+				TaskCompletionSource<bool> presentationCompletionSource = new();
 
-			void OnAnimationEnded(object? sender, EventArgs e)
-			{
-				dialogFragment!.AnimationEnded -= OnAnimationEnded;
-				animationCompletionSource.SetResult(true);
+				dialogFragment.PresentationCompleted += OnPresentationCompleted;
+
+				void OnPresentationCompleted(object? sender, EventArgs e)
+				{
+					dialogFragment.PresentationCompleted -= OnPresentationCompleted;
+					presentationCompletionSource.SetResult(true);
+				}
+
+				await presentationCompletionSource.Task;
 			}
 		}
 
@@ -207,9 +219,10 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
+			bool _pendingNavigation = true;
 
-			public event EventHandler? AnimationEnded;
-
+			internal event EventHandler? AnimationEnded;
+			internal event EventHandler? PresentationCompleted;
 
 			public bool IsAnimated { get; internal set; }
 
@@ -238,8 +251,14 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
 
-				if (mainActivityWindow is not null)
+				// Configure translucent system bars for modal pages on Android API 30+
+				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
 				{
+					dialog.Window.ConfigureTranslucentSystemBars(activity);
+				}
+				else if (mainActivityWindow is not null)
+				{
+					// Fallback for API < 30: Apply legacy translucent behavior
 					var navigationBarColor = mainActivityWindow.NavigationBarColor;
 					var statusBarColor = mainActivityWindow.StatusBarColor;
 #pragma warning disable CA1422
@@ -247,6 +266,7 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
 #pragma warning restore CA1422
 				}
+
 
 				return dialog;
 			}
@@ -348,11 +368,23 @@ namespace Microsoft.Maui.Controls.Platform
 				var dialog = Dialog;
 
 				if (dialog is null || dialog.Window is null || View is null)
+				{
+					// SAFETY: Fire event even on early return to prevent deadlock
+					FirePresentationCompleted();
 					return;
+				}
 
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
+			}
+
+			public override void OnResume()
+			{
+				base.OnResume();
+
+				// Signal that the modal is fully presented and ready
+				FirePresentationCompleted();
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
@@ -377,6 +409,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnDestroy();
 				FireAnimationEnded();
+
+				// SAFETY: If destroyed before OnStart completed, fire PresentationCompleted to prevent deadlock
+				FirePresentationCompleted();
 			}
 
 			void FireAnimationEnded()
@@ -390,12 +425,76 @@ namespace Microsoft.Maui.Controls.Platform
 				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
 
+			void FirePresentationCompleted()
+			{
+				if (!_pendingNavigation)
+					return;
+
+				_pendingNavigation = false;
+				PresentationCompleted?.Invoke(this, EventArgs.Empty);
+			}
+
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
 				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
 				{
 					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
+				}
+
+				public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyDown>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyDown(keyCode, e);
+				}
+
+				public override bool OnKeyLongPress(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyLongPress>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyLongPress(keyCode, e);
+				}
+
+				public override bool OnKeyMultiple(Keycode keyCode, int repeatCount, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyMultiple>(del =>
+					{
+						handled = del(this, keyCode, repeatCount, e) || handled;
+					});
+
+					return handled || base.OnKeyMultiple(keyCode, repeatCount, e);
+				}
+
+				public override bool OnKeyShortcut(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyShortcut>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyShortcut(keyCode, e);
+				}
+
+				public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+				{
+					var handled = false;
+					IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnKeyUp>(del =>
+					{
+						handled = del(this, keyCode, e) || handled;
+					});
+
+					return handled || base.OnKeyUp(keyCode, e);
 				}
 
 				sealed class CallBack : OnBackPressedCallback
@@ -415,45 +514,14 @@ namespace Microsoft.Maui.Controls.Platform
 							return;
 						}
 
-						Window? window = activity.GetWindow() as Window;
-						EventHandler? eventHandler = null;
-						eventHandler = OnPopCanceled;
-						if (window is not null)
-						{
-							window.PopCanceled += eventHandler;
-						}
-
-						var preventBackPropagation = false;
-
 						try
 						{
 							IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
 							{
-								preventBackPropagation = del(activity) || preventBackPropagation;
+								del(activity);
 							});
 						}
-						finally
-						{
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
-
-						if (!preventBackPropagation)
-						{
-							customComponentDialog.OnBackPressedDispatcher.OnBackPressed();
-						}
-
-						eventHandler = null;
-						void OnPopCanceled(object? sender, EventArgs e)
-						{
-							preventBackPropagation = true;
-							if (window is not null && eventHandler is not null)
-							{
-								window.PopCanceled -= eventHandler;
-							}
-						}
+						finally { }
 					}
 				}
 			}

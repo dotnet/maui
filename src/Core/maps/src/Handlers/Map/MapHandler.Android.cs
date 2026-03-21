@@ -7,6 +7,7 @@ using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
+using Android.Views;
 using Java.Lang;
 using Java.Util.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,14 +176,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativeCircle = GetNativeCircle(mauiCircle);
 
 			if (nativeCircle == null)
+			{
 				return;
-
+			}
 
 			if (mauiCircle.Stroke is SolidPaint solidPaint)
-				nativeCircle.FillColor = solidPaint.Color.AsColor();
+			{
+				nativeCircle.StrokeColor = solidPaint.Color.AsColor();
+			}
 
 			if (mauiCircle.Fill is SolidPaint solidFillPaint)
+			{
 				nativeCircle.FillColor = solidFillPaint.Color.AsColor();
+			}
 
 			nativeCircle.Center = new LatLng(mauiCircle.Center.Latitude, mauiCircle.Center.Longitude);
 			nativeCircle.Radius = mauiCircle.Radius.Meters;
@@ -316,7 +322,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
-		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
+		void MapViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
 			InitialUpdate();
 		}

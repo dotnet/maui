@@ -15,7 +15,6 @@ public class Issue28485 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.Navigation)]
 	public void SwipeBackGestureShouldNavigateOnce()
 	{
 		App.WaitForElement("GotoPage2");

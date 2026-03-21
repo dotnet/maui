@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +23,8 @@ public class Issue29458 : _IssuesUITest
 			App.ScrollLeft("RTLScrollView");
 			App.ScrollRight("LTRScrollView");
 		}
-		App.WaitForElement("Tab5RTL");
-		App.WaitForElement("Tab5LTR");
+		Assert.That(App.FindElement("Tab5LTR").GetRect().X, Is.LessThan(App.FindElement("RTLScrollView").GetRect().Width * 1.2f));
+		Assert.That(App.FindElement("Tab5RTL").GetRect().X, Is.GreaterThan(-50f));
 	}
 }
+#endif

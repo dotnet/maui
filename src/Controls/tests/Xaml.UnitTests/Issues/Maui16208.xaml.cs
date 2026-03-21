@@ -1,39 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui16208
 {
-	public Maui16208()
-	{
-		InitializeComponent();
-	}
+	public Maui16208() => InitializeComponent();
 
-	public Maui16208(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
@@ -41,20 +26,20 @@ public partial class Maui16208
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			mockDeviceInfo = null;
 		}
 
-		[Test]
-		public void SetterAndTargetName([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void SetterAndTargetName(XamlInflator inflator)
 		{
-
-			Assert.DoesNotThrow(() => new Maui16208(useCompiledXaml));
-			var page = new Maui16208(useCompiledXaml);
-			Assert.That(page!.ItemLabel.BackgroundColor, Is.EqualTo(Colors.Green));
+			var ex = Record.Exception(() => new Maui16208(inflator));
+			Assert.Null(ex);
+			var page = new Maui16208(inflator);
+			Assert.Equal(Colors.Green, page!.ItemLabel.BackgroundColor);
 		}
 	}
 }

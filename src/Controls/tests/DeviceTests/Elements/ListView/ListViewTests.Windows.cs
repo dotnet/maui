@@ -17,7 +17,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ListView)]
 	public partial class ListViewTests
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		void ValidatePlatformCells(ListView listView)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 
 		}
@@ -28,10 +30,12 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var data = new ObservableCollection<string>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView()
 			{
 				ItemsSource = data
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new VerticalStackLayout()
 			{

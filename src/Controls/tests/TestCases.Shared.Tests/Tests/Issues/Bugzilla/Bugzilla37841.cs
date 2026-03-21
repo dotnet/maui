@@ -20,6 +20,7 @@ public class Bugzilla37841 : _IssuesUITest
 	public void TextAndEntryCellsDataBindInTableView()
 	{
 		App.WaitForElement(Generate);
+		Thread.Sleep(500); // Add a small delay after WaitForElement to let the UI fully settle before attempting the tap
 		App.Tap(Generate);
 
 		App.WaitForTextToBePresentInElement(entrycell, "12345");

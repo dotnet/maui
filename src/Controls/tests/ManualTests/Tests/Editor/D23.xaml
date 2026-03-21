@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D23"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D23">
+    <Grid Margin="15"
+          RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+        <Label Grid.Row="0"
+               Text="1. Enter text into the 'Message' editor at the bottom of the screen." />
+        <Label Grid.Row="1"
+               Text="2. This test fails if the UI at the top of the screen (including this message) is no longer visible when the keyboard appears." />
+        <Label Grid.Row="2"
+               Text="3. Press the return (arrow) button in the virtual keyboard to complete the message." />
+        <Label Grid.Row="3"
+               Text="4. This test fails if the message does not appear in the 'Messages Board' list." />
+
+        <Label x:Name="labelTitle"
+               Grid.Row="4"
+               FontSize="20"
+               HorizontalOptions="Center"
+               Text="Messages Board" />
+        <Grid x:Name="gridMessages"
+              Grid.Row="5"
+              RowDefinitions="*,Auto">
+            <CollectionView x:Name="listViewMessages"
+                            Margin="0,10,0,10"
+                            VerticalOptions="FillAndExpand">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Margin="4"
+                               Padding="4"
+                               Text="{Binding .}" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Entry x:Name="entryMessage"
+                   Grid.Row="1"
+                   Placeholder="Message" />
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -41,7 +41,7 @@ public class Bugzilla44338 : TestContentPage
 				view.ContextActions.Add(new MenuItem
 				{
 					Text = "Action",
-					Command = new Command(() => DisplayAlert("Alert", "Context Action Pressed", "Close"))
+					Command = new Command(() => DisplayAlertAsync("Alert", "Context Action Pressed", "Close"))
 				});
 				return view;
 			})

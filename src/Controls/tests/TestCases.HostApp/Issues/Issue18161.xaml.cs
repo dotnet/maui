@@ -13,6 +13,9 @@
 		{
 			// https://github.com/dotnet/maui/issues/13496
 			await Task.Yield();
+#if MACCATALYST
+			await Task.Delay(500); // Add delay for MacCatalyst when page is loaded directly as window root
+#endif
 			this.IsPresented = true;
 		}
 

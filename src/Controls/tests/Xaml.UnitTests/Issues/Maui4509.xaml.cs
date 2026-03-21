@@ -1,43 +1,42 @@
-﻿using Microsoft.Maui.ApplicationModel;
+using System;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Maui4509 : ContentPage
 {
-	public partial class Maui4509 : ContentPage
+	public Maui4509() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Maui4509() => InitializeComponent();
-		public Maui4509(bool useCompiledXaml)
+		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
+
+		public void Dispose()
 		{
-			//this stub will be replaced at compile time
+			AppInfo.SetCurrent(null);
+			DeviceInfo.SetCurrent(null);
 		}
 
-		[TestFixture]
-		class Test
+		[Theory]
+		[XamlInflatorData]
+		internal void OnPlatformAsCollectionElementiOS(XamlInflator inflator)
 		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown]
-			public void TearDown()
-			{
-				AppInfo.SetCurrent(null);
-				DeviceInfo.SetCurrent(null);
-			}
+			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
+			var page = new Maui4509(inflator);
+			Assert.Equal(2, page.layout.Children.Count);
+		}
 
-			[Test]
-			public void OnPlatformAsCollectionElementiOS([Values(false, true)] bool useCompiledXaml)
-			{
-				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-				var page = new Maui4509(useCompiledXaml);
-				Assert.That(page.layout.Children.Count, Is.EqualTo(2));
-			}
-			[Test]
-			public void OnPlatformAsCollectionElementAndroid([Values(false, true)] bool useCompiledXaml)
-			{
-				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
-				var page = new Maui4509(useCompiledXaml);
-				Assert.That(page.layout.Children.Count, Is.EqualTo(1));
-			}
+		[Theory]
+		[XamlInflatorData]
+		internal void OnPlatformAsCollectionElementAndroid(XamlInflator inflator)
+		{
+			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.Android));
+			var page = new Maui4509(inflator);
+			Assert.Single(page.layout.Children);
 		}
 	}
 }

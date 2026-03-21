@@ -1,35 +1,25 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz51567 : ContentPage
 {
-	public partial class Bz51567 : ContentPage
+	public Bz51567()
 	{
-		public Bz51567()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz51567(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void SetterWithElementValue(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void SetterWithElementValue(bool useCompiledXaml)
-			{
-				var page = new Bz51567(useCompiledXaml);
-				var style = page.Resources["ListText"] as Style;
-				var setter = style.Setters[1];
-				Assert.NotNull(setter);
-			}
+			var page = new Bz51567(inflator);
+			var style = page.Resources["ListText"] as Style;
+			var setter = style.Setters[1];
+			Assert.NotNull(setter);
 		}
 	}
 }

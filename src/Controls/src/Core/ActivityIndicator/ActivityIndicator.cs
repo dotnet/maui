@@ -6,7 +6,12 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="Type[@FullName='Microsoft.Maui.Controls.ActivityIndicator']/Docs/*" />
+	/// <summary>
+	/// A visual control used to indicate that something is ongoing.
+	/// </summary>
+	/// <remarks>
+	/// This control gives a visual clue to the user that something is happening, without information about its progress.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
@@ -18,20 +23,28 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<ActivityIndicator>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the ActivityIndicator class.
+		/// </summary>
 		public ActivityIndicator()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ActivityIndicator>>(() => new PlatformConfigurationRegistry<ActivityIndicator>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="//Member[@MemberName='Color']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the color of the ActivityIndicator. This is a bindable property.
+		/// </summary>
+		/// <value>A <see cref="Graphics.Color"/> used to display the ActivityIndicator.</value>
 		public Color Color
 		{
 			get { return (Color)GetValue(ColorElement.ColorProperty); }
 			set { SetValue(ColorElement.ColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="//Member[@MemberName='IsRunning']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether the ActivityIndicator is running (animating). This is a bindable property.
+		/// </summary>
+		/// <value><see langword="true"/> if the indicator is running; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</value>
 		public bool IsRunning
 		{
 			get { return (bool)GetValue(IsRunningProperty); }

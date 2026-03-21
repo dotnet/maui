@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				context.FromPixels(rect.Width),
 				context.FromPixels(rect.Height));
 
-		internal static Rect FromPixels(this Context context, Android.Graphics.Rect rect) =>
+		internal static Rect FromPixels(this Context context, global::Android.Graphics.Rect rect) =>
 			new Rect(
 				context.FromPixels(rect.Left),
 				context.FromPixels(rect.Top),
@@ -120,6 +120,17 @@ namespace Microsoft.Maui.Platform
 			// For example 112.00000000000001dp * 2.625 = 294.000000000000026px incorrectly rounded to 295px. 
 			// To address this, we subtract a small Epsilon 0.0000000001px before ceiling.
 			return (float)Math.Ceiling((dp * s_displayDensity) - GeometryUtil.Epsilon);
+		}
+
+		internal static (int left, int top, int right, int bottom) ToPixels(this View view, Graphics.Rect rectangle)
+		{
+			return
+			(
+				(int)view.ToPixels(rectangle.Left),
+				(int)view.ToPixels(rectangle.Top),
+				(int)view.ToPixels(rectangle.Right),
+				(int)view.ToPixels(rectangle.Bottom)
+			);
 		}
 
 		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rect rectangle)
@@ -248,7 +259,7 @@ namespace Microsoft.Maui.Platform
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			context ??= Android.App.Application.Context;
+			context ??= global::Android.App.Application.Context;
 
 			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
 				s_displayDensity = metrics != null ? metrics.Density : 1;
@@ -333,7 +344,7 @@ namespace Microsoft.Maui.Platform
 			var windows = WindowExtensions.GetWindows();
 			foreach (var window in windows)
 			{
-				if (window.Handler?.PlatformView is Android.App.Activity activity)
+				if (window.Handler?.PlatformView is AActivity activity)
 				{
 					if (activity == platformWindow)
 						return window;

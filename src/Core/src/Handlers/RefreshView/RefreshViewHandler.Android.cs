@@ -9,6 +9,12 @@ namespace Microsoft.Maui.Handlers
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			PlatformView.CrossPlatformLayout = VirtualView as ICrossPlatformLayout;
+		}
+
 		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -42,9 +48,6 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView.SetColorSchemeColors(color.Value);
 		}
 
-		static void UpdateIsRefreshing(IRefreshViewHandler handler) =>
-			handler.PlatformView.Refreshing = handler.VirtualView.IsRefreshing;
-
 		static void UpdateBackground(IRefreshViewHandler handler)
 		{
 			if (handler.VirtualView.Background == null)
@@ -59,12 +62,18 @@ namespace Microsoft.Maui.Handlers
 			=> UpdateBackground(handler);
 
 		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
-			=> UpdateIsRefreshing(handler);
+			=> handler.PlatformView.Refreshing = handler.VirtualView.IsRefreshing;
 
 		public static void MapContent(IRefreshViewHandler handler, IRefreshView refreshView)
 			=> UpdateContent(handler);
 
 		public static void MapRefreshColor(IRefreshViewHandler handler, IRefreshView refreshView)
 			=> UpdateRefreshColor(handler);
+
+		internal static void MapIsRefreshEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> handler.PlatformView.RefreshEnabled = handler.VirtualView.IsRefreshEnabled;
+
+		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
+			=> handler.PlatformView.Enabled = handler.VirtualView.IsEnabled;
 	}
 }

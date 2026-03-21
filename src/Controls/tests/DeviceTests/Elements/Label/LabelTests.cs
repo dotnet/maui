@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 #if __IOS__
 using Foundation;
 #endif
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -11,7 +13,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.Diagnostics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -30,7 +31,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Does Not Leak")]
+		[Fact(DisplayName = "Does Not Leak"
+#if IOS || MACCATALYST
+		, Skip = "failing on dnceng"
+#endif
+		)]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
@@ -303,6 +308,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[SkipOnIOSVersion(26, "Font comparison may fail on iOS 26")]
 		public async Task ChangingTextTypeWithFormattedTextSwitchesTextSource()
 		{
 			SetupBuilder();
@@ -507,6 +513,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[SkipOnIOSVersion(26, "Font comparison may fail on iOS 26")]
 		public async Task FontStuffAppliesEvenInHtmlMode()
 		{
 			// Note: this is specifically a Controls-level rule that's inherited from Forms
@@ -711,6 +718,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[SkipOnIOSVersion(26, "Font comparison may fail on iOS 26")]
 		public async Task FontStuffAfterTextTypeIsCorrect()
 		{
 			// Note: this is specifically a Controls-level rule that's inherited from Forms

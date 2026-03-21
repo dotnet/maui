@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Input;
 using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -88,25 +89,8 @@ namespace Microsoft.Maui.Controls.Platform
 		// Do we need to provide a hook for this in the handlers?
 		// For now I just built this ugly matching statement
 		// to replicate our handlers where we are setting this to true
-		public bool PreventGestureBubbling
-		{
-			get
-			{
-				return Element switch
-				{
-					Button => true,
-					CheckBox => true,
-					DatePicker => true,
-					Stepper => true,
-					Slider => true,
-					Switch => true,
-					TimePicker => true,
-					ImageButton => true,
-					RadioButton => true,
-					_ => false,
-				};
-			}
-		}
+		public bool PreventGestureBubbling =>
+			(Element?.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
 
 		public FrameworkElement? Control
 		{
@@ -184,7 +168,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// for example
 				// e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				// Even if AcceptedOperation is already set to Copy it will cause the copy animation
-				// to remain even after the the dragged element has left
+				// to remain even after the dragged element has left
 				if (!dragEventArgs.PlatformArgs?.Handled ?? true && operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
@@ -254,21 +238,18 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
-				var view = Element as View;
-
-				if (!rec.CanDrag || view is null)
+				if (!rec.CanDrag || Element is not View view)
 				{
 					e.Cancel = true;
 					return;
 				}
 
-				var handler = sender as IViewHandler;
 				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e), new PlatformDragStartingEventArgs(sender, e));
 
 				e.Data.Properties[_doNotUsePropertyString] = args.Data;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && handler != null)
+				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && sender is IViewHandler handler)
 #pragma warning restore CS0618 // Type or member is obsolete
 				{
 					if (handler?.PlatformView is UI.Xaml.Controls.Image nativeImage &&
@@ -502,8 +483,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_isPinching = true;
-
 			if (e.OriginalSource is UIElement container)
 			{
 				global::Windows.Foundation.Point translationPoint = container.TransformToVisual(Container).TransformPoint(e.Position);
@@ -534,13 +513,13 @@ namespace Microsoft.Maui.Controls.Platform
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Clear();
 		}
 
 		void OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 		{
-			var view = Element as View;
-
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -552,40 +531,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
 
+			_isPinching = true;
 			_wasPinchGestureStartedSent = false;
 			_wasPanGestureStartedSent = false;
 		}
 
 		void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
-
 			SwipeComplete(false);
 			PinchComplete(false);
 			PanComplete(false);
+
+			_fingers.Clear();
 		}
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
+			SwipeComplete(true);
+
 			if (!_isPanning)
 			{
-				uint id = e.Pointer.PointerId;
-				if (_fingers.Contains(id))
-					_fingers.Remove(id);
+				_fingers.Remove(e.Pointer.PointerId);
 			}
-
-			SwipeComplete(true);
-			PinchComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -599,21 +571,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			uint id = e.Pointer.PointerId;
-			if (_fingers.Contains(id))
-			{
-				_fingers.Remove(id);
-			}
-
 			SwipeComplete(true);
-			PinchComplete(true);
 			PanComplete(true);
+
+			_fingers.Remove(e.Pointer.PointerId);
 		}
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerEntered(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerEntered(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		}
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
 		{
@@ -633,33 +602,40 @@ namespace Microsoft.Maui.Controls.Platform
 					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
-		{
-			HandlePgrPointerEvent(e, (view, recognizer)
-						=> recognizer.SendPointerPressed(view, (relativeTo)
-							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
-
-			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
-			{
-				OnPointerPressed(sender, e);
-			}
-		}
+			=> HandlePgrPointerButtonAction(sender, e, true);
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerButtonAction(sender, e, false);
+
+		void HandlePgrPointerButtonAction(object sender, PointerRoutedEventArgs e, bool isPressed)
 		{
-			HandlePgrPointerEvent(e, (view, recognizer)
-						=> recognizer.SendPointerReleased(view, (relativeTo)
-							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+			if (Element is View view)
+			{
+				var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
+				var button = GetPressedButton(sender, e);
+				foreach (var recognizer in pointerGestures)
+				{
+					if (!CheckButtonMask(recognizer, button))
+						continue;
+					if (isPressed)
+						recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), button);
+					else
+						recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e), button);
+				}
+			}
 
 			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
 			{
-				OnPointerReleased(sender, e);
+				if (isPressed)
+					OnPointerPressed(sender, e);
+				else
+					OnPointerReleased(sender, e);
 			}
 		}
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -669,6 +645,89 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				SendPointerEvent.Invoke(view, recognizer);
 			}
+		}
+
+		/// <summary>
+		/// Determines if multiple windows are currently open. This is used to decide
+		/// whether to apply pointer event debouncing to work around a specific bug where
+		/// PointerEntered events fire unexpectedly in multi-window scenarios.
+		/// </summary>
+		/// <returns>True if multiple windows are open, false otherwise</returns>
+		bool HasMultipleWindows() =>
+			Application.Current?.Windows?.Count > 1;
+
+		bool IsPointerEventRelevantToCurrentElement(PointerRoutedEventArgs e)
+		{
+			// For multi-window scenarios, we need to validate that the pointer event
+			// is actually relevant to the current element's window
+			try
+			{
+				// Check if the container has a valid XamlRoot (indicates it's in a live window)
+				if (_container?.XamlRoot is null || e?.OriginalSource is null)
+				{
+					return false;
+				}
+				// Validate that the event source is from the same visual tree as our container
+				if (e.OriginalSource is FrameworkElement sourceElement && sourceElement.XamlRoot != _container.XamlRoot)
+				{
+					return false; // Event is from a different window
+				}
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				// Log the exception for diagnostics
+				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
+				return false;
+			}
+		}
+
+		ButtonsMask GetPressedButton(object? sender, PointerRoutedEventArgs e)
+		{
+			// Touch/Pen don't have right button semantics; treat as Primary
+			if (e.Pointer?.PointerDeviceType != PointerDeviceType.Mouse)
+				return ButtonsMask.Primary;
+
+			var reference = sender as UIElement ?? _container ?? _control ?? _container?.XamlRoot?.Content as UIElement;
+			if (reference is null)
+				return ButtonsMask.Primary;
+
+			var point = e.GetCurrentPoint(reference);
+			var props = point?.Properties;
+			if (props is null)
+				return ButtonsMask.Primary;
+
+			switch (props.PointerUpdateKind)
+			{
+				case PointerUpdateKind.RightButtonPressed:
+				case PointerUpdateKind.RightButtonReleased:
+					return ButtonsMask.Secondary;
+				case PointerUpdateKind.LeftButtonPressed:
+				case PointerUpdateKind.LeftButtonReleased:
+					return ButtonsMask.Primary;
+				// Middle/other map to Primary by convention
+				case PointerUpdateKind.MiddleButtonPressed:
+				case PointerUpdateKind.MiddleButtonReleased:
+				case PointerUpdateKind.Other:
+				default:
+					break;
+			}
+
+			if (props.IsRightButtonPressed)
+				return ButtonsMask.Secondary;
+
+			return ButtonsMask.Primary;
+		}
+
+		bool CheckButtonMask(PointerGestureRecognizer recognizer, ButtonsMask currentButton)
+		{
+			if (currentButton == ButtonsMask.Secondary)
+			{
+				return (recognizer.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary;
+			}
+
+			return (recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
 		}
 
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
@@ -685,8 +744,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnTap(object sender, RoutedEventArgs e)
 		{
-			var view = Element as View;
-			if (view == null)
+			if (Element is not View view)
 			{
 				return;
 			}
@@ -723,12 +781,30 @@ namespace Microsoft.Maui.Controls.Platform
 					return handled;
 				}
 
+				bool onlyDoubleTaps = false;
+
+				if (e is DoubleTappedRoutedEventArgs)
+				{
+					// Is there a recognizer that has exactly two taps?
+					foreach (var recognizer in tapGestures)
+					{
+						if (recognizer.NumberOfTapsRequired == 2)
+						{
+							onlyDoubleTaps = true;
+							break;
+						}
+					}
+				}
+
 				foreach (var recognizer in tapGestures)
 				{
-					recognizer.SendTapped(view, (relativeTo) => GetPosition(relativeTo, e));
+					if (!onlyDoubleTaps || recognizer.NumberOfTapsRequired == 2)
+					{
+						recognizer.SendTapped(view, (relativeTo) => GetPosition(relativeTo, e));
 
-					e.SetHandled(true);
-					handled = true;
+						e.SetHandled(true);
+						handled = true;
+					}
 				}
 
 				return handled;
@@ -753,7 +829,9 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 
 				if (e is DoubleTappedRoutedEventArgs)
+				{
 					return g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2;
+				}
 
 				return g.NumberOfTapsRequired == 1;
 			}
@@ -762,8 +840,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SwipeComplete(bool success)
 		{
-			var view = Element as View;
-			if (view == null || !_isSwiping)
+			if (Element is not View view || !_isSwiping)
 			{
 				return;
 			}
@@ -781,8 +858,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PanComplete(bool success)
 		{
-			var view = Element as View;
-			if (view == null || !_isPanning)
+			if (Element is not View view || !_isPanning)
 			{
 				return;
 			}
@@ -805,8 +881,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PinchComplete(bool success)
 		{
-			var view = Element as View;
-			if (view is null || !_isPinching)
+			if (Element is not View view || !_isPinching)
 			{
 				return;
 			}

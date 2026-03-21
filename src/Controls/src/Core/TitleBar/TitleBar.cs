@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -348,7 +349,9 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = new Thickness(80, 0, 0, 0),
+				Margin = OperatingSystem.IsMacCatalystVersionAtLeast(26)
+					? new Thickness(90, 0, 0, 0)
+					: new Thickness(80, 0, 0, 0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
@@ -363,7 +366,9 @@ namespace Microsoft.Maui.Controls
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
 				},
+#pragma warning disable CS0618 // Type or member is obsolete
 				IgnoreSafeArea = true,
+#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			contentGrid.SetBinding(

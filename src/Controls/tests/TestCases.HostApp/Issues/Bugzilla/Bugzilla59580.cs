@@ -26,6 +26,7 @@ public class Bugzilla59580 : TestContentPage
 		switchCell.ContextActions.Add(menuItem);
 		tableSection.Add(switchCell);
 		tableView.Root.Add(tableSection);
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = tableView;
 	}
 }

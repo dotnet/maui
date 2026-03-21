@@ -5,9 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Entry)]
-public class EntryFeatureTests : UITest
+public class EntryFeatureTests : _GalleryUITest
 {
 	public const string EntryFeatureMatrix = "Entry Feature Matrix";
+
+	public override string GalleryPageName => EntryFeatureMatrix;
 
 #if IOS
 	private const int CropBottomValue = 1550;
@@ -16,18 +18,12 @@ public class EntryFeatureTests : UITest
 #elif WINDOWS
 	private const int CropBottomValue = 400;
 #else
-	private const int CropBottomValue = 360;		
+	private const int CropBottomValue = 360;
 #endif
 
 	public EntryFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(EntryFeatureMatrix);
 	}
 
 	[Test, Order(0)]
@@ -70,7 +66,10 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.DismissKeyboard();
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
@@ -88,7 +87,11 @@ public class EntryFeatureTests : UITest
 	public void VerifyClearButtonVisiblityWhenTextPresentOrEmpty()
 	{
 		Exception? exception = null;
-		App.WaitForElement("Entry Control");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent");
 		App.WaitForElement("TestEntry");
@@ -287,6 +290,10 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+#if WINDOWS // On Windows, the Entry control cursor does not disappear when IsCursorVisible is set to false
+		App.WaitForElement("TextChangedLabel");
+		App.Tap("TextChangedLabel");
+#endif
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -799,11 +806,11 @@ public class EntryFeatureTests : UITest
 		App.Tap("Options");
 		App.WaitForElement("PlaceholderColorRed");
 		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		App.DismissKeyboard();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -906,6 +913,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 

@@ -75,11 +75,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_carouselViewLoopManager?.SetItemsSource(null);
 				_carouselViewLoopManager = null;
 
-				if (_itemDecoration != null)
-				{
-					_itemDecoration.Dispose();
-					_itemDecoration = null;
-				}
+				_itemDecoration?.Dispose();
+				_itemDecoration = null;
 
 				ClearLayoutListener();
 			}
@@ -492,7 +489,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SetCurrentItem(int carouselPosition)
 		{
-			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
+			if (ItemsViewAdapter?.ItemsSource?.Count == 0 || carouselPosition < 0)
 				return;
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);

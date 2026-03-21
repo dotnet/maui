@@ -3,6 +3,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+#if ANDROID
+using Android.Content;
+using Android.Graphics.Drawables;
+using Android.Widget;
+#endif
 
 namespace Microsoft.Maui
 {
@@ -15,10 +20,10 @@ namespace Microsoft.Maui
 
 		public ILogger? Logger { get; }
 
-#if __ANDROID__
+#if ANDROID
 		public virtual async Task<IImageSourceServiceResult?> LoadDrawableAsync(
 			IImageSource imageSource,
-			Android.Widget.ImageView imageView,
+			ImageView imageView,
 			CancellationToken cancellationToken = default)
 		{
 			var realResult = await GetDrawableAsync(imageSource, imageView.Context!, cancellationToken);
@@ -38,9 +43,9 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public abstract Task<IImageSourceServiceResult<Android.Graphics.Drawables.Drawable>?> GetDrawableAsync(
+		public abstract Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(
 			IImageSource imageSource,
-			Android.Content.Context context,
+			Context context,
 			CancellationToken cancellationToken = default);
 #elif __IOS__
 		public abstract Task<IImageSourceServiceResult<UIKit.UIImage>?> GetImageAsync(

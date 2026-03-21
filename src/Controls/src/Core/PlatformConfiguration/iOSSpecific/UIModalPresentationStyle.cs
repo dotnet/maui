@@ -1,17 +1,29 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle']/Docs/*" />
+	/// <summary>
+	/// Enumerates valid modal presentation styles for iOS.
+	/// </summary>
 	public enum UIModalPresentationStyle
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='FullScreen']/Docs/*" />
+		/// <summary>The content is displayed in a manner that covers the screen.</summary>
+		/// <remarks>The views belonging to the presenting view controller are removed after the presentation completes.</remarks>
 		FullScreen,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='FormSheet']/Docs/*" />
+
+		/// <summary>The content is displayed in the center of the screen.</summary>
 		FormSheet,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='Automatic']/Docs/*" />
+
+		/// <summary>The system selects an appropriate presentation style for the view controller.</summary>
 		Automatic,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='OverFullScreen']/Docs/*" />
+
+		/// <summary>The content is displayed in a manner that covers the screen.</summary>
+		/// <remarks>The views belonging to the presenting view controller are not removed after the presentation completes.</remarks>
 		OverFullScreen,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='PageSheet']/Docs/*" />
-		PageSheet
+
+		/// <summary>The content is displayed in a popover view.</summary>
+		PageSheet,
+
+		/// <summary>The content is displayed in a popover view.</summary>
+		Popover,
+
 	}
 }

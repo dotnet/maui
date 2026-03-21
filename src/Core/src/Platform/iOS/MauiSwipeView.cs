@@ -607,7 +607,7 @@ namespace Microsoft.Maui.Platform
 
 				if (animated)
 				{
-					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, null);
+					Animate(swipeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseOut, SetFrame, () => { });
 				}
 				else
 				{
@@ -645,7 +645,7 @@ namespace Microsoft.Maui.Platform
 							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
 							break;
 					}
-				}, null);
+				}, () => { });
 			}
 		}
 
@@ -801,20 +801,21 @@ namespace Microsoft.Maui.Platform
 				Animate(completeAnimationDuration, 0.0, UIViewAnimationOptions.CurveEaseIn,
 					() =>
 					{
-						_swipeOffset = GetSwipeThreshold();
+						_swipeOffset = Math.Abs(GetSwipeThreshold());
+						
+						// If the user swiped left or up, we need a negative offset to move content in the correct direction on the screen.
+						if (_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Up)
+							_swipeOffset = -_swipeOffset;
+
 						double swipeThreshold = _swipeOffset;
 
 						switch (_swipeDirection)
 						{
 							case SwipeDirection.Left:
-								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								break;
 							case SwipeDirection.Right:
 								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
 								break;
 							case SwipeDirection.Up:
-								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y - swipeThreshold, _originalBounds.Width, _originalBounds.Height);
-								break;
 							case SwipeDirection.Down:
 								_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + swipeThreshold, _originalBounds.Width, _originalBounds.Height);
 								break;

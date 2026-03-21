@@ -1,0 +1,4 @@
+{"happiness": 0, 
+"anger": 0, 
+"reply": "Hello! I'm just a computer program, so I don't feel emotions, 
+but I'm here and ready to help you with whatever you need."}

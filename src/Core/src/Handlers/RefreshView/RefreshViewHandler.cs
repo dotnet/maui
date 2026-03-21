@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IRefreshView.IsRefreshing)] = MapIsRefreshing,
 			[nameof(IRefreshView.Content)] = MapContent,
 			[nameof(IRefreshView.RefreshColor)] = MapRefreshColor,
+			[nameof(IRefreshView.IsRefreshEnabled)] = MapIsRefreshEnabled,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 		};

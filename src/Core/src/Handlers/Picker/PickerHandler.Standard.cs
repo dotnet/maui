@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		// TODO Uncomment me on NET8 [Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) { }
 		internal static void MapItems(IPickerHandler handler, IPicker picker) { }
 
@@ -18,5 +18,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IPickerHandler handler, IPicker view) { }
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker view) { }
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker view) { }
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
 	}
 }

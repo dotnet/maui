@@ -11,7 +11,8 @@
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022</NoWarn>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027;RS0022</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
 
@@ -23,9 +24,13 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <IsAotCompatible>true</IsAotCompatible>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+
+    <!-- This project implements generic WinRT interfaces which requires generated code using unsafe for trimming and AOT compatibility if passed across the WinRT ABI. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
@@ -38,6 +43,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Essentials\src\Types\Shared\WebUtils.shared.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' and '$(TargetFramework)' == '$(_MauiDotNetTfm)'">
@@ -62,6 +71,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
   </ItemGroup>

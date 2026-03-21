@@ -1,8 +1,10 @@
 ﻿using System;
 using Android.App;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
+using DateFormat = Android.Text.Format.DateFormat;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -13,22 +15,30 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiTimePicker CreatePlatformView()
 		{
-			_timePicker = new MauiTimePicker(Context)
-			{
-				ShowPicker = ShowPickerDialog,
-				HidePicker = HidePickerDialog
-			};
+			_timePicker = new MauiTimePicker(Context);
 
 			return _timePicker;
+		}
+
+		protected override void ConnectHandler(MauiTimePicker platformView)
+		{
+			base.ConnectHandler(platformView);
+
+			platformView.ShowPicker = ShowPickerDialog;
+			platformView.HidePicker = HidePickerDialog;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker platformView)
 		{
 			if (_dialog != null)
 			{
-				_dialog.Hide();
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Dismiss();
 				_dialog = null;
 			}
+
+			platformView.ShowPicker = null;
+			platformView.HidePicker = null;
 		}
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
@@ -48,6 +58,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var dialog = new TimePickerDialog(Context!, onTimeSetCallback, hour, minute, Use24HourView);
+			dialog.DismissEvent += OnDialogDismiss;
 
 			return dialog;
 		}
@@ -85,29 +96,64 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.IsConnected() && handler is TimePickerHandler timePickerHandler)
+			{
+				if (timePicker.IsOpen)
+					timePickerHandler.ShowPickerDialog();
+				else
+					timePickerHandler.HidePickerDialog();
+			}
+		}
+
 		void ShowPickerDialog()
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
+			{
 				return;
+			}
 
-			var time = VirtualView.Time;
-			ShowPickerDialog(time.Hours, time.Minutes);
+			ShowPickerDialog(VirtualView.Time);
 		}
 
 		// This overload is here so we can pass in the current values from the dialog 
 		// on an orientation change (so that orientation changes don't cause the user's date selection progress
 		// to be lost). Not useful until we have orientation changed events.
-		void ShowPickerDialog(int hour, int minute)
+		void ShowPickerDialog(TimeSpan? time)
 		{
+			if (_dialog is not null && _dialog.IsShowing)
+			{
+				return;
+			}
+
+			var hour = time?.Hours ?? 0;
+			var minute = time?.Minutes ?? 0;
+
 			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
+
+			if (VirtualView is not null)
+			{
+				VirtualView.IsOpen = true;
+			}
 		}
 
 		void HidePickerDialog()
 		{
-			_dialog?.Hide();
+			if (_dialog is not null)
+			{
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Hide();
+			}
 
 			_dialog = null;
+			VirtualView.IsOpen = false;
+		}
+
+		void OnDialogDismiss(object? sender, EventArgs e)
+		{
+			HidePickerDialog();
 		}
 
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)

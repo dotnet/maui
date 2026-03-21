@@ -1,17 +1,17 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI多项目应用",
-  "description": "用于创建适用于 iOS、Android、Mac Catalyst 和包含多个单独应用项目的 WinUI 的 .NET MAUI 应用程序的项目。",
+  "name": ".NET MAUI 多项目应用",
+  "description": "一个项目，用于创建适用于 iOS、Android、Mac Catalyst 和包含多个单独应用项目的 WinUI 的 .NET MAUI 应用程序。",
   "postActions/openInEditor/description": "在编辑器中打开 MainPage.xaml。",
   "symbols/applicationId/description": "替代项目中的 $(ApplicationId)",
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目标 DOTNET_TFM_VALUE",
   "symbols/android/displayName": "Android",
-  "symbols/android/description": "包括 Android 应用头项目",
+  "symbols/android/description": "包含 Android 应用主项目",
   "symbols/ios/displayName": "iOS",
-  "symbols/ios/description": "包括 iOS 应用头项目",
-  "symbols/maccatalyst/displayName": "使用 Mac 的 macOs",
-  "symbols/maccatalyst/description": "使用 Mac 工作区 (包括 macOS 应用头项目)",
+  "symbols/ios/description": "包含 iOS 应用主项目",
+  "symbols/maccatalyst/displayName": "使用 Mac Catalyst 的 macOS",
+  "symbols/maccatalyst/description": "包含 macOS 应用主项目(使用 Mac Catalyst)",
   "symbols/winui/displayName": "使用 WinUI 3 的 Windows",
-  "symbols/winui/description": "使用 WinUI 3) (包括 Windows 应用头项目"
+  "symbols/winui/description": "包含 Windows 应用主项目(使用 WinUI 3)"
 }

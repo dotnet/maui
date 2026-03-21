@@ -187,8 +187,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(hsv);
 
 				sv.Measure(
-					MeasureSpec.MakeMeasureSpec(1000, Android.Views.MeasureSpecMode.Exactly),
-					MeasureSpec.MakeMeasureSpec(1000, Android.Views.MeasureSpecMode.Exactly));
+					MeasureSpec.MakeMeasureSpec(1000, global::Android.Views.MeasureSpecMode.Exactly),
+					MeasureSpec.MakeMeasureSpec(1000, global::Android.Views.MeasureSpecMode.Exactly));
 
 				sv.Layout(0, 0, 1000, 1000);
 

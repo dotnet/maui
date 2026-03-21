@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
 	{
+		CGSize _previousBounds;
 		UIVisualEffectView _blurView;
 		UIImageView _bgImage;
 		readonly IShellContext _shellContext;
@@ -216,7 +217,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var footerWidth = View.Frame.Width;
 
-			_footerView.Frame = new CoreGraphics.CGRect(0, View.Frame.Height - footerHeight, footerWidth, footerHeight);
+			_footerView.Frame = new CGRect(0, View.Frame.Height - footerHeight - View.SafeAreaInsets.Bottom, footerWidth, footerHeight);
 
 			_tableViewController.LayoutParallax();
 		}
@@ -226,6 +227,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillLayoutSubviews();
 			UpdateFooterPosition();
 			UpdateFlyoutContent();
+			var currentSize = View.Bounds.Size;
+			if (_previousBounds != currentSize)
+			{
+				// Whenever the layout changes, the background needs to be redrawn to match the new view dimensions. This is especially important for gradients.
+				UpdateBackground();
+				_previousBounds = currentSize;
+			}
 		}
 
 		protected virtual void UpdateBackground()
@@ -337,7 +345,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uIViews[BlurIndex] = _blurView;
 			_uIViews[BackgroundImageIndex] = _bgImage;
 
-			UpdateBackground();
 			UpdateFlowDirection();
 		}
 

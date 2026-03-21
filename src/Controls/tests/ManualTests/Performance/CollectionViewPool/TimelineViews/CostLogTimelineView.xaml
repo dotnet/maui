@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:TimelineBaseView
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:PoolMathApp.Xaml"
+	xmlns:data="clr-namespace:PoolMath.Data"
+	xmlns:share="clr-namespace:PoolMathApp"
+	x:DataType="data:CostLog"
+	x:Class="PoolMathApp.Xaml.TimelineViews.CostLogTimelineView">
+    <local:TimelineBaseView.MainContent>
+
+        <Grid
+			ColumnDefinitions="34,*">
+            <Border
+				Grid.Column="0"
+				Grid.Row="0"
+				Padding="0,0,0,0"
+                Background="{DynamicResource CostLighterColor}"
+                StrokeShape="{RoundRectangle CornerRadius=17}"
+				VerticalOptions="Center"
+				HorizontalOptions="Center"
+				WidthRequest="34"
+				HeightRequest="34">
+                <Image HorizontalOptions="Center" VerticalOptions="Center" HeightRequest="20" WidthRequest="20">
+                    <Image.Source>
+                        <FontImageSource
+							Glyph="{x:Static share:FontGlyphs.Cost}"
+							FontFamily="Ionicons"
+							Size="60"
+							Color="{DynamicResource PrimaryTextColor}" />
+                    </Image.Source>
+                </Image>
+            </Border>
+
+            <Label
+				Grid.Row="0"
+				Grid.Column="1"
+				FontSize="18" 
+				FormattedText="{Binding ., Mode=OneTime, Converter={StaticResource CostLogToFormattedTextConverter}}"
+				VerticalOptions="Center"
+				Margin="8,2,0,2" />
+        </Grid>
+
+    </local:TimelineBaseView.MainContent>
+</local:TimelineBaseView>

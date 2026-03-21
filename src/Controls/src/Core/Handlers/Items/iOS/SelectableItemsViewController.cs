@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
-			if (ItemsView?.ItemsSource is null)
+			if (ItemsView?.ItemsSource is not object originalSource)
 			{
 				return;
 			}
@@ -57,6 +57,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				CollectionView.PerformBatchUpdates(null, _ =>
 				{
+					// Ensure ItemsSource hasn't been disposed
+					if (ItemsSource is EmptySource)
+					{
+						return;
+					}
+
+					// Exit if the ItemsSource reference no longer matches the one captured at invocation.
+					if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
+					{
+						return;
+					}
+
+					// Recalculate the index for the selectedItem now that the collection may have changed.(Adding, deleting etc..)
+					var updatedIndex = GetIndexForItem(selectedItem);
+					if (updatedIndex.Section < 0 || updatedIndex.Item < 0)
+					{
+						return;
+					}
+
+					// Retrieve the current item at that index and verify it still equals the intended selection.
+					var liveItem = GetItemAtIndex(updatedIndex);
+					if (!Equals(liveItem, selectedItem))
+					{
+						return;
+					}
+
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 				});
 			}

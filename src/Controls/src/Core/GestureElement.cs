@@ -7,13 +7,13 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/GestureElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.GestureElement']/Docs/*" />
+	/// <summary>An element that can respond to gestures.</summary>
 	public class GestureElement : Element, ISpatialElement, IGestureRecognizers
 	{
 		readonly GestureRecognizerCollection _gestureRecognizers = new GestureRecognizerCollection();
 		internal event NotifyCollectionChangedEventHandler GestureRecognizersCollectionChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureElement.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.GestureElement"/> object with default values.</summary>
 		public GestureElement()
 		{
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 
 		Region ISpatialElement.Region { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GestureElement.xml" path="//Member[@MemberName='GestureRecognizers']/Docs/*" />
+		/// <summary>Gets the list of recognizers that belong to the element.</summary>
 		public IList<IGestureRecognizer> GestureRecognizers
 		{
 			get { return _gestureRecognizers; }

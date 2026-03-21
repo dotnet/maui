@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Storage
 		/// Opens the default file picker to allow the user to pick one or more files.
 		/// </summary>
 		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
-		/// <returns>An IEnumerable of file picking result objects, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <returns>An IEnumerable of file picking result objects. When the operation was cancelled by the user, this will return an empty collection.</returns>
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Storage
 		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
 		/// also handle the <see cref="TaskCanceledException"/> in this case.
 		/// </remarks>
-		Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions? options = null);
+		Task<IEnumerable<FileResult?>> PickMultipleAsync(PickOptions? options = null);
 	}
 
 	/// <summary>
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Storage
 		/// Opens the default file picker to allow the user to pick one or more files.
 		/// </summary>
 		/// <param name="options">File picker options to use; may be <see langword="null"/> for default options.</param>
-		/// <returns>An IEnumerable of file picking result objects, or <see langword="null"/> if picking was cancelled by the user.</returns>
+		/// <returns>An IEnumerable of file picking result objects. When the operation was cancelled by the user, this will return an empty collection.</returns>
 		/// <remarks>
 		/// File types can be specified in order to limit files that can be selected, using a
 		/// <see cref="PickOptions"/> object. Note that this method may re-throw platform specific exceptions that
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Storage
 		/// picker, the <see cref="Task"/> object that was returned from the first call is cancelled. Be sure to
 		/// also handle the <see cref="TaskCanceledException"/> in this case.
 		/// </remarks>
-		public static Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions? options = null) =>
+		public static Task<IEnumerable<FileResult?>> PickMultipleAsync(PickOptions? options = null) =>
 			Default.PickMultipleAsync(options);
 
 		static IFilePicker? defaultImplementation;
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Storage
 		public async Task<FileResult?> PickAsync(PickOptions? options = null) =>
 			(await PlatformPickAsync(options))?.FirstOrDefault();
 
-		public Task<IEnumerable<FileResult>> PickMultipleAsync(PickOptions? options = null) =>
+		public Task<IEnumerable<FileResult?>> PickMultipleAsync(PickOptions? options = null) =>
 			PlatformPickAsync(options ?? PickOptions.Default, true);
 	}
 

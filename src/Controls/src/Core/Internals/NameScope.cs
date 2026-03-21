@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NameScope']/Docs/*" />
+	/// <summary>Provides XAML namescope functionality for resolving named elements.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NameScope : INameScope
 	{
@@ -18,10 +18,18 @@ namespace Microsoft.Maui.Controls.Internals
 		readonly Dictionary<object, string> _values = new Dictionary<object, string>();
 
 		object INameScope.FindByName(string name)
-			=> _names.TryGetValue(name, out var element) ? element : null;
+		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
+			return _names.TryGetValue(name, out var element) ? element : null;
+		}
 
 		void INameScope.RegisterName(string name, object scopedElement)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			if (_names.ContainsKey(name))
 				throw new ArgumentException($"An element with the key '{name}' already exists in NameScope", nameof(name));
 
@@ -31,21 +39,37 @@ namespace Microsoft.Maui.Controls.Internals
 
 		//used by VS Live Visual Tree
 		internal string NameOf(object scopedObject)
-			=> _values.TryGetValue(scopedObject, out var name) ? name : null;
+		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
 
+			return _values.TryGetValue(scopedObject, out var name) ? name : null;
+		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='GetNameScope']/Docs/*" />
-		public static INameScope GetNameScope(BindableObject bindable) => (INameScope)bindable.GetValue(NameScopeProperty);
+		/// <summary>Gets the namescope attached to the bindable object.</summary>
+		public static INameScope GetNameScope(BindableObject bindable)
+		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='SetNameScope']/Docs/*" />
+			return (INameScope)bindable.GetValue(NameScopeProperty);
+		}
+
+		/// <summary>Attaches a namescope to the bindable object.</summary>
 		public static void SetNameScope(BindableObject bindable, INameScope value)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			if (bindable.GetValue(NameScopeProperty) == null)
 				bindable.SetValue(NameScopeProperty, value);
 		}
 
 		void INameScope.UnregisterName(string name)
 		{
+			if (!RuntimeFeature.AreNamescopesSupported)
+				throw new NotSupportedException("Namescopes are not supported. Please enable the feature switch 'Microsoft.Maui.RuntimeFeature.AreNamescopesSupported' to keep using namescopes.");
+
 			if (name == null)
 				throw new ArgumentNullException(nameof(name));
 
