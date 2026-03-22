@@ -33,6 +33,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			}
 		}
 
+		class FixedSizeLabel : Label
+		{
+			readonly double _width;
+			readonly double _height;
+
+			public FixedSizeLabel(double width, double height)
+			{
+				_width = width;
+				_height = height;
+			}
+
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				return new Size(_width, _height);
+			}
+		}
+
 		[Fact]
 		public void FlexLayoutMeasuresImagesUnconstrained()
 		{
@@ -343,6 +360,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			// Should fall back to the auto-sized DesiredSize (100 from FlexTestView default)
 			var clearedFrame = (flexLayout as IFlexLayout).GetFlexFrame(view as IView);
 			Assert.Equal(100, clearedFrame.Width);
+		}
+    
+    [Fact]
+		public void GrowItemsPreserveNaturalSizeAndDistributeFreeSpaceEqually_Issue34464()
+		{
+			// Items with different natural widths but equal Grow values should each receive
+			// an equal share of the available free space added on top of their natural width.
+			// Before the fix, the natural size was zeroed and the inflated flex_dim was
+			// distributed proportionally, causing items with larger natural sizes to receive
+			// less growth than smaller items (violating the flex-grow spec).
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout();
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+
+			// item1 is narrower (50px), item2 is wider (100px); both have equal Grow
+			var item1 = new FixedSizeLabel(50, 50);
+			var item2 = new FixedSizeLabel(100, 50);
+
+			FlexLayout.SetGrow(item1, 1);
+			FlexLayout.SetShrink(item1, 0);
+			FlexLayout.SetGrow(item2, 1);
+			FlexLayout.SetShrink(item2, 0);
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(item1 as IView);
+			flexLayout.Add(item2 as IView);
+
+			// Container = 300px; total natural width = 150px; free space = 150px.
+			// With Grow=1 on both items each should receive 75px of extra space:
+			//   item1 expected: 50 + 75 = 125
+			//   item2 expected: 100 + 75 = 175
+			_ = flexLayout.CrossPlatformMeasure(300, 200);
+
+			var frame1 = flexLayout.GetFlexFrame(item1 as IView);
+			var frame2 = flexLayout.GetFlexFrame(item2 as IView);
+
+			Assert.Equal(125, frame1.Width);
+			Assert.Equal(175, frame2.Width);
 		}
 	}
 }
