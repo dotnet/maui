@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var size = base.ArrangeOverride(bounds);
 
-			RecalculateSpanPositions();
+			RecalculateSpanPositions(size);
 
 			return size;
 		}
@@ -36,29 +36,27 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateMaxLines(label);
 		}
 
-		static void MapFormatting(ILabelHandler handler, Label label)
+		internal static void MapFormatting(ILabelHandler handler, Label label)
 		{
-			// we need to re-apply color and font for HTML labels
-			if (!label.HasFormattedTextSpans && label.TextType == TextType.Html)
+			if (IsPlainText(label))
+			{
+				LabelHandler.MapFormatting(handler, label);
+			}
+			else if (!label.HasFormattedTextSpans && label.TextType == TextType.Html) // we need to re-apply color and font for HTML labels
 			{
 				handler.UpdateValue(nameof(ILabel.TextColor));
 				handler.UpdateValue(nameof(ILabel.Font));
 			}
-
-			if (!IsPlainText(label))
-				return;
-
-			LabelHandler.MapFormatting(handler, label);
 		}
 
-		void RecalculateSpanPositions()
+		void RecalculateSpanPositions(Size size)
 		{
 			if (Handler is LabelHandler labelHandler)
 			{
 				if (labelHandler.PlatformView is not UILabel platformView || labelHandler.VirtualView is not Label virtualView)
 					return;
 
-				platformView.RecalculateSpanPositions(virtualView);
+				platformView.RecalculateSpanPositions(virtualView, size);
 			}
 		}
 	}

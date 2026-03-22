@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Pages
 
 		public static void AddToolBarItems(Microsoft.Maui.Controls.Page page)
 		{
-			Action action = () => page.DisplayAlert(Title, Message, Dismiss);
+			Action action = () => page.DisplayAlertAsync(Title, Message, Dismiss);
 
 			page.ToolbarItems.Add(new ToolbarItem("Primary 1", "calculator.png", action, ToolbarItemOrder.Primary));
 			page.ToolbarItems.Add(new ToolbarItem("Primary 2", "calculator.png", action, ToolbarItemOrder.Primary));
@@ -63,7 +63,7 @@ namespace Maui.Controls.Sample.Pages
 
 		public static Layout CreateAddRemoveToolbarItemButtons(Microsoft.Maui.Controls.Page page)
 		{
-			Action action = () => page.DisplayAlert(Title, Message, Dismiss);
+			Action action = () => page.DisplayAlertAsync(Title, Message, Dismiss);
 
 			var primaryButton = new Button { Text = "Add Primary", BackgroundColor = Colors.Gray };
 			primaryButton.Clicked += (sender, e) =>

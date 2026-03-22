@@ -410,11 +410,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ItemsViewAdapter?.Dispose();
 			}
 
-			if (_snapManager != null)
-			{
-				_snapManager.Dispose();
-				_snapManager = null;
-			}
+			_snapManager?.Dispose();
+			_snapManager = null;
 
 			if (_itemDecoration != null)
 			{

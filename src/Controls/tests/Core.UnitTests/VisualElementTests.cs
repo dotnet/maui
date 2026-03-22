@@ -154,9 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(visual);
 
 			gradient.GradientStops.Add(new GradientStop(Colors.CornflowerBlue, 1));
@@ -187,9 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(visual);
 
 			geometry.Rect = new Rect(1, 2, 3, 4);
@@ -209,9 +205,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 			GC.KeepAlive(visualElement);
 
 			shadow.Brush = new SolidColorBrush(Colors.Green);
@@ -230,11 +224,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var reference = new WeakReference(new VisualElement { Shadow = shadow });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "VisualElement should not be alive!");
 		}
 
 		[Fact]
@@ -316,80 +306,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.HeightRequest = 99;
 			Assert.Equal(2, heightMapperCalled);
 			Assert.Equal(2, widthMapperCalled);
-		}
-
-		[Fact]
-		public void ShouldPropagateVisibilityToChildren()
-		{
-			var grid = new Grid() { IsVisible = false };
-			var label = new Label() { IsVisible = true };
-			grid.Add(label);
-
-			Assert.False(label.IsVisible);
-			Assert.Equal(grid.IsVisible, label.IsVisible);
-		}
-
-		[Theory]
-		[InlineData(false, true, true, false, false, false)]
-		[InlineData(true, false, true, true, false, false)]
-		public void IsVisiblePropagates(bool rootIsVisible, bool nestedIsVisible, bool childIsVisible, bool expectedRootVisibility, bool expectedNestedVisibility, bool expectedChildVisibility)
-		{
-			var root = new Grid() { IsVisible = rootIsVisible };
-			var nested = new Grid() { IsVisible = nestedIsVisible };
-			var child = new Button() { IsVisible = childIsVisible };
-
-			nested.Add(child);
-			root.Add(nested);
-
-			Assert.Equal(root.IsVisible, expectedRootVisibility);
-			Assert.Equal(nested.IsVisible, expectedNestedVisibility);
-			Assert.Equal(child.IsVisible, expectedChildVisibility);
-		}
-
-		[Fact]
-		public void IsVisibleParentCorrectlyUnsetsPropagatedChange()
-		{
-			var button = new Button();
-			var grid = new Grid { button };
-
-			grid.IsVisible = false;
-			Assert.False(button.IsVisible);
-
-			grid.IsVisible = true;
-			Assert.True(button.IsVisible);
-		}
-
-		[Fact]
-		public void ButtonShouldStayHiddenIfExplicitlySet()
-		{
-			var button = new Button { IsVisible = false };
-			var grid = new Grid { button };
-
-			grid.IsVisible = false;
-			Assert.False(button.IsVisible);
-
-			// button stays hidden if it was explicitly set
-			grid.IsVisible = true;
-			Assert.False(button.IsVisible);
-		}
-
-		[Fact]
-		public void ButtonShouldBeVisibleWhenExplicitlySetWhenParentIsVisible()
-		{
-			var button = new Button { IsVisible = false };
-			var grid = new Grid { button };
-
-			// everything is hidden
-			grid.IsVisible = false;
-			Assert.False(button.IsVisible);
-
-			// make button visible, but it should not appear
-			button.IsVisible = true;
-			Assert.False(button.IsVisible);
-
-			// button appears when parent appears
-			grid.IsVisible = true;
-			Assert.True(button.IsVisible);
 		}
 	}
 }

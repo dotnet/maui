@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			IL = il;
 			Body = body;
-			Values = new Dictionary<IValueNode, object>();
-			Variables = new Dictionary<IElementNode, VariableDefinition>();
-			Scopes = new Dictionary<INode, Tuple<VariableDefinition, IList<string>>>();
-			TypeExtensions = new Dictionary<INode, TypeReference>();
+			Values = [];
+			Variables = [];
+			Scopes = [];
+			TypeExtensions = [];
 			ParentContextValues = parentContextValues;
 			Module = module;
 			Cache = cache;
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public Dictionary<IValueNode, object> Values { get; private set; }
 
-		public Dictionary<IElementNode, VariableDefinition> Variables { get; private set; }
+		public Dictionary<ElementNode, VariableDefinition> Variables { get; private set; }
 
 		public Dictionary<INode, Tuple<VariableDefinition, IList<string>>> Scopes { get; private set; }
 

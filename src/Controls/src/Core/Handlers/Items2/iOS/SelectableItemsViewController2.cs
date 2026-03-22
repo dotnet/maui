@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -25,18 +26,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
 			FormsSelectItem(indexPath);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
 			FormsDeselectItem(indexPath);
 		}
 
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
+			if (ItemsView?.ItemsSource is not object originalSource)
+			{
+				return;
+			}
+
 			var index = GetIndexForItem(selectedItem);
 
 			if (index.Section > -1 && index.Item > -1)
@@ -44,6 +58,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Ensure the selected index is updated after the collection view's items generation is completed
 				CollectionView.PerformBatchUpdates(null, _ =>
 				{
+					// Ensure ItemsSource hasn't been disposed
+					if (ItemsSource is Items.EmptySource)
+					{
+						return;
+					}
+
+					// Exit if the ItemsSource reference no longer matches the one captured at invocation.
+					if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
+					{
+						return;
+					}
+
+					// Recalculate the index for the selectedItem now that the collection may have changed.(Adding, deleting etc..)
+					var updatedIndex = GetIndexForItem(selectedItem);
+					if (updatedIndex.Section < 0 || updatedIndex.Item < 0)
+					{
+						return;
+					}
+
+					// Retrieve the current item at that index and verify it still equals the intended selection.
+					var liveItem = GetItemAtIndex(updatedIndex);
+					if (!Equals(liveItem, selectedItem))
+					{
+						return;
+					}
+
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 				});
 			}
@@ -52,6 +92,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Called by Forms to clear the native selection
 		internal void ClearSelection()
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
 			foreach (var index in selectedItemIndexes)
@@ -95,7 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdatePlatformSelection()
 		{
-			if (ItemsView == null)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}

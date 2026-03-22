@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui32924">
+    <StackLayout x:Name="Stack0">
+        <StackLayout.BindingContext>
+            <local:Maui32924ViewModel />
+        </StackLayout.BindingContext>
+        <StackLayout x:Name="Stack1"
+                     BindingContext="{x:Null}">
+            <!-- Test with explicit FindAncestorBindingContext mode (per issue #32924) -->
+            <Label x:Name="ExplicitModeLabel"
+                   Text="{Binding Path=Name, Source={RelativeSource AncestorType={x:Type local:Maui32924ViewModel}, Mode=FindAncestorBindingContext}}" />
+            
+            <!-- Test with implicit FindAncestorBindingContext mode (non-Element type infers the mode) -->
+            <Label x:Name="ImplicitModeLabel"
+                   Text="{Binding Source={RelativeSource AncestorType={x:Type local:Maui32924ViewModel}}, Path=Name}" />
+
+            <!-- Test with FindAncestor mode (Element type) -->
+            <Label x:Name="FindAncestorLabel"
+                   Text="{Binding Path=StyleId, Source={RelativeSource AncestorType={x:Type StackLayout}}}" />
+
+            <!-- Test with Self mode -->
+            <Label x:Name="SelfLabel"
+                   StyleId="SelfTest"
+                   Text="{Binding Path=StyleId, Source={RelativeSource Self}}" />
+        </StackLayout>
+    </StackLayout>
+</ContentPage>

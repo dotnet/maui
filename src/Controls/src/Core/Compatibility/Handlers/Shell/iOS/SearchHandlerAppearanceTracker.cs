@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_fontManager = fontManager;
 			_searchHandler = searchHandler;
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
+			_searchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
+			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 			_searchHandler.FocusChangeRequested += SearchHandlerFocusChangeRequested;
 			_uiSearchBar = searchBar;
 			_uiSearchBar.OnEditingStarted += OnEditingStarted;
@@ -164,7 +166,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			backgroundView.ClipsToBounds = true;
 			if (_defaultBackgroundColor == null)
 				_defaultBackgroundColor = backgroundView.BackgroundColor;
-			backgroundView.BackgroundColor = backGroundColor.ToPlatform();
+
+			UIColor backgroundColor = backGroundColor.ToPlatform();
+			backgroundView.BackgroundColor = backgroundColor;
+			textField.BackgroundColor = backgroundColor;
 		}
 
 		void UpdateCancelButtonColor(UIButton cancelButton)
@@ -338,6 +343,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.ResignFirstResponder();
 		}
 
+		void OnShowSoftInputRequested(object sender, EventArgs e)
+		{
+			_uiSearchBar?.BecomeFirstResponder();
+		}
+
+		void OnHideSoftInputRequested(object sender, EventArgs e)
+		{
+			_uiSearchBar?.ResignFirstResponder();
+		}
+
+
 		UIToolbar CreateNumericKeyboardAccessoryView()
 		{
 			var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
@@ -395,6 +411,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					_searchHandler.FocusChangeRequested -= SearchHandlerFocusChangeRequested;
 					_searchHandler.PropertyChanged -= SearchHandlerPropertyChanged;
+					_searchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+					_searchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 				}
 				_searchHandler = null;
 				_uiSearchBar = null;

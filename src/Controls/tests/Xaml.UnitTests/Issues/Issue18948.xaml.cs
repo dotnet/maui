@@ -1,29 +1,21 @@
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue18948 : Shell
 {
-	public partial class Issue18948 : Shell
-	{
-		public Issue18948()
-		{
-			InitializeComponent();
-		}
-		public Issue18948(bool useCompiledXaml)
-		{
-			// This stub will be replaced at compile time
-		}
+	public Issue18948() => InitializeComponent();
 
-		[TestFixture]
-		public class Tests
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void NavBarIsVisiblePropertyPropagates(XamlInflator inflator)
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void NavBarIsVisiblePropertyPropagates(bool useCompiledXaml)
-			{
-				var shell = new Issue18948(useCompiledXaml);
-				var navBarIsVisible = Shell.GetNavBarIsVisible(shell.CurrentContent);
-				Assert.False(navBarIsVisible);
-			}
+			var shell = new Issue18948(inflator);
+			var navBarIsVisible = Shell.GetNavBarIsVisible(shell.CurrentContent);
+			Assert.False(navBarIsVisible);
 		}
 	}
 }

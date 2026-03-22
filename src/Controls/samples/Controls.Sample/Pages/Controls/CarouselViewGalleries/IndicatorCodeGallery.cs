@@ -62,7 +62,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			generator.GenerateItems();
 
 			_carouselView.PropertyChanged += CarouselViewPropertyChanged;
-			(_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>)!.CollectionChanged += IndicatorCodeGalleryCollectionChanged;
+			((ObservableCollection<CollectionViewGalleryTestItem>)_carouselView.ItemsSource).CollectionChanged += IndicatorCodeGalleryCollectionChanged;
 
 			var indicatorView = new IndicatorView
 			{
@@ -205,7 +205,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				Padding = new Thickness(5),
 				Command = new Command(() =>
 				{
-					var items = (_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>)!;
+					var items = (ObservableCollection<CollectionViewGalleryTestItem>)_carouselView.ItemsSource;
 					items.Remove(items[0]);
 				})
 			};
@@ -238,7 +238,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 					_carouselView.Position++;
 				}, () =>
 				{
-					var items = (_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>)!;
+					var items = (ObservableCollection<CollectionViewGalleryTestItem>)_carouselView.ItemsSource;
 					return _carouselView.Position < items.Count - 1;
 				})
 			};
@@ -252,7 +252,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				Padding = new Thickness(5),
 				Command = new Command(() =>
 				{
-					var items = (_carouselView.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>)!;
+					var items = (ObservableCollection<CollectionViewGalleryTestItem>)_carouselView.ItemsSource;
 					var indexToRemove = items.Count - 1;
 					items.Remove(items[indexToRemove]);
 				})

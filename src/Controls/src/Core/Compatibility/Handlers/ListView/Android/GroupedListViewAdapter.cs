@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public int Start { get; set; }
 			public int End => Start + Length;
 		}
+#pragma warning disable CS0618 // Type or member is obsolete
 		public GroupedListViewAdapter(Context context, AListView realListView, ListView listView) : base(context, realListView, listView)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 
 		}

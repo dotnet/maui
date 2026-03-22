@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				}
 			};
 
-			var itemsLayout = new GridItemsLayout(3, ItemsLayoutOrientation.Vertical) as IItemsLayout;
+			IItemsLayout itemsLayout = new GridItemsLayout(3, ItemsLayoutOrientation.Vertical);
 
 			var itemTemplate = ExampleTemplates.PhotoTemplate();
 

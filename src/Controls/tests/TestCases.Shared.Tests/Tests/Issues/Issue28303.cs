@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue28303 : _IssuesUITest
 {
 	public override string Issue => "[Windows] WebView Navigated event called after cancelling it";

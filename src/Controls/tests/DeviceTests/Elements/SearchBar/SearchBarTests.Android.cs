@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Alpha;
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a SearchBar should match with native ScaleX")]
 		public async Task ScaleXConsistent()
@@ -117,12 +117,52 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformRotation);
 		}
 
+		[Fact]
+		[Description("The IsEnabled of a SearchBar should match with native IsEnabled")]
+		public async Task VerifySearchBarIsEnabledProperty()
+		{
+			var searchBar = new SearchBar
+			{
+				IsEnabled = false
+			};
+			var expectedValue = searchBar.IsEnabled;
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+
+				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
 		Task<bool> GetPlatformIsVisible(SearchBarHandler searchBarHandler)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(searchBarHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a SearchBar should match with native Translation")]
+		public async Task SearchBarTranslationConsistent()
+		{
+			var searchBar = new SearchBar()
+			{
+				Text = "SearchBar Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, searchBar.TranslationX, searchBar.TranslationY);
 			});
 		}
 	}

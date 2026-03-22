@@ -1,60 +1,43 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Maui18976 : ContentPage
 {
-	public partial class Maui18976 : ContentPage
+	public Maui18976() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		public Maui18976()
+		public Test()
 		{
-			InitializeComponent();
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		public Maui18976(bool useCompiledXaml)
+
+		public void Dispose() => AppInfo.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void DataTriggerRestoreValue(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var page = new Maui18976(inflator);
+			Assert.False(page.checkbox.IsChecked);
+			Assert.True(page.button.IsEnabled);
 
-		[TestFixture]
-		class Test
-		{
-			[SetUp]
-			public void Setup()
-			{
-				Application.SetCurrentApplication(new MockApplication());
-				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			}
+			page.checkbox.IsChecked = true;
+			Assert.True(page.checkbox.IsChecked);
+			Assert.False(page.button.IsEnabled);
 
-
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-			[Test]
-			public void DataTriggerRestoreValue([Values(false, true)] bool useCompiledXaml)
-			{
-				var page = new Maui18976(useCompiledXaml);
-				Assert.That(page.checkbox.IsChecked, Is.False);
-				Assert.That(page.button.IsEnabled, Is.True);
-
-				page.checkbox.IsChecked = true;
-				Assert.That(page.checkbox.IsChecked, Is.True);
-				Assert.That(page.button.IsEnabled, Is.False);
-
-				page.checkbox.IsChecked = false;
-				Assert.That(page.checkbox.IsChecked, Is.False);
-				Assert.That(page.button.IsEnabled, Is.True);
-			}
+			page.checkbox.IsChecked = false;
+			Assert.False(page.checkbox.IsChecked);
+			Assert.True(page.button.IsEnabled);
 		}
 	}
 }

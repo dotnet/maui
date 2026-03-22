@@ -5,8 +5,17 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Provides extension methods for working with SkiaSharp graphics objects.
+	/// </summary>
 	public static class SKGraphicsExtensions
 	{
+		/// <summary>
+		/// Converts a .NET MAUI Graphics color to a SkiaSharp color with a multiplied alpha value.
+		/// </summary>
+		/// <param name="target">The color to convert.</param>
+		/// <param name="alpha">The alpha multiplier to apply (0-1).</param>
+		/// <returns>A SkiaSharp color with the alpha value multiplied by the specified factor.</returns>
 		public static SKColor AsSKColorMultiplyAlpha(this Color target, float alpha)
 		{
 			var r = (byte)(target.Red * 255f);
@@ -21,6 +30,11 @@ namespace Microsoft.Maui.Graphics.Skia
 			return color;
 		}
 
+		/// <summary>
+		/// Converts a .NET MAUI Graphics color to an ARGB integer representation.
+		/// </summary>
+		/// <param name="target">The color to convert.</param>
+		/// <returns>The color as a 32-bit ARGB integer.</returns>
 		public static int ToArgb(this Color target)
 		{
 			var a = (int)(target.Alpha * 255f);
@@ -32,6 +46,12 @@ namespace Microsoft.Maui.Graphics.Skia
 			return argb;
 		}
 
+		/// <summary>
+		/// Converts a .NET MAUI Graphics color to an ARGB integer representation with a modified alpha value.
+		/// </summary>
+		/// <param name="target">The color to convert.</param>
+		/// <param name="alpha">The alpha multiplier to apply (0-1).</param>
+		/// <returns>The color as a 32-bit ARGB integer with the modified alpha value.</returns>
 		public static int ToArgb(this Color target, float alpha)
 		{
 			var a = (int)(target.Alpha * 255f * alpha);
@@ -43,6 +63,11 @@ namespace Microsoft.Maui.Graphics.Skia
 			return argb;
 		}
 
+		/// <summary>
+		/// Converts a .NET MAUI Graphics color to a SkiaSharp color.
+		/// </summary>
+		/// <param name="target">The color to convert.</param>
+		/// <returns>A SkiaSharp color that corresponds to the specified color.</returns>
 		public static SKColor AsSKColor(this Color target)
 		{
 			var r = (byte)(target.Red * 255f);
@@ -52,6 +77,11 @@ namespace Microsoft.Maui.Graphics.Skia
 			return new SKColor(r, g, b, a);
 		}
 
+		/// <summary>
+		/// Converts a SkiaSharp color to a .NET MAUI Graphics color.
+		/// </summary>
+		/// <param name="target">The SkiaSharp color to convert.</param>
+		/// <returns>A .NET MAUI Graphics color that corresponds to the specified SkiaSharp color.</returns>
 		public static Color AsColor(this SKColor target)
 		{
 			var r = (int)target.Red;
@@ -61,21 +91,41 @@ namespace Microsoft.Maui.Graphics.Skia
 			return new Color(r, g, b, a);
 		}
 
+		/// <summary>
+		/// Converts a RectF to a SkiaSharp SKRect.
+		/// </summary>
+		/// <param name="target">The RectF to convert.</param>
+		/// <returns>A SkiaSharp SKRect that corresponds to the specified RectF.</returns>
 		public static SKRect AsSKRect(this RectF target)
 		{
 			return new SKRect(target.Left, target.Top, target.Right, target.Bottom);
 		}
 
+		/// <summary>
+		/// Converts a SkiaSharp SKRect to a RectF.
+		/// </summary>
+		/// <param name="target">The SKRect to convert.</param>
+		/// <returns>A RectF that corresponds to the specified SKRect.</returns>
 		public static RectF AsRectangleF(this SKRect target)
 		{
 			return new RectF(target.Left, target.Top, MathF.Abs(target.Right - target.Left), MathF.Abs(target.Bottom - target.Top));
 		}
 
+		/// <summary>
+		/// Converts a PointF to a SkiaSharp SKPoint.
+		/// </summary>
+		/// <param name="target">The PointF to convert.</param>
+		/// <returns>A SkiaSharp SKPoint that corresponds to the specified PointF.</returns>
 		public static SKPoint ToSKPoint(this PointF target)
 		{
 			return new SKPoint(target.X, target.Y);
 		}
 
+		/// <summary>
+		/// Converts a Matrix3x2 to a SkiaSharp SKMatrix.
+		/// </summary>
+		/// <param name="transform">The Matrix3x2 to convert.</param>
+		/// <returns>A SkiaSharp SKMatrix that corresponds to the specified Matrix3x2.</returns>
 		public static SKMatrix AsMatrix(this in Matrix3x2 transform)
 		{
 			var matrix = new SKMatrix
@@ -93,16 +143,37 @@ namespace Microsoft.Maui.Graphics.Skia
 			return matrix;
 		}
 
+		/// <summary>
+		/// Converts a PathF to a SkiaSharp SKPath.
+		/// </summary>
+		/// <param name="target">The PathF to convert.</param>
+		/// <returns>A SkiaSharp SKPath that corresponds to the specified PathF.</returns>
 		public static SKPath AsSkiaPath(this PathF target)
 		{
 			return AsSkiaPath(target, 1);
 		}
 
+		/// <summary>
+		/// Converts a PathF to a SkiaSharp SKPath with a specified pixels-per-unit value.
+		/// </summary>
+		/// <param name="path">The PathF to convert.</param>
+		/// <param name="ppu">The pixels-per-unit value.</param>
+		/// <returns>A SkiaSharp SKPath that corresponds to the specified PathF, scaled by the specified pixels-per-unit value.</returns>
 		public static SKPath AsSkiaPath(this PathF path, float ppu)
 		{
 			return AsSkiaPath(path, ppu, 0, 0, 1, 1);
 		}
 
+		/// <summary>
+		/// Converts a PathF to a SkiaSharp SKPath with specified transformation parameters.
+		/// </summary>
+		/// <param name="path">The PathF to convert.</param>
+		/// <param name="ppu">The pixels-per-unit value.</param>
+		/// <param name="ox">The x-offset.</param>
+		/// <param name="oy">The y-offset.</param>
+		/// <param name="fx">The x-scale factor.</param>
+		/// <param name="fy">The y-scale factor.</param>
+		/// <returns>A SkiaSharp SKPath that corresponds to the specified PathF, transformed according to the specified parameters.</returns>
 		public static SKPath AsSkiaPath(
 			this PathF path,
 			float ppu,
@@ -183,11 +254,26 @@ namespace Microsoft.Maui.Graphics.Skia
 			return platformPath;
 		}
 
+		/// <summary>
+		/// Converts a PathF to a SkiaSharp SKPath with a specified pixels-per-unit value and zoom level.
+		/// </summary>
+		/// <param name="path">The PathF to convert.</param>
+		/// <param name="ppu">The pixels-per-unit value.</param>
+		/// <param name="zoom">The zoom level.</param>
+		/// <returns>A SkiaSharp SKPath that corresponds to the specified PathF, scaled by the specified pixels-per-unit value and zoom level.</returns>
 		public static SKPath AsSkiaPath(this PathF path, float ppu, float zoom)
 		{
 			return AsSkiaPath(path, ppu * zoom);
 		}
 
+		/// <summary>
+		/// Converts a segment of a PathF to a SkiaSharp SKPath with a specified pixels-per-unit value and zoom level.
+		/// </summary>
+		/// <param name="target">The PathF containing the segment to convert.</param>
+		/// <param name="segmentIndex">The index of the segment to convert.</param>
+		/// <param name="ppu">The pixels-per-unit value.</param>
+		/// <param name="zoom">The zoom level.</param>
+		/// <returns>A SkiaSharp SKPath that corresponds to the specified segment of the PathF, scaled by the specified pixels-per-unit value and zoom level.</returns>
 		public static SKPath AsSkiaPathFromSegment(this PathF target, int segmentIndex, float ppu, float zoom)
 		{
 			ppu = zoom * ppu;
@@ -258,6 +344,15 @@ namespace Microsoft.Maui.Graphics.Skia
 			return path;
 		}
 
+		/// <summary>
+		/// Converts a PathF to a SkiaSharp SKPath with a specified pixels-per-unit value, zoom level, and rotation angle.
+		/// </summary>
+		/// <param name="target">The PathF to convert.</param>
+		/// <param name="center">The center point around which to rotate the path.</param>
+		/// <param name="ppu">The pixels-per-unit value.</param>
+		/// <param name="zoom">The zoom level.</param>
+		/// <param name="angle">The rotation angle in degrees.</param>
+		/// <returns>A SkiaSharp SKPath that corresponds to the specified PathF, scaled by the specified pixels-per-unit value and zoom level, and rotated around the specified center point.</returns>
 		public static SKPath AsRotatedAndroidPath(this PathF target, PointF center, float ppu, float zoom, float angle)
 		{
 			ppu = zoom * ppu;
@@ -339,21 +434,42 @@ namespace Microsoft.Maui.Graphics.Skia
 			return path;
 		}
 
+		/// <summary>
+		/// Converts a SkiaSharp SKSize to a .NET MAUI Graphics SizeF.
+		/// </summary>
+		/// <param name="target">The SKSize to convert.</param>
+		/// <returns>A .NET MAUI Graphics SizeF that corresponds to the specified SKSize.</returns>
 		public static SizeF AsSize(this SKSize target)
 		{
 			return new SizeF(target.Width, target.Height);
 		}
 
+		/// <summary>
+		/// Converts a .NET MAUI Graphics SizeF to a SkiaSharp SKSize.
+		/// </summary>
+		/// <param name="target">The SizeF to convert.</param>
+		/// <returns>A SkiaSharp SKSize that corresponds to the specified SizeF.</returns>
 		public static SKSize AsSizeF(this SizeF target)
 		{
 			return new SKSize(target.Width, target.Height);
 		}
 
+		/// <summary>
+		/// Converts a SkiaSharp SKPoint to a .NET MAUI Graphics PointF.
+		/// </summary>
+		/// <param name="target">The SKPoint to convert.</param>
+		/// <returns>A .NET MAUI Graphics PointF that corresponds to the specified SKPoint.</returns>
 		public static PointF AsPointF(this SKPoint target)
 		{
 			return new PointF(target.X, target.Y);
 		}
 
+		/// <summary>
+		/// Retrieves the bitmap pattern from a PatternPaint object.
+		/// </summary>
+		/// <param name="patternPaint">The PatternPaint object.</param>
+		/// <param name="scale">The scale factor for the bitmap.</param>
+		/// <returns>The bitmap pattern.</returns>
 		public static SKBitmap GetPatternBitmap(this PatternPaint patternPaint, float scale = 1)
 		{
 			var pattern = patternPaint?.Pattern;
@@ -371,6 +487,14 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Retrieves the bitmap pattern from a PatternPaint object with specified scale factors.
+		/// </summary>
+		/// <param name="patternPaint">The PatternPaint object.</param>
+		/// <param name="scaleX">The scale factor for the X dimension.</param>
+		/// <param name="scaleY">The scale factor for the Y dimension.</param>
+		/// <param name="currentFigure">The current figure (optional).</param>
+		/// <returns>The bitmap pattern.</returns>
 		public static SKBitmap GetPatternBitmap(this PatternPaint patternPaint, float scaleX, float scaleY, object currentFigure)
 		{
 			var pattern = patternPaint?.Pattern;

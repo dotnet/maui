@@ -5,6 +5,20 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents a geometric path consisting of lines, curves, and shapes using single-precision floating-point coordinates.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A path is composed of one or more sub-paths, each beginning with a Move operation and consisting of connected
+	/// line segments, curves, and arcs. For fill operations to work reliably, paths should typically be closed using
+	/// the <see cref="Close()"/> method or by explicitly connecting the end point back to the starting point.
+	/// </para>
+	/// <para>
+	/// When creating paths for filling, ensure proper path construction to avoid exceptions during rendering.
+	/// Paths that start with <see cref="LineTo(PointF)"/> operations will automatically create an initial MoveTo operation.
+	/// </para>
+	/// </remarks>
 	public class PathF : IDisposable
 	{
 		private const float K_RATIO = 0.551784777779014f; // ideal ratio of cubic Bezier points for a quarter circle
@@ -44,6 +58,10 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Initializes a new path by copying the segments, points, and arc metadata of another <see cref="PathF"/>.
+		/// </summary>
+		/// <param name="path">The path to copy.</param>
 		public PathF(PathF path) : this()
 		{
 			_operations.AddRange(path._operations);
@@ -56,16 +74,28 @@ namespace Microsoft.Maui.Graphics
 			_subPathsClosed = new List<bool>(path._subPathsClosed);
 		}
 
+		/// <summary>
+		/// Initializes a new path whose first (move) point is the specified point.
+		/// </summary>
+		/// <param name="point">The starting point.</param>
 		public PathF(PointF point) : this()
 		{
 			MoveTo(point.X, point.Y);
 		}
 
+		/// <summary>
+		/// Initializes a new path whose first (move) point is at the specified coordinates.
+		/// </summary>
+		/// <param name="x">X coordinate of the starting point.</param>
+		/// <param name="y">Y coordinate of the starting point.</param>
 		public PathF(float x, float y) : this()
 		{
 			MoveTo(x, y);
 		}
 
+		/// <summary>
+		/// Initializes an empty path with no segments.
+		/// </summary>
 		public PathF()
 		{
 			_subPathCount = 0;
@@ -76,8 +106,14 @@ namespace Microsoft.Maui.Graphics
 			_subPathsClosed = new List<bool>();
 		}
 
+		/// <summary>
+		/// Gets the number of sub-paths (contiguous sequences beginning with <see cref="PathOperation.Move"/>) in the path.
+		/// </summary>
 		public int SubPathCount => _subPathCount;
 
+		/// <summary>
+		/// Gets a value indicating whether the last sub-path has been explicitly closed with <see cref="Close"/>.
+		/// </summary>
 		public bool Closed
 		{
 			get
@@ -89,6 +125,9 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets the first point in the path, or the default value if the path is empty.
+		/// </summary>
 		public PointF FirstPoint
 		{
 			get
@@ -100,6 +139,9 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Enumerates the sequence of segment operations composing the path.
+		/// </summary>
 		public IEnumerable<PathOperation> SegmentTypes
 		{
 			get
@@ -109,6 +151,9 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Enumerates all points used by the path's segments in logical order.
+		/// </summary>
 		public IEnumerable<PointF> Points
 		{
 			get
@@ -118,6 +163,9 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets the last point in the path, or the default value if the path is empty.
+		/// </summary>
 		public PointF LastPoint
 		{
 			get
@@ -129,6 +177,9 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets the index of the last point, or -1 if the path is empty.
+		/// </summary>
 		public int LastPointIndex
 		{
 			get
@@ -140,6 +191,10 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets the point at the specified index, or the default value if the index is out of range.
+		/// </summary>
+		/// <param name="index">Index of the point.</param>
 		public PointF this[int index]
 		{
 			get
@@ -152,22 +207,42 @@ namespace Microsoft.Maui.Graphics
 			//set { points[index] = value; }
 		}
 
+		/// <summary>
+		/// Sets the coordinates of the point at the specified index.
+		/// </summary>
+		/// <param name="index">Index of the point.</param>
+		/// <param name="x">New X value.</param>
+		/// <param name="y">New Y value.</param>
 		public void SetPoint(int index, float x, float y)
 		{
 			_points[index] = new PointF(x, y);
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Sets the point at the specified index.
+		/// </summary>
+		/// <param name="index">Index of the point.</param>
+		/// <param name="point">The new point value.</param>
 		public void SetPoint(int index, PointF point)
 		{
 			_points[index] = point;
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Gets the total number of points in the path.
+		/// </summary>
 		public int Count => _points.Count;
 
+		/// <summary>
+		/// Gets the number of segment operations (including move and close) in the path.
+		/// </summary>
 		public int OperationCount => _operations.Count;
 
+		/// <summary>
+		/// Gets the count of segment operations excluding a leading <see cref="PathOperation.Move"/> and a trailing <see cref="PathOperation.Close"/>, if present.
+		/// </summary>
 		public int SegmentCountExcludingOpenAndClose
 		{
 			get
@@ -195,11 +270,21 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Gets the segment operation type at the specified index.
+		/// </summary>
+		/// <param name="aIndex">Segment index.</param>
+		/// <returns>The <see cref="PathOperation"/> value.</returns>
 		public PathOperation GetSegmentType(int aIndex)
 		{
 			return _operations[aIndex];
 		}
 
+		/// <summary>
+		/// Gets an arc angle value at the specified index (stored as degrees).
+		/// </summary>
+		/// <param name="aIndex">Angle index.</param>
+		/// <returns>The angle in degrees, or 0 if out of range.</returns>
 		public float GetArcAngle(int aIndex)
 		{
 			if (_arcAngles.Count > aIndex)
@@ -210,6 +295,11 @@ namespace Microsoft.Maui.Graphics
 			return 0;
 		}
 
+		/// <summary>
+		/// Sets an arc angle value (degrees) at the specified index.
+		/// </summary>
+		/// <param name="aIndex">Angle index.</param>
+		/// <param name="aValue">New angle in degrees.</param>
 		public void SetArcAngle(int aIndex, float aValue)
 		{
 			if (_arcAngles.Count > aIndex)
@@ -220,6 +310,11 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Gets the stored clockwise flag for an arc segment at the specified index.
+		/// </summary>
+		/// <param name="aIndex">Arc flag index.</param>
+		/// <returns><c>true</c> if clockwise; otherwise <c>false</c>.</returns>
 		public bool GetArcClockwise(int aIndex)
 		{
 			if (_arcClockwise.Count > aIndex)
@@ -230,6 +325,11 @@ namespace Microsoft.Maui.Graphics
 			return false;
 		}
 
+		/// <summary>
+		/// Sets the stored clockwise flag for an arc segment.
+		/// </summary>
+		/// <param name="aIndex">Arc flag index.</param>
+		/// <param name="aValue">New clockwise value.</param>
 		public void SetArcClockwise(int aIndex, bool aValue)
 		{
 			if (_arcClockwise.Count > aIndex)
@@ -240,11 +340,22 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Starts a new sub-path at the specified coordinates.
+		/// </summary>
+		/// <param name="x">X coordinate of the starting point.</param>
+		/// <param name="y">Y coordinate of the starting point.</param>
+		/// <returns>The current path for chaining.</returns>
 		public PathF MoveTo(float x, float y)
 		{
 			return MoveTo(new PointF(x, y));
 		}
 
+		/// <summary>
+		/// Starts a new sub-path at the specified point.
+		/// </summary>
+		/// <param name="point">Starting point of the new sub-path.</param>
+		/// <returns>The current path for chaining.</returns>
 		public PathF MoveTo(PointF point)
 		{
 			_subPathCount++;
@@ -255,6 +366,14 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Closes the current sub-path by appending a close segment if it is not already closed.
+		/// </summary>
+		/// <remarks>
+		/// Closing a path is typically required for fill operations to work correctly. Attempting to fill
+		/// an unclosed path may result in undefined behavior or exceptions in some graphics implementations.
+		/// A closed path ensures that the shape is properly defined for filling operations.
+		/// </remarks>
 		public void Close()
 		{
 			if (!Closed)
@@ -267,6 +386,9 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Reopens a previously closed last sub-path by removing its closing segment.
+		/// </summary>
 		public void Open()
 		{
 			if (_operations[_operations.Count - 1] == PathOperation.Close)
@@ -279,11 +401,27 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Adds a straight line segment to the specified coordinates.
+		/// </summary>
+		/// <param name="x">The x-coordinate of the end point.</param>
+		/// <param name="y">The y-coordinate of the end point.</param>
+		/// <returns>The current path.</returns>
 		public PathF LineTo(float x, float y)
 		{
 			return LineTo(new PointF(x, y));
 		}
 
+		/// <summary>
+		/// Adds a straight line segment to the specified end point (starting a new sub-path if the path is empty).
+		/// </summary>
+		/// <param name="point">The end point.</param>
+		/// <returns>The current path.</returns>
+		/// <remarks>
+		/// If this is the first operation on an empty path, it will automatically create an initial MoveTo operation
+		/// to the specified point. For paths intended to be filled, ensure the path forms a closed shape by calling
+		/// <see cref="Close()"/> or explicitly connecting back to the starting point.
+		/// </remarks>
 		public PathF LineTo(PointF point)
 		{
 			if (_points.Count == 0)
@@ -304,6 +442,12 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Inserts a line segment at a specific segment index.
+		/// </summary>
+		/// <param name="point">Line end point.</param>
+		/// <param name="index">Segment index at which to insert.</param>
+		/// <returns>The current path.</returns>
 		public PathF InsertLineTo(PointF point, int index)
 		{
 			if (index == 0)
@@ -326,11 +470,40 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Adds an elliptical arc segment using coordinate values instead of points.
+		/// </summary>
+		/// <param name="x1">The X coordinate of the top-left corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="y1">The Y coordinate of the top-left corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="x2">The X coordinate of the bottom-right corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="y2">The Y coordinate of the bottom-right corner of the bounding rectangle of the ellipse.</param>
+		/// <param name="startAngle">Starting angle of the arc in degrees. 0° points to the right (along the positive X axis). Angles increase counter-clockwise.</param>
+		/// <param name="endAngle">Ending angle of the arc in degrees, measured with the same convention as <paramref name="startAngle"/>.</param>
+		/// <param name="clockwise">If <c>true</c>, the arc is drawn in the clockwise direction from <paramref name="startAngle"/> to <paramref name="endAngle"/>; otherwise it is drawn counter-clockwise (the positive angle direction).</param>
+		/// <returns>The current path for chaining.</returns>
 		public PathF AddArc(float x1, float y1, float x2, float y2, float startAngle, float endAngle, bool clockwise)
 		{
 			return AddArc(new PointF(x1, y1), new PointF(x2, y2), startAngle, endAngle, clockwise);
 		}
 
+		/// <summary>
+		/// Adds an elliptical arc segment to the current sub-path.
+		/// </summary>
+		/// <param name="topLeft">The top-left point of the rectangle that bounds the full ellipse from which the arc segment is taken.</param>
+		/// <param name="bottomRight">The bottom-right point of the bounding rectangle of the ellipse.</param>
+		/// <param name="startAngle">Starting angle of the arc in degrees. 0° points to the right (along the positive X axis). Angles increase counter-clockwise.</param>
+		/// <param name="endAngle">Ending angle of the arc in degrees, measured with the same convention as <paramref name="startAngle"/>.</param>
+		/// <param name="clockwise">If <c>true</c>, the arc is drawn in the clockwise direction from <paramref name="startAngle"/> to <paramref name="endAngle"/>; otherwise it is drawn counter-clockwise (the positive angle direction).</param>
+		/// <remarks>
+		/// Angle values are specified in degrees (not radians). The angular coordinate system used by <see cref="Microsoft.Maui.Graphics"/> for arcs is:
+		/// <list type="bullet">
+		/// <item><description>0° is the point on the ellipse at the positive X axis (to the right of center).</description></item>
+		/// <item><description>Positive angles advance counter-clockwise.</description></item>
+		/// <item><description>The direction of increasing Y on the drawing surface (often downwards in device pixels) does not change the counter-clockwise convention used for angles.</description></item>
+		/// </list>
+		/// The current point is not implicitly connected to the start of the arc. If you need a straight line connection, call <see cref="LineTo(PointF)"/> first.
+		/// </remarks>
+		/// <returns>The current <see cref="PathF"/> so that calls can be chained fluently.</returns>
 		public PathF AddArc(PointF topLeft, PointF bottomRight, float startAngle, float endAngle, bool clockwise)
 		{
 			if (Count == 0 || OperationCount == 0 || GetSegmentType(OperationCount - 1) == PathOperation.Close)
@@ -349,11 +522,25 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Adds a quadratic Bézier curve segment using coordinate values.
+		/// </summary>
+		/// <param name="cx">X-coordinate of the control point.</param>
+		/// <param name="cy">Y-coordinate of the control point.</param>
+		/// <param name="x">X-coordinate of the end point.</param>
+		/// <param name="y">Y-coordinate of the end point.</param>
+		/// <returns>The current path.</returns>
 		public PathF QuadTo(float cx, float cy, float x, float y)
 		{
 			return QuadTo(new PointF(cx, cy), new PointF(x, y));
 		}
 
+		/// <summary>
+		/// Adds a quadratic Bézier curve segment defined by a control point and an end point.
+		/// </summary>
+		/// <param name="controlPoint">Quadratic control point.</param>
+		/// <param name="point">End point of the curve.</param>
+		/// <returns>The current path.</returns>
 		public PathF QuadTo(PointF controlPoint, PointF point)
 		{
 			_points.Add(controlPoint);
@@ -363,6 +550,13 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Inserts a quadratic Bézier segment at a specific segment index.
+		/// </summary>
+		/// <param name="controlPoint">Control point.</param>
+		/// <param name="point">End point.</param>
+		/// <param name="index">Insertion segment index.</param>
+		/// <returns>The current path.</returns>
 		public PathF InsertQuadTo(PointF controlPoint, PointF point, int index)
 		{
 			if (index == 0)
@@ -386,11 +580,28 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Adds a cubic Bézier curve segment using coordinate values.
+		/// </summary>
+		/// <param name="c1X">X-coordinate of the first control point.</param>
+		/// <param name="c1Y">Y-coordinate of the first control point.</param>
+		/// <param name="c2X">X-coordinate of the second control point.</param>
+		/// <param name="c2Y">Y-coordinate of the second control point.</param>
+		/// <param name="x">X-coordinate of the end point.</param>
+		/// <param name="y">Y-coordinate of the end point.</param>
+		/// <returns>The current path.</returns>
 		public PathF CurveTo(float c1X, float c1Y, float c2X, float c2Y, float x, float y)
 		{
 			return CurveTo(new PointF(c1X, c1Y), new PointF(c2X, c2Y), new PointF(x, y));
 		}
 
+		/// <summary>
+		/// Adds a cubic Bézier curve segment defined by two control points and an end point.
+		/// </summary>
+		/// <param name="controlPoint1">First control point.</param>
+		/// <param name="controlPoint2">Second control point.</param>
+		/// <param name="point">End point of the curve.</param>
+		/// <returns>The current path.</returns>
 		public PathF CurveTo(PointF controlPoint1, PointF controlPoint2, PointF point)
 		{
 			_points.Add(controlPoint1);
@@ -401,6 +612,14 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Inserts a cubic Bézier segment at a specific segment index.
+		/// </summary>
+		/// <param name="controlPoint1">First control point.</param>
+		/// <param name="controlPoint2">Second control point.</param>
+		/// <param name="point">End point.</param>
+		/// <param name="index">Insertion segment index.</param>
+		/// <returns>The current path.</returns>
 		public PathF InsertCurveTo(PointF controlPoint1, PointF controlPoint2, PointF point, int index)
 		{
 			if (index == 0)
@@ -425,6 +644,11 @@ namespace Microsoft.Maui.Graphics
 			return this;
 		}
 
+		/// <summary>
+		/// Computes the starting point index in the internal point list for a given segment index.
+		/// </summary>
+		/// <param name="index">Segment index.</param>
+		/// <returns>The point index, or -1 if not found.</returns>
 		public int GetSegmentPointIndex(int index)
 		{
 			if (index <= OperationCount)
@@ -479,6 +703,14 @@ namespace Microsoft.Maui.Graphics
 			return -1;
 		}
 
+		/// <summary>
+		/// Retrieves segment metadata, returning the segment type and output indices pointing into internal collections.
+		/// </summary>
+		/// <param name="segmentIndex">Segment index.</param>
+		/// <param name="pointIndex">Receives the starting point index.</param>
+		/// <param name="arcAngleIndex">Receives the starting arc angle index.</param>
+		/// <param name="arcClockwiseIndex">Receives the arc clockwise flag index.</param>
+		/// <returns>The segment operation type, or <see cref="PathOperation.Close"/> if invalid.</returns>
 		public PathOperation GetSegmentInfo(int segmentIndex, out int pointIndex, out int arcAngleIndex, out int arcClockwiseIndex)
 		{
 			pointIndex = 0;
@@ -534,6 +766,11 @@ namespace Microsoft.Maui.Graphics
 			return PathOperation.Close;
 		}
 
+		/// <summary>
+		/// Determines which segment uses the point at a specified index.
+		/// </summary>
+		/// <param name="pointIndex">Point index.</param>
+		/// <returns>The segment index, or -1 if not found.</returns>
 		public int GetSegmentForPoint(int pointIndex)
 		{
 			if (pointIndex < _points.Count)
@@ -603,6 +840,11 @@ namespace Microsoft.Maui.Graphics
 			return -1;
 		}
 
+		/// <summary>
+		/// Gets the points defining the segment at the specified index.
+		/// </summary>
+		/// <param name="segmentIndex">Segment index.</param>
+		/// <returns>An array of points (length varies by segment type), an empty array for close segments, or <c>null</c> if invalid.</returns>
 		public PointF[] GetPointsForSegment(int segmentIndex)
 		{
 			if (segmentIndex <= OperationCount)
@@ -707,6 +949,10 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Removes the specified segment and all segments that follow it.
+		/// </summary>
+		/// <param name="segmentIndex">Segment index at which truncation begins.</param>
 		public void RemoveAllSegmentsAfter(int segmentIndex)
 		{
 			if (segmentIndex <= OperationCount)
@@ -752,6 +998,10 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Removes a single segment, adjusting internal point and arc data accordingly.
+		/// </summary>
+		/// <param name="segmentIndex">Segment index to remove.</param>
 		public void RemoveSegment(int segmentIndex)
 		{
 			if (segmentIndex <= OperationCount)
@@ -870,6 +1120,16 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Creates a new <see cref="PathF"/> representing this path rotated by the specified angle about a pivot point.
+		/// </summary>
+		/// <param name="angleAsDegrees">The rotation angle in degrees. Positive angles rotate counter-clockwise; 0° keeps the path unchanged.</param>
+		/// <param name="pivot">The pivot point about which all points (and ellipse bounding rectangles for arc segments) are rotated.</param>
+		/// <returns>A new <see cref="PathF"/> containing the rotated geometry. The original path is not modified.</returns>
+		/// <remarks>
+		/// Rotation uses the same degree-based, counter-clockwise positive convention as arc angles (see <see cref="AddArc(PointF, PointF, float, float, bool)"/>).
+		/// Arc segments preserve their original start and end angle values; only their bounding rectangle corner points are rotated.
+		/// </remarks>
 		public PathF Rotate(float angleAsDegrees, PointF pivot)
 		{
 			var path = new PathF();
@@ -922,12 +1182,26 @@ namespace Microsoft.Maui.Graphics
 			return path;
 		}
 
+		/// <summary>
+		/// Computes the position of a point in the path after rotation about a pivot.
+		/// </summary>
+		/// <param name="pointIndex">Index into the internal point list.</param>
+		/// <param name="pivotPoint">The pivot point for rotation.</param>
+		/// <param name="angle">Rotation angle in degrees (counter-clockwise positive).</param>
+		/// <returns>The rotated point.</returns>
+		/// <remarks>
+		/// This helper applies the same rotation semantics used by <see cref="Rotate(float, PointF)"/> and does not cache results.
+		/// </remarks>
 		public PointF GetRotatedPoint(int pointIndex, PointF pivotPoint, float angle)
 		{
 			var point = _points[pointIndex];
 			return GeometryUtil.RotatePoint(pivotPoint, point, angle);
 		}
 
+		/// <summary>
+		/// Applies a 2D affine transformation matrix to all points in the path in place.
+		/// </summary>
+		/// <param name="transform">The transformation matrix.</param>
 		public void Transform(Matrix3x2 transform)
 		{
 			for (var i = 0; i < _points.Count; i++)
@@ -936,6 +1210,10 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Splits the path into individual sub-path objects.
+		/// </summary>
+		/// <returns>A list of sub-paths.</returns>
 		public List<PathF> Separate()
 		{
 			var paths = new List<PathF>();
@@ -984,6 +1262,10 @@ namespace Microsoft.Maui.Graphics
 			return paths;
 		}
 
+		/// <summary>
+		/// Creates a new path with the segment and point order reversed.
+		/// </summary>
+		/// <returns>A new reversed path.</returns>
 		public PathF Reverse()
 		{
 			var points = new List<PointF>(_points);
@@ -1028,11 +1310,22 @@ namespace Microsoft.Maui.Graphics
 			return new PathF(points, arcSizes, arcClockwise, operations, _subPathCount);
 		}
 
+		/// <summary>
+		/// Appends an approximated ellipse path inside the specified rectangle.
+		/// </summary>
+		/// <param name="rect">The bounding rectangle for the ellipse.</param>
 		public void AppendEllipse(RectF rect)
 		{
 			AppendEllipse(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
+		/// <summary>
+		/// Appends an approximated ellipse path (using 4 cubic curves) inside the specified rectangle.
+		/// </summary>
+		/// <param name="x">Left.</param>
+		/// <param name="y">Top.</param>
+		/// <param name="w">Width.</param>
+		/// <param name="h">Height.</param>
 		public void AppendEllipse(float x, float y, float w, float h)
 		{
 			var minX = x;
@@ -1052,11 +1345,22 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
+		/// <summary>
+		/// Appends an approximated circle path centered at the specified point.
+		/// </summary>
+		/// <param name="center">Center point.</param>
+		/// <param name="r">Radius.</param>
 		public void AppendCircle(PointF center, float r)
 		{
 			AppendCircle(center.X, center.Y, r);
 		}
 
+		/// <summary>
+		/// Appends an approximated circle path centered at the specified point.
+		/// </summary>
+		/// <param name="cx">Center X.</param>
+		/// <param name="cy">Center Y.</param>
+		/// <param name="r">Radius.</param>
 		public void AppendCircle(float cx, float cy, float r)
 		{
 			var minX = cx - r;
@@ -1076,11 +1380,24 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
+		/// <summary>
+		/// Appends a rectangle path using the specified rectangle bounds.
+		/// </summary>
+		/// <param name="rect">The rectangle bounds.</param>
+		/// <param name="includeLast">Include a final duplicate line to the first point before closing.</param>
 		public void AppendRectangle(RectF rect, bool includeLast = false)
 		{
 			AppendRectangle(rect.X, rect.Y, rect.Width, rect.Height, includeLast);
 		}
 
+		/// <summary>
+		/// Appends a rectangle path.
+		/// </summary>
+		/// <param name="x">Left.</param>
+		/// <param name="y">Top.</param>
+		/// <param name="w">Width.</param>
+		/// <param name="h">Height.</param>
+		/// <param name="includeLast">Include a final duplicate line to the first point before closing.</param>
 		public void AppendRectangle(float x, float y, float w, float h, bool includeLast = false)
 		{
 			var minX = x;
@@ -1101,11 +1418,26 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
+		/// <summary>
+		/// Appends a rounded rectangle using the specified rectangle bounds and uniform corner radius.
+		/// </summary>
+		/// <param name="rect">The rectangle bounds.</param>
+		/// <param name="cornerRadius">Corner radius (clamped to half width/height).</param>
+		/// <param name="includeLast">Include a duplicate final line before closing.</param>
 		public void AppendRoundedRectangle(RectF rect, float cornerRadius, bool includeLast = false)
 		{
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, cornerRadius, includeLast);
 		}
 
+		/// <summary>
+		/// Appends a rounded rectangle where all four corners share the same radius.
+		/// </summary>
+		/// <param name="x">Left.</param>
+		/// <param name="y">Top.</param>
+		/// <param name="w">Width.</param>
+		/// <param name="h">Height.</param>
+		/// <param name="cornerRadius">Corner radius (clamped to half width/height).</param>
+		/// <param name="includeLast">Include a duplicate final line before closing.</param>
 		public void AppendRoundedRectangle(float x, float y, float w, float h, float cornerRadius, bool includeLast = false)
 		{
 			cornerRadius = ClampCornerRadius(cornerRadius, w, h);
@@ -1135,11 +1467,26 @@ namespace Microsoft.Maui.Graphics
 			Close();
 		}
 
+		/// <summary>
+		/// Appends a rounded rectangle using the specified rectangle bounds and individual corner radii.
+		/// </summary>
+		/// <param name="rect">Bounding rectangle.</param>
+		/// <param name="topLeftCornerRadius">Top-left corner radius.</param>
+		/// <param name="topRightCornerRadius">Top-right corner radius.</param>
+		/// <param name="bottomLeftCornerRadius">Bottom-left corner radius.</param>
+		/// <param name="bottomRightCornerRadius">Bottom-right corner radius.</param>
+		/// <param name="includeLast">Include a duplicate final line before closing.</param>
 		public void AppendRoundedRectangle(RectF rect, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
 		{
 			AppendRoundedRectangle(rect.X, rect.Y, rect.Width, rect.Height, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius, includeLast);
 		}
 
+		/// <summary>
+		/// Appends a rounded rectangle using distinct horizontal and vertical radii (elliptical corners).
+		/// </summary>
+		/// <param name="rect">Bounding rectangle.</param>
+		/// <param name="xCornerRadius">Horizontal corner radius.</param>
+		/// <param name="yCornerRadius">Vertical corner radius.</param>
 		public void AppendRoundedRectangle(RectF rect, float xCornerRadius, float yCornerRadius)
 		{
 			xCornerRadius = Math.Min(xCornerRadius, rect.Width / 2);
@@ -1187,6 +1534,18 @@ namespace Microsoft.Maui.Graphics
 			LineTo(new PointF(minX, minY + yCornerRadius));
 		}
 
+		/// <summary>
+		/// Appends a rounded rectangle specifying individual corner radii.
+		/// </summary>
+		/// <param name="x">Left.</param>
+		/// <param name="y">Top.</param>
+		/// <param name="w">Width.</param>
+		/// <param name="h">Height.</param>
+		/// <param name="topLeftCornerRadius">Top-left radius.</param>
+		/// <param name="topRightCornerRadius">Top-right radius.</param>
+		/// <param name="bottomLeftCornerRadius">Bottom-left radius.</param>
+		/// <param name="bottomRightCornerRadius">Bottom-right radius.</param>
+		/// <param name="includeLast">Include a duplicate final line before closing.</param>
 		public void AppendRoundedRectangle(float x, float y, float w, float h, float topLeftCornerRadius, float topRightCornerRadius, float bottomLeftCornerRadius, float bottomRightCornerRadius, bool includeLast = false)
 		{
 			topLeftCornerRadius = ClampCornerRadius(topLeftCornerRadius, w, h);
@@ -1232,6 +1591,11 @@ namespace Microsoft.Maui.Graphics
 			return cornerRadius;
 		}
 
+		/// <summary>
+		/// Indicates whether the specified sub-path is closed.
+		/// </summary>
+		/// <param name="subPathIndex">Zero-based sub-path index.</param>
+		/// <returns><c>true</c> if closed; otherwise <c>false</c>.</returns>
 		public bool IsSubPathClosed(int subPathIndex)
 		{
 			if (subPathIndex >= 0 && subPathIndex < SubPathCount)
@@ -1242,6 +1606,9 @@ namespace Microsoft.Maui.Graphics
 			return false;
 		}
 
+		/// <summary>
+		/// Gets or sets a platform-specific native path object associated with this path. Setting a new value disposes the previous one if disposable.
+		/// </summary>
 		public object PlatformPath
 		{
 			get => _platformPath;
@@ -1252,12 +1619,18 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Clears cached bounds and releases any native platform path.
+		/// </summary>
 		public void Invalidate()
 		{
 			_cachedBounds = null;
 			ReleaseNative();
 		}
 
+		/// <summary>
+		/// Releases native resources associated with the path.
+		/// </summary>
 		public void Dispose()
 		{
 			ReleaseNative();
@@ -1271,6 +1644,11 @@ namespace Microsoft.Maui.Graphics
 			_platformPath = null;
 		}
 
+		/// <summary>
+		/// Offsets every point in the path by the specified amounts.
+		/// </summary>
+		/// <param name="x">Delta X.</param>
+		/// <param name="y">Delta Y.</param>
 		public void Move(float x, float y)
 		{
 			for (var i = 0; i < _points.Count; i++)
@@ -1281,12 +1659,19 @@ namespace Microsoft.Maui.Graphics
 			Invalidate();
 		}
 
+		/// <summary>
+		/// Offsets a single point by the specified deltas.
+		/// </summary>
+		/// <param name="index">Point index.</param>
+		/// <param name="dx">Delta X.</param>
+		/// <param name="dy">Delta Y.</param>
 		public void MovePoint(int index, float dx, float dy)
 		{
 			_points[index] = _points[index].Offset(dx, dy);
 			Invalidate();
 		}
 
+		/// <inheritdoc />
 		public override bool Equals(object obj)
 		{
 			if (obj is PathF compareTo)
@@ -1332,6 +1717,7 @@ namespace Microsoft.Maui.Graphics
 			return true;
 		}
 
+		/// <inheritdoc />
 		public override int GetHashCode()
 		{
 			unchecked
@@ -1344,6 +1730,12 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Determines whether this path and another have equivalent geometry within a tolerance.
+		/// </summary>
+		/// <param name="obj">The other path.</param>
+		/// <param name="epsilon">Maximum allowed difference per component.</param>
+		/// <returns><c>true</c> if equivalent; otherwise <c>false</c>.</returns>
 		public bool Equals(object obj, float epsilon)
 		{
 			if (obj is PathF compareTo)
@@ -1389,6 +1781,9 @@ namespace Microsoft.Maui.Graphics
 			return true;
 		}
 
+		/// <summary>
+		/// Gets the axis-aligned bounding box of the path (cached until modified).
+		/// </summary>
 		public RectF Bounds
 		{
 			get
@@ -1412,6 +1807,11 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Computes bounds by flattening curves with the given flatness, updating the cache.
+		/// </summary>
+		/// <param name="flatness">Maximum allowed deviation when flattening (smaller = more points).</param>
+		/// <returns>The bounding rectangle.</returns>
 		public RectF GetBoundsByFlattening(float flatness = 0.001f)
 		{
 			if (_cachedBounds != null)
@@ -1450,6 +1850,12 @@ namespace Microsoft.Maui.Graphics
 			return (RectF)_cachedBounds;
 		}
 
+		/// <summary>
+		/// Creates a new path consisting only of line segments approximating all curves and arcs.
+		/// </summary>
+		/// <param name="flatness">Maximum allowed deviation per segment (smaller = more segments).</param>
+		/// <param name="includeSubPaths">If <c>true</c>, flattens all sub-paths; otherwise stops after the first closed one.</param>
+		/// <returns>A flattened path.</returns>
 		public PathF GetFlattenedPath(float flatness = .001f, bool includeSubPaths = false)
 		{
 			var flattenedPath = new PathF();

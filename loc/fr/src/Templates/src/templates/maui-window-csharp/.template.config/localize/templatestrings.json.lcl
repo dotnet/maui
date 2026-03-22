@@ -23,12 +23,12 @@
         <Str Cat="Text">
           <Val><![CDATA[A window for displaying a page using C#.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fenêtre permettant d’afficher une page en C#.]]></Val>
+            <Val><![CDATA[Fenêtre permettant d’afficher une page à l’aide de C#.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Window (C#)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -41,7 +41,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens NewWindow1.cs in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ouvre NewWindow1.cs dans le Rédacteur.]]></Val>
+            <Val><![CDATA[Ouvre NewWindow1.cs dans l’éditeur.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

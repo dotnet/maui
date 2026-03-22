@@ -13,13 +13,17 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Tab.xml" path="Type[@FullName='Microsoft.Maui.Controls.Tab']/Docs/*" />
+	/// <summary>
+	/// Represents a group of items within a <see cref="ShellItem"/>. This is an alias for <see cref="ShellSection"/>.
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class Tab : ShellSection
 	{
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs/*" />
+	/// <summary>
+	/// Represents a group of tabs within a <see cref="Controls.ShellItem"/>. Contains <see cref="ShellContent"/> items.
+	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
@@ -110,7 +114,6 @@ namespace Microsoft.Maui.Controls
 			_lastInset = inset;
 			_lastTabThickness = tabThickness;
 		}
-
 		async void IShellSectionController.SendPopping(Task poppingCompleted)
 		{
 			if (_navStack.Count <= 1)
@@ -215,7 +218,9 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="ShellSection"/> instance.
+		/// </summary>
 		public ShellSection()
 		{
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
@@ -242,18 +247,24 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItem']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the currently selected <see cref="ShellContent"/>. This is a bindable property.
+		/// </summary>
 		public ShellContent CurrentItem
 		{
 			get { return (ShellContent)GetValue(CurrentItemProperty); }
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Items']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="ShellContent"/> items in this section. This is a bindable property.
+		/// </summary>
 		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Stack']/Docs/*" />
+		/// <summary>
+		/// Gets the current navigation stack of pages in this section.
+		/// </summary>
 		public IReadOnlyList<Page> Stack => _navStack;
 
 		internal Page DisplayedPage
@@ -694,7 +705,8 @@ namespace Microsoft.Maui.Controls
 				{
 					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
 					base.OnChildRemoved(child, oldLogicalIndex);
-				};
+				}
+				;
 			}
 			else
 			{
@@ -946,6 +958,7 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
+			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove
@@ -954,12 +967,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool IsVisibleSection => Parent?.Parent is Shell shell && shell.CurrentItem?.CurrentItem == this;
+
 		void PresentedPageDisappearing()
 		{
 			if (this is IShellSectionController sectionController)
 			{
 				CurrentItem?.SendDisappearing();
-				sectionController.PresentedPage?.SendDisappearing();
+				var presentedPage = sectionController.PresentedPage;
+				if (presentedPage is not null)
+				{
+					// Don't send disappearing to a modal page if we're switching ShellItems
+					// The modal belongs to the new ShellItem, not the old one being disappeared
+					if (IsVisibleSection)
+					{
+						presentedPage.SendDisappearing();
+					}
+				}
 			}
 		}
 

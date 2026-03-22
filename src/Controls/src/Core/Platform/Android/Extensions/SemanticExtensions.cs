@@ -11,16 +11,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (info == null)
 				return;
 
-			if (virtualView.TapGestureRecognizerNeedsActionClick())
-			{
-				// Add "double tap to activate" to the screen reader
+			if (virtualView.HasAccessibleTapGesture())
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
-			}
-			if (virtualView.TapGestureRecognizerNeedsButtonAnnouncement())
-			{
-				// Add "button" to the screen reader
-				info.ClassName = "android.widget.Button";
-			}
 		}
 
 		internal static void AddOrRemoveControlsAccessibilityDelegate(this View virtualView)
@@ -54,5 +46,9 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 		}
+
+		internal static bool ControlsAccessibilityDelegateNeeded(this View virtualView)
+			=> virtualView.HasAccessibleTapGesture();
+
 	}
 }

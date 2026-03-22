@@ -168,17 +168,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					Element = null;
 				}
 
-				if (_tracker != null)
-				{
-					_tracker.Dispose();
-					_tracker = null;
-				}
+				_tracker?.Dispose();
+				_tracker = null;
 
-				if (_events != null)
-				{
-					_events.Dispose();
-					_events = null;
-				}
+				_events?.Dispose();
+				_events = null;
 
 				if (_flyoutController != null)
 				{
@@ -223,8 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
-			if (element != null)
-				element.SendViewInitialized(NativeView);
+			element?.SendViewInitialized(NativeView);
 		}
 
 		public void SetElementSize(Size size)

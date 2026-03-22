@@ -22,6 +22,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
 		{
+			if (!Loop)
+			{
+				return base.CreateIndexesFrom(startIndex, count);
+			}
+			var collectionView = CollectionView;
+			if (collectionView is null || count < 0)
+			{
+				return Array.Empty<NSIndexPath>();
+			}
+
 			if (ItemCount == 0)
 			{
 				count += 2;
@@ -59,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			get
 			{
 				var newCount = ItemCount;
-				if (newCount > 0)
+				if (Loop && newCount > 0)
 				{
 					newCount = ItemCount + 2;
 				}

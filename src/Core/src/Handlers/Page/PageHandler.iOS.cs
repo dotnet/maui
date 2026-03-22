@@ -21,14 +21,6 @@ namespace Microsoft.Maui.Handlers
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
 		}
 
-		public override void SetVirtualView(IView view)
-		{
-			base.SetVirtualView(view);
-
-			// Ensure we tag the ContentView as a Page so that InvalidateAncestorsMeasures can stop propagation here
-			PlatformView.IsPage = true;
-		}
-
 		public static void MapBackground(IPageHandler handler, IContentView page)
 		{
 			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)

@@ -1,8 +1,7 @@
 using System;
-using Android.Content;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
+using global::Android.Content;
+using global::Android.Runtime;
+using global::Android.Views;
 using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Android;
@@ -25,8 +24,8 @@ namespace GraphicsTester.Android
 
 			_listView = new ListView(context);
 			_listView.LayoutParameters = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.WrapContent,
-				ViewGroup.LayoutParams.MatchParent,
+				global::Android.Views.ViewGroup.LayoutParams.WrapContent,
+				global::Android.Views.ViewGroup.LayoutParams.MatchParent,
 				2.5f);
 			base.AddView(_listView);
 

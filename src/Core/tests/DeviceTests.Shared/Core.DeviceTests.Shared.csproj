@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <SingleProject>true</SingleProject>
+    <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.DeviceTests.Shared</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
@@ -17,6 +18,7 @@
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
     <PackageReference Include="xunit.runner.utility" Version="$(XunitPackageVersion)"/>
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21558.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>

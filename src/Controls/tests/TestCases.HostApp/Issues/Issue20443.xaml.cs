@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Controls.TestCases.HostApp.Issues
+namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 20443, "CollectionView item sizing wrong after refresh", PlatformAffected.iOS)]
 

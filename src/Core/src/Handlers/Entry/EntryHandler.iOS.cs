@@ -11,12 +11,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiTextFieldProxy _proxy = new();
 
-		protected override MauiTextField CreatePlatformView() =>
-			new MauiTextField
+		protected override MauiTextField CreatePlatformView()
+		{
+			var platformEntry = new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
+
+			platformEntry.AddMauiDoneAccessoryView(this);
+			return platformEntry;
+		}
 
 		public override void SetVirtualView(IView view)
 		{
@@ -43,8 +48,14 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
-		public static void MapTextColor(IEntryHandler handler, IEntry entry) =>
+		public static void MapTextColor(IEntryHandler handler, IEntry entry)
+		{
 			handler.PlatformView?.UpdateTextColor(entry);
+			if (entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
+			{
+				handler.PlatformView?.UpdateClearButtonColor(entry);
+			}
+		}
 
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsPassword(entry);
@@ -165,10 +176,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
 				{
-					if (virtualView.SelectionLength > 0) {
+					if (virtualView.SelectionLength > 0)
+					{
 						platformView.UpdateSelectionLength(virtualView);
 					}
-					else {
+					else
+					{
 						platformView.UpdateCursorPosition(virtualView);
 					}
 					virtualView.IsFocused = true;
@@ -177,12 +190,16 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (sender is MauiTextField platformView)
+				if (sender is MauiTextField platformView && VirtualView is not null)
 				{
-					VirtualView?.UpdateText(platformView.Text);
-				}
-			}
+					// Update cursor position before updating text so that when TextChanged event fires,
+					// the CursorPosition property reflects the current native cursor position
+					VirtualView.UpdateCursorPosition(platformView.GetCursorPosition());
 
+					VirtualView.UpdateText(platformView.Text);
+				}
+			}	
+				
 			void OnEditingEnded(object? sender, EventArgs e)
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)

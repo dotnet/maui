@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Controls.Xaml.Internals;
-using Microsoft.Maui.Controls.XamlC;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using static Mono.Cecil.Cil.Instruction;
@@ -164,8 +162,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				IEnumerable<Instruction> instructions;
 				try
 				{
-					instructions = (IEnumerable<Instruction>)converter.Invoke(compiledConverter, new object[] {
-					node.Value as string, context, node as BaseNode});
+					instructions = (IEnumerable<Instruction>)converter.Invoke(compiledConverter, [
+					node.Value as string, context, node as BaseNode]);
 				}
 				catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is XamlParseException)
 				{
@@ -178,7 +176,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				foreach (var i in instructions)
 					yield return i;
 				if (targetTypeRef.IsValueType && boxValueTypes)
-					yield return Instruction.Create(OpCodes.Box, module.ImportReference(targetTypeRef));
+					yield return Create(Box, module.ImportReference(targetTypeRef));
 				yield break;
 			}
 
@@ -206,10 +204,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						yield return instruction;
 				}
 
-				yield return Instruction.Create(OpCodes.Callvirt, convertFromInvariantStringReference);
+				yield return Create(Callvirt, convertFromInvariantStringReference);
 
 				if (targetTypeRef.IsValueType && unboxValueTypes)
-					yield return Instruction.Create(OpCodes.Unbox_Any, module.ImportReference(targetTypeRef));
+					yield return Create(Unbox_Any, module.ImportReference(targetTypeRef));
 
 				//ConvertFrom returns an object, no need to Box
 				yield break;
@@ -232,54 +230,54 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (targetTypeRef.ResolveCached(context.Cache).BaseType != null && targetTypeRef.ResolveCached(context.Cache).BaseType.FullName == "System.Enum")
 				yield return PushParsedEnum(context.Cache, targetTypeRef, str, node);
 			else if (targetTypeRef.FullName == "System.Char")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(Char.Parse, node, str)));
+				yield return Create(Ldc_I4, unchecked((int)TryFormat(Char.Parse, node, str)));
 			else if (targetTypeRef.FullName == "System.SByte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => SByte.Parse(s, CultureInfo.InvariantCulture), node, str)));
+				yield return Create(Ldc_I4, unchecked((int)TryFormat(s => SByte.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Int16")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => Int16.Parse(s, CultureInfo.InvariantCulture), node, str)));
+				yield return Create(Ldc_I4, unchecked((int)TryFormat(s => Int16.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Int32")
-				yield return Instruction.Create(OpCodes.Ldc_I4, TryFormat(s => Int32.Parse(s, CultureInfo.InvariantCulture), node, str));
+				yield return Create(Ldc_I4, TryFormat(s => Int32.Parse(s, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Int64")
-				yield return Instruction.Create(OpCodes.Ldc_I8, TryFormat(s => Int64.Parse(s, CultureInfo.InvariantCulture), node, str));
+				yield return Create(Ldc_I8, TryFormat(s => Int64.Parse(s, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Byte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => Byte.Parse(s, CultureInfo.InvariantCulture), node, str)));
+				yield return Create(Ldc_I4, unchecked((int)TryFormat(s => Byte.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.UInt16")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => UInt16.Parse(s, CultureInfo.InvariantCulture), node, str)));
+				yield return Create(Ldc_I4, unchecked((int)TryFormat(s => UInt16.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.UInt32")
-				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)TryFormat(s => UInt32.Parse(s, CultureInfo.InvariantCulture), node, str)));
+				yield return Create(Ldc_I4, unchecked((int)TryFormat(s => UInt32.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.UInt64")
-				yield return Instruction.Create(OpCodes.Ldc_I8, unchecked((long)TryFormat(s => UInt64.Parse(s, CultureInfo.InvariantCulture), node, str)));
+				yield return Create(Ldc_I8, unchecked((long)TryFormat(s => UInt64.Parse(s, CultureInfo.InvariantCulture), node, str)));
 			else if (targetTypeRef.FullName == "System.Single")
-				yield return Instruction.Create(OpCodes.Ldc_R4, TryFormat(s => Single.Parse(str, CultureInfo.InvariantCulture), node, str));
+				yield return Create(Ldc_R4, TryFormat(s => Single.Parse(str, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Double")
-				yield return Instruction.Create(OpCodes.Ldc_R8, TryFormat(s => Double.Parse(str, CultureInfo.InvariantCulture), node, str));
+				yield return Create(Ldc_R8, TryFormat(s => Double.Parse(str, CultureInfo.InvariantCulture), node, str));
 			else if (targetTypeRef.FullName == "System.Boolean")
 			{
 				if (TryFormat(Boolean.Parse, node, str))
-					yield return Instruction.Create(OpCodes.Ldc_I4_1);
+					yield return Create(Ldc_I4_1);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4_0);
+					yield return Create(Ldc_I4_0);
 			}
 			else if (targetTypeRef.FullName == "System.TimeSpan")
 			{
 				var ts = TryFormat(s => TimeSpan.Parse(s, CultureInfo.InvariantCulture), node, str);
 				var ticks = ts.Ticks;
-				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
+				yield return Create(Ldc_I8, ticks);
+				yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
 			}
 			else if (targetTypeRef.FullName == "System.DateTime")
 			{
 				var dt = TryFormat(s => DateTime.Parse(s, CultureInfo.InvariantCulture), node, str);
 				var ticks = dt.Ticks;
-				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
-				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("mscorlib", "System", "DateTime"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
+				yield return Create(Ldc_I8, ticks);
+				yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("mscorlib", "System", "DateTime"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
 			}
 			else if (targetTypeRef.FullName == "System.String" && str.StartsWith("{}", StringComparison.Ordinal))
-				yield return Instruction.Create(OpCodes.Ldstr, str.Substring(2));
+				yield return Create(Ldstr, str.Substring(2));
 			else if (targetTypeRef.FullName == "System.String")
-				yield return Instruction.Create(OpCodes.Ldstr, str);
+				yield return Create(Ldstr, str);
 			else if (targetTypeRef.FullName == "System.Object")
-				yield return Instruction.Create(OpCodes.Ldstr, str);
+				yield return Create(Ldstr, str);
 			else if (targetTypeRef.FullName == "System.Decimal")
 			{
 				decimal outdecimal;
@@ -411,21 +409,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			switch (typeRef.FullName)
 			{
 				case "System.Byte":
-					return Instruction.Create(OpCodes.Ldc_I4, (int)b);
+					return Create(Ldc_I4, (int)b);
 				case "System.SByte":
-					return Instruction.Create(OpCodes.Ldc_I4, (int)sb);
+					return Create(Ldc_I4, (int)sb);
 				case "System.Int16":
-					return Instruction.Create(OpCodes.Ldc_I4, (int)s);
+					return Create(Ldc_I4, (int)s);
 				case "System.UInt16":
-					return Instruction.Create(OpCodes.Ldc_I4, (int)us);
+					return Create(Ldc_I4, (int)us);
 				case "System.Int32":
-					return Instruction.Create(OpCodes.Ldc_I4, (int)i);
+					return Create(Ldc_I4, (int)i);
 				case "System.UInt32":
-					return Instruction.Create(OpCodes.Ldc_I4, (uint)ui);
+					return Create(Ldc_I4, (uint)ui);
 				case "System.Int64":
-					return Instruction.Create(OpCodes.Ldc_I4, (long)l);
+					return Create(Ldc_I4, (long)l);
 				case "System.UInt64":
-					return Instruction.Create(OpCodes.Ldc_I4, (ulong)ul);
+					return Create(Ldc_I4, (ulong)ul);
 				default:
 					throw new BuildException(BuildExceptionCode.EnumValueMissing, lineInfo, null, value);
 			}
@@ -439,8 +437,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			var module = context.Body.Method.Module;
 
-			var xmlLineInfo = node as IXmlLineInfo;
-			if (xmlLineInfo == null)
+			if (node is not IXmlLineInfo xmlLineInfo)
 			{
 				yield return Create(Ldnull);
 				yield break;
@@ -468,51 +465,50 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			var module = context.Body.Method.Module;
 
-			var nodes = new List<IElementNode>();
+			var nodes = new List<ElementNode>();
 			INode n = node.Parent;
 			while (n != null)
 			{
-				var en = n as IElementNode;
-				if (en != null && context.Variables.ContainsKey(en))
+				if (n is ElementNode en && context.Variables.ContainsKey(en))
 					nodes.Add(en);
 				n = n.Parent;
 			}
 
 			if (nodes.Count == 0 && context.ParentContextValues == null)
 			{
-				yield return Instruction.Create(OpCodes.Ldnull);
+				yield return Create(Ldnull);
 				yield break;
 			}
 
 			if (nodes.Count == 0)
 			{
-				yield return Instruction.Create(OpCodes.Ldarg_0);
-				yield return Instruction.Create(OpCodes.Ldfld, context.ParentContextValues);
+				yield return Create(Ldarg_0);
+				yield return Create(Ldfld, context.ParentContextValues);
 				yield break;
 			}
 
 			//Compute parent object length
 			if (context.ParentContextValues != null)
 			{
-				yield return Instruction.Create(OpCodes.Ldarg_0);
-				yield return Instruction.Create(OpCodes.Ldfld, context.ParentContextValues);
-				yield return Instruction.Create(OpCodes.Ldlen);
-				yield return Instruction.Create(OpCodes.Conv_I4);
+				yield return Create(Ldarg_0);
+				yield return Create(Ldfld, context.ParentContextValues);
+				yield return Create(Ldlen);
+				yield return Create(Conv_I4);
 			}
 			else
-				yield return Instruction.Create(OpCodes.Ldc_I4_0);
+				yield return Create(Ldc_I4_0);
 			var parentObjectLength = new VariableDefinition(module.TypeSystem.Int32);
 			context.Body.Variables.Add(parentObjectLength);
-			yield return Instruction.Create(OpCodes.Stloc, parentObjectLength);
+			yield return Create(Stloc, parentObjectLength);
 
 			//Create the final array
-			yield return Instruction.Create(OpCodes.Ldloc, parentObjectLength);
-			yield return Instruction.Create(OpCodes.Ldc_I4, nodes.Count);
-			yield return Instruction.Create(OpCodes.Add);
-			yield return Instruction.Create(OpCodes.Newarr, module.TypeSystem.Object);
+			yield return Create(Ldloc, parentObjectLength);
+			yield return Create(Ldc_I4, nodes.Count);
+			yield return Create(Add);
+			yield return Create(Newarr, module.TypeSystem.Object);
 			var finalArray = new VariableDefinition(module.ImportArrayReference(context.Cache, ("mscorlib", "System", "Object")));
 			context.Body.Variables.Add(finalArray);
-			yield return Instruction.Create(OpCodes.Stloc, finalArray);
+			yield return Create(Stloc, finalArray);
 
 			//Copy original array to final
 			if (context.ParentContextValues != null)
@@ -536,17 +532,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			//Add nodes to array
-			yield return Instruction.Create(OpCodes.Ldloc, finalArray);
+			yield return Create(Ldloc, finalArray);
 			if (nodes.Count > 0)
 			{
 				for (var i = 0; i < nodes.Count; i++)
 				{
 					var en = nodes[i];
-					yield return Instruction.Create(OpCodes.Dup);
-					yield return Instruction.Create(OpCodes.Ldc_I4, i);
+					yield return Create(Dup);
+					yield return Create(Ldc_I4, i);
 					foreach (var instruction in context.Variables[en].LoadAs(context.Cache, module.TypeSystem.Object, module))
 						yield return instruction;
-					yield return Instruction.Create(OpCodes.Stelem_Ref);
+					yield return Create(Stelem_Ref);
 				}
 			}
 		}
@@ -581,23 +577,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var scopes = new List<VariableDefinition>();
 			do
 			{
-
 				if (context.Scopes.TryGetValue(node, out var scope))
 					scopes.Add(scope.Item1);
 				node = node.Parent;
 			} while (node != null);
 
 
-			yield return Instruction.Create(OpCodes.Ldc_I4, scopes.Count);
-			yield return Instruction.Create(OpCodes.Newarr, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
+			yield return Create(Ldc_I4, scopes.Count);
+			yield return Create(Newarr, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "NameScope")));
 
 			var i = 0;
 			foreach (var scope in scopes)
 			{
-				yield return Instruction.Create(OpCodes.Dup);
-				yield return Instruction.Create(OpCodes.Ldc_I4, i);
-				yield return Instruction.Create(OpCodes.Ldloc, scope);
-				yield return Instruction.Create(OpCodes.Stelem_Ref);
+				yield return Create(Dup);
+				yield return Create(Ldc_I4, i);
+				yield return Create(Ldloc, scope);
+				yield return Create(Stelem_Ref);
 				i++;
 			}
 		}
@@ -625,7 +620,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget, IReferenceProvider and IProvideParentValues
 			if (createAllServices
 				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideParentValues")), TypeRefComparer.Default)
-				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")), TypeRefComparer.Default))
+				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")), TypeRefComparer.Default)
+				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IRootObjectProvider")), TypeRefComparer.Default))
 			{
 				alreadyContainsProvideValueTarget = true;
 				var pushParentIl = node.PushParentObjectsArray(context).ToList();
@@ -644,9 +640,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					foreach (var instruction in PushNamescopes(node, context, module))
 						yield return instruction;
 
-					yield return Create(Ldc_I4_0); //don't ask
+					//rootObject
+					if (context.Root is VariableDefinition rootVariable)
+						yield return Create(Ldloc, rootVariable);
+					else if (context.Root is FieldReference rootField)
+					{
+						yield return Create(Ldarg_0);
+						yield return Create(Ldfld, rootField);
+					}
+					else
+						yield return Create(Ldnull);
+
 					yield return Create(Newobj, module.ImportCtorReference(context.Cache,
-						("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
+						type: ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"),
+						parameterTypes: [
+							("mscorlib", "System", "Object[]"),
+							("mscorlib", "System", "Object"),
+							("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "INameScope[]"),
+							("mscorlib", "System", "Object"),
+						]));
 
 					//store the provider so we can register it again with a different key
 					yield return Create(Dup);
@@ -660,6 +672,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 					yield return Create(Ldloc, refProvider);
 					yield return Create(Callvirt, addService);
+
+					yield return Create(Dup); //Keep the serviceProvider on the stack
+					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IRootObjectProvider")));
+					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+					yield return Create(Ldloc, refProvider);
+					yield return Create(Callvirt, addService);
 				}
 			}
 
@@ -670,7 +688,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")));
 				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 
-				if (node.Parent is IElementNode elementNode &&
+				if (node.Parent is ElementNode elementNode &&
 					context.Variables.TryGetValue(elementNode, out VariableDefinition variableDefinition))
 				{
 					foreach (var instruction in variableDefinition.LoadAs(context.Cache, module.TypeSystem.Object, module))

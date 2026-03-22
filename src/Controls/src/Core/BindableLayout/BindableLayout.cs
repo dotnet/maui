@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public IList Children { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableLayout']/Docs/*" />
+	/// <summary>Provides attached properties for enabling data binding on layout elements.</summary>
 	public static class BindableLayout
 	{
 		/// <summary>Bindable property for attached property <c>ItemsSource</c>.</summary>
@@ -46,61 +46,81 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty EmptyViewTemplateProperty =
 			BindableProperty.Create("EmptyViewTemplate", typeof(DataTemplate), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyViewTemplate = (DataTemplate)n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetItemsSource']/Docs/*" />
+		/// <summary>Sets the items source for the bindable layout.</summary>
+		/// <param name="b">The bindable object to set the items source on.</param>
+		/// <param name="value">The enumerable collection to use as items source.</param>
 		public static void SetItemsSource(BindableObject b, IEnumerable value)
 		{
 			b.SetValue(ItemsSourceProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetItemsSource']/Docs/*" />
+		/// <summary>Gets the items source for the bindable layout.</summary>
+		/// <param name="b">The bindable object to get the items source from.</param>
+		/// <returns>The enumerable collection used as items source.</returns>
 		public static IEnumerable GetItemsSource(BindableObject b)
 		{
 			return (IEnumerable)b.GetValue(ItemsSourceProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetItemTemplate']/Docs/*" />
+		/// <summary>Sets the data template for items in the bindable layout.</summary>
+		/// <param name="b">The bindable object to set the template on.</param>
+		/// <param name="value">The data template to use for items.</param>
 		public static void SetItemTemplate(BindableObject b, DataTemplate value)
 		{
 			b.SetValue(ItemTemplateProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetItemTemplate']/Docs/*" />
+		/// <summary>Gets the data template for items in the bindable layout.</summary>
+		/// <param name="b">The bindable object to get the template from.</param>
+		/// <returns>The data template used for items.</returns>
 		public static DataTemplate GetItemTemplate(BindableObject b)
 		{
 			return (DataTemplate)b.GetValue(ItemTemplateProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetItemTemplateSelector']/Docs/*" />
+		/// <summary>Sets the template selector for items in the bindable layout.</summary>
+		/// <param name="b">The bindable object to set the template selector on.</param>
+		/// <param name="value">The data template selector to use.</param>
 		public static void SetItemTemplateSelector(BindableObject b, DataTemplateSelector value)
 		{
 			b.SetValue(ItemTemplateSelectorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetItemTemplateSelector']/Docs/*" />
+		/// <summary>Gets the template selector for items in the bindable layout.</summary>
+		/// <param name="b">The bindable object to get the template selector from.</param>
+		/// <returns>The data template selector used for items.</returns>
 		public static DataTemplateSelector GetItemTemplateSelector(BindableObject b)
 		{
 			return (DataTemplateSelector)b.GetValue(ItemTemplateSelectorProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetEmptyView']/Docs/*" />
+		/// <summary>Gets the view displayed when the items source is empty.</summary>
+		/// <param name="b">The bindable object to get the empty view from.</param>
+		/// <returns>The view or content displayed when items source is empty.</returns>
 		public static object GetEmptyView(BindableObject b)
 		{
 			return b.GetValue(EmptyViewProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetEmptyView']/Docs/*" />
+		/// <summary>Sets the view displayed when the items source is empty.</summary>
+		/// <param name="b">The bindable object to set the empty view on.</param>
+		/// <param name="value">The view or content to display when items source is empty.</param>
 		public static void SetEmptyView(BindableObject b, object value)
 		{
 			b.SetValue(EmptyViewProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='GetEmptyViewTemplate']/Docs/*" />
+		/// <summary>Gets the template used to create the empty view.</summary>
+		/// <param name="b">The bindable object to get the empty view template from.</param>
+		/// <returns>The data template used for the empty view.</returns>
 		public static DataTemplate GetEmptyViewTemplate(BindableObject b)
 		{
 			return (DataTemplate)b.GetValue(EmptyViewTemplateProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='SetEmptyViewTemplate']/Docs/*" />
+		/// <summary>Sets the template used to create the empty view.</summary>
+		/// <param name="b">The bindable object to set the empty view template on.</param>
+		/// <param name="value">The data template to use for the empty view.</param>
 		public static void SetEmptyViewTemplate(BindableObject b, DataTemplate value)
 		{
 			b.SetValue(EmptyViewTemplateProperty, value);

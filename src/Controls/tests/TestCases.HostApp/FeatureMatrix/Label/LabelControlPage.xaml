@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.LabelControlMainPage"
+             Title="LabelControlPage">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+        Clicked="NavigateToOptionsPage_Clicked"
+        AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
+
+    <VerticalStackLayout>
+      <Label
+        HeightRequest="600"
+        Text="{Binding Text , Mode=TwoWay}"
+        CharacterSpacing="{Binding CharacterSpacing}"
+        FontAttributes="{Binding FontAttributes}"
+        FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+        FontFamily="{Binding FontFamily}"
+        FontSize="{Binding FontSize}"
+        FormattedText="{Binding FormattedText}"
+        HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+        LineBreakMode="{Binding LineBreakMode}"
+        LineHeight="{Binding LineHeight}"
+        MaxLines="{Binding MaxLines}"
+        Padding="{Binding Padding}"
+        TextColor="{Binding TextColor}"
+        TextDecorations="{Binding TextDecorations}"
+        TextTransform="{Binding TextTransform}"
+        TextType="{Binding TextType}"
+        VerticalTextAlignment="{Binding VerticalTextAlignment}"
+        BackgroundColor="LightGray"
+        AutomationId="MainLabel"/>
+    </VerticalStackLayout>
+</ContentPage>

@@ -4,9 +4,9 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -97,8 +97,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
 			if (_measureInvalidated ||
-			    !AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
-			    !preferredAttributes.Frame.Size.IsCloseTo(_size))
+				!AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
+				!preferredAttributes.Frame.Size.IsCloseTo(_size))
 			{
 				// Measure this cell (including the Forms element) if there is no constrained size
 				var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
@@ -276,7 +276,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
 					{
 						var setter = state.Setters[setterIndex];
-						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+							setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 						{
 							return true;
 						}
@@ -306,14 +307,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			// If the cell is not bound (or getting unbounded), we don't want to measure it
 			// and cause a useless and harming InvalidateLayout on the collection view layout
 			if (!_measureInvalidated && _bound)
 			{
 				_measureInvalidated = true;
+				return true;
 			}
+
+			return false;
 		}
 
 		protected void OnContentSizeChanged()

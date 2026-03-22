@@ -1,75 +1,74 @@
 parameters:
-  - name: condition
-    default: true
+- name: condition
+  default: true
 
-  - name: conditionMacTemplates
-    default: true
-  
-  - name: skipProvisioning
-    default: true
+- name: conditionMacTemplates
+  default: true
 
-  - name: artifactName
-    type: string
-    default: nuget
+- name: skipProvisioning
+  default: true
 
-  - name: artifactItemPattern
-    type: string
-    default: '**/*.nupkg'
+- name: artifactName
+  type: string
+  default: nuget
 
-  - name: uploadPrefix
-    type: string
-    default: ''
+- name: artifactItemPattern
+  type: string
+  default: '**/*.nupkg'
 
-  - name: checkoutDirectory
-    type: string
-    default: $(System.DefaultWorkingDirectory)
+- name: uploadPrefix
+  type: string
+  default: ''
 
-  - name: MacBuildPool
-    type: object
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
 
-  - name: BuildPlatforms
-    type: object
+- name: MacBuildPool
+  type: object
 
-  - name: BuildCategoriesMac
-    type: object
-    default:
-    - macOSTemplates
-    - AOT
+- name: BuildPlatforms
+  type: object
 
-  - name: BuildCategories
-    type: object
-    default:
-    - WindowsTemplates
-    - Build
-    - Blazor
-    - MultiProject
+- name: BuildCategoriesMac
+  type: object
+  default:
+  - macOSTemplates
+  - AOT
 
-  - name: RunPlatforms
-    type: object
+- name: BuildCategories
+  type: object
+  default:
+  - WindowsTemplates
+  - Build
+  - Blazor
+  - MultiProject
 
-  - name: prepareSteps
-    type: stepList
-    default: []
+- name: RunPlatforms
+  type: object
+
+- name: prepareSteps
+  type: stepList
+  default: []
 
 jobs:
 - ${{ each category in parameters.BuildCategoriesMac }}:
   - job: build_maui_templates_${{ category }}
     workspace:
       clean: all
-    displayName: 'Build ${{ category }}: macOS' 
+    displayName: 'Build ${{ category }}: macOS'
     timeoutInMinutes: 240
     condition: ${{ parameters.conditionMacTemplates }}
     pool: ${{ parameters.MacBuildPool }}
     steps:
-      - template: maui-templates-steps.yml
-        parameters:
-          condition: ${{ parameters.condition }}
-          artifactName: ${{ parameters.artifactName }}
-          artifactItemPattern: ${{ parameters.artifactItemPattern }}
-          checkoutDirectory: ${{ parameters.checkoutDirectory }}
-          prepareSteps: ${{ parameters.prepareSteps }}
-          category: ${{ category }}
-
+    - template: maui-templates-steps.yml
+      parameters:
+        condition: ${{ parameters.condition }}
+        artifactName: ${{ parameters.artifactName }}
+        artifactItemPattern: ${{ parameters.artifactItemPattern }}
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
+        prepareSteps: ${{ parameters.prepareSteps }}
+        category: ${{ category }}
 
 - ${{ each category in parameters.BuildCategories }}:
   - job: build_maui_templates_${{ category }}
@@ -90,17 +89,17 @@ jobs:
       name: $(POOL_NAME)
       vmImage: $(POOL_VIMAGE)
       demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals arm64
+      - macOS.Name -equals Sequoia
+      - macOS.Architecture -equals arm64
     steps:
-      - template: maui-templates-steps.yml
-        parameters:
-          condition: ${{ parameters.condition }}
-          artifactName: ${{ parameters.artifactName }}
-          artifactItemPattern: ${{ parameters.artifactItemPattern }}
-          checkoutDirectory: ${{ parameters.checkoutDirectory }}
-          prepareSteps: ${{ parameters.prepareSteps }}
-          category: ${{ category }}
+    - template: maui-templates-steps.yml
+      parameters:
+        condition: ${{ parameters.condition }}
+        artifactName: ${{ parameters.artifactName }}
+        artifactItemPattern: ${{ parameters.artifactItemPattern }}
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
+        prepareSteps: ${{ parameters.prepareSteps }}
+        category: ${{ category }}
 
 - ${{ each RunPlatform in parameters.RunPlatforms }}:
   - job: run_${{ RunPlatform.testName }}
@@ -157,13 +156,12 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
-
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
       - pwsh: ./build.ps1 -Script eng/devices/ios.cake --target=Cleanup --verbosity=diagnostic
         displayName: Reset iOS simulators
         # TODO: pass properly device type/version from top-level yml
         env:
-          IOS_TEST_DEVICE: ios-simulator-64_18.0
+          IOS_TEST_DEVICE: ios-simulator-64_18.4
 
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run ${{ RunPlatform.testName }} templates run tests
@@ -171,7 +169,7 @@ jobs:
       # TODO: pass properly device type/version from top-level yml
       ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
         env:
-            IOS_TEST_DEVICE: ios-simulator-64_18.0
+          IOS_TEST_DEVICE: ios-simulator-64_18.4
 
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
       - pwsh: ./build.ps1 --target=Cleanup -Script eng/devices/ios.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
@@ -186,6 +184,5 @@ jobs:
         testRunner: VSTest
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
         testRunTitle: ${{ RunPlatform.testName }} templates run tests
-
-    - template: /eng/pipelines/common/fail-on-issue.yml
+    # - template: /eng/pipelines/common/fail-on-issue.yml
 

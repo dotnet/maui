@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (_footerUIView != null && IsViewLoaded && View.Window != null)
 				{
-					var width = ItemsViewLayout.CollectionViewContentSize.Height;
+					var width = ItemsViewLayout.CollectionViewContentSize.Width;
 					var footerX = width + emptyWidth;
 					var currentFrame = _footerUIView.Frame;
 

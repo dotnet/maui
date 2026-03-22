@@ -1,12 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			source.Add("Item 3");
 			var count = 0;
 			await InvokeOnMainThreadAsync(() =>
-			{ 
+			{
 				count = ois.Count;
 				Assert.Equal(3, ois.Count);
 			});

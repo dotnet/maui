@@ -4,7 +4,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwitchCell']/Docs/*" />
+	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with a label and an on/off switch.</summary>
+	[Obsolete("The controls which use SwitchCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public class SwitchCell : Cell
 	{
 		/// <summary>Bindable property for <see cref="On"/>.</summary>
@@ -20,21 +21,21 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(SwitchCell), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='OnColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the switch when it is in the "On" position. This is a bindable property.</summary>
 		public Color OnColor
 		{
 			get { return (Color)GetValue(OnColorProperty); }
 			set { SetValue(OnColorProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <summary>Gets or sets the state of the switch. This is a bindable property.</summary>
 		public bool On
 		{
 			get { return (bool)GetValue(OnProperty); }
 			set { SetValue(OnProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>Gets or sets the text displayed next to the switch. This is a bindable property.</summary>
 		public string Text
 		{
 			get { return (string)GetValue(TextProperty); }

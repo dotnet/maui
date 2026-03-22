@@ -15,7 +15,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			ApplicationModel.Platform.MapServiceToken = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
 #endif
 		}
-#if !ANDROID
+
+		// Temporarily disabling this test on Windows due to consistent CI failures.
+		// See https://github.com/dotnet/maui/issues/30507 for tracking re-enablement.
+#if !ANDROID && !WINDOWS
 		[Theory]
 		[InlineData(47.673988, -122.121513)]
 		public async Task Get_Placemarks_LatLong(double latitude, double longitude)

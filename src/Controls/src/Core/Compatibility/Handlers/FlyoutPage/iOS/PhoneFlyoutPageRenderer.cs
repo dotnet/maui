@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
-		VisualElement _element;
+		WeakReference<VisualElement> _element;
 		bool _disposed;
 
 		UIViewController _flyoutController;
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return _presented; }
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
-			_element = element;
+			_element = new(element);
 
 			if (_intialLayoutFinished)
 			{
@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
+		[Obsolete]
 		public void SetElementSize(Size size)
 		{
-			Element.Layout(new Rect(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIViewController ViewController
@@ -124,6 +124,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidAppear(animated);
 			Page.SendAppearing();
+			if (!_intialLayoutFinished)
+			{
+				_intialLayoutFinished = true;
+				SetInitialPresented();
+			}
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -156,19 +161,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdatePresented(((FlyoutPage)Element).IsPresented);
 
 			UpdateLeftBarButton();
-		}
-
-		public override void ViewWillLayoutSubviews()
-		{
-			// Orientation doesn't seem to be set to a stable correct value until here.
-			// So, we officially process orientation here.
-			if (!_intialLayoutFinished)
-			{
-				_intialLayoutFinished = true;
-				SetInitialPresented();
-			}
-
-			base.ViewWillLayoutSubviews();
 		}
 
 		public override void ViewDidLoad()
@@ -205,18 +197,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewWillTransitionToSize(CoreGraphics.CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 		{
 			base.ViewWillTransitionToSize(toSize, coordinator);
-
-			if (FlyoutOverlapsDetailsInPopoverMode)
+			if (!OperatingSystem.IsMacCatalyst())
 			{
-				if (FlyoutPageController.ShouldShowSplitMode)
-					UpdatePresented(true);
-				else
+				bool shouldShowSplitMode = FlyoutPageController.ShouldShowSplitMode;
+				if (FlyoutOverlapsDetailsInPopoverMode)
+				{
+					UpdatePresented(shouldShowSplitMode);
+				}
+				else if (!shouldShowSplitMode && _presented)
+				{
 					UpdatePresented(false);
-			}
-			else
-			{
-				if (!FlyoutPageController.ShouldShowSplitMode && _presented)
-					UpdatePresented(false);
+				}
 			}
 
 			UpdateLeftBarButton();
@@ -269,9 +260,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				EmptyContainers();
-
-				Page.SendDisappearing();
-
+				_element = null;
 				_disposed = true;
 			}
 
@@ -366,6 +355,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBackground();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
 				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
+			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName)
+				UpdateFlyoutLayoutBehaviorChanges();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
 					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdatePageSpecifics();
@@ -374,6 +365,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void LayoutChildren(bool animated)
 		{
 			var frame = Element.Bounds.ToCGRect();
+
+			// Apply safe area insets to the FlyoutPage container if UseSafeArea is enabled.
+			// This ensures the Flyout content (e.g., CollectionView) renders below the status bar/notch
+			// on iOS devices with notches (iPhone X and newer). Without this adjustment, the container
+			// would start at Y=0, causing content to overlap with the status bar.
+			// https://github.com/dotnet/maui/issues/29170
+			if (Element is FlyoutPage flyoutPage && flyoutPage is ISafeAreaView sav &&
+			 !sav.IgnoreSafeArea && OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				var safeAreaTopInset = View.SafeAreaInsets.Top;
+
+				if (safeAreaTopInset > 0)
+				{
+					frame.Y = safeAreaTopInset;
+					frame.Height -= safeAreaTopInset;
+				}
+			}
+
 			var flyoutFrame = frame;
 			nfloat opacity = 1;
 
@@ -474,6 +483,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Presented)
 				UpdateClickOffViewFrame();
+		}
+
+		void UpdateFlyoutLayoutBehaviorChanges()
+		{
+			LayoutChildren(true);
+			if (FlyoutPage is null)
+				return;
+			FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
+			bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
+			if (flyoutBehavior == FlyoutLayoutBehavior.Popover || flyoutBehavior == FlyoutLayoutBehavior.Default)
+			{
+				shouldPresent = false;
+			}
+
+			if (shouldPresent != FlyoutPage.IsPresented)
+			{
+				((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
+				UpdateLeftBarButton();
+			}
 		}
 
 		void PackContainers()

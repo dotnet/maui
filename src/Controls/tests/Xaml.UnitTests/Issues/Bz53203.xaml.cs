@@ -1,63 +1,53 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public enum Bz53203Values
 {
-	public enum Bz53203Values
+	Unknown,
+	Good,
+	Better,
+	Best
+}
+
+public partial class Bz53203 : ContentPage
+{
+	public static int IntValue = 42;
+	public static object ObjValue = new object();
+
+	public static readonly BindableProperty ParameterProperty = BindableProperty.CreateAttached("Parameter",
+		typeof(object), typeof(Bz53203), null);
+
+	public static object GetParameter(BindableObject obj) =>
+		obj.GetValue(ParameterProperty);
+
+	public static void SetParameter(BindableObject obj, object value) =>
+		obj.SetValue(ParameterProperty, value);
+
+	public Bz53203()
 	{
-		Unknown,
-		Good,
-		Better,
-		Best
+		InitializeComponent();
 	}
 
-	public partial class Bz53203 : ContentPage
+	[Collection("Issue")]
+	public class Tests
 	{
-		public static int IntValue = 42;
-		public static object ObjValue = new object();
-
-		public static readonly BindableProperty ParameterProperty = BindableProperty.CreateAttached("Parameter",
-			typeof(object), typeof(Bz53203), null);
-
-		public static object GetParameter(BindableObject obj) =>
-			obj.GetValue(ParameterProperty);
-
-		public static void SetParameter(BindableObject obj, object value) =>
-			obj.SetValue(ParameterProperty, value);
-
-		public Bz53203()
+		[Fact]
+		internal void MarkupOnAttachedBPDoesNotThrowAtCompileTime()
 		{
-			InitializeComponent();
+			MockCompiler.Compile(typeof(Bz53203));
 		}
 
-		public Bz53203(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void MarkupOnAttachedBP(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var page = new Bz53203(inflator);
+			var label = page.label0;
+			Assert.Equal(42, Grid.GetRow(label));
+			Assert.Equal(Bz53203Values.Better, GetParameter(label));
 		}
 
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			public void MarkupOnAttachedBPDoesNotThrowAtCompileTime(bool useCompiledXaml)
-			{
-				MockCompiler.Compile(typeof(Bz53203));
-			}
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void MarkupOnAttachedBP(bool useCompiledXaml)
-			{
-				var page = new Bz53203(useCompiledXaml);
-				var label = page.label0;
-				Assert.That(Grid.GetRow(label), Is.EqualTo(42));
-				Assert.That(GetParameter(label), Is.EqualTo(Bz53203Values.Better));
-			}
-
-		}
 	}
 }

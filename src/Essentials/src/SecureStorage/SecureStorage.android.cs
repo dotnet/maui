@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Storage
 				return CreateEncryptedSharedPreferences();
 			}
 			catch (System.Exception ex)
-			when (ex is InvalidProtocolBufferException or Android.Security.KeyStoreException or KeyStoreException or BadPaddingException)
+			when (ex is InvalidProtocolBufferException or global::Android.Security.KeyStoreException or KeyStoreException or BadPaddingException)
 			{
 				// If we encounter any of these exceptions, it's likely due to a corrupt key or bad migration between devices
 				// There isn't much to do at this point except try to delete the shared preferences so we can recreate them
@@ -127,6 +127,7 @@ namespace Microsoft.Maui.Storage
 		{
 			var context = Application.Context;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var prefsMainKey = new MasterKey.Builder(context, Alias)
 				.SetKeyScheme(MasterKey.KeyScheme.Aes256Gcm)
 				.Build();
@@ -137,6 +138,7 @@ namespace Microsoft.Maui.Storage
 				prefsMainKey,
 				EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
 				EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

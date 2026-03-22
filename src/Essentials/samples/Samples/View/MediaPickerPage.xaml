@@ -4,24 +4,245 @@
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 x:Class="Samples.View.MediaPickerPage"
                 Title="Media Picker">
-    <views:BasePage.BindingContext>
-        <viewmodels:MediaPickerViewModel />
-    </views:BasePage.BindingContext>
+  <views:BasePage.BindingContext>
+    <viewmodels:MediaPickerViewModel />
+  </views:BasePage.BindingContext>
 
-    <Grid RowDefinitions="Auto,*">
-        <Label Text="Pick or capture a photo or video." FontAttributes="Bold" Margin="12" />
+  <ScrollView>
+    <VerticalStackLayout Padding="16" Spacing="20">
+        
+        <!-- Settings Section -->
+        <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#343A40}" 
+                StrokeThickness="0" 
+                Stroke="{AppThemeBinding Light=#DEE2E6, Dark=#495057}"
+                StrokeShape="RoundRectangle 12" 
+                Padding="16">
+          <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2" />
+          </Border.Shadow>
+          <VerticalStackLayout Spacing="16">
+            <Label Text="⚙️ Settings" 
+                   FontSize="16" 
+                   FontAttributes="Bold" 
+                   TextColor="{AppThemeBinding Light=#495057, Dark=#F8F9FA}" />
+            
+            <!-- Selection Limit -->
+            <Grid ColumnDefinitions="2*,Auto,80">
+              <Label Grid.Column="0" 
+                     Text="Selection Limit" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Stepper Grid.Column="1" 
+                       Value="{Binding PickerSelectionLimit, Mode=TwoWay}" 
+                       Minimum="1" Maximum="10" Increment="1" />
+              <Label Grid.Column="2" 
+                     Text="{Binding PickerSelectionLimit}" 
+                     VerticalOptions="Center" 
+                     HorizontalOptions="Center"
+                     FontAttributes="Bold" />
+            </Grid>
+            
+            <!-- Compression Quality -->
+            <Grid ColumnDefinitions="2*,Auto,80">
+              <Label Grid.Column="0" 
+                     Text="Compression Quality %" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Stepper Grid.Column="1" 
+                       Value="{Binding PickerCompressionQuality, Mode=TwoWay}" 
+                       Minimum="10" Maximum="100" Increment="10" />
+              <Label Grid.Column="2" 
+                     Text="{Binding PickerCompressionQuality}" 
+                     VerticalOptions="Center" 
+                     HorizontalOptions="Center"
+                     FontAttributes="Bold" />
+            </Grid>
+            
+            <!-- Maximum Width -->
+            <Grid ColumnDefinitions="2*,Auto,80">
+              <Label Grid.Column="0" 
+                     Text="Max Width (0 = original)" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Stepper Grid.Column="1" 
+                       Value="{Binding PickerMaximumWidth, Mode=TwoWay}" 
+                       Minimum="0" Maximum="4000" Increment="100" />
+              <Label Grid.Column="2" 
+                     Text="{Binding PickerMaximumWidth}" 
+                     VerticalOptions="Center" 
+                     HorizontalOptions="Center"
+                     FontAttributes="Bold" />
+            </Grid>
+            
+            <!-- Maximum Height -->
+            <Grid ColumnDefinitions="2*,Auto,80">
+              <Label Grid.Column="0" 
+                     Text="Max Height (0 = original)" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Stepper Grid.Column="1" 
+                       Value="{Binding PickerMaximumHeight, Mode=TwoWay}" 
+                       Minimum="0" Maximum="4000" Increment="100" />
+              <Label Grid.Column="2" 
+                     Text="{Binding PickerMaximumHeight}" 
+                     VerticalOptions="Center" 
+                     HorizontalOptions="Center"
+                     FontAttributes="Bold" />
+            </Grid>
+            
+            <!-- Auto-rotate Image -->
+            <Grid ColumnDefinitions="2*,Auto">
+              <Label Grid.Column="0" 
+                     Text="Auto-rotate from EXIF" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Switch Grid.Column="1" 
+                      IsToggled="{Binding PickerRotateImage, Mode=TwoWay}"
+                      OnColor="{AppThemeBinding Light=#007BFF, Dark=#0D6EFD}" />
+            </Grid>
+            
+            <!-- Preserve Metadata -->
+            <Grid ColumnDefinitions="2*,Auto">
+              <Label Grid.Column="0" 
+                     Text="Preserve Metadata" 
+                     VerticalOptions="Center"
+                     TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}" />
+              <Switch Grid.Column="1" 
+                      IsToggled="{Binding PickerPreserveMetaData, Mode=TwoWay}"
+                      OnColor="{AppThemeBinding Light=#007BFF, Dark=#0D6EFD}" />
+            </Grid>
+          </VerticalStackLayout>
+        </Border>
 
-        <ScrollView Grid.Row="1">
-            <StackLayout Padding="12,0,12,12" Spacing="6">
-                <Button Text="Pick photo" Command="{Binding PickPhotoCommand}" />
-                <Button Text="Capture photo" Command="{Binding CapturePhotoCommand}" />
-                <Button Text="Pick video" Command="{Binding PickVideoCommand}" />
-                <Button Text="Capture video" Command="{Binding CaptureVideoCommand}" />
+        <!-- Actions Section -->
+        <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#343A40}" 
+                StrokeThickness="0" 
+                Stroke="{AppThemeBinding Light=#DEE2E6, Dark=#495057}"
+                StrokeShape="RoundRectangle 12" 
+                Padding="16">
+          <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2" />
+          </Border.Shadow>
+          <VerticalStackLayout Spacing="12">
+            <Label Text="📸 Actions" 
+                   FontSize="16" 
+                   FontAttributes="Bold" 
+                   TextColor="{AppThemeBinding Light=#495057, Dark=#F8F9FA}" />
+            
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+              <Button Grid.Row="0" Grid.Column="0"
+                      Text="📷 Pick Photo" 
+                      Command="{Binding PickPhotoCommand}"
+                      BackgroundColor="{AppThemeBinding Light=#007BFF, Dark=#0D6EFD}"
+                      TextColor="White" />
+              <Button Grid.Row="0" Grid.Column="1"
+                      Text="📹 Capture Photo" 
+                      Command="{Binding CapturePhotoCommand}"
+                      BackgroundColor="{AppThemeBinding Light=#28A745, Dark=#198754}"
+                      TextColor="White" />
+              <Button Grid.Row="1" Grid.Column="0"
+                      Text="🎬 Pick Video" 
+                      Command="{Binding PickVideoCommand}"
+                      BackgroundColor="{AppThemeBinding Light=#DC3545, Dark=#DC3545}"
+                      TextColor="White" />
+              <Button Grid.Row="1" Grid.Column="1"
+                      Text="🎥 Capture Video" 
+                      Command="{Binding CaptureVideoCommand}"
+                      BackgroundColor="{AppThemeBinding Light=#FD7E14, Dark=#FD7E14}"
+                      TextColor="White" />
+            </Grid>
+          </VerticalStackLayout>
+        </Border>
 
-                <Image Source="{Binding PhotoSource}" IsVisible="{Binding ShowPhoto}" HeightRequest="300"/>
-                <!--<MediaElement VerticalOptions="FillAndExpand" Source="{Binding VideoSource}" IsVisible="{Binding ShowVideo}" />-->
-            </StackLayout>
-        </ScrollView>
-    </Grid>
+        <!-- Multiple Photos Section -->
+        <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#343A40}" 
+                StrokeThickness="0" 
+                Stroke="{AppThemeBinding Light=#DEE2E6, Dark=#495057}"
+                StrokeShape="RoundRectangle 12" 
+                Padding="16"
+                IsVisible="{Binding ShowMultiplePhotos}">
+          <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2" />
+          </Border.Shadow>
+          <VerticalStackLayout Spacing="12">
+            <Label Text="🖼️ Selected Photos" 
+                   FontSize="16" 
+                   FontAttributes="Bold" 
+                   TextColor="{AppThemeBinding Light=#495057, Dark=#F8F9FA}" />
+            
+            <ScrollView Orientation="Horizontal" HeightRequest="280">
+              <HorizontalStackLayout BindableLayout.ItemsSource="{Binding PhotoList}" Spacing="12">
+                <BindableLayout.ItemTemplate>
+                  <DataTemplate>
+                    <Border BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#495057}"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#DEE2E6, Dark=#6C757D}"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8"
+                            WidthRequest="160">
+                      <VerticalStackLayout Spacing="4">
+                        <Image Source="{Binding Source}" 
+                               HeightRequest="180" 
+                               WidthRequest="144" 
+                               Aspect="AspectFit"
+                               VerticalOptions="Center" />
+                        <Label Text="{Binding Dimensions}" 
+                               FontSize="10" 
+                               HorizontalOptions="Center"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#495057, Dark=#F8F9FA}"
+                               LineBreakMode="NoWrap" />
+                        <Label Text="{Binding FileSize}" 
+                               FontSize="9" 
+                               HorizontalOptions="Center"
+                               FontAttributes="Italic"
+                               TextColor="{AppThemeBinding Light=#6C757D, Dark=#CED4DA}"
+                               LineBreakMode="NoWrap" />
+                      </VerticalStackLayout>
+                    </Border>
+                  </DataTemplate>
+                </BindableLayout.ItemTemplate>
+              </HorizontalStackLayout>
+            </ScrollView>
+          </VerticalStackLayout>
+        </Border>
+
+        <!-- Single Photo Section -->
+        <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#343A40}" 
+                StrokeThickness="0" 
+                Stroke="{AppThemeBinding Light=#DEE2E6, Dark=#495057}"
+                StrokeShape="RoundRectangle 12" 
+                Padding="16"
+                IsVisible="{Binding ShowPhoto}">
+          <Border.Shadow>
+            <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,2" />
+          </Border.Shadow>
+          <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+            <Label Text="📷 Selected Photo" 
+                   FontSize="16" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center"
+                   TextColor="{AppThemeBinding Light=#495057, Dark=#F8F9FA}" />
+            
+            <Border BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#495057}"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light=#DEE2E6, Dark=#6C757D}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="8">
+              <VerticalStackLayout Spacing="12">
+                <Image Source="{Binding PhotoSource}" 
+                       HeightRequest="300" 
+                       Aspect="AspectFit" />
+                <Label Text="{Binding ImageDimensions}" 
+                       FontSize="16" 
+                       HorizontalOptions="Center" 
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light=#495057, Dark=#F8F9FA}" />
+              </VerticalStackLayout>
+            </Border>
+          </VerticalStackLayout>
+        </Border>
+      </VerticalStackLayout>
+    </ScrollView>
 
 </views:BasePage>

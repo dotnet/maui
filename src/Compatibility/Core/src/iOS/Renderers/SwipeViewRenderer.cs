@@ -178,8 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Brush.IsNullOrEmpty(background))
 				return;
 
-			if (Control != null)
-				Control.UpdateBackground(background);
+			Control?.UpdateBackground(background);
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
@@ -251,23 +250,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					_panGestureRecognizer = null;
 				}
 
-				if (_contentView != null)
-				{
-					_contentView.Dispose();
-					_contentView = null;
-				}
+				_contentView?.Dispose();
+				_contentView = null;
 
-				if (_actionView != null)
-				{
-					_actionView.Dispose();
-					_actionView = null;
-				}
+				_actionView?.Dispose();
+				_actionView = null;
 
-				if (_swipeItemsRect != null)
-				{
-					_swipeItemsRect.Clear();
-					_swipeItemsRect = null;
-				}
+				_swipeItemsRect?.Clear();
+				_swipeItemsRect = null;
 			}
 
 			_isDisposed = true;
@@ -724,12 +714,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var width = maxResizeFactor * sourceSize.Width;
 			var height = maxResizeFactor * sourceSize.Height;
-			UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-			sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
-			var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			var renderer = new UIGraphicsImageRenderer(new CGSize((nfloat)width, (nfloat)height), new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = 0,
+			});
 
-			return resultImage;
+			return renderer.CreateImage((context) =>
+			{
+				sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+			});
 		}
 
 		void HandleTouchInteractions(GestureStatus status, CGPoint point)
@@ -1032,11 +1026,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_actionView = null;
 			}
 
-			if (_swipeItemsRect != null)
-			{
-				_swipeItemsRect.Clear();
-				_swipeItemsRect = null;
-			}
+			_swipeItemsRect?.Clear();
+			_swipeItemsRect = null;
 
 			UpdateIsOpen(false);
 		}

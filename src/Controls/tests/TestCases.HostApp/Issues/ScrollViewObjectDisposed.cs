@@ -17,7 +17,7 @@
 
 		void InitTest()
 		{
-			 _status = new Label() { Text = "Test is running...", BackgroundColor = Colors.Red, TextColor = Colors.White };
+			_status = new Label() { Text = "Test is running...", BackgroundColor = Colors.Red, TextColor = Colors.White };
 
 			_scroll = new ScrollView
 			{

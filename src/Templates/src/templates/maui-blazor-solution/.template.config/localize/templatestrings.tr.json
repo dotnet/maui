@@ -16,7 +16,7 @@
   "symbols/InteractivityPlatform/description": "Etkileşimli bileşenler için hangi etkileşimli işleme modunun kullanılacağını seçer",
   "symbols/InteractivityPlatform/choices/None/displayName": "Yok",
   "symbols/InteractivityPlatform/choices/None/description": "Etkileşim yok (yalnızca statik sunucu işleme)",
-  "symbols/InteractivityPlatform/choices/Server/displayName": "Server",
+  "symbols/InteractivityPlatform/choices/Server/displayName": "Sunucu",
   "symbols/InteractivityPlatform/choices/Server/description": "Sunucuda çalıştırılır",
   "symbols/InteractivityPlatform/choices/WebAssembly/displayName": "WebAssembly",
   "symbols/InteractivityPlatform/choices/WebAssembly/description": "WebAssembly kullanarak tarayıcıda çalışır",

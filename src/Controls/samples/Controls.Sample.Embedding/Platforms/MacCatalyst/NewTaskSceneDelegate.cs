@@ -40,13 +40,19 @@ public class NewTaskSceneDelegate : UIWindowSceneDelegate
 
 		var toolbar = new NSToolbar();
 
-#pragma warning disable CA1422
-		toolbar.ShowsBaselineSeparator = false;
-#pragma warning restore CA1422
+		if (OperatingSystem.IsMacOSVersionAtLeast(15, 0))
+		{
+			toolbar.ShowsBaselineSeparator = false;
+		}
 
 		var titlebar = Window.WindowScene.Titlebar;
 		titlebar.Toolbar = toolbar;
-		titlebar.ToolbarStyle = UITitlebarToolbarStyle.Automatic;
+
+		if (OperatingSystem.IsMacOSVersionAtLeast(12, 0))
+		{
+			titlebar.ToolbarStyle = UITitlebarToolbarStyle.Automatic;
+		}
+
 		titlebar.TitleVisibility = UITitlebarTitleVisibility.Visible;
 	}
 }

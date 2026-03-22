@@ -2,12 +2,14 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Android.Content.Res;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -22,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).Text);
 		}
 
-		Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
+		global::Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).Ellipsize;
 
 		Task<float> GetPlatformOpacity(ButtonHandler buttonHandler)
@@ -39,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformButton(buttonHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 
@@ -95,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 #pragma warning disable CS0618 // Type or member is obsolete
 				var drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
 #pragma warning restore CS0618 // Type or member is obsolete
-				Assert.NotNull(drawables[matchingDrawableIndex]);
+				Assert.NotNull(drawables?[matchingDrawableIndex]);
 			});
 		}
 
@@ -116,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a Button should match with native ScaleX")]
 		public async Task ScaleXConsistent()
@@ -189,6 +191,52 @@ namespace Microsoft.Maui.DeviceTests
 			var platformButton = GetPlatformButton(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformButton.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		[Fact]
+		[Description("The RippleColor property of a Button Platform Specific should match with native RippleDrawable Color")]
+		public async Task ButtonRippleColorPlatformSpecific()
+		{
+			var button = new Button();
+			var expected = Graphics.Colors.Red;
+			Controls.PlatformConfiguration.AndroidSpecific.Button.SetRippleColor(button, expected);
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			var platformButton = GetPlatformButton(handler);
+
+			if (platformButton.Background is global::Android.Graphics.Drawables.RippleDrawable rippleDrawable)
+			{
+				var constantState = rippleDrawable.GetConstantState();
+				if (constantState is not null)
+				{
+					var colorField = constantState.Class.GetDeclaredField("mColor");
+					colorField.Accessible = true;
+					if (colorField.Get(constantState) is ColorStateList colorStateList)
+					{
+						var color = colorStateList?.DefaultColor;
+						Assert.Equal(expected.ToPlatform(), color);
+					}
+				}
+			}
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Button should match with native Translation")]
+		public async Task ButtonTranslationConsistent()
+		{
+			var button = new Button()
+			{
+				Text = "Button Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			var nativeView = GetPlatformButton(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, button.TranslationX, button.TranslationY);
+			});
 		}
 	}
 }

@@ -162,6 +162,46 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformLabel.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		[Fact]
+		[Description("The IsEnabled property of a Label should match with native IsEnabled")]
+		public async Task VerifyLabelIsEnabledProperty()
+		{
+			var label = new Label
+			{
+				IsEnabled = false
+			};
+			var expectedValue = label.IsEnabled;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var nativeView = GetPlatformLabel(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Label should match with native Translation")]
+		public async Task LabelTranslationConsistent()
+		{
+			var label = new Label()
+			{
+				Text = "Label Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var nativeView = GetPlatformLabel(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, label.TranslationX, label.TranslationY);
+			});
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
@@ -185,7 +225,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformLabel(labelHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 	}

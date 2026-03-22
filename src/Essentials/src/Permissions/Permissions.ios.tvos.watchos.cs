@@ -135,8 +135,6 @@ namespace Microsoft.Maui.ApplicationModel
 				if (status == PermissionStatus.Granted || status == PermissionStatus.Disabled)
 					return status;
 
-				EnsureMainThread();
-
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 #pragma warning disable CA1422 // Validate platform compatibility
 				return await RequestLocationAsync(true, lm => lm.RequestWhenInUseAuthorization());

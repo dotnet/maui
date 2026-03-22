@@ -8,7 +8,7 @@ using AndroidX.ViewPager.Widget;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class MauiViewPager : ViewPager
+	public class MauiViewPager : ViewPager
 	{
 		public MauiViewPager(Context context) : base(context)
 		{

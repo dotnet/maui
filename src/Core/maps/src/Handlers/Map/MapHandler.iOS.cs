@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override MauiMKMapView CreatePlatformView()
 		{
-			return MapPool.Get() ?? new MauiMKMapView(this);
+			return MapPool.Get(this) ?? new MauiMKMapView(this);
 		}
 
 		protected override void ConnectHandler(MauiMKMapView platformView)

@@ -1,11 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -30,18 +30,18 @@ namespace Microsoft.Maui.DeviceTests
 				Opacity = 0.35f
 			};
 			var expectedValue = swipeView.Opacity;
-			
+
 			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var nativeView = GetPlatformControl(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var nativeOpacityValue = (float)nativeView.Alpha;
-				Assert.Equal(expectedValue, nativeOpacityValue);
-			});
+				   var nativeOpacityValue = (float)nativeView.Alpha;
+				   Assert.Equal(expectedValue, nativeOpacityValue);
+			   });
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a SwipeView should match with native IsVisible")]		
+		[Description("The IsVisible property of a SwipeView should match with native IsVisible")]
 		public async Task VerifySwipeViewIsVisibleProperty()
 		{
 			var swipeView = new SwipeView
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetPlatformControl(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var isVisible = !nativeView.Hidden;
-				Assert.Equal(expectedValue, isVisible);
-			});	
+				   var isVisible = !nativeView.Hidden;
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 	}
 }

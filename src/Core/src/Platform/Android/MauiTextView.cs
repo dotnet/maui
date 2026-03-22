@@ -1,8 +1,6 @@
 ﻿using System;
 using Android.Content;
 using AndroidX.AppCompat.Widget;
-using Android.Text;
-using Android.Views;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,26 +15,6 @@ namespace Microsoft.Maui.Platform
 		internal override void OnLayoutFormatted(bool changed, int l, int t, int r, int b)
 		{
 			LayoutChanged?.Invoke(this, new LayoutChangedEventArgs(l, t, r, b));
-		}
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
-			{
-				int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
-				widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
-			}
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-		}
-
-		static float GetMaxLineWidth(Layout layout)
-		{
-			float maxWidth = 0;
-			//Calculates the maximum width needed to display the content based on the widest line."
-			for (int i = 0, count = layout.LineCount; i < count; i++)
-			{
-				maxWidth = Math.Max(maxWidth, layout.GetLineWidth(i));
-			}
-			return maxWidth;
 		}
 	}
 

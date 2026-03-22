@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue3884Test()
 		{
 			App.WaitForElement("You should see a blue circle");

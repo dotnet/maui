@@ -1,39 +1,35 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh6192 : ContentPage
 {
-	public partial class Gh6192 : ContentPage
+	public Gh6192() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Gh6192() => InitializeComponent();
-		public Gh6192(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void XamlCDoesntFail(XamlInflator inflator)
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[Test]
-			public void XamlCDoesntFail([Values(false, true)] bool useCompiledXaml)
+			var layout = new Gh6192(inflator);
+			layout.BindingContext = new
 			{
-				var layout = new Gh6192(useCompiledXaml);
-				layout.BindingContext = new
-				{
-					Items = new[] {
-						new {
-							Options = new [] { "Foo", "Bar" },
-						}
+				Items = new[] {
+					new {
+						Options = new [] { "Foo", "Bar" },
 					}
-				};
-				var lv = (layout.bindableStackLayout.Children[0] as ContentView).Content as ListView;
-				lv.ItemTemplate.CreateContent();
-			}
+				}
+			};
+			var lv = (layout.bindableStackLayout.Children[0] as ContentView).Content as ListView;
+			lv.ItemTemplate.CreateContent();
 		}
 	}
 }

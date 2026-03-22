@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TitleBarControlPage"
+             x:DataType="local:TitleBarViewModel"
+             Title="TitleBarControlPage">
+       <Grid ColumnDefinitions="*,*"
+             Padding="10">
+              <VerticalStackLayout Grid.Column="0"
+                                   Padding="10"
+                                   Spacing="15">
+                     <!-- Left Column Content -->
+                     <Label Text="TitleBar Visibility"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="ShowTitleBarCheckBox"
+                                      IsChecked="{Binding IsVisible}"/>
+                            <Label Text="Show TitleBar"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <Label Text="TitleBar Content Visibility"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="ShowLeadingContentCheckBox"
+                                      IsChecked="{Binding ShowLeadingContent}"/>
+                            <Label Text="Show Leading Content"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="ShowTrailingContentCheckBox"
+                                      IsChecked="{Binding ShowTrailingContent}"/>
+                            <Label Text="Show Trailing Content"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <Label Text="Title and Subtitle"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="15">
+                            <CheckBox AutomationId="ShowTitleCheckBox"
+                                      IsChecked="{Binding ShowTitle}"/>
+                            <Label Text="Title:"
+                                   VerticalOptions="Center"/>
+                            <Entry  AutomationId="TitleEntry"
+                                    Text="{Binding Title}"
+                                    WidthRequest="200"
+                                    IsEnabled="{Binding ShowTitle}"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="5">
+                            <CheckBox AutomationId="ShowSubtitleCheckBox"
+                                      IsChecked="{Binding ShowSubtitle}"/>
+                            <Label Text="Subtitle:"
+                                   VerticalOptions="Center"/>
+                            <Entry  AutomationId="SubtitleEntry"
+                                    Text="{Binding Subtitle}"
+                                    WidthRequest="200"
+                                    IsEnabled="{Binding ShowSubtitle}"/>
+                     </HorizontalStackLayout>
+                     <Label Text="Icon"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="ShowIconCheckBox"
+                                      IsChecked="{Binding ShowIcon}"/>
+                            <Label Text="Show Icon"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <Label Text="Flow Direction"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="5">
+                            <CheckBox x:Name="FlowDirectionRTLCheckBox"
+                                      AutomationId="FlowDirectionRTLCheckBox"
+                                      CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
+                            <Label Text="Right to Left"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <Button AutomationId="ApplyButton"
+                             Text="Apply"
+                             HorizontalOptions="Start"
+                             Clicked="OnApplyButtonClicked"
+                             WidthRequest="300"/>
+              </VerticalStackLayout>
+
+              <VerticalStackLayout Grid.Column="1"
+                                   Padding="10"
+                                   Spacing="15">
+                     <!-- Right Column Content -->
+                     <Label Text="Background Color"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="ShowBackgroundColorCheckBox"
+                                      IsChecked="{Binding ShowBackgroundColor}"/>
+                            <Label Text="Enable Background Color"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton AutomationId="OrangeRadioButton"
+                                         Content="Orange"
+                                         GroupName="BackgroundColorGroup"
+                                         IsChecked="{Binding IsOrangeChecked}"/>
+                            <RadioButton AutomationId="RedRadioButton"
+                                         Content="Red"
+                                         GroupName="BackgroundColorGroup"
+                                         IsChecked="{Binding IsRedChecked}"/>
+                     </HorizontalStackLayout>
+                     <Label Text="Foreground Color"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="ShowForegroundColorCheckBox"
+                                      IsChecked="{Binding ShowForegroundColor}"/>
+                            <Label Text="Enable Foreground Color"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout>
+                            <RadioButton AutomationId="WhiteForegroundRadioButton"
+                                         Content="White"
+                                         GroupName="ForegroundColorGroup"
+                                         IsChecked="{Binding IsWhiteForegroundChecked}"/>
+                     </HorizontalStackLayout>
+                     <Label Text="Select TitleBar Content"
+                            FontSize="Medium"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="10">
+                            <CheckBox AutomationId="IsTitleBarContentVisibleCheckBox"
+                                      IsChecked="{Binding IsTitleBarContentVisible}"/>
+                            <Label Text="Enable TitleBar Content"
+                                   VerticalOptions="Center"/>
+                     </HorizontalStackLayout>
+                     <VerticalStackLayout>
+                            <RadioButton AutomationId="SearchBarRadioButton"
+                                         Content="SearchBar"
+                                         GroupName="TitleBarContentGroup"
+                                         IsChecked="{Binding IsSearchBarChecked}"
+                                         CheckedChanged="OnTitleBarContentChanged"
+                                         Value="SearchBar"/>
+                            <RadioButton AutomationId="HorizontalStackLayoutRadioButton"
+                                         Content="Horizontal StackLayout"
+                                         GroupName="TitleBarContentGroup"
+                                         IsChecked="{Binding IsHorizontalStackLayoutChecked}"
+                                         CheckedChanged="OnTitleBarContentChanged"
+                                         Value="HorizontalStackLayout"/>
+                            <RadioButton AutomationId="ProgressBarRadioButton"
+                                         Content="Grid with ProgressBar"
+                                         IsChecked="{Binding IsGridWithProgressBarChecked}"
+                                         GroupName="TitleBarContentGroup"
+                                         CheckedChanged="OnTitleBarContentChanged"
+                                         Value="ProgressBar"/>
+                     </VerticalStackLayout>
+                     <Button AutomationId="ResetButton"
+                             Text="Reset"
+                             HorizontalOptions="Start"
+                             Clicked="OnResetButtonClicked"
+                             WidthRequest="300"/>
+              </VerticalStackLayout>
+       </Grid>
+</ContentPage>

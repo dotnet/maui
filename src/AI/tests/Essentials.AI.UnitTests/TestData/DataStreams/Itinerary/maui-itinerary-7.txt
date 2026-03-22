@@ -1,0 +1,51 @@
+{"days":[{
+"title":"Relaxing Day at the Spa","activities":[{"description":"Visit a luxurious hotel for a relaxing
+ spa experience.","title":"Hotel 
+1","type":"HotelAnd
+Lodging"},{"description":"Enjoy a
+ delicious sushi lunch at a renowned restaurant.","title":"
+Restaurant 1","type":"FoodAnd
+Dining"},{"description":"Spend
+ the evening unwinding in the hotel's hot
+ springs.","title":"Hotel 1
+","type":"HotelAndLodging
+"}],"destination":"Maui
+","subtitle":"Unwind and rejuvenate
+ in Maui's finest accommodations."},{"title":"
+Exploring Haleakalā National Park","activities":[
+{"description":"Witness the breathtaking sunrise at Hale
+akalā National Park.","title":"Hale
+akalā National Park","type":"Sight
+seeing"},{"description":"Hike through lush
+ rainforests and discover diverse flora and fauna.","title":"
+Road to Hana","type":"Sightseeing
+"},{"description":"Visit a local café
+ to enjoy a refreshing tropical drink.","title":"
+Cafe 1","type":"Food
+AndDining
+"}],"destination":"Maui","subtitle":"Experience
+ the natural beauty and adventure of Maui's landscapes
+."},{"title":"Whale Watching and
+ Beach Day","activities":[{"description":"
+Embark on a whale-watching tour to see
+ humpback whales in their natural habitat.","title":"
+Whale Watching Tour","type":"Sight
+seeing"},{"description":"Relax on a pristine
+ beach and soak up the sun.","title":"
+Kaanapali Beach","type":"
+Sightseeing"},{"description":"Enjoy a casual
+ beachside lunch at a local eatery.","title":"
+Restaurant 2","type":"FoodAnd
+Dining
+"}],"destination":"Maui","subtitle":"Celebrate
+ Maui's marine life and stunning coastlines.
+"}],"rationale":"This itinerary offers a
+ perfect blend of relaxation, adventure, and cultural experiences
+, showcasing the best of Maui's natural beauty
+ and vibrant culture.","description":"This
+ itinerary offers a perfect blend of relaxation, adventure,
+ and cultural experiences, showcasing the best of Maui'
+s natural beauty and vibrant culture.","title":"
+Maui Adventure Itinerary","destinationName":"
+Maui
+"}

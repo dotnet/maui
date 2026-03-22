@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this TButton platformButton, Button button)
 		{
-			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			var text = TextTransformUtilities.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.Text = text;
 		}
 

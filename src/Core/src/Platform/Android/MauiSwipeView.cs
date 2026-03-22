@@ -78,12 +78,12 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-				base.OnLayout(changed, left, top, right, bottom);
+			base.OnLayout(changed, left, top, right, bottom);
 
-				if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not {Count: > 0} swipeItems)
-					return;
+			if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not { Count: > 0 } swipeItems)
+				return;
 
-				LayoutSwipeItems(swipeItems);
+			LayoutSwipeItems(swipeItems);
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)
@@ -210,7 +210,12 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					ResetSwipe(e);
-					PropagateParentTouch();
+
+					// Prevent parent touch propagation during swipe gestures to avoid interference with swipe functionality.
+					if (!_isSwiping)
+					{
+						PropagateParentTouch();
+					}
 				}
 			}
 
@@ -1320,8 +1325,7 @@ namespace Microsoft.Maui.Platform
 
 		void EnableParentGesture(bool isGestureEnabled)
 		{
-			if (_viewPagerParent != null)
-				_viewPagerParent.EnableGesture = isGestureEnabled;
+			_viewPagerParent?.EnableGesture = isGestureEnabled;
 		}
 
 		internal void OnOpenRequested(SwipeViewOpenRequest e)

@@ -66,6 +66,53 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
+		/// <inheritdoc/>
+		void IInitializationAwareWebView.WebViewInitializationStarted(WebViewInitializationStartedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewInitializingEventArgs(args);
+			var e = new WebViewInitializingEventArgs(platformArgs);
+			WebViewInitializing?.Invoke(this, e);
+		}
+
+		/// <summary>
+		/// Raised when the web view is initializing. This event allows the application to perform additional configuration.
+		/// </summary>
+		public event EventHandler<WebViewInitializingEventArgs>? WebViewInitializing;
+
+		/// <inheritdoc/>
+		void IInitializationAwareWebView.WebViewInitializationCompleted(WebViewInitializationCompletedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewInitializedEventArgs(args);
+			var e = new WebViewInitializedEventArgs(platformArgs);
+			WebViewInitialized?.Invoke(this, e);
+		}
+
+		/// <summary>
+		/// Raised when the web view has been initialized.
+		/// </summary>
+		public event EventHandler<WebViewInitializedEventArgs>? WebViewInitialized;
+
+		/// <inheritdoc/>
+		bool IWebRequestInterceptingWebView.WebResourceRequested(WebResourceRequestedEventArgs args)
+		{
+			var platformArgs = new PlatformWebViewWebResourceRequestedEventArgs(args);
+			var e = new WebViewWebResourceRequestedEventArgs(platformArgs);
+			WebResourceRequested?.Invoke(this, e);
+			return e.Handled;
+		}
+
+		/// <summary>
+		/// Raised when a web resource is requested. This event allows the application to intercept the request and provide a
+		/// custom response.
+		/// The event handler can set the <see cref="WebViewWebResourceRequestedEventArgs.Handled"/> property to true
+		/// to indicate that the request has been handled and no further processing is needed. If the event handler does set this
+		/// property to true, it must also call the
+		/// <see cref="WebViewWebResourceRequestedEventArgs.SetResponse(int, string, System.Collections.Generic.IReadOnlyDictionary{string, string}?, System.IO.Stream?)"/>
+		/// or <see cref="WebViewWebResourceRequestedEventArgs.SetResponse(int, string, System.Collections.Generic.IReadOnlyDictionary{string, string}?, System.Threading.Tasks.Task{System.IO.Stream?})"/>
+		/// method to provide a response to the request.
+		/// </summary>
+		public event EventHandler<WebViewWebResourceRequestedEventArgs>? WebResourceRequested;
+
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.
 		/// </summary>
@@ -80,9 +127,15 @@ namespace Microsoft.Maui.Controls
 				});
 		}
 
-		/// <inheritdoc/>
-		/// TODO: make this public for .NET 10 (or a .NET 9 SR)
-		internal async Task InvokeJavaScriptAsync(
+		/// <summary>
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
+		/// by <paramref name="paramValues"/> by JSON-encoding each one.
+		/// </summary>
+		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
+		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		public async Task InvokeJavaScriptAsync(
 			string methodName,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null)
@@ -109,7 +162,15 @@ namespace Microsoft.Maui.Controls
 				new HybridWebViewInvokeJavaScriptRequest(methodName, null, paramValues, paramJsonTypeInfos))!;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
+		/// by <paramref name="paramValues"/> by JSON-encoding each one.
+		/// </summary>
+		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="returnTypeJsonTypeInfo">Metadata about deserializing the return value from the JavaScript method call to type <typeparamref name="TReturnType"/>.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
+		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
 		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(
 			string methodName,
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,

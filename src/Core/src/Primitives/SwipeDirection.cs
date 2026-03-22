@@ -4,17 +4,22 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/SwipeDirection.xml" path="Type[@FullName='Microsoft.Maui.SwipeDirection']/Docs/*" />
+	/// <summary>
+	/// Enumerates swipe directions.
+	/// </summary>
 	[Flags]
 	public enum SwipeDirection
 	{
-		/// <include file="../../docs/Microsoft.Maui/SwipeDirection.xml" path="//Member[@MemberName='Right']/Docs/*" />
+		/// <summary>Indicates a rightward swipe.</summary>
 		Right = 1,
-		/// <include file="../../docs/Microsoft.Maui/SwipeDirection.xml" path="//Member[@MemberName='Left']/Docs/*" />
+
+		/// <summary>Indicates a leftward swipe.</summary>
 		Left = 2,
-		/// <include file="../../docs/Microsoft.Maui/SwipeDirection.xml" path="//Member[@MemberName='Up']/Docs/*" />
+
+		/// <summary>Indicates an upward swipe.</summary>
 		Up = 4,
-		/// <include file="../../docs/Microsoft.Maui/SwipeDirection.xml" path="//Member[@MemberName='Down']/Docs/*" />
+
+		/// <summary>Indicates a downward swipe.</summary>
 		Down = 8
 	}
 

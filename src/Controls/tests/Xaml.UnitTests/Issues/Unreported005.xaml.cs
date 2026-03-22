@@ -1,83 +1,65 @@
 using System;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
+public abstract class Unreported005RelativeToView : IMarkupExtension
 {
-	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
-	using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
+	protected Unreported005RelativeToView() => Factor = 1;
 
-	[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
-	public abstract class Unreported005RelativeToView : IMarkupExtension
+	public string ElementName { get; set; }
+
+	public double Factor { get; set; }
+
+	public double Constant { get; set; }
+
+	public object ProvideValue(IServiceProvider serviceProvider)
 	{
-		protected Unreported005RelativeToView()
+		if (new ReferenceExtension { Name = ElementName }.ProvideValue(serviceProvider) is View element)
 		{
-			Factor = 1;
-		}
-
-		public string ElementName { get; set; }
-
-		public double Factor { get; set; }
-
-		public double Constant { get; set; }
-
-		public object ProvideValue(IServiceProvider serviceProvider)
-		{
-			var element = new ReferenceExtension { Name = ElementName }.ProvideValue(serviceProvider) as View;
-			if (element != null)
-			{
-				var result = Constraint.RelativeToView(element, (layout, view) => DeterminePosition(view) + Constant);
-				return result;
-			}
-			return null;
-		}
-
-		protected virtual double DeterminePosition(VisualElement view)
-		{
-			var result = DetermineStart(view) + DetermineExtent(view) * Factor;
+			var result = Constraint.RelativeToView(element, (layout, view) => DeterminePosition(view) + Constant);
 			return result;
 		}
-
-		protected abstract double DetermineExtent(VisualElement view);
-
-		protected abstract double DetermineStart(VisualElement view);
+		return null;
 	}
 
-	public class Unreported005RelativeToViewHorizontal : Unreported005RelativeToView
+	protected virtual double DeterminePosition(VisualElement view)
 	{
-		protected override double DetermineExtent(VisualElement view)
-		{
-			return view.Width;
-		}
-
-		protected override double DetermineStart(VisualElement view)
-		{
-			return view.X;
-		}
+		var result = DetermineStart(view) + DetermineExtent(view) * Factor;
+		return result;
 	}
 
-	//[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Unreported005 : ContentPage
+	protected abstract double DetermineExtent(VisualElement view);
+
+	protected abstract double DetermineStart(VisualElement view);
+}
+
+public class Unreported005RelativeToViewHorizontal : Unreported005RelativeToView
+{
+	protected override double DetermineExtent(VisualElement view) => view.Width;
+
+	protected override double DetermineStart(VisualElement view) => view.X;
+}
+
+public partial class Unreported005 : ContentPage
+{
+	public Unreported005() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Unreported005()
+		[Theory]
+		[XamlInflatorData]
+		internal void CustomMarkupExtensionWorks(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Unreported005(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void CustomMarkupExtensionWorks(bool useCompiledXaml)
-			{
-				var page = new Unreported005(useCompiledXaml);
-				Assert.That(RelativeLayout.GetXConstraint(page.after), Is.TypeOf<Constraint>());
-				Assert.NotNull(RelativeLayout.GetXConstraint(page.after));
-			}
+			var page = new Unreported005(inflator);
+			Assert.IsType<Constraint>(RelativeLayout.GetXConstraint(page.after));
+			Assert.NotNull(RelativeLayout.GetXConstraint(page.after));
 		}
 	}
 }

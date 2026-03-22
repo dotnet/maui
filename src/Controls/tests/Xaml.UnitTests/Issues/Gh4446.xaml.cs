@@ -1,40 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Gh4446Item
 {
-	public class Gh4446Item
+	public string Id { get; set; }
+	public string Text { get; set; }
+	public string Description { get; set; }
+}
+
+public partial class Gh4446 : ContentPage
+{
+	public Gh4446() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public string Id { get; set; }
-		public string Text { get; set; }
-		public string Description { get; set; }
-	}
-
-	public partial class Gh4446 : ContentPage
-	{
-		public Gh4446()
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingThrowsOnWrongConverterParameter(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Gh4446(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true), TestCase(false)]
-			public void BindingThrowsOnWrongConverterParameter(bool useCompiledXaml)
-			{
-				Assert.DoesNotThrow(() => new Gh4446(useCompiledXaml) { BindingContext = new Gh4446Item { Text = null } });
-			}
+			var ex = Record.Exception(() => new Gh4446(inflator) { BindingContext = new Gh4446Item { Text = null } });
+			Assert.Null(ex);
 		}
 	}
 }

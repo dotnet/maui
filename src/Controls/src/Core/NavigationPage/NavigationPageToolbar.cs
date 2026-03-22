@@ -55,7 +55,8 @@ namespace Microsoft.Maui.Controls
 				NavigationPage.BarTextColorProperty) ||
 				e.IsOneOf(
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
-					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty) ||
+				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty))
 			{
 				ApplyChanges(_currentNavigationPage);
 			}
@@ -180,7 +181,11 @@ namespace Microsoft.Maui.Controls
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
-			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
+#if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
+				&& !anyPagesPushed.Value
+#endif
+				)
 				_drawerToggleVisible = true;
 			else
 				_drawerToggleVisible = false;
@@ -277,7 +282,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
-		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
+		Color GetIconColor() => NavigationPage.GetIconColor(_currentPage) ?? NavigationPage.GetIconColor(_currentNavigationPage);
 
 		string GetTitle()
 		{

@@ -14,9 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		[Category(UITestCategories.Compatibility)]
 		public void WebViewDisposesProperly()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("NextButton");
 			App.Tap("NextButton");
 			App.WaitForElement("BackButton");

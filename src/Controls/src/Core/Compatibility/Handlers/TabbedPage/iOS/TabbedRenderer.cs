@@ -51,6 +51,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set
 			{
 				base.SelectedViewController = value;
+				// If the selected view controller is the "More" navigation controller, do not update the current page
+				// because it is a special case where the user is navigating to a different set of tabs
+				if (value == MoreNavigationController)
+					return;
+
 				UpdateCurrentPage();
 			}
 		}
@@ -60,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return (TabbedPage)Element; }
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault();
+		public VisualElement Element => _viewHandlerWrapper?.Element ?? _element?.GetTargetOrDefault();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -127,6 +132,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
+			// On iPadOS 26.1+, ViewDidLayoutSubviews can be called during UITabBarController construction
+			// in narrow viewports (< 667 points) before Element is set. Guard against this.
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
 		}
@@ -180,14 +187,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == Page.IconImageSourceProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
 			{
 				var page = (Page)sender;
-
-				IPlatformViewHandler renderer = page.ToHandler(_mauiContext);
-
-				if (renderer?.ViewController.TabBarItem == null)
-					return;
-
-				SetTabBarItem(renderer);
+				UpdateTabBarItem(page);
 			}
+		}
+		
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
+				return;
+
+			if (Element is not null)
+			{
+				UpdateTabBarItems();
+			}
+		}
+
+		void UpdateTabBarItem(Page page)
+		{
+			IPlatformViewHandler renderer = page.ToHandler(_mauiContext);
+
+			if (renderer?.ViewController.TabBarItem == null)
+				return;
+
+			SetTabBarItem(renderer);
 		}
 
 		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -288,6 +310,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ChildViewControllerForStatusBarHidden()?.SetNeedsStatusBarAppearanceUpdate();
 		}
 
+		void UpdateTabBarVisibility()
+		{
+			if (TabBar == null)
+				return;
+
+			// Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar 
+			// which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
+			// This is a side effect of TabSidebar mode when there's no sidebar to show.
+			//
+			// This fix explicitly overrides that behavior to ensure the TabBar remains visible.
+			// Related: ShellItemRenderer.UpdateTabBarHidden() has the same fix for Shell TabbedPage.
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
+			{
+#if MACCATALYST
+				if (TabBar.Hidden || TabBar.Alpha != 1.0f)
+				{
+					// Explicitly set Alpha and Hidden to override incorrect system behavior
+					TabBar.Alpha = 1.0f;
+					TabBar.Hidden = false;
+				}
+#endif
+			}
+		}
+
 		void Reset()
 		{
 			if (Tabbed is not TabbedPage tabbed)
@@ -313,6 +359,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					list.Add(GetViewController(v));
 			}
 			ViewControllers = list.ToArray();
+
+			// Fix TabBar visibility on MacCatalyst 18+ after controllers are set
+			UpdateTabBarVisibility();
 		}
 
 		void SetupPage(Page page, int index)
@@ -448,6 +497,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		void UpdateTabBarItems()
+		{
+			foreach (var page in Tabbed.InternalChildren)
+			{
+				UpdateTabBarItem((Page)page);
+			}
+		}
+
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
 		{
 			if (Tabbed is not TabbedPage tabbed)
@@ -480,11 +537,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
 			var icons = await GetIcon(page);
-			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icons?.Item1, icons?.Item2)
+			var resizedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item1);
+			var resizedSelectedImage = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icons?.Item2);
+			SetTabBarItem(resizedImage, resizedSelectedImage);
+			resizedImage?.Dispose();
+			resizedSelectedImage?.Dispose();
+
+			void SetTabBarItem(UIImage image, UIImage selectedImage)
 			{
-				Tag = Tabbed?.Children.IndexOf(page) ?? -1,
-				AccessibilityIdentifier = page.AutomationId
-			};
+				renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, image, selectedImage)
+				{
+					Tag = Tabbed?.Children.IndexOf(page) ?? -1,
+					AccessibilityIdentifier = page.AutomationId
+				};
+			}
+
 			icons?.Item1?.Dispose();
 			icons?.Item2?.Dispose();
 		}

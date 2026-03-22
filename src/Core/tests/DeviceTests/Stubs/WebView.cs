@@ -42,9 +42,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 #if ANDROID
 			// While this does capture some content, it will not capture video or canvas objects
-			var v = Handler!.PlatformView as Android.Webkit.WebView;
-			var bitmap = Android.Graphics.Bitmap.CreateBitmap(v!.Width, v!.Height, Android.Graphics.Bitmap.Config.Argb8888!);
-			var canvas = new Android.Graphics.Canvas(bitmap!);
+			var v = Handler!.PlatformView as global::Android.Webkit.WebView;
+			var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(v!.Width, v!.Height, global::Android.Graphics.Bitmap.Config.Argb8888!);
+			var canvas = new global::Android.Graphics.Canvas(bitmap!);
 			v.Draw(canvas);
 			return bitmap;
 #elif IOS || MACCATALYST

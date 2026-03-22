@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue2728TestsItalicLabel()
 		{
 			App.WaitForElement(LabelHome);

@@ -7,10 +7,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue25201 : _IssuesUITest
 	{
-		public Issue25201(TestDevice testDevice) : base(testDevice){}
+		public Issue25201(TestDevice testDevice) : base(testDevice) { }
 
 		public override string Issue => "[Android] ImageButton Padding Incorrect After IsVisible False";
-		
+
 		[Test]
 		[Category(UITestCategories.ImageButton)]
 		public void ImageButtonPaddingDoesNotChangeWhenIsVisibleChanges()
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// https://github.com/dotnet/maui/issues/25201
 			App.Tap("Switch1"); // ImageButton IsVisible changes to true
-			// https://github.com/dotnet/maui/issues/16713
+								// https://github.com/dotnet/maui/issues/16713
 			App.Tap("Switch2"); // Hides overlay ContentView
 
 			VerifyScreenshot();

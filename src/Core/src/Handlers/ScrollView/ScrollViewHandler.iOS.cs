@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout
 	{
-		const nint ContentTag = 0x845fed;
-
 		readonly ScrollEventProxy _eventProxy = new();
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
@@ -18,6 +16,15 @@ namespace Microsoft.Maui.Handlers
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();
+		}
+
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			
+			if (PlatformView is MauiScrollView mauiScrollView)
+				mauiScrollView.View = view;
+				
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -83,6 +90,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			platformView.UpdateIsEnabled(scrollView);
 			platformView.InvalidateMeasure(scrollView);
 		}
 
@@ -100,10 +108,10 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
-				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
-				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
-				var minScrollVertical = Math.Min(request.VerticalOffset, availableScrollHeight);
+				var availableScrollHeight = Math.Max(uiScrollView.ContentSize.Height - uiScrollView.Frame.Height, 0);
+				var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
+				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
+				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
 				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
 
 				if (request.Instant)
@@ -113,34 +121,29 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static UIView? GetContentView(UIScrollView scrollView)
-		{
-			for (int i = 0; i < scrollView.Subviews.Length; i++)
-			{
-				if (scrollView.Subviews[i] is { Tag: ContentTag } contentView)
-				{
-					return contentView;
-				}
-			}
-
-			return null;
-		}
-
 		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler)
 		{
+			bool changed = false;
 			var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			var mauiContext = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (GetContentView(platformView) is { } currentContentPlatformView)
+			if (platformView.GetContentView() is { } currentContentPlatformView)
 			{
 				currentContentPlatformView.RemoveFromSuperview();
+				changed = true;
 			}
 
 			if (scrollView.PresentedContent is { } content)
 			{
 				var platformContent = content.ToPlatform(mauiContext);
-				platformContent.Tag = ContentTag;
+				platformContent.Tag = MauiScrollView.ContentTag;
 				platformView.AddSubview(platformContent);
+				changed = true;
+			}
+
+			if (changed)
+			{
+				platformView.InvalidateMeasure();
 			}
 		}
 

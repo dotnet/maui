@@ -38,15 +38,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			try
 			{
 				if (hideOnTapped)
+				{
+					App.WaitForElement("HideSoftInputOnTappedTrue");
 					App.Click("HideSoftInputOnTappedTrue");
+				}
 				else
+				{
+					App.WaitForElement("HideSoftInputOnTappedFalse");
 					App.Click("HideSoftInputOnTappedFalse");
+				}
 
 				App.WaitForElement(control);
 				App.Click(control);
 
 				ClassicAssert.IsTrue(App.IsFocused(control));
 
+				App.WaitForElement("EmptySpace");
 				App.Click("EmptySpace");
 				ClassicAssert.AreEqual(!hideOnTapped, App.IsFocused(control));
 			}
@@ -64,15 +71,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 					App.DismissKeyboard();
 
 				if (hideOnTapped)
+				{
+					App.WaitForElement("HideSoftInputOnTappedTrue");
 					App.Tap("HideSoftInputOnTappedTrue");
+				}
 				else
+				{
+					App.WaitForElement("HideSoftInputOnTappedFalse");
 					App.Tap("HideSoftInputOnTappedFalse");
+				}
 
 				App.WaitForElement(control);
 				App.Tap(control);
 
 				ClassicAssert.True(App.IsKeyboardShown());
 
+				App.WaitForElement("EmptySpace");
 				App.Tap("EmptySpace");
 				ClassicAssert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
 			}
@@ -103,18 +117,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			try
 			{
+				App.WaitForElement("HideSoftInputOnTappedFalse");
 				App.Click("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
+					App.WaitForElement("HideKeyboardWhenTappingPage");
 					App.Click("HideKeyboardWhenTappingPage");
 					ClassicAssert.True(App.IsFocused("HideKeyboardWhenTappingPage"));
+
+					App.WaitForElement("EmptySpace");
 					App.Click("EmptySpace");
 					ClassicAssert.AreEqual(false, App.IsFocused("HideKeyboardWhenTappingPage"));
 
+					App.WaitForElement("DontHideKeyboardWhenTappingPage");
 					App.Click("DontHideKeyboardWhenTappingPage");
 					ClassicAssert.True(App.IsFocused("DontHideKeyboardWhenTappingPage"));
+
+					App.WaitForElement("EmptySpace");
 					App.Click("EmptySpace");
 					ClassicAssert.AreEqual(true, App.IsFocused("DontHideKeyboardWhenTappingPage"));
 				}
@@ -132,6 +153,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				if (App.IsKeyboardShown())
 					App.DismissKeyboard();
 
+				App.WaitForElement("HideSoftInputOnTappedFalse");
 				App.Tap("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
@@ -140,11 +162,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 					App.WaitForElement("HideKeyboardWhenTappingPage");
 					App.Tap("HideKeyboardWhenTappingPage");
 					ClassicAssert.True(App.IsKeyboardShown());
+					App.WaitForElement("EmptySpace");
 					App.Tap("EmptySpace");
 					ClassicAssert.AreEqual(false, App.IsKeyboardShown());
 
+					App.WaitForElement("DontHideKeyboardWhenTappingPage");
 					App.Tap("DontHideKeyboardWhenTappingPage");
 					ClassicAssert.True(App.IsKeyboardShown());
+					App.WaitForElement("EmptySpace");
 					App.Tap("EmptySpace");
 					ClassicAssert.AreEqual(true, App.IsKeyboardShown());
 				}

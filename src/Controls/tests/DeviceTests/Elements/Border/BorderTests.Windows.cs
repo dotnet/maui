@@ -61,8 +61,8 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), cornerRadius, cornerRadius);
 		}
 
-	    [Fact]
-		[Description("The IsVisible property of a Border should match with native IsVisible")]		
+		[Fact]
+		[Description("The IsVisible property of a Border should match with native IsVisible")]
 		public async Task VerifyBorderIsVisibleProperty()
 		{
 			var border = new Border();
@@ -73,9 +73,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeBorder(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
-				Assert.Equal(expectedValue, isVisible);
-			});	
+				   var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>

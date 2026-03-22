@@ -2,10 +2,24 @@ using System;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides utility methods for geometric calculations.
+	/// </summary>
 	public static class GeometryUtil
 	{
+		/// <summary>
+		/// A small value used for floating-point comparisons to account for precision errors.
+		/// </summary>
 		public const float Epsilon = 0.0000000001f;
 
+		/// <summary>
+		/// Calculates the distance between two points.
+		/// </summary>
+		/// <param name="x1">The x-coordinate of the first point.</param>
+		/// <param name="y1">The y-coordinate of the first point.</param>
+		/// <param name="x2">The x-coordinate of the second point.</param>
+		/// <param name="y2">The y-coordinate of the second point.</param>
+		/// <returns>The Euclidean distance between the two points.</returns>
 		public static float GetDistance(float x1, float y1, float x2, float y2)
 		{
 			var a = x2 - x1;
@@ -14,6 +28,14 @@ namespace Microsoft.Maui.Graphics
 			return MathF.Sqrt(a * a + b * b);
 		}
 
+		/// <summary>
+		/// Calculates the angle in degrees between two points relative to the horizontal axis.
+		/// </summary>
+		/// <param name="x1">The x-coordinate of the first point.</param>
+		/// <param name="y1">The y-coordinate of the first point.</param>
+		/// <param name="x2">The x-coordinate of the second point.</param>
+		/// <param name="y2">The y-coordinate of the second point.</param>
+		/// <returns>The angle in degrees.</returns>
 		public static float GetAngleAsDegrees(float x1, float y1, float x2, float y2)
 		{
 			var dx = x1 - x2;
