@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var titleRect = App.FindElement("TitleLabel").GetRect();
 			App.DragCoordinates(10, titleRect.CenterY(), titleRect.Width - 10, titleRect.CenterY());
 
-			// Verify flyout IS visible now
+			// Verify flyout is NOT visible (gesture was disabled)
 			App.WaitForNoElement("FlyoutLabel", timeout: TimeSpan.FromSeconds(5));
 		}
 	}
