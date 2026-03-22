@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 		List<APolyline> _polylines;
 		List<APolygon> _polygons;
 		List<ACircle> _circles;
+		List<MapElement> _trackedMapElements;
 
 		public MapRenderer(Context context) : base(context)
 		{
@@ -581,6 +582,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 					AddMapElements(e.NewItems.Cast<MapElement>());
 					break;
 				case NotifyCollectionChangedAction.Reset:
+					// Clear MapElementId from tracked elements (not Element.MapElements,
+					// which is already empty after ObservableCollection.Clear())
+					if (_trackedMapElements != null)
+					{
+						foreach (var element in _trackedMapElements)
+							element.MapElementId = null;
+
+						_trackedMapElements = null;
+					}
+
 					if (_polylines != null)
 					{
 						for (int i = 0; i < _polylines.Count; i++)
@@ -612,8 +623,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 
 		void AddMapElements(IEnumerable<MapElement> mapElements)
 		{
+			_trackedMapElements ??= new List<MapElement>();
+
 			foreach (var element in mapElements)
 			{
+				_trackedMapElements.Add(element);
 				element.PropertyChanged += MapElementPropertyChanged;
 
 				switch (element)

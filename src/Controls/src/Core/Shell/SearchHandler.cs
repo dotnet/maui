@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Devices;
 using static Microsoft.Maui.Controls.VisualElement;
 
 namespace Microsoft.Maui.Controls
@@ -314,6 +315,12 @@ namespace Microsoft.Maui.Controls
 		{
 			OnItemSelected(obj);
 			SetValue(SelectedItemPropertyKey, obj, specificity: SetterSpecificity.FromHandler);
+			if (!(DeviceInfo.Platform == DevicePlatform.WinUI))
+			{
+				// For WinUI the query is confirmed in the QuerySubmitted event, 
+				// so we don't want to call OnQueryConfirmed here as it would cause the command to execute twice
+				OnQueryConfirmed();
+			}
 		}
 
 		void ISearchHandlerController.QueryConfirmed()

@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<APolyline>? _polylines;
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
+		List<IMapElement>? _trackedMapElements;
 
 		public GoogleMap? Map { get; private set; }
 
@@ -466,6 +467,16 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void ClearMapElements()
 		{
+			// Clear MapElementId from tracked elements (not VirtualView.Elements,
+			// which returns an empty snapshot after ObservableCollection.Clear())
+			if (_trackedMapElements != null)
+			{
+				foreach (var element in _trackedMapElements)
+					element.MapElementId = null;
+
+				_trackedMapElements = null;
+			}
+
 			if (_polylines != null)
 			{
 				for (int i = 0; i < _polylines.Count; i++)
@@ -498,8 +509,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (Map == null || MauiContext == null)
 				return;
 
+			_trackedMapElements = new List<IMapElement>();
+
 			foreach (var element in mapElements)
 			{
+				if (element is IMapElement me)
+					_trackedMapElements.Add(me);
+
 				if (element is IGeoPathMapElement geoPath)
 				{
 					if (element is IFilledMapElement)
