@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.OnEditingStarted += OnEditingStarted;
 			_uiSearchBar.OnEditingStopped += OnEditingEnded;
 			_uiSearchBar.TextChanged += OnTextChanged;
-			_uiSearchBar.ShowsCancelButton = false;
 			GetDefaultSearchBarColors(_uiSearchBar);
 			var uiTextField = searchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarColors();
