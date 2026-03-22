@@ -7,7 +7,9 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.MultiBinding']/Docs/*" />
+	/// <summary>
+	/// A binding that combines multiple source bindings into a single target value using an <see cref="IMultiValueConverter"/>.
+	/// </summary>
 	[ContentProperty(nameof(Bindings))]
 	public sealed class MultiBinding : BindingBase
 	{
@@ -20,7 +22,9 @@ namespace Microsoft.Maui.Controls
 		BindableProperty[] _bpProxies;
 		bool _applying;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="IMultiValueConverter"/> used to combine the source values into a target value.
+		/// </summary>
 		public IMultiValueConverter Converter
 		{
 			get { return _converter; }
@@ -31,7 +35,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets an optional parameter to pass to the <see cref="Converter"/>.
+		/// </summary>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -42,7 +48,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/MultiBinding.xml" path="//Member[@MemberName='Bindings']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of <see cref="BindingBase"/> objects whose values are combined by this multi-binding.
+		/// </summary>
 		public IList<BindingBase> Bindings
 		{
 			get => _bindings ?? (_bindings = new List<BindingBase>());

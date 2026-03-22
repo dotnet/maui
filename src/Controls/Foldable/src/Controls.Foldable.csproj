@@ -7,7 +7,7 @@
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
   </PropertyGroup>
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">

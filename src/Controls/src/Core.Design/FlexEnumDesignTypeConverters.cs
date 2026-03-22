@@ -8,10 +8,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for FlexJustify values.
+	/// </summary>
 	public class FlexJustifyDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"Start",
@@ -23,10 +28,15 @@ namespace Microsoft.Maui.Controls.Design
 			};
 	}
 
+	/// <summary>
+	/// Provides design-time type conversion for FlexDirection values.
+	/// </summary>
 	public class FlexDirectionDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"Column",
@@ -36,10 +46,15 @@ namespace Microsoft.Maui.Controls.Design
 		};
 	}
 
+	/// <summary>
+	/// Provides design-time type conversion for FlexAlignContent values.
+	/// </summary>
 	public class FlexAlignContentDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"Stretch",
@@ -53,10 +68,15 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
+	/// <summary>
+	/// Provides design-time type conversion for FlexAlignItems values.
+	/// </summary>
 	public class FlexAlignItemsDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"Stretch",
@@ -67,10 +87,15 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
+	/// <summary>
+	/// Provides design-time type conversion for FlexAlignSelf values.
+	/// </summary>
 	public class FlexAlignSelfDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"Auto",
@@ -82,10 +107,15 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
+	/// <summary>
+	/// Provides design-time type conversion for FlexWrap values.
+	/// </summary>
 	public class FlexWrapDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override bool ExclusiveToKnownValues => true;
 
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"NoWrap",
@@ -95,13 +125,18 @@ namespace Microsoft.Maui.Controls.Design
 	}
 
 
+	/// <summary>
+	/// Provides design-time type conversion for FlexBasis values.
+	/// </summary>
 	public class FlexBasisDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
+		/// <inheritdoc/>
 		protected override string[] KnownValues
 			=> new[] {
 				"Auto",
 		};
 
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			if (KnownValues.Any(v => value?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false))

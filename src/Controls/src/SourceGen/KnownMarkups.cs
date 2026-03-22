@@ -148,16 +148,46 @@ internal class KnownMarkups
 
 		// Get the AncestorType property (which is an x:Type extension)
 		ITypeSymbol? ancestorTypeSymbol = null;
-		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode? ancestorTypeNode)
-			|| markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+		INode? ancestorTypeNode = null;
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out ancestorTypeNode)
+			&& !markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+			markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "AncestorType"), out ancestorTypeNode);
+		
+		if (ancestorTypeNode is not null)
 		{
-			if (ancestorTypeNode is ElementNode typeExtNode && context.Types.TryGetValue(typeExtNode, out ancestorTypeSymbol))
+			if (ancestorTypeNode is ElementNode typeExtNode)
 			{
-				// Type was already resolved by ProvideValueForTypeExtension
+				if (context.Types.TryGetValue(typeExtNode, out ancestorTypeSymbol))
+				{
+					// Type was already resolved by ProvideValueForTypeExtension
+				}
+				else
+				{
+					// x:Type extension not yet processed - resolve it now
+					// This can happen when RelativeSource is processed before the x:Type child
+					if (!typeExtNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+						&& !typeExtNode.Properties.TryGetValue(new XmlName(null, "TypeName"), out typeNameNode)
+						&& !typeExtNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+						&& typeExtNode.CollectionItems.Count == 1)
+						typeNameNode = typeExtNode.CollectionItems[0];
+
+					if (typeNameNode is ValueNode vnTypeName)
+					{
+						var typeName = vnTypeName.Value as string;
+						if (!IsNullOrEmpty(typeName))
+						{
+							XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, typeExtNode.NamespaceResolver, typeExtNode as IXmlLineInfo);
+							xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var resolvedType);
+							ancestorTypeSymbol = resolvedType;
+							if (resolvedType is not null)
+								context.Types[typeExtNode] = resolvedType;
+						}
+					}
+				}
 			}
 			else if (ancestorTypeNode is ValueNode vnType)
 			{
-				// Try to parse as a type name
+				// Try to parse as a type name directly (without x:Type)
 				var typeName = vnType.Value as string;
 				if (!IsNullOrEmpty(typeName))
 				{
@@ -276,7 +306,9 @@ internal class KnownMarkups
 
 		if (styleNode != null)
 		{
-			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{(styleNode as ValueNode)!.Value as string}\")";
+			// Escape quotes for verbatim string literal (@"") by doubling them
+			var styleContent = ((styleNode as ValueNode)!.Value as string)?.Replace("\"", "\"\"") ?? "";
+			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{styleContent}\")";
 			return true;
 		}
 		else // sourceNode != null
@@ -309,23 +341,25 @@ internal class KnownMarkups
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
 		
-		// Check if the binding has a Source property with a RelativeSource.
-		// In this case, we should NOT compile the binding using x:DataType because
-		// the source type will be determined at runtime by the RelativeSource, not x:DataType.
-		bool hasRelativeSource = HasRelativeSourceBinding(markupNode);
+		// When Source is explicitly set (RelativeSource or x:Reference), x:DataType does not describe
+		// the actual source — skip compilation and fall back to runtime binding.
+		bool hasExplicitSource = HasExplicitBindingSource(markupNode);
 		
 		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
 		
-		if (   !hasRelativeSource
-			&& extVariable is not null
-			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
-			&& dataTypeSymbol is not null)
+		if (   !hasExplicitSource
+			&& extVariable is not null)
 		{
-			var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
-			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+			TryGetXDataType(markupNode, context, out dataTypeSymbol);
+
+			if (dataTypeSymbol is not null)
 			{
-				value = newBindingExpression;
-				return true;
+				var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
+				if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+				{
+					value = newBindingExpression;
+					return true;
+				}
 			}
 		}
 
@@ -446,10 +480,8 @@ internal class KnownMarkups
 
 			if (xDataTypeIsInOuterScope)
 			{
-				// TODO
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType from outer scope"));
-				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				// continue compilation
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingWithXDataTypeFromOuterScope, location));
+				// continue compilation - this is a warning
 			}
 
 			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
@@ -516,10 +548,9 @@ internal class KnownMarkups
 				return false;
 			}
 
-			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) && symbol is not null)
+			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) || symbol is null)
 			{
-				// TODO report the right diagnostic
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot resolve x:DataType type"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, location, dataTypeName));
 				return false;
 			}
 
@@ -598,10 +629,10 @@ internal class KnownMarkups
 				&& propertyName.LocalName == "BindingContext";
 		}
 
-		// Checks if the binding has a Source property that is a RelativeSource extension.
-		// When a binding uses RelativeSource, the source type is determined at runtime,
+		// Checks if the binding has a Source property set to RelativeSource or x:Reference.
+		// When Source is explicitly set, x:DataType does not describe the actual binding source,
 		// so we should NOT compile the binding using x:DataType.
-		static bool HasRelativeSourceBinding(ElementNode bindingNode)
+		static bool HasExplicitBindingSource(ElementNode bindingNode)
 		{
 			// Check if Source property exists
 			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
@@ -610,12 +641,13 @@ internal class KnownMarkups
 				return false;
 			}
 
-			// Check if the Source is a RelativeSourceExtension
+			// Check if the Source is a RelativeSourceExtension or ReferenceExtension
 			if (sourceNode is ElementNode sourceElementNode)
 			{
-				// Check if the element is a RelativeSourceExtension
-				return sourceElementNode.XmlType.Name == "RelativeSourceExtension"
-					|| sourceElementNode.XmlType.Name == "RelativeSource";
+				return sourceElementNode.XmlType.Name is "RelativeSourceExtension"
+					or "RelativeSource"
+					or "ReferenceExtension"
+					or "Reference";
 			}
 
 			return false;

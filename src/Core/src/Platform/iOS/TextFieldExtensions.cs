@@ -32,13 +32,29 @@ namespace Microsoft.Maui.Platform
 		{
 			if (entry.IsPassword && textField.IsFirstResponder)
 			{
+				var currentText = textField.Text;
 				textField.Enabled = false;
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
 				textField.BecomeFirstResponder();
+				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
+				{
+					mauiTextField.SuppressTextPropertySet(true);
+					try
+					{
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+					}
+					finally
+					{
+						mauiTextField.SuppressTextPropertySet(false);
+					}
+				}
 			}
 			else
+			{
 				textField.SecureTextEntry = entry.IsPassword;
+			}
 #if MACCATALYST
 			textField.TextContentType = UITextContentType.OneTimeCode;
 #endif
@@ -159,12 +175,28 @@ namespace Microsoft.Maui.Platform
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
 		{
-			if (!entry.IsReadOnly)
+			if (entry.IsReadOnly)
 			{
-				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
-				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
+				return;
+			}
 
-				textField.SelectedTextRange = textField.GetTextRange(start, end);
+			void UpdateSelection()
+			{
+				if (textField is not null && textField.Handle != IntPtr.Zero)
+				{
+					UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
+					UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
+					textField.SelectedTextRange = textField.GetTextRange(start, end);
+				}
+			}
+
+			if (entry.IsFocused)
+			{
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(UpdateSelection);
+			}
+			else
+			{
+				UpdateSelection();
 			}
 		}
 
@@ -215,8 +247,8 @@ namespace Microsoft.Maui.Platform
 
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
+					clearButton.TintColor = null;
 				}
 				else
 				{

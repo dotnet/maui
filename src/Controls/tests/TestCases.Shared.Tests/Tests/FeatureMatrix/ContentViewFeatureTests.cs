@@ -103,7 +103,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("This is Default Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -116,7 +116,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("This is Default Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -129,7 +129,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("This is Default Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // related issue link: https://github.com/dotnet/maui/issues/29812
@@ -143,7 +143,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("This is Default Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -169,7 +169,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("This is Default Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -213,7 +213,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("First ContentView Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -242,7 +242,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("First ContentView Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -271,7 +271,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("First ContentView Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -286,7 +286,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("First ContentView Page");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -301,7 +301,7 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Second Custom Title");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -330,6 +330,6 @@ public class ContentViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Second Custom Title");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

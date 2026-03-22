@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Xunit;
 
 #nullable enable
 
@@ -32,9 +33,9 @@ public static class MockSourceGenerator
 	public static Compilation WithAdditionalSource(this Compilation compilation, string sourceCode, string hintName = "File.Xaml.cs") =>
 		compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(sourceCode, path: hintName));
 
-	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework);
-	public record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null)
-		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework);
+	public record AdditionalFile(AdditionalText Text, string Kind, string RelativePath, string? TargetPath, string? ManifestResourceName, string? TargetFramework, bool EnablePreviewFeatures = true);
+	public record AdditionalXamlFile(string Path, string Content, string? RelativePath = null, string? TargetPath = null, string? ManifestResourceName = null, string? TargetFramework = null, bool EnablePreviewFeatures = true)
+		: AdditionalFile(Text: ToAdditionalText(Path, Content), Kind: "Xaml", RelativePath: RelativePath ?? Path, TargetPath: TargetPath, ManifestResourceName: ManifestResourceName, TargetFramework: TargetFramework, EnablePreviewFeatures: EnablePreviewFeatures);
 
 	public static AdditionalText ToAdditionalText(string path, string text) => CustomAdditionalText.From(path, text);
 
@@ -50,27 +51,55 @@ public static class MockSourceGenerator
 		return RunMauiSourceGenerator(compilation, new AdditionalXamlFile(resourcePath, new StreamReader(resourceStream!).ReadToEnd(), TargetFramework: targetFramework));
 	}
 
-	static string GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
+	static string? GetTopDirRecursive(string searchDirectory, int maxSearchDepth = 7)
 	{
 		if (File.Exists(Path.Combine(searchDirectory, "Microsoft.Maui.sln")))
 			return searchDirectory;
 
 		if (maxSearchDepth <= 0)
-			throw new DirectoryNotFoundException("Unable to locate root maui directory!");
+			return null; // Return null instead of throwing when running outside repo (e.g., Helix)
 
 		return GetTopDirRecursive(Directory.GetParent(searchDirectory)?.FullName ?? "", --maxSearchDepth);
 	}
 
-	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, params AdditionalFile[] additionalFiles)
+	/// <summary>
+	/// Gets the path to the SourceGen DLL, checking both local repo and Helix payload locations.
+	/// </summary>
+	static string GetSourceGenDllPath()
 	{
 #if DEBUG
 		var config = "Debug";
 #else
 		var config = "Release";
 #endif
+		// First, check Helix correlation payload (HELIX_CORRELATION_PAYLOAD environment variable)
+		var helixPayload = Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD");
+		if (!string.IsNullOrEmpty(helixPayload))
+		{
+			var helixPath = Path.Combine(helixPayload, "sourcegen", "Microsoft.Maui.Controls.SourceGen.dll");
+			if (File.Exists(helixPath))
+				return helixPath;
+		}
 
+		// Fall back to local repo path
 		var top = GetTopDirRecursive(Directory.GetCurrentDirectory());
-		var path = System.IO.Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
+		if (top == null)
+			throw new InvalidOperationException(
+				"SourceGen tests require the Microsoft.Maui.Controls.SourceGen.dll. " +
+				"Ensure the DLL is built locally (artifacts/bin/Controls.SourceGen/) or included in HELIX_CORRELATION_PAYLOAD/sourcegen/.");
+
+		var path = Path.Combine(top, "artifacts", "bin", "Controls.SourceGen", config, "netstandard2.0", "Microsoft.Maui.Controls.SourceGen.dll");
+		if (!File.Exists(path))
+			throw new InvalidOperationException(
+				$"SourceGen DLL not found at {path}. " +
+				"Ensure the DLL is built locally (dotnet build Microsoft.Maui.BuildTasks.slnf) or included in HELIX_CORRELATION_PAYLOAD/sourcegen/.");
+		
+		return path;
+	}
+
+	public static GeneratorDriverRunResult RunMauiSourceGenerator(this Compilation compilation, params AdditionalFile[] additionalFiles)
+	{
+		var path = GetSourceGenDllPath();
 		var analyzerAssembly = Assembly.LoadFrom(path);
 
 		var generatorType = analyzerAssembly?.GetType("Microsoft.Maui.Controls.SourceGen.XamlGenerator")!;
@@ -189,6 +218,7 @@ public static class MockSourceGenerator
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
 					"build_metadata.additionalfiles.Inflator" => "SourceGen",
 					"build_property.targetFramework" => _additionalFile.TargetFramework,
+					"build_property.EnablePreviewFeatures" => _additionalFile.EnablePreviewFeatures ? "true" : null,
 					_ => null
 				};
 

@@ -4,7 +4,9 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.TransformGroup']/Docs/*" />
+	/// <summary>
+	/// Represents a composite <see cref="Transform"/> composed of multiple transforms applied in sequence.
+	/// </summary>
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform
 	{
@@ -13,13 +15,17 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null,
 				propertyChanged: OnTransformGroupChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TransformGroup"/> class.
+		/// </summary>
 		public TransformGroup()
 		{
 			Children = new TransformCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="//Member[@MemberName='Children']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of child <see cref="Transform"/> objects. This is a bindable property.
+		/// </summary>
 		public TransformCollection Children
 		{
 			set { SetValue(ChildrenProperty, value); }
