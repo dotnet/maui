@@ -248,6 +248,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
+
+			// Apply drawer lock mode during layout so IsGestureEnabled is respected
+			// even before the detail platform view is ready
+			DrawerLayout.SetDrawerLockMode(
+				VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && VirtualView.IsGestureEnabled
+					? DrawerLayout.LockModeUnlocked
+					: DrawerLayout.LockModeLockedClosed);
 		}
 
 		void UpdateIsPresented()
@@ -264,26 +271,22 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyoutBehavior()
 		{
 			var behavior = VirtualView.FlyoutBehavior;
+			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
+				return;
 
-			if (_detailViewFragment?.DetailView?.Handler?.PlatformView is not null)
-			{
-				// Important to create the layout views before setting the lock mode
-				LayoutViews();
-			}
+			// Important to create the layout views before setting the lock mode
+			LayoutViews();
 
-			if (DrawerLayout is not null)
+			switch (behavior)
 			{
-				switch (behavior)
-				{
-					case FlyoutBehavior.Disabled:
-					case FlyoutBehavior.Locked:
-						DrawerLayout.CloseDrawers();
-						DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
-						break;
-					case FlyoutBehavior.Flyout:
-						DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
-						break;
-				}
+				case FlyoutBehavior.Disabled:
+				case FlyoutBehavior.Locked:
+					DrawerLayout.CloseDrawers();
+					DrawerLayout.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
+					break;
+				case FlyoutBehavior.Flyout:
+					DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
+					break;
 			}
 		}
 
