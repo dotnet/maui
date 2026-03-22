@@ -217,7 +217,17 @@ namespace Microsoft.Maui.Handlers
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				button.SetImage(platformImage, UIControlState.Normal);
-				button.BringSubviewToFront(button.ImageView);
+
+				// Ensure the image is above any background/gradient subviews, but keep the title label
+				// above the image in case they overlap (e.g., with custom ContentLayout or insets).
+				var imageView = button.ImageView;
+				if (imageView is not null)
+					button.BringSubviewToFront(imageView);
+
+				var titleLabel = button.TitleLabel;
+				if (titleLabel is not null)
+					button.BringSubviewToFront(titleLabel);
+
 				// UIButton.SetImage(image, forState:) does not immediately assign the image to UIButton.ImageView.Image.
 				// Instead, the image is set internally and only applied to ImageView when the button is rendered.
 				// To ensure SizeThatFits is correct, and avoid race conditions, we have to force a layout.
