@@ -98,11 +98,6 @@ namespace Microsoft.Maui.Media
 			}
 			else
 			{
-				if (!pickExisting)
-				{
-					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
-				}
-
 				var sourceType = pickExisting
 					? UIImagePickerControllerSourceType.PhotoLibrary
 					: UIImagePickerControllerSourceType.Camera;
