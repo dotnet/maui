@@ -1109,32 +1109,36 @@ namespace Microsoft.Maui.Controls
 			protected override async Task OnPopToRootAsync(bool animated)
 			{
 				_owner.IsPoppingModalStackToRoot = true;
-
-				if (!_owner.IsVisibleSection)
+				try
 				{
-					await _owner.OnPopToRootAsync(animated);
-					_owner.IsPoppingModalStackToRoot = false;
-					return;
+					if (!_owner.IsVisibleSection)
+					{
+						await _owner.OnPopToRootAsync(animated);
+						return;
+					}
+
+					var shell = _owner.Shell;
+					var targetState =
+						ShellNavigationManager.GetNavigationState(
+							shell.CurrentItem,
+							_owner,
+							_owner.CurrentItem,
+							null,
+							null);
+
+					var navigationParameters = new ShellNavigationParameters()
+					{
+						Animated = animated,
+						TargetState = targetState,
+						PopAllPagesNotSpecifiedOnTargetState = true
+					};
+
+					await _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
 				}
-
-				var shell = _owner.Shell;
-				var targetState =
-					ShellNavigationManager.GetNavigationState(
-						shell.CurrentItem,
-						_owner,
-						_owner.CurrentItem,
-						null,
-						null);
-
-				var navigationParameters = new ShellNavigationParameters()
+				finally
 				{
-					Animated = animated,
-					TargetState = targetState,
-					PopAllPagesNotSpecifiedOnTargetState = true
-				};
-
-				await _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
-				_owner.IsPoppingModalStackToRoot = false;
+					_owner.IsPoppingModalStackToRoot = false;
+				}
 			}
 
 			protected override Task OnPushAsync(Page page, bool animated)

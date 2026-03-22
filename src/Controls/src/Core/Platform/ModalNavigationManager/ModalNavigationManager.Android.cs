@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				dialogFragment.Dismiss();
+				dialogFragment.DismissNow();
 				source.TrySetResult(modal);
 			}
 

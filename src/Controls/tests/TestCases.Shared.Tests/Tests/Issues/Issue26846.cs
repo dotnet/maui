@@ -26,4 +26,18 @@ public class Issue26846 : _IssuesUITest
 
 		App.WaitForElement("OpenModalPage2");
 	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void PopToRootShouldDismissAllModalsInstantly()
+	{
+		App.WaitForElement("OpenModalPage2");
+		App.Click("OpenModalPage2");
+		App.WaitForElement("OpenModalPage3");
+		App.Click("OpenModalPage3");
+		App.WaitForElement("PopRootPage3");
+		App.Click("PopRootPage3");
+
+		App.WaitForElement("OpenModalPage2");
+	}
 }
