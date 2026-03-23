@@ -93,8 +93,12 @@ namespace Microsoft.Maui
 			if (platformView is PlatformView androidView && androidView.IsDisposed())
 				return false;
 #endif
+#if WINDOWS
 			if (viewHandler?.MauiContext is MauiContext mc && mc.IsWindowScopeDisposed)
+			{
 				return false;
+			}
+#endif
 
 			return true;
 		}
