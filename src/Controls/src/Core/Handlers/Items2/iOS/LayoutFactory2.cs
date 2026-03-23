@@ -157,7 +157,17 @@ internal static class LayoutFactory2
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
+			var halfHorizontalSpacing = new NFloat(horizontalItemSpacing / 2d);
+			var halfVerticalSpacing = new NFloat(verticalItemSpacing / 2d);
 
+			if (scrollDirection == UICollectionViewScrollDirection.Vertical && horizontalItemSpacing > 0)
+			{
+				item.ContentInsets = new NSDirectionalEdgeInsets(0, halfHorizontalSpacing, 0, halfHorizontalSpacing);
+			}
+			else if (scrollDirection == UICollectionViewScrollDirection.Horizontal && verticalItemSpacing > 0)
+			{
+				item.ContentInsets = new NSDirectionalEdgeInsets(halfVerticalSpacing, 0, halfVerticalSpacing, 0);
+			}
 			// Each group of items (for grouped collections) has a size
 			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
