@@ -741,11 +741,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Also worth noting this task returns on the main thread
 				if (t.Result)
 					return;
-				// Only dispose if the controller was actually removed from the navigation stack.
-				// On iOS 26, interrupted transitions and subsequent navigations can complete
-				// this task with false even when the controller is still visible.
-				if (controller is not null && !ViewControllers.Contains(controller))
-					controller.Dispose();
+
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					// Only dispose if the controller was actually removed from the navigation stack.
+					// On iOS 26, interrupted transitions and subsequent navigations can complete
+					// this task with false even when the controller is still visible.
+					if (controller is not null && !ViewControllers.Contains(controller))
+						controller.Dispose();
+				}
+				else
+				{
+					// because we skip the normal pop process we need to dispose ourselves
+					controller?.Dispose();
+				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
