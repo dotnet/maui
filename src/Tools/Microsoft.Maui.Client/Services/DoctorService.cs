@@ -161,7 +161,8 @@ public class DoctorService : IDoctorService
 
 		try
 		{
-			var result = await ProcessRunner.RunAsync(fix.Command, cancellationToken: cancellationToken);
+			var (fileName, arguments) = ParseCommand(fix.Command);
+			var result = await ProcessRunner.RunAsync(fileName, arguments, cancellationToken: cancellationToken);
 			return result.ExitCode == 0;
 		}
 		catch (Exception ex)
@@ -169,6 +170,32 @@ public class DoctorService : IDoctorService
 			System.Diagnostics.Trace.WriteLine($"Auto-fix '{fix.Command}' failed: {ex.Message}");
 			return false;
 		}
+	}
+
+	/// <summary>
+	/// Splits a command string into executable and arguments.
+	/// Handles quoted executables (e.g., "C:\Program Files\tool.exe" --flag).
+	/// </summary>
+	internal static (string fileName, string arguments) ParseCommand(string command)
+	{
+		var trimmed = command.Trim();
+
+		if (trimmed.StartsWith('"'))
+		{
+			var endQuote = trimmed.IndexOf('"', 1);
+			if (endQuote > 0)
+			{
+				var fileName = trimmed[1..endQuote];
+				var arguments = trimmed[(endQuote + 1)..].TrimStart();
+				return (fileName, arguments);
+			}
+		}
+
+		var spaceIndex = trimmed.IndexOf(' ', StringComparison.Ordinal);
+		if (spaceIndex < 0)
+			return (trimmed, string.Empty);
+
+		return (trimmed[..spaceIndex], trimmed[(spaceIndex + 1)..]);
 	}
 
 	private async Task<HealthCheck> CheckDotNetSdkAsync(CancellationToken cancellationToken)

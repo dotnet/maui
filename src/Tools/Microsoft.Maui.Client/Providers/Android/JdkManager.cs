@@ -250,9 +250,45 @@ public class JdkManager : IJdkManager
 		};
 	}
 
+	/// <summary>
+	/// Validates that the install path is not a dangerous system or user directory.
+	/// Prevents accidental recursive deletion of critical directories.
+	/// </summary>
+	internal static void ValidateInstallPath(string path)
+	{
+		var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+		// Block home directory
+		var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+			.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		if (string.Equals(fullPath, homePath, StringComparison.OrdinalIgnoreCase))
+			throw new MauiToolException(ErrorCodes.JdkInstallFailed,
+				$"Refusing to use home directory as install path: {path}");
+
+		// Block root and well-known system directories
+		string[] dangerousPaths = ["/", "/usr", "/bin", "/etc", "/var", "/tmp", "/opt", "/home",
+			"C:\\", "C:\\Windows", "C:\\Users", "C:\\Program Files", "C:\\Program Files (x86)"];
+
+		foreach (var dangerous in dangerousPaths)
+		{
+			var normalizedDangerous = dangerous.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+			if (string.Equals(fullPath, normalizedDangerous, StringComparison.OrdinalIgnoreCase))
+				throw new MauiToolException(ErrorCodes.JdkInstallFailed,
+					$"Refusing to use system directory as install path: {path}");
+		}
+
+		// Path must be at least 3 segments deep to prevent broad deletions
+		var segments = fullPath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar },
+			StringSplitOptions.RemoveEmptyEntries);
+		if (segments.Length < 3)
+			throw new MauiToolException(ErrorCodes.JdkInstallFailed,
+				$"Install path is too shallow (requires at least 3 directory levels): {path}");
+	}
+
 	private async Task ExtractArchiveAsync(string archivePath, string targetPath, CancellationToken cancellationToken)
 	{
-		// Ensure target directory exists
+		ValidateInstallPath(targetPath);
+
 		if (Directory.Exists(targetPath))
 			Directory.Delete(targetPath, recursive: true);
 		Directory.CreateDirectory(targetPath);
