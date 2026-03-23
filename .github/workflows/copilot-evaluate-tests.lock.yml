@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"cdb78e365dd809c6f3de4ce518fca9b92d9d8ab8d701288f8aca0b0ffbf0b7c1","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a1b9d69f47622f8bad62c3a23f3b5785438db6570f205c3d0c7363b6cd4fafbd","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -324,7 +324,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
         name: Checkout PR branch
-        run: "if [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  echo \"Checking out PR #$PR_NUMBER...\"\n\n  # Guard: block fork PRs on workflow_dispatch to prevent fork code execution\n  HEAD_OWNER=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo \"\")\n  BASE_OWNER=$(echo \"$GITHUB_REPOSITORY\" | cut -d'/' -f1)\n  if [ -z \"$HEAD_OWNER\" ]; then\n    echo \"⚠️ Could not determine PR owner. Skipping checkout for security.\"\n    exit 0\n  fi\n  if [ \"$HEAD_OWNER\" != \"$BASE_OWNER\" ]; then\n    echo \"⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security.\"\n    echo \"The agent will use GitHub API to read PR data instead.\"\n    exit 0\n  fi\n\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
+        run: "# SECURITY NOTE: This step checks out PR code (including fork PRs) onto disk.\n# This is safe because NO subsequent steps execute workspace code — the gh-aw\n# platform copies the workspace into a sandboxed container with scrubbed\n# credentials before starting the agent. The classic \"pwn-request\" attack\n# requires checkout + execution; we only do checkout.\n#\n# ⚠️  DO NOT add steps after this that run scripts from the workspace\n#     (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual\n#     fork code execution vulnerability. See:\n#     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/\nif [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  echo \"Checking out PR #$PR_NUMBER...\"\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
 
       - name: Configure Git credentials
         env:

@@ -77,48 +77,21 @@ steps:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
     run: |
+      # SECURITY NOTE: This step checks out PR code (including fork PRs) onto disk.
+      # This is safe because NO subsequent steps execute workspace code — the gh-aw
+      # platform copies the workspace into a sandboxed container with scrubbed
+      # credentials before starting the agent. The classic "pwn-request" attack
+      # requires checkout + execution; we only do checkout.
+      #
+      # ⚠️  DO NOT add steps after this that run scripts from the workspace
+      #     (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual
+      #     fork code execution vulnerability. See:
+      #     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
       if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
         echo "Checking out PR #$PR_NUMBER..."
-
-        HEAD_OWNER=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo "")
-        BASE_OWNER=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
-        if [ -z "$HEAD_OWNER" ]; then
-          echo "⚠️ Could not determine PR owner. Skipping checkout for security."
-          exit 0
-        fi
-
-        if [ "$HEAD_OWNER" != "$BASE_OWNER" ]; then
-          # Fork PR: fetch individual changed files via GitHub API instead of full checkout.
-          # Full `gh pr checkout` would place all fork-controlled files on disk where subsequent
-          # steps could theoretically execute them. Fetching file contents via the API is a pure
-          # data read — only the specific changed files are written, no git hooks or scripts run.
-          echo "🔀 PR #$PR_NUMBER is from fork ($HEAD_OWNER). Fetching changed files via API..."
-
-          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq '.headRefOid')
-          gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only > .pr-changed-files.txt
-
-          DOWNLOAD_COUNT=0
-          SKIP_COUNT=0
-          while IFS= read -r FILE; do
-            [ -z "$FILE" ] && continue
-            mkdir -p "$(dirname "$FILE")"
-            if gh api "repos/${GITHUB_REPOSITORY}/contents/${FILE}?ref=${HEAD_SHA}" \
-                 --jq '.content' > /tmp/gh_content.b64 2>/dev/null; then
-              base64 -d < /tmp/gh_content.b64 > "${FILE}"
-              DOWNLOAD_COUNT=$((DOWNLOAD_COUNT + 1))
-            else
-              SKIP_COUNT=$((SKIP_COUNT + 1))
-            fi
-          done < .pr-changed-files.txt
-          rm -f /tmp/gh_content.b64
-
-          echo "✅ Downloaded $DOWNLOAD_COUNT file(s), $SKIP_COUNT skipped/deleted"
-        else
-          # Same-repo PR: standard checkout (safe — code is from the same repo)
-          gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
-          echo "✅ Checked out PR #$PR_NUMBER"
-          git log --oneline -1
-        fi
+        gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
+        echo "✅ Checked out PR #$PR_NUMBER"
+        git log --oneline -1
       else
         echo "No PR number available, using default checkout"
       fi
@@ -133,9 +106,7 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
 
-The PR's changed files are available locally. For same-repo PRs, the full branch was checked out.
-For fork PRs, individual changed files were fetched via the GitHub API and a `.pr-changed-files.txt`
-file lists all changed paths.
+The PR branch has been checked out for you. All files from the PR are available locally.
 
 ## Running the skill
 
