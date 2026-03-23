@@ -25,6 +25,7 @@ Microsoft.Maui.Controls.LongPressingEventArgs
 Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!

@@ -32,6 +32,7 @@ parameters:
   expiryInHours: 1
   base64Encode: false
   skipInternalFeeds: true
+  skipCertificates: false
 
 steps:
 
@@ -168,9 +169,19 @@ steps:
       done
 
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
+        echo "WARNING: No exact match for requested Xcode version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        exit 1
+        echo "Falling back to latest available Xcode on this agent..."
+        # Find the latest Xcode by sorting version numbers
+        LATEST_XCODE=$(ls -1d /Applications/Xcode_*.app 2>/dev/null | sed 's|/Applications/Xcode_||;s|\.app||' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
+        if [[ -n "$LATEST_XCODE" ]]; then
+          XCODE_VERSION="$LATEST_XCODE"
+          XCODE_PATH="/Applications/Xcode_${LATEST_XCODE}.app"
+          echo "Using latest available Xcode: ${XCODE_VERSION} at ${XCODE_PATH}"
+        else
+          echo "ERROR: No Xcode installations found in /Applications"
+          exit 1
+        fi
       fi
 
       sudo xcode-select -s "$XCODE_PATH"

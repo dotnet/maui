@@ -23,6 +23,7 @@ Microsoft.Maui.Controls.LongPressedEventArgs.Parameter.get -> object?
 Microsoft.Maui.Controls.LongPressingEventArgs
 Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -43,4 +44,6 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Type targetType, System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
 ~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
