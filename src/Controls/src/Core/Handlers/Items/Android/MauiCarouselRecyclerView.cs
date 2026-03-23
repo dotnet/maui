@@ -297,7 +297,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							UpdatePosition(carouselPosition);
 						}
 
-						UpdateAdapter();
 						ScrollToPosition(carouselPosition);
 
 						//If we are adding or removing the last item we need to update
