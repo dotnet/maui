@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		MapCallbackHandler? _mapReady;
 		MapSpan? _lastMoveToRegion;
-		List<Marker>? _markers;
 		IList? _pins;
 		IList? _elements;
 		List<APolyline>? _polylines;
@@ -56,6 +55,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
+			DisconnectPins();
+
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
 
@@ -260,14 +261,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
-				if (mapHandler._markers != null)
-				{
-					for (int i = 0; i < mapHandler._markers.Count; i++)
-						mapHandler._markers[i].Remove();
-
-					mapHandler._markers = null;
-				}
-
 				mapHandler.AddPins((IList)map.Pins);
 			}
 		}
@@ -419,33 +412,23 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (Map == null || MauiContext == null)
 				return;
 
-			if (_markers == null)
-				_markers = new List<Marker>();
-
 			foreach (var p in pins)
 			{
 				IMapPin pin = (IMapPin)p;
-				Marker? marker;
-
-				var pinHandler = pin.ToHandler(MauiContext);
-				if (pinHandler is MapPinHandler mapPinHandler)
-				{
-					marker = Map.AddMarker(mapPinHandler.PlatformView);
-					if (marker == null)
-					{
-						throw new System.Exception("Map.AddMarker returned null");
-					}
-
-					// Store the marker reference in the MapPinHandler for future property updates
-					mapPinHandler.Marker = marker;
-
-					// associate pin with marker for later lookup in event handlers
-					pin.MarkerId = marker.Id;
-					_markers.Add(marker);
-				}
-
+				pin.ToHandler(MauiContext);
 			}
 			_pins = null;
+		}
+
+		void DisconnectPins()
+		{
+			if (VirtualView == null)
+				return;
+
+			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			{
+				VirtualView.Pins[i]?.Handler?.DisconnectHandler();
+			}
 		}
 
 		protected IMapPin? GetPinForMarker(Marker marker)
