@@ -98,6 +98,8 @@ Call `add_comment` with `item_number` set to the PR number. Wrap the report in a
 
 [1-2 sentence summary]
 
+> 👍 / 👎 — Was this evaluation helpful? React to let us know!
+
 <details>
 <summary>📊 Expand Full Evaluation</summary>
 
