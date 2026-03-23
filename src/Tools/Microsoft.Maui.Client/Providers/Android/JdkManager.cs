@@ -53,7 +53,7 @@ public class JdkManager : IJdkManager
 				DetectedJdkVersion = knownJdk.Version?.Major;
 			}
 		}
-		catch (Exception) { /* JDK detection is best-effort; fall through to manual detection */ }
+		catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"JDK auto-detection failed: {ex.Message}"); }
 	}
 
 	private static int? GetJdkVersion(string jdkPath)
@@ -78,7 +78,7 @@ public class JdkManager : IJdkManager
 				return version;
 			}
 		}
-		catch (Exception) { /* Version detection is best-effort */ }
+		catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"JDK version detection failed for '{jdkPath}': {ex.Message}"); }
 
 		return null;
 	}

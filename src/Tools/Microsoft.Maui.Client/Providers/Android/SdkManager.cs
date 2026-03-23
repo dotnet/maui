@@ -64,8 +64,9 @@ public class SdkManager : IDisposable
 			var (installed, _) = await _sdkManager.ListAsync(cancellationToken);
 			return installed.Select(MapToMauiPackage).ToList();
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"SDK GetInstalledPackagesAsync failed: {ex.Message}");
 			return new List<SdkPackage>();
 		}
 	}
@@ -78,8 +79,9 @@ public class SdkManager : IDisposable
 			var (_, available) = await _sdkManager.ListAsync(cancellationToken);
 			return available.Select(MapToMauiPackage).ToList();
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"SDK GetAvailablePackagesAsync failed: {ex.Message}");
 			return new List<SdkPackage>();
 		}
 	}

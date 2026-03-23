@@ -53,9 +53,9 @@ public static partial class AndroidCommands
 				return (inst, avail);
 			});
 		}
-		catch
+		catch (Exception ex)
 		{
-			// Can't list packages (SDK not installed yet) — use sensible defaults
+			System.Diagnostics.Trace.WriteLine($"Package list fetch failed, using defaults: {ex.Message}");
 			return GetDefaultPackages();
 		}
 

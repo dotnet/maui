@@ -95,8 +95,9 @@ public class AvdManager
 			var avds = await _runner.ListAvdsAsync(cancellationToken);
 			return avds.Select(MapToMauiAvd).ToList();
 		}
-		catch (InvalidOperationException)
+		catch (InvalidOperationException ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"AVD list failed: {ex.Message}");
 			return new List<AvdInfo>();
 		}
 	}
@@ -138,9 +139,9 @@ public class AvdManager
 						}
 					}
 				}
-				catch
+				catch (Exception ex)
 				{
-					// Ignore config read errors
+					System.Diagnostics.Trace.WriteLine($"AVD config read error for '{avd.Name}': {ex.Message}");
 				}
 			}
 		}

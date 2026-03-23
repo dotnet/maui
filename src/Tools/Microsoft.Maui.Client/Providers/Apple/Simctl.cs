@@ -83,8 +83,9 @@ public class Simctl
 
 			return devices;
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"Simctl ListDevicesAsync failed: {ex.Message}");
 			return new List<Device>();
 		}
 	}
@@ -189,8 +190,9 @@ public class Simctl
 
 			return runtimes;
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"Simctl ListRuntimesAsync failed: {ex.Message}");
 			return new List<Runtime>();
 		}
 	}
@@ -253,8 +255,9 @@ public class Simctl
 
 			return runtimes;
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"Simctl ListAvailableRuntimesAsync failed: {ex.Message}");
 			return new List<Runtime>();
 		}
 	}

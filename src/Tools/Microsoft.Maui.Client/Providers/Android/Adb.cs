@@ -63,8 +63,9 @@ public class Adb
 
 			return result;
 		}
-		catch (InvalidOperationException)
+		catch (InvalidOperationException ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"ADB GetDevicesAsync failed: {ex.Message}");
 			return new List<Device>();
 		}
 	}
@@ -93,7 +94,7 @@ public class Adb
 					return name;
 			}
 		}
-		catch (Exception) { /* fall through to console fallback */ }
+		catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"AVD name query via adb failed: {ex.Message}"); }
 
 		// Fallback: query the emulator console directly via TCP
 		// Serial format is "emulator-XXXX" where XXXX is the console port
@@ -137,8 +138,9 @@ public class Adb
 				? null
 				: name.Trim();
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"AVD name query via console failed for '{serial}': {ex.Message}");
 			return null;
 		}
 	}

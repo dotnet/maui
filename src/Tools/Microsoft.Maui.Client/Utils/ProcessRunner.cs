@@ -102,7 +102,7 @@ public static class ProcessRunner
 			{
 				try
 				{ process.Kill(entireProcessTree: true); }
-				catch (Exception) { /* Process may have already exited */ }
+				catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"Kill after sync timeout failed: {ex.Message}"); }
 				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
 			}
 
@@ -213,9 +213,10 @@ public static class ProcessRunner
 							await process.StandardInput.WriteLineAsync(continuousInput);
 							await process.StandardInput.FlushAsync();
 						}
-						catch (Exception)
+						catch (Exception ex)
 						{
-							break; // Process may have exited
+							System.Diagnostics.Trace.WriteLine($"Continuous input write failed: {ex.Message}");
+							break;
 						}
 						await Task.Delay(250, linkedCts.Token);
 					}
@@ -230,7 +231,7 @@ public static class ProcessRunner
 			{
 				try
 				{ process.Kill(entireProcessTree: true); }
-				catch (Exception) { /* Process may have already exited */ }
+				catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"Kill after async timeout failed: {ex.Message}"); }
 				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
 			}
 
@@ -239,7 +240,7 @@ public static class ProcessRunner
 			{
 				try
 				{ await inputTask.WaitAsync(TimeSpan.FromSeconds(2)); }
-				catch (Exception) { /* Process may have already exited */ }
+				catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"Input task cleanup failed: {ex.Message}"); }
 			}
 
 			// Wait for output streams to complete
@@ -304,9 +305,9 @@ public static class ProcessRunner
 			process?.WaitForExit();
 			return process?.ExitCode == 0;
 		}
-		catch (System.ComponentModel.Win32Exception)
+		catch (System.ComponentModel.Win32Exception ex)
 		{
-			// User cancelled the UAC prompt
+			System.Diagnostics.Trace.WriteLine($"UAC elevation cancelled or failed: {ex.Message}");
 			return false;
 		}
 	}
@@ -325,8 +326,9 @@ public static class ProcessRunner
 			var principal = new System.Security.Principal.WindowsPrincipal(identity);
 			return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"Elevation check failed: {ex.Message}");
 			return false;
 		}
 	}
@@ -342,8 +344,9 @@ public static class ProcessRunner
 			var result = RunSync(whichCommand, command, timeout: TimeSpan.FromSeconds(5));
 			return result.ExitCode == 0;
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Trace.WriteLine($"CommandExists check for '{command}' failed: {ex.Message}");
 			return false;
 		}
 	}
@@ -364,7 +367,7 @@ public static class ProcessRunner
 					return path;
 			}
 		}
-		catch (Exception) { /* Process may have already exited */ }
+		catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"Command path lookup for '{command}' failed: {ex.Message}"); }
 		return null;
 	}
 }

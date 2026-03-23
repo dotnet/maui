@@ -39,7 +39,7 @@ public static class PlatformDetector
 					if (result.ExitCode == 0)
 						return result.StandardOutput.Trim();
 				}
-				catch (Exception) { /* sw_vers may not exist on non-macOS; fall through */ }
+				catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"sw_vers failed: {ex.Message}"); }
 			}
 			return Environment.OSVersion.Version.ToString();
 		}
@@ -202,9 +202,9 @@ public static class PlatformDetector
 							return found;
 					}
 				}
-				catch
+				catch (Exception ex)
 				{
-					// Ignore permission errors
+					System.Diagnostics.Trace.WriteLine($"JDK directory scan permission error at '{basePath}': {ex.Message}");
 				}
 			}
 

@@ -164,9 +164,9 @@ public class DoctorService : IDoctorService
 			var result = await ProcessRunner.RunAsync(fix.Command, cancellationToken: cancellationToken);
 			return result.ExitCode == 0;
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-			// Fix attempt failed — caller will report the failure
+			System.Diagnostics.Trace.WriteLine($"Auto-fix '{fix.Command}' failed: {ex.Message}");
 			return false;
 		}
 	}
