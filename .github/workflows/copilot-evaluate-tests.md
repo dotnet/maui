@@ -83,7 +83,11 @@ steps:
         # Guard: block fork PRs on workflow_dispatch to prevent fork code execution
         HEAD_OWNER=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo "")
         BASE_OWNER=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
-        if [ -n "$HEAD_OWNER" ] && [ "$HEAD_OWNER" != "$BASE_OWNER" ]; then
+        if [ -z "$HEAD_OWNER" ]; then
+          echo "⚠️ Could not determine PR owner. Skipping checkout for security."
+          exit 0
+        fi
+        if [ "$HEAD_OWNER" != "$BASE_OWNER" ]; then
           echo "⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security."
           echo "The agent will use GitHub API to read PR data instead."
           exit 0

@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d02e3e79454827c10327c3dd0453de2cffdbd625c5b488228b300b6c061cbee0","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"cdb78e365dd809c6f3de4ce518fca9b92d9d8ab8d701288f8aca0b0ffbf0b7c1","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -324,7 +324,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
         name: Checkout PR branch
-        run: "if [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  echo \"Checking out PR #$PR_NUMBER...\"\n\n  # Guard: block fork PRs on workflow_dispatch to prevent fork code execution\n  HEAD_OWNER=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo \"\")\n  BASE_OWNER=$(echo \"$GITHUB_REPOSITORY\" | cut -d'/' -f1)\n  if [ -n \"$HEAD_OWNER\" ] && [ \"$HEAD_OWNER\" != \"$BASE_OWNER\" ]; then\n    echo \"⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security.\"\n    echo \"The agent will use GitHub API to read PR data instead.\"\n    exit 0\n  fi\n\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
+        run: "if [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  echo \"Checking out PR #$PR_NUMBER...\"\n\n  # Guard: block fork PRs on workflow_dispatch to prevent fork code execution\n  HEAD_OWNER=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo \"\")\n  BASE_OWNER=$(echo \"$GITHUB_REPOSITORY\" | cut -d'/' -f1)\n  if [ -z \"$HEAD_OWNER\" ]; then\n    echo \"⚠️ Could not determine PR owner. Skipping checkout for security.\"\n    exit 0\n  fi\n  if [ \"$HEAD_OWNER\" != \"$BASE_OWNER\" ]; then\n    echo \"⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security.\"\n    echo \"The agent will use GitHub API to read PR data instead.\"\n    exit 0\n  fi\n\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
 
       - name: Configure Git credentials
         env:

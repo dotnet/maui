@@ -133,10 +133,8 @@ if ($usePrDiff -and $changedFiles.Count -gt 0) {
                     $apiPath = "repos/$owner/$repo/contents/$($encodedFile)?ref=$headSha"
                     $b64 = gh api $apiPath --jq '.content' 2>$null
                     if ($b64) {
-                        $decoded = [System.Text.Encoding]::UTF8.GetString(
-                            [System.Convert]::FromBase64String(($b64 -replace '\s', ''))
-                        )
-                        [System.IO.File]::WriteAllText($targetPath, $decoded)
+                        $bytes = [System.Convert]::FromBase64String(($b64 -replace '\s', ''))
+                        [System.IO.File]::WriteAllBytes($targetPath, $bytes)
                         $downloadCount++
                     }
                 } catch {
