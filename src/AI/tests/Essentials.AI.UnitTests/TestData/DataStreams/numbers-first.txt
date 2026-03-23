@@ -1,0 +1,7 @@
+{"anger": 
+0, 
+"happiness": 
+5, 
+"reply": 
+"Hello! I'm just
+ a program."}

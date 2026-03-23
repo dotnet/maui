@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 			await _viewModel.LoadItemsAsync();
 		}
 
-		void OnItemsUpdatingScrollModeChanged(object sender, EventArgs e)
+		void OnItemsUpdatingScrollModeChanged(object? sender, EventArgs e)
 		{
 			CollectionView.ItemsUpdatingScrollMode = (ItemsUpdatingScrollMode)((EnumPicker)sender!).SelectedItem;
 		}

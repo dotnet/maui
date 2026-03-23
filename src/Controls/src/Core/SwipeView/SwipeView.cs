@@ -142,6 +142,18 @@ namespace Microsoft.Maui.Controls
 			SetInheritedBindingContext(RightItems, BindingContext);
 			SetInheritedBindingContext(TopItems, BindingContext);
 			SetInheritedBindingContext(BottomItems, BindingContext);
+
+			// In Windows and Android, new cells are created when rebinding, so _isOpen is false.
+			// In iOS, CollectionView reuses cells, so SwipeView remain open (_isOpen = true).
+			// When new cells are recreated, the swipe state is reset. 
+			// When cells are reused (iOS), the open state is maintained.
+			// Fix for iOS: Close SwipeView when BindingContext changes to prevent stale open state
+#if IOS || MACCATALYST
+			if (_isOpen)
+			{
+				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(false));
+			}
+#endif
 		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)

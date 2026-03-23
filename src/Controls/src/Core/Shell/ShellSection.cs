@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
-	/// Represents a group of tabs within a <see cref="ShellItem"/>. Contains <see cref="ShellContent"/> items.
+	/// Represents a group of tabs within a <see cref="Controls.ShellItem"/>. Contains <see cref="ShellContent"/> items.
 	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls
 			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
+				MauiLogger<ShellSection>.Log(LogLevel.Warning, $"Failed to Create Content For: {route}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);

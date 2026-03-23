@@ -5,11 +5,14 @@ parameters:
   installPackageArtifacts: true
   buildMSBuildTasks: false
   androidSdkRoot: $(ANDROID_SDK_ROOT)
+  skipXcode: false
 
 steps:
 - checkout: self
   fetchDepth: 1
   clean: true
+
+- template: /eng/pipelines/common/enable-kvm.yml@self
 
 - template: /eng/pipelines/common/provision.yml@self
   parameters:
@@ -21,8 +24,8 @@ steps:
     skipAndroidEmulatorImages: true
     skipAndroidCreateAvds: true
     skipProvisioning: true
-    skipXcode: false
-    skipSimulatorSetup: false
+    skipXcode: ${{ parameters.skipXcode }}
+    skipSimulatorSetup: ${{ parameters.skipXcode }}
 
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
