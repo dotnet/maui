@@ -17,23 +17,11 @@ internal static class UriExtensions
 			return false;
 		}
 
-		if (uri.Scheme is not ("http" or "https"))
-		{
-
-			return false;
-		}
-
 		if (Path.HasExtension(uri.AbsolutePath))
 		{
 			return false;
 		}
 
-		if (!string.Equals(baseUri.Host, uri.Host, StringComparison.OrdinalIgnoreCase) &&
-			!uri.Host.EndsWith("." + baseUri.Host, StringComparison.OrdinalIgnoreCase))
-		{
-			return false;
-		}
-
-		return uri.AbsolutePath.StartsWith(baseUri.AbsolutePath, StringComparison.OrdinalIgnoreCase);
+		return baseUri.IsBaseOf(uri);
 	}
 }
