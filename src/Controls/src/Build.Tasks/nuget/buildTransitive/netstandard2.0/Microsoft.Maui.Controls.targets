@@ -355,6 +355,10 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCollectionView2Enabled"
+                                      Condition="'$(UseCollectionView2)' != '' and '$(_MauiTargetPlatformIsWindows)' == 'True'"
+                                      Value="$(UseCollectionView2)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 
