@@ -18,7 +18,7 @@
     <UseMaterial3>false</UseMaterial3>
     <!-- NOTE: By default the UseCollectionView2 flag value is false. If you change the UseCollectionView2 flag, you MUST delete the artifacts folder 
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
-    <UseCollectionView2>true</UseCollectionView2>
+    <UseCollectionView2>false</UseCollectionView2>
   </PropertyGroup>
 
   <PropertyGroup>
