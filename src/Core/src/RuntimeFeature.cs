@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 		const bool IsMeterSupportedByDefault = true;
 		const bool EnableAspireByDefault = true;
 		const bool IsMaterial3EnabledByDefault = false;
-		const bool IsCssEnabledByDefault = true;
+		const bool IsWindowsCollectionView2HandlerEnabledByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -157,14 +157,14 @@ namespace Microsoft.Maui
 				? isEnabled
 				: IsMaterial3EnabledByDefault;
 
-#pragma warning restore IL4000
-
-#if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}")]
+#if NET10_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsWindowsCollectionView2HandlerEnabled)}")]
 #endif
-		internal static bool IsCssEnabled =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}", out bool isEnabled)
+		public static bool IsWindowsCollectionView2HandlerEnabled =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsWindowsCollectionView2HandlerEnabled)}", out bool isEnabled)
 				? isEnabled
-				: IsCssEnabledByDefault;
+				: IsWindowsCollectionView2HandlerEnabledByDefault;
+
+#pragma warning restore IL4000
 	}
 }

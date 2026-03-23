@@ -18,6 +18,9 @@
     <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
     <UseMaterial3>false</UseMaterial3>
+    <!-- NOTE: By default the UseWindowsCollectionView2Handler flag value is false. If you change the UseWindowsCollectionView2Handler flag, you MUST delete the artifacts folder 
+       and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
+    <UseWindowsCollectionView2Handler>false</UseWindowsCollectionView2Handler>
   </PropertyGroup>
 
   <PropertyGroup>
