@@ -22,13 +22,19 @@
 #
 # Runs AI pre-flight analysis on PRs — gathers context from issues, review comments, and changed files, then posts a structured summary comment
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"20db975902b5a23dc469312d836e256e9f38a0f06f98277515a70ff6e2d273cd","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"3c3d9ff21fe6bb796663b4b1c7a2528cf02c12097f0021583673c819272d65f5","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4"}
 
 name: "AI Pre-flight Analysis"
 "on":
   issue_comment:
     types:
     - created
+  pull_request:
+    paths:
+    - .github/workflows/pr-preflight*
+    types:
+    - opened
+    - synchronize
   workflow_dispatch:
     inputs:
       pr_number:
@@ -40,7 +46,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: pr-preflight-${{ github.event.issue.number || inputs.pr_number || github.run_id }}
+  group: pr-preflight-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
 
 run-name: "AI Pre-flight Analysis"
 
@@ -48,9 +54,9 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      needs.pre_activation.outputs.activated == 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      needs.pre_activation.outputs.activated == 'true' && ((github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/preflight')))
+      startsWith(github.event.comment.body, '/preflight'))) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository_id))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -131,7 +137,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
+          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -199,7 +205,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
+          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
         with:
           script: |
@@ -211,7 +217,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
+          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -233,7 +239,7 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_A77326CF: process.env.GH_AW_EXPR_A77326CF,
+                GH_AW_EXPR_93C755A4: process.env.GH_AW_EXPR_93C755A4,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -309,7 +315,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
         name: Checkout PR branch
         run: "if [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  echo \"Checking out PR #$PR_NUMBER...\"\n\n  # Guard: block fork PRs to prevent fork code execution\n  HEAD_OWNER=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo \"\")\n  BASE_OWNER=$(echo \"$GITHUB_REPOSITORY\" | cut -d'/' -f1)\n  if [ -n \"$HEAD_OWNER\" ] && [ \"$HEAD_OWNER\" != \"$BASE_OWNER\" ]; then\n    echo \"⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security.\"\n    echo \"The agent will use GitHub API to read PR data instead.\"\n    exit 0\n  fi\n\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
 
@@ -971,9 +977,9 @@ jobs:
 
   pre_activation:
     if: >
-      github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/preflight'))
+      startsWith(github.event.comment.body, '/preflight'))) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository_id)
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}

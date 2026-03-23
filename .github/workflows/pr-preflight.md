@@ -1,6 +1,10 @@
 ---
 description: Runs AI pre-flight analysis on PRs — gathers context from issues, review comments, and changed files, then posts a structured summary comment
 on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '.github/workflows/pr-preflight*'
   issue_comment:
     types: [created]
   workflow_dispatch:
@@ -11,6 +15,7 @@ on:
         type: number
 
 if: >-
+  github.event_name == 'pull_request' ||
   github.event_name == 'workflow_dispatch' ||
   (github.event_name == 'issue_comment' &&
    github.event.issue.pull_request &&
@@ -43,7 +48,7 @@ tools:
 network: defaults
 
 concurrency:
-  group: "pr-preflight-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
+  group: "pr-preflight-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}"
   cancel-in-progress: true
 
 timeout-minutes: 10
@@ -52,7 +57,7 @@ steps:
   - name: Checkout PR branch
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
     run: |
       if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
         echo "Checking out PR #$PR_NUMBER..."
@@ -83,7 +88,7 @@ You are the Pre-flight Analyst for the dotnet/maui repository. Your job is to ga
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR Number**: ${{ github.event.issue.number || inputs.pr_number }}
+- **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
 
 The PR branch has been checked out for you. All files from the PR are available locally.
 
