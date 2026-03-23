@@ -23,7 +23,6 @@ using Microsoft.Web.WebView2;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 using System.Reflection;
-using System.Threading;
 #elif WEBVIEW2_WPF
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
@@ -31,14 +30,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
 using System.Reflection;
-using System.Threading;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 using Launcher = Windows.System.Launcher;
-using System.Threading;
 #endif
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
@@ -64,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private readonly WebView2Control _webview;
 		private readonly Task<bool> _webviewReadyTask;
 		private readonly string _contentRootRelativeToAppRoot;
-		int _isDisposing;
+		volatile bool _isDisposing;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment? _coreWebView2Environment;
@@ -202,7 +199,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		protected override void SendMessage(string message)
 		{
 			// Check disposal flag first (prevents most calls after disposal)
-			if (Interlocked.CompareExchange(ref _isDisposing, 0, 0) == 1)
+			if (_isDisposing)
 			{
 				return;
 			}
@@ -231,7 +228,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			catch (InvalidOperationException)
 			{
 				// Set flag so subsequent calls use the fast path
-				Interlocked.Exchange(ref _isDisposing, 1);
+				_isDisposing = true;
 			}
 		}
 
@@ -241,7 +238,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// </summary>
 		internal void MarkAsDisposing()
 		{
-			Interlocked.Exchange(ref _isDisposing, 1);
+			_isDisposing = true;
 		}
 
 		private async Task<bool> TryInitializeWebView2()
