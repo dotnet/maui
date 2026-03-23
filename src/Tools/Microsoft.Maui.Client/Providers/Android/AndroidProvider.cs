@@ -40,7 +40,8 @@ public class AndroidProvider : IAndroidProvider
 	{
 		_jdkManager = jdkManager ?? throw new ArgumentNullException(nameof(jdkManager));
 		_sdkManager = sdkManager ?? new SdkManager(() => SdkPath, () => JdkPath);
-		_adb = adb ?? new Adb(() => SdkPath);
+		var env = AndroidEnvironment.BuildEnvironmentVariables(SdkPath, JdkPath);
+		_adb = adb ?? new Adb(() => SdkPath, env);
 		_avdManager = avdManager ?? new AvdManager(() => SdkPath, () => JdkPath, _adb);
 	}
 
