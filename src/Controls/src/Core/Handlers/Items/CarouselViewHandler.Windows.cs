@@ -590,21 +590,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemHeight = GetItemHeight();
 			var itemWidth = GetItemWidth();
 
-			var items = ListViewBase.GetChildren<ItemContentControl>().ToList();
-
-			foreach (var item in items)
+			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
 			{
 				item.ItemHeight = itemHeight;
 				item.ItemWidth = itemWidth;
 			}
-
-			ListViewBase.DispatcherQueue.TryEnqueue(() =>
-			{
-				foreach (var item in items)
-				{
-					item.InvalidateMeasure();
-				}
-			});
 		}
 	}
 }

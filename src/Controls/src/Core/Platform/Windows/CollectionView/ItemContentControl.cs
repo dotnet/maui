@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty ItemHeightProperty = DependencyProperty.Register(
 			nameof(ItemHeight), typeof(double), typeof(ItemContentControl),
-			new PropertyMetadata(default(double)));
+			new PropertyMetadata(default(double), OnItemDimensionChanged));
 
 		public double ItemHeight
 		{
@@ -108,12 +108,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty ItemWidthProperty = DependencyProperty.Register(
 			nameof(ItemWidth), typeof(double), typeof(ItemContentControl),
-			new PropertyMetadata(default(double)));
+			new PropertyMetadata(default(double), OnItemDimensionChanged));
 
 		public double ItemWidth
 		{
 			get => (double)GetValue(ItemWidthProperty);
 			set => SetValue(ItemWidthProperty, value);
+		}
+
+		static void OnItemDimensionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (Equals(e.OldValue, e.NewValue))
+			{
+				return;
+			}
+
+			((ItemContentControl)d).InvalidateMeasure();
 		}
 
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
