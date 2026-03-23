@@ -71,6 +71,10 @@ namespace Microsoft.Maui.Controls.Platform
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext)
 		{
+			// The new Material package version in .NET 11 returns MaxItemCount as 6,
+			// whereas previous versions returned 5. Clamp to 5 for consistency across
+			// all .NET versions. See https://github.com/dotnet/maui/pull/33450
+			maxBottomItems = Math.Min(maxBottomItems, 5);
 			Context context = mauiContext.Context;
 
 			while (items.Count < menu.Size())
@@ -171,6 +175,10 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int maxItemCount)
 		{
+			// The new Material package version in .NET 11 returns MaxItemCount as 6,
+			// whereas previous versions returned 5. Clamp to 5 for consistency across
+			// all .NET versions. See https://github.com/dotnet/maui/pull/33450
+			maxItemCount = Math.Min(maxItemCount, 5);
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
 			var bottomSheetLayout = new LinearLayout(context);
