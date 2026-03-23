@@ -1,5 +1,6 @@
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.CustomAttributes;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -8,19 +9,26 @@ public class Issue34318 : Shell
 {
 	public Issue34318()
 	{
-		// When Shell.Navigating fires, broadcast a message the page test can observe
-		Navigating += (s, e) => MessagingCenter.Send(this, "NavigatingFired");
-
 		var section = new ShellSection();
+
+		var pageA = new Issue34318_PageA(this);
 
 		var contentA = new ShellContent
 		{
-			Content = new Issue34318_PageA()
+			Content = pageA
 		};
 
 		var contentB = new ShellContent
 		{
-			Content = new ContentPage { Title = "PageB", Content = new Label { Text = "Page B", AutomationId = "PageBLabel" } }
+			Content = new ContentPage
+			{
+				Title = "PageB",
+				Content = new Label
+				{
+					Text = "Page B",
+					AutomationId = "PageBLabel"
+				}
+			}
 		};
 
 		section.Items.Add(contentA);
@@ -30,39 +38,59 @@ public class Issue34318 : Shell
 		item.Items.Add(section);
 
 		Items.Add(item);
+
+		// 🔥 Evento directo, sin MessagingCenter
+		Navigating += (_, __) =>
+		{
+			pageA.SetNavigatingFired();
+		};
 	}
 
 	public class Issue34318_PageA : ContentPage
 	{
 		Label resultLabel;
 
-		public Issue34318_PageA()
+		public Issue34318_PageA(Shell shell)
 		{
 			Title = "PageA";
-			resultLabel = new Label { Text = "Waiting", AutomationId = "ResultLabel" };
 
-			var button = new Button { Text = "Change Content", AutomationId = "ChangeContentButton" };
+			resultLabel = new Label
+			{
+				Text = "Waiting",
+				AutomationId = "ResultLabel"
+			};
+
+			var button = new Button
+			{
+				Text = "Change Content",
+				AutomationId = "ChangeContentButton"
+			};
+
 			button.Clicked += (s, e) =>
 			{
-				if (Parent is ShellSection section && section.Items.Count > 1)
+				Element parent = this;
+
+				while (parent != null && parent is not ShellSection)
+					parent = parent.Parent;
+
+				if (parent is ShellSection section && section.Items.Count > 1)
 				{
 					section.CurrentItem = section.Items[1];
 				}
 			};
 
-			// Update the label when the shell raises Navigating (message sent from Shell)
-			MessagingCenter.Subscribe<Shell>(this, "NavigatingFired", (sender) =>
-			{
-				MainThread.BeginInvokeOnMainThread(() =>
-				{
-					resultLabel.Text = "Navigating";
-				});
-			});
-
 			Content = new VerticalStackLayout
 			{
 				Children = { button, resultLabel }
 			};
+		}
+
+		public void SetNavigatingFired()
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				resultLabel.Text = "Navigating";
+			});
 		}
 	}
 }
