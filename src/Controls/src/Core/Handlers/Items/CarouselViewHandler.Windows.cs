@@ -384,10 +384,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
-			bool isOutOfBounds = currentItemPosition < 0 || currentItemPosition >= ItemCount;
-			bool isSamePosition = ItemsView.Position == currentItemPosition;
-
-			if (isOutOfBounds || isSamePosition)
+			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
 			{
 				return;
 			}
@@ -528,6 +525,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			// When KeepLastItemInView is active and a new item is added, the base handler
+			// (ItemsViewHandler) already scrolls to the new last item via VirtualView.ScrollTo.
+			// Returning early here prevents CarouselViewHandler from reasserting the old
+			// current-item position and undoing that scroll.
+			if (e.Action == NotifyCollectionChangedAction.Add && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				return;
+			}
+
 			var carouselPosition = ItemsView.Position;
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 			var count = (sender as IList).Count;
