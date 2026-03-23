@@ -148,10 +148,19 @@ namespace Microsoft.Maui.Controls.Handlers
             var context = MauiContext?.Context
                 ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
 
+            // Resolve ?attr/actionBarSize to match the old XML layout height.
+            // The old shellsectionlayout.axml used android:layout_height="?attr/actionBarSize"
+            // for the TabLayout. Using wrap_content would make tabs ~48dp instead of 56dp,
+            // shifting all content below and causing visual regressions.
+            var actionBarSizeAttribute = new int[] { global::Android.Resource.Attribute.ActionBarSize };
+            var typedArray = context.ObtainStyledAttributes(actionBarSizeAttribute);
+            int actionBarHeight = typedArray.GetDimensionPixelSize(0, LP.WrapContent);
+            typedArray.Recycle();
+
             _contentTabLayout = new TabLayout(context)
             {
                 Id = AView.GenerateViewId(),
-                LayoutParameters = new LP(LP.MatchParent, LP.WrapContent),
+                LayoutParameters = new LP(LP.MatchParent, actionBarHeight),
                 Visibility = ViewStates.Gone,  // Hidden by default (shown when > 1 tab)
                 TabMode = TabLayout.ModeScrollable
             };
@@ -323,6 +332,13 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal TabLayout ContentTabLayout => _contentTabLayout;
 
+        AView FindNavigationLayoutTopTabsContainer()
+        {
+            var shell = VirtualView?.FindParentOfType<Shell>();
+            var rootView = shell?.Handler?.PlatformView as AView;
+            return rootView?.FindViewById(Resource.Id.navigationlayout_toptabs);
+        }
+
         /// <summary>
         /// Places the TabLayout into navigationlayout_toptabs via Activity FragmentManager.
         /// Same pattern as ShellItemHandler.PlaceBottomTabs and TabbedPageManager.SetTabLayout.
@@ -369,6 +385,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _topTabsPlaced = true;
             _contentTabLayout.Visibility = ViewStates.Visible;
+
+            // Ensure the container FragmentContainerView is visible when tabs are placed
+            var topTabsContainer = FindNavigationLayoutTopTabsContainer();
+            if (topTabsContainer is not null)
+            {
+                topTabsContainer.Visibility = ViewStates.Visible;
+            }
         }
 
         /// <summary>
@@ -377,6 +400,14 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void RemoveTopTabs()
         {
+            // Always hide the container FragmentContainerView so it doesn't take space in the AppBarLayout,
+            // even if no tabs were placed (initial single-content case)
+            var topTabsContainer = FindNavigationLayoutTopTabsContainer();
+            if (topTabsContainer is not null)
+            {
+                topTabsContainer.Visibility = ViewStates.Gone;
+            }
+
             if (!_topTabsPlaced || _topTabFragment is null)
             {
                 return;
