@@ -156,6 +156,37 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			ToolRunner.Run("open", $"-a Simulator", out int exitCode, timeoutInSeconds: 30, output: _output);
 			return exitCode == 0;
 		}
+
+		/// <summary>
+		/// Waits for the simulator to fully boot. This prevents race conditions where
+		/// the simulator reports as "booted" but is still in the Booting state internally.
+		/// Uses 'simctl bootstatus' which blocks until the device is fully booted.
+		/// </summary>
+		/// <param name="timeoutSeconds">Maximum time to wait for boot completion</param>
+		/// <returns>True if the simulator is fully booted, false if timeout or error</returns>
+		public bool WaitForBootComplete(int timeoutSeconds = 120)
+		{
+			var udid = GetUDID();
+			if (string.IsNullOrEmpty(udid))
+			{
+				_output?.WriteLine("Cannot wait for boot: no UDID available");
+				return false;
+			}
+
+			_output?.WriteLine($"Waiting for simulator {udid} to fully boot...");
+
+			// simctl bootstatus blocks until the device is fully booted, or returns immediately if already booted
+			var output = ToolRunner.Run(XCRunTool, $"simctl bootstatus {udid}", out int exitCode, timeoutInSeconds: timeoutSeconds, output: _output);
+
+			if (exitCode == 0)
+			{
+				_output?.WriteLine("Simulator fully booted.");
+				return true;
+			}
+
+			_output?.WriteLine($"Simulator boot status check failed with exit code {exitCode}: {output}");
+			return false;
+		}
 	}
 }
 

@@ -85,19 +85,56 @@ if ($Platform -eq "android") {
     Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
+    $maxAttempts = 2
+    $buildExitCode = 1
     
-    # Build and deploy in one step (Run target handles both)
-    & dotnet build @buildArgs
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        if ($attempt -gt 1) {
+            Write-Warn "Retrying build/deploy (attempt $attempt of $maxAttempts)..."
+            
+            # Uninstall any MAUI test packages to clear bad state
+            $installedPkg = & adb shell pm list packages 2>$null | Select-String "maui" | ForEach-Object { ($_ -replace "package:", "").Trim() }
+            if ($installedPkg) {
+                foreach ($pkg in $installedPkg) {
+                    Write-Info "Uninstalling $pkg before retry..."
+                    & adb uninstall $pkg 2>$null
+                }
+            }
+            
+            # Restart ADB server to recover from broken pipe / transient errors
+            Write-Info "Restarting ADB server..."
+            & adb kill-server 2>$null
+            Start-Sleep -Seconds 2
+            & adb start-server
+            Start-Sleep -Seconds 2
+            & adb wait-for-device
+            Start-Sleep -Seconds 3
+        }
+        
+        & dotnet build @buildArgs
+        $buildExitCode = $LASTEXITCODE
+        
+        if ($buildExitCode -eq 0) {
+            break
+        }
+        
+        if ($attempt -lt $maxAttempts) {
+            Write-Warn "Build/deploy failed (attempt $attempt). ADB0010/broken-pipe errors are transient on API 30 — will retry."
+        }
+    }
     
-    $buildExitCode = $LASTEXITCODE
     $buildDuration = (Get-Date) - $buildStartTime
     
     if ($buildExitCode -ne 0) {
-        Write-Error "Build/deploy failed with exit code $buildExitCode"
+        Write-Error "Build/deploy failed after $maxAttempts attempts with exit code $buildExitCode"
         exit $buildExitCode
     }
     
-    Write-Success "Build and deploy completed in $($buildDuration.TotalSeconds) seconds"
+    if ($attempt -gt 1) {
+        Write-Success "Build and deploy succeeded on attempt $attempt in $($buildDuration.TotalSeconds) seconds"
+    } else {
+        Write-Success "Build and deploy completed in $($buildDuration.TotalSeconds) seconds"
+    }
     
     #endregion
     
@@ -106,7 +143,13 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for iOS..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    # Detect host architecture for simulator builds
+    $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $runtimeId = if ($hostArch -eq "x64") { "iossimulator-x64" } else { "iossimulator-arm64" }
+    $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
+    Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
+    
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -130,6 +173,20 @@ if ($Platform -eq "android") {
     
     # Deploy to iOS simulator
     Write-Step "Deploying to iOS simulator..."
+
+    # Shutdown any OTHER booted simulators to avoid Appium connecting to the wrong device
+    $bootedSims = xcrun simctl list devices --json | ConvertFrom-Json
+    $otherBooted = $bootedSims.devices.PSObject.Properties.Value |
+        ForEach-Object { $_ } |
+        Where-Object { $_.state -eq "Booted" -and $_.udid -ne $DeviceUdid }
+    
+    if ($otherBooted) {
+        foreach ($sim in $otherBooted) {
+            Write-Info "Shutting down other booted simulator: $($sim.name) ($($sim.udid))"
+            xcrun simctl shutdown $sim.udid 2>$null
+        }
+    }
+
     Write-Info "Booting simulator (if not already running)..."
     xcrun simctl boot $DeviceUdid 2>$null
     
@@ -169,13 +226,26 @@ if ($Platform -eq "android") {
     }
     
     Write-Info "Searching for app bundle in: $artifactsDir"
+    
     $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
         Where-Object { 
-            $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+            $_.FullName -match "$Configuration.*iossimulator-$simArch.*$projectName" -and 
             $_.FullName -notmatch "\\obj\\" -and 
             $_.FullName -notmatch "/obj/"
         } |
         Select-Object -First 1
+    
+    # Fallback: try any iossimulator build if specific arch not found
+    if (-not $appPath) {
+        Write-Info "Specific arch ($simArch) not found, trying any iossimulator build..."
+        $appPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue | 
+            Where-Object { 
+                $_.FullName -match "$Configuration.*iossimulator.*$projectName" -and 
+                $_.FullName -notmatch "\\obj\\" -and 
+                $_.FullName -notmatch "/obj/"
+            } |
+            Select-Object -First 1
+    }
     
     if (-not $appPath) {
         Write-Error "Could not find built app bundle in artifacts directory"

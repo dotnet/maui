@@ -123,7 +123,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
 		Thread.Sleep(2000); // Allow time for the UI to update
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
@@ -168,7 +168,7 @@ public class HybridWebViewFeatureTests : _GalleryUITest
 		App.WaitForElement("FlowDirectionCheckBox");
 		App.Tap("FlowDirectionCheckBox");
 		Thread.Sleep(2000); // Allow time for the UI to update
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -17,10 +18,11 @@ namespace Microsoft.Maui.IntegrationTests
 	public class AndroidEmulatorFixture : IDisposable
 	{
 		public Emulator TestAvd { get; } = new Emulator();
+		private readonly string _emulatorLogPath;
 
 		public AndroidEmulatorFixture()
 		{
-			// One-time setup: prepare Android emulator
+			// One-time setup: prepare and launch Android emulator
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
@@ -29,6 +31,11 @@ namespace Microsoft.Maui.IntegrationTests
 			
 			if (!TestAvd.InstallAvd(out var installOutput))
 				throw new Exception($"Failed to install Test AVD.\n{installOutput}");
+
+			// Launch the emulator once for all tests in this collection
+			_emulatorLogPath = Path.Combine(TestEnvironment.GetLogDirectory(), $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
+			if (!TestAvd.LaunchAndWaitForAvd(600, _emulatorLogPath))
+				throw new Exception($"Failed to launch Test AVD. See log: {_emulatorLogPath}");
 		}
 
 		public void Dispose()
@@ -57,11 +64,7 @@ namespace Microsoft.Maui.IntegrationTests
 			: base(fixture, output)
 		{
 			_emulatorFixture = emulatorFixture;
-			
-			// Per-test setup: launch emulator
-			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			if (!_emulatorFixture.TestAvd.LaunchAndWaitForAvd(600, emulatorLog))
-				throw new Exception("Failed to launch Test AVD.");
+			// Emulator is already launched by the fixture - no per-test launch needed
 		}
 
 		public override void Dispose()
@@ -91,6 +94,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
+
+			// On Linux, only the maui-android workload is installed. Previous .NET
+			// templates may still include iOS/macOS TFMs causing NETSDK1178 errors
+			// during restore. Strip them so only Android remains.
+			if (TestEnvironment.IsLinux)
+				StripNonAndroidTfms(projectFile, framework);
 
 			var buildProps = BuildProps;
 			if (!string.IsNullOrEmpty(trimMode))
@@ -124,6 +133,21 @@ namespace Microsoft.Maui.IntegrationTests
 			FileUtilities.ReplaceInFile(Path.Combine(androidDir, "MainActivity.cs"),
 				"MainLauncher = true",
 				"MainLauncher = true, Name = \"com.microsoft.mauitemplate.MainActivity\"");
+		}
+
+		static void StripNonAndroidTfms(string projectFile, string framework)
+		{
+			var content = File.ReadAllText(projectFile);
+			var androidTfm = $"{framework}-android";
+			// Remove conditional TargetFrameworks lines (iOS/macOS/Windows additions)
+			content = Regex.Replace(content,
+				@"\s*<TargetFrameworks\s+Condition=""[^""]*"">[^<]*</TargetFrameworks>",
+				"");
+			// Set the base TargetFrameworks to Android only
+			content = Regex.Replace(content,
+				@"<TargetFrameworks>[^<]*</TargetFrameworks>",
+				$"<TargetFrameworks>{androidTfm}</TargetFrameworks>");
+			File.WriteAllText(projectFile, content);
 		}
 
 	}

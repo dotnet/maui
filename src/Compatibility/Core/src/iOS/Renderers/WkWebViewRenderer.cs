@@ -821,8 +821,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		class CustomWebViewUIDelegate : WKUIDelegate
 		{
-			static string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
-			static string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
+			static string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("OK") ?? "OK";
+			static string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Cancel") ?? "Cancel";
 
 			public override void RunJavaScriptAlertPanel(WKWebView webView, string message, WKFrameInfo frame, Action completionHandler)
 			{
