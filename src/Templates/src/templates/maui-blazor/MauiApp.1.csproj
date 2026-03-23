@@ -21,6 +21,12 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
         <Nullable>enable</Nullable>
 
+        <!-- Workaround for known ASP.NET Core Blazor trim analysis issues
+             https://github.com/dotnet/aspnetcore/issues/63951 (Router.NotFoundPage IL2111)
+             https://github.com/dotnet/aspnetcore/issues/61358 (Blazor trim warnings)
+             These are upstream issues in ASP.NET Core assemblies that cannot be fixed in MAUI. -->
+        <NoWarn>$(NoWarn);IL2026;IL2045;IL2065;IL2067;IL2072;IL2110;IL2111;IL2121</NoWarn>
+
         <!-- Enable XAML source generation for faster build times and improved performance.
              This generates C# code from XAML at compile time instead of runtime inflation.
              To disable, remove this line.

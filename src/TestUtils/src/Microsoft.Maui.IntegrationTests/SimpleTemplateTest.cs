@@ -144,7 +144,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		if (mv is not null or "")
+		if (mv is not null and not "")
 		{
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
