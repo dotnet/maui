@@ -137,7 +137,7 @@ public class ShapesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(5)]
-	public void Polyline_FillColorWithStrokeColor_Shadow()
+	public void Polyline_StrokeColor_Shadow()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -153,7 +153,6 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-
 		VerifyShapeScreenshot();
 	}
 
@@ -165,6 +164,33 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("PathRadioButton");
 		App.Tap("PathRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(30)]
+	public void RoundRectangle_FillColorWithStrokeColor_Shadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
 
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
@@ -377,7 +403,7 @@ public class ShapesFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(13)]
-	public void Path_Points_Thickness()
+	public void Path_PathData_Thickness()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -835,32 +861,6 @@ public class ShapesFeatureTests : _GalleryUITest
 		VerifyShapeScreenshot();
 	}
 
-#if TEST_FAILS_ON_WINDOWS //For more information see: https://github.com/dotnet/maui/issues/29812
-	[Test, Order(30)]
-	public void RoundRectangle_FillColorWithStrokeColor_Shadow()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("RoundRectangleRadioButton");
-		App.Tap("RoundRectangleRadioButton");
-
-		App.WaitForElement("FillColorBlueRadioButton");
-		App.Tap("FillColorBlueRadioButton");
-
-		App.WaitForElement("StrokeColorRedRadioButton");
-		App.Tap("StrokeColorRedRadioButton");
-
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyShapeScreenshot();
-	}
-#endif
-
 	[Test, Order(31)]
 	public void RoundRectangle_CornerRadius()
 	{
@@ -1146,6 +1146,439 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("AspectUniformToFillRadioButton");
 		App.Tap("AspectUniformToFillRadioButton");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(40)]
+	public void RoundRectangle_HeightAndWidth()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("RoundRectangleHeightEntry");
+		App.Tap("RoundRectangleHeightEntry");
+		App.ClearText("RoundRectangleHeightEntry");
+		App.EnterText("RoundRectangleHeightEntry", "100");
+
+		App.WaitForElement("RoundRectangleWidthEntry");
+		App.Tap("RoundRectangleWidthEntry");
+		App.ClearText("RoundRectangleWidthEntry");
+		App.EnterText("RoundRectangleWidthEntry", "200");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(41)]
+	public void Ellipse_HeightAndWidth()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("EllipseRadioButton");
+		App.Tap("EllipseRadioButton");
+
+		App.WaitForElement("EllipseHeightEntry");
+		App.Tap("EllipseHeightEntry");
+		App.ClearText("EllipseHeightEntry");
+		App.EnterText("EllipseHeightEntry", "80");
+
+		App.WaitForElement("EllipseWidthEntry");
+		App.Tap("EllipseWidthEntry");
+		App.ClearText("EllipseWidthEntry");
+		App.EnterText("EllipseWidthEntry", "220");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(42)]
+	public void RoundRectangle_StrokeColor_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(43)]
+	public void RoundRectangle_StrokeColor_DashArray_Thickness()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RoundRectangleRadioButton");
+		App.Tap("RoundRectangleRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.Tap("StrokeDashArrayEntry");
+		App.ClearText("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,2");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(44)]
+	public void Line_StrokeLineCap_Flat()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("LineRadioButton");
+		App.Tap("LineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "12");
+
+		App.WaitForElement("StrokeLineCapFlatRadioButton");
+		App.Tap("StrokeLineCapFlatRadioButton");
+
+		App.WaitForElement("X1Entry");
+		App.Tap("X1Entry");
+		App.ClearText("X1Entry");
+		App.EnterText("X1Entry", "50");
+
+		App.WaitForElement("Y1Entry");
+		App.Tap("Y1Entry");
+		App.ClearText("Y1Entry");
+		App.EnterText("Y1Entry", "100");
+
+		App.WaitForElement("X2Entry");
+		App.Tap("X2Entry");
+		App.ClearText("X2Entry");
+		App.EnterText("X2Entry", "250");
+
+		App.WaitForElement("Y2Entry");
+		App.Tap("Y2Entry");
+		App.ClearText("Y2Entry");
+		App.EnterText("Y2Entry", "100");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(45)]
+	public void Polyline_StrokeLineCap_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "12");
+
+		App.WaitForElement("StrokeLineCapRoundRadioButton");
+		App.Tap("StrokeLineCapRoundRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(46)]
+	public void Polyline_StrokeLineCap_Square()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "12");
+
+		App.WaitForElement("StrokeLineCapSquareRadioButton");
+		App.Tap("StrokeLineCapSquareRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(47)]
+	public void Path_StrokeLineCap_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "8");
+
+		App.WaitForElement("StrokeLineCapRoundRadioButton");
+		App.Tap("StrokeLineCapRoundRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(48)]
+	public void Path_StrokeLineCap_Square()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "8");
+
+		App.WaitForElement("StrokeLineCapSquareRadioButton");
+		App.Tap("StrokeLineCapSquareRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(49)]
+	public void Polygon_StrokeLineJoin_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "20");
+
+		App.WaitForElement("StrokeLineJoinRoundRadioButton");
+		App.Tap("StrokeLineJoinRoundRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(50)]
+	public void Polygon_StrokeLineJoin_Bevel()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "20");
+
+		App.WaitForElement("StrokeLineJoinBevelRadioButton");
+		App.Tap("StrokeLineJoinBevelRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(51)]
+	public void Path_StrokeLineJoin_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "20");
+
+		App.WaitForElement("StrokeLineJoinRoundRadioButton");
+		App.Tap("StrokeLineJoinRoundRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(52)]
+	public void Path_StrokeLineJoin_Bevel()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.Tap("StrokeThicknessEntry");
+		App.ClearText("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "20");
+
+		App.WaitForElement("StrokeLineJoinBevelRadioButton");
+		App.Tap("StrokeLineJoinBevelRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(53)]
+	public void Polygon_FillRule_Nonzero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolygonRadioButton");
+		App.Tap("PolygonRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "150,10 60,198 210,78 90,78 240,198");
+
+		App.WaitForElement("FillRuleNonzeroRadioButton");
+		App.Tap("FillRuleNonzeroRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+
+	[Test, Order(54)]
+	public void Polyline_FillRule_Nonzero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PolylineRadioButton");
+		App.Tap("PolylineRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("FillRuleNonzeroRadioButton");
+		App.Tap("FillRuleNonzeroRadioButton");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyShapeScreenshot();
+	}
+	[Test, Order(55)]
+	public void Path_Aspect_None()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathRadioButton");
+		App.Tap("PathRadioButton");
+
+		App.WaitForElement("FillColorBlueRadioButton");
+		App.Tap("FillColorBlueRadioButton");
+
+		App.WaitForElement("StrokeColorRedRadioButton");
+		App.Tap("StrokeColorRedRadioButton");
+
+		App.WaitForElement("AspectNoneRadioButton");
+		App.Tap("AspectNoneRadioButton");
 
 		App.WaitForElement("PathDataEntry");
 		App.Tap("PathDataEntry");
