@@ -120,13 +120,10 @@ public static class DeviceCommand
 		var deviceOption = new Option<string?>(new[] { "-d", "--device" }, "Target device ID (auto-detects if not specified)");
 		var filterOption = new Option<string?>(new[] { "-f", "--filter" }, "Filter logs by tag or pattern");
 		var followOption = new Option<bool>("--follow", () => true, "Follow log output (like tail -f)");
-		var linesOption = new Option<int>(new[] { "-n", "--lines" }, () => 50, "Number of lines to show (0 = all)");
-		var mauiOnlyOption = new Option<bool>("--maui-only", "Show only .NET MAUI related log entries");
-		var sinceOption = new Option<string?>("--since", "Show logs since timestamp (e.g., '5m', '1h', ISO 8601)");
 
 		var command = new Command("logs", "View device logs")
 		{
-			deviceOption, filterOption, followOption, linesOption, mauiOnlyOption, sinceOption
+			deviceOption, filterOption, followOption
 		};
 
 		command.SetHandler(async (InvocationContext context) =>
@@ -135,7 +132,6 @@ public static class DeviceCommand
 			var deviceId = context.ParseResult.GetValueForOption(deviceOption);
 			var filter = context.ParseResult.GetValueForOption(filterOption);
 			var follow = context.ParseResult.GetValueForOption(followOption);
-			var lines = context.ParseResult.GetValueForOption(linesOption);
 
 			try
 			{
@@ -152,7 +148,7 @@ public static class DeviceCommand
 				}
 
 				// Delegate to the shared log streaming implementation
-				await LogsCommand.StreamDeviceLogsAsync(device, filter, follow, lines, context.GetCancellationToken());
+				await LogsCommand.StreamDeviceLogsAsync(device, filter, follow, context.GetCancellationToken());
 			}
 			catch (OperationCanceledException)
 			{

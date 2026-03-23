@@ -61,8 +61,10 @@ public class XcodeSelect
 	/// </summary>
 	public async Task SwitchAsync(string xcodePath, CancellationToken cancellationToken = default)
 	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(xcodePath);
+
 		var result = await ProcessRunner.RunAsync(
-			"sudo", $"xcode-select --switch \"{xcodePath}\"",
+			"sudo", $"xcode-select --switch {ProcessRunner.SanitizeArg(xcodePath)}",
 			timeout: TimeSpan.FromSeconds(30),
 			cancellationToken: cancellationToken);
 
