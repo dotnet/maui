@@ -23,11 +23,7 @@ public class Issue34273 : _IssuesUITest
 		// Wait for the layout to re-render after orientation change before verifying
 		App.WaitForElement("TestEditor");
 
-#if ANDROID
-		VerifyScreenshot(cropLeft:125, retryTimeout: TimeSpan.FromSeconds(2));
-#else
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
-#endif
 	}
 
 	[Test]

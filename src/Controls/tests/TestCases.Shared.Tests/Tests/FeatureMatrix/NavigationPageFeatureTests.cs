@@ -333,8 +333,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(14)]
 		public void TitleIcon_And_TitleView_Persist_On_Push_Then_Clear()
 		{
-			App.WaitForElement("PopToRootPageButton");
-			App.Tap("PopToRootPageButton");
+			if (!(App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp)))
+			{
+				App.WaitForElement("PopToRootPageButton");
+				App.Tap("PopToRootPageButton");
+			}
 
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
