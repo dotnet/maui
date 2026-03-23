@@ -15,7 +15,6 @@
     <Authors>Microsoft</Authors>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     
     <!-- Override repo versioning - this tool has its own version -->
     <VersionPrefix>0.0.1</VersionPrefix>
