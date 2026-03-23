@@ -48,14 +48,21 @@ steps:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
     run: |
+      # Capture base SHA before checkout
+      BASE_SHA=$(git rev-parse HEAD)
+
       # Safe: checkout only, no workspace scripts executed
       gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
+
+      # Restore agent infrastructure from base branch (fork PRs won't have these)
+      git checkout "$BASE_SHA" -- .github/skills/ .github/instructions/ 2>/dev/null || true
 ```
 
 This is safe for fork PRs because:
 - `gh pr checkout` is a GitHub CLI command, not workspace code
 - No subsequent step executes anything from the checked-out workspace
 - The agent runs in a sandboxed container with scrubbed credentials
+- Skill/instruction files are restored from the base branch, not the fork
 
 ### 🚨 NEVER Do This After Fork Checkout
 
