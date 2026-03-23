@@ -200,20 +200,6 @@ git commit -m "Fix: Description of the change"
 - `.github/instructions/android.instructions.md` - Android handler implementation
 - `.github/instructions/xaml-unittests.instructions.md` - XAML unit test guidelines
 
-### Opening PRs
-
-All PRs are required to have this at the top of the description:
-
-```
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-```
-
-Always put that at the top, without the block quotes. Without it, users will NOT be able to try the PR and your work will have been in vain!
-
-
 
 ## Custom Agents and Skills
 
