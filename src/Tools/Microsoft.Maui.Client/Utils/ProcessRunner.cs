@@ -102,7 +102,7 @@ public static class ProcessRunner
 			{
 				try
 				{ process.Kill(entireProcessTree: true); }
-				catch { }
+				catch (Exception) { /* Process may have already exited */ }
 				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
 			}
 
@@ -213,7 +213,7 @@ public static class ProcessRunner
 							await process.StandardInput.WriteLineAsync(continuousInput);
 							await process.StandardInput.FlushAsync();
 						}
-						catch
+						catch (Exception)
 						{
 							break; // Process may have exited
 						}
@@ -230,7 +230,7 @@ public static class ProcessRunner
 			{
 				try
 				{ process.Kill(entireProcessTree: true); }
-				catch { }
+				catch (Exception) { /* Process may have already exited */ }
 				throw new TimeoutException($"Process '{fileName}' timed out after {effectiveTimeout.TotalSeconds}s");
 			}
 
@@ -239,7 +239,7 @@ public static class ProcessRunner
 			{
 				try
 				{ await inputTask.WaitAsync(TimeSpan.FromSeconds(2)); }
-				catch { }
+				catch (Exception) { /* Process may have already exited */ }
 			}
 
 			// Wait for output streams to complete
@@ -266,24 +266,6 @@ public static class ProcessRunner
 				Duration = stopwatch.Elapsed
 			};
 		}
-	}
-
-	/// <summary>
-	/// Runs a process asynchronously with continuous stdin input until exit.
-	/// Convenience overload for backward compatibility.
-	/// </summary>
-	[Obsolete("Use RunAsync with continuousInput parameter instead.")]
-	public static Task<ProcessResult> RunWithContinuousInputAsync(
-		string fileName,
-		string arguments = "",
-		string inputToWrite = "y",
-		string? workingDirectory = null,
-		Dictionary<string, string>? environmentVariables = null,
-		TimeSpan? timeout = null,
-		CancellationToken cancellationToken = default)
-	{
-		return RunAsync(fileName, arguments, workingDirectory, environmentVariables,
-			timeout, continuousInput: inputToWrite, cancellationToken: cancellationToken);
 	}
 
 	/// <summary>
@@ -382,7 +364,7 @@ public static class ProcessRunner
 					return path;
 			}
 		}
-		catch { }
+		catch (Exception) { /* Process may have already exited */ }
 		return null;
 	}
 }

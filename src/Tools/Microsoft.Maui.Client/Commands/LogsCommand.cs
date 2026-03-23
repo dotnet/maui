@@ -28,18 +28,12 @@ public static class LogsCommand
 		description: "Follow log output (like tail -f)",
 		getDefaultValue: () => true);
 
-	private static readonly Option<int> LinesOption = new(
-		aliases: new[] { "-n", "--lines" },
-		description: "Number of lines to show (0 = all)",
-		getDefaultValue: () => 50);
-
 	public static Command Create()
 	{
 		var command = new Command("logs", "View device logs");
 		command.AddOption(DeviceOption);
 		command.AddOption(FilterOption);
 		command.AddOption(FollowOption);
-		command.AddOption(LinesOption);
 
 		command.SetHandler(async (InvocationContext context) =>
 		{
@@ -47,7 +41,6 @@ public static class LogsCommand
 			var deviceId = context.ParseResult.GetValueForOption(DeviceOption);
 			var filter = context.ParseResult.GetValueForOption(FilterOption);
 			var follow = context.ParseResult.GetValueForOption(FollowOption);
-			var lines = context.ParseResult.GetValueForOption(LinesOption);
 
 			try
 			{
@@ -63,7 +56,7 @@ public static class LogsCommand
 						?? throw new MauiToolException(ErrorCodes.DeviceNotFound, $"Device not found: {deviceId}");
 				}
 
-				await StreamDeviceLogsAsync(device, filter, follow, lines, context.GetCancellationToken());
+				await StreamDeviceLogsAsync(device, filter, follow, context.GetCancellationToken());
 			}
 			catch (OperationCanceledException)
 			{
@@ -81,12 +74,15 @@ public static class LogsCommand
 		return command;
 	}
 
-	internal static async Task StreamDeviceLogsAsync(Device device, string? filter, bool follow, int lines, CancellationToken cancellationToken)
+	internal static async Task StreamDeviceLogsAsync(Device device, string? filter, bool follow, CancellationToken cancellationToken)
 	{
 		string command;
 		string args;
 
-		switch (device.Platform.ToLowerInvariant())
+		var platform = device.Platform?.ToLowerInvariant()
+			?? throw new MauiToolException(ErrorCodes.PlatformNotSupported, "Device platform is not set.");
+
+		switch (platform)
 		{
 			case Platforms.Android:
 				var sdkPath = PlatformDetector.Paths.GetAndroidSdkPath();
@@ -95,10 +91,10 @@ public static class LogsCommand
 					: "adb";
 
 				command = adbPath;
-				args = $"-s {device.Id} logcat";
+				args = $"-s {ProcessRunner.SanitizeArg(device.Id)} logcat";
 
 				if (!string.IsNullOrEmpty(filter))
-					args += $" -s {filter}";
+					args += $" -s {ProcessRunner.SanitizeArg(filter)}";
 				if (!follow)
 					args += " -d"; // Dump and exit
 				break;
@@ -113,10 +109,10 @@ public static class LogsCommand
 				}
 
 				command = "xcrun";
-				args = $"simctl spawn {device.Id} log stream";
+				args = $"simctl spawn {ProcessRunner.SanitizeArg(device.Id)} log stream";
 
 				if (!string.IsNullOrEmpty(filter))
-					args += $" --predicate 'subsystem CONTAINS \"{filter}\"'";
+					args += $" --predicate 'subsystem CONTAINS \"{ProcessRunner.SanitizeArg(filter)}\"'";
 				break;
 
 			default:
@@ -126,7 +122,7 @@ public static class LogsCommand
 		}
 
 		// Stream output directly to console
-		var process = new System.Diagnostics.Process
+		using var process = new System.Diagnostics.Process
 		{
 			StartInfo = new System.Diagnostics.ProcessStartInfo
 			{

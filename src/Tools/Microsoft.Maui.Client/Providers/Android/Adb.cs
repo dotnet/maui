@@ -93,7 +93,7 @@ public class Adb
 					return name;
 			}
 		}
-		catch { /* fall through to console fallback */ }
+		catch (Exception) { /* fall through to console fallback */ }
 
 		// Fallback: query the emulator console directly via TCP
 		// Serial format is "emulator-XXXX" where XXXX is the console port

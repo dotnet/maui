@@ -223,12 +223,16 @@ public class AvdManager
 				await Task.Delay(3000, cancellationToken);
 				if (process.HasExited && process.ExitCode != 0)
 				{
+					process.Dispose();
 					throw new MauiToolException(
 						ErrorCodes.AndroidEmulatorNotFound,
 						$"Emulator exited immediately with code {process.ExitCode}. " +
 						$"This often means stale lock files exist. " +
 						$"Try stopping all emulators first with: maui android emulator stop");
 				}
+
+				// Release the process handle; the emulator continues running independently.
+				process.Dispose();
 			}
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException and not MauiToolException)

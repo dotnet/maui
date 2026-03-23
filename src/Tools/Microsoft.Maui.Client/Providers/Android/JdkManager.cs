@@ -16,6 +16,8 @@ public class JdkManager : IJdkManager
 	private const int MinJdkVersion = 11;
 	private const int MaxJdkVersion = 21;
 
+	private static readonly HttpClient s_httpClient = new() { Timeout = TimeSpan.FromMinutes(10) };
+
 	public string? DetectedJdkPath { get; private set; }
 	public int? DetectedJdkVersion { get; private set; }
 
@@ -51,7 +53,7 @@ public class JdkManager : IJdkManager
 				DetectedJdkVersion = knownJdk.Version?.Major;
 			}
 		}
-		catch { }
+		catch (Exception) { /* JDK detection is best-effort; fall through to manual detection */ }
 	}
 
 	private static int? GetJdkVersion(string jdkPath)
@@ -76,7 +78,7 @@ public class JdkManager : IJdkManager
 				return version;
 			}
 		}
-		catch { }
+		catch (Exception) { /* Version detection is best-effort */ }
 
 		return null;
 	}
@@ -183,10 +185,7 @@ public class JdkManager : IJdkManager
 		try
 		{
 			// Download with progress
-			using var httpClient = new HttpClient();
-			httpClient.Timeout = TimeSpan.FromMinutes(10);
-
-			using var response = await httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+			using var response = await s_httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
 			var totalBytes = response.Content.Headers.ContentLength ?? 0;

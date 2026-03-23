@@ -39,7 +39,7 @@ public static class PlatformDetector
 					if (result.ExitCode == 0)
 						return result.StandardOutput.Trim();
 				}
-				catch { }
+				catch (Exception) { /* sw_vers may not exist on non-macOS; fall through */ }
 			}
 			return Environment.OSVersion.Version.ToString();
 		}
