@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ScrollingPerformancePage"
+             Title="Scrolling Performance">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <VerticalStackLayout Grid.Row="0"
+                Padding="10"
+                BackgroundColor="LightGray">
+            <Label x:Name="StatusLabel"
+                    Text="Ready - Scrolling Performance Test"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    AutomationId="StatusLabel"/>
+            <Label x:Name="ItemCountLabel"
+                    Text="Items: 0"
+                    FontSize="12"
+                    AutomationId="ItemCountLabel"/>
+            <Label x:Name="TimingLabel"
+                    Text="Scroll Time: --"
+                    FontSize="12"
+                    AutomationId="TimingLabel"/>
+            <Label x:Name="FpsLabel"
+                    Text="Scroll FPS: --"
+                    FontSize="12"
+                    TextColor="DodgerBlue"
+                    AutomationId="FpsLabel"/>
+            <Label x:Name="FrameCountLabel"
+                    Text="Frames: -- | Dropped: --"
+                    FontSize="12"
+                    AutomationId="FrameCountLabel"/>
+        </VerticalStackLayout>
+
+        <CollectionView x:Name="CV"
+                Grid.Row="1"
+                Scrolled="OnScrolled"
+                AutomationId="PerformanceCollectionView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="LightGray"
+                            StrokeThickness="1"
+                            Padding="10"
+                            Margin="4"
+                            BackgroundColor="White">
+                        <Grid ColumnDefinitions="50,*"
+                                ColumnSpacing="10">
+                            <Border Grid.Column="0"
+                                    WidthRequest="42"
+                                    HeightRequest="42"
+                                    StrokeShape="RoundRectangle 21"
+                                    BackgroundColor="{Binding AvatarColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Initials}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1"
+                                    VerticalOptions="Center"
+                                    Spacing="2">
+                                <Label Text="{Binding Title}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding Subtitle}"
+                                       FontSize="12"
+                                       TextColor="Gray"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid Grid.Row="2"
+                Padding="10"
+                RowDefinitions="Auto,Auto"
+                RowSpacing="6">
+            <HorizontalStackLayout Grid.Row="0"
+                    Spacing="6"
+                    HorizontalOptions="Center">
+                <Button Text="Slow Scroll"
+                        Clicked="OnSlowScroll"
+                        BackgroundColor="MediumSeaGreen"
+                        TextColor="White"
+                        AutomationId="SlowScrollButton"/>
+                <Button Text="Fast Scroll"
+                        Clicked="OnFastScroll"
+                        BackgroundColor="DodgerBlue"
+                        TextColor="White"
+                        AutomationId="FastScrollButton"/>
+                <Button Text="Jump Scroll"
+                        Clicked="OnJumpScroll"
+                        BackgroundColor="Coral"
+                        TextColor="White"
+                        AutomationId="JumpScrollButton"/>
+                <Button Text="Reset"
+                        Clicked="OnResetScroll"
+                        AutomationId="ResetButton"/>
+            </HorizontalStackLayout>
+
+            <Grid Grid.Row="1"
+                    ColumnDefinitions="*,*,*"
+                    ColumnSpacing="8">
+                <Button Grid.Column="0"
+                        Text="Load 100"
+                        Clicked="OnLoad100"
+                        AutomationId="Load100Button"/>
+                <Button Grid.Column="1"
+                        Text="Load 500"
+                        Clicked="OnLoad500"
+                        AutomationId="Load500Button"/>
+                <Button Grid.Column="2"
+                        Text="Load 1000"
+                        Clicked="OnLoad1000"
+                        AutomationId="Load1000Button"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

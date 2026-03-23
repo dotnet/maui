@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.CollectionViewPerformancePage"
+             Title="CollectionView Performance Matrix">
+    <VerticalStackLayout Padding="20"
+            Spacing="10"
+            VerticalOptions="Center">
+        <Label Text="CollectionView Performance Tests"
+               FontSize="20"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+        <Button Text="Simple Template Load"
+                Clicked="OnSimpleTemplateButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="SimpleTemplateButton"
+                WidthRequest="400"/>
+        <Button Text="Complex Template Load"
+                Clicked="OnComplexTemplateButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ComplexTemplateButton"
+                WidthRequest="400"/>
+        <Button Text="Scrolling Performance"
+                Clicked="OnScrollingPerformanceButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ScrollingPerformanceButton"
+                WidthRequest="400"/>
+        <Button Text="Grid Span Performance"
+                Clicked="OnGridSpanButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="GridSpanButton"
+                WidthRequest="400"/>
+        <Button Text="Grouping Orientation Performance"
+                Clicked="OnGroupingOrientationButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="GroupingOrientationButton"
+                WidthRequest="400"/>
+    </VerticalStackLayout>
+</ContentPage>

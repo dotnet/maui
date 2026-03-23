@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.GridSpanPerformancePage"
+             Title="Grid Span Performance">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <VerticalStackLayout Grid.Row="0"
+                Padding="10"
+                BackgroundColor="LightGray">
+            <Label x:Name="StatusLabel"
+                    Text="Ready - Grid Span Test"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    AutomationId="StatusLabel"/>
+            <Label x:Name="ItemCountLabel"
+                    Text="Items: 0"
+                    FontSize="12"
+                    AutomationId="ItemCountLabel"/>
+            <Label x:Name="TimingLabel"
+                    Text="Load Time: --"
+                    FontSize="12"
+                    AutomationId="TimingLabel"/>
+            <Label x:Name="SpanLabel"
+                    Text="Current Span: 2"
+                    FontSize="12"
+                    TextColor="DodgerBlue"
+                    AutomationId="SpanLabel"/>
+        </VerticalStackLayout>
+
+        <CollectionView x:Name="CV"
+                Grid.Row="1"
+                AutomationId="PerformanceCollectionView">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                        Span="2"
+                        HorizontalItemSpacing="4"
+                        VerticalItemSpacing="4"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="LightGray"
+                            StrokeThickness="1"
+                            Padding="8"
+                            Margin="2"
+                            BackgroundColor="White"
+                            StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                                RowSpacing="4">
+                            <Border Grid.Row="0"
+                                    WidthRequest="40"
+                                    HeightRequest="40"
+                                    StrokeShape="RoundRectangle 20"
+                                    BackgroundColor="{Binding AvatarColor}"
+                                    StrokeThickness="0"
+                                    HorizontalOptions="Center">
+                                <Label Text="{Binding Initials}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label Grid.Row="1"
+                                   Text="{Binding Title}"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   LineBreakMode="TailTruncation"/>
+
+                            <Border Grid.Row="2"
+                                    BackgroundColor="LightBlue"
+                                    Padding="6,2"
+                                    StrokeShape="RoundRectangle 4"
+                                    StrokeThickness="0"
+                                    HorizontalOptions="Center">
+                                <Label Text="{Binding Tag}"
+                                       FontSize="10"
+                                       TextColor="DarkBlue"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid Grid.Row="2"
+                Padding="10"
+                RowDefinitions="Auto,Auto"
+                RowSpacing="6">
+            <HorizontalStackLayout Grid.Row="0"
+                    Spacing="6"
+                    HorizontalOptions="Center">
+                <Label Text="Span:"
+                        VerticalOptions="Center"
+                        FontAttributes="Bold"/>
+                <Button Text="1" Clicked="OnSpan1" WidthRequest="50" AutomationId="Span1Button"/>
+                <Button Text="2" Clicked="OnSpan2" WidthRequest="50" AutomationId="Span2Button" BackgroundColor="DodgerBlue" TextColor="White"/>
+                <Button Text="3" Clicked="OnSpan3" WidthRequest="50" AutomationId="Span3Button"/>
+                <Button Text="4" Clicked="OnSpan4" WidthRequest="50" AutomationId="Span4Button"/>
+                <Button Text="5" Clicked="OnSpan5" WidthRequest="50" AutomationId="Span5Button"/>
+            </HorizontalStackLayout>
+
+            <Grid Grid.Row="1"
+                    ColumnDefinitions="*,*,*,*"
+                    ColumnSpacing="8">
+                <Button Grid.Column="0" Text="Load 100" Clicked="OnLoad100" AutomationId="Load100Button"/>
+                <Button Grid.Column="1" Text="Load 1000" Clicked="OnLoad1000" AutomationId="Load1000Button"/>
+                <Button Grid.Column="2" Text="Clear" Clicked="OnClear" AutomationId="ClearButton"/>
+                <Button Grid.Column="3" Text="Scroll End" Clicked="OnScrollEnd" AutomationId="ScrollEndButton"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

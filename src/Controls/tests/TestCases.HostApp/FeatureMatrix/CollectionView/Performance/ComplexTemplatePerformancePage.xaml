@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ComplexTemplatePerformancePage"
+             Title="Complex Template Performance">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <VerticalStackLayout Grid.Row="0" Padding="10" BackgroundColor="LightGray">
+            <Label x:Name="StatusLabel" Text="Ready - Complex Template Test" FontSize="16" FontAttributes="Bold" AutomationId="StatusLabel"/>
+            <Label x:Name="ItemCountLabel" Text="Items: 0" FontSize="12" AutomationId="ItemCountLabel"/>
+            <Label x:Name="TimingLabel" Text="Load Time: --" FontSize="12" AutomationId="TimingLabel"/>
+        </VerticalStackLayout>
+
+        <CollectionView x:Name="CV" Grid.Row="1" AutomationId="PerformanceCollectionView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="10" Margin="4" BackgroundColor="White">
+                        <Grid ColumnDefinitions="60,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="4">
+                            <!-- Avatar placeholder -->
+                            <Border Grid.Column="0" Grid.RowSpan="3"
+                                    WidthRequest="50" HeightRequest="50"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="{Binding AvatarColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Initials}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <!-- Title label -->
+                            <Label Grid.Column="1" Grid.Row="0"
+                                   Text="{Binding Title}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation"/>
+
+                            <!-- Subtitle with tag badge -->
+                            <HorizontalStackLayout Grid.Column="1" Grid.Row="1" Spacing="8">
+                                <Label Text="{Binding Subtitle}"
+                                       FontSize="12"
+                                       TextColor="Gray"
+                                       LineBreakMode="TailTruncation"/>
+                                <Border BackgroundColor="LightBlue"
+                                        Padding="4,2"
+                                        StrokeShape="RoundRectangle 4"
+                                        StrokeThickness="0">
+                                    <Label Text="{Binding Tag}"
+                                           FontSize="10"
+                                           TextColor="DarkBlue"/>
+                                </Border>
+                            </HorizontalStackLayout>
+
+                            <!-- Description label -->
+                            <Label Grid.Column="1" Grid.Row="2"
+                                   Text="{Binding Description}"
+                                   FontSize="11"
+                                   TextColor="DimGray"
+                                   MaxLines="2"
+                                   LineBreakMode="TailTruncation"/>
+
+                            <!-- Action button -->
+                            <Button Grid.Column="2" Grid.RowSpan="3"
+                                    Text="Action"
+                                    FontSize="12"
+                                    Padding="8,4"
+                                    VerticalOptions="Center"
+                                    BackgroundColor="DodgerBlue"
+                                    TextColor="White"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid Grid.Row="2" Padding="10" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+            <Button Grid.Column="0" Text="Load 100" Clicked="OnLoad100" AutomationId="Load100Button"/>
+            <Button Grid.Column="1" Text="Load 1000" Clicked="OnLoad1000" AutomationId="Load1000Button"/>
+            <Button Grid.Column="2" Text="Clear" Clicked="OnClear" AutomationId="ClearButton"/>
+            <Button Grid.Column="3" Text="Scroll End" Clicked="OnScrollEnd" AutomationId="ScrollEndButton"/>
+        </Grid>
+    </Grid>
+</ContentPage>

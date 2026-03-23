@@ -52,4 +52,9 @@ public partial class CollectionViewFeatureMainPage : ContentPage
 	{
 		await Navigation.PushAsync(new CollectionViewItemsSourcePage());
 	}
+
+	private async void OnPerformanceButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewPerformancePage());
+	}
 }

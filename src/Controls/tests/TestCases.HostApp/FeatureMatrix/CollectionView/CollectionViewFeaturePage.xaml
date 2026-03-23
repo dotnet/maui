@@ -41,6 +41,11 @@
                 Clicked="OnDynamicChangesButtonClicked"
                 HorizontalOptions="Center"
                 AutomationId="DynamicButton"
-                WidthRequest="400"/>    
+                WidthRequest="400"/>
+        <Button Text="Performance Tests"
+                Clicked="OnPerformanceButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="PerformanceButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>

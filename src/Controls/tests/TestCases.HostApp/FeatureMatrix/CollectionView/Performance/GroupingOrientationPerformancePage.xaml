@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.GroupingOrientationPerformancePage"
+             Title="Grouping &amp; Orientation Performance">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <VerticalStackLayout Grid.Row="0"
+                Padding="10"
+                BackgroundColor="LightGray">
+            <Label x:Name="StatusLabel"
+                    Text="Ready - Grouping &amp; Orientation Test"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    AutomationId="StatusLabel"/>
+            <Label x:Name="ItemCountLabel"
+                    Text="Items: 0 | Groups: 0"
+                    FontSize="12"
+                    AutomationId="ItemCountLabel"/>
+            <Label x:Name="TimingLabel"
+                    Text="Load Time: --"
+                    FontSize="12"
+                    AutomationId="TimingLabel"/>
+            <Label x:Name="OrientationLabel"
+                    Text="Orientation: Vertical"
+                    FontSize="12"
+                    TextColor="DodgerBlue"
+                    AutomationId="OrientationLabel"/>
+        </VerticalStackLayout>
+
+        <CollectionView x:Name="CV"
+                Grid.Row="1"
+                IsGrouped="True"
+                AutomationId="PerformanceCollectionView">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical"
+                        ItemSpacing="2"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Grid BackgroundColor="SlateBlue"
+                            Padding="12,8"
+                            ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0"
+                               Text="{Binding Name}"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Count, StringFormat='{0} items'}"
+                               FontSize="12"
+                               TextColor="LightGray"
+                               VerticalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+            <CollectionView.GroupFooterTemplate>
+                <DataTemplate>
+                    <BoxView HeightRequest="1"
+                            Color="LightGray"
+                            Margin="0,0,0,4"/>
+                </DataTemplate>
+            </CollectionView.GroupFooterTemplate>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Stroke="LightGray"
+                            StrokeThickness="1"
+                            Padding="10"
+                            Margin="2"
+                            BackgroundColor="White">
+                        <Grid ColumnDefinitions="40,*,Auto"
+                                ColumnSpacing="10">
+                            <Border Grid.Column="0"
+                                    WidthRequest="36"
+                                    HeightRequest="36"
+                                    StrokeShape="RoundRectangle 18"
+                                    BackgroundColor="{Binding AvatarColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Initials}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1"
+                                    VerticalOptions="Center"
+                                    Spacing="2">
+                                <Label Text="{Binding Name}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding Category}"
+                                       FontSize="11"
+                                       TextColor="Gray"/>
+                            </VerticalStackLayout>
+
+                            <Border Grid.Column="2"
+                                    BackgroundColor="LightGray"
+                                    Padding="6,2"
+                                    StrokeShape="RoundRectangle 4"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Index}"
+                                       FontSize="10"
+                                       TextColor="DimGray"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid Grid.Row="2"
+                Padding="10"
+                RowDefinitions="Auto,Auto,Auto"
+                RowSpacing="6">
+            <HorizontalStackLayout Grid.Row="0"
+                    Spacing="8"
+                    HorizontalOptions="Center">
+                <Label Text="Orientation:"
+                        VerticalOptions="Center"
+                        FontAttributes="Bold"/>
+                <Button x:Name="VerticalBtn"
+                        Text="Vertical"
+                        Clicked="OnVertical"
+                        BackgroundColor="DodgerBlue"
+                        TextColor="White"
+                        AutomationId="VerticalButton"/>
+                <Button x:Name="HorizontalBtn"
+                        Text="Horizontal"
+                        Clicked="OnHorizontal"
+                        AutomationId="HorizontalButton"/>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Row="1"
+                    Spacing="8"
+                    HorizontalOptions="Center">
+                <Label Text="Grouping:"
+                        VerticalOptions="Center"
+                        FontAttributes="Bold"/>
+                <Button x:Name="GroupOnBtn"
+                        Text="On"
+                        Clicked="OnGroupingOn"
+                        BackgroundColor="DodgerBlue"
+                        TextColor="White"
+                        AutomationId="GroupOnButton"/>
+                <Button x:Name="GroupOffBtn"
+                        Text="Off"
+                        Clicked="OnGroupingOff"
+                        AutomationId="GroupOffButton"/>
+                <Button Text="5 Groups"
+                        Clicked="OnLoad5Groups"
+                        AutomationId="Load5GroupsButton"/>
+                <Button Text="20 Groups"
+                        Clicked="OnLoad20Groups"
+                        AutomationId="Load20GroupsButton"/>
+            </HorizontalStackLayout>
+
+            <Grid Grid.Row="2"
+                    ColumnDefinitions="*,*,*,*"
+                    ColumnSpacing="8">
+                <Button Grid.Column="0" Text="Load 100" Clicked="OnLoad100" AutomationId="Load100Button"/>
+                <Button Grid.Column="1" Text="Load 1000" Clicked="OnLoad1000" AutomationId="Load1000Button"/>
+                <Button Grid.Column="2" Text="Clear" Clicked="OnClear" AutomationId="ClearButton"/>
+                <Button Grid.Column="3" Text="Scroll End" Clicked="OnScrollEnd" AutomationId="ScrollEndButton"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>
