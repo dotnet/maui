@@ -65,6 +65,8 @@
              StrokeThickness="{Binding StrokeThickness}"
              StrokeDashArray="{Binding StrokeDashCollection}"
              StrokeDashOffset="{Binding StrokeDashOffset}"
+             StrokeLineCap="{Binding StrokeLineCap}"
+             StrokeLineJoin="{Binding StrokeLineJoin}"
              Shadow="{Binding BoxShadow}"
              IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Ellipse}"
              AutomationId="EllipseShape"/>
@@ -82,6 +84,7 @@
           StrokeDashArray="{Binding StrokeDashCollection}"
           StrokeDashOffset="{Binding StrokeDashOffset}"
           StrokeLineCap="{Binding StrokeLineCap}"
+          StrokeLineJoin="{Binding StrokeLineJoin}"
           Shadow="{Binding BoxShadow}"
           IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Line}"
           AutomationId="LineShape"/>
@@ -96,9 +99,12 @@
              StrokeThickness="{Binding StrokeThickness}"
              StrokeDashArray="{Binding StrokeDashCollection}"
              StrokeDashOffset="{Binding StrokeDashOffset}"
+             StrokeLineCap="{Binding StrokeLineCap}"
              StrokeLineJoin="{Binding StrokeLineJoin}"
+             FillRule="{Binding FillRule}"
              Shadow="{Binding BoxShadow}"
              WidthRequest="{Binding Width}"
+             HeightRequest="{Binding Height}"
              IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Polygon}"
              AutomationId="PolygonShape"/>
 
@@ -113,7 +119,10 @@
               StrokeDashOffset="{Binding StrokeDashOffset}"
               StrokeLineCap="{Binding StrokeLineCap}"
               StrokeLineJoin="{Binding StrokeLineJoin}"
+              FillRule="{Binding FillRule}"
               Shadow="{Binding BoxShadow}"
+              WidthRequest="{Binding Width}"
+              HeightRequest="{Binding Height}"
               IsVisible="{Binding SelectedShapeType, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Polyline}"
               AutomationId="PolylineShape"/>
 
