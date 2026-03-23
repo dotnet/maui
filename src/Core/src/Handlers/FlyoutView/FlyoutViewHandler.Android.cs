@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Android.App.Roles;
 using Android.Runtime;
@@ -69,15 +69,6 @@ namespace Microsoft.Maui.Handlers
 			var context = MauiContext.Context;
 			if (context is null)
 				return;
-
-			// Disconnect the OLD detail's handler before replacing it with the new one.
-			// This ensures the previous NavigationPage and its child pages can be
-			// garbage collected (fixes the memory leak from dotnet/maui#33355).
-			if (_detailViewFragment?.DetailView is IView previousDetail &&
-				previousDetail != VirtualView.Detail)
-			{
-				previousDetail.Handler?.DisconnectHandler();
-			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 

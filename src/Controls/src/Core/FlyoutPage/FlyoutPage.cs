@@ -76,6 +76,20 @@ namespace Microsoft.Maui.Controls
 				{
 					previousDetail.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage: value, NavigationType.Replace));
+
+					// Page.SendNavigatedFrom only disconnects handlers for Pop/PopToRoot, not Replace.
+					// FlyoutPage.Detail swaps use NavigationType.Replace, so we disconnect here.
+					// Mirror the Window.OnPageChanged pattern: if the old page is still in the
+					// visual tree, wait for its platform view to detach before disconnecting;
+					// otherwise disconnect immediately.
+					if (previousDetail.IsLoaded)
+					{
+						previousDetail.OnUnloaded(() => previousDetail.DisconnectHandlers());
+					}
+					else
+					{
+						previousDetail.DisconnectHandlers();
+					}
 				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));
