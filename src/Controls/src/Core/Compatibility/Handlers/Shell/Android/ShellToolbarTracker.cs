@@ -663,9 +663,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_searchView.SearchConfirmed += OnSearchConfirmed;
 				}
 				// If the existing _searchView is present but its SearchHandler doesn't match the current page SearchHandler,
-				// update it to ensure the correct handler is used for search operations.
+				// first collapse and reset the active search UI state, then apply the existing handler swap + reload
+				// so Shell tab navigation does not carry the previous page's interaction state into the next page.
 				else if (_searchView.SearchHandler != SearchHandler)
 				{
+					menu.FindItem(_placeholderMenuItemId)?.CollapseActionView();
+					ClearSearchViewState(_searchView.View);
 					_searchView.SearchHandler = SearchHandler;
 					_searchView.LoadView();
 				}
@@ -709,6 +712,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			menu.Dispose();
+		}
+
+		static void ClearSearchViewState(AView view)
+		{
+			view.ClearFocus();
+
+			if (view is AppCompatAutoCompleteTextView autoCompleteTextView)
+			{
+				autoCompleteTextView.DismissDropDown();
+				autoCompleteTextView.ClearComposingText();
+
+				var text = autoCompleteTextView.Text;
+				if (!string.IsNullOrEmpty(text))
+					autoCompleteTextView.SetSelection(text.Length);
+			}
+
+			if (view is ViewGroup viewGroup)
+			{
+				for (int i = 0; i < viewGroup.ChildCount; i++)
+					ClearSearchViewState(viewGroup.GetChildAt(i));
+			}
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
