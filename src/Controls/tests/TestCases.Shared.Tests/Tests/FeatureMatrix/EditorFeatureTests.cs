@@ -768,7 +768,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30571
-	[Test, Order(53)]
+	[Test, Order(49)]
 	public void VerifyEditorPlaceholderWithAutoSizeDisabled()
 	{
 		App.WaitForElement("Options");
@@ -785,7 +785,7 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(height, Is.LessThan(45));
 	}
 
-	[Test, Order(55)]
+	[Test, Order(51)]
 	public void VerifyEditorPlaceholderWithAutoSizeTextChanges()
 	{
 		App.WaitForElement("Options");
@@ -852,8 +852,73 @@ public class EditorFeatureTests : _GalleryUITest
 		Assert.That(height, Is.EqualTo(100).Within(2));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link:
-	[Test, Order(49)]
+	[Test, Order(50)]
+	public void VerifyEditorTextWhenAutoSizeDisabled()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.LessThan(45));
+	}
+
+	[Test, Order(52)]
+	public void VerifyEditorTextWhenAutoSizeTextChangesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("AutoSizeTextChanges");
+		App.Tap("AutoSizeTextChanges");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.GreaterThan(45));
+		App.ClearText("TestEditor");
+	}
+
+	[Test, Order(53)]
+	public void VerifyEditorTextWhenFontAttributesBoldAndItalicSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(54)]
+	public void VerifyEditorPlaceholderTextWhenFontAttributesBoldAndItalicSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(55)]
 	public void VerifyEditorWhenBackgroundColorSet()
 	{
 		App.WaitForElement("Options");
@@ -866,7 +931,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(50)]
+	[Test, Order(56)]
 	public void VerifyEditorBackgroundColorWithTextColor()
 	{
 		App.WaitForElement("Options");
@@ -881,7 +946,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(51)]
+	[Test, Order(57)]
 	public void VerifyEditorBackgroundColorWithPlaceholder()
 	{
 		App.WaitForElement("Options");
@@ -899,7 +964,8 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(52)]
+	#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link:
+	[Test, Order(58)]
 	public void VerifyEditorBackgroundColorResetToNone()
 	{
 		App.WaitForElement("Options");
@@ -919,52 +985,6 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
-
-	[Test, Order(54)]
-	public void VerifyEditorTextWhenAutoSizeDisabled()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.LessThan(45));
-	}
-
-	[Test, Order(56)]
-	public void VerifyEditorTextWhenAutoSizeTextChangesSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("AutoSizeTextChanges");
-		App.Tap("AutoSizeTextChanges");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.GreaterThan(45));
-		App.ClearText("TestEditor");
-	}
-
-	[Test, Order(57)]
-	public void VerifyEditorTextWhenFontAttributesBoldAndItalicSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping
