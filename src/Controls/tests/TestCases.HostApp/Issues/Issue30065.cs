@@ -8,6 +8,7 @@ public class Issue30065 : ContentPage
 		DatePicker rtlDatePicker = new DatePicker
 		{
 			Date = new DateTime(2002, 5, 14),
+			Format = "MM/dd/yyyy",
 			WidthRequest = 300,
 			FlowDirection = FlowDirection.RightToLeft,
 		};
@@ -15,6 +16,7 @@ public class Issue30065 : ContentPage
 		DatePicker ltrDatePicker = new DatePicker
 		{
 			Date = new DateTime(2002, 5, 14),
+			Format = "MM/dd/yyyy",
 			WidthRequest = 300,
 			FlowDirection = FlowDirection.LeftToRight,
 		};
