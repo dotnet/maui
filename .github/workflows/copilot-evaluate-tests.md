@@ -4,11 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'src/Controls/tests/**'
-      - 'src/Core/tests/**'
-      - 'src/Essentials/test/**'
-      - '.github/workflows/copilot-evaluate-tests.md'
-      - '.github/skills/evaluate-pr-tests/**'
+      - 'src/**/tests/**'
+      - 'src/**/test/**'
   issue_comment:
     types: [created]
   workflow_dispatch:
@@ -58,6 +55,23 @@ concurrency:
 timeout-minutes: 15
 
 steps:
+  - name: Gate — skip if no test source files in diff
+    if: github.event_name == 'pull_request'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    run: |
+      TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only \
+        | grep -E '\.(cs|xaml)$' \
+        | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \
+        || true)
+      if [ -z "$TEST_FILES" ]; then
+        echo "⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation."
+        exit 1
+      fi
+      echo "✅ Found test files to evaluate:"
+      echo "$TEST_FILES" | head -20
+
   - name: Checkout PR branch
     env:
       GH_TOKEN: ${{ github.token }}

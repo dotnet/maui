@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"2331b3ae5af12ebc31061b652acc9bfa2605fc5c6ebfa086584fcb7e5a350ab7","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d02e3e79454827c10327c3dd0453de2cffdbd625c5b488228b300b6c061cbee0","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -31,11 +31,8 @@ name: "Evaluate PR Tests"
     - created
   pull_request:
     paths:
-    - src/Controls/tests/**
-    - src/Core/tests/**
-    - src/Essentials/test/**
-    - .github/workflows/copilot-evaluate-tests.md
-    - .github/skills/evaluate-pr-tests/**
+    - src/**/tests/**
+    - src/**/test/**
     types:
     - opened
     - synchronize
@@ -317,6 +314,12 @@ jobs:
         run: bash ${RUNNER_TEMP}/gh-aw/actions/configure_gh_for_ghe.sh
         env:
           GH_TOKEN: ${{ github.token }}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        if: github.event_name == 'pull_request'
+        name: Gate — skip if no test source files in diff
+        run: "TEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
