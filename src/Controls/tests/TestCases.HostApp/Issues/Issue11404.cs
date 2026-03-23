@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 11404, "Line coordinates not computed correctly", PlatformAffected.iOS | PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 11404, "Line coordinates not computed correctly", PlatformAffected.All)]
 public class Issue11404 : ContentPage
 {
 	readonly Line _line1;
