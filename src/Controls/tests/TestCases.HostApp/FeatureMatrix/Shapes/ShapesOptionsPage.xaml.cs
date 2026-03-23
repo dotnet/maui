@@ -90,6 +90,15 @@ public partial class ShapesOptionsPage : ContentPage
 		}
 	}
 
+	private void OnFillRuleChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (e.Value && sender is RadioButton radioButton && radioButton.Content is string fillRuleName)
+		{
+			if (Enum.TryParse<FillRule>(fillRuleName, out var fillRule))
+				_viewModel.FillRule = fillRule;
+		}
+	}
+
 	private Microsoft.Maui.Graphics.Color GetColorByName(string colorName)
 	{
 		return colorName.ToLower(System.Globalization.CultureInfo.InvariantCulture) switch

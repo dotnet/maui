@@ -169,6 +169,21 @@
                                                        AutomationId="StrokeLineJoinRoundRadioButton"/>
                                    </HorizontalStackLayout>
 
+                                   <!-- FillRule -->
+                                   <Label Text="Fill Rule:"
+                                          FontAttributes="Bold"/>
+                                   <HorizontalStackLayout Spacing="1">
+                                          <RadioButton Content="EvenOdd"
+                                                       GroupName="FillRule"
+                                                       IsChecked="True"
+                                                       CheckedChanged="OnFillRuleChanged"
+                                                       AutomationId="FillRuleEvenOddRadioButton"/>
+                                          <RadioButton Content="Nonzero"
+                                                       GroupName="FillRule"
+                                                       CheckedChanged="OnFillRuleChanged"
+                                                       AutomationId="FillRuleNonzeroRadioButton"/>
+                                   </HorizontalStackLayout>
+
                                    <!-- Shadow -->
                                    <HorizontalStackLayout Spacing="10">
                                           <CheckBox IsChecked="{Binding HasShadow}"

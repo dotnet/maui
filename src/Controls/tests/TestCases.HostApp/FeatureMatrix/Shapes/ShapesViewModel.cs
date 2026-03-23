@@ -42,6 +42,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 		Aspect = Stretch.None;
 		StrokeLineCap = PenLineCap.Flat;
 		StrokeLineJoin = PenLineJoin.Miter;
+		FillRule = FillRule.EvenOdd;
 		CornerRadius = 0;
 		RadiusX = 0;
 		RadiusY = 0;
@@ -163,6 +164,13 @@ public class ShapesViewModel : INotifyPropertyChanged
 	{
 		get => _aspect;
 		set => SetProperty(ref _aspect, value);
+	}
+
+	private FillRule _fillRule = FillRule.EvenOdd;
+	public FillRule FillRule
+	{
+		get => _fillRule;
+		set => SetProperty(ref _fillRule, value);
 	}
 
 	private PenLineCap _strokeLineCap = PenLineCap.Flat;
