@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void UpdateSearchHandlerText(this AutoSuggestBox platformControl, SearchHandler searchHandler)
 		{
-			platformControl.Text = TextTransformUtilites.GetTransformedText(searchHandler.Query, searchHandler.TextTransform);
+			platformControl.Text = TextTransformUtilities.GetTransformedText(searchHandler.Query, searchHandler.TextTransform);
 		}
 
 		static readonly string[] backgroundColorKeys =
