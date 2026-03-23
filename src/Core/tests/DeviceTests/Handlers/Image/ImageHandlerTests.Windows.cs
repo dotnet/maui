@@ -67,11 +67,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// https://github.com/dotnet/maui/issues/32393
-		// GetDesiredSize must use the cached pixel size (_cachedImageSize) during source transitions.
-		// Without the cache, GetImageSize() returns 0 while a new source is decoding (PixelWidth=0),
-		// so no capping occurs and the image fills the container until OnImageOpened fires.
-		// The race window is frozen by using a blank BitmapImage (PixelWidth=0, no WinUI cache)
-		// and setting platformView.Width so base.GetDesiredSize reliably returns a large value.
+		// GetDesiredSize must use _cachedImageSize (set in OnImageOpened) during source transitions.
+		// The cache persists while a new source is decoding so layout stays capped to the previous
+		// natural size instead of expanding to fill the container (PixelWidth=0 while pending).
+		// The race window is frozen by replacing platformView.Source with a blank BitmapImage
+		// (PixelWidth=0 always) and setting platformView.Width so base.GetDesiredSize returns large.
 		[Fact]
 		public async Task AspectFit_GetDesiredSize_DuringSourceTransition_UsesCachedNaturalSize()
 		{

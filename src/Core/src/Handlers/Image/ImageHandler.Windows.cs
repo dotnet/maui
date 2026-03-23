@@ -10,8 +10,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, WImage>
 	{
-		// Cache image dimensions for consistent layout behavior
-		private Graphics.Size _cachedImageSize = Graphics.Size.Zero;
+		private Graphics.Size _cachedImageSize;
 
 		/// <inheritdoc/>
 		protected override WImage CreatePlatformView() => new WImage();
@@ -178,8 +177,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				ih.PlatformView.MaxWidth = double.PositiveInfinity;
 				ih.PlatformView.MaxHeight = double.PositiveInfinity;
-				// Clear cached size when source changes
-				ih._cachedImageSize = Graphics.Size.Zero;
 			}
 
 			return handler.SourceLoader.UpdateImageSourceAsync();
