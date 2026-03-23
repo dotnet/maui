@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Editor");
 			App.Tap("Editor");
 #if IOS
-			VerifyScreenshot(cropBottom:1400);
+			VerifyScreenshot(cropBottom: 1400);
 #else
 			VerifyScreenshot();
 #endif
