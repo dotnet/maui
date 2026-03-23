@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 public class AvdManager
 {
+	private const int EmulatorStartupCheckDelayMs = 3000;
+
 	private readonly AvdManagerRunner? _runner;
 	private readonly EmulatorRunner? _emulatorRunner;
 	private readonly Adb? _adb;
@@ -221,7 +223,7 @@ public class AvdManager
 
 				// Wait briefly to detect immediate crashes (e.g. stale lock files,
 				// missing system image, HAXM issues). A healthy emulator stays alive.
-				await Task.Delay(3000, cancellationToken);
+				await Task.Delay(EmulatorStartupCheckDelayMs, cancellationToken);
 				if (process.HasExited && process.ExitCode != 0)
 				{
 					process.Dispose();

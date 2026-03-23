@@ -15,6 +15,7 @@ public class JdkManager : IJdkManager
 	private const int DefaultJdkVersion = 17;
 	private const int MinJdkVersion = 11;
 	private const int MaxJdkVersion = 21;
+	private const int DownloadBufferSize = 81920;
 
 	private static readonly HttpClient s_httpClient = new() { Timeout = TimeSpan.FromMinutes(10) };
 
@@ -193,7 +194,7 @@ public class JdkManager : IJdkManager
 			await using (var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken))
 			await using (var fs = File.Create(tempArchivePath))
 			{
-				var buffer = new byte[81920];
+				var buffer = new byte[DownloadBufferSize];
 				long totalRead = 0;
 				int bytesRead;
 

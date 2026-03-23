@@ -183,7 +183,10 @@ public static partial class AndroidCommands
 					return;
 				}
 
-				await androidProvider.CreateAvdAsync(name, device, package!, force, context.GetCancellationToken());
+				if (string.IsNullOrEmpty(package))
+					throw new InvalidOperationException("No system image package specified. Provide one via --package or run interactively.");
+
+				await androidProvider.CreateAvdAsync(name, device, package, force, context.GetCancellationToken());
 
 				if (useJson)
 				{

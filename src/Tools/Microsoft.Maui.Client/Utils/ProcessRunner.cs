@@ -23,6 +23,10 @@ public record ProcessResult
 /// </summary>
 public static class ProcessRunner
 {
+	private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(5);
+	private const int ContinuousInputDelayMs = 250;
+	private static readonly TimeSpan InputTaskCleanupTimeout = TimeSpan.FromSeconds(2);
+	private static readonly TimeSpan OutputStreamCompletionTimeout = TimeSpan.FromSeconds(5);
 	/// <summary>
 	/// Validates and quotes a process argument value to prevent command injection.
 	/// Rejects values containing shell metacharacters that could escape argument boundaries.
@@ -95,7 +99,7 @@ public static class ProcessRunner
 			process.BeginOutputReadLine();
 			process.BeginErrorReadLine();
 
-			var effectiveTimeout = timeout ?? TimeSpan.FromMinutes(5);
+			var effectiveTimeout = timeout ?? DefaultProcessTimeout;
 			var completed = process.WaitForExit((int)effectiveTimeout.TotalMilliseconds);
 
 			if (!completed)
@@ -194,7 +198,7 @@ public static class ProcessRunner
 			process.BeginOutputReadLine();
 			process.BeginErrorReadLine();
 
-			var effectiveTimeout = timeout ?? TimeSpan.FromMinutes(5);
+			var effectiveTimeout = timeout ?? DefaultProcessTimeout;
 
 			using var timeoutCts = new CancellationTokenSource(effectiveTimeout);
 			using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -218,7 +222,7 @@ public static class ProcessRunner
 							System.Diagnostics.Trace.WriteLine($"Continuous input write failed: {ex.Message}");
 							break;
 						}
-						await Task.Delay(250, linkedCts.Token);
+						await Task.Delay(ContinuousInputDelayMs, linkedCts.Token);
 					}
 				}, linkedCts.Token);
 			}
@@ -239,12 +243,12 @@ public static class ProcessRunner
 			if (inputTask != null)
 			{
 				try
-				{ await inputTask.WaitAsync(TimeSpan.FromSeconds(2)); }
+				{ await inputTask.WaitAsync(InputTaskCleanupTimeout); }
 				catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"Input task cleanup failed: {ex.Message}"); }
 			}
 
 			// Wait for output streams to complete
-			await Task.WhenAll(outputTcs.Task, errorTcs.Task).WaitAsync(TimeSpan.FromSeconds(5));
+			await Task.WhenAll(outputTcs.Task, errorTcs.Task).WaitAsync(OutputStreamCompletionTimeout);
 
 			stopwatch.Stop();
 

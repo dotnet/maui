@@ -37,7 +37,7 @@ public class Program
 				return _serviceProvider ??= ServiceConfiguration.CreateServiceProvider();
 			}
 		}
-		set => _serviceProvider = value;
+		set { lock (_lock) { _serviceProvider = value; } }
 	}
 
 	// Convenience accessors for services
