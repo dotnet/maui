@@ -26,7 +26,6 @@ public class Issue32279 : TestContentPage
 			WidthRequest = 300,
 		};
 
-		// 👉 Tap target REAL (Appium sí lo puede tocar)
 		var tapLabelNoBackground = new Label
 		{
 			Text = "Tap me (no background)",
@@ -59,7 +58,6 @@ public class Issue32279 : TestContentPage
 			BackgroundColor = Colors.LightGray,
 		};
 
-		// 👉 Tap target REAL
 		var tapLabelWithBackground = new Label
 		{
 			Text = "Tap me (with background)",
