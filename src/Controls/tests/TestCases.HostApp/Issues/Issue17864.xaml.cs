@@ -21,6 +21,11 @@ namespace Maui.Controls.Sample.Issues
 		{
 			_ItemListViewModel.IsGrouped = !_ItemListViewModel.IsGrouped;
 		}
+
+		private void EnableGroupingOnlyButton_Clicked(object sender, EventArgs e)
+		{
+			_ItemListViewModel.EnableGroupingWithoutRegrouping();
+		}
 	}
 
 	class Issue17864_GroupViewModel : ObservableCollection<Issue17864_ItemViewModel>, Issue17864_IItemViewModel
@@ -84,6 +89,13 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		public ObservableCollection<Issue17864_IItemViewModel> Items => items;
+
+		public void EnableGroupingWithoutRegrouping()
+		{
+			isGrouped = true;
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsGrouped)));
+		}
+
 		public bool IsGrouped
 		{
 			get => isGrouped;

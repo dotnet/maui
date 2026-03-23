@@ -15,10 +15,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewShouldNotCrashWhenIsGroupedChanges()
+		public void CollectionViewShouldNotCrashWhenIsGroupedChangesInBothDirections()
 		{
 			App.WaitForElement(CollectionView);
+
+			// true -> false
 			App.Tap("Button");
+			App.WaitForElement(CollectionView);
+
+			// false -> true while items remain flat
+			App.Tap("EnableGroupingOnlyButton");
 			App.WaitForElement(CollectionView);
 		}
 	}
