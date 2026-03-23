@@ -10,6 +10,7 @@
       "src\\Controls\\Foldable\\src\\Controls.Foldable.csproj",
       "src\\Controls\\Maps\\src\\Controls.Maps.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
+      "src\\Controls\\src\\Build.Tasks.Windows.Run\\Controls.Build.Tasks.Windows.Run.csproj",
       "src\\Controls\\src\\Core.Design\\Controls.Core.Design.csproj",
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
       "src\\Controls\\src\\NuGet\\Controls.NuGet.csproj",
