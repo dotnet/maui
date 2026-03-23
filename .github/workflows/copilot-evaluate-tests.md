@@ -51,6 +51,10 @@ tools:
 
 network: defaults
 
+concurrency:
+  group: "evaluate-pr-tests-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number || github.run_id }}"
+  cancel-in-progress: true
+
 timeout-minutes: 15
 
 steps:
@@ -61,6 +65,16 @@ steps:
     run: |
       if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
         echo "Checking out PR #$PR_NUMBER..."
+
+        # Guard: block fork PRs on workflow_dispatch to prevent fork code execution
+        HEAD_OWNER=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo "")
+        BASE_OWNER=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
+        if [ -n "$HEAD_OWNER" ] && [ "$HEAD_OWNER" != "$BASE_OWNER" ]; then
+          echo "⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security."
+          echo "The agent will use GitHub API to read PR data instead."
+          exit 0
+        fi
+
         gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
         echo "✅ Checked out PR #$PR_NUMBER"
         git log --oneline -1

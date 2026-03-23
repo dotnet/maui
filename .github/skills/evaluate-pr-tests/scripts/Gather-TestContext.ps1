@@ -113,23 +113,30 @@ if ($usePrDiff -and $changedFiles.Count -gt 0) {
 
     if ($headSha) {
         $downloadCount = 0
+        $repoRootFull = [System.IO.Path]::GetFullPath($RepoRoot)
         $owner, $repo = ($env:GITHUB_REPOSITORY ?? "dotnet/maui") -split '/', 2
         foreach ($file in $changedFiles) {
-            if (-not (Test-Path $file)) {
+            # Path traversal guard: ensure resolved path stays within repo root
+            $targetPath = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $file))
+            if (-not $targetPath.StartsWith($repoRootFull + [System.IO.Path]::DirectorySeparatorChar)) {
+                Write-Warning "Skipping out-of-root path: $file"
+                continue
+            }
+
+            if (-not (Test-Path $targetPath)) {
                 try {
-                    $dir = [System.IO.Path]::GetDirectoryName($file)
+                    $dir = [System.IO.Path]::GetDirectoryName($targetPath)
                     if ($dir -and -not (Test-Path $dir)) {
                         New-Item -ItemType Directory -Force -Path $dir | Out-Null
                     }
-                    $apiPath = "repos/$owner/$repo/contents/$($file)?ref=$headSha"
+                    $encodedFile = [Uri]::EscapeDataString($file) -replace '%2F', '/'
+                    $apiPath = "repos/$owner/$repo/contents/$($encodedFile)?ref=$headSha"
                     $b64 = gh api $apiPath --jq '.content' 2>$null
                     if ($b64) {
                         $decoded = [System.Text.Encoding]::UTF8.GetString(
                             [System.Convert]::FromBase64String(($b64 -replace '\s', ''))
                         )
-                        [System.IO.File]::WriteAllText(
-                            (Join-Path $RepoRoot $file), $decoded
-                        )
+                        [System.IO.File]::WriteAllText($targetPath, $decoded)
                         $downloadCount++
                     }
                 } catch {
