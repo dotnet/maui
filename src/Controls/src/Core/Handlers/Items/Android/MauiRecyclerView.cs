@@ -484,26 +484,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				// SpacingItemDecoration now removes spacing on outer edges (first/last row or column),
-				// so we only need negative padding on the cross-axis for grid layouts to compensate
-				// for the spacing between columns (vertical grid) or rows (horizontal grid).
-				if (ItemsLayout is GridItemsLayout gridItemsLayout)
-				{
-					if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
-					{
-						var verticalPadding = -spacingDecoration.VerticalOffset;
-						SetPadding(0, verticalPadding, 0, verticalPadding);
-					}
-					else
-					{
-						var horizontalPadding = -spacingDecoration.HorizontalOffset;
-						SetPadding(horizontalPadding, 0, horizontalPadding, 0);
-					}
-				}
-				else
-				{
-					SetPadding(0, 0, 0, 0);
-				}
+				var horizontalPadding = ItemsLayout is GridItemsLayout ? 0 : -spacingDecoration.HorizontalOffset;
+				var verticalPadding = ItemsLayout is GridItemsLayout ? 0 : -spacingDecoration.VerticalOffset;
+				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
 			}
 		}
 
