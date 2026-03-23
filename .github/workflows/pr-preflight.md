@@ -54,29 +54,72 @@ concurrency:
 timeout-minutes: 10
 
 steps:
-  - name: Checkout PR branch
+  - name: Gather PR context
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
     run: |
-      if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
-        echo "Checking out PR #$PR_NUMBER..."
+      set -euo pipefail
+      REPO="$GITHUB_REPOSITORY"
+      OUT_DIR="/tmp/gh-aw/preflight-context"
+      mkdir -p "$OUT_DIR"
 
-        # Guard: block fork PRs to prevent fork code execution
-        HEAD_OWNER=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRepositoryOwner --jq '.headRepositoryOwner.login' 2>/dev/null || echo "")
-        BASE_OWNER=$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)
-        if [ -n "$HEAD_OWNER" ] && [ "$HEAD_OWNER" != "$BASE_OWNER" ]; then
-          echo "⚠️ PR #$PR_NUMBER is from fork ($HEAD_OWNER). Skipping checkout for security."
-          echo "The agent will use GitHub API to read PR data instead."
-          exit 0
-        fi
+      echo "📋 Gathering context for PR #$PR_NUMBER..."
 
-        gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
-        echo "✅ Checked out PR #$PR_NUMBER"
-        git log --oneline -1
+      # 1. PR metadata
+      gh pr view "$PR_NUMBER" --repo "$REPO" \
+        --json number,title,body,author,labels,baseRefName,headRefName,state,url,files,comments,reviewComments \
+        > "$OUT_DIR/pr.json"
+      echo "✅ PR metadata saved"
+
+      # 2. Changed files with diff stats
+      gh pr diff "$PR_NUMBER" --repo "$REPO" --name-only > "$OUT_DIR/changed-files.txt" 2>/dev/null || true
+      gh api "repos/$REPO/pulls/$PR_NUMBER/files" --paginate \
+        --jq '.[] | "\(.status)\t\(.additions)\t\(.deletions)\t\(.filename)"' \
+        > "$OUT_DIR/file-stats.tsv"
+      echo "✅ File list saved ($(wc -l < "$OUT_DIR/file-stats.tsv") files)"
+
+      # 3. Find linked issues from PR body
+      BODY=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json body --jq '.body // ""')
+      ISSUES=$(echo "$BODY" | grep -oE '(Fixes|Closes|Resolves|Fix|Close|Resolve)\s+#[0-9]+' | grep -oE '#[0-9]+' | tr -d '#' | sort -u || true)
+
+      if [ -n "$ISSUES" ]; then
+        for ISSUE_NUM in $ISSUES; do
+          echo "  Fetching issue #$ISSUE_NUM..."
+          gh issue view "$ISSUE_NUM" --repo "$REPO" \
+            --json number,title,body,labels,state,comments \
+            > "$OUT_DIR/issue-${ISSUE_NUM}.json" 2>/dev/null || true
+        done
+        echo "✅ Linked issues saved"
       else
-        echo "No PR number available, using default checkout"
+        echo "ℹ️ No linked issues found in PR body"
       fi
+
+      # 4. PR review comments (inline code feedback)
+      gh api "repos/$REPO/pulls/$PR_NUMBER/comments" --paginate \
+        --jq '.[] | "**\(.user.login)** on `\(.path):\(.line // .original_line // "?")`:\n\(.body)\n---"' \
+        > "$OUT_DIR/review-comments.md" 2>/dev/null || true
+      REVIEW_COUNT=$(gh api "repos/$REPO/pulls/$PR_NUMBER/comments" --jq 'length' 2>/dev/null || echo "0")
+      echo "✅ Inline review comments saved ($REVIEW_COUNT)"
+
+      # 5. Write summary index
+      cat > "$OUT_DIR/index.md" <<EOF
+      # Pre-flight Context for PR #$PR_NUMBER
+
+      ## Files in this directory
+      - pr.json — Full PR metadata, conversation comments, labels, files
+      - file-stats.tsv — Changed files (status, additions, deletions, path)
+      - changed-files.txt — File paths only
+      - review-comments.md — Inline code review comments
+      - issue-*.json — Linked issue data (if any)
+
+      ## PR Number
+      $PR_NUMBER
+      EOF
+
+      echo ""
+      echo "📦 Context gathered in $OUT_DIR:"
+      ls -la "$OUT_DIR/"
 ---
 
 # AI Pre-flight Analysis
@@ -90,28 +133,29 @@ You are the Pre-flight Analyst for the dotnet/maui repository. Your job is to ga
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
 
-The PR branch has been checked out for you. All files from the PR are available locally.
+All PR context has been pre-fetched into `/tmp/gh-aw/preflight-context/`:
+- `pr.json` — PR metadata, body, conversation comments, labels, files
+- `file-stats.tsv` — Changed files (status, additions, deletions, path)
+- `review-comments.md` — Inline code review comments
+- `issue-*.json` — Linked issue data (body, comments, labels)
+
+**Read these files to gather context. Do NOT use GitHub MCP tools for PR/issue data — it is all in these files.**
 
 ## Instructions
 
-### 1. Gather PR metadata
+### 1. Read PR metadata
 
-Use GitHub MCP tools to fetch:
-- PR details via `get_pull_request`: title, body, author, labels, state, base/head branches
-- Changed files via `list_pull_request_files`: paths, status (added/modified/deleted), change counts
+Read `/tmp/gh-aw/preflight-context/pr.json`. Extract: title, body, author, labels, base/head branches, state, changed files list and conversation comments.
 
-### 2. Find and read linked issues
+### 2. Read linked issues
 
-1. Parse the PR body for issue references (`Fixes #NNNNN`, `Closes #NNNNN`, `Resolves #NNNNN`, or plain `#NNNNN`)
-2. For each linked issue, use `get_issue` to fetch title, body, labels, state
-3. Read issue comments for reproduction steps, discussion, and additional context
-4. If no linked issue is found, note this in the output
+Read any `/tmp/gh-aw/preflight-context/issue-*.json` files. Extract: title, body, labels, comments (reproduction steps, discussion, context). If no issue files exist, note "No linked issue found."
 
-### 3. Read PR discussion
+### 3. Read PR review comments
 
-1. Fetch all PR conversation comments
-2. Use `list_review_comments_on_pull_request` to get inline code review comments — these often contain key technical feedback
-3. Look for prior AI reviews (comments containing "Final Recommendation" with phase status tables)
+Read `/tmp/gh-aw/preflight-context/review-comments.md` for inline code feedback. These often contain the most important technical feedback.
+
+Also check the `comments` field in `pr.json` for conversation-level comments. Look for prior AI reviews (comments containing "Final Recommendation" with phase status tables).
 
 ### 4. Classify changed files
 
