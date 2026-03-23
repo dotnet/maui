@@ -260,6 +260,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
 				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
+
+				if (this.Selected)
+				{
+					UpdateVisualStates();
+					UpdateSelectionColor();
+				}
 			}
 
 			if (PlatformHandler?.VirtualView is View view)

@@ -199,6 +199,10 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// We are reusing this ItemContentControl and we can reuse the Element
 				_visualElement.BindingContext = dataContext;
+
+				// Re-add to the logical tree after RemoveLogicalChild was called at the top of Realize(),
+				// so styles, resources, and VSM states continue to resolve correctly on recycled cells.
+				itemsView?.AddLogicalChild(_visualElement);
 			}
 
 			if (_handler.VirtualView is ICrossPlatformLayout)
