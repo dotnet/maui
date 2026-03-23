@@ -728,7 +728,10 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in _swipeItems.Keys)
 			{
-				item.Handler?.DisconnectHandler();
+				if (item.Handler is not null && ReferenceEquals(item.Handler.PlatformView, _swipeItems[item]))
+				{
+					item.Handler.DisconnectHandler();
+				}
 			}
 
 			_swipeItems.Clear();
