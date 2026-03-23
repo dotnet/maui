@@ -1,6 +1,5 @@
 using System;
 using Android.Content.Res;
-using Android.Views;
 using AndroidX.AppCompat.Widget;
 using ATextAlignment = Android.Views.TextAlignment;
 
