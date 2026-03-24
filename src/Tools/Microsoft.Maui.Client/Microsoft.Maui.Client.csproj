@@ -46,7 +46,6 @@
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
     <!-- Platform tooling: versions managed via eng/Versions.props + darc (see eng/Version.Details.xml) -->
     <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="$(XamarinAndroidToolsAndroidSdkPackageVersion)" />
-    <PackageReference Include="Xamarin.Apple.Tools.MaciOS" Version="$(XamarinAppleToolsMaciOSPackageVersion)" />
   </ItemGroup>
 
   <!-- Allow test project to access internals -->

@@ -63,7 +63,7 @@
     <MicrosoftAgentsAIWorkflowsGeneratorsVersion>1.0.0-rc2</MicrosoftAgentsAIWorkflowsGeneratorsVersion>
     <MicrosoftAgentsAIHostingVersion>1.0.0-preview.260225.1</MicrosoftAgentsAIHostingVersion>
     <!-- dotnet/android-tools: Android SDK tooling consumed by Microsoft.Maui.Client -->
-    <XamarinAndroidToolsAndroidSdkPackageVersion>1.0.136-ci.main.214</XamarinAndroidToolsAndroidSdkPackageVersion>
+    <XamarinAndroidToolsAndroidSdkPackageVersion>1.0.143-preview.8</XamarinAndroidToolsAndroidSdkPackageVersion>
     <!-- dotnet/macios-devtools: Apple platform tooling consumed by Microsoft.Maui.Client -->
     <XamarinAppleToolsMaciOSPackageVersion>1.0.11</XamarinAppleToolsMaciOSPackageVersion>
     <!-- xamarin/xamarin-android -->
