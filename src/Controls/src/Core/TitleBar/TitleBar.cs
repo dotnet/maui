@@ -342,8 +342,8 @@ namespace Microsoft.Maui.Controls
 						var fullScreen = windowScene.FullScreen;
 						if (_templateRoot is Grid contentGrid)
 						{
-							// If in fullscreen, remove left margin, otherwise set 80px margin
-							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(MacCatalystMargin, 0, 0, 0);
+							// If in fullscreen, remove left margin, otherwise set version-appropriate margin
+							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0);
 						}
 					}
 				}
