@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a3399f0985363ddb2c40a4a43552c5339bfafe4443e7a188d7ac74466e49fa6f","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"98b1ff00b9be3d0923a371bf9f882bd0c6eb1d664c20ed3e2b176e02ca0a0184","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -323,10 +323,9 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
-        name: Checkout PR branch
-        run: "# SECURITY NOTE: This step checks out PR code (including fork PRs) onto disk.\n# This is safe because NO subsequent steps execute workspace code — the gh-aw\n# platform copies the workspace into a sandboxed container with scrubbed\n# credentials before starting the agent. The classic \"pwn-request\" attack\n# requires checkout + execution; we only do checkout.\n#\n# ⚠️  DO NOT add steps after this that run scripts from the workspace\n#     (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual\n#     fork code execution vulnerability. See:\n#     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/\nif [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  # Save base branch SHA to env — used by the restore step below.\n  # Must be captured BEFORE checkout replaces HEAD.\n  echo \"BASE_SHA=$(git rev-parse HEAD)\" >> \"$GITHUB_ENV\"\n\n  # Block fork PRs via issue_comment trigger (/evaluate-tests).\n  # The gh-aw platform inserts checkout_pr_branch.cjs AFTER all user steps,\n  # which re-checks out the fork branch and overwrites our restored skill files.\n  # Until gh-aw supports post-platform user steps, fork PRs must use\n  # workflow_dispatch instead. See: https://github.com/github/gh-aw/issues/18481\n  if [ \"$GITHUB_EVENT_NAME\" = \"issue_comment\" ]; then\n    HEAD_REPO_ID=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" \\\n      --json headRepository --jq '.headRepository.id' 2>/dev/null) \\\n      || { echo \"❌ Failed to query PR repository info (API error). Blocking for safety.\"; exit 1; }\n    BASE_REPO_ID=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" \\\n      --json baseRepository --jq '.baseRepository.id' 2>/dev/null) \\\n      || { echo \"❌ Failed to query PR repository info (API error). Blocking for safety.\"; exit 1; }\n    if [ \"$HEAD_REPO_ID\" != \"$BASE_REPO_ID\" ]; then\n      echo \"❌ /evaluate-tests is not supported on fork PRs.\"\n      echo \"\"\n      echo \"The gh-aw platform re-checks out the PR branch after our restore step,\"\n      echo \"which would overwrite the trusted skill and instruction files the agent\"\n      echo \"needs. See: https://github.com/github/gh-aw/issues/18481\"\n      echo \"\"\n      echo \"Workaround: use workflow_dispatch instead:\"\n      echo \"  Actions tab → 'Evaluate PR Tests' → 'Run workflow' → enter PR number\"\n      echo \"\"\n      echo \"This achieves the same result and works for all PRs including forks.\"\n      exit 1\n    fi\n  fi\n\n  echo \"Checking out PR #$PR_NUMBER...\"\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi\n"
-      - name: Restore agent infrastructure from base branch
-        run: "# For fork PRs (workflow_dispatch path), the PR branch won't have\n# .github/skills/ or .github/instructions/. Restore from base branch.\n# For same-repo PRs, this is a no-op (files already exist).\nif [ -n \"$BASE_SHA\" ]; then\n  rm -rf .github/skills/ .github/instructions/\n  git checkout \"$BASE_SHA\" -- \\\n    .github/skills/ \\\n    .github/instructions/ \\\n    .github/copilot-instructions.md \\\n    2>/dev/null\n  if [ $? -eq 0 ]; then\n    echo \"✅ Restored agent infrastructure from base branch ($BASE_SHA)\"\n  else\n    echo \"⚠️ Failed to restore agent infrastructure from $BASE_SHA\"\n    exit 1\n  fi\nfi"
+          WORKFLOW_NAME: Evaluate PR Tests
+        name: Checkout PR and restore agent infrastructure
+        run: bash .github/scripts/gh-aw-checkout-pr.sh
 
       - name: Configure Git credentials
         env:
