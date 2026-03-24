@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[iOS] Fix ShellContent Title Does Not Update at Runtime";
+		public override string Issue => "Fix ShellContent Title Does Not Update at Runtime";
 
 		[Test, Order(1)]
 		[Category(UITestCategories.Shell)]
