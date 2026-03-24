@@ -51,6 +51,7 @@ public class Issue34611 : TestContentPage
 
 		Content = new VerticalStackLayout
 		{
+			Margin = new Thickness(20, 0, 20, 0),
 			Spacing = 12,
 			Children =
 			{

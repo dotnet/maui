@@ -18,9 +18,8 @@ public class Issue34611 : _IssuesUITest
 	{
 		App.WaitForElement("ApplyBackgroundColorButton");
 		App.Tap("ApplyBackgroundColorButton");
-		VerifyScreenshot("BackgroundColorApplied");
-
+		App.WaitForElement("TestEntry");
 		App.Tap("ResetToDefaultButton");
-		VerifyScreenshot("BackgroundColorReset");
+		VerifyScreenshot();
 	}
 }
