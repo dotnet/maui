@@ -56,7 +56,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
-		public static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFlowDirection(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView?.UpdateFlowDirection(timePicker);
+			handler.PlatformView?.UpdateTextAlignment(timePicker);
+		}
+
+		// Make it public in .NET 11 and remove the concrete TimePickerHandler overload.
+		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler.PlatformView is not null)
 			{
