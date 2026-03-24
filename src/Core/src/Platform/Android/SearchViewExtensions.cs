@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -122,20 +122,35 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
+		internal static void UpdateCancelButtonState(this SearchView searchView, ISearchBar searchBar)
+		{
+			var cancelButton = searchView.GetCancelButton();
+			if (cancelButton is not null)
+			{
+				cancelButton.Enabled = !searchBar.IsReadOnly;
+			}
+		}
+
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
-			if (searchView.Resources == null)
-				return;
-
-			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
-
-			if (searchCloseButtonIdentifier > 0)
+			var cancelButton = searchView.GetCancelButton();
+			if (cancelButton?.Drawable is not null)
 			{
-				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
-				if (searchBar.CancelButtonColor is not null)
-					SafeSetTint(image, searchBar.CancelButtonColor.ToPlatform());
-				else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
-					SafeSetTint(image, color);
+				if (cancelButton.Enabled)
+				{
+					if (searchBar.CancelButtonColor is not null)
+					{
+						SafeSetTint(cancelButton, searchBar.CancelButtonColor.ToPlatform());
+					}
+					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					{
+						SafeSetTint(cancelButton, color);
+					}
+				}
+				else
+				{
+					cancelButton.Drawable.ClearColorFilter();
+				}
 			}
 		}
 
@@ -162,6 +177,22 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 			}
+		}
+
+		static ImageView? GetCancelButton(this SearchView searchView)
+		{
+			if (searchView.Resources is null)
+			{
+				return null;
+			}
+
+			var closeButtonId = Resource.Id.search_close_btn;
+			if (closeButtonId <= 0)
+			{
+				return null;
+			}
+
+			return searchView.FindViewById<ImageView>(closeButtonId);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
