@@ -3,6 +3,7 @@ using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WSize = Windows.Foundation.Size;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement _visualElement;
 		IViewHandler _handler;
 		DataTemplate _currentTemplate;
+		bool _isMeasureInvalidationPending;
 
 		public ItemContentControl()
 		{
@@ -123,7 +125,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			((ItemContentControl)d).InvalidateMeasure();
+			((ItemContentControl)d).InvalidateItemDimensionMeasure();
 		}
 
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
@@ -264,6 +266,34 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnViewMeasureInvalidated(object sender, EventArgs e)
 		{
 			InvalidateMeasure();
+		}
+
+		void InvalidateItemDimensionMeasure()
+		{
+			if (_isMeasureInvalidationPending)
+			{
+				return;
+			}
+
+			var dispatcherQueue = DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+
+			if (dispatcherQueue is null)
+			{
+				InvalidateMeasure();
+				return;
+			}
+
+			_isMeasureInvalidationPending = true;
+
+			if (!dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+				{
+					_isMeasureInvalidationPending = false;
+					InvalidateMeasure();
+				}))
+			{
+				_isMeasureInvalidationPending = false;
+				InvalidateMeasure();
+			}
 		}
 
 		void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
