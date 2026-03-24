@@ -150,7 +150,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				scrollPosition = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, UICollectionViewScrollDirection.Vertical);
+				var scrollDirection = Controller.GetScrollDirection();
+				scrollPosition = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
 
 				// Capture section and item as ints before the using block disposes the indexPath
 				section = (int)indexPath.Section;
