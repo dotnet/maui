@@ -7,6 +7,7 @@ using CoreTelephony;
 #endif
 using CoreFoundation;
 using Network;
+using SystemConfiguration;
 
 namespace Microsoft.Maui.Networking
 {
