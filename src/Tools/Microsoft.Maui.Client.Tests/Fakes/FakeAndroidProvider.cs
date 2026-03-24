@@ -58,7 +58,6 @@ public class FakeAndroidProvider : IAndroidProvider
 	public List<string> StoppedEmulators { get; } = new();
 	public List<List<string>> UninstalledPackageSets { get; } = new();
 	public int AcceptLicensesCalled { get; private set; }
-	public List<(string DeviceSerial, string OutputPath)> ScreenshotsTaken { get; } = new();
 	public List<(string? SdkPath, string? JdkPath, int JdkVersion, List<string>? AdditionalPackages)> InstallCalls { get; } = new();
 	public List<string> InstallSdkToolsCalls { get; } = new();
 	public List<int> InstallJdkCalls { get; } = new();
@@ -171,12 +170,6 @@ public class FakeAndroidProvider : IAndroidProvider
 	{
 		InstallSdkToolsCalls.Add(targetPath);
 		return Task.CompletedTask;
-	}
-
-	public Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath, CancellationToken cancellationToken = default)
-	{
-		ScreenshotsTaken.Add((deviceSerial, outputPath));
-		return Task.FromResult(outputPath);
 	}
 
 	public void Dispose()

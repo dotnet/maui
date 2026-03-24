@@ -150,59 +150,6 @@ public class DeviceManager : IDeviceManager
 		return runningDevice;
 	}
 
-	public async Task<string> TakeScreenshotAsync(string deviceId, string? outputPath = null, CancellationToken cancellationToken = default)
-	{
-		var device = await GetDeviceByIdAsync(deviceId, cancellationToken);
-		if (device == null)
-		{
-			throw new MauiToolException(
-				ErrorCodes.DeviceNotFound,
-				$"Device not found: {deviceId}");
-		}
-
-		outputPath ??= Path.Combine(
-			Environment.CurrentDirectory,
-			$"screenshot_{device.Platform}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
-
-		switch (device.Platform.ToLowerInvariant())
-		{
-			case "android":
-				if (_androidProvider == null)
-					throw new MauiToolException(ErrorCodes.AndroidSdkNotFound, "Android provider not available");
-				return await _androidProvider.TakeScreenshotAsync(deviceId, outputPath, cancellationToken);
-
-			case "ios":
-			case "apple":
-				return await TakeAppleScreenshotAsync(deviceId, outputPath, cancellationToken);
-
-			default:
-				throw new MauiToolException(
-					ErrorCodes.PlatformNotSupported,
-					$"Screenshot not supported for platform: {device.Platform}");
-		}
-	}
-
-	private async Task<string> TakeAppleScreenshotAsync(string udid, string outputPath, CancellationToken cancellationToken)
-	{
-		if (!PlatformDetector.IsMacOS)
-			throw new MauiToolException(ErrorCodes.PlatformNotSupported, "Apple screenshot is only available on macOS");
-
-		var result = await ProcessRunner.RunAsync(
-			"xcrun", $"simctl io \"{udid}\" screenshot \"{outputPath}\"",
-			timeout: TimeSpan.FromSeconds(30),
-			cancellationToken: cancellationToken);
-
-		if (!result.Success)
-		{
-			throw new MauiToolException(
-				ErrorCodes.AppleSimctlFailed,
-				$"Failed to take screenshot: {result.StandardError}",
-				nativeError: result.StandardError);
-		}
-
-		return outputPath;
-	}
-
 	/// <summary>
 	/// Parses a system image path like "system-images;android-35;google_apis_playstore;arm64-v8a"
 	/// to extract API level, tag ID, and ABI.

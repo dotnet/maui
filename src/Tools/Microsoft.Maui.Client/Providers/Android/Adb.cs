@@ -106,28 +106,4 @@ public class Adb
 		await _runner!.StopEmulatorAsync(deviceSerial, cancellationToken);
 	}
 
-	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath,
-		CancellationToken cancellationToken = default)
-	{
-		if (!IsAvailable)
-			throw new MauiToolException(ErrorCodes.AndroidAdbNotFound, "ADB not found");
-
-		var remotePath = "/sdcard/screenshot.png";
-
-		// Capture screenshot on device
-		var captureResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {ProcessRunner.SanitizeArg(deviceSerial)} shell screencap -p {remotePath}", cancellationToken: cancellationToken);
-		if (!captureResult.Success)
-			throw new MauiToolException(ErrorCodes.AndroidDeviceNotFound,
-				$"Failed to capture screenshot: {captureResult.StandardError}",
-				nativeError: captureResult.StandardError);
-
-		// Pull screenshot to local path
-		var pullResult = await ProcessRunner.RunAsync(AdbPath!, $"-s {ProcessRunner.SanitizeArg(deviceSerial)} pull {remotePath} {ProcessRunner.SanitizeArg(outputPath)}", cancellationToken: cancellationToken);
-		if (!pullResult.Success)
-			throw new MauiToolException(ErrorCodes.AndroidDeviceNotFound,
-				$"Failed to pull screenshot: {pullResult.StandardError}",
-				nativeError: pullResult.StandardError);
-
-		return outputPath;
-	}
 }

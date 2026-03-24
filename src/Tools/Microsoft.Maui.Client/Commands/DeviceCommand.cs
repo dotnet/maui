@@ -20,7 +20,6 @@ public static class DeviceCommand
 		var command = new Command("device", "Manage devices and emulators");
 
 		command.AddCommand(CreateListCommand());
-		command.AddCommand(CreateScreenshotCommand());
 		command.AddCommand(CreateDeviceLogsCommand());
 
 		return command;
@@ -60,46 +59,6 @@ public static class DeviceCommand
 					}
 
 					formatter.WriteResult(new DeviceListResult { Devices = devices.ToList() });
-				}
-			}
-			catch (Exception ex)
-			{
-				formatter.WriteError(ex);
-				context.ExitCode = 1;
-			}
-		});
-
-		return command;
-	}
-
-	private static Command CreateScreenshotCommand()
-	{
-		var deviceIdArg = new Argument<string>("device-id", "Device ID to capture");
-		var outputOption = new Option<string>("--output", "Output file path");
-		var command = new Command("screenshot", "Capture device screenshot")
-		{
-			deviceIdArg, outputOption
-		};
-
-		command.SetHandler(async (InvocationContext context) =>
-		{
-			var deviceManager = Program.DeviceManager;
-			var formatter = Program.GetFormatter(context);
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var deviceId = context.ParseResult.GetValueForArgument(deviceIdArg);
-			var outputPath = context.ParseResult.GetValueForOption(outputOption);
-
-			try
-			{
-				var result = await deviceManager.TakeScreenshotAsync(deviceId, outputPath, context.GetCancellationToken());
-
-				if (useJson)
-				{
-					formatter.Write(new { path = result, success = true });
-				}
-				else
-				{
-					formatter.WriteSuccess($"Screenshot saved to: {result}");
 				}
 			}
 			catch (Exception ex)

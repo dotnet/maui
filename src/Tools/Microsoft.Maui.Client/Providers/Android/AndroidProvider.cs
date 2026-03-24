@@ -407,9 +407,4 @@ public class AndroidProvider : IAndroidProvider
 		_sdkPath = targetPath;
 	}
 
-	public async Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath,
-		CancellationToken cancellationToken = default)
-	{
-		return await _adb.TakeScreenshotAsync(deviceSerial, outputPath, cancellationToken);
-	}
 }

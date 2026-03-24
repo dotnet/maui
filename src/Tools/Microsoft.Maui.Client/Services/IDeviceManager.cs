@@ -14,5 +14,4 @@ public interface IDeviceManager
 	Task<IReadOnlyList<Device>> GetDevicesByPlatformAsync(string platform, CancellationToken cancellationToken = default);
 	Task<Device?> GetDeviceByIdAsync(string deviceId, CancellationToken cancellationToken = default);
 	Task<Device> GetRunningDeviceOrThrowAsync(CancellationToken cancellationToken = default);
-	Task<string> TakeScreenshotAsync(string deviceId, string? outputPath = null, CancellationToken cancellationToken = default);
 }

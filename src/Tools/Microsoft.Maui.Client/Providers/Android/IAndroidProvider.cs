@@ -137,10 +137,6 @@ public interface IAndroidProvider : IDisposable
 	/// </summary>
 	Task InstallSdkToolsAsync(string targetPath, Action<string, int, string>? onProgress = null, CancellationToken cancellationToken = default);
 
-	/// <summary>
-	/// Takes a screenshot from a device.
-	/// </summary>
-	Task<string> TakeScreenshotAsync(string deviceSerial, string outputPath, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
