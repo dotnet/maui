@@ -4,10 +4,10 @@
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Providers.Android;
 using Microsoft.Maui.Client.Services;
-using Microsoft.Maui.Client.Tests.Fakes;
+using Microsoft.Maui.Client.UnitTests.Fakes;
 using Xunit;
 
-namespace Microsoft.Maui.Client.Tests;
+namespace Microsoft.Maui.Client.UnitTests;
 
 public class DeviceManagerTests
 {

@@ -50,7 +50,7 @@
 
   <!-- Allow test project to access internals -->
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Maui.Client.Tests" />
+    <InternalsVisibleTo Include="Microsoft.Maui.Client.UnitTests" />
   </ItemGroup>
 
 </Project>

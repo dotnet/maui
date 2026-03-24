@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Maui.Client\Microsoft.Maui.Client.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Maui.Client\Microsoft.Maui.Client.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@ using Microsoft.Maui.Client.Services;
 using Microsoft.Maui.Client.Utils;
 using Xunit;
 
-namespace Microsoft.Maui.Client.Tests;
+namespace Microsoft.Maui.Client.UnitTests;
 
 public class ProcessRunnerTests
 {

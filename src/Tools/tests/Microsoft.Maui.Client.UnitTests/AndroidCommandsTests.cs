@@ -6,7 +6,7 @@ using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Commands;
 using Xunit;
 
-namespace Microsoft.Maui.Client.Tests;
+namespace Microsoft.Maui.Client.UnitTests;
 
 public class AndroidCommandsTests
 {

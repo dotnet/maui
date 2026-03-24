@@ -9,7 +9,7 @@ using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
 
-namespace Microsoft.Maui.Client.Tests;
+namespace Microsoft.Maui.Client.UnitTests;
 
 public class OutputFormatterTests
 {

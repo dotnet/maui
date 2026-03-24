@@ -4,7 +4,7 @@
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Providers.Apple;
 
-namespace Microsoft.Maui.Client.Tests.Fakes;
+namespace Microsoft.Maui.Client.UnitTests.Fakes;
 
 /// <summary>
 /// Hand-written fake for <see cref="IAppleProvider"/> used in unit tests.

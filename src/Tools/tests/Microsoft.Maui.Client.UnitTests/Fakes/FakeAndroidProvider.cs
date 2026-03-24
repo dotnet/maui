@@ -4,7 +4,7 @@
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Providers.Android;
 
-namespace Microsoft.Maui.Client.Tests.Fakes;
+namespace Microsoft.Maui.Client.UnitTests.Fakes;
 
 /// <summary>
 /// Hand-written fake for <see cref="IAndroidProvider"/> used in unit tests.

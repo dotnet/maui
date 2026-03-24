@@ -4,7 +4,7 @@
 using Microsoft.Maui.Client.Models;
 using Xunit;
 
-namespace Microsoft.Maui.Client.Tests;
+namespace Microsoft.Maui.Client.UnitTests;
 
 public class PlatformsTests
 {
