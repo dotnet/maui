@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"26bfc89675532dc174359160dd807bb951fd9c95770d2880c391de72e0398ff2","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"7861c31e8d340fd0baed486fdab36934f00bab347a6628ca451950c5b64f61b4","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -324,7 +324,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
         name: Checkout PR branch
-        run: "# SECURITY NOTE: This step checks out PR code (including fork PRs) onto disk.\n# This is safe because NO subsequent steps execute workspace code — the gh-aw\n# platform copies the workspace into a sandboxed container with scrubbed\n# credentials before starting the agent. The classic \"pwn-request\" attack\n# requires checkout + execution; we only do checkout.\n#\n# ⚠️  DO NOT add steps after this that run scripts from the workspace\n#     (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual\n#     fork code execution vulnerability. See:\n#     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/\nif [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  # Capture base branch SHA before checkout — used to restore agent\n  # infrastructure files that may not exist on fork PR branches\n  BASE_SHA=$(git rev-parse HEAD)\n\n  echo \"Checking out PR #$PR_NUMBER...\"\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\n\n  # Restore skill and instruction files from base branch.\n  # Fork PRs won't have .github/skills/ or .github/instructions/,\n  # which the agent needs to run the evaluation.\n  git checkout \"$BASE_SHA\" -- .github/skills/ .github/instructions/ 2>/dev/null || true\nelse\n  echo \"No PR number available, using default checkout\"\nfi"
+        run: "# SECURITY NOTE: This step checks out PR code (including fork PRs) onto disk.\n# This is safe because NO subsequent steps execute workspace code — the gh-aw\n# platform copies the workspace into a sandboxed container with scrubbed\n# credentials before starting the agent. The classic \"pwn-request\" attack\n# requires checkout + execution; we only do checkout.\n#\n# ⚠️  DO NOT add steps after this that run scripts from the workspace\n#     (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual\n#     fork code execution vulnerability. See:\n#     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/\nif [ -n \"$PR_NUMBER\" ] && [ \"$PR_NUMBER\" != \"0\" ]; then\n  # Save base branch SHA to env — used by the restore step below.\n  # Must be captured BEFORE checkout replaces HEAD.\n  echo \"BASE_SHA=$(git rev-parse HEAD)\" >> \"$GITHUB_ENV\"\n\n  echo \"Checking out PR #$PR_NUMBER...\"\n  gh pr checkout \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\"\n  echo \"✅ Checked out PR #$PR_NUMBER\"\n  git log --oneline -1\nelse\n  echo \"No PR number available, using default checkout\"\nfi\n"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Restore agent infrastructure from base branch
+        run: "# After all checkout steps (including gh-aw's platform checkout_pr_branch.cjs),\n# restore skill, instruction, and config files from the base branch.\n# Fork PRs won't have these files, and the platform checkout may overwrite them.\nif [ -n \"$BASE_SHA\" ]; then\n  # Clean directories first to remove any fork-added files\n  rm -rf .github/skills/ .github/instructions/\n  # Restore from base branch\n  git checkout \"$BASE_SHA\" -- \\\n    .github/skills/ \\\n    .github/instructions/ \\\n    .github/copilot-instructions.md \\\n    2>/dev/null\n  if [ $? -eq 0 ]; then\n    echo \"✅ Restored agent infrastructure from base branch ($BASE_SHA)\"\n  else\n    echo \"⚠️ Failed to restore agent infrastructure from $BASE_SHA\"\n    exit 1\n  fi\nfi"
 
       - name: Configure Git credentials
         env:

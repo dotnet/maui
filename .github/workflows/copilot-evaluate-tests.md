@@ -88,21 +88,40 @@ steps:
       #     fork code execution vulnerability. See:
       #     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
       if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
-        # Capture base branch SHA before checkout — used to restore agent
-        # infrastructure files that may not exist on fork PR branches
-        BASE_SHA=$(git rev-parse HEAD)
+        # Save base branch SHA to env — used by the restore step below.
+        # Must be captured BEFORE checkout replaces HEAD.
+        echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
         echo "Checking out PR #$PR_NUMBER..."
         gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
         echo "✅ Checked out PR #$PR_NUMBER"
         git log --oneline -1
-
-        # Restore skill and instruction files from base branch.
-        # Fork PRs won't have .github/skills/ or .github/instructions/,
-        # which the agent needs to run the evaluation.
-        git checkout "$BASE_SHA" -- .github/skills/ .github/instructions/ 2>/dev/null || true
       else
         echo "No PR number available, using default checkout"
+      fi
+
+  - name: Restore agent infrastructure from base branch
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      # After all checkout steps (including gh-aw's platform checkout_pr_branch.cjs),
+      # restore skill, instruction, and config files from the base branch.
+      # Fork PRs won't have these files, and the platform checkout may overwrite them.
+      if [ -n "$BASE_SHA" ]; then
+        # Clean directories first to remove any fork-added files
+        rm -rf .github/skills/ .github/instructions/
+        # Restore from base branch
+        git checkout "$BASE_SHA" -- \
+          .github/skills/ \
+          .github/instructions/ \
+          .github/copilot-instructions.md \
+          2>/dev/null
+        if [ $? -eq 0 ]; then
+          echo "✅ Restored agent infrastructure from base branch ($BASE_SHA)"
+        else
+          echo "⚠️ Failed to restore agent infrastructure from $BASE_SHA"
+          exit 1
+        fi
       fi
 ---
 
