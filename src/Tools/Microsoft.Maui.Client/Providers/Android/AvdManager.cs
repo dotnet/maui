@@ -223,7 +223,17 @@ public class AvdManager
 
 				// Wait briefly to detect immediate crashes (e.g. stale lock files,
 				// missing system image, HAXM issues). A healthy emulator stays alive.
-				await Task.Delay(EmulatorStartupCheckDelayMs, cancellationToken);
+				try
+				{
+					await Task.Delay(EmulatorStartupCheckDelayMs, cancellationToken);
+				}
+				catch (OperationCanceledException)
+				{
+					try { process.Kill(); } catch { }
+					process.Dispose();
+					throw;
+				}
+
 				if (process.HasExited && process.ExitCode != 0)
 				{
 					process.Dispose();

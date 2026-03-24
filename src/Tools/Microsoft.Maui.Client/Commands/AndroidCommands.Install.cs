@@ -71,7 +71,8 @@ public static partial class AndroidCommands
 					}
 
 					// Resolve package list: explicit --packages or interactive selection
-					var pkgList = await ResolveInstallPackagesAsync(packages, spectre, androidProvider, context.GetCancellationToken());
+					var isCi = Program.IsCiMode(context);
+					var pkgList = await ResolveInstallPackagesAsync(packages, spectre, androidProvider, isCi, context.GetCancellationToken());
 
 					await spectre.LiveProgressAsync(async (ctx) =>
 					{

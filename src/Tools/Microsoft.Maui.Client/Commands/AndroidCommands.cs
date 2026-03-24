@@ -30,16 +30,22 @@ public static partial class AndroidCommands
 
 	/// <summary>
 	/// Resolves packages to install: uses explicit --packages if provided, otherwise shows interactive prompts.
+	/// In CI mode, returns defaults without interactive prompts.
 	/// </summary>
 	private static async Task<List<string>> ResolveInstallPackagesAsync(
 		string[]? explicitPackages,
 		SpectreOutputFormatter spectre,
 		IAndroidProvider androidProvider,
+		bool isCi,
 		CancellationToken cancellationToken)
 	{
 		// If user specified packages explicitly, use those
 		if (explicitPackages is { Length: > 0 })
 			return explicitPackages.ToList();
+
+		// In CI mode, use defaults without interactive prompts
+		if (isCi)
+			return GetDefaultPackages();
 
 		// Try to fetch available packages for interactive selection
 		List<SdkPackage> installed;

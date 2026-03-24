@@ -29,9 +29,6 @@ public class Program
 	{
 		get
 		{
-			if (_serviceProvider is not null)
-				return _serviceProvider;
-
 			lock (_lock)
 			{
 				return _serviceProvider ??= ServiceConfiguration.CreateServiceProvider();

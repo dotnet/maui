@@ -112,7 +112,10 @@ public static class LogsCommand
 				args = $"simctl spawn {ProcessRunner.SanitizeArg(device.Id)} log stream";
 
 				if (!string.IsNullOrEmpty(filter))
-					args += $" --predicate 'subsystem CONTAINS \"{ProcessRunner.SanitizeArg(filter)}\"'";
+				{
+					var escaped = filter.Replace("\"", "\\\"", StringComparison.Ordinal);
+					args += $" --predicate 'subsystem CONTAINS \"{escaped}\"'";
+				}
 				break;
 
 			default:

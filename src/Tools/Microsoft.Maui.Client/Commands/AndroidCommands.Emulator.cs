@@ -81,8 +81,10 @@ public static partial class AndroidCommands
 
 			try
 			{
+				var isCi = Program.IsCiMode(context);
+
 				// --- Step 1: System image selection ---
-				if (string.IsNullOrEmpty(package) && !useJson && formatter is SpectreOutputFormatter spectre)
+				if (string.IsNullOrEmpty(package) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre)
 				{
 					var sysImages = await spectre.StatusAsync("Finding installed system images...", async () =>
 					{
@@ -125,7 +127,7 @@ public static partial class AndroidCommands
 				}
 
 				// --- Step 2: Device profile selection ---
-				if (string.IsNullOrEmpty(device) && !useJson && formatter is SpectreOutputFormatter spectre2)
+				if (string.IsNullOrEmpty(device) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre2)
 				{
 					var deviceProfiles = new List<(string Id, string Name)>
 					{
@@ -150,7 +152,7 @@ public static partial class AndroidCommands
 				device ??= "pixel_6";
 
 				// --- Step 3: Name prompt (after selections so user sees what they picked) ---
-				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectre3)
+				if (string.IsNullOrEmpty(name) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre3)
 				{
 					// Build a sensible default name from the selected image
 					var apiPart = package?.Split(';').ElementAtOrDefault(1) ?? "android";
@@ -227,8 +229,10 @@ public static partial class AndroidCommands
 
 			try
 			{
+				var isCi = Program.IsCiMode(context);
+
 				// Interactive AVD selection if name not provided
-				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectre0)
+				if (string.IsNullOrEmpty(name) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre0)
 				{
 					var avds = await spectre0.StatusAsync("Finding emulators...", async () =>
 						await androidProvider.GetAvdsAsync(context.GetCancellationToken()));
@@ -317,12 +321,14 @@ public static partial class AndroidCommands
 
 			try
 			{
+				var isCi = Program.IsCiMode(context);
+
 				// Find running emulators
 				var devices = await androidProvider.GetDevicesAsync(context.GetCancellationToken());
 				var runningEmulators = devices.Where(d => d.IsEmulator).ToList();
 
 				// Interactive selection if name not provided
-				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectreStop)
+				if (string.IsNullOrEmpty(name) && !useJson && !isCi && formatter is SpectreOutputFormatter spectreStop)
 				{
 					if (!runningEmulators.Any())
 					{
@@ -429,8 +435,10 @@ public static partial class AndroidCommands
 
 			try
 			{
+				var isCi = Program.IsCiMode(context);
+
 				// Interactive selection if name not provided
-				if (string.IsNullOrEmpty(name) && !useJson && formatter is SpectreOutputFormatter spectreDel)
+				if (string.IsNullOrEmpty(name) && !useJson && !isCi && formatter is SpectreOutputFormatter spectreDel)
 				{
 					var avds = await spectreDel.StatusAsync("Finding emulators...", async () =>
 						await androidProvider.GetAvdsAsync(context.GetCancellationToken()));

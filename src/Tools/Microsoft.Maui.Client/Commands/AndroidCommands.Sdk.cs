@@ -66,8 +66,10 @@ public static partial class AndroidCommands
 
 			try
 			{
+				var isCi = Program.IsCiMode(context);
+
 				// Interactive selection if no packages specified
-				if ((packages == null || packages.Length == 0) && !useJson && formatter is SpectreOutputFormatter spectre)
+				if ((packages == null || packages.Length == 0) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre)
 				{
 					var (installed, available) = await spectre.StatusAsync("Fetching available packages...", async () =>
 					{
