@@ -168,7 +168,7 @@ public static class PlatformDetector
 		/// Finds the JDK home directory by looking for bin/java executable.
 		/// Handles nested directory structures like jdk/jdk-17/jdk-17.0.18+8/Contents/Home
 		/// </summary>
-		private static string? FindJdkHome(string basePath, int maxDepth = 4)
+		static string? FindJdkHome(string basePath, int maxDepth = 4)
 		{
 			if (!Directory.Exists(basePath))
 				return null;

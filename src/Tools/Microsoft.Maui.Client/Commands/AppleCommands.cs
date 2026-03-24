@@ -27,7 +27,7 @@ public static class AppleCommands
 		return appleCommand;
 	}
 
-	private static Command CreateInstallCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
+	static Command CreateInstallCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
 	{
 		var command = new Command("install", "Set up Apple development environment (Xcode, runtimes)")
 		{
@@ -165,7 +165,7 @@ public static class AppleCommands
 		return command;
 	}
 
-	private static Command CreateSimulatorCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
+	static Command CreateSimulatorCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
 	{
 		var simulatorCommand = new Command("simulator", "Manage iOS simulators");
 
@@ -393,7 +393,7 @@ public static class AppleCommands
 		return simulatorCommand;
 	}
 
-	private static Command CreateRuntimeCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
+	static Command CreateRuntimeCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
 	{
 		var runtimeCommand = new Command("runtime", "Manage iOS runtimes");
 
@@ -575,7 +575,7 @@ public static class AppleCommands
 		return runtimeCommand;
 	}
 
-	private static Command CreateXcodeCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
+	static Command CreateXcodeCommand(IAppleProvider provider, Func<InvocationContext, IOutputFormatter> getFormatter)
 	{
 		var xcodeCommand = new Command("xcode", "Manage Xcode installations");
 

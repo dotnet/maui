@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Client.Commands;
 
 public static partial class AndroidCommands
 {
-	private static Command CreateSdkCommand()
+	static Command CreateSdkCommand()
 	{
 		var command = new Command("sdk", "Manage Android SDK");
 
@@ -483,7 +483,7 @@ public static partial class AndroidCommands
 		return command;
 	}
 
-	private static Command CreateSdkUninstallCommand()
+	static Command CreateSdkUninstallCommand()
 	{
 		var command = new Command("uninstall", "Uninstall SDK packages")
 		{

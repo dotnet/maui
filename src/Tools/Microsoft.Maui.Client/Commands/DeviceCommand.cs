@@ -25,7 +25,7 @@ public static class DeviceCommand
 		return command;
 	}
 
-	private static Command CreateListCommand()
+	static Command CreateListCommand()
 	{
 		var platformOption = new Option<string>("--platform", () => "all", "Filter by platform (android, apple, windows, all)");
 		var command = new Command("list", "List available devices")
@@ -74,7 +74,7 @@ public static class DeviceCommand
 	/// <summary>
 	/// Creates the 'device logs' subcommand that shares the same handler logic as the root 'logs' command.
 	/// </summary>
-	private static Command CreateDeviceLogsCommand()
+	static Command CreateDeviceLogsCommand()
 	{
 		var deviceOption = new Option<string?>(new[] { "-d", "--device" }, "Target device ID (auto-detects if not specified)");
 		var filterOption = new Option<string?>(new[] { "-f", "--filter" }, "Filter logs by tag or pattern");

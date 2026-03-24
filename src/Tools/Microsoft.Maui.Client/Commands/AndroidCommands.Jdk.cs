@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Client.Commands;
 
 public static partial class AndroidCommands
 {
-	private static Command CreateJdkCommand()
+	static Command CreateJdkCommand()
 	{
 		var command = new Command("jdk", "Manage JDK installation");
 

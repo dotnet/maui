@@ -15,11 +15,11 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 public class AvdManager
 {
-	private const int EmulatorStartupCheckDelayMs = 3000;
+	const int EmulatorStartupCheckDelayMs = 3000;
 
-	private readonly AvdManagerRunner? _runner;
-	private readonly EmulatorRunner? _emulatorRunner;
-	private readonly Adb? _adb;
+	readonly AvdManagerRunner? _runner;
+	readonly EmulatorRunner? _emulatorRunner;
+	readonly Adb? _adb;
 
 	public AvdManager(Func<string?> getSdkPath, Func<string?> getJdkPath, Adb? adb = null)
 	{
@@ -40,7 +40,7 @@ public class AvdManager
 
 	public string? EmulatorPath => _emulatorRunner != null ? "emulator" : null;
 
-	private static string? ResolveAvdManagerPath(string? sdkPath)
+	static string? ResolveAvdManagerPath(string? sdkPath)
 	{
 		if (string.IsNullOrEmpty(sdkPath))
 			return null;
@@ -77,7 +77,7 @@ public class AvdManager
 		return File.Exists(legacyPath) ? legacyPath : null;
 	}
 
-	private static string? ResolveEmulatorPath(string? sdkPath)
+	static string? ResolveEmulatorPath(string? sdkPath)
 	{
 		if (string.IsNullOrEmpty(sdkPath))
 			return null;
@@ -104,7 +104,7 @@ public class AvdManager
 		}
 	}
 
-	private static AvdInfo MapToMauiAvd(Xamarin.Android.Tools.AvdInfo avd)
+	static AvdInfo MapToMauiAvd(Xamarin.Android.Tools.AvdInfo avd)
 	{
 		string? systemImage = null;
 		string? target = null;
@@ -229,7 +229,9 @@ public class AvdManager
 				}
 				catch (OperationCanceledException)
 				{
-					try { process.Kill(); } catch { }
+					try
+					{ process.Kill(); }
+					catch { }
 					process.Dispose();
 					throw;
 				}

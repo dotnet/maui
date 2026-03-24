@@ -32,7 +32,7 @@ public static partial class AndroidCommands
 	/// Resolves packages to install: uses explicit --packages if provided, otherwise shows interactive prompts.
 	/// In CI mode, returns defaults without interactive prompts.
 	/// </summary>
-	private static async Task<List<string>> ResolveInstallPackagesAsync(
+	static async Task<List<string>> ResolveInstallPackagesAsync(
 		string[]? explicitPackages,
 		SpectreOutputFormatter spectre,
 		IAndroidProvider androidProvider,
@@ -159,7 +159,7 @@ public static partial class AndroidCommands
 		return selectedScope.Packages;
 	}
 
-	private static List<string> GetDefaultPackages() => new()
+	static List<string> GetDefaultPackages() => new()
 	{
 		"platform-tools",
 		"emulator",
@@ -168,15 +168,15 @@ public static partial class AndroidCommands
 		$"system-images;android-35;google_apis;{(PlatformDetector.IsArm64 ? "arm64-v8a" : "x86_64")}"
 	};
 
-	private record PlatformChoice(string PackagePath, string DisplayName, string Description, bool IsInstalled);
-	private record InstallScope(string Name, string Description, List<string> Packages);
+	record PlatformChoice(string PackagePath, string DisplayName, string Description, bool IsInstalled);
+	record InstallScope(string Name, string Description, List<string> Packages);
 
 	/// <summary>
 	/// Checks if the SDK is in a protected location and attempts elevation if needed.
 	/// Returns true if elevation was launched (caller should return), false if no elevation needed.
 	/// Throws UnauthorizedAccessException if elevation was cancelled.
 	/// </summary>
-	private static bool TryRequestElevation(IAndroidProvider androidProvider, IOutputFormatter formatter, bool useJson)
+	static bool TryRequestElevation(IAndroidProvider androidProvider, IOutputFormatter formatter, bool useJson)
 	{
 		if (!PlatformDetector.IsWindows || !androidProvider.SdkPathRequiresElevation || ProcessRunner.IsRunningElevated())
 			return false;

@@ -15,15 +15,15 @@ namespace Microsoft.Maui.Client.Commands;
 /// </summary>
 public static class LogsCommand
 {
-	private static readonly Option<string?> DeviceOption = new(
+	static readonly Option<string?> DeviceOption = new(
 		aliases: new[] { "-d", "--device" },
 		description: "Target device ID (auto-detects if not specified)");
 
-	private static readonly Option<string?> FilterOption = new(
+	static readonly Option<string?> FilterOption = new(
 		aliases: new[] { "-f", "--filter" },
 		description: "Filter logs by tag or pattern");
 
-	private static readonly Option<bool> FollowOption = new(
+	static readonly Option<bool> FollowOption = new(
 		aliases: new[] { "--follow" },
 		description: "Follow log output (like tail -f)",
 		getDefaultValue: () => true);
@@ -170,7 +170,7 @@ public static class LogsCommand
 	/// Writes a log line with color based on log level.
 	/// Detects Android logcat format (E/, W/, I/, D/, V/) and iOS os_log levels.
 	/// </summary>
-	private static void WriteColorizedLogLine(string line)
+	static void WriteColorizedLogLine(string line)
 	{
 		// Android logcat: "06-01 12:00:00.000  1234  5678 E Tag: message"
 		// or brief format: "E/Tag(1234): message"
@@ -187,7 +187,7 @@ public static class LogsCommand
 		}
 	}
 
-	private static ConsoleColor? DetectLogLevel(string line)
+	static ConsoleColor? DetectLogLevel(string line)
 	{
 		if (line.Length < 2)
 			return null;

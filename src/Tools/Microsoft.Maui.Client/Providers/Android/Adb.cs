@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 public class Adb
 {
-	private readonly AdbRunner? _runner;
-	private readonly string? _adbPath;
+	readonly AdbRunner? _runner;
+	readonly string? _adbPath;
 
 	public Adb(Func<string?> getSdkPath, IDictionary<string, string>? environmentVariables = null)
 	{
@@ -30,7 +30,7 @@ public class Adb
 
 	internal AdbRunner? Runner => _runner;
 
-	private static string? ResolveAdbPath(string? sdkPath)
+	static string? ResolveAdbPath(string? sdkPath)
 	{
 		if (string.IsNullOrEmpty(sdkPath))
 			return null;
@@ -59,7 +59,7 @@ public class Adb
 		}
 	}
 
-	private static Device MapToMauiDevice(AdbDeviceInfo info)
+	static Device MapToMauiDevice(AdbDeviceInfo info)
 	{
 		var isEmulator = info.IsEmulator;
 		var state = MapDeviceState(info.Status);
@@ -86,7 +86,7 @@ public class Adb
 		};
 	}
 
-	private static DeviceState MapDeviceState(AdbDeviceStatus status)
+	static DeviceState MapDeviceState(AdbDeviceStatus status)
 	{
 		return status switch
 		{

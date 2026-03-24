@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Client.Providers.Apple;
 /// </summary>
 public class AppleProvider : IAppleProvider
 {
-	private readonly Simctl _simctl;
-	private readonly XcodeSelect _xcodeSelect;
+	readonly Simctl _simctl;
+	readonly XcodeSelect _xcodeSelect;
 
-	private string? _xcodePath;
+	string? _xcodePath;
 
 	public string? XcodePath => _xcodePath ??= _xcodeSelect.GetDeveloperDirectory();
 	public bool IsXcodeInstalled => !string.IsNullOrEmpty(XcodePath) && Directory.Exists(XcodePath);
@@ -50,7 +50,7 @@ public class AppleProvider : IAppleProvider
 		return checks;
 	}
 
-	private async Task<HealthCheck> CheckXcodeAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck> CheckXcodeAsync(CancellationToken cancellationToken)
 	{
 		if (!PlatformDetector.IsMacOS)
 		{
@@ -103,7 +103,7 @@ public class AppleProvider : IAppleProvider
 		};
 	}
 
-	private async Task<HealthCheck?> CheckCommandLineToolsAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck?> CheckCommandLineToolsAsync(CancellationToken cancellationToken)
 	{
 		if (!PlatformDetector.IsMacOS)
 			return null;
@@ -140,7 +140,7 @@ public class AppleProvider : IAppleProvider
 		};
 	}
 
-	private async Task<HealthCheck> CheckSimulatorsAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck> CheckSimulatorsAsync(CancellationToken cancellationToken)
 	{
 		var devices = await ListSimulatorsAsync(cancellationToken);
 

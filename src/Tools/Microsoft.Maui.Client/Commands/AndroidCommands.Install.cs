@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Client.Commands;
 
 public static partial class AndroidCommands
 {
-	private static Command CreateInstallCommand()
+	static Command CreateInstallCommand()
 	{
 		var packagesOption = new Option<string[]>("--packages", "SDK packages to install (replaces defaults; comma-separated or multiple --packages flags)")
 		{

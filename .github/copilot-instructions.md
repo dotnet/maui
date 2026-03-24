@@ -98,6 +98,18 @@ Always format code before committing:
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
+### C# Coding Conventions
+
+The repository enforces these conventions via `.editorconfig`:
+
+- **Omit redundant `private` modifier** — `private` is the default for class members in C#. The repo uses `dotnet_style_require_accessibility_modifiers = never`. Write `readonly string _name;` not `private readonly string _name;`.
+- **Use `var`** for built-in types and when the type is apparent (`csharp_style_var_for_built_in_types = true`).
+- **File-scoped namespaces** — Use `namespace Foo;` not `namespace Foo { }`.
+- **Prefer braces** — Always use braces for control flow (`csharp_prefer_braces = true`).
+- **No `this.` qualifier** — Don't prefix members with `this.` unless necessary for disambiguation.
+- **Private fields use `_camelCase`** — Prefix with underscore (e.g., `readonly string _name;`).
+- **Use predefined types** — Write `string`, `int`, `bool` not `String`, `Int32`, `Boolean`.
+
 ## Contribution Guidelines
 
 ### Handling Existing PRs for Assigned Issues

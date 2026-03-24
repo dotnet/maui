@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Client.Services;
 /// </summary>
 public class DeviceManager : IDeviceManager
 {
-	private readonly IAndroidProvider? _androidProvider;
-	private readonly IAppleProvider? _appleProvider;
+	readonly IAndroidProvider? _androidProvider;
+	readonly IAppleProvider? _appleProvider;
 
 	public DeviceManager(IAndroidProvider? androidProvider = null, IAppleProvider? appleProvider = null)
 	{
@@ -154,7 +154,7 @@ public class DeviceManager : IDeviceManager
 	/// Parses a system image path like "system-images;android-35;google_apis_playstore;arm64-v8a"
 	/// to extract API level, tag ID, and ABI.
 	/// </summary>
-	private static (string? ApiLevel, string? TagId, string? Abi) ParseSystemImage(string? systemImage)
+	static (string? ApiLevel, string? TagId, string? Abi) ParseSystemImage(string? systemImage)
 	{
 		if (string.IsNullOrEmpty(systemImage))
 			return (null, null, null);

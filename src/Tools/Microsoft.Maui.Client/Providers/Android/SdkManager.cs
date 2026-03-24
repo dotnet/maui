@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 public class SdkManager : IDisposable
 {
-	private readonly Func<string?> _getSdkPath;
-	private readonly Func<string?> _getJdkPath;
-	private readonly XatSdkManager _sdkManager;
+	readonly Func<string?> _getSdkPath;
+	readonly Func<string?> _getJdkPath;
+	readonly XatSdkManager _sdkManager;
 
 	/// <summary>
 	/// Creates a logger that forwards android-tools diagnostics when verbose mode is active.
@@ -44,7 +44,7 @@ public class SdkManager : IDisposable
 		_sdkManager = new XatSdkManager(logger: CreateLogger(verbose));
 	}
 
-	private void SyncPaths()
+	void SyncPaths()
 	{
 		_sdkManager.AndroidSdkPath = _getSdkPath();
 		_sdkManager.JavaSdkPath = _getJdkPath();
@@ -86,7 +86,7 @@ public class SdkManager : IDisposable
 		}
 	}
 
-	private static SdkPackage MapToMauiPackage(XatSdkPackage pkg) => new()
+	static SdkPackage MapToMauiPackage(XatSdkPackage pkg) => new()
 	{
 		Path = pkg.Path,
 		Version = pkg.Version,
@@ -183,7 +183,7 @@ public class SdkManager : IDisposable
 		await _sdkManager.BootstrapAsync(targetPath, bootstrapProgress, cancellationToken);
 	}
 
-	private void EnsureAvailable()
+	void EnsureAvailable()
 	{
 		if (!IsAvailable)
 			throw MauiToolException.AutoFixable(
@@ -197,7 +197,7 @@ public class SdkManager : IDisposable
 	/// The Android sdkmanager process reports permission errors as text in stderr/stdout
 	/// rather than throwing UnauthorizedAccessException, so we pattern-match the message.
 	/// </summary>
-	private static bool IsPermissionError(Exception ex)
+	static bool IsPermissionError(Exception ex)
 	{
 		if (ex is UnauthorizedAccessException)
 			return true;

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Client.Commands;
 
 public static partial class AndroidCommands
 {
-	private static Command CreateEmulatorCommand()
+	static Command CreateEmulatorCommand()
 	{
 		var command = new Command("emulator", "Manage Android emulators");
 

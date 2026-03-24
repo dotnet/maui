@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Client.Output;
 /// </summary>
 public class JsonOutputFormatter : IOutputFormatter
 {
-	private static readonly JsonSerializerOptions s_options = new()
+	static readonly JsonSerializerOptions s_options = new()
 	{
 		WriteIndented = true,
 		PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -20,7 +20,7 @@ public class JsonOutputFormatter : IOutputFormatter
 		Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) }
 	};
 
-	private readonly TextWriter _output;
+	readonly TextWriter _output;
 
 	public JsonOutputFormatter(TextWriter? output = null)
 	{

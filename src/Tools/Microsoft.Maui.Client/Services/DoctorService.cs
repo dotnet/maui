@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Client.Services;
 /// </summary>
 public class DoctorService : IDoctorService
 {
-	private readonly IAndroidProvider? _androidProvider;
-	private readonly IAppleProvider? _appleProvider;
+	readonly IAndroidProvider? _androidProvider;
+	readonly IAppleProvider? _appleProvider;
 
 	public DoctorService(IAndroidProvider? androidProvider = null, IAppleProvider? appleProvider = null)
 	{
@@ -126,7 +126,7 @@ public class DoctorService : IDoctorService
 		return CreateReport(checks);
 	}
 
-	private static DoctorReport CreateReport(List<HealthCheck> checks)
+	static DoctorReport CreateReport(List<HealthCheck> checks)
 	{
 		var errorCount = checks.Count(c => c.Status == CheckStatus.Error);
 		var warningCount = checks.Count(c => c.Status == CheckStatus.Warning);
@@ -198,7 +198,7 @@ public class DoctorService : IDoctorService
 		return (trimmed[..spaceIndex], trimmed[(spaceIndex + 1)..]);
 	}
 
-	private async Task<HealthCheck> CheckDotNetSdkAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck> CheckDotNetSdkAsync(CancellationToken cancellationToken)
 	{
 		var dotnetPath = ProcessRunner.GetCommandPath("dotnet");
 		if (dotnetPath == null)
@@ -249,7 +249,7 @@ public class DoctorService : IDoctorService
 		};
 	}
 
-	private async Task<HealthCheck> CheckMauiWorkloadAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck> CheckMauiWorkloadAsync(CancellationToken cancellationToken)
 	{
 		var result = await ProcessRunner.RunAsync("dotnet", "workload list",
 			timeout: TimeSpan.FromSeconds(30), cancellationToken: cancellationToken);
@@ -295,7 +295,7 @@ public class DoctorService : IDoctorService
 		};
 	}
 
-	private async Task<HealthCheck> CheckXcodeAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck> CheckXcodeAsync(CancellationToken cancellationToken)
 	{
 		var result = await ProcessRunner.RunAsync("xcode-select", "-p",
 			timeout: TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
@@ -350,7 +350,7 @@ public class DoctorService : IDoctorService
 		};
 	}
 
-	private async Task<HealthCheck> CheckWindowsSdkAsync(CancellationToken cancellationToken)
+	async Task<HealthCheck> CheckWindowsSdkAsync(CancellationToken cancellationToken)
 	{
 		// Check for Windows SDK in common locations
 		var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);

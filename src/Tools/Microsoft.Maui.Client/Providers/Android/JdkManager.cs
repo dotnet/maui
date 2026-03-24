@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 public class JdkManager : IJdkManager
 {
-	private const int DefaultJdkVersion = 17;
-	private const int MinJdkVersion = 11;
-	private const int MaxJdkVersion = 21;
-	private const int DownloadBufferSize = 81920;
+	const int DefaultJdkVersion = 17;
+	const int MinJdkVersion = 11;
+	const int MaxJdkVersion = 21;
+	const int DownloadBufferSize = 81920;
 
-	private static readonly HttpClient s_httpClient = new() { Timeout = TimeSpan.FromMinutes(10) };
+	static readonly HttpClient s_httpClient = new() { Timeout = TimeSpan.FromMinutes(10) };
 
 	public string? DetectedJdkPath { get; private set; }
 	public int? DetectedJdkVersion { get; private set; }
@@ -29,7 +29,7 @@ public class JdkManager : IJdkManager
 		Detect();
 	}
 
-	private void Detect()
+	void Detect()
 	{
 		DetectedJdkPath = PlatformDetector.Paths.GetJdkPath();
 		if (DetectedJdkPath != null)
@@ -57,7 +57,7 @@ public class JdkManager : IJdkManager
 		catch (Exception ex) { System.Diagnostics.Trace.WriteLine($"JDK auto-detection failed: {ex.Message}"); }
 	}
 
-	private static int? GetJdkVersion(string jdkPath)
+	static int? GetJdkVersion(string jdkPath)
 	{
 		var javaBin = Path.Combine(jdkPath, "bin", "java");
 		if (PlatformDetector.IsWindows)
@@ -234,7 +234,7 @@ public class JdkManager : IJdkManager
 		}
 	}
 
-	private static string GetDownloadUrl(int version)
+	static string GetDownloadUrl(int version)
 	{
 		// Use Eclipse Temurin (Adoptium) builds
 		var os = PlatformDetector.IsMacOS ? "mac" : PlatformDetector.IsWindows ? "windows" : "linux";
@@ -285,7 +285,7 @@ public class JdkManager : IJdkManager
 				$"Install path is too shallow (requires at least 3 directory levels): {path}");
 	}
 
-	private async Task ExtractArchiveAsync(string archivePath, string targetPath, CancellationToken cancellationToken)
+	async Task ExtractArchiveAsync(string archivePath, string targetPath, CancellationToken cancellationToken)
 	{
 		ValidateInstallPath(targetPath);
 

@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Client.Output;
 /// </summary>
 public class SpectreOutputFormatter : IOutputFormatter
 {
-	private readonly IAnsiConsole _console;
-	private readonly bool _verbose;
+	readonly IAnsiConsole _console;
+	readonly bool _verbose;
 
 	public IAnsiConsole Console => _console;
 
@@ -49,7 +49,7 @@ public class SpectreOutputFormatter : IOutputFormatter
 		_console.MarkupLine(Markup.Escape(result.ToString() ?? string.Empty));
 	}
 
-	private void WriteDoctorReport(DoctorReport report)
+	void WriteDoctorReport(DoctorReport report)
 	{
 		_console.WriteLine();
 		_console.Write(new Rule("[cyan]MAUI Doctor[/]").LeftJustified());
@@ -96,7 +96,7 @@ public class SpectreOutputFormatter : IOutputFormatter
 		_console.WriteLine();
 	}
 
-	private void WriteDeviceList(DeviceListResult result)
+	void WriteDeviceList(DeviceListResult result)
 	{
 		if (result.Devices.Count == 0)
 		{
@@ -349,8 +349,8 @@ public interface ILiveProgressTask
 
 internal sealed class SpectreLiveProgressContext : ILiveProgressContext
 {
-	private readonly ProgressContext _ctx;
-	private readonly Dictionary<string, (ProgressTask Task, ILiveProgressTask Wrapper)> _tasks = new();
+	readonly ProgressContext _ctx;
+	readonly Dictionary<string, (ProgressTask Task, ILiveProgressTask Wrapper)> _tasks = new();
 
 	public SpectreLiveProgressContext(ProgressContext ctx)
 	{
@@ -383,7 +383,7 @@ internal sealed class SpectreLiveProgressContext : ILiveProgressContext
 
 internal sealed class SpectreLiveProgressTask : ILiveProgressTask
 {
-	private readonly ProgressTask _task;
+	readonly ProgressTask _task;
 
 	public SpectreLiveProgressTask(ProgressTask task)
 	{

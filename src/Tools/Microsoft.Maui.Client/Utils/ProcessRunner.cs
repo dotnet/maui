@@ -23,10 +23,10 @@ public record ProcessResult
 /// </summary>
 public static class ProcessRunner
 {
-	private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(5);
-	private const int ContinuousInputDelayMs = 250;
-	private static readonly TimeSpan InputTaskCleanupTimeout = TimeSpan.FromSeconds(2);
-	private static readonly TimeSpan OutputStreamCompletionTimeout = TimeSpan.FromSeconds(5);
+	static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(5);
+	const int ContinuousInputDelayMs = 250;
+	static readonly TimeSpan InputTaskCleanupTimeout = TimeSpan.FromSeconds(2);
+	static readonly TimeSpan OutputStreamCompletionTimeout = TimeSpan.FromSeconds(5);
 	/// <summary>
 	/// Validates and quotes a process argument value to prevent command injection.
 	/// Rejects values containing shell metacharacters that could escape argument boundaries.

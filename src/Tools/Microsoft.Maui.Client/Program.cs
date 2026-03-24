@@ -18,8 +18,8 @@ namespace Microsoft.Maui.Client;
 public class Program
 {
 	// Thread-safe lazy initialization of the service provider
-	private static readonly object _lock = new();
-	private static IServiceProvider? _serviceProvider;
+	static readonly object _lock = new();
+	static IServiceProvider? _serviceProvider;
 
 	/// <summary>
 	/// Gets or sets the service provider. Thread-safe initialization with lock.
@@ -69,7 +69,7 @@ public class Program
 		return await parser.InvokeAsync(args);
 	}
 
-	private static RootCommand BuildRootCommand()
+	static RootCommand BuildRootCommand()
 	{
 		var rootCommand = new RootCommand("MAUI Development Tools - Device management and environment setup")
 		{

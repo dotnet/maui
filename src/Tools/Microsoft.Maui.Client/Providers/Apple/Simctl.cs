@@ -90,7 +90,7 @@ public class Simctl
 		}
 	}
 
-	private static string DetermineIdiomFromName(string name)
+	static string DetermineIdiomFromName(string name)
 	{
 		var lowerName = name.ToLowerInvariant();
 		if (lowerName.Contains("ipad", StringComparison.Ordinal))
@@ -104,7 +104,7 @@ public class Simctl
 		return DeviceIdiom.Phone; // iPhone, default
 	}
 
-	private static string ExtractPlatformFromRuntime(string runtimeIdentifier)
+	static string ExtractPlatformFromRuntime(string runtimeIdentifier)
 	{
 		if (runtimeIdentifier.Contains("tvOS", StringComparison.OrdinalIgnoreCase))
 			return "tvos";
@@ -116,7 +116,7 @@ public class Simctl
 		return "ios"; // Default to iOS
 	}
 
-	private static string? ExtractRuntimeVersion(string runtimeIdentifier)
+	static string? ExtractRuntimeVersion(string runtimeIdentifier)
 	{
 		// Format: com.apple.CoreSimulator.SimRuntime.iOS-18-5 -> "18.5"
 		var match = System.Text.RegularExpressions.Regex.Match(runtimeIdentifier, @"(\d+)-(\d+)(?:-(\d+))?$");
@@ -130,7 +130,7 @@ public class Simctl
 		return null;
 	}
 
-	private static string[]? GetAppleRuntimeIdentifiers(string platform, string architecture)
+	static string[]? GetAppleRuntimeIdentifiers(string platform, string architecture)
 	{
 		var rid = platform switch
 		{
@@ -401,7 +401,7 @@ public class Simctl
 		}
 	}
 
-	private static string ExtractRuntimeName(string runtimeIdentifier)
+	static string ExtractRuntimeName(string runtimeIdentifier)
 	{
 		// com.apple.CoreSimulator.SimRuntime.iOS-17-0 -> iOS 17.0
 		var parts = runtimeIdentifier.Split('.');
@@ -413,7 +413,7 @@ public class Simctl
 		return runtimeIdentifier;
 	}
 
-	private static DeviceState ParseState(string? state)
+	static DeviceState ParseState(string? state)
 	{
 		return state?.ToLowerInvariant() switch
 		{

@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Client.Providers.Android;
 /// </summary>
 public class AndroidProvider : IAndroidProvider
 {
-	private readonly SdkManager _sdkManager;
-	private readonly AvdManager _avdManager;
-	private readonly Adb _adb;
-	private readonly IJdkManager _jdkManager;
+	readonly SdkManager _sdkManager;
+	readonly AvdManager _avdManager;
+	readonly Adb _adb;
+	readonly IJdkManager _jdkManager;
 
-	private string? _sdkPath;
-	private string? _jdkPath;
+	string? _sdkPath;
+	string? _jdkPath;
 
 	// Default Android SDK target versions — update these when the minimum supported API level changes
 	internal const int DefaultAndroidApiLevel = 35;
@@ -268,7 +268,7 @@ public class AndroidProvider : IAndroidProvider
 		return systemImages.FirstOrDefault()?.Package.Path;
 	}
 
-	private static int ExtractApiLevel(string systemImagePath)
+	static int ExtractApiLevel(string systemImagePath)
 	{
 		// Parse "system-images;android-35;google_apis;arm64-v8a" -> 35
 		var parts = systemImagePath.Split(';');
