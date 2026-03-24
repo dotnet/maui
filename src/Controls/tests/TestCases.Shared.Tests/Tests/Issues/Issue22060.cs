@@ -14,7 +14,6 @@ public class Issue22060 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.SearchBar)]
 	public void ShouldAppearFlyoutIconAndContentPageTitle()
 	{
 		App.EnterTextInShellSearchHandler("Hello");
