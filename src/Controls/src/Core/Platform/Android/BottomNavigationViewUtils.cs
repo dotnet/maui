@@ -29,8 +29,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		/// <summary>
 		/// Maximum number of items allowed in the bottom navigation bar.
-		/// The Material package in .NET 11 reports MaxItemCount as 6, whereas previous versions returned 5.
-		/// so clamp to 5 for consistency across all .NET versions.
+		/// Newer versions of the Xamarin.Google.Android.Material package report
+		/// <c>BottomNavigationView.MaxItemCount</c> as 6, whereas older versions returned 5.
+		/// Clamped to 5 for consistent behavior regardless of the Material library version.
 		/// See https://github.com/dotnet/maui/pull/33450
 		/// </summary>
 		internal const int MaxBottomNavigationItems = 5;
