@@ -17,15 +17,15 @@ namespace Maui.Controls.Sample.Pages
 					.ToList();
 		}
 
-		private void OnDetailClicked(object sender, EventArgs e)
+		private void OnDetailClicked(object? sender, EventArgs e)
 		{
-			var mi = ((MenuItem)sender);
+			var mi = ((MenuItem)sender!);
 			DisplayAlertAsync("Detail Action", $"Details for item {mi.CommandParameter}", "OK");
 		}
 
-		private void OnDeleteClicked(object sender, EventArgs e)
+		private void OnDeleteClicked(object? sender, EventArgs e)
 		{
-			var mi = ((MenuItem)sender);
+			var mi = ((MenuItem)sender!);
 			DisplayAlertAsync("Delete Action", $"Deleting item {mi.CommandParameter}!", "OK");
 		}
 
