@@ -9,6 +9,16 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		return new Window(new AppFlyoutPage());
+		// To test shell scenarios, change this to true
+		bool useShell = false;
+
+		if (!useShell)
+		{
+			return new Window(new NavigationPage(new MainPage()));
+		}
+		else
+		{
+			return new Window(new SandboxShell());
+		}
 	}
 }
