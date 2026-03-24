@@ -52,5 +52,8 @@ public class Issue13323 : _IssuesUITest
 
 		var positionAfter = App.FindElement("LoopPositionLabel").GetText();
 		Assert.That(positionAfter, Is.EqualTo("LoopPosition:2"), $"CarouselView (Loop=true) jumped after tapping Center-aligned Entry: {positionAfter}");
+
+		App.DismissKeyboard();
+		App.WaitForKeyboardToHide();
 	}
 }
