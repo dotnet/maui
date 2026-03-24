@@ -528,24 +528,18 @@ namespace Microsoft.Maui.Controls
 
 					if (child is Image)
 					{
-						// This is a hack to get FlexLayout to behave like it did in Forms
-						// Forms always did its initial image measure unconstrained, which would return
-						// the intrinsic size of the image (no scaling or aspect ratio adjustments)
-
-						sizeConstraints.Width = double.PositiveInfinity;
-						sizeConstraints.Height = double.PositiveInfinity;
+						// Arrange pass, do not ever run a measure here!
+						// When WidthRequest/HeightRequest is explicitly set, the Flex.Item already
+						// has the correct value from EnsureFlexItemPropertiesUpdated(). Return NaN
+						// so layout_item preserves that value instead of overwriting it with a
+						// potentially stale DesiredSize from a previous measure pass. This fixes
+						// dynamic WidthRequest not updating on Android (see #31109).
+						request = child.DesiredSize;
 					}
-
-					request = child.Measure(sizeConstraints.Width, sizeConstraints.Height);
-				}
-				else
-				{
-					// Arrange pass, do not ever run a measure here!
-					request = child.DesiredSize;
-				}
-				w = (float)request.Width;
-				h = (float)request.Height;
-			};
+					w = (!inMeasureMode && !float.IsNaN(it.Width)) ? float.NaN : (float)request.Width;
+					h = (!inMeasureMode && !float.IsNaN(it.Height)) ? float.NaN : (float)request.Height;
+				};
+			}
 
 			_root.InsertAt(index, item);
 			SetFlexItem(child, item);
