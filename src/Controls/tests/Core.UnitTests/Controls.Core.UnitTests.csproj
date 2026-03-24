@@ -6,6 +6,9 @@
     <IsPackable>false</IsPackable>
     <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
     <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
+    <!-- NOTE: By default the UseWindowsCollectionView2Handler flag value is false. If you change the UseWindowsCollectionView2Handler flag, you MUST delete the artifacts folder 
+       and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
+    <UseWindowsCollectionView2Handler>true</UseWindowsCollectionView2Handler>
   </PropertyGroup>
 
   <ItemGroup>
