@@ -308,6 +308,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (emptyView is null && emptyViewTemplate is null)
 			{
 				RemoveEmptyView();
+				_emptyView = null;
+				_formsEmptyView = null;
 				(ListViewBase as IEmptyView)?.SetEmptyView(null, null);
 				return;
 			}
