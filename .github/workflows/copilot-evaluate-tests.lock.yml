@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"91184cf24c3662724186f685c74e348aaea98634a8efa846dabd97592cc65cf7","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"37bca071edd5440eca2fbeeb43fb9456e0728efa92cda37a8912a9d1d92c5be9","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -80,7 +80,7 @@ jobs:
         env:
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
-          GH_AW_INFO_MODEL: "claude-sonnet-4"
+          GH_AW_INFO_MODEL: "claude-sonnet-4.6"
           GH_AW_INFO_VERSION: ""
           GH_AW_INFO_AGENT_VERSION: "latest"
           GH_AW_INFO_CLI_VERSION: "v0.62.2"
@@ -602,7 +602,7 @@ jobs:
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: claude-sonnet-4
+          COPILOT_MODEL: claude-sonnet-4.6
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
@@ -825,7 +825,7 @@ jobs:
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: claude-sonnet-4
+          COPILOT_MODEL: claude-sonnet-4.6
           GH_AW_PHASE: detection
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_VERSION: v0.62.2
@@ -1026,7 +1026,7 @@ jobs:
     env:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/copilot-evaluate-tests"
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "claude-sonnet-4"
+      GH_AW_ENGINE_MODEL: "claude-sonnet-4.6"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🧪 *Test evaluation by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔬 Evaluating tests on this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Test evaluation complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Test evaluation failed. [{workflow_name}]({run_url}) {status}\"}"
       GH_AW_WORKFLOW_ID: "copilot-evaluate-tests"
       GH_AW_WORKFLOW_NAME: "Evaluate PR Tests"
