@@ -27,6 +27,14 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		internal const int MoreTabId = 99;
 
+		/// <summary>
+		/// Maximum number of items allowed in the bottom navigation bar.
+		/// The Material package in .NET 11 reports MaxItemCount as 6, whereas previous versions returned 5.
+		/// so clamp to 5 for consistency across all .NET versions.
+		/// See https://github.com/dotnet/maui/pull/33450
+		/// </summary>
+		internal const int MaxBottomNavigationItems = 5;
+
 		public static Drawable CreateItemBackgroundDrawable()
 		{
 			var stateList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.2f).ToPlatform());
@@ -71,10 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext)
 		{
-			// The new Material package version in .NET 11 returns MaxItemCount as 6,
-			// whereas previous versions returned 5. Clamp to 5 for consistency across
-			// all .NET versions. See https://github.com/dotnet/maui/pull/33450
-			maxBottomItems = Math.Min(maxBottomItems, 5);
+			maxBottomItems = Math.Min(maxBottomItems, MaxBottomNavigationItems);
 			Context context = mauiContext.Context;
 
 			while (items.Count < menu.Size())
@@ -166,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext,
 			List<(string title, ImageSource icon, bool tabEnabled)> items)
 		{
-			return CreateMoreBottomSheet(selectCallback, mauiContext, items, 5);
+			return CreateMoreBottomSheet(selectCallback, mauiContext, items, MaxBottomNavigationItems);
 		}
 
 		internal static BottomSheetDialog CreateMoreBottomSheet(
@@ -175,10 +180,7 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int maxItemCount)
 		{
-			// The new Material package version in .NET 11 returns MaxItemCount as 6,
-			// whereas previous versions returned 5. Clamp to 5 for consistency across
-			// all .NET versions. See https://github.com/dotnet/maui/pull/33450
-			maxItemCount = Math.Min(maxItemCount, 5);
+			maxItemCount = Math.Min(maxItemCount, MaxBottomNavigationItems);
 			var context = mauiContext.Context;
 			var bottomSheetDialog = new BottomSheetDialog(context);
 			var bottomSheetLayout = new LinearLayout(context);

@@ -176,10 +176,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// handle the more tab
 			var items = ((IShellItemController)ShellItem).GetItems();
-			// The new Material package version in .NET 11 returns MaxItemCount as 6,
-			// whereas previous versions returned 5. Clamp to 5 for consistency across
-			// all .NET versions. See https://github.com/dotnet/maui/pull/33450
-			var maxItems = Math.Min(_bottomView.MaxItemCount, 5);
+			var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
 			for (int i = maxItems - 1; i < items.Count; i++)
 			{
 				var closure_i = i;
@@ -380,10 +377,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
 
 				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
-				// The new Material package version in .NET 11 returns MaxItemCount of BottomNavigationView as 6,
-				// whereas previous versions returned 5. Clamp to 5 for consistency across
-				// all .NET versions. See https://github.com/dotnet/maui/pull/33450
-				var maxItems = Math.Min(_bottomView.MaxItemCount, 5);
+				var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
 				IMenuItem menuItem = null;
 
 				if (!(itemCount > maxItems && index > maxItems - 2))
