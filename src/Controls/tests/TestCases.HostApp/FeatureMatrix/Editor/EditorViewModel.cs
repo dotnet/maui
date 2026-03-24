@@ -5,9 +5,9 @@ namespace Maui.Controls.Sample;
 public class EditorViewModel : INotifyPropertyChanged
 {
 	private string _text = "Test Editor";
-	private Color _textColor = Colors.Black;
+	private Color _textColor = null;
 	private string _placeholder = "Enter text here";
-	private Color _placeholderColor = Colors.Gray;
+	private Color _placeholderColor = null;
 	private double _fontSize = 14;
 	private double _heightrequest = -1;
 	private double _widthRequest = -1;
@@ -271,8 +271,8 @@ public class EditorViewModel : INotifyPropertyChanged
 
 	public void Reset()
 	{
-		TextColor = Colors.Black;
-		PlaceholderColor = Colors.Gray;
+		TextColor = null;
+		PlaceholderColor = null;
 		FontSize = 14;
 		HorizontalTextAlignment = TextAlignment.Start;
 		VerticalTextAlignment = TextAlignment.End;

@@ -23,7 +23,12 @@ public partial class EditorOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.TextColor = button.BackgroundColor;
+			_viewModel.TextColor = button.AutomationId switch
+			{
+				"TextColorRed" => Colors.Red,
+				"TextColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 
@@ -47,7 +52,12 @@ public partial class EditorOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.PlaceholderColor = button.BackgroundColor;
+			_viewModel.PlaceholderColor = button.AutomationId switch
+			{
+				"PlaceholderColorRed" => Colors.Red,
+				"PlaceholderColorBlue" => Colors.Blue,
+				_ => _viewModel.PlaceholderColor
+			};
 		}
 	}
 	private void HorizontalAlignmentButton_Clicked(object sender, EventArgs e)

@@ -236,11 +236,9 @@
                             FontSize="11"/>
                      <HorizontalStackLayout
                             Spacing="1">
-                            <Button Text="Black"
+                            <Button Text="Default"
                                     FontSize="10"
-                                    BackgroundColor="Black"
-                                    TextColor="White"
-                                    AutomationId="TextColorBlack"
+                                    AutomationId="TextColorDefault"
                                     Clicked="TextColorButton_Clicked"/>
                             <Button Text="Red"
                                     FontSize="10"
@@ -260,11 +258,9 @@
                             FontSize="11"/>
                      <HorizontalStackLayout
                             Spacing="1">
-                            <Button Text="Gray"
+                            <Button Text="Default"
                                     FontSize="10"
-                                    BackgroundColor="Gray"
-                                    TextColor="White"
-                                    AutomationId="PlaceholderColorGray"
+                                    AutomationId="PlaceholderColorDefault"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                             <Button Text="Red"
                                     FontSize="10"
