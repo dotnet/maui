@@ -24,9 +24,22 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBackground(this WebView2 platformWebView, IWebView webView)
 		{
+			Color? backgroundColor = null;
+
 			if (webView.Background is SolidPaint solidPaint)
 			{
-				platformWebView.DefaultBackgroundColor = solidPaint.Color.ToWindowsColor();
+				backgroundColor = solidPaint.Color;
+			}
+			else if (webView.Background is GradientPaint gradientPaint)
+			{
+				// WebView2 only supports a solid DefaultBackgroundColor; use the gradient's
+				// start color as a best-effort approximation.
+				backgroundColor = gradientPaint.StartColor;
+			}
+
+			if (backgroundColor is not null)
+			{
+				platformWebView.DefaultBackgroundColor = backgroundColor.ToWindowsColor();
 
 				if (platformWebView.CoreWebView2 is not null)
 				{
@@ -35,6 +48,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (platformWebView.CoreWebView2 is not null)
 			{
+				platformWebView.DefaultBackgroundColor = Colors.Transparent.ToWindowsColor();
 				platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Auto;
 			}
 		}
