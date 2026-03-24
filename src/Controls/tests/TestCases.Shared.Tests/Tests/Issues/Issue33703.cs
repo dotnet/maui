@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33703 : _IssuesUITest
 {
-	public override string Issue => "Empty space above TabBar after navigate back when TabBar visibility toggled";
+	public override string Issue => "Empty space above TabBar after navigating back when TabBar visibility is toggled";
 
 	public Issue33703(TestDevice device) : base(device) { }
 
