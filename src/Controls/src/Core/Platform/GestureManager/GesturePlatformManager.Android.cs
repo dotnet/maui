@@ -78,16 +78,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var eventConsumed = false;
 
-			bool hasOnlyPointer =
-				!ViewHasPinchGestures() &&
-				!ViewHasNonPointerTouchGestures();
+			bool hasPinchGestures = ViewHasPinchGestures();
+			bool hasNonPointerTouchGestures = ViewHasNonPointerTouchGestures();
 
-			if (ViewHasPinchGestures())
+			bool hasOnlyPointer =
+				!hasPinchGestures &&
+				!hasNonPointerTouchGestures;
+
+			if (hasPinchGestures)
 			{
 				eventConsumed = _scaleDetector.Value.OnTouchEvent(e);
 			}
 
-			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
+			if (!hasPinchGestures || !_scaleDetector.Value.IsInProgress)
 			{
 				var detectorHandled = _tapAndPanAndSwipeDetector?.Value.OnTouchEvent(e) ?? false;
 

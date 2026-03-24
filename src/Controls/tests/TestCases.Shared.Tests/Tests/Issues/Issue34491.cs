@@ -28,17 +28,18 @@ public class Issue34491 : _IssuesUITest
 		App.WaitForElement("Item 1");
 		App.Tap("Item 1");
 
-		// Retry loop for UI update
+		// Wait until UI reflects selection (no Thread.Sleep, no invalid APIs)
 		string finalText = string.Empty;
 
-		for (int i = 0; i < 10; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			finalText = App.FindElement("StatusLabel").GetText() ?? string.Empty;
 
 			if (finalText == "Selected: Item 1")
 				break;
 
-			Thread.Sleep(500);
+			// Sync with UI instead of sleeping
+			App.WaitForElement("StatusLabel");
 		}
 
 		Assert.That(finalText, Is.EqualTo("Selected: Item 1"),
