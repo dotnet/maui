@@ -41,7 +41,7 @@ public class Issue34188 : ContentPage
 
 		internal override Size ArrangeContent(Rect bounds)
 		{
-			int y = 0;
+			double y = bounds.Top;
 			foreach (var child in this.Children)
 			{
 				child.Arrange(new Rect(bounds.Left, y, 200, 100));

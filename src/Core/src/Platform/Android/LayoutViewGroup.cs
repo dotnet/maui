@@ -158,6 +158,12 @@ namespace Microsoft.Maui.Platform
 				_clipRect.Bottom = b - t;
 				ClipBounds = _clipRect;
 				TranslationZ = 0f;
+
+				if (_outlineProviderSaved)
+				{
+					OutlineProvider = _originalOutlineProvider;
+					_outlineProviderSaved = false;
+				}
 			}
 			else
 			{
