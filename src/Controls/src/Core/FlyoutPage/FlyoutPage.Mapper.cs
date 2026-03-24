@@ -45,10 +45,12 @@ namespace Microsoft.Maui.Controls
 				switch (collapseStyle)
 				{
 					case PlatformConfiguration.WindowsSpecific.CollapseStyle.Partial:
+						navigationView.FlyoutPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftCompact;
 						navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftCompact;
 						break;
 					case PlatformConfiguration.WindowsSpecific.CollapseStyle.Full:
 					default:
+						navigationView.FlyoutPaneDisplayMode = null;
 						navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 						break;
 				}
