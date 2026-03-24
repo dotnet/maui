@@ -92,6 +92,32 @@ steps:
         # Must be captured BEFORE checkout replaces HEAD.
         echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
+        # Block fork PRs via issue_comment trigger (/evaluate-tests).
+        # The gh-aw platform inserts checkout_pr_branch.cjs AFTER all user steps,
+        # which re-checks out the fork branch and overwrites our restored skill files.
+        # Until gh-aw supports post-platform user steps, fork PRs must use
+        # workflow_dispatch instead. See: https://github.com/github/gh-aw/issues/18481
+        if [ "$GITHUB_EVENT_NAME" = "issue_comment" ]; then
+          HEAD_REPO_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json headRepository --jq '.headRepository.id // ""')
+          BASE_REPO_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json baseRepository --jq '.baseRepository.id // ""')
+          if [ -n "$HEAD_REPO_ID" ] && [ -n "$BASE_REPO_ID" ] && \
+             [ "$HEAD_REPO_ID" != "$BASE_REPO_ID" ]; then
+            echo "❌ /evaluate-tests is not supported on fork PRs."
+            echo ""
+            echo "The gh-aw platform re-checks out the PR branch after our restore step,"
+            echo "which would overwrite the trusted skill and instruction files the agent"
+            echo "needs. See: https://github.com/github/gh-aw/issues/18481"
+            echo ""
+            echo "Workaround: use workflow_dispatch instead:"
+            echo "  Actions tab → 'Evaluate PR Tests' → 'Run workflow' → enter PR number"
+            echo ""
+            echo "This achieves the same result and works for all PRs including forks."
+            exit 1
+          fi
+        fi
+
         echo "Checking out PR #$PR_NUMBER..."
         gh pr checkout "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
         echo "✅ Checked out PR #$PR_NUMBER"
@@ -104,9 +130,25 @@ steps:
     env:
       GH_TOKEN: ${{ github.token }}
     run: |
-      # After all checkout steps (including gh-aw's platform checkout_pr_branch.cjs),
-      # restore skill, instruction, and config files from the base branch.
-      # Fork PRs won't have these files, and the platform checkout may overwrite them.
+      # SECURITY: Restore trusted agent infrastructure files from the base branch
+      # AND create an untracked backup that survives subsequent git checkouts.
+      #
+      # Problem: gh-aw inserts a platform "Checkout PR branch" step
+      # (checkout_pr_branch.cjs) AFTER all user steps. This re-checks out the
+      # PR branch, overwriting any files we restored here. We cannot insert
+      # user steps after platform steps — this is a gh-aw limitation.
+      #
+      # Solution: Copy trusted files to .restore-backup/ (an untracked directory).
+      # Untracked files are NOT affected by git checkout operations, so they
+      # survive checkout_pr_branch.cjs. The agent prompt (baked from the base
+      # branch lock.yml) instructs the agent to restore from this backup as
+      # its very first action.
+      #
+      # Defense-in-depth layers:
+      #   1. Fork PRs blocked by the check above (issue_comment path)
+      #   2. pull_request fork PRs blocked by activation job's `if` condition
+      #   3. Untracked backup survives checkout_pr_branch.cjs for ALL PR types
+      #   4. Agent prompt from base branch (trusted) instructs restore
       if [ -n "$BASE_SHA" ]; then
         # Clean directories first to remove any fork-added files
         rm -rf .github/skills/ .github/instructions/
@@ -122,10 +164,46 @@ steps:
           echo "⚠️ Failed to restore agent infrastructure from $BASE_SHA"
           exit 1
         fi
+
+        # Create untracked backup that survives checkout_pr_branch.cjs.
+        # git checkout only affects tracked files; untracked dirs are untouched.
+        rm -rf .restore-backup
+        mkdir -p .restore-backup/.github
+        cp -r .github/skills/ .restore-backup/.github/skills/
+        cp -r .github/instructions/ .restore-backup/.github/instructions/
+        cp .github/copilot-instructions.md .restore-backup/.github/copilot-instructions.md
+        # Also save the base SHA for the agent to verify
+        echo "$BASE_SHA" > .restore-backup/.base-sha
+        echo "✅ Created untracked backup in .restore-backup/"
       fi
 ---
 
 # Evaluate PR Tests
+
+## ⚠️ CRITICAL — Restore trusted agent infrastructure first
+
+**Before doing ANYTHING else**, you MUST restore the trusted agent infrastructure files.
+The gh-aw platform's `checkout_pr_branch.cjs` may have overwritten `.github/skills/`,
+`.github/instructions/`, and `.github/copilot-instructions.md` with the PR branch version.
+A backup of the trusted base-branch versions was saved to `.restore-backup/`.
+
+Run these commands immediately as your **very first action**:
+
+```bash
+if [ -d ".restore-backup/.github" ]; then
+  rm -rf .github/skills/ .github/instructions/
+  cp -r .restore-backup/.github/skills/ .github/skills/
+  cp -r .restore-backup/.github/instructions/ .github/instructions/
+  cp .restore-backup/.github/copilot-instructions.md .github/copilot-instructions.md
+  echo "✅ Restored trusted agent infrastructure from backup"
+else
+  echo "⚠️ No backup found at .restore-backup/ — using workspace files as-is"
+fi
+```
+
+**Do NOT skip this step. Do NOT proceed to the evaluation until the restore is complete.**
+
+## Task
 
 Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate-pr-tests/SKILL.md`.
 
