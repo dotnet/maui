@@ -43,7 +43,6 @@ public partial class ShapesOptionsPage : ContentPage
 			if (colorName.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "none")
 			{
 				_viewModel.HasFillColor = false;
-				_viewModel.FillColor = null;
 			}
 			else
 			{
@@ -99,11 +98,11 @@ public partial class ShapesOptionsPage : ContentPage
 		}
 	}
 
-	private Microsoft.Maui.Graphics.Color GetColorByName(string colorName)
+	private static Microsoft.Maui.Graphics.Color GetColorByName(string colorName)
 	{
 		return colorName.ToLower(System.Globalization.CultureInfo.InvariantCulture) switch
 		{
-			"red" => Colors.Red,
+			"red" => Microsoft.Maui.Graphics.Colors.Red,
 			"blue" => Microsoft.Maui.Graphics.Colors.Blue,
 			"green" => Microsoft.Maui.Graphics.Colors.Green,
 			"yellow" => Microsoft.Maui.Graphics.Colors.Yellow,
