@@ -76,7 +76,6 @@ steps:
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
-      WORKFLOW_NAME: Evaluate PR Tests
     run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 

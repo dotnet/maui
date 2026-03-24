@@ -85,20 +85,6 @@ git fetch origin --quiet 2>$null
 
 # --- 2. Get changed files ---
 $changedFiles = @()
-$usedPreFetched = $false
-
-# Check for pre-fetched file list (created by workflow steps: for fork PRs where gh/git are unavailable)
-$prFilesPath = Join-Path $RepoRoot ".pr-changed-files.txt"
-if (Test-Path $prFilesPath) {
-    $prFileContent = Get-Content $prFilesPath
-    if ($prFileContent) {
-        $changedFiles = @($prFileContent | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" })
-        if ($changedFiles.Count -gt 0) {
-            Write-Host "📋 Using pre-fetched file list from .pr-changed-files.txt ($($changedFiles.Count) files)"
-            $usedPreFetched = $true
-        }
-    }
-}
 
 if ($changedFiles.Count -eq 0 -and $usePrDiff) {
     # Use gh pr diff to get file list directly from GitHub API — works regardless of local checkout
@@ -120,8 +106,7 @@ if ($changedFiles.Count -eq 0) {
 }
 
 # --- 2b. Download missing files via GitHub API (needed when PR isn't checked out locally) ---
-# Skip if files were pre-fetched by workflow steps (they're already on disk)
-if (-not $usedPreFetched -and $usePrDiff -and $changedFiles.Count -gt 0) {
+if ($usePrDiff -and $changedFiles.Count -gt 0) {
     $headSha = $null
     try {
         $headSha = gh pr view $PrNumber --json headRefOid --jq '.headRefOid' 2>$null

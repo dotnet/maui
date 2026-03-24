@@ -4,7 +4,8 @@
 
 .DESCRIPTION
     Checks out a PR branch and restores trusted agent infrastructure (skills,
-    instructions) from the base branch. Handles fork PRs safely.
+    instructions) from the base branch. Handles fork PRs optimistically —
+    checkout + restore, no hard-fail guard.
 
     SECURITY NOTE: This script checks out PR code (including fork PRs) onto disk.
     This is safe because NO subsequent user steps execute workspace code — the
@@ -22,17 +23,10 @@
       GH_TOKEN          - GitHub token for API access
       PR_NUMBER         - PR number to check out
       GITHUB_REPOSITORY - owner/repo (set by GitHub Actions)
-      GITHUB_EVENT_NAME - trigger type (set by GitHub Actions)
       GITHUB_ENV        - path to env file (set by GitHub Actions)
-
-    Optional environment variables:
-      WORKFLOW_NAME     - human-readable workflow name for error messages
-                          (e.g., "Evaluate PR Tests"). Defaults to "this workflow".
 #>
 
 $ErrorActionPreference = 'Stop'
-
-$WorkflowDisplayName = if ($env:WORKFLOW_NAME) { $env:WORKFLOW_NAME } else { "this workflow" }
 
 # ── Validate inputs ──────────────────────────────────────────────────────────
 
@@ -76,7 +70,7 @@ git log --oneline -1
 if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
 if (Test-Path '.github/instructions/') { Remove-Item -Recurse -Force '.github/instructions/' }
 
-git checkout $BaseSha -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>$null
+git checkout $BaseSha -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Restored agent infrastructure from base branch ($BaseSha)"
 } else {
