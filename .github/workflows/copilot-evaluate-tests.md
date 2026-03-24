@@ -99,11 +99,12 @@ steps:
         # workflow_dispatch instead. See: https://github.com/github/gh-aw/issues/18481
         if [ "$GITHUB_EVENT_NAME" = "issue_comment" ]; then
           HEAD_REPO_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-            --json headRepository --jq '.headRepository.id // ""')
+            --json headRepository --jq '.headRepository.id' 2>/dev/null) \
+            || { echo "❌ Failed to query PR repository info (API error). Blocking for safety."; exit 1; }
           BASE_REPO_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-            --json baseRepository --jq '.baseRepository.id // ""')
-          if [ -n "$HEAD_REPO_ID" ] && [ -n "$BASE_REPO_ID" ] && \
-             [ "$HEAD_REPO_ID" != "$BASE_REPO_ID" ]; then
+            --json baseRepository --jq '.baseRepository.id' 2>/dev/null) \
+            || { echo "❌ Failed to query PR repository info (API error). Blocking for safety."; exit 1; }
+          if [ "$HEAD_REPO_ID" != "$BASE_REPO_ID" ]; then
             echo "❌ /evaluate-tests is not supported on fork PRs."
             echo ""
             echo "The gh-aw platform re-checks out the PR branch after our restore step,"
