@@ -50,30 +50,99 @@ public partial class Issue27563 : ContentPage
 		};
 
 		carousel.IndicatorView = indicatorView;
-		var button = new Button
-		{
-			Text = "Change IndicatorView Position",
-			AutomationId = "PositionButton",
-			Margin = new Thickness(20),
-		};
 
-		var label = new Label
+		var carouselPositionLabel = new Label
 		{
-			Text = $"CarouselView Position - {carousel.Position}",
-			AutomationId = "positionLabel",
+			Text = "CarouselPos:0",
+			AutomationId = "carouselPositionLabel",
 			HorizontalOptions = LayoutOptions.Center,
 		};
 
-		button.Clicked += (sender, e) =>
+		var indicatorPositionLabel = new Label
+		{
+			Text = "IndicatorPos:0",
+			AutomationId = "indicatorPositionLabel",
+			HorizontalOptions = LayoutOptions.Center,
+		};
+
+		var pingLabel = new Label
+		{
+			Text = "Ping:0",
+			AutomationId = "pingLabel",
+			HorizontalOptions = LayoutOptions.Center,
+		};
+
+		var currentItemLabel = new Label
+		{
+			Text = "CurrentItem:Remain View",
+			AutomationId = "currentItemLabel",
+			HorizontalOptions = LayoutOptions.Center,
+		};
+
+		var scrollToSecondButton = new Button
+		{
+			Text = "Scroll To Second Item",
+			AutomationId = "ScrollToSecondButton",
+			Margin = new Thickness(20, 10),
+		};
+
+		scrollToSecondButton.Clicked += (sender, e) =>
+		{
+			carousel.ScrollTo(1, position: ScrollToPosition.Center, animate: false);
+		};
+
+		var positionButton = new Button
+		{
+			Text = "Change IndicatorView Position",
+			AutomationId = "PositionButton",
+			Margin = new Thickness(20, 10),
+		};
+
+		positionButton.Clicked += (sender, e) =>
 		{
 			indicatorView.Position = 2;
-			label.Text = $"CarouselView Position - {carousel.Position}";
+		};
+
+		var pingCount = 0;
+		var pingButton = new Button
+		{
+			Text = "Ping",
+			AutomationId = "PingButton",
+			Margin = new Thickness(20, 10),
+		};
+
+		pingButton.Clicked += (sender, e) =>
+		{
+			pingCount++;
+			pingLabel.Text = $"Ping:{pingCount}";
+		};
+
+		carousel.PropertyChanged += (sender, e) =>
+		{
+			if (e.PropertyName == CarouselView.PositionProperty.PropertyName)
+				carouselPositionLabel.Text = $"CarouselPos:{carousel.Position}";
+		};
+
+		indicatorView.PropertyChanged += (sender, e) =>
+		{
+			if (e.PropertyName == IndicatorView.PositionProperty.PropertyName)
+				indicatorPositionLabel.Text = $"IndicatorPos:{indicatorView.Position}";
+		};
+
+		carousel.CurrentItemChanged += (sender, e) =>
+		{
+			currentItemLabel.Text = $"CurrentItem:{carousel.CurrentItem}";
 		};
 
 		verticalStackLayout.Children.Add(carousel);
 		verticalStackLayout.Children.Add(indicatorView);
-		verticalStackLayout.Children.Add(button);
-		verticalStackLayout.Children.Add(label);
+		verticalStackLayout.Children.Add(scrollToSecondButton);
+		verticalStackLayout.Children.Add(positionButton);
+		verticalStackLayout.Children.Add(pingButton);
+		verticalStackLayout.Children.Add(carouselPositionLabel);
+		verticalStackLayout.Children.Add(indicatorPositionLabel);
+		verticalStackLayout.Children.Add(currentItemLabel);
+		verticalStackLayout.Children.Add(pingLabel);
 
 		Content = verticalStackLayout;
 	}
