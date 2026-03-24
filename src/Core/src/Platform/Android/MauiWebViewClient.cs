@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
+			RefreshViewWebViewScrollCapture.Reset(view);
+
 			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null)
 				return;
 
@@ -64,6 +66,7 @@ namespace Microsoft.Maui.Platform
 			handler.SyncPlatformCookiesToVirtualView(url);
 
 			handler?.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
+			RefreshViewWebViewScrollCapture.InjectObserver(view);
 
 			base.OnPageFinished(view, url);
 		}
