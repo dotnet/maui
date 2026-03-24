@@ -50,6 +50,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private object _emptyView;
 	private object _header;
 	private object _footer;
+	private FlowDirection _flowDirection;
 	private DataTemplate _emptyViewTemplate;
 	private DataTemplate _headerTemplate;
 	private DataTemplate _footerTemplate;
@@ -153,6 +154,12 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	{
 		get => _header;
 		set { _header = value; OnPropertyChanged(); }
+	}
+
+	public FlowDirection FlowDirection
+	{
+		get => _flowDirection;
+		set { _flowDirection = value; OnPropertyChanged(); }
 	}
 
 	public object Footer
