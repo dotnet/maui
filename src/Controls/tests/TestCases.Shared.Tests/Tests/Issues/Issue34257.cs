@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -36,4 +35,3 @@ public class Issue34257 : _IssuesUITest
 		Assert.That(firstColumnBefore.Y, Is.Not.EqualTo(firstColumnAfter.Y), $"Expected the first row to move");
 	}
 }
-#endif
