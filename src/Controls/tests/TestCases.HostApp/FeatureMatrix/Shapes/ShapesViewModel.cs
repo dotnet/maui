@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 
@@ -50,9 +51,9 @@ public class ShapesViewModel : INotifyPropertyChanged
 		Y1 = 0;
 		X2 = 280;
 		Y2 = 0;
-		Points = "100,50 150,100 100,150 50,100";
+		Points = "100,20 170,75 100,130 30,75";
 		PolylinePoints = "50,100 100,50 150,100 200,50 250,100";
-		PathData = "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z";
+		PathData = "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z";
 	}
 	public bool HasShadow
 	{
@@ -237,7 +238,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Polygon/Polyline Points
-	private string _points = "100,50 150,100 100,150 50,100";
+	private string _points = "100,20 170,75 100,130 30,75";
 	public string Points
 	{
 		get => _points;
@@ -265,7 +266,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Path Data
-	private string _pathData = "M 10,100 C 10,100 40,-20 100,50 C 160,-20 190,100 190,100 C 190,100 100,190 100,190 C 100,190 10,100 10,100 Z";
+	private string _pathData = "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z";
 
 	public string PathData
 	{
@@ -280,50 +281,26 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Computed properties for proper data types
-	public PointCollection PolygonPointCollection
-	{
-		get
-		{
-			var points = new PointCollection();
-			if (!string.IsNullOrWhiteSpace(_points))
-			{
-				var pointPairs = _points.Split(' ');
-				foreach (var pointPair in pointPairs)
-				{
-					var coords = pointPair.Split(',');
-					if (coords.Length == 2 &&
-						double.TryParse(coords[0], out double x) &&
-						double.TryParse(coords[1], out double y))
-					{
-						points.Add(new Point(x, y));
-					}
-				}
-			}
-			return points;
-		}
-	}
+	public PointCollection PolygonPointCollection => ParsePointCollection(_points);
 
-	public PointCollection PolylinePointCollection
+	public PointCollection PolylinePointCollection => ParsePointCollection(_polylinePoints);
+
+	static PointCollection ParsePointCollection(string input)
 	{
-		get
-		{
-			var points = new PointCollection();
-			if (!string.IsNullOrWhiteSpace(_polylinePoints))
-			{
-				var pointPairs = _polylinePoints.Split(' ');
-				foreach (var pointPair in pointPairs)
-				{
-					var coords = pointPair.Split(',');
-					if (coords.Length == 2 &&
-						double.TryParse(coords[0], out double x) &&
-						double.TryParse(coords[1], out double y))
-					{
-						points.Add(new Point(x, y));
-					}
-				}
-			}
+		var points = new PointCollection();
+		if (string.IsNullOrWhiteSpace(input))
 			return points;
+		foreach (var pair in input.Split(' '))
+		{
+			var coords = pair.Split(',');
+			if (coords.Length == 2 &&
+				double.TryParse(coords[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
+				double.TryParse(coords[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
+			{
+				points.Add(new Point(x, y));
+			}
 		}
+		return points;
 	}
 
 	public DoubleCollection StrokeDashCollection
@@ -357,9 +334,9 @@ public class ShapesViewModel : INotifyPropertyChanged
 					return (Geometry)_pathGeometryConverter.ConvertFromInvariantString(_pathData);
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
-				// Return a simple default path if parsing fails
+				System.Diagnostics.Debug.WriteLine($"PathGeometry parse failed: {ex.Message}");
 			}
 			return (Geometry)_pathGeometryConverter.ConvertFromInvariantString("M 10,100 L 100,100");
 		}
