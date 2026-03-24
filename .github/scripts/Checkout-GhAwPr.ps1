@@ -54,42 +54,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 Add-Content -Path $env:GITHUB_ENV -Value "BASE_SHA=$BaseSha"
 
-# ── Fork guard for issue_comment triggers ────────────────────────────────────
-# The gh-aw platform inserts checkout_pr_branch.cjs AFTER all user steps,
-# which re-checks out the fork branch and overwrites our restored skill files.
-# Until gh-aw supports post-platform user steps, fork PRs must use
-# workflow_dispatch instead. See: https://github.com/github/gh-aw/issues/18481
-
-if ($env:GITHUB_EVENT_NAME -eq 'issue_comment') {
-    $HeadRepoId = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY `
-        --json headRepository --jq '.headRepository.id' 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $HeadRepoId) {
-        Write-Host "❌ Failed to query PR repository info (API error). Blocking for safety."
-        exit 1
-    }
-
-    $BaseRepoId = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY `
-        --json baseRepository --jq '.baseRepository.id' 2>$null
-    if ($LASTEXITCODE -ne 0 -or -not $BaseRepoId) {
-        Write-Host "❌ Failed to query PR repository info (API error). Blocking for safety."
-        exit 1
-    }
-
-    if ($HeadRepoId -ne $BaseRepoId) {
-        Write-Host "❌ Slash commands are not supported on fork PRs for $WorkflowDisplayName."
-        Write-Host ""
-        Write-Host "The gh-aw platform re-checks out the PR branch after our restore step,"
-        Write-Host "which would overwrite the trusted skill and instruction files the agent"
-        Write-Host "needs. See: https://github.com/github/gh-aw/issues/18481"
-        Write-Host ""
-        Write-Host "Workaround: use workflow_dispatch instead:"
-        Write-Host "  Actions tab -> '$WorkflowDisplayName' -> 'Run workflow' -> enter PR number"
-        Write-Host ""
-        Write-Host "This achieves the same result and works for all PRs including forks."
-        exit 1
-    }
-}
-
 # ── Checkout PR branch ──────────────────────────────────────────────────────
 
 Write-Host "Checking out PR #$PrNumber..."
@@ -102,9 +66,11 @@ Write-Host "✅ Checked out PR #$PrNumber"
 git log --oneline -1
 
 # ── Restore agent infrastructure from base branch ────────────────────────────
-# For fork PRs (workflow_dispatch path), the PR branch won't have
-# .github/skills/ or .github/instructions/. Restore from base branch.
-# For same-repo PRs, this replaces files with base branch copies.
+# Best-effort restore of skill/instruction files from the base branch.
+# - workflow_dispatch: platform checkout is skipped, so this IS the final state
+# - issue_comment: platform's checkout_pr_branch.cjs runs after and may overwrite,
+#   but if the fork is rebased on main, the files will already be there
+# - pull_request (same-repo): files already exist, this is a no-op
 # rm -rf first to prevent fork-added files from surviving the restore.
 
 if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
@@ -114,6 +80,5 @@ git checkout $BaseSha -- .github/skills/ .github/instructions/ .github/copilot-i
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Restored agent infrastructure from base branch ($BaseSha)"
 } else {
-    Write-Host "❌ Failed to restore agent infrastructure from $BaseSha"
-    exit 1
+    Write-Host "⚠️ Could not restore agent infrastructure from base branch — files may come from the PR branch"
 }

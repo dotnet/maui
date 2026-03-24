@@ -91,6 +91,26 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 
 The PR branch has been checked out for you. All files from the PR are available locally.
 
+## Pre-flight check
+
+Before starting, verify the skill file exists:
+
+```bash
+test -f .github/skills/evaluate-pr-tests/SKILL.md
+```
+
+If the file is **missing**, the fork PR branch is likely not rebased on the latest `main`. Post a comment using `add_comment`:
+
+```markdown
+## 🧪 PR Test Evaluation
+
+❌ **Cannot evaluate**: this PR's branch does not include the evaluate-pr-tests skill (`.github/skills/evaluate-pr-tests/SKILL.md` is missing).
+
+**Fix**: rebase your fork on the latest `main` branch, or use the **workflow_dispatch** trigger (Actions tab → "Evaluate PR Tests" → "Run workflow" → enter PR number) which handles this automatically.
+```
+
+Then stop — do not proceed with the evaluation.
+
 ## Running the skill
 
 1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). If `gh` CLI is unavailable, use the GitHub MCP tools instead.
