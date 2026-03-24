@@ -6,7 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Core.View;
+using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.ApplicationModel;

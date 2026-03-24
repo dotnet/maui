@@ -1,4 +1,4 @@
-#if ANDROID // This test validates Android-specific layout behavior with soft keyboard and navigation
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,23 +20,23 @@ public class Issue34584 : _IssuesUITest
 		// Wait for the main page to load
 		App.WaitForElement("Entry");
 
-		// Tap the Entry to open the soft keyboard
+		// Focus Entry and open keyboard
 		App.Tap("Entry");
 
-		// Enter text to ensure the IME is fully visible
+		// Enter text to ensure IME is active
 		App.EnterText("Entry", "test");
 
-		// Tap the navigate button to go to the destination page
-		App.Tap("NavigateButton");
+		//  Trigger navigation while IME is still open
+		App.PressEnter();
 
-		// Wait for the destination page to load
+		// Wait for destination page
 		App.WaitForElement("TargetLabel");
 
-		// Get the rect of the label on the destination page
-		var labelRect = App.FindElement("TargetLabel").GetRect();
+		var label = App.FindElement("TargetLabel");
+		Assert.That(label, Is.Not.Null);
 
-		// The label should be positioned below the status bar (Y > 0)
-		// If Y == 0, the content is rendering under the status bar which is the bug
+		var labelRect = label.GetRect();
+
 		Assert.That(labelRect.Y, Is.GreaterThan(0),
 			"TargetLabel should not be at Y=0 (would be under the status bar)");
 	}

@@ -8,22 +8,8 @@ public class Issue34584 : TestShell
 		var mainPage = new Issue34584_MainPage();
 		var destinationPage = new Issue34584_DestinationPage();
 
-		var shellContent1 = new ShellContent
-		{
-			Title = "Main",
-			Route = "MainPage",
-			Content = mainPage
-		};
-
-		var shellContent2 = new ShellContent
-		{
-			Title = "Destination",
-			Route = "DestinationPage",
-			Content = destinationPage
-		};
-
-		Items.Add(shellContent1);
-		Items.Add(shellContent2);
+		AddContentPage(mainPage, "MainPage");
+		AddContentPage(destinationPage, "DestinationPage");
 	}
 }
 
@@ -43,7 +29,7 @@ public class Issue34584_MainPage : ContentPage
 			AutomationId = "NavigateButton"
 		};
 
-		navigateButton.Clicked += async (s, e) =>
+		entry.Completed += async (s, e) =>
 		{
 			await Shell.Current.GoToAsync("//DestinationPage", false);
 		};
