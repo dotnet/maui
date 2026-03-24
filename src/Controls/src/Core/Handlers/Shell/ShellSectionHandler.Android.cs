@@ -374,6 +374,18 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _pendingTopTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
             {
+                // Detach TabLayout from any existing parent before wrapping in a new ViewFragment.
+                // PlaceTopTabs/RemoveTopTabs use deferred .Commit() via RunOrWaitForResume.
+                // During clear+recreate (Items.Clear() then AddTopTabs()), RemoveTopTabs schedules
+                // a deferred removal of the old ViewFragment, then PlaceTopTabs schedules a deferred
+                // Replace with a new ViewFragment wrapping the same TabLayout. When both execute,
+                // the old fragment hasn't released _contentTabLayout yet, so addViewToContainer()
+                // crashes with "child already has a parent".
+                if (_contentTabLayout?.Parent is ViewGroup oldParent)
+                {
+                    oldParent.RemoveView(_contentTabLayout);
+                }
+
                 _topTabFragment = new ViewFragment(_contentTabLayout);
 
                 fm
