@@ -13,7 +13,7 @@
                      <Button Text="Apply"
                              FontSize="14"
                              Clicked="ApplyButton_Clicked"
-                             AutomationId="ApplyButton"/>
+                             AutomationId="Apply"/>
               </VerticalStackLayout>
               <!-- Left Column: Editor property toggles and settings -->
               <VerticalStackLayout Grid.Column="0"
@@ -48,13 +48,16 @@
                             <Button Text="Start"
                                     AutomationId="HStart"
                                     FontSize="10"
+                                    Padding="6"
                                     Clicked="HorizontalAlignmentButton_Clicked"/>
                             <Button Text="Center"
                                     AutomationId="HCenter"
                                     FontSize="10"
+                                    Padding="6"
                                     Clicked="HorizontalAlignmentButton_Clicked"/>
                             <Button Text="End"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="HEnd"
                                     Clicked="HorizontalAlignmentButton_Clicked"/>
                      </HorizontalStackLayout>
@@ -66,13 +69,16 @@
                             <Button Text="Start"
                                     AutomationId="VStart"
                                     FontSize="10"
+                                    Padding="6"
                                     Clicked="VerticalAlignmentButton_Clicked"/>
                             <Button Text="Center"
                                     AutomationId="VCenter"
                                     FontSize="10"
+                                    Padding="6"
                                     Clicked="VerticalAlignmentButton_Clicked"/>
                             <Button Text="End"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="VEnd"
                                     Clicked="VerticalAlignmentButton_Clicked"/>
                      </HorizontalStackLayout>
@@ -154,10 +160,10 @@
                                          CheckedChanged="FlowDirection_CheckedChanged"/>
                      </HorizontalStackLayout>
                      <!-- IsVisible -->
-                     <Label Text="IsVisible:"
-                            FontSize="11"/>
                      <HorizontalStackLayout
                             Spacing="1">
+                            <Label Text="IsVisible:"
+                                   FontSize="11"/>
                             <RadioButton x:Name="IsVisibleTrue"
                                          Content="True"
                                          IsChecked="True"
@@ -173,10 +179,10 @@
                                          CheckedChanged="IsVisibleTrueOrFalse_Clicked"/>
                      </HorizontalStackLayout>
                      <!-- IsEnabled -->
-                     <Label Text="IsEnabled:"
-                            FontSize="11"/>
                      <HorizontalStackLayout
                             Spacing="1">
+                            <Label Text="IsEnabled:"
+                                   FontSize="11"/>
                             <RadioButton x:Name="IsEnabledTrue"
                                          Content="True"
                                          FontSize="11"
@@ -227,6 +233,18 @@
                                    FontSize="11"
                                    VerticalOptions="Center"/>
                      </HorizontalStackLayout>
+                     <!-- Opacity -->
+                     <HorizontalStackLayout>
+                            <Label Text="Opacity:"
+                                   FontSize="11"
+                                   VerticalTextAlignment="Center"/>
+                            <Entry x:Name="OpacityEntry"
+                                   Text="{Binding Opacity}"
+                                   AutomationId="OpacityEntry"
+                                   TextChanged="OpacityEditor_TextChanged"
+                                   FontSize="10"
+                                   WidthRequest="100"/>
+                     </HorizontalStackLayout>
               </VerticalStackLayout>
               <!-- Right Column: Color, spacing, keyboard, and other settings -->
               <VerticalStackLayout Grid.Column="1"
@@ -238,16 +256,19 @@
                             Spacing="1">
                             <Button Text="Default"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="TextColorDefault"
                                     Clicked="TextColorButton_Clicked"/>
                             <Button Text="Red"
                                     FontSize="10"
+                                    Padding="6"
                                     BackgroundColor="Red"
                                     TextColor="White"
                                     AutomationId="TextColorRed"
                                     Clicked="TextColorButton_Clicked"/>
                             <Button Text="Blue"
                                     FontSize="10"
+                                    Padding="6"
                                     BackgroundColor="Blue"
                                     TextColor="White"
                                     AutomationId="TextColorBlue"
@@ -260,16 +281,19 @@
                             Spacing="1">
                             <Button Text="Default"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="PlaceholderColorDefault"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                             <Button Text="Red"
                                     FontSize="10"
+                                          Padding="6"
                                     BackgroundColor="Red"
                                     TextColor="White"
                                     AutomationId="PlaceholderColorRed"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                             <Button Text="Blue"
                                     FontSize="10"
+                                          Padding="6"
                                     BackgroundColor="Blue"
                                     TextColor="White"
                                     AutomationId="PlaceholderColorBlue"
@@ -331,14 +355,17 @@
                                    Spacing="1">
                                    <Button Text="Default"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Default"
                                            Clicked="KeyboardButton_Clicked"/>
                                    <Button Text="Chat"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Chat"
                                            Clicked="KeyboardButton_Clicked"/>
                                    <Button Text="Url"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Url"
                                            Clicked="KeyboardButton_Clicked"/>
                             </HorizontalStackLayout>
@@ -346,10 +373,12 @@
                                    Spacing="1">
                                    <Button Text="Email"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Email"
                                            Clicked="KeyboardButton_Clicked"/>
                                    <Button Text="Numeric"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Numeric"
                                            Clicked="KeyboardButton_Clicked"/>
                             </HorizontalStackLayout>
@@ -357,10 +386,12 @@
                                    Spacing="1">
                                    <Button Text="Telephone"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Telephone"
                                            Clicked="KeyboardButton_Clicked"/>
                                    <Button Text="Text"
                                            FontSize="10"
+                                           Padding="6"
                                            AutomationId="Text"
                                            Clicked="KeyboardButton_Clicked"/>
                             </HorizontalStackLayout>
@@ -404,18 +435,21 @@
                      <HorizontalStackLayout Spacing="1">
                             <Button Text="None"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="BackgroundColorNone"
                                     Clicked="BackgroundColorButton_Clicked"/>
                             <Button Text="Yellow"
                                     BackgroundColor="Yellow"
                                     TextColor="Black"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="BackgroundColorYellow"
                                     Clicked="BackgroundColorButton_Clicked"/>
                             <Button Text="Blue"
                                     BackgroundColor="LightBlue"
                                     TextColor="Black"
                                     FontSize="10"
+                                    Padding="6"
                                     AutomationId="BackgroundColorLightBlue"
                                     Clicked="BackgroundColorButton_Clicked"/>
                      </HorizontalStackLayout>

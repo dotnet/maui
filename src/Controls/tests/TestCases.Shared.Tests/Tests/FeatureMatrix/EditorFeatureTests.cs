@@ -344,7 +344,7 @@ public class EditorFeatureTests : _GalleryUITest
 
 	[Test, Order(21)]
 	[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
-	public void VerifyEditorTextWhenIsTextPredictionEnabledTrueOrFalse()
+	public void VerifyEditorTextWhenIsTextPredictionEnabledTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -361,7 +361,7 @@ public class EditorFeatureTests : _GalleryUITest
 
 	[Test, Order(22)]
 	[Ignore("Fails on all platforms, related issue link: https://github.com/dotnet/maui/issues/29833")]
-	public void VerifyEditorTextWhenIsSpellCheckEnabledTrueOrFalse()
+	public void VerifyEditorTextWhenIsSpellCheckEnabledTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -409,6 +409,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		App.DismissKeyboard();
@@ -431,6 +432,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("3"));
+		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		App.DismissKeyboard();
@@ -491,7 +494,7 @@ public class EditorFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
 	[Test, Order(29)]
-	public void VerifyEditorControlWhenIsEnabledTrueOrFalse()
+	public void VerifyEditorControlWhenIsEnabledFalse()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -506,13 +509,8 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(30)]
-	public void VerifyEditorControlWhenIsVisibleTrueOrFalse()
+	public void VerifyEditorControlWhenIsVisibleFalse()
 	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEditor");
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("VisibleFalse");
@@ -615,7 +613,7 @@ public class EditorFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(36)]
-	public void VerifyEditorWhenTextChanged()
+	public void VerifyEditorTextDynamicChange()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -933,6 +931,45 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(55)]
+
+	public void VerifyEditorTextWhenAutoSizeTextChangesSetWithShortShrinkText()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("AutoSizeTextChanges");
+		App.Tap("AutoSizeTextChanges");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.GreaterThan(55));
+		App.WaitForElement("TestEditor");
+		App.ClearText("TestEditor");
+		App.EnterText("TestEditor", "Short text");
+		height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.LessThan(55));
+	}
+
+	[Test, Order(56)]
+	public void VerifyEditorTextWhenAutoSizeTextChangesSetWithHeightRequest()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "100");
+		App.WaitForElement("AutoSizeTextChanges");
+		App.Tap("AutoSizeTextChanges");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		var height = GetElementHeightInDip("TestEditor");
+		Assert.That(height, Is.LessThan(50).Within(5));
+	}
+
+
+	[Test, Order(57)]
 	public void VerifyEditorTextWhenFontAttributesBoldAndItalicSet()
 	{
 		App.WaitForElement("Options");
@@ -947,7 +984,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(56)]
+	[Test, Order(58)]
 	public void VerifyEditorPlaceholderTextWhenFontAttributesBoldAndItalicSet()
 	{
 		App.WaitForElement("Options");
@@ -967,7 +1004,57 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(57)]
+	[Test, Order(59)]
+	public void VerifyEditorWhenOpacitySet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(60)]
+	public void VerifyEditorWhenOpacityResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "1.0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(61)]
+	public void VerifyEditorWhenOpacitySetToZero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		// Verify element is not visible (opacity = 0)
+		App.WaitForNoElement("TestEditor");
+	}
+
+	[Test, Order(62)]
 	public void VerifyEditorWhenBackgroundColorSet()
 	{
 		App.WaitForElement("Options");
@@ -980,7 +1067,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(58)]
+	[Test, Order(63)]
 	public void VerifyEditorBackgroundColorWithTextColor()
 	{
 		App.WaitForElement("Options");
@@ -995,7 +1082,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(59)]
+	[Test, Order(64)]
 	public void VerifyEditorBackgroundColorWithPlaceholder()
 	{
 		App.WaitForElement("Options");
@@ -1014,7 +1101,7 @@ public class EditorFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link: https://github.com/dotnet/maui/issues/34611
-	[Test, Order(60)]
+	[Test, Order(65)]
 	public void VerifyEditorBackgroundColorResetToNone()
 	{
 		App.WaitForElement("Options");
@@ -1062,7 +1149,7 @@ public class EditorFeatureTests : _GalleryUITest
 	private (double Width, double Height) GetElementSizeInDip(string automationId)
 	{
 		var rect = App.WaitForElement(automationId).GetRect();
-#if ANDROID
+#if ANDROID || WINDOWS
 		var density = App.GetDisplayDensity();
 		if (density > 0)
 			return (rect.Width / density, rect.Height / density);

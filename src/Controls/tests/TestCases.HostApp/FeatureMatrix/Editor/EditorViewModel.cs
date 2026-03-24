@@ -28,6 +28,7 @@ public class EditorViewModel : INotifyPropertyChanged
 	private bool _hasShadow = false;
 	private Shadow _editorShadow = null;
 	private Color _backgroundColor = null;
+	private double _opacity = 1.0;
 	private TextTransform _transform = TextTransform.Default;
 	private FontAttributes _fontAttributes = FontAttributes.None;
 	private EditorAutoSizeOption _autoSizeOption = EditorAutoSizeOption.Disabled;
@@ -230,6 +231,19 @@ public class EditorViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public double Opacity
+	{
+		get => _opacity;
+		set
+		{
+			if (_opacity != value)
+			{
+				_opacity = value;
+				OnPropertyChanged(nameof(Opacity));
+			}
+		}
+	}
+
 	public TextTransform TextTransform
 	{
 		get => _transform;
@@ -288,6 +302,7 @@ public class EditorViewModel : INotifyPropertyChanged
 		FlowDirection = FlowDirection.LeftToRight;
 		HasShadow = false;
 		BackgroundColor = null;
+		Opacity = 1.0;
 		TextTransform = TextTransform.Default;
 		FontAttributes = FontAttributes.None;
 		AutoSizeOption = EditorAutoSizeOption.Disabled;

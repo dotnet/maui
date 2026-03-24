@@ -30,6 +30,7 @@
                                   IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
                                   Shadow="{Binding EditorShadow}"
                                   BackgroundColor="{Binding BackgroundColor}"
+                                  Opacity="{Binding Opacity}"
                                   MaxLength="{Binding MaxLength}"
                                   SelectionLength="{Binding SelectionLength}"
                                   CursorPosition="{Binding CursorPosition, Mode=TwoWay}"
@@ -54,7 +55,7 @@
               <Button Text="Options"
                       FontSize="11"
                       Clicked="NavigateToOptionsPage_Clicked"
-                      AutomationId="OptionsButton"
+                      AutomationId="Options"
                       Margin="0,10,0,0"/>
 
               <Grid ColumnSpacing="10"

@@ -279,5 +279,15 @@ public partial class EditorOptionsPage : ContentPage
 			_viewModel.AutoSizeOption = EditorAutoSizeOption.Disabled;
 		}
 	}
+
+	private void OpacityEditor_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double opacity))
+		{
+			// Clamp opacity between 0.0 and 1.0
+			opacity = Math.Clamp(opacity, 0.0, 1.0);
+			_viewModel.Opacity = opacity;
+		}
+	}
 }
 
