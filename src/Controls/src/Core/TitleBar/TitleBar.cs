@@ -47,8 +47,14 @@ namespace Microsoft.Maui.Controls
 		internal const string TitleBarLTRState = "TitleBarLeftToRight";
 		internal const string TitleBarRTLState = "TitleBarRightToLeft";
 
-		// Margin space (80px) required for Mac Catalyst window traffic light controls when not in fullscreen
+		// Margin space required for Mac Catalyst window traffic light controls when not in fullscreen
 		const int MacCatalystMargin = 80;
+		const int MacCatalystMarginLiquidGlass = 90; // Mac Catalyst 26+ (Liquid Glass UI)
+
+#if MACCATALYST
+		static int GetMacCatalystLeadingMargin() =>
+			OperatingSystem.IsMacCatalystVersionAtLeast(26) ? MacCatalystMarginLiquidGlass : MacCatalystMargin;
+#endif
 
 		// Margin space (150px) required for Windows title bar system buttons
 		const int WindowsMargin = 150;
@@ -372,9 +378,7 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = OperatingSystem.IsMacCatalystVersionAtLeast(26)
-					? new Thickness(90, 0, 0, 0)
-					: new Thickness(80, 0, 0, 0),
+				Margin = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
@@ -581,7 +585,7 @@ namespace Microsoft.Maui.Controls
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
 #if MACCATALYST
-				Value = new Thickness(MacCatalystMargin, 0, 0, 0)  // System buttons on left in macOS
+				Value = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0)  // System buttons on left in macOS
 #else
 				Value = new Thickness(0, 0, WindowsMargin, 0)  // System buttons on right in Windows
 #endif
@@ -595,7 +599,7 @@ namespace Microsoft.Maui.Controls
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
 #if MACCATALYST
-				Value = new Thickness(0, 0, MacCatalystMargin, 0)  // System buttons on right in macOS RTL
+				Value = new Thickness(0, 0, GetMacCatalystLeadingMargin(), 0)  // System buttons on right in macOS RTL
 #else
 				Value = new Thickness(WindowsMargin, 0, 0, 0)  // System buttons on left in Windows RTL
 #endif
