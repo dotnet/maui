@@ -61,16 +61,13 @@ Reference: https://securitylab.github.com/resources/github-actions-preventing-pw
 | `pull_request` | ✅ Yes | Blocked by auto-generated activation gate |
 | `workflow_dispatch` | ❌ Skipped | ✅ Works — user steps handle checkout and restore is final |
 | `issue_comment` (same-repo) | ✅ Yes | ✅ Works — files already on PR branch |
-| `issue_comment` (fork, rebased) | ✅ Yes (re-checkouts after user steps) | ✅ Works — fork has files from `main` |
-| `issue_comment` (fork, stale) | ✅ Yes (re-checkouts after user steps) | ⚠️ Agent detects missing `SKILL.md`, posts "please rebase" |
+| `issue_comment` (fork) | N/A | ❌ Blocked by fail-closed fork guard in `Checkout-GhAwPr.ps1` |
 
 ### The `issue_comment` + Fork Problem
 
-For `/slash-command` triggers on fork PRs, `checkout_pr_branch.cjs` runs AFTER all user steps and re-checks out the fork branch. This overwrites any files restored by user steps (e.g., `.github/skills/`). There is no way to run user steps after platform steps.
+For `/slash-command` triggers on fork PRs, `checkout_pr_branch.cjs` runs AFTER all user steps and re-checks out the fork branch. This overwrites any files restored by user steps (e.g., `.github/skills/`). There is no way to run user steps after platform steps. A fork could include a crafted `SKILL.md` that alters the agent's evaluation behavior.
 
-**Current approach (optimistic path):** No fork guard. The checkout + restore runs for all PRs. For rebased forks, the skill/instruction files are already present on the fork branch and everything works. For stale forks, `SKILL.md` is missing and the agent's pre-flight check posts a "please rebase or use `workflow_dispatch`" message.
-
-**Known limitation:** A fork author could craft a modified `SKILL.md` or `Gather-TestContext.ps1` that the agent reads via `issue_comment`. The impact is limited to one misleading PR comment (agent is sandboxed with no credentials, max 1 sanitized comment, prompt rendered from base branch). This is an accepted tradeoff for the better UX on rebased forks.
+**Current approach (fail-closed fork guard):** `Checkout-GhAwPr.ps1` checks `isCrossRepository` via `gh pr view` for `issue_comment` triggers. If the PR is from a fork or the API call fails, the script exits with code 1. Fork PRs should use `workflow_dispatch` instead, where `checkout_pr_branch.cjs` is skipped and the user step restore is the final workspace state.
 
 **Upstream issue:** [github/gh-aw#18481](https://github.com/github/gh-aw/issues/18481) — "Using gh-aw in forks of repositories"
 
@@ -89,15 +86,16 @@ steps:
 
 The script:
 1. Captures the base branch SHA before checkout
-2. Checks out the PR branch via `gh pr checkout`
-3. Deletes `.github/skills/` and `.github/instructions/` (prevents fork-added files)
-4. Restores them from the base branch SHA (best-effort, non-fatal)
+2. **Fork guard** (`issue_comment` only): checks `isCrossRepository` — exits 1 if fork or API failure
+3. Checks out the PR branch via `gh pr checkout`
+4. Deletes `.github/skills/` and `.github/instructions/` (prevents fork-added files)
+5. Restores them from the base branch SHA (best-effort, non-fatal)
 
 **Behavior by trigger:**
-- **`workflow_dispatch`**: Platform checkout is skipped, so the restore IS the final workspace state (trusted files from base branch)
-- **`issue_comment`** (same-repo): Platform re-checks out PR branch — files already match, effectively a no-op
-- **`issue_comment`** (fork, rebased): Platform re-checks out fork — files from `main` are already present
-- **`issue_comment`** (fork, stale): Platform re-checks out fork — files missing, agent detects and posts error
+- **`workflow_dispatch`**: Fork guard skipped. Platform checkout is skipped, so the restore IS the final workspace state (trusted files from base branch)
+- **`issue_comment`** (same-repo): Fork guard passes. Platform re-checks out PR branch — files already match, effectively a no-op
+- **`issue_comment`** (fork): Fork guard rejects — exits 1 with actionable notice to use `workflow_dispatch`
+- **`pull_request`** (same-repo): Fork guard skipped. Files already exist, restore is a no-op
 
 ### Anti-Patterns
 
@@ -217,8 +215,8 @@ Manual triggers (`workflow_dispatch`, `issue_comment`) should bypass the gate. N
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | Agent evaluates wrong PR | `workflow_dispatch` checks out workflow branch | Add `gh pr checkout` in `steps:` |
-| Agent can't find SKILL.md | Fork PR branch doesn't have `.github/skills/` | Add base branch restore step |
 | Agent can't find SKILL.md | Fork PR branch doesn't have `.github/skills/` | Agent posts "rebase or use `workflow_dispatch`" message; or rebase fork on `main` |
+| Fork PR rejected on `/evaluate-tests` | Fail-closed fork guard in `Checkout-GhAwPr.ps1` | Use `workflow_dispatch` with `pr_number` input instead |
 | `gh` commands fail in agent | Credentials scrubbed inside container | Move to `steps:` section |
 | Lock file out of date | Forgot to recompile | Run `gh aw compile` |
 | Integrity filtering warning | MCP reading fork PR data | Expected, non-blocking |

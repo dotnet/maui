@@ -431,7 +431,16 @@ $report += ""
 $report += "| Category | Count | Files |"
 $report += "|----------|-------|-------|"
 
-function Format-FileList { param([string[]]$files) if ($files.Count -eq 0) { return "_none_" } return ($files | ForEach-Object { "``$_``" }) -join ", " }
+function Format-FileList {
+    param([string[]]$files)
+    if ($files.Count -eq 0) { return "_none_" }
+    return ($files | ForEach-Object {
+        # Escape markdown metacharacters to prevent injection via crafted filenames.
+        # Use double-backtick code spans (`` ... ``) so literal backticks render correctly.
+        $escaped = $_ -replace '\|', '\|' -replace '<', '&lt;' -replace '>', '&gt;'
+        "````$escaped````"
+    }) -join ", "
+}
 
 $report += "| **Fix files** | $($fixFiles.Count) | $(Format-FileList $fixFiles) |"
 $report += "| **UI Tests (NUnit)** | $($uiTestFiles.Count) | $(Format-FileList $uiTestFiles) |"
