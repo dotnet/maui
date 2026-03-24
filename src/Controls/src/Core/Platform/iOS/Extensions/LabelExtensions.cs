@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 			switch (label.TextType)
 			{
 				case TextType.Html:
-					// NOTE: Setting HTML text this will crash with some sort of consistency error
+					// NOTE: Setting HTML text like this will crash with some sort of consistency error.
 					// when inside a CV1 (CollectionView/CarouselView handler v1) layout pass.
 					// https://github.com/dotnet/maui/issues/25946
 					// CV2 (the default handler in .NET 10) does NOT have this crash.
