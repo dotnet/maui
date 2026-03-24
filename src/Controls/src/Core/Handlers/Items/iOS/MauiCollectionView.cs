@@ -82,7 +82,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 		DispatchQueue.MainQueue.DispatchAsync(() =>
 		{
-			var indexPath = NSIndexPath.Create(section, item);
+			using var indexPath = NSIndexPath.Create(section, item);
 			ScrollToItem(indexPath, scrollPosition, false);
 		});
 	}
@@ -190,6 +190,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		else
 		{
 			StopContentOffsetObserver();
+			ClearPendingScrollRestore();
 		}
 #endif
 	}
