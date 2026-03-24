@@ -3,7 +3,7 @@
 
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Providers.Android;
-using Moq;
+using Microsoft.Maui.Client.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Maui.Client.Tests;
@@ -23,23 +23,23 @@ public class AndroidProviderTests
 			new SdkPackage { Path = "build-tools;34.0.0" } // Not a system image
 		};
 
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(packages);
-		mockProvider.Setup(x => x.GetMostRecentSystemImageAsync(It.IsAny<CancellationToken>()))
-			.Returns(async (CancellationToken ct) =>
+		var provider = new FakeAndroidProvider
+		{
+			InstalledPackages = packages,
+			GetMostRecentSystemImageFunc = async ct =>
 			{
-				var pkgs = await mockProvider.Object.GetInstalledPackagesAsync(ct);
+				var pkgs = packages;
 				return pkgs
 					.Where(p => p.Path.StartsWith("system-images;android-", StringComparison.OrdinalIgnoreCase))
 					.Select(p => new { Package = p, ApiLevel = ExtractApiLevel(p.Path) })
 					.Where(x => x.ApiLevel > 0)
 					.OrderByDescending(x => x.ApiLevel)
 					.FirstOrDefault()?.Package.Path;
-			});
+			}
+		};
 
 		// Act
-		var result = await mockProvider.Object.GetMostRecentSystemImageAsync();
+		var result = await provider.GetMostRecentSystemImageAsync();
 
 		// Assert
 		Assert.Equal("system-images;android-35;google_apis;arm64-v8a", result);
@@ -49,20 +49,18 @@ public class AndroidProviderTests
 	public async Task GetMostRecentSystemImageAsync_ReturnsNull_WhenNoSystemImages()
 	{
 		// Arrange
-		var packages = new List<SdkPackage>
+		var provider = new FakeAndroidProvider
 		{
-			new SdkPackage { Path = "platform-tools" },
-			new SdkPackage { Path = "build-tools;34.0.0" }
+			InstalledPackages = new List<SdkPackage>
+			{
+				new SdkPackage { Path = "platform-tools" },
+				new SdkPackage { Path = "build-tools;34.0.0" }
+			},
+			MostRecentSystemImage = null
 		};
 
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(packages);
-		mockProvider.Setup(x => x.GetMostRecentSystemImageAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync((string?)null);
-
 		// Act
-		var result = await mockProvider.Object.GetMostRecentSystemImageAsync();
+		var result = await provider.GetMostRecentSystemImageAsync();
 
 		// Assert
 		Assert.Null(result);
@@ -72,18 +70,10 @@ public class AndroidProviderTests
 	public async Task CreateAvdAsync_CreatesAvdWithCorrectParameters()
 	{
 		// Arrange
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.CreateAvdAsync(
-				It.IsAny<string>(),
-				It.IsAny<string>(),
-				It.IsAny<string>(),
-				It.IsAny<bool>(),
-				It.IsAny<CancellationToken>()))
-			.ReturnsAsync((string name, string device, string image, bool force, CancellationToken ct) =>
-				new AvdInfo { Name = name, DeviceProfile = device, SystemImage = image });
+		var provider = new FakeAndroidProvider();
 
 		// Act
-		var result = await mockProvider.Object.CreateAvdAsync(
+		var result = await provider.CreateAvdAsync(
 			"TestEmulator",
 			"pixel_6",
 			"system-images;android-35;google_apis;arm64-v8a");
@@ -98,55 +88,45 @@ public class AndroidProviderTests
 	public async Task DeleteAvdAsync_CallsDeleteWithCorrectName()
 	{
 		// Arrange
-		string? deletedAvdName = null;
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.DeleteAvdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-			.Callback<string, CancellationToken>((name, ct) => deletedAvdName = name)
-			.Returns(Task.CompletedTask);
+		var provider = new FakeAndroidProvider();
 
 		// Act
-		await mockProvider.Object.DeleteAvdAsync("MyEmulator");
+		await provider.DeleteAvdAsync("MyEmulator");
 
 		// Assert
-		Assert.Equal("MyEmulator", deletedAvdName);
-		mockProvider.Verify(x => x.DeleteAvdAsync("MyEmulator", It.IsAny<CancellationToken>()), Times.Once);
+		Assert.Single(provider.DeletedAvds);
+		Assert.Equal("MyEmulator", provider.DeletedAvds[0]);
 	}
 
 	[Fact]
 	public async Task StartAvdAsync_StartsWithCorrectOptions()
 	{
 		// Arrange
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.StartAvdAsync(
-				It.IsAny<string>(),
-				It.IsAny<bool>(),
-				It.IsAny<bool>(),
-				It.IsAny<CancellationToken>()))
-			.Returns(Task.CompletedTask);
+		var provider = new FakeAndroidProvider();
 
 		// Act
-		await mockProvider.Object.StartAvdAsync("TestEmulator", coldBoot: true, wait: true);
+		await provider.StartAvdAsync("TestEmulator", coldBoot: true, wait: true);
 
 		// Assert
-		mockProvider.Verify(x => x.StartAvdAsync("TestEmulator", true, true, It.IsAny<CancellationToken>()), Times.Once);
+		Assert.Single(provider.StartedAvds);
+		Assert.Equal(("TestEmulator", true, true), provider.StartedAvds[0]);
 	}
 
 	[Fact]
 	public async Task GetAvdsAsync_ReturnsAvdList()
 	{
 		// Arrange
-		var avds = new List<AvdInfo>
+		var provider = new FakeAndroidProvider
 		{
-			new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" },
-			new AvdInfo { Name = "Pixel_7_API_34", Target = "android-34", DeviceProfile = "pixel_7" }
+			Avds = new List<AvdInfo>
+			{
+				new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" },
+				new AvdInfo { Name = "Pixel_7_API_34", Target = "android-34", DeviceProfile = "pixel_7" }
+			}
 		};
 
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(avds);
-
 		// Act
-		var result = await mockProvider.Object.GetAvdsAsync();
+		var result = await provider.GetAvdsAsync();
 
 		// Assert
 		Assert.Equal(2, result.Count);
@@ -161,26 +141,19 @@ public class AndroidProviderTests
 		var progressMessages = new List<string>();
 		var progress = new Progress<string>(msg => progressMessages.Add(msg));
 
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.InstallAsync(
-				It.IsAny<string?>(),
-				It.IsAny<string?>(),
-				It.IsAny<int>(),
-				It.IsAny<IEnumerable<string>?>(),
-				It.IsAny<IProgress<string>?>(),
-				It.IsAny<CancellationToken>()))
-			.Callback<string?, string?, int, IEnumerable<string>?, IProgress<string>?, CancellationToken>(
-				(sdk, jdk, ver, pkgs, prog, ct) =>
-				{
-					prog?.Report("Step 1/4: Installing JDK...");
-					prog?.Report("Step 2/4: Installing Android SDK...");
-					prog?.Report("Step 3/4: Accepting licenses...");
-					prog?.Report("Step 4/4: Installing packages...");
-				})
-			.Returns(Task.CompletedTask);
+		var provider = new FakeAndroidProvider
+		{
+			InstallCallback = (sdk, jdk, ver, pkgs, prog, ct) =>
+			{
+				prog?.Report("Step 1/4: Installing JDK...");
+				prog?.Report("Step 2/4: Installing Android SDK...");
+				prog?.Report("Step 3/4: Accepting licenses...");
+				prog?.Report("Step 4/4: Installing packages...");
+			}
+		};
 
 		// Act
-		await mockProvider.Object.InstallAsync(progress: progress);
+		await provider.InstallAsync(progress: progress);
 
 		// Allow progress callbacks to complete
 		await Task.Delay(100);
@@ -196,23 +169,16 @@ public class AndroidProviderTests
 	public async Task InstallPackagesAsync_InstallsMultiplePackages()
 	{
 		// Arrange
-		IEnumerable<string>? installedPackages = null;
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.InstallPackagesAsync(
-				It.IsAny<IEnumerable<string>>(),
-				It.IsAny<bool>(),
-				It.IsAny<CancellationToken>()))
-			.Callback<IEnumerable<string>, bool, CancellationToken>((pkgs, accept, ct) => installedPackages = pkgs)
-			.Returns(Task.CompletedTask);
-
+		var provider = new FakeAndroidProvider();
 		var packages = new[] { "platform-tools", "build-tools;35.0.0", "platforms;android-35" };
 
 		// Act
-		await mockProvider.Object.InstallPackagesAsync(packages, acceptLicenses: true);
+		await provider.InstallPackagesAsync(packages, acceptLicenses: true);
 
 		// Assert
-		Assert.NotNull(installedPackages);
-		Assert.Equal(3, installedPackages.Count());
+		Assert.Single(provider.InstalledPackageSets);
+		var installedPackages = provider.InstalledPackageSets[0];
+		Assert.Equal(3, installedPackages.Count);
 		Assert.Contains("platform-tools", installedPackages);
 		Assert.Contains("build-tools;35.0.0", installedPackages);
 		Assert.Contains("platforms;android-35", installedPackages);
@@ -222,19 +188,18 @@ public class AndroidProviderTests
 	public async Task GetAvailablePackagesAsync_ReturnsAvailablePackages()
 	{
 		// Arrange
-		var availablePackages = new List<SdkPackage>
+		var provider = new FakeAndroidProvider
 		{
-			new SdkPackage { Path = "platforms;android-36", Version = "1", Description = "Android SDK Platform 36", IsInstalled = false },
-			new SdkPackage { Path = "system-images;android-36;google_apis;arm64-v8a", Version = "1", IsInstalled = false },
-			new SdkPackage { Path = "build-tools;36.0.0", Version = "36.0.0", IsInstalled = false }
+			AvailablePackages = new List<SdkPackage>
+			{
+				new SdkPackage { Path = "platforms;android-36", Version = "1", Description = "Android SDK Platform 36", IsInstalled = false },
+				new SdkPackage { Path = "system-images;android-36;google_apis;arm64-v8a", Version = "1", IsInstalled = false },
+				new SdkPackage { Path = "build-tools;36.0.0", Version = "36.0.0", IsInstalled = false }
+			}
 		};
 
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.GetAvailablePackagesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(availablePackages);
-
 		// Act
-		var result = await mockProvider.Object.GetAvailablePackagesAsync();
+		var result = await provider.GetAvailablePackagesAsync();
 
 		// Assert
 		Assert.Equal(3, result.Count);
@@ -247,19 +212,18 @@ public class AndroidProviderTests
 	public async Task GetInstalledPackagesAsync_SetsIsInstalledToTrue()
 	{
 		// Arrange
-		var installedPackages = new List<SdkPackage>
+		var provider = new FakeAndroidProvider
 		{
-			new SdkPackage { Path = "platforms;android-35", Version = "3", IsInstalled = true },
-			new SdkPackage { Path = "build-tools;35.0.0", Version = "35.0.0", IsInstalled = true },
-			new SdkPackage { Path = "platform-tools", Version = "35.0.2", IsInstalled = true }
+			InstalledPackages = new List<SdkPackage>
+			{
+				new SdkPackage { Path = "platforms;android-35", Version = "3", IsInstalled = true },
+				new SdkPackage { Path = "build-tools;35.0.0", Version = "35.0.0", IsInstalled = true },
+				new SdkPackage { Path = "platform-tools", Version = "35.0.2", IsInstalled = true }
+			}
 		};
 
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(installedPackages);
-
 		// Act
-		var result = await mockProvider.Object.GetInstalledPackagesAsync();
+		var result = await provider.GetInstalledPackagesAsync();
 
 		// Assert
 		Assert.Equal(3, result.Count);
@@ -270,26 +234,23 @@ public class AndroidProviderTests
 	public async Task GetAvailableAndInstalledPackages_CanBeCombined()
 	{
 		// Arrange
-		var installedPackages = new List<SdkPackage>
+		var provider = new FakeAndroidProvider
 		{
-			new SdkPackage { Path = "platforms;android-35", Version = "3", IsInstalled = true },
-			new SdkPackage { Path = "build-tools;35.0.0", Version = "35.0.0", IsInstalled = true }
+			InstalledPackages = new List<SdkPackage>
+			{
+				new SdkPackage { Path = "platforms;android-35", Version = "3", IsInstalled = true },
+				new SdkPackage { Path = "build-tools;35.0.0", Version = "35.0.0", IsInstalled = true }
+			},
+			AvailablePackages = new List<SdkPackage>
+			{
+				new SdkPackage { Path = "platforms;android-36", Version = "1", IsInstalled = false },
+				new SdkPackage { Path = "build-tools;36.0.0", Version = "36.0.0", IsInstalled = false }
+			}
 		};
-		var availablePackages = new List<SdkPackage>
-		{
-			new SdkPackage { Path = "platforms;android-36", Version = "1", IsInstalled = false },
-			new SdkPackage { Path = "build-tools;36.0.0", Version = "36.0.0", IsInstalled = false }
-		};
-
-		var mockProvider = new Mock<IAndroidProvider>();
-		mockProvider.Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(installedPackages);
-		mockProvider.Setup(x => x.GetAvailablePackagesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(availablePackages);
 
 		// Act
-		var installed = await mockProvider.Object.GetInstalledPackagesAsync();
-		var available = await mockProvider.Object.GetAvailablePackagesAsync();
+		var installed = await provider.GetInstalledPackagesAsync();
+		var available = await provider.GetAvailablePackagesAsync();
 		var allPackages = installed.Concat(available).ToList();
 
 		// Assert

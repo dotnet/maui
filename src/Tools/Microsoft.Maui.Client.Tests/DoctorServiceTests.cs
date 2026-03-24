@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Maui.Client.Models;
-using Microsoft.Maui.Client.Providers.Android;
-using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Services;
-using Moq;
+using Microsoft.Maui.Client.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Maui.Client.Tests;
@@ -16,15 +14,9 @@ public class DoctorServiceTests
 	public async Task RunAllChecksAsync_IncludesDotNetChecks()
 	{
 		// Arrange
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<HealthCheck>());
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<HealthCheck>());
-
-		var service = new DoctorService(mockAndroid.Object, mockApple.Object);
+		var fakeAndroid = new FakeAndroidProvider();
+		var fakeApple = new FakeAppleProvider();
+		var service = new DoctorService(fakeAndroid, fakeApple);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -38,32 +30,28 @@ public class DoctorServiceTests
 	public async Task RunAllChecksAsync_IncludesAndroidChecks_WhenProviderReturnsChecks()
 	{
 		// Arrange
-		var androidChecks = new List<HealthCheck>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new HealthCheck
+			HealthChecks = new List<HealthCheck>
 			{
-				Category = "android",
-				Name = "JDK",
-				Status = CheckStatus.Ok,
-				Message = "JDK 17"
-			},
-			new HealthCheck
-			{
-				Category = "android",
-				Name = "Android SDK",
-				Status = CheckStatus.Ok
+				new HealthCheck
+				{
+					Category = "android",
+					Name = "JDK",
+					Status = CheckStatus.Ok,
+					Message = "JDK 17"
+				},
+				new HealthCheck
+				{
+					Category = "android",
+					Name = "Android SDK",
+					Status = CheckStatus.Ok
+				}
 			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(androidChecks);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<HealthCheck>());
-
-		var service = new DoctorService(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var service = new DoctorService(fakeAndroid, fakeApple);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -77,22 +65,18 @@ public class DoctorServiceTests
 	public async Task RunAllChecksAsync_CalculatesCorrectSummary()
 	{
 		// Arrange
-		var androidChecks = new List<HealthCheck>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new HealthCheck { Category = "android", Name = "JDK", Status = CheckStatus.Ok },
-			new HealthCheck { Category = "android", Name = "SDK", Status = CheckStatus.Warning },
-			new HealthCheck { Category = "android", Name = "AVD", Status = CheckStatus.Error }
+			HealthChecks = new List<HealthCheck>
+			{
+				new HealthCheck { Category = "android", Name = "JDK", Status = CheckStatus.Ok },
+				new HealthCheck { Category = "android", Name = "SDK", Status = CheckStatus.Warning },
+				new HealthCheck { Category = "android", Name = "AVD", Status = CheckStatus.Error }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(androidChecks);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<HealthCheck>());
-
-		var service = new DoctorService(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var service = new DoctorService(fakeAndroid, fakeApple);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -107,20 +91,16 @@ public class DoctorServiceTests
 	public async Task RunAllChecksAsync_SetsStatusBasedOnChecks()
 	{
 		// Arrange - all OK
-		var okChecks = new List<HealthCheck>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new HealthCheck { Category = "android", Name = "JDK", Status = CheckStatus.Ok }
+			HealthChecks = new List<HealthCheck>
+			{
+				new HealthCheck { Category = "android", Name = "JDK", Status = CheckStatus.Ok }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(okChecks);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<HealthCheck>());
-
-		var service = new DoctorService(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var service = new DoctorService(fakeAndroid, fakeApple);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -133,20 +113,16 @@ public class DoctorServiceTests
 	public async Task RunAllChecksAsync_IncludesAndroidChecks_WhenProviderReturnsAndroidOnly()
 	{
 		// Arrange
-		var androidChecks = new List<HealthCheck>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new HealthCheck { Category = "android", Name = "JDK", Status = CheckStatus.Ok }
+			HealthChecks = new List<HealthCheck>
+			{
+				new HealthCheck { Category = "android", Name = "JDK", Status = CheckStatus.Ok }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(androidChecks);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.CheckHealthAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<HealthCheck>());
-
-		var service = new DoctorService(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var service = new DoctorService(fakeAndroid, fakeApple);
 
 		// Act
 		var report = await service.RunAllChecksAsync();

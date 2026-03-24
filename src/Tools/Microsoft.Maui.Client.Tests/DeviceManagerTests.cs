@@ -3,9 +3,8 @@
 
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Providers.Android;
-using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Services;
-using Moq;
+using Microsoft.Maui.Client.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Maui.Client.Tests;
@@ -16,27 +15,23 @@ public class DeviceManagerTests
 	public async Task GetAllDevicesAsync_CombinesAndroidAndAppleDevices()
 	{
 		// Arrange
-		var androidDevices = new List<Device>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new Device { Id = "emulator-5554", Name = "Pixel 6", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Booted, IsEmulator = true, IsRunning = true }
+			Devices = new List<Device>
+			{
+				new Device { Id = "emulator-5554", Name = "Pixel 6", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Booted, IsEmulator = true, IsRunning = true }
+			}
 		};
 
-		var iosDevices = new List<Device>
+		var fakeApple = new FakeAppleProvider
 		{
-			new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
+			Simulators = new List<Device>
+			{
+				new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(androidDevices);
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<AvdInfo>());
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(iosDevices);
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();
@@ -51,27 +46,23 @@ public class DeviceManagerTests
 	public async Task GetDevicesByPlatformAsync_FiltersCorrectly()
 	{
 		// Arrange
-		var androidDevices = new List<Device>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new Device { Id = "emulator-5554", Name = "Pixel 6", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Booted, IsEmulator = true, IsRunning = true }
+			Devices = new List<Device>
+			{
+				new Device { Id = "emulator-5554", Name = "Pixel 6", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Booted, IsEmulator = true, IsRunning = true }
+			}
 		};
 
-		var iosDevices = new List<Device>
+		var fakeApple = new FakeAppleProvider
 		{
-			new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
+			Simulators = new List<Device>
+			{
+				new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(androidDevices);
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<AvdInfo>());
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(iosDevices);
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var androidOnly = await manager.GetDevicesByPlatformAsync("android");
@@ -88,23 +79,17 @@ public class DeviceManagerTests
 	public async Task GetDeviceByIdAsync_FindsCorrectDevice()
 	{
 		// Arrange
-		var devices = new List<Device>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new Device { Id = "device-1", Name = "Device 1", Platforms = new[] { "android" }, Type = DeviceType.Physical, State = DeviceState.Booted, IsEmulator = false, IsRunning = true },
-			new Device { Id = "device-2", Name = "Device 2", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
+			Devices = new List<Device>
+			{
+				new Device { Id = "device-1", Name = "Device 1", Platforms = new[] { "android" }, Type = DeviceType.Physical, State = DeviceState.Booted, IsEmulator = false, IsRunning = true },
+				new Device { Id = "device-2", Name = "Device 2", Platforms = new[] { "android" }, Type = DeviceType.Emulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(devices);
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<AvdInfo>());
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<Device>());
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var device = await manager.GetDeviceByIdAsync("device-2");
@@ -119,17 +104,9 @@ public class DeviceManagerTests
 	public async Task GetDeviceByIdAsync_ReturnsNull_WhenNotFound()
 	{
 		// Arrange
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<Device>());
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<AvdInfo>());
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<Device>());
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var fakeAndroid = new FakeAndroidProvider();
+		var fakeApple = new FakeAppleProvider();
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var device = await manager.GetDeviceByIdAsync("nonexistent");
@@ -142,23 +119,16 @@ public class DeviceManagerTests
 	public async Task GetAllDevicesAsync_IncludesShutdownAvds()
 	{
 		// Arrange
-		var runningDevices = new List<Device>();
-		var avds = new List<AvdInfo>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35" }
+			Avds = new List<AvdInfo>
+			{
+				new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35" }
+			}
 		};
 
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(runningDevices);
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(avds);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<Device>());
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();
@@ -174,39 +144,31 @@ public class DeviceManagerTests
 	public async Task GetAllDevicesAsync_MergesRunningEmulatorWithAvd()
 	{
 		// Arrange: ADB returns a running emulator with AVD name in details
-		var runningDevices = new List<Device>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new Device
+			Devices = new List<Device>
 			{
-				Id = "emulator-5554",
-				Name = "Google sdk_gphone64_arm64",
-				Platforms = new[] { "android" },
-				Type = DeviceType.Emulator,
-				State = DeviceState.Booted,
-				IsEmulator = true,
-				IsRunning = true,
-				EmulatorId = "Pixel_6_API_35",
-				Details = new Dictionary<string, object> { ["avd"] = "Pixel_6_API_35" }
+				new Device
+				{
+					Id = "emulator-5554",
+					Name = "Google sdk_gphone64_arm64",
+					Platforms = new[] { "android" },
+					Type = DeviceType.Emulator,
+					State = DeviceState.Booted,
+					IsEmulator = true,
+					IsRunning = true,
+					EmulatorId = "Pixel_6_API_35",
+					Details = new Dictionary<string, object> { ["avd"] = "Pixel_6_API_35" }
+				}
+			},
+			Avds = new List<AvdInfo>
+			{
+				new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" }
 			}
 		};
 
-		// AVD manager returns the same emulator definition
-		var avds = new List<AvdInfo>
-		{
-			new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" }
-		};
-
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(runningDevices);
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(avds);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<Device>());
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();
@@ -222,39 +184,31 @@ public class DeviceManagerTests
 	public async Task GetAllDevicesAsync_MergesRunningEmulatorWithAvd_ByEmulatorId()
 	{
 		// Arrange: ADB returns a running emulator with EmulatorId set but no "avd" in Details
-		// This simulates the case where "emu avd name" succeeded but wasn't stored in Details
-		var runningDevices = new List<Device>
+		var fakeAndroid = new FakeAndroidProvider
 		{
-			new Device
+			Devices = new List<Device>
 			{
-				Id = "emulator-5554",
-				Name = "Google sdk_gphone64_arm64",
-				Platforms = new[] { "android" },
-				Type = DeviceType.Emulator,
-				State = DeviceState.Booted,
-				IsEmulator = true,
-				IsRunning = true,
-				EmulatorId = "Pixel_6_API_35",
-				Details = new Dictionary<string, object>()
+				new Device
+				{
+					Id = "emulator-5554",
+					Name = "Google sdk_gphone64_arm64",
+					Platforms = new[] { "android" },
+					Type = DeviceType.Emulator,
+					State = DeviceState.Booted,
+					IsEmulator = true,
+					IsRunning = true,
+					EmulatorId = "Pixel_6_API_35",
+					Details = new Dictionary<string, object>()
+				}
+			},
+			Avds = new List<AvdInfo>
+			{
+				new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" }
 			}
 		};
 
-		var avds = new List<AvdInfo>
-		{
-			new AvdInfo { Name = "Pixel_6_API_35", Target = "android-35", DeviceProfile = "pixel_6" }
-		};
-
-		var mockAndroid = new Mock<IAndroidProvider>();
-		mockAndroid.Setup(x => x.GetDevicesAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(runningDevices);
-		mockAndroid.Setup(x => x.GetAvdsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(avds);
-
-		var mockApple = new Mock<IAppleProvider>();
-		mockApple.Setup(x => x.ListSimulatorsAsync(It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new List<Device>());
-
-		var manager = new DeviceManager(mockAndroid.Object, mockApple.Object);
+		var fakeApple = new FakeAppleProvider();
+		var manager = new DeviceManager(fakeAndroid, fakeApple);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();

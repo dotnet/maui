@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Client.Providers.Android;
 using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Services;
-using Moq;
+using Microsoft.Maui.Client.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Maui.Client.Tests;
@@ -39,34 +39,34 @@ public class ServiceConfigurationTests
 	}
 
 	[Fact]
-	public void CreateTestServiceProvider_UsesProvidedMocks()
+	public void CreateTestServiceProvider_UsesProvidedFakes()
 	{
 		// Arrange
-		var mockAndroid = new Mock<IAndroidProvider>();
-		var mockApple = new Mock<IAppleProvider>();
+		var fakeAndroid = new FakeAndroidProvider();
+		var fakeApple = new FakeAppleProvider();
 
 		// Act
 		var provider = ServiceConfiguration.CreateTestServiceProvider(
-			androidProvider: mockAndroid.Object,
-			appleProvider: mockApple.Object);
+			androidProvider: fakeAndroid,
+			appleProvider: fakeApple);
 
 		// Assert
-		Assert.Same(mockAndroid.Object, provider.GetService<IAndroidProvider>());
-		Assert.Same(mockApple.Object, provider.GetService<IAppleProvider>());
+		Assert.Same(fakeAndroid, provider.GetService<IAndroidProvider>());
+		Assert.Same(fakeApple, provider.GetService<IAppleProvider>());
 	}
 
 	[Fact]
 	public void CreateTestServiceProvider_CreatesMissingServices()
 	{
-		// Arrange - only provide android mock
-		var mockAndroid = new Mock<IAndroidProvider>();
+		// Arrange - only provide android fake
+		var fakeAndroid = new FakeAndroidProvider();
 
 		// Act
 		var provider = ServiceConfiguration.CreateTestServiceProvider(
-			androidProvider: mockAndroid.Object);
+			androidProvider: fakeAndroid);
 
 		// Assert - should create real apple provider
-		Assert.Same(mockAndroid.Object, provider.GetService<IAndroidProvider>());
+		Assert.Same(fakeAndroid, provider.GetService<IAndroidProvider>());
 		Assert.NotNull(provider.GetService<IAppleProvider>());
 		Assert.IsType<AppleProvider>(provider.GetService<IAppleProvider>());
 	}
@@ -77,15 +77,15 @@ public class ServiceConfigurationTests
 		try
 		{
 			// Arrange
-			var mockAndroid = new Mock<IAndroidProvider>();
+			var fakeAndroid = new FakeAndroidProvider();
 			var testProvider = ServiceConfiguration.CreateTestServiceProvider(
-				androidProvider: mockAndroid.Object);
+				androidProvider: fakeAndroid);
 
 			// Act
 			Program.Services = testProvider;
 
 			// Assert
-			Assert.Same(mockAndroid.Object, Program.AndroidProvider);
+			Assert.Same(fakeAndroid, Program.AndroidProvider);
 		}
 		finally
 		{
