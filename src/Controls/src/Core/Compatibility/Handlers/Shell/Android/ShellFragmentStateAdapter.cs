@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		/// Invalidates the cached item ID for the given <paramref name="shellContent"/> so that
 		/// existing fragment and recreate it with the updated page content.
 		/// </summary>
-		public void InvalidateShellContent(ShellContent shellContent)
+		internal void InvalidateShellContent(ShellContent shellContent)
 		{
 			long removeKey = -1;
 			foreach (var item in _createdShellContent)
