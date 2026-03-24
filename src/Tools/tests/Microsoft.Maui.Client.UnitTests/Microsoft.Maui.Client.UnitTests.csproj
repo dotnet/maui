@@ -17,6 +17,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
 
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="Spectre.Console.Testing" Version="0.49.1" />
   </ItemGroup>
 

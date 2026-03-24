@@ -37,6 +37,7 @@
     <XUnitProject Include="$(RepoRoot)src/Essentials/test/UnitTests/Essentials.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj" />
     <XUnitProject Include="$(RepoRoot)src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj" />
+    <XUnitProject Include="$(RepoRoot)src/Tools/tests/Microsoft.Maui.Client.UnitTests/Microsoft.Maui.Client.UnitTests.csproj" />
   </ItemGroup>
 
   <!-- Prepare the staging directory for MSBuild test payloads - runs early during Restore -->
