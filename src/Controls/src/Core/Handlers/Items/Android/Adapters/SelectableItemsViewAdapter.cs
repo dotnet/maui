@@ -162,9 +162,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SelectableClicked(object sender, int adapterPosition)
 		{
-			if (!ItemsView.IsEnabled)
-				return;
-			
 			if (adapterPosition >= 0 && adapterPosition < ItemsSource?.Count)
 			{
 				UpdateMauiSelection(adapterPosition);

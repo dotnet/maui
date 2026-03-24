@@ -538,13 +538,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollHelper?.AdjustScroll();
 		}
 
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			if (!Enabled)
-                return false;
-            return base.OnTouchEvent(e);
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
