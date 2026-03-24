@@ -43,7 +43,7 @@ param(
     [int]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet('android', 'ios', 'windows', 'maccatalyst')]
+    [ValidateSet('android', 'ios', 'windows', 'maccatalyst', 'catalyst')]
     [string]$Platform,
 
     [Parameter(Mandatory = $false)]
@@ -482,12 +482,20 @@ $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
 $dryRunFlag = if ($DryRun) { @('-DryRun') } else { @() }
 
 # 3a: Post PR review phases (pre-flight, gate, try-fix, report)
+$aiSummaryCommentId = $null
 $reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
 if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
-        & $reviewScript -PRNumber $PRNumber @dryRunFlag
-        Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
+        $reviewOutput = & $reviewScript -PRNumber $PRNumber @dryRunFlag
+        # Capture comment ID from script output (format: COMMENT_ID=<id>)
+        $idLine = $reviewOutput | Where-Object { $_ -match '^COMMENT_ID=' } | Select-Object -Last 1
+        if ($idLine -match '^COMMENT_ID=(\d+)$') {
+            $aiSummaryCommentId = $Matches[1]
+            Write-Host "  ✅ PR review summary posted (comment ID: $aiSummaryCommentId)" -ForegroundColor Green
+        } else {
+            Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
+        }
     } catch {
         Write-Host "  ⚠️ PR review summary posting failed (non-fatal): $_" -ForegroundColor Yellow
     }
@@ -500,7 +508,11 @@ $finalizeScript = Join-Path $summaryScriptsDir "post-pr-finalize-comment.ps1"
 if (Test-Path $finalizeScript) {
     try {
         Write-Host "  📝 Posting PR finalize summary..." -ForegroundColor Cyan
-        & $finalizeScript -PRNumber $PRNumber @dryRunFlag
+        $finalizeArgs = @('-PRNumber', $PRNumber) + $dryRunFlag
+        if ($aiSummaryCommentId) {
+            $finalizeArgs += @('-ExistingCommentId', $aiSummaryCommentId)
+        }
+        & $finalizeScript @finalizeArgs
         Write-Host "  ✅ PR finalize summary posted" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ PR finalize summary posting failed (non-fatal): $_" -ForegroundColor Yellow

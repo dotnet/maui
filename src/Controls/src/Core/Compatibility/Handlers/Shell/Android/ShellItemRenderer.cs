@@ -176,7 +176,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// handle the more tab
 			var items = ((IShellItemController)ShellItem).GetItems();
-			for (int i = _bottomView.MaxItemCount - 1; i < items.Count; i++)
+			var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
+			for (int i = maxItems - 1; i < items.Count; i++)
 			{
 				var closure_i = i;
 				var shellContent = items[i];
@@ -376,7 +377,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
 
 				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
-				var maxItems = _bottomView.MaxItemCount;
+				var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
 				IMenuItem menuItem = null;
 
 				if (!(itemCount > maxItems && index > maxItems - 2))
