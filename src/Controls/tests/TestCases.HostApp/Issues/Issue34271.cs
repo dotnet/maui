@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34271, "CollectionView scroll position resets to top after ScrollTo last item when Picker is dismissed", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 34271, "CollectionView scroll position resets to top after ScrollTo last item when Picker is dismissed", PlatformAffected.macOS, isInternetRequired: true)]
 public class Issue34271 : ContentPage
 {
 	public record Monkey(string Name, string Location, string ImageUrl);

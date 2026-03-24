@@ -84,6 +84,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				mauiCV.ClearPendingScrollRestore();
 			}
+
+			base.DraggingStarted(scrollView);
 		}
 #endif
 
