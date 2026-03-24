@@ -1,4 +1,4 @@
-#if ANDROID			//More info : https://github.com/dotnet/maui/pull/33335
+#if IOS		//More info : https://github.com/dotnet/maui/pull/34510
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -34,8 +34,8 @@ public class Issue32275 : _IssuesUITest
 		App.Tap("ToggleHeaderFooter");
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
-		App.WaitForElement("Header");
-		App.WaitForElement("Footer");
+		App.WaitForElement("Header View");
+		App.WaitForElement("Footer View");
 		VerifyScreenshot();
 	}
 
@@ -62,8 +62,8 @@ public class Issue32275 : _IssuesUITest
 		App.Tap("ToggleHeaderFooter");
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
-		App.WaitForElement("Header");
-		App.WaitForElement("Footer");
+		App.WaitForElement("Header View");
+		App.WaitForElement("Footer View");
 		VerifyScreenshot();
 	}
 
@@ -92,8 +92,8 @@ public class Issue32275 : _IssuesUITest
 		App.WaitForElement("PageLoaded");
 		App.ShowFlyout();
 		App.WaitForElement("ContentView");
-		App.WaitForElement("Header");
-		App.WaitForElement("Footer");
+		App.WaitForElement("Header View");
+		App.WaitForElement("Footer View");
 		VerifyScreenshot();
 	}
 }
