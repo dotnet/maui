@@ -852,15 +852,17 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
             }
 
-            // The adapter's _sections reference is a live ReadOnlyCollection wrapping
-            // the internal ObservableCollection, so it already sees the new items.
-            // Just notify the adapter of the change — do NOT recreate it, as that would
-            // destroy and recreate all fragments (causing a visible content flicker).
+            // The adapter's _sections reference may be a live ReadOnlyCollection,
+            // but when items change visibility, positions shift and the position-based
+            // renderer cache becomes stale. Use UpdateSections() to clear the cache,
+            // remove stale IDs, and notify the adapter properly.
+            // Update OffscreenPageLimit BEFORE the adapter notification to prevent
+            // ViewPager2 from trying to bind positions beyond the new item count.
             if (_adapter is not null && _viewPager is not null)
             {
-                _adapter.NotifyDataSetChanged();
                 var shellSections = ((IShellItemController)VirtualView).GetItems();
                 _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
+                _adapter.UpdateSections(shellSections);
             }
 
             // Rebuild the bottom navigation menu for the updated sections
