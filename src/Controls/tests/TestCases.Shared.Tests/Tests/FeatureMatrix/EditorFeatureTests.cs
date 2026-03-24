@@ -302,7 +302,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		App.Tap("Editor Control"); // Add an additional tap to make the Editor control unfocus.
+		App.Tap("EditorControlTitleLabel"); // Add an additional tap to make the Editor control unfocus.
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -316,7 +316,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		App.Tap("Editor Control");
+		App.Tap("EditorControlTitleLabel"); // Add an additional tap to make the Editor control unfocus.
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextColorDefault");
@@ -324,7 +324,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		App.Tap("Editor Control"); // Add an additional tap to make the Editor control unfocus.
+		App.Tap("EditorControlTitleLabel"); // Add an additional tap to make the Editor control unfocus.
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -1013,7 +1013,7 @@ public class EditorFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link:
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link: https://github.com/dotnet/maui/issues/34611
 	[Test, Order(60)]
 	public void VerifyEditorBackgroundColorResetToNone()
 	{
