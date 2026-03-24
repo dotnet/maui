@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Open PR for iOS and Mac https://github.com/dotnet/maui/pull/27056
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,4 +20,3 @@ public class Issue29772 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif
