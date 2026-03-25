@@ -28,6 +28,7 @@ public class EntryViewModel : INotifyPropertyChanged
 	private bool _isVisible = true;
 	private bool _isEnabled = true;
 	private Color _backgroundColor = null;
+	private double _opacity = 1.0;
 	private double _widthRequest = -1;
 	private ClearButtonVisibility _clearButtonVisibility = ClearButtonVisibility.WhileEditing;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
@@ -175,6 +176,12 @@ public class EntryViewModel : INotifyPropertyChanged
 		set { _backgroundColor = value; OnPropertyChanged(); }
 	}
 
+	public double Opacity
+	{
+		get => _opacity;
+		set { _opacity = value; OnPropertyChanged(); }
+	}
+
 	public double WidthRequest
 	{
 		get => _widthRequest;
@@ -292,6 +299,7 @@ public class EntryViewModel : INotifyPropertyChanged
 		HeightRequest = -1;
 		WidthRequest = -1;
 		BackgroundColor = null;
+		Opacity = 1.0;
 		HorizontalTextAlignment = TextAlignment.Start;
 		VerticalTextAlignment = TextAlignment.Center;
 		IsPassword = false;

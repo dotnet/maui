@@ -41,6 +41,7 @@
                                  HeightRequest="{Binding HeightRequest}"
                                  WidthRequest="{Binding WidthRequest}"
                                  BackgroundColor="{Binding BackgroundColor}"
+                                 Opacity="{Binding Opacity}"
                                  FontAttributes="{Binding FontAttributes}"
                                  TextTransform="{Binding TextTransform}"
                                  TextChanged="EntryControl_TextChanged"

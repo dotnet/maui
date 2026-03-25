@@ -296,10 +296,8 @@
                      <Label Text="Text Color:"
                             FontSize="10"/>
                      <HorizontalStackLayout Spacing="1">
-                            <Button Text="Black"
-                                    BackgroundColor="Black"
-                                    TextColor="White"
-                                    AutomationId="TextColorBlack"
+                            <Button Text="Default"
+                                    AutomationId="TextColorDefault"
                                     FontSize="9"
                                     Padding="6"
                                     Clicked="TextColorButton_Clicked"/>
@@ -322,12 +320,10 @@
                      <Label Text="Placeholder Color:"
                             FontSize="10"/>
                      <HorizontalStackLayout Spacing="1">
-                            <Button Text="Gray"
-                                    BackgroundColor="Gray"
-                                    TextColor="White"
+                            <Button Text="Default"
                                     FontSize="9"
                                     Padding="6"
-                                    AutomationId="PlaceholderColorGray"
+                                    AutomationId="PlaceholderColorDefault"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                             <Button Text="Red"
                                     BackgroundColor="Red"
@@ -507,6 +503,18 @@
                                    TextChanged="WidthRequestEntry_TextChanged"
                                    WidthRequest="80"/>
                      </HorizontalStackLayout>
+                             <!-- Opacity -->
+                             <HorizontalStackLayout Spacing="2">
+                                          <Label Text="Opacity:"
+                                                    FontSize="10"
+                                                    VerticalTextAlignment="Center"/>
+                                          <Entry x:Name="OpacityEntry"
+                                                    Text="{Binding Opacity}"
+                                                    AutomationId="OpacityEntry"
+                                                    FontSize="9"
+                                                    TextChanged="OpacityEntry_TextChanged"
+                                                    WidthRequest="80"/>
+                             </HorizontalStackLayout>
                      <!-- Font Attributes -->
                      <Label Text="Font Attributes:"
                             FontSize="10"/>

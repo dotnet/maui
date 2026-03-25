@@ -23,7 +23,12 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.TextColor = button.BackgroundColor;
+			_viewModel.TextColor = button.AutomationId switch
+			{
+				"TextColorRed" => Colors.Red,
+				"TextColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 
@@ -47,7 +52,12 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.PlaceholderColor = button.BackgroundColor;
+			_viewModel.PlaceholderColor = button.AutomationId switch
+			{
+				"PlaceholderColorRed" => Colors.Red,
+				"PlaceholderColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 
@@ -274,6 +284,15 @@ public partial class EntryOptionsPage : ContentPage
 		if (double.TryParse(e.NewTextValue, out double widthRequest))
 		{
 			_viewModel.WidthRequest = widthRequest;
+		}
+	}
+
+	private void OpacityEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double opacity))
+		{
+			opacity = Math.Clamp(opacity, 0.0, 1.0);
+			_viewModel.Opacity = opacity;
 		}
 	}
 
