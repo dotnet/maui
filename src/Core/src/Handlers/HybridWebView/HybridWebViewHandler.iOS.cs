@@ -79,6 +79,10 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
 		{
+			// Update the WKWebView itself so SemanticContentAttribute is set correctly
+			handler.PlatformView?.UpdateFlowDirection(hybridWebView);
+
+			// Also update the internal ScrollView so the scrollbar aligns with the flow direction
 			var scrollView = handler.PlatformView?.ScrollView;
 			if (scrollView == null)
 				return;
