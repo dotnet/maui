@@ -46,14 +46,15 @@ function Write-Section {
 
 function Get-IssueReferences {
     param([string]$CommitMessage)
-    # Match common patterns: fixes #123, closes #123, resolves #123, issue #123, re: #123, #123
+    # Match explicit issue-fix keywords only. Do NOT match bare (#{N}) because GitHub
+    # automatically appends the PR number to every squash-merged commit subject
+    # (e.g. "Fix something (#32278)") — that pattern would flag every single deleted line.
     $patterns = @(
         'fixes?\s+#(\d+)',
         'closes?\s+#(\d+)',
         'resolves?\s+#(\d+)',
         'issue\s+#(\d+)',
-        're:\s+#(\d+)',
-        '\(#(\d+)\)'
+        're:\s+#(\d+)'
     )
     $issues = @()
     foreach ($pattern in $patterns) {
@@ -72,14 +73,19 @@ function Is-TrivialLine {
     if ($trimmed -eq '' -or $trimmed -eq '{' -or $trimmed -eq '}' -or $trimmed -eq '};') { return $true }
     if ($trimmed.StartsWith('//') -or $trimmed.StartsWith('*') -or $trimmed.StartsWith('/*')) { return $true }
     if ($trimmed.StartsWith('using ') -or $trimmed.StartsWith('namespace ')) { return $true }
-    if ($trimmed -match '^(public|private|protected|internal|static|abstract|virtual|override|sealed)?\s*class\s') { return $true }
+    # Match class declarations with any combination of modifiers (public, sealed, internal, static, abstract, partial, etc.)
+    if ($trimmed -match '^\s*(public|private|protected|internal|static|sealed|abstract|partial|\s)*class\s') { return $true }
     return $false
 }
 
 function Is-TestFile {
     param([string]$FilePath)
-    return $FilePath -match '(Test|Spec|\.Tests\.|TestCases|DeviceTests|UnitTests|Xaml\.UnitTests)' -or
-           $FilePath -match '(test|spec)' -or
+    # Match only path SEGMENTS to avoid false positives on words containing "spec" or "test"
+    # (e.g. "AspectExtensions.cs", "PlatformConfiguration/AndroidSpecific/Button.cs",
+    #  "MeasureSpecFactory.cs" would all be incorrectly excluded by a plain substring match)
+    return $FilePath -match '[\\/](tests?|specs?)[\\/]' -or
+           $FilePath -match '[\\/](TestCases|DeviceTests|UnitTests|Xaml\.UnitTests)[\\/]' -or
+           $FilePath -match '\.Tests\.' -or
            $FilePath -match '\.t\.cs$'
 }
 
@@ -200,16 +206,31 @@ foreach ($file in $FileDeletes.Keys) {
     # Get git blame for this file on the base branch
     $blameOutput = $null
     try {
-        # Use the local base branch for blame
-        $baseRef = $BaseBranch -replace '^origin/', ''
-        $blameOutput = git blame "$baseRef" -- $file 2>&1
+        # Use $BaseBranch as-is — git blame accepts remote tracking refs (e.g. origin/main)
+        # directly, which works reliably in worktrees and CI where a local tracking branch
+        # may not exist.
+        $blameOutput = git blame "$BaseBranch" -- $file 2>&1
+        if ($LASTEXITCODE -ne 0 -or ($blameOutput -join '') -match 'no such path|fatal:') {
+            # File may have been renamed in the PR — git blame on the old path will fail.
+            # Try to find the original path via rename detection.
+            $renamedFrom = git log --follow --diff-filter=R --name-status "$BaseBranch..HEAD" -- $file 2>&1 |
+                Where-Object { $_ -match '^R\d+\s' } |
+                ForEach-Object { ($_ -split '\s+')[1] } |
+                Select-Object -First 1
+            if ($renamedFrom) {
+                Write-Host "  '$file' appears renamed from '$renamedFrom'. Blaming original path."
+                $blameOutput = git blame "$BaseBranch" -- $renamedFrom 2>&1
+            }
+            if ($LASTEXITCODE -ne 0 -or -not $blameOutput) {
+                Write-Warning "  Could not run git blame for $file (or its rename source). Skipping."
+                continue
+            }
+        }
     }
     catch {
         Write-Warning "  Could not run git blame for $file. Skipping."
         continue
     }
-
-    if (-not $blameOutput) { continue }
 
     $blameLines = $blameOutput -split "`n"
 

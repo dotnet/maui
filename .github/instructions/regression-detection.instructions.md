@@ -68,7 +68,7 @@ In the commit message, look for:
 
 ### When a Regression is Detected
 
-```markdown
+````markdown
 ### 🔴 Prior Fix Regression Detected
 
 **File:** `src/Core/src/Platform/Android/MauiWindowInsetListener.cs`
@@ -87,15 +87,15 @@ In the commit message, look for:
 **Risk:** Removing this guard will cause RecyclerView/CollectionView scroll to reintroduce the bottom gap (issue #32436).
 
 **Action required:** PR author must confirm this removal is intentional AND explain how issue #32436 is prevented by other means in this PR.
-```
+````
 
 ### When Check Passes
 
-```markdown
+````markdown
 ### ✅ Prior Fix Regression Check: PASSED
 
 No deleted lines were identified as reversions of prior bug fixes.
-```
+````
 
 ## Guidance for PR Authors
 

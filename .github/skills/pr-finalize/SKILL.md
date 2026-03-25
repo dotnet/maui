@@ -368,7 +368,7 @@ Flag as **🔴 Critical — Prior Fix Regression** when ALL of the following are
 #### Output for Regression Check
 
 If regressions found:
-```
+````
 ### 🔴 Prior Fix Regression Detected
 
 **File:** `src/Core/src/Platform/Android/MauiWindowInsetListener.cs`
@@ -385,14 +385,14 @@ If regressions found:
 **Risk:** Removing this guard will cause RecyclerView/CollectionView scrolling to re-introduce the bottom gap regression (issue #32436).
 
 **Required action before merge:** Author must confirm this removal is intentional AND explain how the original bug #32436 is now prevented by other means.
-```
+````
 
 If no regressions found:
-```
+````
 ### ✅ Prior Fix Regression Check: PASSED
 
 No deleted lines were identified as reversions of prior bug fixes.
-```
+````
 
 ---
 
