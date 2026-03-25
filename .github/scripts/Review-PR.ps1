@@ -50,6 +50,9 @@ param(
     [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
+    [switch]$SkipTryFix,
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
@@ -441,11 +444,16 @@ function Invoke-CopilotStep {
 #  STEP 1: PR Review (4-phase skill)
 # ═════════════════════════════════════════════════════════════════════════════
 
+$skipTryFixInstruction = if ($SkipTryFix) {
+    "`n🚫 SKIP Phase 3 (Try-Fix) entirely. After Gate, go directly to Phase 4 (Report). Do NOT run any try-fix attempts."
+} else { "" }
+
 $step1Prompt = @"
 Use a skill to review PR #$PRNumber.
 
 $platformInstruction
 $autonomousRules
+$skipTryFixInstruction
 
 📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
 "@
