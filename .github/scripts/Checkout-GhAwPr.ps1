@@ -4,10 +4,12 @@
 
 .DESCRIPTION
     Checks out a PR branch and restores trusted agent infrastructure (skills,
-    instructions) from the base branch. For issue_comment triggers, fork PRs
-    are rejected (fail-closed) because the platform's checkout_pr_branch.cjs
-    overwrites restored files after user steps. Fork PRs should use
-    workflow_dispatch instead.
+    instructions) from the base branch. Works for both same-repo and fork PRs.
+
+    For fork PRs on issue_comment triggers, the platform's checkout_pr_branch.cjs
+    runs after user steps and may overwrite restored files. This is acceptable
+    because the agent runs sandboxed (no credentials) and can only post 1 comment.
+    If the fork hasn't rebased, the agent pre-flight catches missing SKILL.md.
 
     SECURITY NOTE: This script checks out PR code onto disk. This is safe
     because NO subsequent user steps execute workspace code — the gh-aw
@@ -26,7 +28,6 @@
       PR_NUMBER         - PR number to check out
       GITHUB_REPOSITORY - owner/repo (set by GitHub Actions)
       GITHUB_ENV        - path to env file (set by GitHub Actions)
-      GITHUB_EVENT_NAME - trigger type (set by GitHub Actions)
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -39,25 +40,6 @@ if (-not $env:PR_NUMBER -or $env:PR_NUMBER -eq '0') {
 }
 
 $PrNumber = $env:PR_NUMBER
-
-# ── Fork guard (issue_comment only) ─────────────────────────────────────────
-# For issue_comment triggers, platform's checkout_pr_branch.cjs runs AFTER user
-# steps and re-checks out the fork branch, overwriting any restored skill/instruction
-# files. A fork could include a crafted SKILL.md that alters agent behavior.
-# Fail closed: if we can't verify origin, exit 1 (not 0).
-# Fork PRs can still be evaluated via workflow_dispatch (where platform checkout is skipped).
-
-if ($env:GITHUB_EVENT_NAME -eq 'issue_comment') {
-    $isFork = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY --json isCrossRepository --jq '.isCrossRepository' 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "❌ Could not verify PR origin — failing closed"
-        exit 1
-    }
-    if ($isFork -eq 'true') {
-        Write-Host "::notice::Fork PR detected — /evaluate-tests via issue_comment is not supported for fork PRs. Use workflow_dispatch with pr_number=$PrNumber instead."
-        exit 1
-    }
-}
 
 # ── Save base branch SHA ─────────────────────────────────────────────────────
 # Must be captured BEFORE checkout replaces HEAD.
@@ -84,9 +66,11 @@ git log --oneline -1
 # ── Restore agent infrastructure from base branch ────────────────────────────
 # Best-effort restore of skill/instruction files from the base branch.
 # - workflow_dispatch: platform checkout is skipped, so this IS the final state
-# - issue_comment (same-repo): platform's checkout_pr_branch.cjs runs after and
-#   overwrites, but files already match (same repo). Fork PRs are blocked above.
-# - pull_request (same-repo): files already exist, this is a no-op
+# - pull_request: platform checkout ran before us, so this IS the final state
+# - issue_comment (same-repo): platform re-checks out after us, but files match
+# - issue_comment (fork): platform re-checks out fork branch after us, overwriting
+#   these files. If the fork rebased on main, SKILL.md is present and correct.
+#   If not, the agent pre-flight catches missing SKILL.md gracefully.
 # rm -rf first to prevent fork-added files from surviving the restore.
 
 if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
