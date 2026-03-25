@@ -64,8 +64,8 @@ namespace Microsoft.Maui.Media
 			}
 
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			// StorageWrite no longer exists starting from Android API 33
-			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+			// Only request storage write permission when saving to gallery on older Android versions
+			if (options?.SaveToGallery == true && !OperatingSystem.IsAndroidVersionAtLeast(29))
 				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
 			var captureIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
@@ -118,6 +118,12 @@ namespace Microsoft.Maui.Media
 				else
 				{
 					captureResult = await CaptureVideoAsync(captureIntent);
+				}
+
+				// Save to gallery if requested
+				if (captureResult is not null && options?.SaveToGallery == true)
+				{
+					await SaveToGalleryAsync(captureResult, photo);
 				}
 
 				// Return the file that we just captured
@@ -413,6 +419,58 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
 
 			return path;
+		}
+
+		static async Task SaveToGalleryAsync(string filePath, bool isPhoto)
+		{
+			try
+			{
+				var context = Application.Context;
+				var contentResolver = context.ContentResolver;
+				if (contentResolver is null)
+					return;
+
+				var fileName = System.IO.Path.GetFileName(filePath);
+				var mimeType = isPhoto ? "image/jpeg" : "video/mp4";
+
+				var contentValues = new ContentValues();
+				contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
+				contentValues.Put(MediaStore.IMediaColumns.MimeType, mimeType);
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					contentValues.Put(MediaStore.IMediaColumns.RelativePath,
+						isPhoto ? Android.OS.Environment.DirectoryPictures : Android.OS.Environment.DirectoryMovies);
+					contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+				}
+
+				var collection = isPhoto
+					? MediaStore.Images.Media.ExternalContentUri
+					: MediaStore.Video.Media.ExternalContentUri;
+
+				var insertUri = contentResolver.Insert(collection, contentValues);
+
+				if (insertUri is not null)
+				{
+					using var outputStream = contentResolver.OpenOutputStream(insertUri);
+					if (outputStream is not null)
+					{
+						using var inputStream = File.OpenRead(filePath);
+						await inputStream.CopyToAsync(outputStream);
+					}
+
+					if (OperatingSystem.IsAndroidVersionAtLeast(29))
+					{
+						contentValues.Clear();
+						contentValues.Put(MediaStore.IMediaColumns.IsPending, 0);
+						contentResolver.Update(insertUri, contentValues, null, null);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to save to gallery: {ex.Message}");
+			}
 		}
 
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)
