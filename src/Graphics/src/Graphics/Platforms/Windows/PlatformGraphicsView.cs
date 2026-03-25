@@ -112,7 +112,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				// so the scale is tracked in CurrentState.Matrix, allowing any transforms applied
 				// by the drawable to chain correctly on top of it. This maps the rounded logical
 				// dimensions back to exact physical dimensions, filling the view edge-to-edge
-				// without sub-pixel gaps. Skipped when already 1:1 (no fractional adjustment needed).
+				// without sub-pixel gaps. Uses epsilon to skip near-identity scales from
+				// double-to-float precision loss.
 				const float scaleEpsilon = 0.0001f;
 				if (MathF.Abs(adjustedScaleX - 1f) > scaleEpsilon || MathF.Abs(adjustedScaleY - 1f) > scaleEpsilon)
 				{
