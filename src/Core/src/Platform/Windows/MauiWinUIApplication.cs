@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 				if (protocolArgs is not null && Security.Authentication.OAuth.OAuth2Manager.CompleteAuthRequest(protocolArgs.Uri))
 				{
 					System.Diagnostics.Process.GetCurrentProcess().Kill();
-					return; // We relaunched the application after compliting a OAuth sign-in, so close this instance
+					return; // We relaunched the application after completing an OAuth sign-in, so close this instance
 				}
 			}
 
