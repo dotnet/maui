@@ -16,7 +16,7 @@ public class Issue18657 : ContentPage
 		var button = new Button
 		{
 			Text = "Remove EmptyView",
-			AutomationId = "Button",
+			AutomationId = "Issue18657Button",
 		};
 		button.Clicked += Button_Clicked;
 
@@ -25,10 +25,10 @@ public class Issue18657 : ContentPage
 			ItemsSource = ViewModel.ItemList,
 			EmptyView = new VerticalStackLayout
 			{
-				AutomationId = "EmptyView",
+				AutomationId = "Issue18657EmptyView",
 				BackgroundColor = Colors.AliceBlue,
 				Children =
-				{ 
+				{
 					new Label
 					{
 						Text = "Empty View",

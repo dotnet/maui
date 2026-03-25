@@ -308,6 +308,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (emptyView is null && emptyViewTemplate is null)
 			{
 				RemoveEmptyView();
+				if (_formsEmptyView is IView formsView && formsView.Handler is not null)
+				{
+					formsView.Handler.DisconnectHandler();
+				}
 				_emptyView = null;
 				_formsEmptyView = null;
 				(ListViewBase as IEmptyView)?.SetEmptyView(null, null);
@@ -328,7 +332,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
 					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = (string)emptyView,
+					Text = emptyView?.ToString() ?? string.Empty,
 				};
 			}
 

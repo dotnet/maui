@@ -15,8 +15,8 @@ public class Issue18657 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void RemoveEmptyViewAtRuntime()
 	{
-		App.WaitForElement("Button");
-		App.Tap("Button");
+		App.WaitForElement("Issue18657Button");
+		App.Tap("Issue18657Button");
 		VerifyScreenshot();
 	}
 }
