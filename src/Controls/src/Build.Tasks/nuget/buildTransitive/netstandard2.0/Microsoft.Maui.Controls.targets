@@ -254,6 +254,35 @@
 		</ItemGroup>
 	</Target>
 
+  <PropertyGroup>
+    <_MauiMibcProfilePath>$(IntermediateOutputPath)$(TargetName).mibc</_MauiMibcProfilePath>
+    <PublishReadyToRunXamlOnly Condition="'$(PublishReadyToRunXamlOnly)' == '' and '$(Configuration)' == 'Debug' and '$(UseMonoRuntime)' != 'true'">false</PublishReadyToRunXamlOnly>
+  </PropertyGroup>
+
+	<!-- Generate MIBC profile listing all InitializeComponent* methods for PGO.
+	     Enabled by setting PublishReadyToRunXamlOnly=true in the project file.
+	     Runs after XamlC so the IL has been post-processed and method signatures are final.
+	     Produces a $(MauiMibcProfilePath) file and populates the @(MauiMibcProfile) item. -->
+	<Target Name="_MauiGenerateMibcProfile"
+		AfterTargets="XamlC"
+		Condition=" '$(PublishReadyToRunXamlOnly)' == 'true' AND '$(DesignTimeBuild)' != 'True' "
+		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
+		Outputs="$(_MauiMibcProfilePath)">
+		<PropertyGroup>
+			<_MibcProfileGeneratorPath>$(MSBuildThisFileDirectory)MibcProfileGenerator.dll</_MibcProfileGeneratorPath>
+		</PropertyGroup>
+
+		<Exec Command="dotnet exec &quot;$(_MibcProfileGeneratorPath)&quot; &quot;$(_MauiMibcProfilePath)&quot; &quot;$(IntermediateOutputPath)$(TargetFileName)&quot;" />
+
+		<ItemGroup>
+			<PublishReadyToRunPgoFiles Include="$(_MauiMibcProfilePath)" />
+			<FileWrites Include="$(_MauiMibcProfilePath)" />
+		</ItemGroup>
+    <PropertyGroup>
+      <PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+    </PropertyGroup>
+	</Target>
+
  <!--
     Platform Specific Targets.
     We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/Microsoft.Maui.Controls.targets
