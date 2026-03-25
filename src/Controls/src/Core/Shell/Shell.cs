@@ -90,23 +90,30 @@ namespace Microsoft.Maui.Controls
 				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 				
 				if (shell == null)
-				return;
+				{
+					return;
+				}
 
-			shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 
-			if (bindable.IsSet(NavBarIsVisibleProperty))
-			{
-				// Value explicitly set — propagate down so iOS/Mac compatibility renderers
-				// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
-				if (shell is IPropertyPropagationController controller)
-					controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
-			}
-			else
-			{
-				// Value was cleared — also clear the propagated copies from visual children
-				// so GetEffectiveValue and platform handlers reflect the reverted state.
-				if (bindable is IVisualTreeElement element)
-					ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
+				if (bindable.IsSet(NavBarIsVisibleProperty))
+				{
+					// Value explicitly set — propagate down so iOS/Mac compatibility renderers
+					// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
+					if (shell is IPropertyPropagationController controller)
+					{
+						controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+					}
+				}
+				else
+				{
+					// Value was cleared — also clear the propagated copies from visual children
+					// so GetEffectiveValue and platform handlers reflect the reverted state.
+					if (bindable is IVisualTreeElement element)
+					{
+						ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
+					}
+				}
 			}
 		}
 
