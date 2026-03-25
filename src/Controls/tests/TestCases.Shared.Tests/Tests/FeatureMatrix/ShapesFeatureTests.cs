@@ -2,7 +2,6 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Shape)]
@@ -344,7 +343,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("StrokeDashOffsetEntry");
 		App.Tap("StrokeDashOffsetEntry");
 		App.ClearText("StrokeDashOffsetEntry");
-		App.EnterText("StrokeDashOffsetEntry", "5");
+		App.EnterText("StrokeDashOffsetEntry", "3");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -444,7 +443,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("PolylinePointsEntry");
 		App.Tap("PolylinePointsEntry");
 		App.ClearText("PolylinePointsEntry");
-		App.EnterText("PolylinePointsEntry", "0,0 10,30 15,0 18,60 23,30 35,30 40,0 43,60 48,30 100,30");
+		App.EnterText("PolylinePointsEntry", "10,15 20,45 25,15 28,75 33,45 45,45 50,15 53,75 58,45 110,45");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -570,6 +569,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(20)]
 	public void Line_StrokeColor_Thickness()
 	{
@@ -609,6 +609,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(21)]
 	public void Polygon_StrokeColor_Thickness()
 	{
@@ -634,6 +635,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(22)]
 	public void Polyline_StrokeColor_Thickness()
 	{
@@ -732,6 +734,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(26)]
 	public void Line_StrokeColor_DashArray_Thickness()
 	{
@@ -779,6 +782,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(27)]
 	public void Polygon_StrokeColor_DashArray_Thickness()
 	{
@@ -806,6 +810,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(28)]
 	public void Polyline_StrokeColor_DashArray_Thickness()
 	{
@@ -833,6 +838,7 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		VerifyShapeScreenshot();
 	}
+
 	[Test, Order(29)]
 	public void Path_StrokeColor_DashArray_Thickness()
 	{
@@ -1528,7 +1534,7 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("PolygonPointsEntry");
 		App.Tap("PolygonPointsEntry");
 		App.ClearText("PolygonPointsEntry");
-		App.EnterText("PolygonPointsEntry", "150,10 60,198 210,78 90,78 240,198");
+		App.EnterText("PolygonPointsEntry", "150,15 60,135 210,58 90,58 240,135");
 
 		App.WaitForElement("FillRuleNonzeroRadioButton");
 		App.Tap("FillRuleNonzeroRadioButton");
