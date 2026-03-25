@@ -66,6 +66,86 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V1 with two children: Label + Button
+	const string PageXamlV4_TwoChildren = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Button Text="Click me" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V5: Remove Button, keep only Label (remove child)
+	const string PageXamlV5_ChildRemoved = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V6: Reorder — Button before Label (swap children)
+	const string PageXamlV6_ChildrenReordered = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Button Text="Click me" />
+		        <Label Text="Hello" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V7: Nested layout — add a Grid inside VerticalStackLayout with children
+	const string PageXamlV7_NestedLayout = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Grid>
+		            <Label Text="Nested" />
+		            <Button Text="Inner" />
+		        </Grid>
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V8: Replace child type — swap Label for an Entry (different element type)
+	const string PageXamlV8_ChildReplaced = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Entry Placeholder="Type here" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V9: Three children — Label, Button, Entry (add multiple)
+	const string PageXamlV9_MultipleAdded = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Button Text="Click me" />
+		        <Entry Placeholder="Type here" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -226,6 +306,78 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
 		Assert.Contains("Button", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ChildRemoved_EmitsUCWithClearAndUnregister()
+	{
+		// Arrange: Start with two children (Label + Button), then remove the Button
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV4_TwoChildren, PageXamlV5_ChildRemoved);
+
+		// Assert: UC emitted with child removal
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Clear()", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Unregister", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ChildrenReordered_EmitsUCWithClearAndReAdd()
+	{
+		// Arrange: Start with Label then Button, swap to Button then Label
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV4_TwoChildren, PageXamlV6_ChildrenReordered);
+
+		// Assert: UC emitted with reorder (clear + re-add in new order)
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Clear()", ucSource!, StringComparison.Ordinal);
+		// Both children should be re-added (retained)
+		Assert.Contains("Add(", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_NestedLayoutAdded_EmitsUCWithGridAndChildren()
+	{
+		// Arrange: Add a Grid with nested children inside VerticalStackLayout
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV7_NestedLayout);
+
+		// Assert: UC emitted with Grid creation and nested children
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Grid", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Nested", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Inner", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ChildReplaced_EmitsUCWithRemoveAndAdd()
+	{
+		// Arrange: Replace Label with Entry (different element type)
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV8_ChildReplaced);
+
+		// Assert: UC emitted with both removal and addition
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Entry", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Unregister", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_MultipleChildrenAdded_EmitsUCWithAllNewElements()
+	{
+		// Arrange: Go from 1 child (Label) to 3 children (Label + Button + Entry)
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV9_MultipleAdded);
+
+		// Assert: UC emitted with both new elements
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Button", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Entry", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
