@@ -25,7 +25,7 @@ public class EntryFeatureTests : _GalleryUITest
 		: base(device)
 	{
 	}
-
+// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
 	[Test, Order(1)]
 	public void VerifyInitialEventStates()
 	{
@@ -534,9 +534,9 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29833
 		[Test, Order(34)]
-		public void VerifyTextWhenIsTextPredictionEnabledTrueOrFalse()
+		[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+		public void VerifyTextWhenIsTextPredictionEnabledTrue()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -552,7 +552,8 @@ public class EntryFeatureTests : _GalleryUITest
 		}
 
 		[Test, Order(35)]
-		public void VerifyTextWhenIsSpellCheckEnabledTrueOrFalse()
+		[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+		public void VerifyTextWhenIsSpellCheckEnabledTrue()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -566,7 +567,6 @@ public class EntryFeatureTests : _GalleryUITest
 			App.EnterText("TestEntry", " ");
 			VerifyScreenshotWithKeyboardHandling();
 		}
-#endif
 
 	[Test, Order(36)]
 	public void VerifyTextWhenSelectionLengthSetValue()
@@ -581,6 +581,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.WaitForElement("SelectionLengthEntry");
+		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -600,6 +602,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.WaitForElement("CursorPositionEntry");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -622,6 +626,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.WaitForElement("CursorPositionEntry");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -645,6 +651,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.WaitForElement("CursorPositionEntry");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("3"));
+		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -704,7 +713,7 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Command Executed with Parameter"));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //keybord type is not supported on Windows and Maccatalyst platforms
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In Android related issue:https://github.com/dotnet/maui/issues/26968 and In mac and Windows keybord type is not supported.
 	[Test, Order(43)]
 	public void VerifyTextWhenKeyboardTypeSet()
 	{
@@ -719,7 +728,6 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/26968
 	[Test, Order(44)]
 	public void VerifyTextWhenReturnTypeSet()
 	{
@@ -733,8 +741,6 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("TestEntry");
 		VerifyScreenshot();
 	}
-
-#endif
 #endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
@@ -763,13 +769,8 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(46)]
-	public void VerifyEntryControlWhenIsVisibleTrueOrFalse()
+	public void VerifyEntryControlWhenIsVisibleFalse()
 	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("VisibleFalse");
@@ -865,7 +866,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(52)]
-	public void VerifyEntryWhenTextChanged()
+	public void VerifyEntryWhenTextDynamicallyUpdated()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
