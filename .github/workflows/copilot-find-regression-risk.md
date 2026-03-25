@@ -3,9 +3,6 @@ description: Detects regression risks by cross-referencing PR changes against re
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - 'src/**/*.cs'
-      - 'src/**/*.xaml'
   issue_comment:
     types: [created]
   workflow_dispatch:

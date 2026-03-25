@@ -22,7 +22,7 @@
 #
 # Detects regression risks by cross-referencing PR changes against recently-merged bug-fix PRs
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"5c50575b14ff805d353aca7f2f41f9435a5a6b546b6d35626163f79036a3ace9","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"85cdece3ecaf6d1c0b574d665e9b76bdf4f746bf265242d6a18e85c639c7f22d","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
 
 name: "Find Regression Risk"
 "on":
@@ -30,9 +30,6 @@ name: "Find Regression Risk"
     types:
     - created
   pull_request:
-    paths:
-    - src/**/*.cs
-    - src/**/*.xaml
     types:
     - opened
     - synchronize
