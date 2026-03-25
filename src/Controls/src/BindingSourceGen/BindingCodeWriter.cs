@@ -437,14 +437,14 @@ public static class BindingCodeWriter
 					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
 
-					if (member.IsGetterInaccessible && (!isLastPart || needsGetterForLastPart))
+					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart))
 					{
 						// we don't need the unsafe getter if the item is the very last part of the path
 						// because we don't need to access its value while constructing the handlers array
 						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 
-					if (member.IsSetterInaccessible && isLastPart && binding.SetterOptions.IsWritable)
+					if (!member.IsSetterAccessible && isLastPart && binding.SetterOptions.IsWritable)
 					{
 						// We only need the unsafe setter if the item is the very last part of the path
 						AppendUnsafePropertySetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);

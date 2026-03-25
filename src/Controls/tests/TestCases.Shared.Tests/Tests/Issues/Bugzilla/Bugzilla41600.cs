@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla41600Test()
 		{
 			App.WaitForElement(BtnScrollToNonExistentItem);

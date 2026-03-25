@@ -39,50 +39,7 @@ public partial class DatePickerMainControlPage : ContentPage
 		_viewModel.Culture = System.Globalization.CultureInfo.CurrentCulture;
 
 		BindingContext = _viewModel = new DatePickerViewModel();
-		ReinitializeDatePicker();
 		await Navigation.PushAsync(new DatePickerOptionsPage(_viewModel));
-	}
-
-	private void ReinitializeDatePicker()
-	{
-		DatePickerLayout.Children.Clear();
-		var datePickerControl = new DatePicker
-		{
-			AutomationId = "DatePickerControl"
-		};
-
-		datePickerControl.SetBinding(DatePicker.CharacterSpacingProperty, new Binding(nameof(DatePickerViewModel.CharacterSpacing)));
-		datePickerControl.SetBinding(DatePicker.DateProperty, new Binding(nameof(DatePickerViewModel.Date)));
-		datePickerControl.DateSelected += OnDateSelected;
-		datePickerControl.SetBinding(DatePicker.FlowDirectionProperty, new Binding(nameof(DatePickerViewModel.FlowDirection)));
-		datePickerControl.SetBinding(DatePicker.FormatProperty, new Binding(nameof(DatePickerViewModel.Format)));
-		datePickerControl.SetBinding(DatePicker.FontAttributesProperty, new Binding(nameof(DatePickerViewModel.FontAttributes)));
-		datePickerControl.SetBinding(DatePicker.FontFamilyProperty, new Binding(nameof(DatePickerViewModel.FontFamily)));
-		datePickerControl.SetBinding(DatePicker.FontSizeProperty, new Binding(nameof(DatePickerViewModel.FontSize)));
-		datePickerControl.SetBinding(DatePicker.IsEnabledProperty, new Binding(nameof(DatePickerViewModel.IsEnabled)));
-		datePickerControl.SetBinding(DatePicker.IsVisibleProperty, new Binding(nameof(DatePickerViewModel.IsVisible)));
-		datePickerControl.SetBinding(DatePicker.MinimumDateProperty, new Binding(nameof(DatePickerViewModel.MinimumDate)));
-		datePickerControl.SetBinding(DatePicker.MaximumDateProperty, new Binding(nameof(DatePickerViewModel.MaximumDate)));
-		datePickerControl.SetBinding(DatePicker.ShadowProperty, new Binding(nameof(DatePickerViewModel.Shadow)));
-		datePickerControl.SetBinding(DatePicker.TextColorProperty, new Binding(nameof(DatePickerViewModel.TextColor)));
-
-		// Set culture directly and update when the view model's culture changes
-		datePickerControl.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == nameof(DatePicker.Date))
-			{
-				DisplayCultureSpecificDate(datePickerControl.Date ?? DateTime.Now, _viewModel.Culture);
-			}
-		};
-		_viewModel.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == nameof(DatePickerViewModel.Culture))
-			{
-				DisplayCultureSpecificDate(datePickerControl.Date ?? DateTime.Now, _viewModel.Culture);
-			}
-		};
-
-		DatePickerLayout.Children.Add(datePickerControl);
 	}
 
 	private void DisplayCultureSpecificDate(DateTime date, CultureInfo culture)

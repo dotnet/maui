@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <Border
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:effectsView="clr-namespace:Syncfusion.Maui.Toolkit.EffectsView;assembly=Syncfusion.Maui.Toolkit"
     xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
     xmlns:models="clr-namespace:MauiApp._1.Models"
@@ -10,10 +7,7 @@
     StrokeShape="RoundRectangle 20"
     Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
     x:DataType="models:ProjectTask">
-    
-     <effectsView:SfEffectsView
-        TouchDownEffects="Highlight"
-        HighlightBackground="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}">
+
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
             VerticalOptions="Fill"
@@ -44,12 +38,6 @@
                             HorizontalOptions="Start"
                             VerticalOptions="Center"
                             LineBreakMode="WordWrap"/>
-
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer
-                                Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}"
-                                CommandParameter="{Binding .}"/>
-                        </Grid.GestureRecognizers>
                     </Grid>
 
                     <CheckBox Grid.Column="0"
@@ -63,5 +51,4 @@
                 </Grid>
             </shimmer:SfShimmer.Content>
         </shimmer:SfShimmer>
-    </effectsView:SfEffectsView>
 </Border>

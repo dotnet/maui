@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.EventTrigger']/Docs/*" />
+	/// <summary>
+	/// A trigger that fires actions in response to a specified event on the associated element.
+	/// </summary>
 	[ContentProperty("Actions")]
 	public sealed class EventTrigger : TriggerBase
 	{
@@ -20,16 +22,22 @@ namespace Microsoft.Maui.Controls
 		string _eventname;
 		Delegate _handlerdelegate;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new <see cref="EventTrigger" /> instance.
+		/// </summary>
 		public EventTrigger() : base(typeof(BindableObject))
 		{
 			Actions = new SealedList<TriggerAction>();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='Actions']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="TriggerAction" /> objects to invoke when the event fires.
+		/// </summary>
 		public IList<TriggerAction> Actions { get; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/EventTrigger.xml" path="//Member[@MemberName='Event']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the event that triggers the actions.
+		/// </summary>
 		public string Event
 		{
 			get { return _eventname; }
@@ -82,7 +90,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<EventTrigger>()?.LogWarning("Cannot attach EventTrigger to {Type}.{Event}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
+				MauiLogger<EventTrigger>.Log(LogLevel.Warning, $"Cannot attach EventTrigger to {bindable.GetType()}.{Event}. Check if the handler exists and if the signature is right.");
 			}
 			if (_eventinfo != null && _handlerdelegate != null)
 				_eventinfo.AddEventHandler(bindable, _handlerdelegate);

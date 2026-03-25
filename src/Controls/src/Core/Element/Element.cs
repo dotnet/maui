@@ -294,10 +294,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
@@ -351,10 +348,7 @@ namespace Microsoft.Maui.Controls
 				_realParent = null;
 				if (logWarningIfParentHasBeenCollected)
 				{
-					Application.Current?
-										.FindMauiContext()?
-										.CreateLogger<Element>()?
-										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 			}
 
@@ -415,14 +409,14 @@ namespace Microsoft.Maui.Controls
 
 				if (value != null && (element is Layout || element is IControlTemplated))
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
 				}
 			}
 
 			RealParent = value;
 			if (RealParent != null)
 			{
-				OnParentResourcesChanged(RealParent.GetMergedResources());
+				OnParentResourcesChangedKeys(RealParent.GetMergedResourceKeys());
 				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
@@ -608,18 +602,26 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Implementors must call the base method.</remarks>
 		protected override void OnBindingContextChanged()
 		{
-			this.PropagateBindingContext(LogicalChildrenInternal, (child, bc) =>
+			var logicalChildren = LogicalChildrenInternal;
+			if (logicalChildren.Count > 0)
 			{
-				SetChildInheritedBindingContext((Element)child, bc);
-			});
+				this.PropagateBindingContext(LogicalChildrenInternal, SetLogicalChildBindingContext);
+			}
 
-			if (_bindableResources != null)
+			if (_bindableResources is not null)
+			{
 				foreach (BindableObject item in _bindableResources)
 				{
 					SetInheritedBindingContext(item, BindingContext);
 				}
+			}
 
 			base.OnBindingContextChanged();
+		}
+
+		void SetLogicalChildBindingContext(BindableObject child, object bc)
+		{
+			SetChildInheritedBindingContext((Element)child, bc);
 		}
 
 		/// <summary>Raises the <see cref="ChildAdded"/> event. Implement this method to add class handling for this event.</summary>
@@ -756,12 +758,29 @@ namespace Microsoft.Maui.Controls
 			if (e == ResourcesChangedEventArgs.StyleSheets)
 				ApplyStyleSheets();
 			else
-				OnParentResourcesChanged(e.Values);
+				OnParentResourcesChangedKeys(e.Keys, e.ResolveValue);
 		}
 
 		internal virtual void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
 			OnResourcesChanged(values);
+		}
+
+		/// <summary>
+		/// Called when parent resources change, using keys only to avoid resolving lazy resources.
+		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
+		/// </summary>
+		internal virtual void OnParentResourcesChangedKeys(IEnumerable<string> keys)
+		{
+			OnResourcesChangedKeys(keys);
+		}
+
+		/// <summary>
+		/// Called when parent resources change, using keys and a resolver to avoid resolving lazy resources.
+		/// </summary>
+		internal virtual void OnParentResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			OnResourcesChangedKeys(keys, resolver);
 		}
 
 		internal override void OnRemoveDynamicResource(BindableProperty property)
@@ -778,7 +797,7 @@ namespace Microsoft.Maui.Controls
 			if (e == ResourcesChangedEventArgs.StyleSheets)
 				ApplyStyleSheets();
 			else
-				OnResourcesChanged(e.Values);
+				OnResourcesChangedKeys(e.Keys, e.ResolveValue);
 		}
 
 		internal void OnResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -786,8 +805,13 @@ namespace Microsoft.Maui.Controls
 			if (values == null)
 				return;
 			if (_changeHandlers != null)
+			{
+#pragma warning disable CS0618 // Legacy code path for backward compatibility
+				var e = new ResourcesChangedEventArgs(values);
+#pragma warning restore CS0618
 				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
-					handler(this, new ResourcesChangedEventArgs(values));
+					handler(this, e);
+			}
 			if (_dynamicResources == null)
 				return;
 			if (_bindableResources == null)
@@ -812,6 +836,77 @@ namespace Microsoft.Maui.Controls
 					OnResourceChanged(changedResource.Item1, value.Value, changedResource.Item2);
 
 				var bindableObject = value.Value as BindableObject;
+				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
+				{
+					if (!_bindableResources.Contains(bindableObject))
+						_bindableResources.Add(bindableObject);
+					SetInheritedBindingContext(bindableObject, BindingContext);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Called when resources change, using keys only to avoid resolving lazy resources.
+		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
+		/// </summary>
+		internal void OnResourcesChangedKeys(IEnumerable<string> keys)
+		{
+			OnResourcesChangedKeys(keys, key =>
+			{
+				// Style class keys need to be merged across the entire parent chain,
+				// not just return the first match from TryGetResource.
+				if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+					return this.GetMergedStyleClassResource(key);
+				return this.TryGetResource(key, out var v) ? v : null;
+			});
+		}
+
+		/// <summary>
+		/// Called when resources change, using keys and a resolver to avoid resolving lazy resources.
+		/// Values are looked up on-demand only for resources that are actually bound via DynamicResource.
+		/// </summary>
+		internal void OnResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			if (keys == null)
+				return;
+			
+			// Notify change handlers with keys + resolver (they can resolve on-demand)
+			if (_changeHandlers != null)
+			{
+				var e = new ResourcesChangedEventArgs(keys, resolver);
+				foreach (Action<object, ResourcesChangedEventArgs> handler in _changeHandlers.ToList())
+					handler(this, e);
+			}
+			
+			if (_dynamicResources == null)
+				return;
+			if (_bindableResources == null)
+				_bindableResources = new List<BindableObject>();
+			foreach (string key in keys)
+			{
+				List<(BindableProperty, SetterSpecificity)> changedResources = null;
+				foreach (KeyValuePair<BindableProperty, (string, SetterSpecificity)> dynR in DynamicResources)
+				{
+					// when the DynamicResource bound to a BindableProperty is
+					// changing then the BindableProperty needs to be refreshed;
+					// The .Value.Item1 is the name of DynamicResource to which the BindableProperty is bound.
+					if (dynR.Value.Item1 != key)
+						continue;
+					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
+					changedResources.Add((dynR.Key, dynR.Value.Item2));
+				}
+				if (changedResources == null)
+					continue;
+				
+				// Only now do we look up the value - on demand
+				object value = resolver(key);
+				if (value == null)
+					continue;
+					
+				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
+					OnResourceChanged(changedResource.Item1, value, changedResource.Item2);
+
+				var bindableObject = value as BindableObject;
 				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
 				{
 					if (!_bindableResources.Contains(bindableObject))

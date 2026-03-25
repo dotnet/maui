@@ -4,16 +4,24 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.LineGeometry']/Docs/*" />
+	/// <summary>
+	/// Represents the geometry of a line.
+	/// </summary>
 	public class LineGeometry : Geometry
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LineGeometry"/> class.
+		/// </summary>
 		public LineGeometry()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="LineGeometry"/> class with the specified start and end points.
+		/// </summary>
+		/// <param name="startPoint">The starting point of the line.</param>
+		/// <param name="endPoint">The ending point of the line.</param>
 		public LineGeometry(Point startPoint, Point endPoint)
 		{
 			StartPoint = startPoint;
@@ -28,14 +36,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty EndPointProperty =
 			BindableProperty.Create(nameof(EndPoint), typeof(Point), typeof(LineGeometry), new Point());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='StartPoint']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the starting point of the line. This is a bindable property.
+		/// </summary>
 		public Point StartPoint
 		{
 			set { SetValue(StartPointProperty, value); }
 			get { return (Point)GetValue(StartPointProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='EndPoint']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the ending point of the line. This is a bindable property.
+		/// </summary>
 		public Point EndPoint
 		{
 			set { SetValue(EndPointProperty, value); }

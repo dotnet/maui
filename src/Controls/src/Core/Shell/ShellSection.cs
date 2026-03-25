@@ -13,13 +13,17 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Tab.xml" path="Type[@FullName='Microsoft.Maui.Controls.Tab']/Docs/*" />
+	/// <summary>
+	/// Represents a group of items within a <see cref="ShellItem"/>. This is an alias for <see cref="ShellSection"/>.
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class Tab : ShellSection
 	{
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs/*" />
+	/// <summary>
+	/// Represents a group of tabs within a <see cref="Controls.ShellItem"/>. Contains <see cref="ShellContent"/> items.
+	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
@@ -110,44 +114,6 @@ namespace Microsoft.Maui.Controls
 			_lastInset = inset;
 			_lastTabThickness = tabThickness;
 		}
-
-		internal void SyncStackDownTo(Page page)
-		{
-			if (_navStack.Count <= 1)
-			{
-				throw new Exception("Nav Stack consistency error");
-			}
-
-			var oldStack = _navStack;
-
-			int index = oldStack.IndexOf(page);
-			_navStack = new List<Page>();
-
-			// Rebuild the stack up to the page that was passed in
-			// Since this now represents the current accurate stack
-			for (int i = 0; i <= index; i++)
-			{
-				_navStack.Add(oldStack[i]);
-			}
-
-			// Send Disappearing for all pages that are no longer in the stack
-			// This will really only SendDisappearing on the top page
-			// but we just call it on all of them to be sure
-			for (int i = oldStack.Count - 1; i > index; i--)
-			{
-				oldStack[i].SendDisappearing();
-			}
-
-			UpdateDisplayedPage();
-
-			for (int i = index + 1; i < oldStack.Count; i++)
-			{
-				RemovePage(oldStack[i]);
-			}
-
-			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.Pop);
-		}
-
 		async void IShellSectionController.SendPopping(Task poppingCompleted)
 		{
 			if (_navStack.Count <= 1)
@@ -252,7 +218,9 @@ namespace Microsoft.Maui.Controls
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Creates a new <see cref="ShellSection"/> instance.
+		/// </summary>
 		public ShellSection()
 		{
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
@@ -279,18 +247,24 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItem']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the currently selected <see cref="ShellContent"/>. This is a bindable property.
+		/// </summary>
 		public ShellContent CurrentItem
 		{
 			get { return (ShellContent)GetValue(CurrentItemProperty); }
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Items']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="ShellContent"/> items in this section. This is a bindable property.
+		/// </summary>
 		public IList<ShellContent> Items => (IList<ShellContent>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='Stack']/Docs/*" />
+		/// <summary>
+		/// Gets the current navigation stack of pages in this section.
+		/// </summary>
 		public IReadOnlyList<Page> Stack => _navStack;
 
 		internal Page DisplayedPage
@@ -537,7 +511,7 @@ namespace Microsoft.Maui.Controls
 			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
+				MauiLogger<ShellSection>.Log(LogLevel.Warning, $"Failed to Create Content For: {route}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
@@ -870,9 +844,20 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			InvokeNavigationRequest(args);
+			PresentedPageDisappearing();
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
+
+			// NOTE:
+			// We intentionally raise PresentedPageAppearing (and thus SendPageAppearing/OnAppearing)
+			// before issuing the platform navigation request and awaiting its completion. This matches
+			// the behavior used for single-level Pop navigation and keeps Shell lifecycle events
+			// consistent across navigation patterns. At this point the root page may not yet be
+			// visually presented by the native stack (the pop-to-root animation can still be in
+			// progress), but Shell-level state (e.g., tab bar visibility) must already be updated
+			// so the platform reads the correct value when it commits the native navigation.
+			PresentedPageAppearing();
+			InvokeNavigationRequest(args);
 
 			if (args.Task != null)
 				await args.Task;
@@ -882,11 +867,14 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
-				oldStack[i].SendDisappearing();
+				// RemovePage is called for all pages. SendDisappearing is only called for
+				// intermediate pages; the top page's disappearing event was already fired
+				// by PresentedPageDisappearing() above to avoid duplicate lifecycle events.
+				if (i < oldStack.Count - 1)
+					oldStack[i].SendDisappearing();
 				RemovePage(oldStack[i]);
 			}
 
-			PresentedPageAppearing();
 		}
 
 		protected virtual Task OnPushAsync(Page page, bool animated)
@@ -984,6 +972,7 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
+			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove

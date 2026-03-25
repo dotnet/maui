@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -106,8 +107,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
-			else if (e.Is(Shell.FlyoutIconProperty))
+			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
+			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
+			}
 		}
 
 #nullable disable
@@ -133,7 +137,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
 			{
-				SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+				SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			}
 			else if (e.PropertyName == Shell.SearchHandlerProperty.PropertyName)
 			{
@@ -150,6 +154,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
 				UpdateTabBarVisible();
+			}
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
 			}
 		}
 
@@ -213,7 +222,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+			SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			SearchHandler = Shell.GetSearchHandler(Page);
 			UpdateTitleView();
 			UpdateTitle();
@@ -451,7 +460,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			NavigationItem.SetRightBarButtonItems(primaries is null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
+			UpdateRightBarButtonItemTintColors();
 			UpdateLeftToolbarItems();
+		}
+
+		/// iOS 26+: LiquidGlass no longer inherits the foreground color from the navigation bar's TintColor.
+		/// Explicitly set TintColor on each right bar button item to ensure the Shell.ForegroundColor is applied.
+		void UpdateRightBarButtonItemTintColors()
+		{
+			if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+			{
+				return;
+			}
+
+			if (NavigationItem?.RightBarButtonItems is not { Length: > 0 } rightItems)
+			{
+				return;
+			}
+
+			var foregroundColor = _context?.Shell?.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+								_context?.Shell?.GetValue(Shell.ForegroundColorProperty);
+
+			var platformColor = foregroundColor is Graphics.Color shellForegroundColor
+				? shellForegroundColor.ToPlatform()
+				: null;
+
+			foreach (var item in rightItems)
+			{
+				item.TintColor = platformColor;
+			}
 		}
 
 		void UpdateLeftToolbarItems()
@@ -494,9 +531,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
+				var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) as Color ??
+					_context?.Shell.GetValue(Shell.ForegroundColorProperty) as Color;
+
 				if (image is not null)
 				{
 					icon = result?.Value;
+
+					if (foregroundColor is null)
+					{
+						icon = icon?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					}
+
 					var originalImageSize = icon?.Size ?? CGSize.Empty;
 
 					// The largest height you can use for navigation bar icons in iOS.
@@ -529,6 +575,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+						
+					// For iOS 26+, explicitly set the tint color on the bar button item
+					// because the navigation bar's tint color is not automatically inherited
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						if (foregroundColor is not null)
+						{
+							NavigationItem.LeftBarButtonItem.TintColor = foregroundColor.ToPlatform();
+						}
+					}
 				}
 				else
 				{
@@ -1045,8 +1101,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			_searchController.Active = false;
 			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
+			_searchController.Active = false;
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)

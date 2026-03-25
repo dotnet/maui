@@ -34,8 +34,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Target = target;
 			TargetType = targetType;
+			// RegisterImplicitStyles handles the initial apply via OnImplicitStyleChanged -> SetStyle.
+			// An explicit Apply(Target) call here would double-attach event handlers when
+			// Application.Current.Resources already contains the implicit style (#24152).
 			RegisterImplicitStyles();
-			Apply(Target);
 		}
 
 		public IStyle Style
@@ -46,7 +48,7 @@ namespace Microsoft.Maui.Controls
 				if (_style == value)
 					return;
 				if (value != null && !value.TargetType.IsAssignableFrom(TargetType))
-					Application.Current?.FindMauiContext()?.CreateLogger<Style>()?.LogWarning("Style TargetType {FullName} is not compatible with element target type {TargetType}", value.TargetType.FullName, TargetType);
+					MauiLogger<Style>.Log(LogLevel.Warning, $"Style TargetType {value.TargetType.FullName} is not compatible with element target type {TargetType}");
 				SetStyle(ImplicitStyle, ClassStyles, value);
 			}
 		}
@@ -132,10 +134,8 @@ namespace Microsoft.Maui.Controls
 
 		void OnImplicitStyleChanged()
 		{
-			List<Style> applicableStyles = new List<Style>(_implicitStyles.Count);
 			var first = true;
 
-			// Collect all applicable styles from the type hierarchy
 			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
 			{
 				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
@@ -143,80 +143,14 @@ namespace Microsoft.Maui.Controls
 				{
 					if (first || implicitStyle.ApplyToDerivedTypes)
 					{
-						applicableStyles.Add(implicitStyle);
+						ImplicitStyle = implicitStyle;
+						return;
 					}
 				}
 				first = false;
 			}
 
-			// If no styles found, clear
-			if (applicableStyles.Count == 0)
-			{
-				ImplicitStyle = null;
-				return;
-			}
-
-			// If only one style, use it directly (no performance overhead)
-			if (applicableStyles.Count == 1)
-			{
-				ImplicitStyle = applicableStyles[0];
-				return;
-			}
-
-			// Multiple styles - need to merge them by creating a chain
-			// The chain goes: most base style <- ... <- most derived style
-			// This ensures derived styles override base styles for conflicting properties
-			Style mergedStyle = null;
-			
-			// Process from most base (last in list) to most derived (first in list)
-			for (int i = applicableStyles.Count - 1; i >= 0; i--)
-			{
-				var currentStyle = applicableStyles[i];
-				
-				if (i == applicableStyles.Count - 1)
-				{
-					// Most base style - use as-is
-					mergedStyle = currentStyle;
-				}
-				else
-				{
-					// Create a new style that wraps the current style and chains to previous
-					var wrapperStyle = new Style(currentStyle.TargetType)
-					{
-						BasedOn = mergedStyle,
-						CanCascade = currentStyle.CanCascade,
-						ApplyToDerivedTypes = currentStyle.ApplyToDerivedTypes
-					};
-					
-					// Copy setters from current style
-					foreach (var setter in currentStyle.Setters)
-					{
-						wrapperStyle.Setters.Add(setter);
-					}
-					
-					// Copy behaviors if any exist
-					if (currentStyle.Behaviors.Count > 0)
-					{
-						foreach (var behavior in currentStyle.Behaviors)
-						{
-							wrapperStyle.Behaviors.Add(behavior);
-						}
-					}
-					
-					// Copy triggers if any exist
-					if (currentStyle.Triggers.Count > 0)
-					{
-						foreach (var trigger in currentStyle.Triggers)
-						{
-							wrapperStyle.Triggers.Add(trigger);
-						}
-					}
-					
-					mergedStyle = wrapperStyle;
-				}
-			}
-			
-			ImplicitStyle = mergedStyle;
+			ImplicitStyle = null;
 		}
 
 		void RegisterImplicitStyles()
@@ -247,9 +181,8 @@ namespace Microsoft.Maui.Controls
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);
 
-			//and proceed as usual
+			//and proceed as usual - RegisterImplicitStyles handles apply via OnImplicitStyleChanged
 			RegisterImplicitStyles();
-			Apply(Target);
 		}
 
 		void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)

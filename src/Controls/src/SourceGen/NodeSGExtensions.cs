@@ -8,8 +8,8 @@ using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -24,7 +24,7 @@ static class NodeSGExtensions
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
-		(value, node, toType, writer, context, parentVar) => 
+		(value, node, toType, writer, context, parentVar) =>
 			lazyConverters.GetOrAdd(typeof(T), _ => new T()).Convert(value, node, toType, writer, context, parentVar);
 
 	static readonly ConcurrentDictionary<Type, ISGTypeConverter> lazyConverters = new();
@@ -32,7 +32,7 @@ static class NodeSGExtensions
 
 	// Lazy registry-based converter function (for non-source-gen converters)
 	static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
-		(value, node, toType, writer, context, parentVar) => 
+		(value, node, toType, writer, context, parentVar) =>
 		{
 			var converter = lazyRegistryConverters.GetOrAdd(typeName, name => TypeConverterRegistry.GetConverter(name)!);
 			return converter?.Convert(value, node, toType, writer, context, parentVar) ?? "default";
@@ -137,6 +137,111 @@ static class NodeSGExtensions
 	public static bool IsResourceDictionary(this ElementNode node, SourceGenContext context)
 		=> context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
+	/// <summary>
+	/// Determines if a node should be treated as a lazy resource in ResourceDictionary.
+	/// Lazy resources are created via factory functions for on-demand instantiation.
+	/// </summary>
+	/// <param name="node">The element node to check.</param>
+	/// <param name="parentNode">The parent node.</param>
+	/// <param name="context">The source generation context.</param>
+	/// <returns>True if the node should be a lazy resource; false otherwise.</returns>
+	public static bool IsLazyResource(this ElementNode node, INode parentNode, SourceGenContext context)
+	{
+		// Feature flag must be enabled
+		if (!context.ProjectItem.LazyRD)
+			return false;
+
+		// If we're in a nested context (inside a lambda body), don't treat as lazy
+		// Nested resources should be created eagerly within their parent lambda
+		if (context.ParentContext != null)
+			return false;
+
+		// Check if node has x:Key or is an implicit style (Style without x:Key)
+		bool hasKey = node.Properties.ContainsKey(XmlName.xKey);
+		bool isImplicitStyle = !hasKey && node.XmlType.Name == "Style";
+
+		// Styles with Class attribute need special handling - can't be lazy
+		// The Add method processes the Class property to add to class styles list
+		if (node.XmlType.Name == "Style" && node.Properties.ContainsKey(new XmlName("", "Class")))
+			return false;
+
+		// Must have x:Key OR be an implicit style to be considered lazy
+		if (!hasKey && !isImplicitStyle)
+			return false;
+
+		// Items with x:Name need a variable for field assignment - can't be lazy
+		if (node.Properties.ContainsKey(XmlName.xName))
+			return false;
+
+		// ResourceDictionary elements themselves are containers, not resources
+		if (node.XmlType.Name == "ResourceDictionary")
+			return false;
+
+		// Type must be resolvable to determine if it's a value type
+		// If we can't resolve the type, err on the side of caution and don't treat as lazy
+		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol) || typeSymbol == null)
+			return false;
+		
+		// Value types should not be lazy (no benefit - value types are copied anyway)
+		if (typeSymbol.IsValueType)
+			return false;
+
+		// Strings should not be lazy - they often require TypeConverter processing
+		// when used with properties like RowDefinitions/ColumnDefinitions
+		if (typeSymbol.SpecialType == SpecialType.System_String)
+			return false;
+
+		// Check if in ResourceDictionary context
+		return IsInResourceDictionaryContext(node, parentNode, context);
+	}
+
+	/// <summary>
+	/// Checks if a node is in a ResourceDictionary context.
+	/// A resource is only lazy if it's:
+	/// 1. Direct child of X.Resources property element
+	/// 2. In a ListNode under X.Resources
+	/// 3. Direct child of ResourceDictionary element
+	/// 4. In a ListNode inside ResourceDictionary
+	/// </summary>
+	static bool IsInResourceDictionaryContext(ElementNode node, INode parentNode, SourceGenContext context)
+	{
+		// Case 1 & 3: Direct child of .Resources property or ResourceDictionary
+		if (parentNode is ElementNode parentElement)
+		{
+			// Check if parent is a ResourceDictionary
+			if (parentElement.XmlType.Name == "ResourceDictionary")
+				return true;
+
+			// Check if parent has us in a .Resources property
+			foreach (var prop in parentElement.Properties)
+			{
+				if (prop.Value == node && prop.Key.LocalName == "Resources")
+					return true;
+			}
+		}
+
+		// Case 2 & 4: In a ListNode that is under .Resources or ResourceDictionary
+		if (parentNode is ListNode listNode)
+		{
+			var grandParent = listNode.Parent;
+			if (grandParent is ElementNode grandParentElement)
+			{
+				// ListNode is direct child of ResourceDictionary
+				if (grandParentElement.XmlType.Name == "ResourceDictionary")
+					return true;
+
+				// ListNode is under a .Resources property
+				foreach (var prop in grandParentElement.Properties)
+				{
+					if (prop.Value == listNode && prop.Key.LocalName == "Resources")
+						return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, out ITypeSymbol? converter)
 	{
 		var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
@@ -164,13 +269,17 @@ static class NodeSGExtensions
 
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
+		// C# expressions can be assigned to any type - trust the user's code
+		if (valueNode.Value is Expression)
+			return true;
+
 		var stringValue = (string)valueNode.Value;
 
 		//if there's a typeconverter, assume we can convert
 		if (converter is not null && stringValue is not null)
 			return true;
 
-		if (   toType.NullableAnnotation == NullableAnnotation.Annotated
+		if (toType.NullableAnnotation == NullableAnnotation.Annotated
 			&& toType.SpecialType == SpecialType.None
 			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
 		{
@@ -250,6 +359,14 @@ static class NodeSGExtensions
 
 	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
+		// C# expressions are emitted directly without conversion, but need quote transformation
+		if (valueNode.Value is Expression expression)
+		{
+			// Transform quotes with semantic context - char literals stay as char only if target expects char
+			return CSharpExpressionHelpers.TransformQuotesWithSemantics(
+				expression.Code, context.Compilation, context.RootType);
+		}
+
 		var valueString = valueNode.Value as string ?? string.Empty;
 
 		if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converterAndReturnType))
@@ -275,7 +392,7 @@ static class NodeSGExtensions
 			=> context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-		if (   toType.NullableAnnotation == NullableAnnotation.Annotated
+		if (toType.NullableAnnotation == NullableAnnotation.Annotated
 			&& toType.SpecialType == SpecialType.None
 			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
 		{
@@ -469,7 +586,7 @@ static class NodeSGExtensions
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})!";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
 				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";
@@ -496,7 +613,7 @@ static class NodeSGExtensions
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
 
-		return variable.Type.IsValueProvider( context, out returnType, out iface, out acceptEmptyServiceProvider, out requiredServices);
+		return variable.Type.IsValueProvider(context, out returnType, out iface, out acceptEmptyServiceProvider, out requiredServices);
 	}
 
 
@@ -546,6 +663,15 @@ static class NodeSGExtensions
 		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
 			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
+			// Check for "skip this node" sentinel: returnType is null and value is empty
+			// This happens when a Setter has no value (e.g., OnPlatform with no matching platform)
+			if (returnType0 is null && string.IsNullOrEmpty(value))
+			{
+				// Remove from Variables so it won't be added to any collection
+				context.Variables.Remove(node);
+				return true;
+			}
+
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
 			context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
@@ -596,22 +722,26 @@ static class NodeSGExtensions
 			property = null;
 		return (bpFieldSymbol, property);
 	}
-	
-	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
-	{
-		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
-		{
-			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
-			//it's either a value
-			if (ttnode is ValueNode { Value: string tt })
-				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
-			//or a x:Type that we parsed earlier
-			if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
-				return typeSymbol;
-			//FIXME: report diagnostic on missing TargetType
-			return null;
-		}
 
+	/// <summary>
+	/// Gets the TargetType symbol from a parent node (Style, Trigger, DataTrigger, MultiTrigger).
+	/// Used to resolve bindable properties when only the property name is specified.
+	/// </summary>
+	public static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
+	{
+		var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+		//it's either a value
+		if (ttnode is ValueNode { Value: string tt })
+			return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
+		//or a x:Type that we parsed earlier
+		if (ttnode != null && context.Types.TryGetValue(ttnode, out var typeSymbol))
+			return typeSymbol;
+		//FIXME: report diagnostic on missing TargetType
+		return null;
+	}
+
+	public static IFieldSymbol? GetBindableProperty(this ValueNode node, SourceGenContext context)
+	{
 		var parts = ((string)node.Value).Split('.');
 		if (parts.Length == 1)
 		{
@@ -628,18 +758,17 @@ static class NodeSGExtensions
 				typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
 
 			var propertyName = parts[0];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else if (parts.Length == 2)
 		{
 			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context, node);
 			string propertyName = parts[1];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else
 		{
-			throw new Exception();
-			// FIXME context.ReportDiagnostic
+			return null;
 		}
 	}
 
@@ -652,8 +781,8 @@ static class NodeSGExtensions
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
-		if (   target.Parent is ListNode
-			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
+		if (target.Parent is ListNode
+			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType("VisualStateGroupList"))
 			target = (ElementNode)target.Parent.Parent;
 		else
 			target = (ElementNode)target.Parent;

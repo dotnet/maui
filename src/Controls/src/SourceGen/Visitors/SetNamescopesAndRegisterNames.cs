@@ -18,7 +18,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -28,8 +28,11 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 			return;
 		var name = (string)node.Value;
 		if (namescope.namesInScope.ContainsKey(name))
-			//TODO send diagnostic instead
-			throw new Exception("dup x:Name");
+		{
+			var location = LocationHelpers.LocationCreate(Context.ProjectItem.RelativePath!, (System.Xml.IXmlLineInfo)node, "x:Name");
+			Context.ReportDiagnostic(Microsoft.CodeAnalysis.Diagnostic.Create(Descriptors.NamescopeDuplicate, location, name));
+			return;
+		}
 		namescope.namesInScope.Add(name, Context.Variables[(ElementNode)parentNode]);
 		using (PrePost.NewConditional(Writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))
 		{
@@ -43,6 +46,10 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		// Skip lazy resources - they're not in Variables
+		if (node.IsLazyResource(parentNode, Context))
+			return;
+
 		ILocalValue namescope;
 		IDictionary<string, ILocalValue> namesInNamescope;
 		var setNameScope = false;
@@ -57,6 +64,12 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		{
 			namescope = Context.Scopes[parentNode].namescope;
 			namesInNamescope = Context.Scopes[parentNode].namesInScope;
+		}
+
+		if (node.IsOnPlatformDefaultValue)
+		{
+			Context.Scopes[node] = (namescope, namesInNamescope);
+			return;
 		}
 
 		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
@@ -113,7 +126,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-	public static  ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
+	public static ILocalValue CreateNamescope(IndentedTextWriter writer, SourceGenContext context, string? accessor = null)
 	{
 		var namescope = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		using (PrePost.NewConditional(writer, "!_MAUIXAML_SG_NAMESCOPE_DISABLE"))

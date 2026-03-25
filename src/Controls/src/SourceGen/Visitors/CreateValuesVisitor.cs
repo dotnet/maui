@@ -20,7 +20,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -37,6 +37,18 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	{
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
+
+		// Handle OnPlatform default value nodes - generate default(T) instead of instantiation
+		// This is used when OnPlatform has no matching platform and no Default specified
+		if (node.IsOnPlatformDefaultValue)
+		{
+			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
+			// Reference-type defaults are null; use default! so generated code does not emit nullable warnings.
+			var defaultValue = type.IsReferenceType ? "default!" : "default";
+			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {defaultValue};");
+			variables[node] = new LocalVariable(type, variableName);
+			return;
+		}
 
 		//x:Array
 		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
@@ -339,6 +351,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		// Skip lazy RD resources - they will be created inside lambda in SetPropertiesVisitor
+		if (node.IsLazyResource(parentNode, Context))
+			return;
+
 		CreateValue(node, Writer, Context.Variables, Context.Compilation, Context.XmlnsCache, Context);
 	}
 

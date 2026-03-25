@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -8,12 +9,20 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
+	/// <summary>
+	/// Provides the base class for all visual elements in .NET MAUI.
+	/// </summary>
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)]
 	public partial class VisualElement : IStylable
 	{
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
+			if (!RuntimeFeature.IsCssEnabled)
+				throw new NotSupportedException(
+					"CSS stylesheets are disabled because no MauiCss items were found in the project. " +
+					"To enable CSS support, add <MauiCssEnabled>true</MauiCssEnabled> to your project file, " +
+					"or add CSS files as MauiCss build items.");
+			
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out var attrList))
 				return null;
 

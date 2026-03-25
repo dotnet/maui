@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls
 
 			if (page == CurrentPage)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+				MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 				PopAsync();
 				return;
 			}
@@ -253,6 +253,10 @@ namespace Microsoft.Maui.Controls
 
 			_removePageRequested?.Invoke(this, new NavigationRequestedEventArgs(page, true));
 			RemoveFromInnerChildren(page);
+
+			// Disconnect handlers for the removed non-visible page.
+			// Note: When the current page is removed, PopAsync() is called instead.
+			page?.DisconnectHandlers();
 
 			if (RootPage == page)
 				RootPage = (Page)InternalChildren.First();

@@ -5,16 +5,23 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTrigger']/Docs/*" />
+	/// <summary>
+	/// A trigger that activates setters when a bound value matches a specified value.
+	/// </summary>
 	[ContentProperty("Setters")]
 	public sealed class DataTrigger : TriggerBase
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new <see cref="DataTrigger" /> instance.
+		/// </summary>
+		/// <param name="targetType">The type of object to which this trigger can be attached.</param>
 		public DataTrigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new BindingCondition(), targetType)
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="//Member[@MemberName='Binding']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the binding whose value will be compared to <see cref="Value" /> to determine when to activate the trigger.
+		/// </summary>
 		public BindingBase Binding
 		{
 			get { return ((BindingCondition)Condition).Binding; }
@@ -30,13 +37,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="//Member[@MemberName='Setters']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="Setter" /> objects to apply when the trigger condition is met.
+		/// </summary>
 		public new IList<Setter> Setters
 		{
 			get { return base.Setters; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value to compare against <see cref="Binding" /> to determine when to activate the trigger.
+		/// </summary>
 		public object Value
 		{
 			get { return ((BindingCondition)Condition).Value; }

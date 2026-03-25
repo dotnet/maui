@@ -9,7 +9,9 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellContent']/Docs/*" />
+	/// <summary>
+	/// Represents the content displayed within a <see cref="ShellSection"/> tab.
+	/// </summary>
 	[ContentProperty(nameof(Content))]
 	[TypeConverter(typeof(ShellContentConverter))]
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
@@ -32,17 +34,23 @@ namespace Microsoft.Maui.Controls
 		internal static readonly BindableProperty QueryAttributesProperty =
 			BindableProperty.CreateAttached("QueryAttributes", typeof(ShellRouteParameters), typeof(ShellContent), defaultValue: null, propertyChanged: OnQueryAttributesPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='MenuItems']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of menu items associated with this content. This is a bindable property.
+		/// </summary>
 		public MenuItemCollection MenuItems => (MenuItemCollection)GetValue(MenuItemsProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='Content']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the page content to display. This is a bindable property.
+		/// </summary>
 		public object Content
 		{
 			get => GetValue(ContentProperty);
 			set => SetValue(ContentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='ContentTemplate']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a template used to create the content page. This is a bindable property.
+		/// </summary>
 		public DataTemplate ContentTemplate
 		{
 			get => (DataTemplate)GetValue(ContentTemplateProperty);
@@ -116,7 +124,9 @@ namespace Microsoft.Maui.Controls
 
 		Page _contentCache;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ShellContent"/> class.
+		/// </summary>
 		public ShellContent()
 		{
 			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;

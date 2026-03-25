@@ -511,12 +511,18 @@ namespace Microsoft.Maui.Controls
 
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
+
+			if (Shell.GetBackButtonBehavior(this) is { } buttonBehavior)
+				SetInheritedBindingContext(buttonBehavior, BindingContext);
+
+			if (Shell.GetSearchHandler(this) is { } searchHandler)
+				SetInheritedBindingContext(searchHandler, BindingContext);
 		}
 
 
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			OnChildMeasureInvalidated(child, InvalidationEventArgs.GetCached(trigger));
 			var propagatedTrigger = GetPropagatedTrigger(trigger);
 			InvokeMeasureInvalidated(propagatedTrigger);
 		}

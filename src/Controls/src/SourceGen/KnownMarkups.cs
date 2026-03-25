@@ -37,7 +37,9 @@ internal class KnownMarkups
 			return false;
 		}
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var dotIdx = member.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		var typename = member.Substring(0, dotIdx);
 		var membername = member.Substring(dotIdx + 1);
 
@@ -148,16 +150,46 @@ internal class KnownMarkups
 
 		// Get the AncestorType property (which is an x:Type extension)
 		ITypeSymbol? ancestorTypeSymbol = null;
-		if (markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode? ancestorTypeNode)
-			|| markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+		INode? ancestorTypeNode = null;
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out ancestorTypeNode)
+			&& !markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+			markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "AncestorType"), out ancestorTypeNode);
+		
+		if (ancestorTypeNode is not null)
 		{
-			if (ancestorTypeNode is ElementNode typeExtNode && context.Types.TryGetValue(typeExtNode, out ancestorTypeSymbol))
+			if (ancestorTypeNode is ElementNode typeExtNode)
 			{
-				// Type was already resolved by ProvideValueForTypeExtension
+				if (context.Types.TryGetValue(typeExtNode, out ancestorTypeSymbol))
+				{
+					// Type was already resolved by ProvideValueForTypeExtension
+				}
+				else
+				{
+					// x:Type extension not yet processed - resolve it now
+					// This can happen when RelativeSource is processed before the x:Type child
+					if (!typeExtNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode)
+						&& !typeExtNode.Properties.TryGetValue(new XmlName(null, "TypeName"), out typeNameNode)
+						&& !typeExtNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
+						&& typeExtNode.CollectionItems.Count == 1)
+						typeNameNode = typeExtNode.CollectionItems[0];
+
+					if (typeNameNode is ValueNode vnTypeName)
+					{
+						var typeName = vnTypeName.Value as string;
+						if (!IsNullOrEmpty(typeName))
+						{
+							XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, typeExtNode.NamespaceResolver, typeExtNode as IXmlLineInfo);
+							xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var resolvedType);
+							ancestorTypeSymbol = resolvedType;
+							if (resolvedType is not null)
+								context.Types[typeExtNode] = resolvedType;
+						}
+					}
+				}
 			}
 			else if (ancestorTypeNode is ValueNode vnType)
 			{
-				// Try to parse as a type name
+				// Try to parse as a type name directly (without x:Type)
 				var typeName = vnType.Value as string;
 				if (!IsNullOrEmpty(typeName))
 				{
@@ -276,7 +308,9 @@ internal class KnownMarkups
 
 		if (styleNode != null)
 		{
-			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{(styleNode as ValueNode)!.Value as string}\")";
+			// Escape quotes for verbatim string literal (@"") by doubling them
+			var styleContent = ((styleNode as ValueNode)!.Value as string)?.Replace("\"", "\"\"") ?? "";
+			value = $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{styleContent}\")";
 			return true;
 		}
 		else // sourceNode != null
@@ -308,15 +342,26 @@ internal class KnownMarkups
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
-		if (   context.Variables.TryGetValue(markupNode, out ILocalValue extVariable)
-			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
-			&& dataTypeSymbol is not null)
+		
+		// When Source is explicitly set (RelativeSource or x:Reference), x:DataType does not describe
+		// the actual source — skip compilation and fall back to runtime binding.
+		bool hasExplicitSource = HasExplicitBindingSource(markupNode);
+		
+		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
+		
+		if (   !hasExplicitSource
+			&& extVariable is not null)
 		{
-			var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
-			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+			TryGetXDataType(markupNode, context, out dataTypeSymbol);
+
+			if (dataTypeSymbol is not null)
 			{
-				value = newBindingExpression;
-				return true;
+				var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
+				if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+				{
+					value = newBindingExpression;
+					return true;
+				}
 			}
 		}
 
@@ -437,10 +482,8 @@ internal class KnownMarkups
 
 			if (xDataTypeIsInOuterScope)
 			{
-				// TODO
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType from outer scope"));
-				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				// continue compilation
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingWithXDataTypeFromOuterScope, location));
+				// continue compilation - this is a warning
 			}
 
 			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
@@ -587,6 +630,30 @@ internal class KnownMarkups
 				&& node.TryGetPropertyName(parentNode, out var propertyName)
 				&& propertyName.NamespaceURI == ""
 				&& propertyName.LocalName == "BindingContext";
+		}
+
+		// Checks if the binding has a Source property set to RelativeSource or x:Reference.
+		// When Source is explicitly set, x:DataType does not describe the actual binding source,
+		// so we should NOT compile the binding using x:DataType.
+		static bool HasExplicitBindingSource(ElementNode bindingNode)
+		{
+			// Check if Source property exists
+			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
+				&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+			{
+				return false;
+			}
+
+			// Check if the Source is a RelativeSourceExtension or ReferenceExtension
+			if (sourceNode is ElementNode sourceElementNode)
+			{
+				return sourceElementNode.XmlType.Name is "RelativeSourceExtension"
+					or "RelativeSource"
+					or "ReferenceExtension"
+					or "Reference";
+			}
+
+			return false;
 		}
 	}
 
@@ -757,59 +824,26 @@ internal class KnownMarkups
 		// At least one value must be set
 		if (lightValue is null && darkValue is null && defaultValue is null)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError,
-				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""),
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
 				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
 			value = string.Empty;
 			return false;
 		}
 
-		// Determine which helper method to call based on which values are set
-		string helperMethodName;
-		var args = new List<string>();
+		// Build the AppThemeBinding initialization expression
+		var parts = new List<string>();
+		
+		if (lightValue is not null)
+			parts.Add($"Light = {lightValue}");
+		
+		if (darkValue is not null)
+			parts.Add($"Dark = {darkValue}");
+		
+		if (defaultValue is not null)
+			parts.Add($"Default = {defaultValue}");
 
-		if (lightValue is not null && darkValue is not null && defaultValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLightDarkDefault";
-			args.Add(lightValue);
-			args.Add(darkValue);
-			args.Add(defaultValue);
-		}
-		else if (lightValue is not null && darkValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLightDark";
-			args.Add(lightValue);
-			args.Add(darkValue);
-		}
-		else if (lightValue is not null && defaultValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLightDefault";
-			args.Add(lightValue);
-			args.Add(defaultValue);
-		}
-		else if (darkValue is not null && defaultValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingDarkDefault";
-			args.Add(darkValue);
-			args.Add(defaultValue);
-		}
-		else if (lightValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingLight";
-			args.Add(lightValue);
-		}
-		else if (darkValue is not null)
-		{
-			helperMethodName = "CreateAppThemeBindingDark";
-			args.Add(darkValue);
-		}
-		else // defaultValue is not null
-		{
-			helperMethodName = "CreateAppThemeBindingDefault";
-			args.Add(defaultValue!);
-		}
-
-		value = $"global::Microsoft.Maui.Controls.XamlSourceGen.AppThemeBindingHelpers.{helperMethodName}({string.Join(", ", args)})";
+		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
 		return true;
 	}
 
@@ -832,9 +866,48 @@ internal class KnownMarkups
 			return false;
 		}
 
-		var resource = GetResourceNode(eNode, context, (string)keyValueNode.Value);
-		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
+		var key = (string)keyValueNode.Value;
+		var resource = GetResourceNode(eNode, context, key);
+		
+		// Try to find the variable in current context or parent contexts (for lambda context)
+		ILocalValue? variable = null;
+		if (resource != null)
 		{
+			var ctx = context;
+			while (ctx != null && variable == null)
+			{
+				if (ctx.Variables.TryGetValue(resource, out var v))
+					variable = v;
+				ctx = ctx.ParentContext;
+			}
+		}
+		
+		if (resource is null || variable is null)
+		{
+			// Resource not in Variables - might be a lazy resource
+			var lazyResource = GetResourceNodeIncludingLazy(eNode, context, key);
+			if (lazyResource != null 
+				&& lazyResource.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var lazyType) 
+				&& lazyType != null)
+			{
+				// Find the Resources property accessor by walking up to find the element with Resources
+				var resourcesAccessor = GetResourcesAccessor(eNode, context, lazyResource);
+				if (resourcesAccessor != null)
+				{
+					// For markup extensions, use the return type of ProvideValue (stored in the dictionary)
+					// not the declaring type of the markup extension itself
+					ITypeSymbol actualType = lazyType;
+					if (lazyType.IsValueProvider(context, out var provideValueReturnType, out _, out _, out _))
+					{
+						actualType = provideValueReturnType;
+					}
+					
+					returnType = actualType;
+					value = $"({actualType.ToFQDisplayString()}){resourcesAccessor}[\"{key}\"]";
+					return true;
+				}
+			}
+			
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
@@ -904,8 +977,61 @@ internal class KnownMarkups
 		return false;
 	}
 
+	/// <summary>
+	/// Gets the Resources property accessor for an element containing a resource.
+	/// Walks up the tree to find which element owns the ResourceDictionary.
+	/// Also checks parent contexts for lazy resources inside lambdas.
+	/// </summary>
+	static string? GetResourcesAccessor(ElementNode en, SourceGenContext context, ElementNode resourceNode)
+	{
+		var n = en;
+		while (n != null)
+		{
+			if (n.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
+			{
+				// Check if this Resources node contains our resource
+				bool containsResource = false;
+				if (resourcesNode is ElementNode irn && irn == resourceNode)
+					containsResource = true;
+				else if (resourcesNode is ListNode lr && lr.CollectionItems.Contains(resourceNode))
+					containsResource = true;
+				else if (resourcesNode is ElementNode rd && rd.XmlType.Name == "ResourceDictionary" && rd.CollectionItems.Contains(resourceNode))
+					containsResource = true;
+
+				if (containsResource)
+				{
+					// Check current context and parent contexts for the variable
+					var ctx = context;
+					while (ctx != null)
+					{
+						if (ctx.Variables.TryGetValue(n, out var ownerVar))
+						{
+							return $"{ownerVar.ValueAccessor}.Resources";
+						}
+						ctx = ctx.ParentContext;
+					}
+				}
+			}
+
+			var np = n.Parent;
+			if (np is ElementNode pen)
+				n = pen;
+			else if (np is ListNode lnp && lnp.Parent is ElementNode elnp)
+				n = elnp;
+			else
+				n = null;
+		}
+		return null;
+	}
+
 	//FIXME this could be smarter and look into merged RDs
 	static ElementNode? GetResourceNode(ElementNode en, SourceGenContext context, string key)
+		=> GetResourceNodeCore(en, context, key, requireInVariables: true);
+
+	static ElementNode? GetResourceNodeIncludingLazy(ElementNode en, SourceGenContext context, string key)
+		=> GetResourceNodeCore(en, context, key, requireInVariables: false);
+
+	static ElementNode? GetResourceNodeCore(ElementNode en, SourceGenContext context, string key, bool requireInVariables)
 	{
 		var n = en;
 		while (n != null)
@@ -924,7 +1050,7 @@ internal class KnownMarkups
 			//single resource in <Resources>
 			if (resourcesNode is ElementNode irn
 				&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-				&& context.Variables.ContainsKey(irn)
+				&& (!requireInVariables || IsInAnyContextVariables(irn, context))
 				&& xKeyNode is ValueNode xKeyValueNode
 				&& xKeyValueNode.Value as string == key)
 			{
@@ -937,7 +1063,7 @@ internal class KnownMarkups
 				{
 					if (rn is ElementNode irn2
 						&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-						&& context.Variables.ContainsKey(irn2)
+						&& (!requireInVariables || IsInAnyContextVariables(irn2, context))
 						&& xKeyNode2 is ValueNode xKeyValueNode2
 						&& xKeyValueNode2.Value as string == key)
 					{
@@ -954,7 +1080,7 @@ internal class KnownMarkups
 					if (rn is ElementNode irn3
 						&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 						&& irn3.XmlType.Name != "OnPlatform"
-						&& context.Variables.ContainsKey(irn3)
+						&& (!requireInVariables || IsInAnyContextVariables(irn3, context))
 						&& xKeyNode3 is ValueNode xKeyValueNode3
 						&& xKeyValueNode3.Value as string == key)
 					{
@@ -966,5 +1092,21 @@ internal class KnownMarkups
 			n = n.Parent as ElementNode;
 		}
 		return null;
+	}
+
+	/// <summary>
+	/// Checks if a node is in the Variables dictionary of any context in the parent chain.
+	/// This handles lambda contexts where variables are in parent context.
+	/// </summary>
+	static bool IsInAnyContextVariables(INode node, SourceGenContext context)
+	{
+		var ctx = context;
+		while (ctx != null)
+		{
+			if (ctx.Variables.ContainsKey(node))
+				return true;
+			ctx = ctx.ParentContext;
+		}
+		return false;
 	}
 }

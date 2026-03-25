@@ -3,11 +3,13 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RoutingEffect.xml" path="Type[@FullName='Microsoft.Maui.Controls.RoutingEffect']/Docs/*" />
+	/// <summary>Platform-independent effect that wraps an inner effect, which is usually platform-specific.</summary>
 	public class RoutingEffect : Effect
 	{
 		internal readonly Effect Inner;
 
+		/// <summary>Creates a new routing effect with the specified effect ID.</summary>
+		/// <param name="effectId">The ID for the effect.</param>
 		protected RoutingEffect(string effectId)
 		{
 			Inner = Resolve(effectId);

@@ -8,7 +8,7 @@ internal static class ColorUtils
 	public static bool TryParse(ReadOnlySpan<char> value, out float red, out float green, out float blue, out float alpha)
 	{
 		red = green = blue = alpha = 0f;
-		
+
 		value = value.Trim();
 		if (value.IsEmpty)
 			return false;
@@ -335,7 +335,7 @@ internal static class ColorUtils
 		h = h.Clamp(0, 1);
 		s = s.Clamp(0, 1);
 		v = v.Clamp(0, 1);
-		
+
 		var range = (int)(Math.Floor(h * 6)) % 6;
 		var f = h * 6 - Math.Floor(h * 6);
 		var p = v * (1 - s);
@@ -361,7 +361,9 @@ internal static class ColorUtils
 		out ReadOnlySpan<char> quad3)
 	{
 		var op = value.IndexOf('(');
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var cp = value.LastIndexOf(')');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		if (op < 0 || cp < 0 || cp < op)
 			goto ReturnFalse;
 
@@ -403,7 +405,9 @@ internal static class ColorUtils
 		out ReadOnlySpan<char> triplet2)
 	{
 		var op = value.IndexOf('(');
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var cp = value.LastIndexOf(')');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		if (op < 0 || cp < 0 || cp < op)
 			goto ReturnFalse;
 
