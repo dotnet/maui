@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 			// timing. Detect this by checking if the UILabel Bounds are unset despite
 			// a valid MAUI-computed size, and defer span recalculation to the next main
 			// run loop iteration when iOS has propagated the frame correctly.
-			if (OperatingSystem.IsIOSVersionAtLeast(26) && HasFormattedTextSpans && Handler is LabelHandler labelHandler &&
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && HasFormattedTextSpans && Handler is LabelHandler labelHandler &&
 				labelHandler.PlatformView is UILabel platformLabel &&
 				platformLabel.Bounds.Width == 0 && size.Width > 0)
 			{
