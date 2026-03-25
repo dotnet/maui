@@ -254,15 +254,15 @@
 		</ItemGroup>
 	</Target>
 
-  <PropertyGroup>
-    <_MauiMibcProfilePath>$(IntermediateOutputPath)$(TargetName).mibc</_MauiMibcProfilePath>
-    <PublishReadyToRunXamlOnly Condition="'$(PublishReadyToRunXamlOnly)' == '' and '$(Configuration)' == 'Debug' and '$(UseMonoRuntime)' != 'true'">false</PublishReadyToRunXamlOnly>
-  </PropertyGroup>
+	<PropertyGroup>
+		<_MauiMibcProfilePath>$(IntermediateOutputPath)$(TargetName).mibc</_MauiMibcProfilePath>
+		<PublishReadyToRunXamlOnly Condition="'$(PublishReadyToRunXamlOnly)' == '' and '$(Configuration)' == 'Debug' and '$(UseMonoRuntime)' != 'true'">false</PublishReadyToRunXamlOnly>
+	</PropertyGroup>
 
 	<!-- Generate MIBC profile listing all InitializeComponent* methods for PGO.
 	     Enabled by setting PublishReadyToRunXamlOnly=true in the project file.
 	     Runs after XamlC so the IL has been post-processed and method signatures are final.
-	     Produces a $(MauiMibcProfilePath) file and populates the @(MauiMibcProfile) item. -->
+	     Produces a $(_MauiMibcProfilePath) file and adds it to the @(PublishReadyToRunPgoFiles) item. -->
 	<Target Name="_MauiGenerateMibcProfile"
 		AfterTargets="XamlC"
 		Condition=" '$(PublishReadyToRunXamlOnly)' == 'true' AND '$(DesignTimeBuild)' != 'True' "
@@ -278,9 +278,9 @@
 			<PublishReadyToRunPgoFiles Include="$(_MauiMibcProfilePath)" />
 			<FileWrites Include="$(_MauiMibcProfilePath)" />
 		</ItemGroup>
-    <PropertyGroup>
-      <PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
-    </PropertyGroup>
+		<PropertyGroup>
+			<PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		</PropertyGroup>
 	</Target>
 
  <!--

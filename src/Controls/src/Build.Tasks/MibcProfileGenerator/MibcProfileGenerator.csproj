@@ -24,6 +24,7 @@
 			<_CopyItems Include="$(TargetDir)MibcProfileGenerator.dll" />
 			<_CopyItems Include="$(TargetDir)MibcProfileGenerator.pdb" />
 			<_CopyItems Include="$(TargetDir)MibcProfileGenerator.runtimeconfig.json" />
+			<_CopyItems Include="$(TargetDir)MibcProfileGenerator.deps.json" />
 		</ItemGroup>
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)" ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
 	</Target>

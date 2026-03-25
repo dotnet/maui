@@ -132,8 +132,11 @@ static class MibcProfileGenerator
 		foreach (var typeHandle in mdReader.TypeDefinitions)
 		{
 			var typeDef = mdReader.GetTypeDefinition(typeHandle);
-			string ns = mdReader.GetString(typeDef.Namespace);
 			string typeName = mdReader.GetString(typeDef.Name);
+
+			// In ECMA-335, nested types have an empty Namespace; only the outermost
+			// declaring type carries the real namespace. Walk up to find it.
+			string ns = GetDeclaringNamespace(mdReader, typeDef);
 
 			// Handle nested types: walk up to build the full name with '/' separators
 			string fullTypeName = BuildFullTypeName(mdReader, typeDef, typeName);
@@ -161,6 +164,20 @@ static class MibcProfileGenerator
 		}
 
 		return results;
+	}
+
+	/// <summary>
+	/// Gets the namespace for a type, walking up to the outermost declaring type for nested types.
+	/// In ECMA-335 metadata, nested TypeDefs have an empty Namespace field.
+	/// </summary>
+	static string GetDeclaringNamespace(MetadataReader mdReader, TypeDefinition typeDef)
+	{
+		var current = typeDef;
+		while (current.IsNested)
+		{
+			current = mdReader.GetTypeDefinition(current.GetDeclaringType());
+		}
+		return mdReader.GetString(current.Namespace);
 	}
 
 	/// <summary>
@@ -316,6 +333,8 @@ static class MibcProfileGenerator
 				groupIl.OpCode(ILOpCode.Pop);
 			}
 
+			groupIl.OpCode(ILOpCode.Ret);
+
 			// Add the group method as a global method
 			int bodyOffset = methodBodyStream.AddMethodBody(groupIl, maxStack: 8);
 			string methodName = $"Assemblies_{group.Key}_{groupIndex}";
@@ -341,6 +360,8 @@ static class MibcProfileGenerator
 			dictIl.Token(groupMethodHandle);
 			dictIl.OpCode(ILOpCode.Pop);
 		}
+
+		dictIl.OpCode(ILOpCode.Ret);
 
 		int dictBodyOffset = methodBodyStream.AddMethodBody(dictIl, maxStack: 8);
 		mdBuilder.AddMethodDefinition(
