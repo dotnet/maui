@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				bool isSelected = false;
 				if (selectableItemsView.SelectionMode == SelectionMode.Single)
-					isSelected = selectableItemsView.SelectedItem == FormsDataContext;
+					isSelected = object.Equals(selectableItemsView.SelectedItem, FormsDataContext);
 				else
 					isSelected = selectableItemsView.SelectedItems.Contains(FormsDataContext);
 
