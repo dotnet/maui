@@ -514,6 +514,10 @@ static class UpdateComponentCodeWriter
 		if (TryParseStaticResource(markupString, out var srKey))
 			return TryEmitStaticResource(codeWriter, srKey, propName, ownerType, targetAccessor, isRoot);
 
+		// Try {Binding Path, ...}
+		if (TryParseBinding(markupString, out var bindingProps))
+			return TryEmitBinding(codeWriter, bindingProps, propName, ownerType, targetAccessor, isRoot);
+
 		// Everything else: try as C# expression.
 		// Explicit expressions ({= ...}) and implicit expressions (operators, method calls, member access)
 		// are detected by IsExpression. Bare identifiers like {FirstName} are not — but if we have
@@ -740,8 +744,144 @@ static class UpdateComponentCodeWriter
 	}
 
 	// -----------------------------------------------------------------------
+	// {Binding Path, Mode=..., Converter=..., StringFormat='...', ...}
+	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits a <c>SetBinding</c> call with a runtime <c>Binding</c> for a <c>{Binding ...}</c> markup.
+	/// Supports Path, Mode, StringFormat, and FallbackValue properties.
+	/// </summary>
+	static bool TryEmitBinding(
+		IndentedTextWriter codeWriter,
+		Dictionary<string, string> bindingProps,
+		string propName,
+		INamedTypeSymbol ownerType,
+		string targetAccessor,
+		bool isRoot)
+	{
+		var bpFieldName = $"{propName}Property";
+		var bpField = FindStaticField(ownerType, bpFieldName);
+		if (bpField == null)
+			return false;
+
+		var bpName = bpField.ToFQDisplayString();
+		var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+
+		// Build: new Binding("Path", mode, converter, converterParameter, stringFormat)
+		var path = bindingProps.TryGetValue("Path", out var p) ? p : ".";
+
+		codeWriter.Write($"{target}.SetBinding({bpName}, new global::Microsoft.Maui.Controls.Binding(\"{EscapeString(path)}\"");
+
+		if (bindingProps.TryGetValue("Mode", out var mode))
+			codeWriter.Write($", mode: global::Microsoft.Maui.Controls.BindingMode.{mode}");
+
+		if (bindingProps.TryGetValue("StringFormat", out var sf))
+			codeWriter.Write($", stringFormat: \"{EscapeString(sf)}\"");
+
+		codeWriter.Write(")");
+
+		// Object initializer for properties not in the constructor
+		var initParts = new List<string>();
+		if (bindingProps.TryGetValue("FallbackValue", out var fv))
+			initParts.Add($"FallbackValue = \"{EscapeString(fv)}\"");
+		if (bindingProps.TryGetValue("TargetNullValue", out var tnv))
+			initParts.Add($"TargetNullValue = \"{EscapeString(tnv)}\"");
+
+		if (initParts.Count > 0)
+			codeWriter.Write($" {{ {string.Join(", ", initParts)} }}");
+
+		codeWriter.WriteLine(");");
+		return true;
+	}
+
+	// -----------------------------------------------------------------------
 	// Helpers for MarkupNode parsing
 	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Parses a <c>{Binding Path, Mode=TwoWay, StringFormat='...'}</c> markup string
+	/// into a dictionary of property name → value pairs.
+	/// </summary>
+	static bool TryParseBinding(string markupString, out Dictionary<string, string> properties)
+	{
+		properties = new Dictionary<string, string>(StringComparer.Ordinal);
+		var trimmed = markupString.Trim();
+		if (!trimmed.StartsWith("{Binding", StringComparison.Ordinal))
+			return false;
+
+		// Must be exactly "{Binding}" or "{Binding " (not "{BindingFoo}")
+		if (trimmed.Length > 8 && trimmed[8] != ' ' && trimmed[8] != '}')
+			return false;
+
+		// Extract content between {Binding and }
+		var content = trimmed.Substring(8, trimmed.Length - 9).Trim();
+		if (content.Length == 0)
+		{
+			properties["Path"] = ".";
+			return true;
+		}
+
+		// Split by comma, respecting single-quoted strings
+		var parts = SplitBindingParts(content);
+
+		// First part without = is the Path (positional argument)
+		for (int i = 0; i < parts.Count; i++)
+		{
+			var part = parts[i].Trim();
+			var eqIndex = part.IndexOf('=');
+			if (eqIndex < 0)
+			{
+				// Positional — must be the first part and is the Path
+				if (i == 0)
+					properties["Path"] = UnquoteSingleQuotes(part);
+			}
+			else
+			{
+				var key = part.Substring(0, eqIndex).Trim();
+				var val = part.Substring(eqIndex + 1).Trim();
+				properties[key] = UnquoteSingleQuotes(val);
+			}
+		}
+
+		if (!properties.ContainsKey("Path"))
+			properties["Path"] = ".";
+
+		return true;
+	}
+
+	/// <summary>
+	/// Splits binding markup content by commas, respecting single-quoted strings.
+	/// e.g. "Name, Mode=TwoWay, StringFormat='Hello, {0}!'" → ["Name", "Mode=TwoWay", "StringFormat='Hello, {0}!'"]
+	/// </summary>
+	static List<string> SplitBindingParts(string content)
+	{
+		var parts = new List<string>();
+		int start = 0;
+		bool inQuote = false;
+		for (int i = 0; i < content.Length; i++)
+		{
+			if (content[i] == '\'')
+				inQuote = !inQuote;
+			else if (content[i] == ',' && !inQuote)
+			{
+				parts.Add(content.Substring(start, i - start));
+				start = i + 1;
+			}
+		}
+		if (start < content.Length)
+			parts.Add(content.Substring(start));
+		return parts;
+	}
+
+	/// <summary>
+	/// Removes surrounding single quotes from a value, e.g. <c>'Hello'</c> → <c>Hello</c>.
+	/// </summary>
+	static string UnquoteSingleQuotes(string value)
+	{
+		if (value.Length >= 2 && value[0] == '\'' && value[value.Length - 1] == '\'')
+			return value.Substring(1, value.Length - 2);
+		return value;
+	}
 
 	static bool TryParseDynamicResource(string markupString, out string key)
 	{

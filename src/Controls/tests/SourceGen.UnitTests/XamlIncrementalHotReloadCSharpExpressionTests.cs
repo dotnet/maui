@@ -593,6 +593,72 @@ public partial class TestPage : ContentPage
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
+	// -------------------------------------------------------------------------
+	// {Binding Path} markup
+	// -------------------------------------------------------------------------
+
+	[Fact]
+	public void Binding_PathChange_GeneratesSetBinding()
+	{
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.TestPage">
+    <Label Text="{Binding FirstName}" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.TestPage">
+    <Label Text="{Binding LastName}" />
+</ContentPage>
+""";
+		RunGenerator(xamlV1, ViewModelCode, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, ViewModelCode, enableIncrementalHotReload: true);
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Binding(\"LastName\")", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void Binding_WithModeAndStringFormat_GeneratesSetBinding()
+	{
+		var xamlV1 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.TestPage">
+    <Label Text="{Binding FirstName}" />
+</ContentPage>
+""";
+		var xamlV2 =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.TestPage">
+    <Label Text="{Binding LastName, Mode=OneWay, StringFormat='Name: {0}'}" />
+</ContentPage>
+""";
+		RunGenerator(xamlV1, ViewModelCode, enableIncrementalHotReload: true);
+		var (result, _) = RunGenerator(xamlV2, ViewModelCode, enableIncrementalHotReload: true);
+		var ucSource = GetUCSource(result);
+		Assert.NotNull(ucSource);
+		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
+		Assert.Contains("\"LastName\"", ucSource, StringComparison.Ordinal);
+		Assert.Contains("BindingMode.OneWay", ucSource, StringComparison.Ordinal);
+		Assert.Contains("Name: {0}", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
+	}
+
 	static string? GetUCSource(GeneratorDriverRunResult result)
 	{
 		foreach (var gen in result.Results)
