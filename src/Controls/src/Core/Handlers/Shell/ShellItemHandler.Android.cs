@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Handlers
     {
         internal ViewPager2 _viewPager;
         internal BottomNavigationView _bottomNavigationView;
-        BottomNavigationManager _bottomNavigationManager; // Shared component for bottom nav management
-        BottomSheetDialog _bottomSheetDialog;
+        internal TabbedViewManager _tabbedViewManager;
+        ShellItemTabbedViewAdapter _shellItemAdapter;
         ShellSectionFragmentAdapter _adapter;
         ShellItemPageChangeCallback _pageChangeCallback;
         IShellContext _shellContext;
@@ -55,12 +55,6 @@ namespace Microsoft.Maui.Controls.Handlers
         internal IShellToolbarTracker _toolbarTracker;
         IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
         internal AppBarLayout _appBarLayout;
-
-        // Bottom tab fragment placed into navigationlayout_bottomtabs via Activity FragmentManager
-        // (same pattern as TabbedPageManager.SetTabLayout)
-        Fragment _bottomTabFragment;
-        IDisposable _pendingBottomTabFragment;
-        bool _bottomTabsPlaced;
 
         /// <summary>
         /// Property mapper for ShellItem properties.
@@ -182,12 +176,13 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Sets up the bottom navigation view with section tabs using BottomNavigationManager.
-        /// This enables code sharing with TabbedPage bottom navigation.
+        /// Sets up the TabbedViewManager for bottom tab management.
+        /// Creates the ITabbedView adapter, wires callbacks, and sets the element.
+        /// TabbedViewManager creates the BNV and manages tabs internally.
         /// </summary>
-        internal void SetupBottomNavigation()
+        internal void SetupTabbedViewManager()
         {
-            if (_bottomNavigationView is null || VirtualView is null || MauiContext is null)
+            if (_viewPager is null || VirtualView is null || MauiContext is null)
             {
                 return;
             }
@@ -199,92 +194,44 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Create BottomNavigationManager if not already created
-            _bottomNavigationManager ??= new BottomNavigationManager(MauiContext, _bottomNavigationView);
+            // Create the adapter that presents ShellItem as ITabbedView
+            _shellItemAdapter = new ShellItemTabbedViewAdapter(VirtualView);
 
-            // Set up the tab selection callback
-            _bottomNavigationManager.OnTabSelected = OnTabSelected;
-            _bottomNavigationManager.OnMoreClicked = OnMoreClicked;
+            // Create TabbedViewManager with Shell's ViewPager2 (external VP2 mode)
+            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager);
+            _tabbedViewManager.OnTabSelected = OnTabbedViewTabSelected;
 
-            // Convert ShellSections to ITabItem using the adapter
-            var tabItems = new List<ITabItem>();
-            foreach (var section in shellSections)
-            {
-                tabItems.Add(new ShellSectionTabItem(section));
-            }
+            // SetElement creates BNV and populates tabs
+            _tabbedViewManager.SetElement(_shellItemAdapter);
 
-            // Get current selection index
-            var currentIndex = shellSections.IndexOf(VirtualView.CurrentItem);
-
-            // Use the shared manager to setup tabs
-            _bottomNavigationManager.SetupTabs(tabItems, currentIndex >= 0 ? currentIndex : 0);
-        }
-
-        void OnMoreClicked()
-        {
-            if (VirtualView is null || _bottomNavigationManager is null)
-            {
-                return;
-            }
-
-            var items = CreateTabList();
-            _bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
-                OnMoreItemSelected, MauiContext, items, _bottomNavigationView.MaxItemCount);
-            _bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
-            _bottomSheetDialog.Show();
-        }
-
-        void OnMoreItemSelected(int shellSectionIndex, BottomSheetDialog dialog)
-        {
-            var shellItems = ((IShellItemController)VirtualView).GetItems();
-            if (shellItems is null || shellSectionIndex < 0 || shellSectionIndex >= shellItems.Count)
-            {
-                return;
-            }
-
-            // Navigate to the selected section
-            OnTabSelected(shellSectionIndex);
-            dialog.Dismiss();
-        }
-
-        void OnMoreSheetDismissed(object sender, EventArgs e)
-        {
-            // Update bottom nav to reflect current selection
-            if (VirtualView is not null)
-            {
-                var items = ((IShellItemController)VirtualView).GetItems();
-                var currentIndex = items?.IndexOf(VirtualView.CurrentItem) ?? -1;
-
-                if (currentIndex >= 0)
-                {
-                    _bottomNavigationManager?.SetSelectedItem(currentIndex);
-                }
-            }
-
-            if (_bottomSheetDialog is not null)
-            {
-                _bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
-                _bottomSheetDialog.Dispose();
-                _bottomSheetDialog = null;
-            }
-        }
-
-        List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
-        {
-            var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
-            var shellItems = ((IShellItemController)VirtualView).GetItems();
-            for (int i = 0; i < shellItems.Count; i++)
-            {
-                var item = shellItems[i];
-                items.Add((item.Title, item.Icon, item.IsEnabled));
-            }
-            return items;
+            // Get BNV reference for appearance tracker
+            _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
         }
 
         /// <summary>
-        /// Handles tab selection from BottomNavigationManager callback.
+        /// Rebuilds the bottom navigation tabs after items change (e.g., SwitchToShellItem).
+        /// Updates the adapter to reflect the new ShellItem's sections.
         /// </summary>
-        void OnTabSelected(int index)
+        internal void RebuildBottomNavigation()
+        {
+            if (_tabbedViewManager is null || VirtualView is null)
+            {
+                return;
+            }
+
+            // Create new adapter for the new ShellItem
+            _shellItemAdapter = new ShellItemTabbedViewAdapter(VirtualView);
+            _tabbedViewManager.SetElement(_shellItemAdapter);
+
+            // Update BNV reference (SetElement creates a new BNV)
+            _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
+        }
+
+        /// <summary>
+        /// Callback from TabbedViewManager when a bottom tab is selected.
+        /// Routes to Shell section switching via ProposeSection.
+        /// </summary>
+        void OnTabbedViewTabSelected(int index)
         {
             if (VirtualView is null || _isNavigating)
             {
@@ -345,7 +292,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var previousSection = _shellSection;
 
             // Update bottom navigation selection
-            _bottomNavigationManager?.SetSelectedItem(position);
+            _tabbedViewManager?.SetSelectedTab(position);
 
             // Use ProposeSection instead of direct property set to fire Shell.Navigating event
             // and support navigation cancellation (matches old ShellItemRenderer.ChangeSection behavior)
@@ -371,9 +318,9 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Legacy method kept for compatibility - icon loading now handled by BottomNavigationManager via ITabItem.
+        /// Legacy method kept for compatibility - icon loading now handled by TabbedViewManager.
         /// </summary>
-        [Obsolete("Icon loading is now handled by BottomNavigationManager via ShellSectionTabItem")]
+        [Obsolete("Icon loading is now handled by TabbedViewManager")]
         async void SetMenuItemIconAsync(IMenuItem menuItem, ShellSection section)
         {
             if (section.Icon is null)
@@ -440,7 +387,7 @@ namespace Microsoft.Maui.Controls.Handlers
             NotifyTopTabsForSectionSwitch(_shellSection, newSection);
 
             // Update bottom navigation
-            _bottomNavigationManager?.SetSelectedItem(index);
+            _tabbedViewManager?.SetSelectedTab(index);
 
             // Track the current section
             _shellSection = newSection;
@@ -472,19 +419,19 @@ namespace Microsoft.Maui.Controls.Handlers
             // Rebuild ViewPager2 adapter for new ShellItem's sections
             SetupViewPagerAdapter();
 
-            // Rebuild bottom navigation for new ShellItem's sections
-            SetupBottomNavigation();
+            // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
+            RebuildBottomNavigation();
 
             // Update tab visibility for new ShellItem (may need to show/hide bottom tabs)
             var showTabs = ((IShellItemController)newItem).ShowTabs;
 
             if (showTabs)
             {
-                PlaceBottomTabs();
+                _tabbedViewManager?.SetTabLayout();
             }
             else
             {
-                RemoveBottomTabs();
+                _tabbedViewManager?.RemoveTabs();
             }
 
             // Re-register appearance observer with new ShellItem
@@ -524,7 +471,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (sender is not ShellSection shellSection || ((ElementHandler)this).VirtualView is null || _bottomNavigationManager is null)
+            if (sender is not ShellSection shellSection || ((ElementHandler)this).VirtualView is null || _tabbedViewManager is null)
             {
                 return;
             }
@@ -533,12 +480,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 e.PropertyName == BaseShellItem.TitleProperty.PropertyName ||
                 e.PropertyName == BaseShellItem.IconProperty.PropertyName)
             {
-                var items = ((IShellItemController)VirtualView).GetItems();
-                var index = items.IndexOf(shellSection);
-                if (index >= 0)
-                {
-                    _bottomNavigationManager.UpdateTab(index, new ShellSectionTabItem(shellSection));
-                }
+                // Refresh all tabs when a section property changes
+                _tabbedViewManager.RefreshTabs();
             }
         }
 
@@ -597,7 +540,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabBarVisibility()
         {
-            if (_bottomNavigationView is null || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
+            if (_tabbedViewManager is null || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
             {
                 return;
             }
@@ -606,113 +549,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (showTabs)
             {
-                PlaceBottomTabs();
+                _tabbedViewManager.SetTabLayout();
             }
             else
             {
-                RemoveBottomTabs();
+                _tabbedViewManager.RemoveTabs();
             }
         }
 
         static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
         {
             handler.UpdateTabBarVisibility();
-        }
-
-        /// <summary>
-        /// Places the BottomNavigationView into navigationlayout_bottomtabs via Activity FragmentManager.
-        /// Same pattern as TabbedPageManager.SetTabLayout() — wraps the BNV in a ViewFragment
-        /// and commits it into the named slot from navigationlayout.axml.
-        /// </summary>
-        internal void PlaceBottomTabs()
-        {
-            if (_bottomNavigationView is null || _bottomTabsPlaced)
-            {
-                return;
-            }
-
-            _pendingBottomTabFragment?.Dispose();
-            _pendingBottomTabFragment = null;
-
-            var context = MauiContext?.Context;
-
-            if (context is null)
-            {
-                return;
-            }
-
-            var fragmentManager = MauiContext.GetFragmentManager();
-
-            _pendingBottomTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
-            {
-                _bottomTabFragment = new ViewFragment(_bottomNavigationView);
-
-                fm
-                    .BeginTransaction()
-                    .Replace(Resource.Id.navigationlayout_bottomtabs, _bottomTabFragment)
-                    .SetReorderingAllowed(true)
-                    .Commit();
-            });
-
-            _bottomTabsPlaced = true;
-            SetContentBottomMargin(MauiContext.Context.Resources.GetDimensionPixelSize(
-                Resource.Dimension.design_bottom_navigation_height));
-        }
-
-        /// <summary>
-        /// Removes the BottomNavigationView from navigationlayout_bottomtabs.
-        /// Called when tabs should be hidden (TabBarIsVisible=false, only 1 section, etc.)
-        /// </summary>
-        internal void RemoveBottomTabs()
-        {
-            if (!_bottomTabsPlaced || _bottomTabFragment is null)
-            {
-                return;
-            }
-
-            _pendingBottomTabFragment?.Dispose();
-            _pendingBottomTabFragment = null;
-
-            var context = MauiContext?.Context;
-
-            if (context is null)
-            {
-                return;
-            }
-
-            var fragmentManager = MauiContext.GetFragmentManager();
-            var fragment = _bottomTabFragment;
-            _bottomTabFragment = null;
-            _bottomTabsPlaced = false;
-
-            if (!fragmentManager.IsDestroyed(context))
-            {
-                _pendingBottomTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
-                {
-                    fm
-                        .BeginTransaction()
-                        .Remove(fragment)
-                        .SetReorderingAllowed(true)
-                        .Commit();
-                });
-            }
-
-            SetContentBottomMargin(0);
-        }
-
-        /// <summary>
-        /// Adjusts the bottom margin on navigationlayout_content so the ViewPager2
-        /// content doesn't overlap the bottom tabs. Same pattern as TabbedPageManager.
-        /// </summary>
-        void SetContentBottomMargin(int bottomMargin)
-        {
-            var shell = VirtualView?.FindParentOfType<Shell>();
-            var rootView = shell?.Handler?.PlatformView as AView;
-            var layoutContent = rootView?.FindViewById(Resource.Id.navigationlayout_content);
-            if (layoutContent is not null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams ml)
-            {
-                ml.BottomMargin = bottomMargin;
-            }
         }
 
         /// <summary>
@@ -865,14 +712,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 _adapter.UpdateSections(shellSections);
             }
 
-            // Rebuild the bottom navigation menu for the updated sections
-            SetupBottomNavigation();
+            // Rebuild the bottom navigation menu for the updated sections via TabbedViewManager
+            _tabbedViewManager?.RefreshTabs();
             UpdateTabBarVisibility();
         }
 
         void UpdateBottomNavigationSelection()
         {
-            if (_bottomNavigationManager is null || VirtualView is null)
+            if (_tabbedViewManager is null || VirtualView is null)
             {
                 return;
             }
@@ -887,7 +734,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var currentIndex = items.IndexOf(VirtualView.CurrentItem);
             if (currentIndex >= 0)
             {
-                _bottomNavigationManager.SetSelectedItem(currentIndex);
+                _tabbedViewManager.SetSelectedTab(currentIndex);
             }
         }
 
@@ -925,17 +772,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 ((IShellController)shell).RemoveAppearanceObserver(this);
             }
 
-            // Clean up bottom sheet dialog
-            if (_bottomSheetDialog is not null)
-            {
-                _bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
-                _bottomSheetDialog.Dispose();
-                _bottomSheetDialog = null;
-            }
-
-            // Clear BottomNavigationManager listener
-            _bottomNavigationManager?.ClearListener();
-
             // Dispose per-item appearance tracker (ConnectHandler recreates for new item)
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
@@ -943,8 +779,13 @@ namespace Microsoft.Maui.Controls.Handlers
             if (!_preserveFragmentResources)
             {
                 // Full disconnect: fragment is being destroyed — clean everything
-                RemoveBottomTabs();
-                _bottomNavigationManager = null;
+                if (_tabbedViewManager is not null)
+                {
+                    _tabbedViewManager.RemoveTabs();
+                    _tabbedViewManager.SetElement(null);
+                    _tabbedViewManager = null;
+                }
+                _shellItemAdapter = null;
 
                 _toolbarAppearanceTracker?.Dispose();
                 _toolbarAppearanceTracker = null;
@@ -1322,19 +1163,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Get ViewPager2 from the inflated layout
                 _handler._viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager);
 
-                // Create BottomNavigationView programmatically using the 3-arg constructor
-                // (context, null, defStyleAttr) to match the old renderer's
-                // PlatformInterop.createNavigationBar(). The defStyleAttr constructor resolves
-                // styles through the Material Components theme chain, ensuring correct icon/text sizing.
-                // NOTE: BNV is NOT added to shellitemlayout — it is placed into
-                // navigationlayout_bottomtabs via PlaceBottomTabs().
-                var bottomNav = new BottomNavigationView(inflater.Context, null, Resource.Attribute.bottomNavigationViewStyle)
-                {
-                    Id = AView.GenerateViewId(),
-                    LayoutParameters = new LP(LP.MatchParent, LP.WrapContent)
-                };
-                bottomNav.SetBackgroundColor(global::Android.Graphics.Color.White);
-                _handler._bottomNavigationView = bottomNav;
+                // BNV is created by TabbedViewManager in SetupTabbedViewManager().
+                // It is placed into navigationlayout_bottomtabs via TabbedViewManager.SetTabLayout().
 
                 // Setup window insets for safe area handling
                 MauiWindowInsetListener.SetupViewWithLocalListener(_rootLayout);
@@ -1353,18 +1183,18 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Setup the shared toolbar
                 _handler.SetupToolbar();
 
-                // Setup bottom navigation (BottomNavigationView created in OnCreateView)
-                _handler.SetupBottomNavigation();
+                // Setup TabbedViewManager for bottom tab management
+                // (creates BNV and populates tabs)
+                _handler.SetupTabbedViewManager();
 
-                // Place bottom tabs into navigationlayout_bottomtabs via Activity FragmentManager
-                // (same pattern as TabbedPageManager.SetTabLayout)
-                _handler.PlaceBottomTabs();
+                // Place bottom tabs into navigationlayout_bottomtabs via TabbedViewManager
+                _handler._tabbedViewManager?.SetTabLayout();
 
                 // Now that the fragment is attached, setup the ViewPager2 adapter
                 _handler.SetupViewPagerAdapter();
 
                 // Register as appearance observer NOW that all views are ready.
-                // This must happen after SetupToolbar and SetupBottomNavigation so that
+                // This must happen after SetupToolbar and SetupTabbedViewManager so that
                 // when Shell calls OnAppearanceChanged, the views can receive appearance updates.
                 _handler.RegisterAppearanceObserver();
 

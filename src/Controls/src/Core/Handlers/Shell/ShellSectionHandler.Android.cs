@@ -44,13 +44,8 @@ namespace Microsoft.Maui.Controls.Handlers
         ViewPager2 _viewPager;
         TabLayout _contentTabLayout;
         ShellContentFragmentAdapter _adapter;
-        TabLayoutMediator _tabLayoutMediator;
-
-        // Top tab fragment placed into navigationlayout_toptabs via Activity FragmentManager.
-        // Same pattern as TabbedPageManager.SetTabLayout for top tab placement.
-        Fragment _topTabFragment;
-        IDisposable _pendingTopTabFragment;
-        bool _topTabsPlaced;
+        TabbedViewManager _tabbedViewManager;
+        ShellSectionTabbedViewAdapter _shellSectionAdapter;
 
         /// <summary>
         /// Gets the toolbar tracker from the parent ShellItemHandler.
@@ -198,7 +193,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Sets up the ViewPager2 adapter and TabLayoutMediator.
+        /// Sets up the ViewPager2 adapter and TabbedViewManager for top tabs.
         /// Called when the view is attached and parent fragment is available.
         /// </summary>
         internal void SetupViewPagerAdapter()
@@ -232,12 +227,12 @@ namespace Microsoft.Maui.Controls.Handlers
             var visibleItems = SectionController.GetItems();
             _viewPager.OffscreenPageLimit = Math.Max(visibleItems.Count, 1);
 
-            // Setup TabLayoutMediator
-            _tabLayoutMediator = new TabLayoutMediator(
-                _contentTabLayout,
-                _viewPager,
-                new ShellTabConfigurationStrategy(VirtualView));
-            _tabLayoutMediator.Attach();
+            // Setup TabbedViewManager for top tab management.
+            // Pre-assign Shell's TabLayout (specific sizing) before SetElement.
+            _shellSectionAdapter = new ShellSectionTabbedViewAdapter(VirtualView);
+            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager);
+            _tabbedViewManager.TabLayout = _contentTabLayout;
+            _tabbedViewManager.SetElement(_shellSectionAdapter);
 
             // Register page change callback
             var pageChangedCallback = new ViewPagerPageChangeCallback(this);
@@ -295,7 +290,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabLayoutVisibility()
         {
-            if (_contentTabLayout is null || VirtualView is null)
+            if (_tabbedViewManager is null || VirtualView is null)
             {
                 return;
             }
@@ -340,13 +335,12 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Places the TabLayout into navigationlayout_toptabs via Activity FragmentManager.
-        /// Same pattern as ShellItemHandler.PlaceBottomTabs and TabbedPageManager.SetTabLayout.
-        /// Top tabs go to navigationlayout_toptabs (immediately after toolbar in the outer AppBarLayout).
+        /// Places the TabLayout into navigationlayout_toptabs via TabbedViewManager.
+        /// Delegates fragment placement to TabbedViewManager.SetTabLayout().
         /// </summary>
         internal void PlaceTopTabs()
         {
-            if (_contentTabLayout is null || _topTabsPlaced)
+            if (_tabbedViewManager is null)
             {
                 return;
             }
@@ -360,43 +354,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            _pendingTopTabFragment?.Dispose();
-            _pendingTopTabFragment = null;
-
-            var context = MauiContext?.Context;
-
-            if (context is null)
-            {
-                return;
-            }
-
-            var fragmentManager = MauiContext.GetFragmentManager();
-
-            _pendingTopTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
-            {
-                // Detach TabLayout from any existing parent before wrapping in a new ViewFragment.
-                // PlaceTopTabs/RemoveTopTabs use deferred .Commit() via RunOrWaitForResume.
-                // During clear+recreate (Items.Clear() then AddTopTabs()), RemoveTopTabs schedules
-                // a deferred removal of the old ViewFragment, then PlaceTopTabs schedules a deferred
-                // Replace with a new ViewFragment wrapping the same TabLayout. When both execute,
-                // the old fragment hasn't released _contentTabLayout yet, so addViewToContainer()
-                // crashes with "child already has a parent".
-                if (_contentTabLayout?.Parent is ViewGroup oldParent)
-                {
-                    oldParent.RemoveView(_contentTabLayout);
-                }
-
-                _topTabFragment = new ViewFragment(_contentTabLayout);
-
-                fm
-                    .BeginTransaction()
-                    .Replace(Resource.Id.navigationlayout_toptabs, _topTabFragment)
-                    .SetReorderingAllowed(true)
-                    .Commit();
-            });
-
-            _topTabsPlaced = true;
-            _contentTabLayout.Visibility = ViewStates.Visible;
+            _tabbedViewManager.SetTabLayout();
 
             // Ensure the container FragmentContainerView is visible when tabs are placed
             var topTabsContainer = FindNavigationLayoutTopTabsContainer();
@@ -404,10 +362,15 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 topTabsContainer.Visibility = ViewStates.Visible;
             }
+
+            if (_contentTabLayout is not null)
+            {
+                _contentTabLayout.Visibility = ViewStates.Visible;
+            }
         }
 
         /// <summary>
-        /// Removes the TabLayout from navigationlayout_toptabs.
+        /// Removes the TabLayout from navigationlayout_toptabs via TabbedViewManager.
         /// Called when tabs should be hidden (1 content, page pushed beyond root, or section deactivated).
         /// </summary>
         internal void RemoveTopTabs()
@@ -420,39 +383,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 topTabsContainer.Visibility = ViewStates.Gone;
             }
 
-            if (!_topTabsPlaced || _topTabFragment is null)
+            _tabbedViewManager?.RemoveTabs();
+
+            if (_contentTabLayout is not null)
             {
-                return;
+                _contentTabLayout.Visibility = ViewStates.Gone;
             }
-
-            _pendingTopTabFragment?.Dispose();
-            _pendingTopTabFragment = null;
-
-            var context = MauiContext?.Context;
-
-            if (context is null)
-            {
-                return;
-            }
-
-            var fragmentManager = MauiContext.GetFragmentManager();
-            var fragment = _topTabFragment;
-            _topTabFragment = null;
-            _topTabsPlaced = false;
-
-            if (!fragmentManager.IsDestroyed(context))
-            {
-                _pendingTopTabFragment = fragmentManager.RunOrWaitForResume(context, fm =>
-                {
-                    fm
-                        .BeginTransaction()
-                        .Remove(fragment)
-                        .SetReorderingAllowed(true)
-                        .Commit();
-                });
-            }
-
-            _contentTabLayout.Visibility = ViewStates.Gone;
         }
 
         protected override void DisconnectHandler(AView platformView)
@@ -464,14 +400,16 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
-            // Remove top tabs from NRM slot
+            // Remove top tabs via TabbedViewManager
             RemoveTopTabs();
-            _pendingTopTabFragment?.Dispose();
-            _pendingTopTabFragment = null;
 
-            // Detach TabLayoutMediator
-            _tabLayoutMediator?.Detach();
-            _tabLayoutMediator = null;
+            // Cleanup TabbedViewManager
+            if (_tabbedViewManager is not null)
+            {
+                _tabbedViewManager.SetElement(null);
+                _tabbedViewManager = null;
+            }
+            _shellSectionAdapter = null;
 
             // Cleanup adapter
             _adapter = null;
@@ -555,7 +493,6 @@ namespace Microsoft.Maui.Controls.Handlers
             if (previousCount == 0 && newCount > 0)
             {
                 // Replace with a fresh adapter to avoid stale state restoration
-                _tabLayoutMediator?.Detach();
                 _viewPager.Adapter = null;
 
                 _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment, MauiContext.MakeScoped(fragmentManager: _parentFragment.ChildFragmentManager))
@@ -565,11 +502,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 _viewPager.Adapter = _adapter;
                 ((AView)_viewPager).SaveEnabled = false;
 
-                _tabLayoutMediator = new TabLayoutMediator(
-                    _contentTabLayout,
-                    _viewPager,
-                    new ShellTabConfigurationStrategy(VirtualView));
-                _tabLayoutMediator.Attach();
+                // Refresh TabbedViewManager's mediator for the new adapter
+                _tabbedViewManager?.RefreshTabs();
             }
             else
             {
