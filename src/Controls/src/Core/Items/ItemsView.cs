@@ -319,18 +319,9 @@ namespace Microsoft.Maui.Controls
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 
-		bool DismissScroll()
+		private bool DismissScroll()
 		{
-			if (ItemsSource is null)
-				return true;
-
-			if (ItemsSource is ICollection collection)
-				return collection.Count == 0;
-
-			if (ItemsSource is ICollection<object> genericCollection)
-				return genericCollection.Count == 0;
-
-			return false;
+			return Handler is null || ItemsSource is null;
 		}
 	}
 }
