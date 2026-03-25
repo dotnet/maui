@@ -405,6 +405,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (bindable is Grid grid)
 			{
+				grid.InvalidateMeasure();
 #if WINDOWS
 				// Windows requires explicit parent invalidation for Grid.Row/Column/RowSpan/ColumnSpan changes.
 				// Unlike iOS/Android, Windows doesn't auto-propagate layout invalidation up the hierarchy,
@@ -415,7 +416,6 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 #endif
-				grid.InvalidateMeasure();
 			}
 			else if (bindable is Element element && element.Parent is Grid parentGrid)
 			{
