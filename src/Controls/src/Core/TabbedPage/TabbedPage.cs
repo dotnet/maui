@@ -1,5 +1,8 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -127,6 +130,59 @@ namespace Microsoft.Maui.Controls
 				if (e.PropertyName == Page.TitleProperty.PropertyName)
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
 			}
+		}
+
+		#region ITabbedView explicit implementation
+
+		IReadOnlyList<ITab> ITabbedView.Tabs => Children.Select(p => (ITab)new PageTabAdapter(p)).ToList();
+
+		ITab ITabbedView.CurrentTab
+		{
+			get => CurrentPage is not null ? new PageTabAdapter(CurrentPage) : null;
+			set
+			{
+				// Find the matching page by title/icon
+				if (value is PageTabAdapter adapter)
+					CurrentPage = adapter.Page;
+			}
+		}
+
+		object ITabbedView.BarBackground => BarBackground;
+
+		TabBarPlacement ITabbedView.TabBarPlacement =>
+			PlatformConfiguration.AndroidSpecific.TabbedPage.GetToolbarPlacement(this) == PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom
+				? TabBarPlacement.Bottom
+				: TabBarPlacement.Top;
+
+		int ITabbedView.OffscreenPageLimit =>
+#pragma warning disable CS0618 // Type or member is obsolete
+			PlatformConfiguration.AndroidSpecific.TabbedPage.GetOffscreenPageLimit(this);
+#pragma warning restore CS0618
+
+		bool ITabbedView.IsSwipePagingEnabled =>
+			PlatformConfiguration.AndroidSpecific.TabbedPage.GetIsSwipePagingEnabled(this);
+
+		bool ITabbedView.IsSmoothScrollEnabled =>
+			PlatformConfiguration.AndroidSpecific.TabbedPage.GetIsSmoothScrollEnabled(this);
+
+		event NotifyCollectionChangedEventHandler ITabbedView.TabsChanged
+		{
+			add => PagesChanged += value;
+			remove => PagesChanged -= value;
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Adapts a <see cref="Page"/> to the <see cref="ITab"/> interface for ITabbedView consumption.
+		/// </summary>
+		internal sealed class PageTabAdapter : ITab
+		{
+			public PageTabAdapter(Page page) => Page = page;
+			internal Page Page { get; }
+			public string Title => Page.Title;
+			public IImageSource Icon => Page.IconImageSource;
+			public bool IsEnabled => Page.IsEnabled;
 		}
 	}
 }
