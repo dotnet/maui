@@ -316,6 +316,9 @@ $$"""
 
 		parsedNewRoot = newRoot;
 
+		// Set Parent pointers on all nodes (needed by UC to walk x:DataType chain)
+		newRoot.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
+
 		// Assign fresh IDs to the new tree (starting from nextNodeId to avoid collision with old IDs)
 		var newIds = NodeIdHelper.AssignIds(newRoot, nextNodeId, out newNextNodeId);
 

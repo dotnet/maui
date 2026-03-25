@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// Verifies that the XamlGenerator + XamlHotReloadState + UpdateComponentCodeWriter
 /// correctly emit UC source files when XAML property values change between generator runs.
 /// </summary>
+[Collection("XamlHotReloadTests")]
 public class XamlIncrementalHotReloadPipelineTests : IDisposable
 {
 	// -----------------------------------------------------------------------

@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// <summary>
 /// Unit tests for <see cref="UpdateComponentCodeWriter.GenerateUpdateComponent"/>.
 /// </summary>
+[Collection("XamlHotReloadTests")]
 public class UpdateComponentCodeWriterTests
 {
 	// ---------------------------------------------------------------------------
@@ -46,6 +47,9 @@ public class UpdateComponentCodeWriterTests
 
 		var oldRoot = Parse(xamlV1);
 		var newRoot = Parse(xamlV2);
+
+		// Set Parent pointers (needed for x:DataType resolution in UC)
+		newRoot.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 
 		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot);
 		if (diff == null) return null; // structural change
@@ -119,9 +123,10 @@ $"""
 		// Child add → UC generated with child list change handling
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		// UC must contain a version guard and child list change handling
 		Assert.Contains("__version == 1", result!, StringComparison.Ordinal);
-		Assert.Contains("XamlComponentRegistry", result!, StringComparison.Ordinal);
+		// No goto fallback label or fallback block
+		Assert.DoesNotContain("goto fallback", result!, StringComparison.Ordinal);
+		Assert.DoesNotContain("fallback:", result!, StringComparison.Ordinal);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -154,20 +159,15 @@ $"""
 	}
 
 	[Fact]
-	public void SinglePropertyChange_ContainsFallbackLabel()
+	public void SinglePropertyChange_NoFallbackLabel()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
 		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
 
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		Assert.Contains("fallback:", result, System.StringComparison.Ordinal);
-		Assert.Contains("InitializeComponentRuntime", result, System.StringComparison.Ordinal);
-		// P0 fix: fallback must Unregister before re-inflating
-		Assert.Contains("XamlComponentRegistry.Unregister(this)", result, System.StringComparison.Ordinal);
-		// P0 fix: fallback must save/restore BindingContext per spec
-		Assert.Contains("__savedBc", result, System.StringComparison.Ordinal);
-		Assert.Contains("BindingContext", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("fallback:", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("InitializeComponentRuntime", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]

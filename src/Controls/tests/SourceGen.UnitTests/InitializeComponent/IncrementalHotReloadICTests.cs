@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 ///   - <c>__version = {latestVersion};</c> at the end of the method body (reads from XamlHotReloadState)
 /// When <c>EnableIncrementalHotReload=false</c> (default), none of those are emitted.
 /// </summary>
+[Collection("XamlHotReloadTests")]
 public class IncrementalHotReloadICTests : SourceGenXamlInitializeComponentTestBase, IDisposable
 {
 	public IncrementalHotReloadICTests() => XamlHotReloadState.Reset();

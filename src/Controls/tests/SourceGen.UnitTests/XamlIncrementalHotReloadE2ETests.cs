@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// True end-to-end tests: XAML → SourceGen → Compile → Load → Hot Reload → Verify.
 /// Uses <see cref="MetadataUpdater.ApplyUpdate"/> to apply deltas to a live assembly.
 /// </summary>
+[Collection("XamlHotReloadTests")]
 public class XamlIncrementalHotReloadE2ETests : IDisposable
 {
 	public void Dispose() => XamlHotReloadState.Reset();

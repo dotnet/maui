@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <item><c>bool</c> — <c>true</c> / <c>false</c> literal.</item>
 /// <item><c>int</c>, <c>double</c>, <c>float</c>, <c>decimal</c> — numeric literal.</item>
 /// <item>All other types — <c>TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString("value")</c>.</item>
-/// <item>Property not found on type — goto fallback (conservative).</item>
+/// <item>Property not found on type — return (skip patch).</item>
 /// </list>
 /// </para>
 /// </remarks>
@@ -86,7 +87,7 @@ static class UpdateComponentCodeWriter
 
 				foreach (var propDiff in nodeDiff.PropertyChanges)
 				{
-					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType);
+					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType, compilation, xmlnsCache, typeCache);
 				}
 				codeWriter.WriteLine();
 				continue;
@@ -95,7 +96,7 @@ static class UpdateComponentCodeWriter
 			var varName = $"__uc_{compIdx++}";
 			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
 			codeWriter.Indent++;
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			codeWriter.Indent--;
 
 			INamedTypeSymbol? nodeType = null;
@@ -114,7 +115,7 @@ static class UpdateComponentCodeWriter
 
 			foreach (var propDiff in nodeDiff.PropertyChanges)
 			{
-				EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName);
+				EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType);
 			}
 
 			codeWriter.WriteLine();
@@ -169,26 +170,6 @@ static class UpdateComponentCodeWriter
 				}
 
 				codeWriter.WriteLine("return;");
-				codeWriter.WriteLine();
-				// Fallback per spec: save BindingContext → Unregister → re-inflate → restore BindingContext.
-				// Uses InitializeComponentRuntime() (not InitializeComponent()) to avoid recursion — IC is the
-				// generated partial method which would re-register components and set __version to latest,
-				// whereas we need the runtime XAML loader to re-inflate from the current XAML source.
-				codeWriter.WriteLine("fallback:");
-				codeWriter.WriteLine("var __savedBc = (this as global::Microsoft.Maui.Controls.BindableObject)?.BindingContext;");
-				codeWriter.WriteLine("try");
-				using (PrePost.NewBlock(codeWriter))
-				{
-					codeWriter.WriteLine("if (__savedBc != null) ((global::Microsoft.Maui.Controls.BindableObject)this).BindingContext = null;");
-					codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);");
-					codeWriter.WriteLine("__version = 0;");
-					codeWriter.WriteLine("this.InitializeComponentRuntime();");
-				}
-				codeWriter.WriteLine("finally");
-				using (PrePost.NewBlock(codeWriter))
-				{
-					codeWriter.WriteLine("if (__savedBc != null) ((global::Microsoft.Maui.Controls.BindableObject)this).BindingContext = __savedBc;");
-				}
 			}
 		}
 
@@ -244,7 +225,7 @@ static class UpdateComponentCodeWriter
 		if (isRoot)
 		{
 			codeWriter.WriteLine("// Root-level child list change not supported — fallback");
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 
@@ -252,13 +233,13 @@ static class UpdateComponentCodeWriter
 		var parentVar = $"__rp_{changeIdx}";
 		codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{change.ParentNodeId}\", out var {parentVar}))");
 		codeWriter.Indent++;
-		codeWriter.WriteLine("goto fallback;");
+		codeWriter.WriteLine("return;");
 		codeWriter.Indent--;
 
 		// Cast to Layout to access Children
 		var layoutVar = $"__rl_{changeIdx}";
 		codeWriter.WriteLine($"var {layoutVar} = {parentVar} as global::Microsoft.Maui.Controls.Layout;");
-		codeWriter.WriteLine($"if ({layoutVar} == null) goto fallback;");
+		codeWriter.WriteLine($"if ({layoutVar} == null) return;");
 
 		// Save references to all retained children by their old node IDs
 		int retainedIdx = 0;
@@ -270,7 +251,7 @@ static class UpdateComponentCodeWriter
 			var childVar = $"__rc_{changeIdx}_{retainedIdx++}";
 			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{entry.OldNodeId}\", out var {childVar}))");
 			codeWriter.Indent++;
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			codeWriter.Indent--;
 		}
 
@@ -326,7 +307,7 @@ static class UpdateComponentCodeWriter
 			|| typeSymbol == null)
 		{
 			codeWriter.WriteLine($"// Cannot resolve type '{element.XmlType.Name}' — fallback");
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 
@@ -370,7 +351,7 @@ static class UpdateComponentCodeWriter
 				if (!InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Layout"))
 				{
 					codeWriter.WriteLine($"// Non-layout container '{typeSymbol.Name}' with children — fallback");
-					codeWriter.WriteLine("goto fallback;");
+					codeWriter.WriteLine("return;");
 					return;
 				}
 
@@ -402,7 +383,10 @@ static class UpdateComponentCodeWriter
 	static void EmitRootPropertyChange(
 		IndentedTextWriter codeWriter,
 		PropertyDiff propDiff,
-		INamedTypeSymbol rootType)
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
@@ -416,23 +400,26 @@ static class UpdateComponentCodeWriter
 				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared on root — fallback to runtime reload");
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
+			return;
+		}
+
+		if (propDiff.NewNode != null)
+		{
+			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType))
+				return;
+			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 
 		var rawValue = propDiff.NewValue ?? string.Empty;
-		if (propDiff.NewNode != null)
-		{
-			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — fallback to runtime reload");
-			codeWriter.WriteLine("goto fallback;");
-			return;
-		}
 		var valueExpr = BuildValueExpression(rawValue, rootType, propName);
 
 		if (valueExpr == null)
 		{
 			codeWriter.WriteLine($"// Cannot encode root '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback");
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 
@@ -444,7 +431,11 @@ static class UpdateComponentCodeWriter
 		string castPrefix,
 		PropertyDiff propDiff,
 		INamedTypeSymbol? nodeType,
-		string varName)
+		string varName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType)
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
@@ -462,18 +453,18 @@ static class UpdateComponentCodeWriter
 					return;
 				}
 			}
-			// Fallback: set to default via property setter (won't cover all cases but avoids goto)
 			codeWriter.WriteLine($"// Property '{propName}' cleared — fallback to runtime reload");
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 
 		// Kind == Set
 		if (propDiff.NewNode != null)
 		{
-			// Complex property (markup extension, nested element, list) — codegen can't emit inline yet
-			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — fallback to runtime reload");
-			codeWriter.WriteLine("goto fallback;");
+			if (nodeType != null && TryEmitMarkupNodeChange(codeWriter, propDiff, nodeType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType))
+				return;
+			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 		var rawValue = propDiff.NewValue ?? string.Empty;
@@ -483,11 +474,377 @@ static class UpdateComponentCodeWriter
 		{
 			// Cannot encode value inline — use runtime fallback
 			codeWriter.WriteLine($"// Cannot encode '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback to runtime reload");
-			codeWriter.WriteLine("goto fallback;");
+			codeWriter.WriteLine("return;");
 			return;
 		}
 
 		codeWriter.WriteLine($"{castPrefix}{propName} = {valueExpr};");
+	}
+
+	// -----------------------------------------------------------------------
+	// MarkupNode handling (expressions, DynamicResource, StaticResource)
+	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Attempts to emit code for a MarkupNode property change.
+	/// Returns <c>true</c> if code was emitted, <c>false</c> if the node type is unsupported.
+	/// </summary>
+	static bool TryEmitMarkupNodeChange(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		INamedTypeSymbol ownerType,
+		string targetAccessor,
+		bool isRoot,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType)
+	{
+		if (propDiff.NewNode is not MarkupNode markupNode)
+			return false;
+
+		var markupString = markupNode.MarkupString;
+		var propName = propDiff.PropertyName.LocalName;
+
+		// Try {DynamicResource Key}
+		if (TryParseDynamicResource(markupString, out var drKey))
+			return TryEmitDynamicResource(codeWriter, drKey, propName, ownerType, targetAccessor, isRoot);
+
+		// Try {StaticResource Key}
+		if (TryParseStaticResource(markupString, out var srKey))
+			return TryEmitStaticResource(codeWriter, srKey, propName, ownerType, targetAccessor, isRoot);
+
+		// Everything else: try as C# expression.
+		// Explicit expressions ({= ...}) and implicit expressions (operators, method calls, member access)
+		// are detected by IsExpression. Bare identifiers like {FirstName} are not — but if we have
+		// an x:DataType and the identifier is NOT a known markup extension, treat as expression.
+		if (IsExpressionForUC(markupString))
+			return TryEmitExpressionBinding(codeWriter, markupString, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache, rootType, markupNode);
+
+		return false;
+	}
+
+	/// <summary>
+	/// Determines if a markup string should be treated as a C# expression in the UC context.
+	/// More permissive than <c>CSharpExpressionHelpers.IsExpression</c> because bare identifiers
+	/// like <c>{FirstName}</c> are treated as expressions when not matching a known markup extension.
+	/// </summary>
+	static bool IsExpressionForUC(string markupString)
+	{
+		// Explicit expressions: {= expr}
+		if (CSharpExpressionHelpers.IsExplicitExpression(markupString))
+			return true;
+
+		var trimmed = markupString.Trim();
+		if (trimmed.Length < 3 || trimmed[0] != '{' || trimmed[trimmed.Length - 1] != '}')
+			return false;
+
+		// Escape sequence {}{...}
+		if (trimmed.StartsWith("{}", StringComparison.Ordinal))
+			return false;
+
+		// If it starts with a known markup extension name, it's not an expression
+		// (DynamicResource/StaticResource already handled above, but check others too)
+		if (StartsWithKnownMarkupExtension(trimmed))
+			return false;
+
+		// Everything else: treat as expression (bare identifier, method call, operator, etc.)
+		return true;
+	}
+
+	static bool StartsWithKnownMarkupExtension(string trimmed)
+	{
+		int start = 1;
+		while (start < trimmed.Length && char.IsWhiteSpace(trimmed[start]))
+			start++;
+		int end = start;
+		while (end < trimmed.Length && (char.IsLetterOrDigit(trimmed[end]) || trimmed[end] == ':'))
+			end++;
+		if (end <= start)
+			return false;
+		var identifier = trimmed.Substring(start, end - start);
+		// Prefixed identifiers like x:Type are always markup extensions
+		if (identifier.IndexOf(':') >= 0)
+			return true;
+		return CSharpExpressionHelpers.IsKnownMarkupExtensionName(identifier);
+	}
+
+	/// <summary>
+	/// Emits a <c>SetBinding</c> call with a <c>TypedBinding</c> for a C# expression.
+	/// </summary>
+	static bool TryEmitExpressionBinding(
+		IndentedTextWriter codeWriter,
+		string markupString,
+		string propName,
+		INamedTypeSymbol ownerType,
+		string targetAccessor,
+		bool isRoot,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		MarkupNode markupNode)
+	{
+		// Find the BindableProperty field
+		var bpFieldName = $"{propName}Property";
+		var bpField = FindStaticField(ownerType, bpFieldName);
+		if (bpField == null)
+			return false;
+
+		// Find x:DataType by walking up the parent chain
+		if (!TryResolveXDataType(markupNode, compilation, xmlnsCache, typeCache, out var dataTypeSymbol) || dataTypeSymbol == null)
+			return false;
+
+		var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+
+		// Transform quotes
+		var transformedExpression = CSharpExpressionHelpers.TransformQuotesWithSemantics(
+			expressionCode, compilation, dataTypeSymbol, rootType);
+
+		// Analyze expression
+		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType);
+		var handlers = analysis.Handlers;
+
+		// Resolve expression result type
+		var expressionType = ResolveExpressionTypeForUC(expressionCode, dataTypeSymbol, compilation);
+		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
+		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
+		var bpName = bpField.ToFQDisplayString();
+
+		// Wrap in scoped block if we have captures
+		bool hasCaptures = analysis.Captures.Count > 0;
+		if (hasCaptures)
+		{
+			codeWriter.WriteLine("{");
+			codeWriter.Indent++;
+			foreach (var capture in analysis.Captures)
+			{
+				codeWriter.WriteLine($"var {capture.CaptureVariable} = this.{capture.InvocationExpression};");
+			}
+		}
+
+		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+		codeWriter.WriteLine($"{setBindingTarget}.SetBinding({bpName},");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
+		codeWriter.Indent++;
+
+		// Getter
+		var getterExpression = analysis.TransformedExpression;
+		if (getterExpression.Contains("?."))
+			getterExpression += "!";
+		codeWriter.WriteLine($"__source => ({getterExpression}, true),");
+
+		// Setter
+		if (analysis.IsSettable)
+			codeWriter.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
+		else
+			codeWriter.WriteLine("null,");
+
+		// Handlers array
+		if (handlers.Count == 0)
+		{
+			codeWriter.WriteLine("null));");
+		}
+		else
+		{
+			codeWriter.WriteLine($"new global::System.Tuple<global::System.Func<{sourceTypeName}, object>, string>[] {{");
+			codeWriter.Indent++;
+			for (int i = 0; i < handlers.Count; i++)
+			{
+				var handler = handlers[i];
+				var comma = i < handlers.Count - 1 ? "," : "";
+				codeWriter.WriteLine($"new(static __source => {handler.ParentExpression}, \"{handler.PropertyName}\"){comma}");
+			}
+			codeWriter.Indent--;
+			codeWriter.WriteLine("}));");
+		}
+		codeWriter.Indent -= 2;
+
+		if (hasCaptures)
+		{
+			codeWriter.Indent--;
+			codeWriter.WriteLine("}");
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Emits a <c>SetDynamicResource</c> call for a <c>{DynamicResource Key}</c> markup.
+	/// </summary>
+	static bool TryEmitDynamicResource(
+		IndentedTextWriter codeWriter,
+		string resourceKey,
+		string propName,
+		INamedTypeSymbol ownerType,
+		string targetAccessor,
+		bool isRoot)
+	{
+		var bpFieldName = $"{propName}Property";
+		var bpField = FindStaticField(ownerType, bpFieldName);
+		if (bpField == null)
+			return false;
+
+		var bpName = bpField.ToFQDisplayString();
+		var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+		codeWriter.WriteLine($"((global::Microsoft.Maui.Controls.Internals.IDynamicResourceHandler){target}).SetDynamicResource({bpName}, \"{EscapeString(resourceKey)}\");");
+		return true;
+	}
+
+	/// <summary>
+	/// Emits code to apply a <c>{StaticResource Key}</c> at runtime.
+	/// Uses the element's resource lookup chain.
+	/// </summary>
+	static bool TryEmitStaticResource(
+		IndentedTextWriter codeWriter,
+		string resourceKey,
+		string propName,
+		INamedTypeSymbol ownerType,
+		string targetAccessor,
+		bool isRoot)
+	{
+		var bpFieldName = $"{propName}Property";
+		var bpField = FindStaticField(ownerType, bpFieldName);
+		if (bpField == null)
+			return false;
+
+		var bpName = bpField.ToFQDisplayString();
+		var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+		// Use SetValue with inline resource lookup walking the element tree
+		codeWriter.WriteLine($"{{");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"object __sr_val = null;");
+		codeWriter.WriteLine($"var __sr_element = {target} as global::Microsoft.Maui.Controls.Element;");
+		codeWriter.WriteLine($"while (__sr_element != null)");
+		codeWriter.WriteLine($"{{");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"if (__sr_element is global::Microsoft.Maui.Controls.VisualElement __sr_ve && __sr_ve.Resources != null && __sr_ve.Resources.TryGetValue(\"{EscapeString(resourceKey)}\", out __sr_val))");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"break;");
+		codeWriter.Indent--;
+		codeWriter.WriteLine($"__sr_element = __sr_element.Parent as global::Microsoft.Maui.Controls.Element;");
+		codeWriter.Indent--;
+		codeWriter.WriteLine($"}}");
+		codeWriter.WriteLine($"if (__sr_val == null && global::Microsoft.Maui.Controls.Application.Current?.Resources?.TryGetValue(\"{EscapeString(resourceKey)}\", out __sr_val) != true)");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"__sr_val = null;");
+		codeWriter.Indent--;
+		codeWriter.WriteLine($"if (__sr_val != null)");
+		codeWriter.Indent++;
+		codeWriter.WriteLine($"{target}.SetValue({bpName}, __sr_val);");
+		codeWriter.Indent--;
+		codeWriter.Indent--;
+		codeWriter.WriteLine($"}}");
+		return true;
+	}
+
+	// -----------------------------------------------------------------------
+	// Helpers for MarkupNode parsing
+	// -----------------------------------------------------------------------
+
+	static bool TryParseDynamicResource(string markupString, out string key)
+	{
+		key = "";
+		var trimmed = markupString.Trim();
+		if (!trimmed.StartsWith("{DynamicResource ", StringComparison.Ordinal))
+			return false;
+		// {DynamicResource Key} → extract "Key"
+		key = trimmed.Substring("{DynamicResource ".Length, trimmed.Length - "{DynamicResource ".Length - 1).Trim();
+		return key.Length > 0;
+	}
+
+	static bool TryParseStaticResource(string markupString, out string key)
+	{
+		key = "";
+		var trimmed = markupString.Trim();
+		if (!trimmed.StartsWith("{StaticResource ", StringComparison.Ordinal))
+			return false;
+		key = trimmed.Substring("{StaticResource ".Length, trimmed.Length - "{StaticResource ".Length - 1).Trim();
+		return key.Length > 0;
+	}
+
+	/// <summary>
+	/// Walks up the XAML node tree from a MarkupNode to find the nearest x:DataType declaration.
+	/// Simplified version of <c>XDataTypeResolver.TryGetXDataType</c> that doesn't require <c>SourceGenContext</c>.
+	/// </summary>
+	static bool TryResolveXDataType(
+		MarkupNode markupNode,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		out ITypeSymbol? dataTypeSymbol)
+	{
+		dataTypeSymbol = null;
+
+		// Walk up: MarkupNode → parent ElementNode → ancestors
+		var current = markupNode.Parent as ElementNode;
+		while (current != null)
+		{
+			if (current.Properties.TryGetValue(XmlName.xDataType, out var dtNode))
+			{
+				// x:DataType="local:TypeName" stored as ValueNode
+				if (dtNode is ValueNode vn && vn.Value is string dtString)
+				{
+					XmlType? xmlType;
+					try
+					{
+						xmlType = TypeArgumentsParser.ParseSingle(dtString, current.NamespaceResolver, null);
+					}
+					catch (XamlParseException)
+					{
+						return false;
+					}
+					if (xmlType != null && xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resolved))
+					{
+						dataTypeSymbol = resolved;
+						return true;
+					}
+				}
+				return false;
+			}
+
+			// Walk up to parent ElementNode
+			var parent = current.Parent;
+			if (parent is ListNode listNode)
+				current = listNode.Parent as ElementNode;
+			else
+				current = parent as ElementNode;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Resolves the result type of a C# expression for TypedBinding TProperty.
+	/// Simplified version that tries member lookup on the data type.
+	/// </summary>
+	static ITypeSymbol? ResolveExpressionTypeForUC(string expression, ITypeSymbol dataType, Compilation compilation)
+	{
+		// Simple property access: "PropertyName"
+		var trimmed = expression.Trim();
+		var members = dataType.GetMembers(trimmed);
+		foreach (var member in members)
+		{
+			if (member is IPropertySymbol prop)
+				return prop.Type;
+			if (member is IFieldSymbol field)
+				return field.Type;
+		}
+
+		// Method call: "MethodName()" — strip parens and look up return type
+		if (trimmed.EndsWith("()", StringComparison.Ordinal))
+		{
+			var methodName = trimmed.Substring(0, trimmed.Length - 2);
+			foreach (var member in dataType.GetMembers(methodName))
+			{
+				if (member is IMethodSymbol method)
+					return method.ReturnType;
+			}
+		}
+
+		// Complex expression — fall back to object
+		return compilation.GetSpecialType(SpecialType.System_Object);
 	}
 
 	/// <summary>
