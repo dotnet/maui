@@ -74,9 +74,10 @@ steps:
       echo "$TEST_FILES" | head -20
 
   - name: Checkout PR and restore agent infrastructure
+    if: github.event_name == 'workflow_dispatch'
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+      PR_NUMBER: ${{ inputs.pr_number }}
     run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
