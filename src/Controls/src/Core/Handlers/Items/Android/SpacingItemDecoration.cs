@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		ItemsLayoutOrientation _orientation;
 
+		// Outer-edge spacing removal is only applied for GridItemsLayout.
+		// For LinearItemsLayout, the RecyclerView's negative padding already handles outer-edge compensation,
+		// and removing outer edges here would cause double compensation, truncating the first/last items.
+		bool _removeOuterEdgeSpacing;
+
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
 			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
@@ -41,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					verticalOffset = gridItemsLayout.VerticalItemSpacing / 2.0;
 					_span = gridItemsLayout.Span;
 					_orientation = gridItemsLayout.Orientation;
+					_removeOuterEdgeSpacing = true;
 					break;
 				case LinearItemsLayout listItemsLayout:
 					if (listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
@@ -70,6 +76,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
 
+			outRect.Left = HorizontalOffset;
+			outRect.Right = HorizontalOffset;
+			outRect.Bottom = VerticalOffset;
+			outRect.Top = VerticalOffset;
+
+			// Only remove outer-edge spacing for grid layouts.
+			// Linear layouts use negative RecyclerView padding instead; doing both would double-compensate.
+			if (!_removeOuterEdgeSpacing)
+				return;
+
 			int position = parent.GetChildAdapterPosition(view);
 			if (position == RecyclerView.NoPosition)
 				return;
@@ -77,11 +93,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int itemCount = state.ItemCount;
 			if (itemCount <= 0)
 				return;
-
-			outRect.Left = HorizontalOffset;
-			outRect.Right = HorizontalOffset;
-			outRect.Bottom = VerticalOffset;
-			outRect.Top = VerticalOffset;
 
 			// Remove spacing on the outer edges so spacing only appears between items.
 			// A linear layout is effectively span=1, so the same math works for both.
