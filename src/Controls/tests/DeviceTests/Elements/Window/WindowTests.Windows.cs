@@ -162,14 +162,57 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
-				var presenter = handler.PlatformView.GetAppWindow()?.Presenter as OverlappedPresenter;
+				var appWindowPlatform = handler.PlatformView.GetAppWindow();
+				Assert.NotNull(appWindowPlatform?.Presenter);
+				var presenter = Assert.IsType<OverlappedPresenter>(appWindowPlatform.Presenter);
 
 				// maximize window
 				presenter.Maximize();
 				var appWindow = handler.PlatformView.GetWindow();
 				await AssertEventually(() => appWindow.X == 0);
 				await AssertEventually(() => appWindow.Y == 0);
+				// Verify width and height are non-zero (regression: Height was reported as 0 when maximized)
+				await AssertEventually(() => appWindow.Width > 0);
+				await AssertEventually(() => appWindow.Height > 0);
 			});
+		}
+
+		[Fact]
+		public async Task WindowsYAndHeightCorrectWhenClosingMaximizedWindow()
+		{
+			SetupBuilder();
+			var mainPage = new NavigationPage(new ContentPage());
+
+			double destroyingY = double.NaN;
+			double destroyingHeight = double.NaN;
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
+			{
+				var window = handler.VirtualView as Window;
+				Assert.NotNull(window);
+
+				var appWindowPlatform = handler.PlatformView.GetAppWindow();
+				Assert.NotNull(appWindowPlatform?.Presenter);
+				var presenter = Assert.IsType<OverlappedPresenter>(appWindowPlatform.Presenter);
+
+				// Capture the frame values at destroy time so we can verify them after cleanup
+				window.Destroying += (s, e) =>
+	   {
+				 destroyingY = window.Y;
+				 destroyingHeight = window.Height;
+			 };
+
+				// Maximize the window and wait until the frame update reflects the maximized bounds
+				presenter.Maximize();
+				await AssertEventually(() => window.Y == 0);
+				await AssertEventually(() => window.Height > 0);
+			});
+
+			// The window is destroyed during CreateHandlerAndAddToWindow cleanup.
+			// Verify that the Y and Height values at Destroying time were non-negative / non-zero.
+			Assert.False(double.IsNaN(destroyingHeight), "Window.Destroying event was not raised");
+			Assert.True(destroyingHeight > 0, $"Height should be > 0 when closing a maximized window, but was {destroyingHeight}");
+			Assert.True(destroyingY >= 0, $"Y should be >= 0 when closing a maximized window, but was {destroyingY}");
 		}
 
 		[Fact]
