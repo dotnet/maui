@@ -63,7 +63,7 @@ public class Issue8305 : TestShell
 			}
 		};
 
-		var tab1 = new Tab { Title = "Home", Icon = "groceries.png" };
+		var tab1 = new Tab { Title = "Home", Icon = "groceries.png", BadgeText = "New", BadgeColor = Colors.Blue };
 		tab1.Items.Add(new ShellContent { Title = "Home", Content = tab1Content });
 
 		var tab2 = new Tab { Title = "Messages", Icon = "dotnet_bot.png", BadgeText = "3", BadgeColor = Colors.Red };
