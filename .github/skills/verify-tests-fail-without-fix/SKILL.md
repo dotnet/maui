@@ -184,15 +184,18 @@ The skill generates output files under `CustomAgentLogsTmp/PRState/<PRNumber>/ve
 | `test-without-fix.log` | Full test output from run without fix |
 | `test-with-fix.log` | Full test output from run with fix |
 
-**Plus UI test logs in** `CustomAgentLogsTmp/UITests/`:
-- `android-device.log` or `ios-device.log` - Device logs
-- `test-output.log` - NUnit test output
+**Plus test logs in** `CustomAgentLogsTmp/`:
+- `UITests/` - UI test device logs and output
+- `DeviceTests/` - Device test output  
+- `UnitTests/` - Unit test output
 
 **Example structure:**
 ```
 CustomAgentLogsTmp/
-├── UITests/                           # Shared UI test logs
+├── UITests/                           # UI test logs
 │   ├── android-device.log
+│   └── test-output.log
+├── DeviceTests/                       # Device test logs
 │   └── test-output.log
 └── PRState/
     └── 27847/

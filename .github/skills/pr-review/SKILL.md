@@ -127,7 +127,7 @@ prompt: |
   Invoke the try-fix skill for PR #XXXXX:
   - problem: {bug description from Pre-Flight}
   - platform: {platform from Platform Selection}
-  - test_command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform {platform} -TestFilter "IssueXXXXX"
+  - test_command: {test command from detected test type — use BuildAndRunHostApp.ps1 for UITest, Run-DeviceTests.ps1 for DeviceTest, dotnet test for UnitTest}
   - target_files:
     - src/{area}/{file1}.cs
     - src/{area}/{file2}.cs
