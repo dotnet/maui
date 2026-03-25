@@ -88,7 +88,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			return btn;
 		}
 
-		Button CreateColorButton(string colorName, Color color)
+		Button CreateColorButton(string colorName, Color? color)
 		{
 			var btn = new Button
 			{
@@ -182,12 +182,12 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			}
 		}
 
-		ShellSection GetCurrentShellSection()
+		ShellSection? GetCurrentShellSection()
 		{
 			return Shell.Current?.CurrentItem?.CurrentItem;
 		}
 
-		IList<ShellSection> GetAllShellSections()
+		IList<ShellSection>? GetAllShellSections()
 		{
 			var shellItem = Shell.Current?.CurrentItem;
 			if (shellItem is null)

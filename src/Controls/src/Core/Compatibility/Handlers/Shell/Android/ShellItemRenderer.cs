@@ -552,11 +552,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var items = ((IShellItemController)ShellItem).GetItems();
 			var maxItems = _bottomView.MaxItemCount;
-			var count = Math.Min(items.Count, maxItems);
 
-			for (int i = 0; i < count; i++)
+			if (items.Count == 0 || maxItems <= 0)
+				return;
+
+			var hasOverflow = items.Count > maxItems;
+
+			// When overflow exists, index maxItems - 1 is the "More" tab.
+			// Only update badges for actual sections shown as tabs.
+			var lastIndexToUpdate = hasOverflow ? maxItems - 2 : Math.Min(items.Count, maxItems) - 1;
+
+			for (int i = 0; i <= lastIndexToUpdate; i++)
 			{
 				UpdateShellSectionBadge(items[i], i);
+			}
+
+			// Ensure the "More" tab itself does not display a badge
+			if (hasOverflow)
+			{
+				_bottomView.RemoveBadge(maxItems - 1);
 			}
 		}
 
