@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				// by the drawable to chain correctly on top of it. This maps the rounded logical
 				// dimensions back to exact physical dimensions, filling the view edge-to-edge
 				// without sub-pixel gaps. Skipped when already 1:1 (no fractional adjustment needed).
-				if (adjustedScaleX is not 1f || adjustedScaleY is not 1f)
+				const float scaleEpsilon = 0.0001f;
+				if (MathF.Abs(adjustedScaleX - 1f) > scaleEpsilon || MathF.Abs(adjustedScaleY - 1f) > scaleEpsilon)
 				{
 					_canvas.Scale(adjustedScaleX, adjustedScaleY);
 				}
