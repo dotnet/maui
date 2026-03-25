@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Builder;
+using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,8 +49,19 @@ public class Program
 	{
 		var rootCommand = BuildRootCommand();
 
+		// Handle help rendering with Spectre.Console before the parser runs
+		if (TryShowSpectreHelp(args, rootCommand))
+			return 0;
+
 		var parser = new CommandLineBuilder(rootCommand)
-			.UseDefaults()
+			.UseHelp()
+			.UseEnvironmentVariableDirective()
+			.UseParseDirective()
+			.UseSuggestDirective()
+			.RegisterWithDotnetSuggest()
+			.UseTypoCorrections()
+			.UseParseErrorReporting()
+			.UseVersionOption()
 			.UseExceptionHandler((exception, context) =>
 			{
 				var formatter = GetFormatter(context);
@@ -117,6 +129,41 @@ public class Program
 
 	internal static bool IsCiMode(InvocationContext context) =>
 		context.ParseResult.GetValueForOption(GlobalOptions.CiOption);
+
+	static readonly string[] s_helpAliases = ["--help", "-h", "-?", "/h", "/?"];
+
+	/// <summary>
+	/// Checks if help was requested and renders colorized help using Spectre.Console.
+	/// Returns true if help was handled, false otherwise.
+	/// </summary>
+	static bool TryShowSpectreHelp(string[] args, RootCommand rootCommand)
+	{
+		if (!args.Any(a => s_helpAliases.Contains(a, StringComparer.OrdinalIgnoreCase)))
+			return false;
+
+		// Resolve which command the user is asking help for
+		var argsWithoutHelp = args.Where(a => !s_helpAliases.Contains(a, StringComparer.OrdinalIgnoreCase)).ToArray();
+		var command = ResolveCommand(argsWithoutHelp, rootCommand);
+		SpectreHelpBuilder.WriteHelp(command);
+		return true;
+	}
+
+	/// <summary>
+	/// Walks the command tree to find the deepest matching command for the given args.
+	/// </summary>
+	static Command ResolveCommand(string[] args, RootCommand rootCommand)
+	{
+		Command current = rootCommand;
+		foreach (var arg in args)
+		{
+			var sub = current.Subcommands.FirstOrDefault(c =>
+				string.Equals(c.Name, arg, StringComparison.OrdinalIgnoreCase));
+			if (sub == null)
+				break;
+			current = sub;
+		}
+		return current;
+	}
 
 	/// <summary>
 	/// Resets the service provider. Used for testing.
