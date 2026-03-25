@@ -6,19 +6,24 @@ public class Issue33241 : ContentPage
 {
 	public Issue33241()
 	{
-		var layout =
-    	new Border
+		var layout = new VerticalStackLayout();
+		var label = new Label();
+		label.Text =  "The blue box should have a red box inside of it.";
+		label.AutomationId = "Label";
+		layout.Children.Add(label);
+    	var border = new Border
     	{
+			HeightRequest = 500,
         	Background = Colors.SkyBlue,
         	Padding = 10,
         	Content =
             new Issue33241_CustomView
             {
                 Background = Colors.Red,
-				AutomationId = "CustomView",
                 Padding = 10
             }
      	};
+		layout.Children.Add(border);
 		Content = layout;
 	}
 }
