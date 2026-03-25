@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Switch)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue1747Test()
 		{
 			App.WaitForElement(ToggleButtonAutomationId);

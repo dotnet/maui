@@ -4,12 +4,25 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.SelectionChangedEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the SelectionChanged event in selectable items views.
+	/// </summary>
+	/// <remarks>
+	/// This event args class is used when the selection changes in a <see cref="CollectionView"/>, <see cref="CarouselView"/>, or other selectable views.
+	/// It provides both the previous and current selections as read-only lists to support both single and multiple selection modes.
+	/// </remarks>
 	public class SelectionChangedEventArgs : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="//Member[@MemberName='PreviousSelection']/Docs/*" />
+		/// <summary>
+		/// Gets the list of items that were previously selected before the change.
+		/// </summary>
+		/// <value>A read-only list of the previously selected items. Empty if no items were previously selected.</value>
 		public IReadOnlyList<object> PreviousSelection { get; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectionChangedEventArgs.xml" path="//Member[@MemberName='CurrentSelection']/Docs/*" />
+		
+		/// <summary>
+		/// Gets the list of items that are now selected after the change.
+		/// </summary>
+		/// <value>A read-only list of the currently selected items. Empty if no items are currently selected.</value>
 		public IReadOnlyList<object> CurrentSelection { get; }
 
 		static readonly IReadOnlyList<object> s_empty = new List<object>(0);

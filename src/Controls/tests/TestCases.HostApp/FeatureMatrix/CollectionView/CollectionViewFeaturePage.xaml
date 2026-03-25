@@ -32,6 +32,11 @@
                 HorizontalOptions="Center"
                 AutomationId="SelectionPageButton"
                 WidthRequest="400"/>
+        <Button Text="ItemsSource Feature"
+                Clicked="OnItemsSourceButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ItemsSourceButton"
+                WidthRequest="400"/>
          <Button Text="CollectionViewDynamicChangesPage"
                 Clicked="OnDynamicChangesButtonClicked"
                 HorizontalOptions="Center"

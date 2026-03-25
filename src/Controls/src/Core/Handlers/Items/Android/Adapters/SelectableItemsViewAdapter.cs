@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsSource : IItemsViewSource
 	{
 		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
+		HashSet<object> _selectedSet = new HashSet<object>();
 
 		protected internal SelectableItemsViewAdapter(TItemsView selectableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(selectableItemsView, createView)
@@ -23,6 +24,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.OnBindViewHolder(holder, position);
 
 			if (!(holder is SelectableViewHolder selectable))
+			{
+				return;
+			}
+
+			// Header and footer view holders should not participate in selection tracking.
+			// They are not data items and calling GetItem() on their positions would cause
+			// an ArgumentOutOfRangeException due to the header index adjustment.
+			if (ItemsSource.IsHeader(position) || ItemsSource.IsFooter(position))
 			{
 				return;
 			}
@@ -57,21 +66,59 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		internal void MarkPlatformSelection(object selectedItem)
+		internal void MarkPlatformSelection(SelectableItemsView selectableItemsView)
 		{
-			if (selectedItem == null)
+			if (_currentViewHolders.Count == 0)
 			{
 				return;
 			}
 
-			var position = GetPositionForItem(selectedItem);
+			_selectedSet.Clear();
+
+			switch (selectableItemsView.SelectionMode)
+			{
+				case SelectionMode.None:
+					ClearPlatformSelection();
+					return;
+
+				case SelectionMode.Single:
+					var selectedItem = selectableItemsView.SelectedItem;
+					if (selectedItem == null)
+					{
+						ClearPlatformSelection();
+						return;
+					}
+
+					_selectedSet.Add(selectedItem);
+					break;
+
+				case SelectionMode.Multiple:
+					var selectedItems = selectableItemsView.SelectedItems;
+					if (selectedItems == null || selectedItems.Count == 0)
+					{
+						ClearPlatformSelection();
+						return;
+					}
+
+					_selectedSet.UnionWith(selectedItems);
+					break;
+
+				default:
+					return;
+			}
 
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
-				if (_currentViewHolders[i].BindingAdapterPosition == position)
+				var holder = _currentViewHolders[i];
+				if (holder.BindingAdapterPosition >= 0)
 				{
-					_currentViewHolders[i].IsSelected = true;
-					return;
+					var item = ItemsSource.GetItem(holder.BindingAdapterPosition);
+					bool shouldBeSelected = _selectedSet.Contains(item);
+
+					if (holder.IsSelected != shouldBeSelected)
+					{
+						holder.IsSelected = shouldBeSelected;
+					}
 				}
 			}
 		}

@@ -12,21 +12,26 @@ namespace Microsoft.Maui.Platform
 		{
 			var trackColor = view.TrackColor;
 
-			if (aSwitch.Checked)
+			if (trackColor is not null)
 			{
-				if (trackColor != null)
-					aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
+				aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
 			}
 			else
+			{
 				aSwitch.TrackDrawable?.ClearColorFilter();
+			}
 		}
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
 		{
 			var thumbColor = view.ThumbColor;
 
-			if (thumbColor != null)
-				aSwitch.ThumbDrawable?.SetColorFilter(thumbColor, FilterMode.SrcAtop);
+			if (thumbColor is not null)
+			{
+				// Use ThumbTintList instead of SetColorFilter to preserve the thumb shadow
+				// SetColorFilter flattens the drawable and removes the shadow effect
+				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
+			}
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>

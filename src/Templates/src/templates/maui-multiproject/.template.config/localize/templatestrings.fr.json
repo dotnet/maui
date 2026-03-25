@@ -1,17 +1,17 @@
 {
   "author": "Microsoft",
-  "name": "application multi-projet .NET MAUI",
-  "description": "Un projet pour créer une application .NET MAUI pour iOS, Android, Mac Catalyst et WinUI avec plusieurs projets d'application séparés.",
+  "name": "Application .NET MAUI Multi-Project",
+  "description": "Projet de création d’une application .NET MAUI pour iOS, Android, Mac Catalyst et WinUI avec plusieurs projets d’application séparés.",
   "postActions/openInEditor/description": "Ouvre MainPage.xaml dans l’éditeur.",
   "symbols/applicationId/description": "Remplace $(ApplicationId) dans le projet",
-  "symbols/Framework/description": "Le cadre cible du projet.",
+  "symbols/Framework/description": "Infrastructure cible du projet.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE cible",
   "symbols/android/displayName": "Android",
   "symbols/android/description": "Inclure le projet d’en-tête d’application Android",
   "symbols/ios/displayName": "iOS",
   "symbols/ios/description": "Inclure le projet d’en-tête d’application iOS",
-  "symbols/maccatalyst/displayName": "macOS utilisant Mac Azure",
-  "symbols/maccatalyst/description": "Inclure le projet d’en-tête d’application macOS (à l’aide de Mac Migrate)",
-  "symbols/winui/displayName": "Windows utilisant WinUI 3",
-  "symbols/winui/description": "Inclure le projet d’en-tête d’application Windows (à l’aide de WinUI 3)"
+  "symbols/maccatalyst/displayName": "macOS utilisant Mac Catalyst",
+  "symbols/maccatalyst/description": "Inclure le projet d’en-tête d’application macOS (utilisant Mac Catalyst)",
+  "symbols/winui/displayName": "Windows utilisant WinUI 3",
+  "symbols/winui/description": "Inclure le projet d’en-tête d’application Windows (utilisant WinUI 3)"
 }

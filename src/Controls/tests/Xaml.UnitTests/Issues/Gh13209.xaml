@@ -5,7 +5,7 @@
     x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh13209">
     <StackLayout x:Name="Root">
 		<StackLayout.Resources>
-			<ResourceDictionary Source="../AppResources/RD13209.xaml"/>
+			<ResourceDictionary Source="../AppResources/RD13209.rtxc.xaml"/>
 		</StackLayout.Resources>
 		<Rectangle x:Name="MyRect" BackgroundColor="{StaticResource Color1}" WidthRequest="100" HeightRequest="100" Margin="6"/>
 		<Label x:Name="MyLabel" WidthRequest="200" HeightRequest="30" Margin="6"/>

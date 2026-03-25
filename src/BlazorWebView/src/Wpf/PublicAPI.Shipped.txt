@@ -1,5 +1,5 @@
 #nullable enable
-~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2CompositionControl
 ~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.get -> string
 ~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.BrowserExecutableFolder.set -> void
 ~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs.EnvironmentOptions.get -> Microsoft.Web.WebView2.Core.CoreWebView2EnvironmentOptions
@@ -34,7 +34,7 @@ Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.get -> strin
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoading.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>!
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoading.set -> void
-Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2CompositionControl!
 Microsoft.AspNetCore.Components.WebView.Wpf.IWpfBlazorWebViewBuilder
 Microsoft.AspNetCore.Components.WebView.Wpf.IWpfBlazorWebViewBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.WebView.Wpf.RootComponent

@@ -151,13 +151,9 @@ namespace Microsoft.Maui.Networking
 					var currentAccess = NetworkAccess.None;
 					var manager = ConnectivityManager;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
 					var networks = manager.GetAllNetworks();
 #pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
 
 					// some devices running 21 and 22 only use the older api.
 					if (networks.Length == 0 && !OperatingSystem.IsAndroidVersionAtLeast(23))
@@ -177,17 +173,6 @@ namespace Microsoft.Maui.Networking
 								continue;
 							}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1422 // Validate platform compatibility
-							var info = manager.GetNetworkInfo(network);
-
-							if (info == null || !info.IsAvailable)
-							{
-								continue;
-							}
-#pragma warning restore CS0618 // Type or member is obsolete
-
 							// Check to see if it has the internet capability
 							if (!capabilities.HasCapability(NetCapability.Internet))
 							{
@@ -196,21 +181,38 @@ namespace Microsoft.Maui.Networking
 								continue;
 							}
 
-							ProcessNetworkInfo(info);
+							// Use modern NetworkCapabilities instead of obsolete NetworkInfo
+							ProcessNetworkCapabilities(capabilities);
 						}
-						catch
+						catch (Exception ex)
 						{
-							// there is a possibility, but don't worry
+							Debug.WriteLine("Failed to get network capabilities: {0}", ex);
 						}
 					}
 
 					void ProcessAllNetworkInfo()
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
-						foreach (var info in manager.GetAllNetworkInfo())
-#pragma warning restore CS0618 // Type or member is obsolete
+						// Fallback for API 21-22 devices where GetAllNetworks() returns empty.
+						// BEHAVIORAL CHANGE: The original code used GetAllNetworkInfo() which
+						// enumerated all network interfaces and picked the best access level.
+						// ActiveNetworkInfo returns only the current default network, so a
+						// better-connected secondary interface will no longer be considered.
+						// On these older API levels multi-network support is limited,
+						// so this is an acceptable trade-off.
+						try
 						{
-							ProcessNetworkInfo(info);
+#pragma warning disable CS0618 // Type or member is obsolete
+							var activeInfo = manager.ActiveNetworkInfo;
+							if (activeInfo != null)
+							{
+								ProcessNetworkInfo(activeInfo);
+							}
+#pragma warning restore CS0618 // Type or member is obsolete
+						}
+						catch (Exception ex)
+						{
+							Debug.WriteLine("Failed to query active network info: {0}", ex);
+							currentAccess = NetworkAccess.None;
 						}
 					}
 
@@ -230,9 +232,33 @@ namespace Microsoft.Maui.Networking
 						{
 							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
 						}
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
+					}
 #pragma warning restore CS0618 // Type or member is obsolete
+
+					// Caller guarantees capabilities is non-null and has NetCapability.Internet.
+					void ProcessNetworkCapabilities(NetworkCapabilities capabilities)
+					{
+						// NetCapability.Validated (API 23+) means the system has verified the
+						// network can actually reach the internet (passes Google's connectivity check).
+						// Without it, the network may be behind a captive portal or otherwise unusable.
+						if (OperatingSystem.IsAndroidVersionAtLeast(23))
+						{
+							if (capabilities.HasCapability(NetCapability.Validated))
+							{
+								currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
+							}
+							else
+							{
+								// Has internet capability but not validated (e.g. captive portal)
+								currentAccess = IsBetterAccess(currentAccess, NetworkAccess.ConstrainedInternet);
+							}
+						}
+						else
+						{
+							// NetCapability.Validated is unavailable on API 21-22;
+							// treat Internet capability alone as a connected state.
+							currentAccess = IsBetterAccess(currentAccess, NetworkAccess.Internet);
+						}
 					}
 
 					return currentAccess;
@@ -253,48 +279,77 @@ namespace Microsoft.Maui.Networking
 				Permissions.EnsureDeclared<Permissions.NetworkState>();
 
 				var manager = ConnectivityManager;
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
 				var networks = manager.GetAllNetworks();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CA1422 // Validate platform compatibility
 				foreach (var network in networks)
 				{
-#pragma warning disable CS0618 // Type or member is obsolete
-					NetworkInfo info = null;
+					NetworkCapabilities capabilities = null;
 					try
 					{
-						info = manager.GetNetworkInfo(network);
+						capabilities = manager.GetNetworkCapabilities(network);
 					}
-					catch
+					catch (Exception ex)
 					{
-						// there is a possibility, but don't worry about it
+						Debug.WriteLine("Failed to get network capabilities for profile: {0}", ex);
 					}
-#pragma warning restore CS0618 // Type or member is obsolete
 
-					var p = ProcessNetworkInfo(info);
+					var p = ProcessNetworkCapabilities(capabilities);
 					if (p.HasValue)
 					{
 						yield return p.Value;
 					}
 				}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-				static ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
+				static ConnectionProfile? ProcessNetworkCapabilities(NetworkCapabilities capabilities)
 				{
-
-					if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
+					if (capabilities == null)
 					{
 						return null;
 					}
 
+					// Only include networks that declare internet capability
+					if (!capabilities.HasCapability(NetCapability.Internet))
+					{
+						return null;
+					}
 
-					return GetConnectionType(info.Type, info.TypeName);
+					return GetConnectionTypeFromCapabilities(capabilities);
 				}
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore CS0618 // Type or member is obsolete
 			}
+		}
+
+		internal static ConnectionProfile GetConnectionTypeFromCapabilities(NetworkCapabilities capabilities)
+		{
+			if (capabilities == null)
+			{
+				return ConnectionProfile.Unknown;
+			}
+
+			// A network may advertise multiple transports (e.g. WiFi + VPN).
+			// We return the first "underlying" transport match, prioritising the
+			// physical link type over overlay transports like VPN.
+			if (capabilities.HasTransport(TransportType.Wifi))
+			{
+				return ConnectionProfile.WiFi;
+			}
+
+			if (capabilities.HasTransport(TransportType.Cellular))
+			{
+				return ConnectionProfile.Cellular;
+			}
+
+			if (capabilities.HasTransport(TransportType.Ethernet))
+			{
+				return ConnectionProfile.Ethernet;
+			}
+
+			if (capabilities.HasTransport(TransportType.Bluetooth))
+			{
+				return ConnectionProfile.Bluetooth;
+			}
+
+			return ConnectionProfile.Unknown;
 		}
 
 		internal static ConnectionProfile GetConnectionType(ConnectivityType connectivityType, string typeName)

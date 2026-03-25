@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "SwipeItem1"
 			};
 
-			deleteSwipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Delete Invoked", "Ok"); };
+			deleteSwipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "Delete Invoked", "Ok"); };
 
 			var leftSwipeItems = new SwipeItems
 			{

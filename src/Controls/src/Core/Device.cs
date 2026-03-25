@@ -11,7 +11,7 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="Type[@FullName='Microsoft.Maui.Controls.Device']/Docs/*" />
+	/// <summary>A utility class to interact with the current Device/Platform.</summary>
 	[Obsolete]
 	public static class Device
 	{
@@ -20,27 +20,27 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Assembly DefaultRendererAssembly { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='iOS']/Docs/*" />
+		/// <summary>The string "iOS", representing the iOS operating system.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.iOS instead.")]
 		public const string iOS = "iOS";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Android']/Docs/*" />
+		/// <summary>The string "Android", representing the Android operating system.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.Android instead.")]
 		public const string Android = "Android";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='UWP']/Docs/*" />
+		/// <summary>The string "UWP", representing the UWP operating system.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.WinUI instead.")]
 		public const string UWP = "WinUI";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='macOS']/Docs/*" />
+		/// <summary>The string "macOS", representing the macOS operating system.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.macOS instead.")]
 		internal const string macOS = "macOS";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GTK']/Docs/*" />
+		/// <summary>The string "GTK", representing the Linux operating system.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.GTK instead.")]
 		internal const string GTK = "GTK";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Tizen']/Docs/*" />
+		/// <summary>The string "Tizen", representing the Tizen operating system.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.Tizen instead.")]
 		public const string Tizen = "Tizen";
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.WinUI instead.")]
 		public const string WinUI = "WinUI";
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='WPF']/Docs/*" />
+		/// <summary>The string "WPF", representing the Windows Presentation Foundation framework.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.WPF instead.")]
 		internal const string WPF = "WPF";
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.MacCatalyst instead.")]
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Use Microsoft.Maui.Devices.DevicePlatform.tvOS instead.")]
 		public const string tvOS = "tvOS";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='Idiom']/Docs/*" />
+		/// <summary>Gets the kind of device that Microsoft.Maui.Controls is currently working on.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DeviceInfo.Idiom instead.")]
 		public static TargetIdiom Idiom
 		{
@@ -69,67 +69,94 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='RuntimePlatform']/Docs/*" />
+		/// <summary>Gets the kind of device that Microsoft.Maui.Controls is currently working on.</summary>
 		[Obsolete("Use Microsoft.Maui.Devices.DeviceInfo.Platform instead.")]
 		public static string RuntimePlatform => DeviceInfo.Platform.ToString();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='FlowDirection']/Docs/*" />
+		/// <summary>Gets the flow direction on the device.</summary>
+		/// <remarks>The following contains a few important points about flow direction from
+		/// The default value of
+		/// All</remarks>
 		[Obsolete("Use Microsoft.Maui.ApplicationModel.AppInfo.RequestedLayoutDirection instead.")]
 		public static FlowDirection FlowDirection =>
 			AppInfo.RequestedLayoutDirection == LayoutDirection.RightToLeft
 				? FlowDirection.RightToLeft
 				: FlowDirection.LeftToRight;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='IsInvokeRequired']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[Obsolete("Use BindableObject.Dispatcher.IsDispatchRequired instead.")]
 		public static bool IsInvokeRequired =>
 			Application.Current.FindDispatcher().IsDispatchRequired;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='BeginInvokeOnMainThread']/Docs/*" />
+		/// <summary>Invokes an Action on the device main (UI) thread.</summary>
+		/// <param name="action">The Action to invoke</param>
+		/// <remarks>This example shows how to set the Text of Label on the main thread, e.g. in response to an async event.</remarks>
 		[Obsolete("Use BindableObject.Dispatcher.Dispatch() instead.")]
 		public static void BeginInvokeOnMainThread(Action action) =>
 			Application.Current.FindDispatcher().Dispatch(action);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][2]/Docs/*" />
+		/// <summary>Invokes an async function on the main thread and returns the result.</summary>
+		/// <typeparam name="T">The return type of the function.</typeparam>
+		/// <param name="func">The function to invoke.</param>
+		/// <returns>A task containing the result of the function.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
 			Application.Current.FindDispatcher().DispatchAsync(func);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][1]/Docs/*" />
+		/// <summary>Invokes an action on the main thread asynchronously.</summary>
+		/// <param name="action">The action to invoke.</param>
+		/// <returns>A task representing the async operation.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task InvokeOnMainThreadAsync(Action action) =>
 			Application.Current.FindDispatcher().DispatchAsync(action);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync&lt;T&gt;'][1]/Docs/*" />
+		/// <summary>Invokes an async task-returning function on the main thread and returns the result.</summary>
+		/// <typeparam name="T">The return type of the task.</typeparam>
+		/// <param name="funcTask">The async function to invoke.</param>
+		/// <returns>A task containing the result of the async function.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='InvokeOnMainThreadAsync'][2]/Docs/*" />
+		/// <summary>Invokes an async task-returning function on the main thread.</summary>
+		/// <param name="funcTask">The async function to invoke.</param>
+		/// <returns>A task representing the async operation.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.DispatchAsync() instead.")]
 		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
 			Application.Current.FindDispatcher().DispatchAsync(funcTask);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetMainThreadSynchronizationContextAsync']/Docs/*" />
+		/// <summary>Returns the current <see cref="System.Threading.SynchronizationContext"/> from the main thread.</summary>
+		/// <returns>The current <see cref="System.Threading.SynchronizationContext"/> from the main thread.</returns>
 		[Obsolete("Use BindableObject.Dispatcher.GetSynchronizationContextAsync() instead.")]
 		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
 			Application.Current.FindDispatcher().GetSynchronizationContextAsync();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][2]/Docs/*" />
+		/// <summary>Returns the named font size for the specified element type.</summary>
+		/// <param name="size">The named size to retrieve.</param>
+		/// <param name="targetElement">The element to get the named size for.</param>
+		/// <returns>The font size value.</returns>
 		[Obsolete]
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
 			return GetNamedSize(size, targetElement.GetType());
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][1]/Docs/*" />
+		/// <summary>Returns the named font size for the specified element type.</summary>
+		/// <param name="size">The named size to retrieve.</param>
+		/// <param name="targetElementType">The element type to get the named size for.</param>
+		/// <returns>The font size value.</returns>
 		[Obsolete]
 		public static double GetNamedSize(NamedSize size, Type targetElementType)
 		{
 			return GetNamedSize(size, targetElementType, false);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='StartTimer']/Docs/*" />
+		/// <summary>Starts a recurring timer using the device clock capabilities.</summary>
+		/// <param name="interval">The interval between invocations of the callback.</param>
+		/// <param name="callback">The action to run when the timer elapses.</param>
+		/// <remarks>While the callback returns
+		/// If you want the code inside the timer to interact on the UI thread (e.g. setting text of a Label or showing an alert), it should be done within a</remarks>
 		[Obsolete("Use BindableObject.Dispatcher.StartTimer() or BindableObject.Dispatcher.DispatchDelayed() instead.")]
 		public static void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
@@ -140,7 +167,11 @@ namespace Microsoft.Maui.Controls
 			dispatcher.StartTimer(interval, callback);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Device.xml" path="//Member[@MemberName='GetNamedSize'][3]/Docs/*" />
+		/// <summary>Returns the named font size for the specified element type.</summary>
+		/// <param name="size">The named size to retrieve.</param>
+		/// <param name="targetElementType">The element type to get the named size for.</param>
+		/// <param name="useOldSizes">Whether to use legacy font sizes.</param>
+		/// <returns>The font size value.</returns>
 		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes) =>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Grid
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:PoolMathApp.Xaml"
+	xmlns:data="clr-namespace:PoolMath.Data"
+	x:DataType="data:Log"
+	Background="{DynamicResource PageBackgroundColor}"
+	x:Class="PoolMathApp.Xaml.TimelineBaseView"
+	ColumnDefinitions="*"
+	RowDefinitions="Auto,*"
+	>
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/PoolStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+    <Label
+		Grid.Row="0"
+		Margin="20,10,0,0"
+		FormattedText="{Binding ., Mode=OneTime, Converter={StaticResource LogToOneLineTimeAndWeatherConverter}}"
+		HorizontalOptions="Start"
+		AutomationId="testLogTimestamp"
+		TextColor="{DynamicResource DetailTextColor}"
+		FontSize="14"
+		FontFamily="FontLighter"/>
+
+	<Border
+		x:Name="mainContent"
+		Grid.Row="1"
+		Background="{DynamicResource CardBackgroundColor}"
+		StrokeShape="{RoundRectangle CornerRadius=14}"
+		Margin="10,4,10,4"
+		Padding="10" />
+</Grid>

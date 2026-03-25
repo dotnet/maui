@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static SpannableString ToSpannableString(this Label label)
-			=> ToSpannableStringNewWay(
+			=> ToSpannableString(
 				label.FormattedText,
 				label.RequireFontManager(),
 				label.Handler?.MauiContext?.Context,
@@ -25,28 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 				label.TextTransform,
 				label.TextDecorations);
 
-		// TODO: NET8 this overload must be removed in net8.0 and replaced with the one below
 		public static SpannableString ToSpannableString(
-			this FormattedString formattedString,
-			IFontManager fontManager,
-			TextPaint? textPaint = null,
-			Context? context = null,
-			double defaultLineHeight = 0,
-			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
-			Font? defaultFont = null,
-			Graphics.Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default)
-			=> formattedString.ToSpannableStringNewWay(
-				fontManager,
-				context,
-				0d,
-				defaultHorizontalAlignment,
-				defaultFont,
-				defaultColor,
-				defaultTextTransform,
-				TextDecorations.None);
-
-		internal static SpannableString ToSpannableStringNewWay(
 			this FormattedString formattedString,
 			IFontManager fontManager,
 			Context? context = null,
@@ -70,7 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
-				var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
+				var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 				if (text == null)
 					continue;
 
@@ -111,10 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (characterSpacing >= 0)
 					spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 
-				// Font
-				var font = span.ToFont(defaultFontSize);
-				if (font.IsDefault && defaultFont.HasValue)
-					font = defaultFont.Value;
+				var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 				if (!font.IsDefault)
 					spannable.SetSpan(new PlatformFontSpan(context ?? AAplication.Context, font.ToTypeface(fontManager), font.AutoScalingEnabled, (float)fontManager.GetFontSize(font).Value), start, end, SpanTypes.InclusiveInclusive);
 

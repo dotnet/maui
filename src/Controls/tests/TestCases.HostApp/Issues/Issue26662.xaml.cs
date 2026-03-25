@@ -14,6 +14,7 @@
 	{
 		public Issue26662Tab1()
 		{
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			//If no FontImageSource color is given, tab icon should be applied based on the SelectedTabColor and UnselectedTabColor.
 			IconImageSource = new FontImageSource
 			{
@@ -55,6 +56,7 @@
 	{
 		public Issue26662Tab2()
 		{
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			//The FontImageSource color is given. So, the tab icon color should be applied based solely on the given color, regardless of the selected tab or unselected tab color.
 			IconImageSource = new FontImageSource
 			{
@@ -84,7 +86,7 @@
 	{
 		public Issue26662Tab3()
 		{
-			//The FontImageSource color is given. So, the icon color should be applied based solely on the given color, regardless of the selected tab or unselected tab color.
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			IconImageSource = new FontImageSource
 			{
 				FontFamily = "Ion",

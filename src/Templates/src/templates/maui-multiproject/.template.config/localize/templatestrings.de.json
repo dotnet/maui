@@ -2,16 +2,16 @@
   "author": "Microsoft",
   "name": ".NET MAUI: Multiprojekt-App",
   "description": "Ein Projekt zum Erstellen einer .NET MAUI-Anwendung für iOS, Android, Mac Und WinUI mit mehreren separaten App-Projekten.",
-  "postActions/openInEditor/description": "Öffnet \"MainPage.xaml\" im Editor.",
+  "postActions/openInEditor/description": "Öffnet MainPage.xaml im Editor.",
   "symbols/applicationId/description": "Überschreibt $(ApplicationId) im Projekt",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Ziel DOTNET_TFM_VALUE",
   "symbols/android/displayName": "Android",
-  "symbols/android/description": "Android-App-Hauptprojekt einschließen",
+  "symbols/android/description": "Einschließen des Android-App-Hauptprojekts",
   "symbols/ios/displayName": "iOS",
-  "symbols/ios/description": "iOS-App-Hauptprojekt einschließen",
-  "symbols/maccatalyst/displayName": "macOS mit Mac Überbetrieb",
-  "symbols/maccatalyst/description": "MacOS-App-Kopfprojekt einschließen (unter Verwendung von Mac-Unterschrift)",
+  "symbols/ios/description": "Einschließen des iOS-App-Hauptprojekts",
+  "symbols/maccatalyst/displayName": "macOS mit Mac-Beschleuniger",
+  "symbols/maccatalyst/description": "Einschließen des Hauptprojekts der macOS-App (mit Mac-Beschleuniger)",
   "symbols/winui/displayName": "Windows mit WinUI 3",
-  "symbols/winui/description": "Windows-App-Hauptprojekt einschließen (mit WinUI 3)"
+  "symbols/winui/description": "Einschließen des Windows-App-Hauptprojekts (mit WinUI 3)"
 }

@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(editorHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 
@@ -168,6 +168,26 @@ namespace Microsoft.Maui.DeviceTests
 				var isEnabled = nativeView.Enabled;
 
 				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Editor should match with native Translation")]
+		public async Task EditorTranslationConsistent()
+		{
+			var editor = new Editor()
+			{
+				Text = "Editor Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, editor.TranslationX, editor.TranslationY);
 			});
 		}
 	}

@@ -4,6 +4,7 @@
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
+    <SampleProject>true</SampleProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests.Sample</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Sample</AssemblyName>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->

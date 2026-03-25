@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="Type[@FullName='Microsoft.Maui.Controls.FormattedString']/Docs/*" />
+	/// <summary>Represents a text with attributes applied to some parts.</summary>
 	[ContentProperty("Spans")]
 	[TypeConverter(typeof(FormattedStringConverter))]
 	public class FormattedString : Element
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		readonly SpanCollection _spans = new SpanCollection();
 		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the FormattedString class.</summary>
 		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
 
 		protected override void OnBindingContextChanged()
@@ -26,14 +26,14 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(Spans[i], BindingContext);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='Spans']/Docs/*" />
+		/// <summary>Gets the collection of spans.</summary>
 		public IList<Span> Spans => _spans;
 
 		public static explicit operator string(FormattedString formatted) => formatted.ToString();
 
 		public static implicit operator FormattedString(string text) => new FormattedString { Spans = { new Span { Text = text } } };
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FormattedString.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>Returns the text of the formatted string as an unformatted string.</summary>
 		public override string ToString() => string.Concat(Spans.Select(span => span.Text));
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -68,8 +68,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateVisibility(view);
 
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
-			if (swipeView != null)
-				swipeView.UpdateIsVisibleSwipeItem(view);
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 	}
 }

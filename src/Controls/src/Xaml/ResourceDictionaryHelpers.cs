@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml
 #endif
 	public static class ResourceDictionaryHelpers
 	{
-		// Called from XamlC generated code when the ResourceDictionary is not compiled
+		// Called from XamlC and SourceGen generated code when the ResourceDictionary is not compiled
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void LoadFromSource(ResourceDictionary rd, Uri source, string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{

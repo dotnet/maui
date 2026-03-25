@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.HtmlWebViewSource']/Docs/*" />
+	/// <summary>A WebViewSource bound to an HTML-formatted string.</summary>
 	public class HtmlWebViewSource : WebViewSource
 	{
 		/// <summary>Bindable property for <see cref="Html"/>.</summary>
@@ -14,21 +14,22 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BaseUrlProperty = BindableProperty.Create(nameof(BaseUrl), typeof(string), typeof(HtmlWebViewSource), default(string),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((HtmlWebViewSource)bindable).OnSourceChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="//Member[@MemberName='BaseUrl']/Docs/*" />
+		/// <summary>The base URL for the source HTML document. This is a bindable property.</summary>
 		public string BaseUrl
 		{
 			get { return (string)GetValue(BaseUrlProperty); }
 			set { SetValue(BaseUrlProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="//Member[@MemberName='Html']/Docs/*" />
+		/// <summary>The HTML content. This is a bindable property.</summary>
 		public string Html
 		{
 			get { return (string)GetValue(HtmlProperty); }
 			set { SetValue(HtmlProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="//Member[@MemberName='Load']/Docs/*" />
+		/// <summary>Loads the specified <paramref name="renderer"/> with the current base URL and HTML.</summary>
+		/// <param name="renderer">The renderer into which to load html content.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public override void Load(IWebViewDelegate renderer)
 		{

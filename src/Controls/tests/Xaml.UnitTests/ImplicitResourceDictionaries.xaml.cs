@@ -1,32 +1,21 @@
-using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class ImplicitResourceDictionaries : ContentPage
 {
-	public partial class ImplicitResourceDictionaries : ContentPage
+	public ImplicitResourceDictionaries() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public ImplicitResourceDictionaries()
+		[Theory]
+		[XamlInflatorData]
+		internal void ImplicitRDonContentViews(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public ImplicitResourceDictionaries(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ImplicitRDonContentViews(bool useCompiledXaml)
-			{
-				var layout = new ImplicitResourceDictionaries(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Colors.Purple));
-			}
+			var layout = new ImplicitResourceDictionaries(inflator);
+			Assert.Equal(Colors.Purple, layout.label.TextColor);
 		}
 	}
 }

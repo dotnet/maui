@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigureCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PathFigureCollection']/Docs/*" />
+	/// <summary>
+	/// A collection of <see cref="PathFigure"/> objects that make up a <see cref="PathGeometry"/>.
+	/// </summary>
 	public sealed class PathFigureCollection : ObservableCollection<PathFigure>
 	{
 

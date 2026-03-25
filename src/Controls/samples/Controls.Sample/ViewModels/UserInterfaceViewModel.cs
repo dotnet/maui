@@ -21,6 +21,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(StylesPage), "Styles",
 				"Define the visual elements appearance."),
 
+			new SectionModel(typeof(StateTriggersPage), "State Triggers",
+				"Use state triggers to automatically change visual states based on device properties like orientation, rotation, size, and platform."),
+
 			new SectionModel(typeof(TriggersPage), "Triggers",
 				"Triggers allow you to express actions declaratively in XAML that change the appearance of controls based on events or property changes. "),
 

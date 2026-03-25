@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					void ScrollViewScrolled(object sender, ScrolledEventArgs e) =>
 						OnScrolled((nfloat)sv.ScrollY);
 				}
+#pragma warning disable CS0618 // Type or member is obsolete
 				else if (Content is CollectionView cv)
 				{
 					cv.Scrolled += CollectionViewScrolled;
@@ -96,6 +97,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					void ListViewScrolled(object sender, ScrolledEventArgs e) =>
 						OnScrolled((nfloat)e.ScrollY);
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 

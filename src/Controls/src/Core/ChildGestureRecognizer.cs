@@ -4,11 +4,11 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ChildGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.ChildGestureRecognizer']/Docs/*" />
+	/// <summary>A gesture recognizer for use as a child of another.</summary>
 	public sealed class ChildGestureRecognizer : IGestureRecognizer
 	{
 		private IGestureRecognizer _gestureRecognizer;
-		/// <include file="../../docs/Microsoft.Maui.Controls/ChildGestureRecognizer.xml" path="//Member[@MemberName='GestureRecognizer']/Docs/*" />
+		/// <summary>Gets or sets the recognizer.</summary>
 		public IGestureRecognizer GestureRecognizer
 		{
 			get => _gestureRecognizer;
@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ChildGestureRecognizer.xml" path="//Member[@MemberName='OnPropertyChanged']/Docs/*" />
+		/// <summary>Method that is called when the recognizer is changed.</summary>
+		/// <param name="propertyName">The property that changed.</param>
 		public void OnPropertyChanged([CallerMemberName] string propertyName = "") =>
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -16,20 +16,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz36422(bool useCompiledXaml)
+		[Collection("Issue")]
+		public class Tests
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void xArrayCanBeAssignedToIListT(bool useCompiledXaml)
+			[Theory]
+			[XamlInflatorData]
+			internal void xArrayCanBeAssignedToIListT(XamlInflator inflator)
 			{
-				var layout = new Bz36422(useCompiledXaml);
-				Assert.AreEqual(3, layout.control.Views.Count);
+				var layout = new Bz36422(inflator);
+				Assert.Equal(3, layout.control.Views.Count);
 			}
 		}
 	}

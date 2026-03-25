@@ -16,9 +16,9 @@ namespace Maui.Controls.Sample
 					editText.SetCursorVisible(isCursorVisible);
 #elif IOS || MACCATALYST
 					if (isCursorVisible)
-						handler.PlatformView.TintColor = UIKit.UITextField.Appearance.TintColor;
+						handler.QueryEditor.TintColor = UIKit.UITextField.Appearance.TintColor;
 					else
-						handler.PlatformView.TintColor = UIKit.UIColor.Clear;
+						handler.QueryEditor.TintColor = UIKit.UIColor.Clear;
 #endif
 				}
 			});

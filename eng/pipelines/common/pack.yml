@@ -30,7 +30,7 @@ parameters:
 - name: nugetFolder
   type: string
   default: 'artifacts'
-  
+
 - name: prepareSteps
   type: stepList
   default: []
@@ -38,10 +38,6 @@ parameters:
 - name: postSteps
   type: stepList
   default: []
-
-- name: gitHubToken
-  type: string
-  default: $(github--pat--vs-mobiletools-engineering-service2)
 
 - name: checkoutDirectory
   type: string
@@ -57,8 +53,9 @@ parameters:
 
 - name: buildConfiguration
   type: string
-  default: 
-  
+  default:
+
+
 - name: runAsPublic
   type: boolean
   default: false

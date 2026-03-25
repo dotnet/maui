@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
@@ -90,6 +91,24 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task IsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
 		{
 			var searchBar = new SearchBarStub()
+			{
+				IsTextPredictionEnabled = isEnabled
+			};
+
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertEventually(() => searchBarHandler.PlatformView.IsLoaded());
+			});
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
+		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled Initializes Correctly for SearchBar")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task SearchBarIsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
+		{
+			var searchBar = new Microsoft.Maui.Controls.SearchBar()
 			{
 				IsTextPredictionEnabled = isEnabled
 			};
@@ -260,6 +279,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
+#if IOS || MACCATALYST
+			// iOS 26 changed UISearchBar internal structure, making cancel button color verification unreliable
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
+
 			var searchBar = new SearchBarStub()
 			{
 				Text = "Search",

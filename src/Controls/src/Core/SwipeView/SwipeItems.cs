@@ -9,12 +9,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeItems']/Docs/*" />
+	/// <summary>
+	/// Represents a collection of <see cref="ISwipeItem"/> objects used by a <see cref="SwipeView"/>.
+	/// </summary>
 	public class SwipeItems : Element, IList<ISwipeItem>, INotifyCollectionChanged
 	{
 		readonly ObservableCollection<Maui.ISwipeItem> _swipeItems;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeItems"/> class with the specified swipe items.
+		/// </summary>
+		/// <param name="swipeItems">The initial collection of swipe items.</param>
 		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
 			foreach (var item in swipeItems)
@@ -28,7 +33,9 @@ namespace Microsoft.Maui.Controls
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeItems"/> class.
+		/// </summary>
 		public SwipeItems() : this(Enumerable.Empty<ISwipeItem>())
 		{
 
@@ -39,14 +46,18 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SwipeBehaviorOnInvoked"/>.</summary>
 		public static readonly BindableProperty SwipeBehaviorOnInvokedProperty = BindableProperty.Create(nameof(SwipeBehaviorOnInvoked), typeof(SwipeBehaviorOnInvoked), typeof(SwipeItems), SwipeBehaviorOnInvoked.Auto);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Mode']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that indicates how the swipe items are displayed. This is a bindable property.
+		/// </summary>
 		public SwipeMode Mode
 		{
 			get { return (SwipeMode)GetValue(ModeProperty); }
 			set { SetValue(ModeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='SwipeBehaviorOnInvoked']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the behavior when a swipe item is invoked. This is a bindable property.
+		/// </summary>
 		public SwipeBehaviorOnInvoked SwipeBehaviorOnInvoked
 		{
 			get { return (SwipeBehaviorOnInvoked)GetValue(SwipeBehaviorOnInvokedProperty); }
@@ -61,19 +72,19 @@ namespace Microsoft.Maui.Controls
 			set => _swipeItems[index] = value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Count']/Docs/*" />
+		/// <inheritdoc/>
 		public int Count => _swipeItems.Count;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
+		/// <inheritdoc/>
 		public bool IsReadOnly => false;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Add']/Docs/*" />
+		/// <inheritdoc/>
 		public void Add(ISwipeItem item)
 		{
 			_swipeItems.Add(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Clear']/Docs/*" />
+		/// <inheritdoc/>
 		public void Clear()
 		{
 			foreach (var item in _swipeItems)
@@ -83,44 +94,44 @@ namespace Microsoft.Maui.Controls
 			_swipeItems.Clear();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Contains']/Docs/*" />
+		/// <inheritdoc/>
 		public bool Contains(ISwipeItem item)
 		{
 			return _swipeItems.Contains(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='CopyTo']/Docs/*" />
+		/// <inheritdoc/>
 		public void CopyTo(ISwipeItem[] array, int arrayIndex)
 		{
 			_swipeItems.CopyTo(array, arrayIndex);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
+		/// <inheritdoc/>
 		public IEnumerator<ISwipeItem> GetEnumerator()
 		{
 			foreach (ISwipeItem item in _swipeItems)
 				yield return item;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='IndexOf']/Docs/*" />
+		/// <inheritdoc/>
 		public int IndexOf(ISwipeItem item)
 		{
 			return _swipeItems.IndexOf(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Insert']/Docs/*" />
+		/// <inheritdoc/>
 		public void Insert(int index, ISwipeItem item)
 		{
 			_swipeItems.Insert(index, item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Remove']/Docs/*" />
+		/// <inheritdoc/>
 		public bool Remove(ISwipeItem item)
 		{
 			return _swipeItems.Remove(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='RemoveAt']/Docs/*" />
+		/// <inheritdoc/>
 		public void RemoveAt(int index)
 		{
 			_swipeItems.RemoveAt(index);

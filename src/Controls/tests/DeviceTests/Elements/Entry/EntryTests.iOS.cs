@@ -136,11 +136,15 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					builder.ConfigureMauiHandlers(handlers =>
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<ListView, ListViewRenderer>();
 						handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 						handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 						handlers.AddHandler<Entry, EntryHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<EntryCell, EntryCellRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 					});
 				});
 			}
@@ -156,12 +160,14 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var listView = new ListView()
 				{
 					ItemTemplate = new DataTemplate(() =>
 					{
 						var cell = new EntryCell();
 						cell.SetBinding(EntryCell.TextProperty, ".");
+#pragma warning restore CS0618 // Type or member is obsolete
 						return cell;
 					}),
 					ItemsSource = Enumerable.Range(0, 10).Select(i => $"EntryCell {i}").ToList()
@@ -201,6 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var tableView = new TableView()
 				{
 					Root = new TableRoot("Table Title") {
@@ -217,6 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var layout = new VerticalStackLayout()
 				{
@@ -365,6 +373,49 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(expectedAlignment, nativeAlignment);
+		}
+
+		[Fact]
+		public async Task IsPasswordTogglePreservesText()
+		{
+			// https://github.com/dotnet/maui/issues/30085
+			var entry = new Entry
+			{
+				Text = "secret123",
+				IsPassword = false,
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformControl = GetPlatformControl(handler);
+
+				// Simulate the field being focused (first responder)
+				platformControl.BecomeFirstResponder();
+
+				// Toggle IsPassword on — iOS internally clears SecureTextEntry text
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				var platformText = platformControl.Text;
+				Assert.Equal("secret123", platformText);
+				Assert.Equal("secret123", entry.Text);
+
+				// Toggle IsPassword off and back on again
+				entry.IsPassword = false;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				platformText = platformControl.Text;
+				Assert.Equal("secret123", platformText);
+				Assert.Equal("secret123", entry.Text);
+
+				platformControl.ResignFirstResponder();
+			});
 		}
 	}
 }

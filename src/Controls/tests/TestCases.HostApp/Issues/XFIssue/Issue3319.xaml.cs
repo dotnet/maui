@@ -49,7 +49,7 @@ public partial class Issue3319 : TestContentPage
 		// So leaving it out unless someone comes up with a really good reason to add it.
 		// (see https://github.com/xamarin/Xamarin.Forms/pull/65#discussion-diff-59305011) 
 		if (articlelistingitem != null)
-			DisplayAlert("Alert", "I'm not deleting just refreshing...", "Ok");
+			DisplayAlertAsync("Alert", "I'm not deleting just refreshing...", "Ok");
 #pragma warning restore 4014
 		ViewModel.LoadFavoritesCommand.Execute(null);
 	}

@@ -1,7 +1,9 @@
 using System;
 using System.Net;
+using System.Runtime.CompilerServices;
 using Android.Graphics;
 using Android.Text;
+using Android.Views;
 using Android.Widget;
 using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
@@ -11,6 +13,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextViewExtensions
 	{
+		static readonly ConditionalWeakTable<TextView, StrongBox<int>> s_htmlGenerations = new();
+
 		public static void UpdateTextPlainText(this TextView textView, IText label)
 		{
 			textView.Text = label.Text;
@@ -19,14 +23,35 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
 			var text = label.Text ?? string.Empty;
+			textView.UpdateTextHtml(text);
+		}
+
+		internal static void UpdateTextHtml(this TextView textView, string text)
+		{
 			var htmlText = WebUtility.HtmlDecode(text);
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
-			else
+			// Track generation to prevent stale image-load callbacks from overwriting newer text
+			var generation = s_htmlGenerations.GetOrCreateValue(textView);
+			int currentGen = ++generation.Value;
+
+			ImageGetter? imageGetter = null;
+
+			void SetTextHtml()
+			{
+				if (generation.Value != currentGen)
+					return;
+
+				imageGetter ??= new ImageGetter(textView.Resources!, SetTextHtml);
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+					textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact, imageGetter, null), BufferType.Spannable);
+				else
 #pragma warning disable CS0618 // Type or member is obsolete
-				textView.SetText(Html.FromHtml(htmlText), BufferType.Spannable);
+					textView.SetText(Html.FromHtml(htmlText, imageGetter, null), BufferType.Spannable);
 #pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			SetTextHtml();
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
@@ -63,14 +88,14 @@ namespace Microsoft.Maui.Platform
 			{
 				// But if RTL support is not available for some reason, we have to resort
 				// to gravity, because Android will simply ignore text alignment
-				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
+				textView.Gravity = GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				textView.JustificationMode = text.HorizontalTextAlignment == TextAlignment.Justify
-					? Android.Text.JustificationMode.InterWord
-					: Android.Text.JustificationMode.None;
+					? JustificationMode.InterWord
+					: JustificationMode.None;
 			}
 		}
 

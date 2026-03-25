@@ -16,13 +16,13 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnSwipeViewTransitionModeChanged(object sender, EventArgs e)
 		{
-			SwipeTransitionMode transitionMode = (SwipeTransitionMode)(sender as EnumPicker)!.SelectedItem;
+			SwipeTransitionMode transitionMode = (SwipeTransitionMode)((EnumPicker)sender).SelectedItem;
 			swipeView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetSwipeTransitionMode(transitionMode);
 		}
 
 		async void OnDeleteSwipeItemInvoked(object sender, EventArgs e)
 		{
-			await DisplayAlert("SwipeView", "Delete invoked.", "OK");
+			await DisplayAlertAsync("SwipeView", "Delete invoked.", "OK");
 		}
 	}
 }

@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
-	class DefaultOrUserDataTemplateSelector : DataTemplateSelector
+	partial class DefaultOrUserDataTemplateSelector : DataTemplateSelector
 	{
 		public string? UserTemplateName { get; set; }
 		public string? DefaultTemplateName { get; set; }

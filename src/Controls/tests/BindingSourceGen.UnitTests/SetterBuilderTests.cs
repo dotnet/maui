@@ -8,7 +8,7 @@ public class SetterBuilderTests
 	[Fact]
 	public void GeneratesSetterWithoutAnyPatternMatchingForEmptyPath()
 	{
-		var setter = Setter.From([], bindingId: 0);
+		var setter = Setter.From([]);
 
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("source = value;", setter.AssignmentStatement);
@@ -17,7 +17,7 @@ public class SetterBuilderTests
 	[Fact]
 	public void GeneratesSetterWithSourceNotNullPatternMatchingForSinglePathStepWhenSourceTypeIsNullableAndConditionalAccess()
 	{
-		var setter = Setter.From([new ConditionalAccess(new MemberAccess("A"))], bindingId: 0);
+		var setter = Setter.From([new ConditionalAccess(new MemberAccess("A"))]);
 
 		Assert.Single(setter.PatternMatchingExpressions);
 		Assert.Equal("source is {} p0", setter.PatternMatchingExpressions[0]);
@@ -27,7 +27,7 @@ public class SetterBuilderTests
 	[Fact]
 	public void GeneratesSetterWithoutAnyPatternMatchingForSignlePathStepWhenSourceTypeIsNotNullable()
 	{
-		var setter = Setter.From([new MemberAccess("A")], bindingId: 0);
+		var setter = Setter.From([new MemberAccess("A")]);
 
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("source.A = value;", setter.AssignmentStatement);
@@ -41,7 +41,7 @@ public class SetterBuilderTests
 				new MemberAccess("A"),
 				new ConditionalAccess(new MemberAccess("B")),
 				new ConditionalAccess(new MemberAccess("C")),
-			], bindingId: 0);
+			]);
 
 		Assert.Equal(2, setter.PatternMatchingExpressions.Length);
 		Assert.Equal("source.A is {} p0", setter.PatternMatchingExpressions[0]);
@@ -60,7 +60,7 @@ public class SetterBuilderTests
 				new Cast(new TypeDescription("Y", IsValueType: true)),
 				new ConditionalAccess(new MemberAccess("C")),
 				new MemberAccess("D"),
-			], bindingId: 0);
+			]);
 
 		Assert.Equal(2, setter.PatternMatchingExpressions.Length);
 		Assert.Equal("source.A is X p0", setter.PatternMatchingExpressions[0]);
@@ -79,7 +79,7 @@ public class SetterBuilderTests
 				new Cast(new TypeDescription("Y", IsValueType: true)),
 				new ConditionalAccess(new MemberAccess("C")),
 				new ConditionalAccess(new MemberAccess("D")),
-			], bindingId: 0);
+			]);
 
 		Assert.Equal(3, setter.PatternMatchingExpressions.Length);
 		Assert.Equal("source.A is X p0", setter.PatternMatchingExpressions[0]);
@@ -100,7 +100,7 @@ public class SetterBuilderTests
 				new ConditionalAccess(new MemberAccess("C")),
 				new Cast(new TypeDescription("Z", IsValueType: true, IsNullable: true)),
 				new ConditionalAccess(new MemberAccess("D")),
-			], bindingId: 0);
+			]);
 
 		Assert.Equal(3, setter.PatternMatchingExpressions.Length);
 		Assert.Equal("source.A is X p0", setter.PatternMatchingExpressions[0]);
@@ -114,10 +114,10 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Field, "Y")
-			], bindingId: 0);
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Field, IsGetterInaccessible: true, IsSetterInaccessible: true)
+			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
-		Assert.Equal("GetUnsafeField0Y(source) = value;", setter.AssignmentStatement);
+		Assert.Equal("GetUnsafeField_Y(source) = value;", setter.AssignmentStatement);
 	}
 
 	[Fact]
@@ -125,10 +125,10 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y")
-			], bindingId: 0);
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: true)
+			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
-		Assert.Equal("SetUnsafeProperty0Y(source, value);", setter.AssignmentStatement);
+		Assert.Equal("SetUnsafeProperty_Y(source, value);", setter.AssignmentStatement);
 	}
 
 	[Fact]
@@ -136,10 +136,29 @@ public class SetterBuilderTests
 	{
 		var setter = Setter.From(
 			[
-				new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y"),
+				new MemberAccess("Y", IsValueType: false, ContainingType: new TypeDescription("X"), MemberType: new TypeDescription("Z"), Kind: AccessorKind.Property, IsGetterInaccessible: true, IsSetterInaccessible: false),
 				new MemberAccess("A"),
-			], bindingId: 0);
+			]);
 		Assert.Empty(setter.PatternMatchingExpressions);
-		Assert.Equal("GetUnsafeProperty0Y(source).A = value;", setter.AssignmentStatement);
+		Assert.Equal("GetUnsafeProperty_Y(source).A = value;", setter.AssignmentStatement);
+	}
+
+	[Fact]
+	public void GeneratesSetterWithValueTypeInTheMiddle()
+	{
+		var setter = Setter.From([
+				new MemberAccess(
+					"FooStruct",
+					IsValueType: true),
+				new MemberAccess(
+					"Bar",
+					IsValueType: false),
+				new MemberAccess(
+					"Value",
+					IsValueType: true)]);
+
+		Assert.Single(setter.PatternMatchingExpressions);
+		Assert.Equal("source.FooStruct is {} p0", setter.PatternMatchingExpressions[0]);
+		Assert.Equal("p0.Bar.Value = value;", setter.AssignmentStatement);
 	}
 }

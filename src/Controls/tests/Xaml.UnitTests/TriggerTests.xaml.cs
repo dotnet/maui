@@ -1,56 +1,43 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class TriggerTests : ContentPage
 {
-	public partial class TriggerTests : ContentPage
+	public TriggerTests() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public TriggerTests()
+		[Theory]
+		[XamlInflatorData]
+		internal void ValueIsConverted(XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new TriggerTests(inflator);
+			Entry entry = layout.entry;
+			Assert.NotNull(entry);
+
+			var triggers = entry.Triggers;
+			Assert.NotEmpty(triggers);
+			var pwTrigger = triggers[0] as Trigger;
+			Assert.Equal(Entry.IsPasswordProperty, pwTrigger.Property);
+			Assert.Equal(true, pwTrigger.Value);
 		}
 
-		public TriggerTests(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void ValueIsConvertedWithPropertyCondition(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var layout = new TriggerTests(inflator);
+			Entry entry = layout.entry1;
+			Assert.NotNull(entry);
 
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ValueIsConverted(bool useCompiledXaml)
-			{
-				var layout = new TriggerTests(useCompiledXaml);
-				Entry entry = layout.entry;
-				Assert.NotNull(entry);
-
-				var triggers = entry.Triggers;
-				Assert.IsNotEmpty(triggers);
-				var pwTrigger = triggers[0] as Trigger;
-				Assert.AreEqual(Entry.IsPasswordProperty, pwTrigger.Property);
-				Assert.AreEqual(true, pwTrigger.Value);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ValueIsConvertedWithPropertyCondition(bool useCompiledXaml)
-			{
-				var layout = new TriggerTests(useCompiledXaml);
-				Entry entry = layout.entry1;
-				Assert.NotNull(entry);
-
-				var triggers = entry.Triggers;
-				Assert.IsNotEmpty(triggers);
-				var pwTrigger = triggers[0] as MultiTrigger;
-				var pwCondition = pwTrigger.Conditions[0] as PropertyCondition;
-				Assert.AreEqual(Entry.IsPasswordProperty, pwCondition.Property);
-				Assert.AreEqual(true, pwCondition.Value);
-			}
+			var triggers = entry.Triggers;
+			Assert.NotEmpty(triggers);
+			var pwTrigger = triggers[0] as MultiTrigger;
+			var pwCondition = pwTrigger.Conditions[0] as PropertyCondition;
+			Assert.Equal(Entry.IsPasswordProperty, pwCondition.Property);
+			Assert.Equal(true, pwCondition.Value);
 		}
 	}
 }

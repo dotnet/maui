@@ -27,6 +27,7 @@ public static class KeyboardAutoManagerScroll
 	internal static CGRect KeyboardFrame = CGRect.Empty;
 	static CGPoint TopViewBeginOrigin = new(nfloat.MaxValue, nfloat.MaxValue);
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
+	static CGSize TopViewBeginContainerSize = CGSize.Empty;
 	static double AnimationDuration = 0.25;
 	static UIView? View;
 	static UIView? ContainerView;
@@ -305,19 +306,28 @@ public static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
+		// If View is inside a MauiView that implements ISafeAreaView2
+		// and has SafeAreaEdges.SoftInput set, do not perform auto-scrolling
+		// since SafeAreaEdges.SoftInput will handle the adjustments
+		if (View is not null && MauiView.IsSoftInputHandledByParent(View))
+		{
+			return;
+		}
+
 		if (IsKeyboardShowing)
 		{
-			// If we are going to a new view that has an InputAccessoryView
-			// while we have the keyboard up, we need a delay to recalculate
-			// the height of the InputAccessoryView
-			if (View?.InputAccessoryView is not null)
-			{
-				await Task.Delay(30);
-			}
+			// Universal 30ms delay for all input controls to ensure proper timing coordination
+			// between keyboard auto-scroll and safe area adjustments. 
+			// This delay allows the InputAccessoryView setup completion for input controls.
+			// Safe area system to process keyboard notifications first
+			// Conflict resolution between auto-scroll and SafeAreaEdges.SoftInput settings
+			// Without this delay, timing conflicts can cause double padding or incorrect positioning
+			await Task.Delay(30);
+
 			AdjustPosition();
 
 			// See if the layout requests to scroll again after our initial scroll
-			await Task.Delay(5);
+			await Task.Delay(30);
 			if (ShouldScrollAgain)
 			{
 				AdjustPosition();
@@ -339,6 +349,7 @@ public static class KeyboardAutoManagerScroll
 		if (TopViewBeginOrigin == InvalidPoint)
 		{
 			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
+			TopViewBeginContainerSize = ContainerView.Frame.Size;
 		}
 
 		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
@@ -368,7 +379,10 @@ public static class KeyboardAutoManagerScroll
 		}
 		else
 		{
-			statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
+				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			else
+				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 
 			navigationBarAreaHeight = statusBarHeight;
 		}
@@ -437,7 +451,7 @@ public static class KeyboardAutoManagerScroll
 
 		// scenario where we go into an editor with the "Next" keyboard button,
 		// but the cursor location on the editor is scrolled below the visible section
-		if (View is UITextView && IsKeyboardShowing && cursorRect.Bottom >= viewRectInWindow.GetMaxY())
+		if (View is UITextView && IsKeyboardShowing && cursorRect.Y >= viewRectInWindow.GetMaxY())
 		{
 			move = viewRectInWindow.Bottom - (nfloat)bottomBoundary;
 		}
@@ -865,6 +879,7 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		var window = ContainerView.Window;
+		ArgumentNullException.ThrowIfNull(window);
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
@@ -920,11 +935,25 @@ public static class KeyboardAutoManagerScroll
 			&& (ContainerView.Frame.X != TopViewBeginOrigin.X || ContainerView.Frame.Y != TopViewBeginOrigin.Y)
 			&& TopViewBeginOrigin != InvalidPoint)
 		{
-			var rect = ContainerView.Frame;
-			rect.X = TopViewBeginOrigin.X;
-			rect.Y = TopViewBeginOrigin.Y;
+			// if the container size changed since the keyboard appeared, the device was rotated while
+			// the keyboard was visible. the stored origin belongs to the previous orientation, so skip
+			// the restore and let the view settle naturally in the new orientation.
+			var currentSize = ContainerView.Frame.Size;
+			// use a 1pt tolerance to guard against sub-pixel floating-point drift in CGSize;
+			// a real orientation change produces a delta of hundreds of points
+			const float SizeChangeTolerance = 1.0f;
+			var sizeChanged = TopViewBeginContainerSize != CGSize.Empty
+				&& (Math.Abs(currentSize.Width - TopViewBeginContainerSize.Width) > SizeChangeTolerance
+					|| Math.Abs(currentSize.Height - TopViewBeginContainerSize.Height) > SizeChangeTolerance);
 
-			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+			if (!sizeChanged)
+			{
+				var rect = ContainerView.Frame;
+				rect.X = TopViewBeginOrigin.X;
+				rect.Y = TopViewBeginOrigin.Y;
+
+				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
+			}
 		}
 
 		if (ScrolledView is not null && ScrolledView.ContentInset != UIEdgeInsets.Zero)
@@ -941,6 +970,7 @@ public static class KeyboardAutoManagerScroll
 		View = null;
 		ContainerView = null;
 		TopViewBeginOrigin = InvalidPoint;
+		TopViewBeginContainerSize = CGSize.Empty;
 		CursorRect = null;
 		ShouldIgnoreSafeAreaAdjustment = false;
 		ShouldScrollAgain = false;

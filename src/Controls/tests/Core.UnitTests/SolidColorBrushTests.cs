@@ -53,5 +53,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(white.Color);
 			Assert.Equal(white.Color, Colors.White);
 		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/27281
+		public void SolidColorBrushEqualsComparesColorValues()
+		{
+			// Create two Color instances with identical RGBA values but different object references
+			// This simulates what happens with OnPlatform<Color> which creates new Color instances
+			var color1 = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+			var color2 = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+
+			// Verify these are different instances
+			Assert.False(ReferenceEquals(color1, color2));
+
+			// Verify the Color.Equals method returns true for same values
+			Assert.True(color1.Equals(color2));
+
+			// Create SolidColorBrush instances with these colors
+			var brush1 = new SolidColorBrush(color1);
+			var brush2 = new SolidColorBrush(color2);
+
+			// This is the bug from issue #27281: SolidColorBrush.Equals uses '==' for Color comparison
+			// which compares references instead of values, causing infinite loops with DynamicResource
+			// and OnPlatform<Color> because OnPlatform creates new Color instances each time
+			Assert.True(brush1.Equals(brush2));
+		}
 	}
 }

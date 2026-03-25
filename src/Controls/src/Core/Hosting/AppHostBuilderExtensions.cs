@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Shapes;
@@ -19,6 +20,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 #elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #elif TIZEN
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
@@ -61,28 +63,61 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
+#if IOS || MACCATALYST
+		handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
+		handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
+#else
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Label, LabelHandler2>();
+			handlersCollection.AddHandler<Editor, EditorHandler2>();
+			handlersCollection.AddHandler<Picker, PickerHandler2>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler2>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Label, LabelHandler>();
+			handlersCollection.AddHandler<Editor, EditorHandler>();
+			handlersCollection.AddHandler<Picker, PickerHandler>();
+			handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+			handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Label, LabelHandler>();
+		handlersCollection.AddHandler<Editor, EditorHandler>();
+		handlersCollection.AddHandler<Picker, PickerHandler>();
+		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
+		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
+		}
+#else
+		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
+#endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
-		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
-		handlersCollection.AddHandler<Image, ImageHandler>();
-		handlersCollection.AddHandler<Label, LabelHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
-		handlersCollection.AddHandler<Picker, PickerHandler>();
-		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
-		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
@@ -90,6 +125,31 @@ public static partial class AppHostBuilderExtensions
 			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
+
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+		}
+#else
+		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
+#endif
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			handlersCollection.AddHandler<Image, ImageHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Image, ImageHandler>();
+		}
+#else
+		handlersCollection.AddHandler<Image, ImageHandler>();
+#endif
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
@@ -103,7 +163,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Window, WindowHandler>();
 		handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 		handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
-		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
@@ -117,16 +176,32 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CA1416
 
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #if !TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -195,6 +270,8 @@ public static partial class AppHostBuilderExtensions
 			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 		}
 
+		builder.ConfigureMauiControlsDiagnostics();
+
 #if WINDOWS
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
@@ -241,12 +318,10 @@ public static partial class AppHostBuilderExtensions
 	internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
 	{
 		// Update the mappings for IView/View to work specifically for Controls
-		Element.RemapForControls();
+		Element.RemapIfNeeded();
 		Application.RemapForControls();
-		VisualElement.RemapForControls();
-		Label.RemapForControls();
+		VisualElement.RemapIfNeeded();
 		Button.RemapForControls();
-		CheckBox.RemapForControls();
 		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
@@ -266,7 +341,9 @@ public static partial class AppHostBuilderExtensions
 		Shape.RemapForControls();
 		WebView.RemapForControls();
 		ContentPage.RemapForControls();
+		ImageButton.RemapForControls();
 
+		Slider.RemapForControls();
 		return builder;
 	}
 }
