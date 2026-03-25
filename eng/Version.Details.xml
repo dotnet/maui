@@ -17,21 +17,21 @@
       <Uri>https://github.com/dotnet/android</Uri>
       <Sha>350a375fc202f0072ac4191624986d8c642b93fa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net11.0_26.2" Version="26.2.11586-net11-p4">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net11.0_26.2" Version="26.2.11587-net11-p4">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>97e02ca909f4700d321153ecf19797479855b6b9</Sha>
+      <Sha>0b1228c0662a1a59a7b341fe9d4abe4a55ee3167</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net11.0_26.2" Version="26.2.11586-net11-p4">
+    <Dependency Name="Microsoft.macOS.Sdk.net11.0_26.2" Version="26.2.11587-net11-p4">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>97e02ca909f4700d321153ecf19797479855b6b9</Sha>
+      <Sha>0b1228c0662a1a59a7b341fe9d4abe4a55ee3167</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net11.0_26.2" Version="26.2.11586-net11-p4">
+    <Dependency Name="Microsoft.iOS.Sdk.net11.0_26.2" Version="26.2.11587-net11-p4">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>97e02ca909f4700d321153ecf19797479855b6b9</Sha>
+      <Sha>0b1228c0662a1a59a7b341fe9d4abe4a55ee3167</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net11.0_26.2" Version="26.2.11586-net11-p4">
+    <Dependency Name="Microsoft.tvOS.Sdk.net11.0_26.2" Version="26.2.11587-net11-p4">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>97e02ca909f4700d321153ecf19797479855b6b9</Sha>
+      <Sha>0b1228c0662a1a59a7b341fe9d4abe4a55ee3167</Sha>
     </Dependency>
     <!-- Previous .NET iOS version(s) -->
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_26.2" Version="26.2.10224" CoherentParentDependency="Microsoft.MacCatalyst.Sdk.net11.0_26.2">
