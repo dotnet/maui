@@ -487,12 +487,16 @@ namespace Microsoft.Maui.Media
 			}
 		}
 		
+		/// <summary>
+		/// Saves the captured media file to the device's photo library using PHPhotoLibrary.
+		/// </summary>
 		static async Task SaveToPhotoLibraryAsync(FileResult fileResult)
 		{
 			try
 			{
 				using var stream = await fileResult.OpenReadAsync();
-				var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), fileResult.FileName ?? $"{Guid.NewGuid()}.jpg");
+				var extension = System.IO.Path.GetExtension(fileResult.FileName);
+				var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
 				using (var fileStream = File.Create(tempPath))
 				{
 					stream.Position = 0;
@@ -513,8 +517,7 @@ namespace Microsoft.Maui.Media
 					}
 				});
 
-				// Clean up temp file
-				try { File.Delete(tempPath); } catch { }
+				try { File.Delete(tempPath); } catch (IOException) { }
 			}
 			catch (Exception ex)
 			{

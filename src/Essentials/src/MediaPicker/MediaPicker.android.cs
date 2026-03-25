@@ -421,6 +421,10 @@ namespace Microsoft.Maui.Media
 			return path;
 		}
 
+		/// <summary>
+		/// Saves the captured media file to the device's gallery using MediaStore.
+		/// On API 29+, uses scoped storage with IsPending flag. On older versions, uses direct file copy.
+		/// </summary>
 		static async Task SaveToGalleryAsync(string filePath, bool isPhoto)
 		{
 			try
@@ -431,7 +435,8 @@ namespace Microsoft.Maui.Media
 					return;
 
 				var fileName = System.IO.Path.GetFileName(filePath);
-				var mimeType = isPhoto ? "image/jpeg" : "video/mp4";
+				var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+				var mimeType = GetMimeType(extension, isPhoto);
 
 				var contentValues = new ContentValues();
 				contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
@@ -440,7 +445,7 @@ namespace Microsoft.Maui.Media
 				if (OperatingSystem.IsAndroidVersionAtLeast(29))
 				{
 					contentValues.Put(MediaStore.IMediaColumns.RelativePath,
-						isPhoto ? Android.OS.Environment.DirectoryPictures : Android.OS.Environment.DirectoryMovies);
+						isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
 					contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
 				}
 
@@ -458,6 +463,12 @@ namespace Microsoft.Maui.Media
 						using var inputStream = File.OpenRead(filePath);
 						await inputStream.CopyToAsync(outputStream);
 					}
+					else
+					{
+						// Clean up the pending entry if we couldn't write to it
+						contentResolver.Delete(insertUri, null, null);
+						return;
+					}
 
 					if (OperatingSystem.IsAndroidVersionAtLeast(29))
 					{
@@ -471,6 +482,23 @@ namespace Microsoft.Maui.Media
 			{
 				System.Diagnostics.Debug.WriteLine($"Failed to save to gallery: {ex.Message}");
 			}
+		}
+
+		static string GetMimeType(string extension, bool isPhoto)
+		{
+			return extension switch
+			{
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".heic" or ".heif" => "image/heif",
+				".webp" => "image/webp",
+				".gif" => "image/gif",
+				".mp4" => "video/mp4",
+				".3gp" => "video/3gpp",
+				".mkv" => "video/x-matroska",
+				".webm" => "video/webm",
+				_ => isPhoto ? "image/jpeg" : "video/mp4",
+			};
 		}
 
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)
