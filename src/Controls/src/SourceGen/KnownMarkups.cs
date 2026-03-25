@@ -37,7 +37,9 @@ internal class KnownMarkups
 			return false;
 		}
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 		var dotIdx = member.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 		var typename = member.Substring(0, dotIdx);
 		var membername = member.Substring(dotIdx + 1);
 
@@ -739,7 +741,6 @@ internal class KnownMarkups
 	/// Provides value for AppThemeBindingExtension by generating an AppThemeBinding instance
 	/// with Light, Dark, and Default properties set based on the markup extension's properties.
 	/// </summary>
-#if NET11_0_OR_GREATER
 	internal static bool ProvideValueForAppThemeBindingExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.AppThemeBinding")!;
@@ -845,7 +846,6 @@ internal class KnownMarkups
 		value = $"new global::Microsoft.Maui.Controls.AppThemeBinding {{ {string.Join(", ", parts)} }}";
 		return true;
 	}
-#endif
 
 	//all of this could/should be better, but is already slightly better than XamlC
 	internal static bool ProvideValueForStaticResourceExtension(ElementNode node, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
@@ -866,9 +866,48 @@ internal class KnownMarkups
 			return false;
 		}
 
-		var resource = GetResourceNode(eNode, context, (string)keyValueNode.Value);
-		if (resource is null || !context.Variables.TryGetValue(resource, out var variable))
+		var key = (string)keyValueNode.Value;
+		var resource = GetResourceNode(eNode, context, key);
+		
+		// Try to find the variable in current context or parent contexts (for lambda context)
+		ILocalValue? variable = null;
+		if (resource != null)
 		{
+			var ctx = context;
+			while (ctx != null && variable == null)
+			{
+				if (ctx.Variables.TryGetValue(resource, out var v))
+					variable = v;
+				ctx = ctx.ParentContext;
+			}
+		}
+		
+		if (resource is null || variable is null)
+		{
+			// Resource not in Variables - might be a lazy resource
+			var lazyResource = GetResourceNodeIncludingLazy(eNode, context, key);
+			if (lazyResource != null 
+				&& lazyResource.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var lazyType) 
+				&& lazyType != null)
+			{
+				// Find the Resources property accessor by walking up to find the element with Resources
+				var resourcesAccessor = GetResourcesAccessor(eNode, context, lazyResource);
+				if (resourcesAccessor != null)
+				{
+					// For markup extensions, use the return type of ProvideValue (stored in the dictionary)
+					// not the declaring type of the markup extension itself
+					ITypeSymbol actualType = lazyType;
+					if (lazyType.IsValueProvider(context, out var provideValueReturnType, out _, out _, out _))
+					{
+						actualType = provideValueReturnType;
+					}
+					
+					returnType = actualType;
+					value = $"({actualType.ToFQDisplayString()}){resourcesAccessor}[\"{key}\"]";
+					return true;
+				}
+			}
+			
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
@@ -938,8 +977,61 @@ internal class KnownMarkups
 		return false;
 	}
 
+	/// <summary>
+	/// Gets the Resources property accessor for an element containing a resource.
+	/// Walks up the tree to find which element owns the ResourceDictionary.
+	/// Also checks parent contexts for lazy resources inside lambdas.
+	/// </summary>
+	static string? GetResourcesAccessor(ElementNode en, SourceGenContext context, ElementNode resourceNode)
+	{
+		var n = en;
+		while (n != null)
+		{
+			if (n.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
+			{
+				// Check if this Resources node contains our resource
+				bool containsResource = false;
+				if (resourcesNode is ElementNode irn && irn == resourceNode)
+					containsResource = true;
+				else if (resourcesNode is ListNode lr && lr.CollectionItems.Contains(resourceNode))
+					containsResource = true;
+				else if (resourcesNode is ElementNode rd && rd.XmlType.Name == "ResourceDictionary" && rd.CollectionItems.Contains(resourceNode))
+					containsResource = true;
+
+				if (containsResource)
+				{
+					// Check current context and parent contexts for the variable
+					var ctx = context;
+					while (ctx != null)
+					{
+						if (ctx.Variables.TryGetValue(n, out var ownerVar))
+						{
+							return $"{ownerVar.ValueAccessor}.Resources";
+						}
+						ctx = ctx.ParentContext;
+					}
+				}
+			}
+
+			var np = n.Parent;
+			if (np is ElementNode pen)
+				n = pen;
+			else if (np is ListNode lnp && lnp.Parent is ElementNode elnp)
+				n = elnp;
+			else
+				n = null;
+		}
+		return null;
+	}
+
 	//FIXME this could be smarter and look into merged RDs
 	static ElementNode? GetResourceNode(ElementNode en, SourceGenContext context, string key)
+		=> GetResourceNodeCore(en, context, key, requireInVariables: true);
+
+	static ElementNode? GetResourceNodeIncludingLazy(ElementNode en, SourceGenContext context, string key)
+		=> GetResourceNodeCore(en, context, key, requireInVariables: false);
+
+	static ElementNode? GetResourceNodeCore(ElementNode en, SourceGenContext context, string key, bool requireInVariables)
 	{
 		var n = en;
 		while (n != null)
@@ -958,7 +1050,7 @@ internal class KnownMarkups
 			//single resource in <Resources>
 			if (resourcesNode is ElementNode irn
 				&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
-				&& context.Variables.ContainsKey(irn)
+				&& (!requireInVariables || IsInAnyContextVariables(irn, context))
 				&& xKeyNode is ValueNode xKeyValueNode
 				&& xKeyValueNode.Value as string == key)
 			{
@@ -971,7 +1063,7 @@ internal class KnownMarkups
 				{
 					if (rn is ElementNode irn2
 						&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
-						&& context.Variables.ContainsKey(irn2)
+						&& (!requireInVariables || IsInAnyContextVariables(irn2, context))
 						&& xKeyNode2 is ValueNode xKeyValueNode2
 						&& xKeyValueNode2.Value as string == key)
 					{
@@ -988,7 +1080,7 @@ internal class KnownMarkups
 					if (rn is ElementNode irn3
 						&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
 						&& irn3.XmlType.Name != "OnPlatform"
-						&& context.Variables.ContainsKey(irn3)
+						&& (!requireInVariables || IsInAnyContextVariables(irn3, context))
 						&& xKeyNode3 is ValueNode xKeyValueNode3
 						&& xKeyValueNode3.Value as string == key)
 					{
@@ -1000,5 +1092,21 @@ internal class KnownMarkups
 			n = n.Parent as ElementNode;
 		}
 		return null;
+	}
+
+	/// <summary>
+	/// Checks if a node is in the Variables dictionary of any context in the parent chain.
+	/// This handles lambda contexts where variables are in parent context.
+	/// </summary>
+	static bool IsInAnyContextVariables(INode node, SourceGenContext context)
+	{
+		var ctx = context;
+		while (ctx != null)
+		{
+			if (ctx.Variables.ContainsKey(node))
+				return true;
+			ctx = ctx.ParentContext;
+		}
+		return false;
 	}
 }

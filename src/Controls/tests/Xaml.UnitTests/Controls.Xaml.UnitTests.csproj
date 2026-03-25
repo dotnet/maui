@@ -10,7 +10,7 @@
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
-    <DefineConstants>$(DefineConstants);MauiAllowImplicitXmlnsDeclaration</DefineConstants>
+    <DefineConstants>$(DefineConstants)</DefineConstants>
     <ReportAnalyzer>true</ReportAnalyzer>
     <!-- We can't yet disable the namescope generation, ConstraintTypeConverter and ReferenceTypeConverter need to be ported to sourcegen
     <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
@@ -77,7 +77,12 @@
     <MauiXaml Update="Issues\Issue2578.xaml" NoWarn="0612" />
     <MauiXaml Update="Issues\Issue2659.xaml" NoWarn="0612" />
 
-    <MauiXaml Update="Benchmark.xaml" TreeOrder="true" />
+    <!-- LazyRD feature test -->
+    <MauiXaml Update="Issues\LazyResourceDictionary.sgen.xaml" LazyRD="true" />
+
+    <!-- Benchmark comparison: with and without LazyRD -->
+    <MauiXaml Update="Benchmark.xaml" LazyRD="true" />
+    <MauiXaml Update="BenchmarkNoLazy.xaml" LazyRD="false" />
   </ItemGroup>
 
   <ItemGroup>

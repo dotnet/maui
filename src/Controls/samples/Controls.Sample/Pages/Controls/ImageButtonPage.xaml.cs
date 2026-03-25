@@ -25,30 +25,30 @@ namespace Maui.Controls.Sample.Pages
 			UpdateImageButtonBackground();
 		}
 
-		void OnImageButtonClicked(object sender, EventArgs e)
+		void OnImageButtonClicked(object? sender, EventArgs e)
 		{
 			_clickTotal += 1;
 			InfoLabel.Text = $"{_clickTotal} ImageButton click{(_clickTotal == 1 ? "" : "s")}";
 		}
 
-		void OnResizeImageButtonClicked(object sender, EventArgs e)
+		void OnResizeImageButtonClicked(object? sender, EventArgs e)
 		{
 			ResizeImageButton.HeightRequest = 100;
 			ResizeImageButton.WidthRequest = 100;
 		}
 
-		void UseOnlineSource_Clicked(object sender, EventArgs e)
+		void UseOnlineSource_Clicked(object? sender, EventArgs e)
 		{
 			AnimatedGifImage.Source =
 				ImageSource.FromUri(new Uri("https://raw.githubusercontent.com/dotnet/maui/126f47aaf9d5c01224f54fe1c6bfb1c8299cc2fe/src/Compatibility/ControlGallery/src/iOS/GifTwo.gif"));
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object? sender, EventArgs e)
 		{
 			UpdateImageButtonBackground();
 		}
 
-		void OnRemoveBackgroundButtonClicked(object sender, EventArgs e)
+		void OnRemoveBackgroundButtonClicked(object? sender, EventArgs e)
 		{
 			BackgroundImageButton.Background = null;
 		}
