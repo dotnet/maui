@@ -3,6 +3,7 @@ description: Evaluates test quality, coverage, and appropriateness on PRs that a
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    forks: ["*"]
     paths:
       - 'src/**/tests/**'
       - 'src/**/test/**'
