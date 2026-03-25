@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
+using WinRT.Interop;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -201,7 +202,12 @@ namespace Microsoft.Maui.Handlers
 		}
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
-			var hwnd = PlatformView.GetWindowHandle();
+			// Use WindowNative.GetWindowHandle directly (non-throwing) so the
+			// IntPtr.Zero guard below is reachable. GetWindowHandle() extension
+			// throws NullReferenceException when the handle is zero, which would
+			// make the early-return dead code and cause a regression during
+			// ConnectHandler or AppWindow.Changed.
+			var hwnd = WindowNative.GetWindowHandle(PlatformView);
 			if (hwnd == IntPtr.Zero)
 			{
 				return;
