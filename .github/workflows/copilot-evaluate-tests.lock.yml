@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"9a0e480927d61956be62f85669d2e599525442694d280126849fe87e727c31df","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d671028235c1b911c7a816a257b07b02793a6b57747b4358f792af183e26ca07","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -30,6 +30,8 @@ name: "Evaluate PR Tests"
     types:
     - created
   pull_request:
+    # forks: # Fork filtering applied via job conditions
+    # - "*" # Fork filtering applied via job conditions
     paths:
     - src/**/tests/**
     - src/**/test/**
@@ -57,9 +59,9 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      (needs.pre_activation.outputs.activated == 'true') && (((github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      (needs.pre_activation.outputs.activated == 'true') && ((github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/evaluate-tests'))) && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id)))
+      startsWith(github.event.comment.body, '/evaluate-tests')))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -324,7 +326,8 @@ jobs:
         run: "TEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
       - env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        if: github.event_name == 'workflow_dispatch'
         name: Checkout PR and restore agent infrastructure
         run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 
@@ -986,9 +989,9 @@ jobs:
 
   pre_activation:
     if: >
-      ((github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/evaluate-tests'))) && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id))
+      startsWith(github.event.comment.body, '/evaluate-tests'))
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}

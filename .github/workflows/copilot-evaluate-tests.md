@@ -3,6 +3,7 @@ description: Evaluates test quality, coverage, and appropriateness on PRs that a
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    forks: ["*"]
     paths:
       - 'src/**/tests/**'
       - 'src/**/test/**'
@@ -72,10 +73,14 @@ steps:
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 
+  # Only needed for workflow_dispatch — for pull_request and issue_comment,
+  # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
+  # workflow_dispatch skips the platform checkout entirely, so we must do it here.
   - name: Checkout PR and restore agent infrastructure
+    if: github.event_name == 'workflow_dispatch'
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+      PR_NUMBER: ${{ inputs.pr_number }}
     run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
