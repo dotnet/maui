@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
@@ -12,4 +12,3 @@ override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstra
 override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
-

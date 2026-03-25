@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Platform
 		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
 		// children. Return false only when semi-transparent so Android applies alpha
 		// per-child instead, avoiding the implicit clip.
-		// When fully opaque (Alpha >= 1), return the Android default (true); the
-		// offscreen buffer path is never entered at full opacity.
-		public override bool HasOverlappingRendering => Alpha >= 1.0f;
+		// When fully opaque (Alpha >= 1), preserve the base class behavior so any
+		// future or subclass override is respected rather than hardcoding true.
+		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
 
 		IBorderStroke? _clip;
 		readonly Context _context;
