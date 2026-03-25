@@ -84,10 +84,10 @@ public class MauiToolExceptionTests
 	[Fact]
 	public void UserActionRequired_CreatesExceptionWithManualSteps()
 	{
-		var steps = new[] { "Open App Store", "Search for Xcode", "Install" };
+		var steps = new[] { "Download Android Studio", "Install SDK", "Accept licenses" };
 		var ex = MauiToolException.UserActionRequired(
-			ErrorCodes.XcodeNotFound,
-			"Xcode not found",
+			ErrorCodes.AndroidSdkNotFound,
+			"Android SDK not found",
 			steps);
 
 		Assert.NotNull(ex.Remediation);

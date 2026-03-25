@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Client.Commands;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Providers.Android;
-using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Services;
 using Microsoft.Maui.Client.Utils;
 
@@ -40,7 +39,6 @@ public class Program
 
 	// Convenience accessors for services
 	internal static IAndroidProvider AndroidProvider => Services.GetRequiredService<IAndroidProvider>();
-	internal static IAppleProvider AppleProvider => Services.GetRequiredService<IAppleProvider>();
 	internal static IDoctorService DoctorService => Services.GetRequiredService<IDoctorService>();
 	internal static IDeviceManager DeviceManager => Services.GetRequiredService<IDeviceManager>();
 	internal static IJdkManager JdkManager => Services.GetRequiredService<IJdkManager>();
@@ -101,12 +99,6 @@ public class Program
 
 		// Platform-specific command groups
 		rootCommand.AddCommand(AndroidCommands.Create());
-
-		// Only add Apple commands on macOS
-		if (PlatformDetector.IsMacOS)
-		{
-			rootCommand.AddCommand(AppleCommands.Create(AppleProvider, GetFormatter));
-		}
 
 		return rootCommand;
 	}

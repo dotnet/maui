@@ -86,17 +86,7 @@ static class SpectreHelpBuilder
 				var name = sub.Name;
 				var desc = sub.Description ?? string.Empty;
 				var padding = new string(' ', Math.Max(1, maxNameLen - name.Length + 2));
-
-				// Add dim annotation for platform-specific commands
-				if (desc.Contains("macOS only", StringComparison.OrdinalIgnoreCase))
-				{
-					var mainDesc = desc.Replace("(macOS only)", "", StringComparison.Ordinal).Replace("(macOS)", "", StringComparison.Ordinal).TrimEnd();
-					console.MarkupLine($"  [green]{Markup.Escape(name)}[/]{padding}{Markup.Escape(mainDesc)} [dim](macOS)[/]");
-				}
-				else
-				{
-					console.MarkupLine($"  [green]{Markup.Escape(name)}[/]{padding}{Markup.Escape(desc)}");
-				}
+				console.MarkupLine($"  [green]{Markup.Escape(name)}[/]{padding}{Markup.Escape(desc)}");
 			}
 			console.WriteLine();
 		}

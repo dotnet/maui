@@ -4,7 +4,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Providers.Android;
-using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Services;
 using Microsoft.Maui.Client.Utils;
 
@@ -34,9 +33,6 @@ public static class ServiceConfiguration
 		services.AddSingleton<IJdkManager, JdkManager>();
 		services.AddSingleton<IAndroidProvider, AndroidProvider>();
 
-		// Apple providers (only functional on macOS, but registered everywhere)
-		services.AddSingleton<IAppleProvider, AppleProvider>();
-
 		// Core services
 		services.AddSingleton<IDoctorService, DoctorService>();
 		services.AddSingleton<IDeviceManager, DeviceManager>();
@@ -51,7 +47,6 @@ public static class ServiceConfiguration
 	/// </summary>
 	public static IServiceProvider CreateTestServiceProvider(
 		IAndroidProvider? androidProvider = null,
-		IAppleProvider? appleProvider = null,
 		IJdkManager? jdkManager = null,
 		IDoctorService? doctorService = null,
 		IDeviceManager? deviceManager = null)
@@ -68,11 +63,6 @@ public static class ServiceConfiguration
 			services.AddSingleton(androidProvider);
 		else
 			services.AddSingleton<IAndroidProvider, AndroidProvider>();
-
-		if (appleProvider != null)
-			services.AddSingleton(appleProvider);
-		else
-			services.AddSingleton<IAppleProvider, AppleProvider>();
 
 		if (doctorService != null)
 			services.AddSingleton(doctorService);

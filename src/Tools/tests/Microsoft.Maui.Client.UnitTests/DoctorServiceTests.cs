@@ -15,8 +15,7 @@ public class DoctorServiceTests
 	{
 		// Arrange
 		var fakeAndroid = new FakeAndroidProvider();
-		var fakeApple = new FakeAppleProvider();
-		var service = new DoctorService(fakeAndroid, fakeApple);
+		var service = new DoctorService(fakeAndroid);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -50,8 +49,7 @@ public class DoctorServiceTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var service = new DoctorService(fakeAndroid, fakeApple);
+		var service = new DoctorService(fakeAndroid);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -75,8 +73,7 @@ public class DoctorServiceTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var service = new DoctorService(fakeAndroid, fakeApple);
+		var service = new DoctorService(fakeAndroid);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -99,8 +96,7 @@ public class DoctorServiceTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var service = new DoctorService(fakeAndroid, fakeApple);
+		var service = new DoctorService(fakeAndroid);
 
 		// Act
 		var report = await service.RunAllChecksAsync();
@@ -121,8 +117,7 @@ public class DoctorServiceTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var service = new DoctorService(fakeAndroid, fakeApple);
+		var service = new DoctorService(fakeAndroid);
 
 		// Act
 		var report = await service.RunAllChecksAsync();

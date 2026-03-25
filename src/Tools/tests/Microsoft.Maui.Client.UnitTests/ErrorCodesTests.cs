@@ -15,7 +15,6 @@ public class ErrorCodesTests
 		Assert.StartsWith("E", ErrorCodes.InternalError);
 		Assert.StartsWith("E", ErrorCodes.JdkNotFound);
 		Assert.StartsWith("E", ErrorCodes.AndroidSdkNotFound);
-		Assert.StartsWith("E", ErrorCodes.XcodeNotFound);
 	}
 
 	[Fact]
@@ -32,9 +31,5 @@ public class ErrorCodesTests
 		// Android errors: E21xx
 		Assert.StartsWith("E21", ErrorCodes.AndroidSdkNotFound);
 		Assert.StartsWith("E21", ErrorCodes.AndroidSdkManagerNotFound);
-
-		// Apple errors: E22xx
-		Assert.StartsWith("E22", ErrorCodes.XcodeNotFound);
-		Assert.StartsWith("E22", ErrorCodes.AppleSimctlFailed);
 	}
 }

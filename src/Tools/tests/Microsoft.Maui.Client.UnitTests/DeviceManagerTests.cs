@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Client.UnitTests;
 public class DeviceManagerTests
 {
 	[Fact]
-	public async Task GetAllDevicesAsync_CombinesAndroidAndAppleDevices()
+	public async Task GetAllDevicesAsync_ReturnsAndroidDevices()
 	{
 		// Arrange
 		var fakeAndroid = new FakeAndroidProvider
@@ -23,23 +23,14 @@ public class DeviceManagerTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider
-		{
-			Simulators = new List<Device>
-			{
-				new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
-			}
-		};
-
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();
 
 		// Assert
-		Assert.Equal(2, devices.Count);
+		Assert.Single(devices);
 		Assert.Contains(devices, d => d.Platforms.Contains("android"));
-		Assert.Contains(devices, d => d.Platforms.Contains("ios"));
 	}
 
 	[Fact]
@@ -54,25 +45,14 @@ public class DeviceManagerTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider
-		{
-			Simulators = new List<Device>
-			{
-				new Device { Id = "ABC-123", Name = "iPhone 15", Platforms = new[] { "ios" }, Type = DeviceType.Simulator, State = DeviceState.Shutdown, IsEmulator = true, IsRunning = false }
-			}
-		};
-
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var androidOnly = await manager.GetDevicesByPlatformAsync("android");
-		var iosOnly = await manager.GetDevicesByPlatformAsync("ios");
 
 		// Assert
 		Assert.Single(androidOnly);
 		Assert.All(androidOnly, d => Assert.Contains("android", d.Platforms));
-		Assert.Single(iosOnly);
-		Assert.All(iosOnly, d => Assert.Contains("ios", d.Platforms));
 	}
 
 	[Fact]
@@ -88,8 +68,7 @@ public class DeviceManagerTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var device = await manager.GetDeviceByIdAsync("device-2");
@@ -105,8 +84,7 @@ public class DeviceManagerTests
 	{
 		// Arrange
 		var fakeAndroid = new FakeAndroidProvider();
-		var fakeApple = new FakeAppleProvider();
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var device = await manager.GetDeviceByIdAsync("nonexistent");
@@ -127,8 +105,7 @@ public class DeviceManagerTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();
@@ -167,8 +144,7 @@ public class DeviceManagerTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();
@@ -207,8 +183,7 @@ public class DeviceManagerTests
 			}
 		};
 
-		var fakeApple = new FakeAppleProvider();
-		var manager = new DeviceManager(fakeAndroid, fakeApple);
+		var manager = new DeviceManager(fakeAndroid);
 
 		// Act
 		var devices = await manager.GetAllDevicesAsync();

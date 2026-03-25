@@ -37,14 +37,6 @@ public static class ErrorCodes
 	public const string AndroidDeviceNotFound = "E2111";
 	public const string AndroidAvdDeleteFailed = "E2112";
 
-	// Platform/SDK errors - Apple/Xcode (E22xx)
-	public const string XcodeNotFound = "E2201";
-	public const string XcodeCommandLineToolsNotFound = "E2202";
-	public const string AppleSimctlFailed = "E2203";
-	public const string RuntimeInstallFailed = "E2207";
-	public const string XcodeSelectFailed = "E2208";
-	public const string AppleNoSimulators = "E2209";
-
 	// Platform/SDK errors - Windows (E23xx)
 	public const string WindowsSdkNotFound = "E2301";
 

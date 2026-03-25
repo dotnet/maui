@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Client.Providers.Android;
-using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Services;
 using Microsoft.Maui.Client.UnitTests.Fakes;
 using Xunit;
@@ -21,7 +20,6 @@ public class ServiceConfigurationTests
 		// Assert
 		Assert.NotNull(provider.GetService<IJdkManager>());
 		Assert.NotNull(provider.GetService<IAndroidProvider>());
-		Assert.NotNull(provider.GetService<IAppleProvider>());
 		Assert.NotNull(provider.GetService<IDoctorService>());
 		Assert.NotNull(provider.GetService<IDeviceManager>());
 	}
@@ -43,16 +41,13 @@ public class ServiceConfigurationTests
 	{
 		// Arrange
 		var fakeAndroid = new FakeAndroidProvider();
-		var fakeApple = new FakeAppleProvider();
 
 		// Act
 		var provider = ServiceConfiguration.CreateTestServiceProvider(
-			androidProvider: fakeAndroid,
-			appleProvider: fakeApple);
+			androidProvider: fakeAndroid);
 
 		// Assert
 		Assert.Same(fakeAndroid, provider.GetService<IAndroidProvider>());
-		Assert.Same(fakeApple, provider.GetService<IAppleProvider>());
 	}
 
 	[Fact]
@@ -65,10 +60,9 @@ public class ServiceConfigurationTests
 		var provider = ServiceConfiguration.CreateTestServiceProvider(
 			androidProvider: fakeAndroid);
 
-		// Assert - should create real apple provider
+		// Assert - should create real services for everything else
 		Assert.Same(fakeAndroid, provider.GetService<IAndroidProvider>());
-		Assert.NotNull(provider.GetService<IAppleProvider>());
-		Assert.IsType<AppleProvider>(provider.GetService<IAppleProvider>());
+		Assert.NotNull(provider.GetService<IDoctorService>());
 	}
 
 	[Fact]

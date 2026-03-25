@@ -4,7 +4,6 @@
 using Microsoft.Maui.Client.Errors;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Providers.Android;
-using Microsoft.Maui.Client.Providers.Apple;
 using Microsoft.Maui.Client.Utils;
 
 namespace Microsoft.Maui.Client.Services;
@@ -15,12 +14,10 @@ namespace Microsoft.Maui.Client.Services;
 public class DoctorService : IDoctorService
 {
 	readonly IAndroidProvider? _androidProvider;
-	readonly IAppleProvider? _appleProvider;
 
-	public DoctorService(IAndroidProvider? androidProvider = null, IAppleProvider? appleProvider = null)
+	public DoctorService(IAndroidProvider? androidProvider = null)
 	{
 		_androidProvider = androidProvider;
-		_appleProvider = appleProvider;
 	}
 
 	public async Task<DoctorReport> RunAllChecksAsync(CancellationToken cancellationToken = default)
@@ -38,20 +35,6 @@ public class DoctorService : IDoctorService
 		{
 			var androidChecks = await _androidProvider.CheckHealthAsync(cancellationToken);
 			checks.AddRange(androidChecks);
-		}
-
-		// Apple checks (macOS only) - use provider if available
-		if (PlatformDetector.IsMacOS)
-		{
-			if (_appleProvider != null)
-			{
-				var appleChecks = await _appleProvider.CheckHealthAsync(cancellationToken);
-				checks.AddRange(appleChecks);
-			}
-			else
-			{
-				checks.Add(await CheckXcodeAsync(cancellationToken));
-			}
 		}
 
 		// Windows checks (Windows only)
@@ -82,24 +65,6 @@ public class DoctorService : IDoctorService
 				}
 				break;
 
-			case "apple":
-			case "ios":
-				if (PlatformDetector.IsMacOS)
-				{
-					checks.Add(await CheckXcodeAsync(cancellationToken));
-				}
-				else
-				{
-					checks.Add(new HealthCheck
-					{
-						Category = "apple",
-						Name = "Platform",
-						Status = CheckStatus.Skipped,
-						Message = "Apple checks only available on macOS"
-					});
-				}
-				break;
-
 			case "windows":
 				if (PlatformDetector.IsWindows)
 				{
@@ -120,7 +85,7 @@ public class DoctorService : IDoctorService
 			default:
 				throw new MauiToolException(
 					ErrorCodes.InvalidArgument,
-					$"Unknown category: {category}. Valid categories: dotnet, android, apple, windows");
+					$"Unknown category: {category}. Valid categories: dotnet, android, windows");
 		}
 
 		return CreateReport(checks);
@@ -292,61 +257,6 @@ public class DoctorService : IDoctorService
 			Name = "MAUI Workload",
 			Status = CheckStatus.Ok,
 			Message = "MAUI workload installed"
-		};
-	}
-
-	async Task<HealthCheck> CheckXcodeAsync(CancellationToken cancellationToken)
-	{
-		var result = await ProcessRunner.RunAsync("xcode-select", "-p",
-			timeout: TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
-
-		if (!result.Success)
-		{
-			return new HealthCheck
-			{
-				Category = "apple",
-				Name = "Xcode",
-				Status = CheckStatus.Error,
-				Message = "Xcode command line tools not installed",
-				Fix = new FixInfo
-				{
-					IssueId = ErrorCodes.XcodeNotFound,
-					Description = "Install Xcode from the App Store",
-					AutoFixable = false,
-					ManualSteps = new[]
-					{
-						"Install Xcode from the Mac App Store",
-						"Run: xcode-select --install"
-					}
-				}
-			};
-		}
-
-		var xcodePath = result.StandardOutput.Trim();
-
-		// Get Xcode version
-		var versionResult = await ProcessRunner.RunAsync("xcodebuild", "-version",
-			timeout: TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
-
-		var version = "unknown";
-		if (versionResult.Success)
-		{
-			var lines = versionResult.StandardOutput.Split('\n');
-			if (lines.Length > 0)
-				version = lines[0].Replace("Xcode ", string.Empty, StringComparison.Ordinal).Trim();
-		}
-
-		return new HealthCheck
-		{
-			Category = "apple",
-			Name = "Xcode",
-			Status = CheckStatus.Ok,
-			Message = $"Xcode {version}",
-			Details = new Dictionary<string, object>
-			{
-				["version"] = version,
-				["path"] = xcodePath
-			}
 		};
 	}
 
