@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Verifies that UI tests catch the bug. Supports two modes: verify failure only or full verification.
+    Verifies that tests catch the bug. Supports all test types and two verification modes.
 
 .DESCRIPTION
     This script verifies that tests actually catch the issue. It supports two modes:
@@ -19,8 +19,19 @@
     The script auto-detects which mode to use based on whether fix files are present.
     Fix files and test filters are auto-detected from the git diff (non-test files that changed).
 
+    SUPPORTED TEST TYPES (auto-detected from changed files):
+    - UITest:       Appium UI tests (TestCases.HostApp / TestCases.Shared.Tests)
+    - UnitTest:     xUnit unit tests (*.UnitTests projects)
+    - XamlUnitTest: XAML unit tests (Xaml.UnitTests)
+    - DeviceTest:   Device tests (*.DeviceTests projects)
+
 .PARAMETER Platform
     Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
+    Required for UITest and DeviceTest types. Optional for UnitTest and XamlUnitTest.
+
+.PARAMETER TestType
+    Explicit test type override. If not provided, auto-detected from changed files.
+    Valid values: UITest, UnitTest, XamlUnitTest, DeviceTest
 
 .PARAMETER TestFilter
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
@@ -33,29 +44,30 @@
 .PARAMETER BaseBranch
     Branch to revert files from. Auto-detected from PR if not specified.
 
-.PARAMETER OutputDir
-    Directory to store results (default: "CustomAgentLogsTmp/TestValidation")
-
 .PARAMETER RequireFullVerification
     If set, the script will fail if it cannot run full verification mode
     (i.e., if no fix files are detected). Without this flag, the script will
     automatically run in verify failure only mode when no fix files are found.
 
 .EXAMPLE
-    # Verify failure only mode - tests should fail (test creation workflow)
+    # Auto-detect everything (test type, filter, platform)
     ./verify-tests-fail.ps1 -Platform android
 
 .EXAMPLE
-    # Full verification mode - require fix files to be present
+    # Verify unit tests (no platform needed)
+    ./verify-tests-fail.ps1 -TestType UnitTest -TestFilter "Maui12345"
+
+.EXAMPLE
+    # Verify XAML unit tests
+    ./verify-tests-fail.ps1 -TestType XamlUnitTest
+
+.EXAMPLE
+    # Full verification mode for UI tests
     ./verify-tests-fail.ps1 -Platform android -RequireFullVerification
 
 .EXAMPLE
-    # Specify test filter explicitly (works in both modes)
-    ./verify-tests-fail.ps1 -Platform android -TestFilter "Issue32030"
-
-.EXAMPLE
     # Specify everything explicitly
-    ./verify-tests-fail.ps1 -Platform ios -TestFilter "Issue12345" `
+    ./verify-tests-fail.ps1 -Platform ios -TestType UITest -TestFilter "Issue12345" `
         -FixFiles @("src/Controls/src/Core/SomeFile.cs")
 #>
 
@@ -77,7 +89,11 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireFullVerification
+    [switch]$RequireFullVerification,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("UITest", "UnitTest", "XamlUnitTest", "DeviceTest")]
+    [string]$TestType
 )
 
 $ErrorActionPreference = "Stop"
@@ -144,72 +160,491 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 # Import Test-IsTestFile and Find-MergeBase from shared script
 . $BaselineScript
 
+# Import the shared test detection script
+$DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
+
 
 # ============================================================
-# Auto-detect test filter from changed files
+# Test type detection from changed files
 # ============================================================
+
+# Maps file path patterns to test types
+$script:TestTypePatterns = @(
+    @{ Pattern = "TestCases\.(Shared\.Tests|HostApp|Android\.Tests|iOS\.Tests|Mac\.Tests|WinUI\.Tests)"; Type = "UITest" }
+    @{ Pattern = "Xaml\.UnitTests/"; Type = "XamlUnitTest" }
+    @{ Pattern = "DeviceTests/"; Type = "DeviceTest" }
+    @{ Pattern = "(?<!\w)UnitTests/|Graphics\.Tests/"; Type = "UnitTest" }
+)
+
+# Maps test types to their project paths (relative to repo root)
+$script:UnitTestProjectMap = @{
+    "Controls.Core.UnitTests"          = "src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj"
+    "Controls.Xaml.UnitTests"          = "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj"
+    "Controls.BindingSourceGen.UnitTests" = "src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj"
+    "SourceGen.UnitTests"              = "src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj"
+    "Core.UnitTests"                   = "src/Core/tests/UnitTests/Core.UnitTests.csproj"
+    "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
+    "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
+    "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
+    "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
+    "Essentials.AI.UnitTests"          = "src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj"
+}
+
+# Maps device test project keys to the -Project parameter of Run-DeviceTests.ps1
+$script:DeviceTestProjectMap = @{
+    "Controls.DeviceTests"             = "Controls"
+    "Core.DeviceTests"                 = "Core"
+    "Essentials.DeviceTests"           = "Essentials"
+    "Graphics.DeviceTests"             = "Graphics"
+    "MauiBlazorWebView.DeviceTests"    = "BlazorWebView"
+    "Essentials.AI.DeviceTests"        = "AI"
+}
+
+function Get-TestTypeFromFiles {
+    <#
+    .SYNOPSIS
+        Detects which test type a set of changed files belong to.
+    .DESCRIPTION
+        Returns a hashtable with:
+        - Type: UITest, UnitTest, XamlUnitTest, or DeviceTest
+        - TestFiles: list of test files
+        - Project: (for UnitTest/DeviceTest) which test project to run
+    #>
+    param([string[]]$ChangedFiles)
+
+    $result = @{
+        Type = $null
+        TestFiles = @()
+        Project = $null
+        ProjectPath = $null
+    }
+
+    foreach ($file in $ChangedFiles) {
+        if ($file -notmatch "\.cs$" -and $file -notmatch "\.xaml$") { continue }
+
+        foreach ($mapping in $script:TestTypePatterns) {
+            if ($file -match $mapping.Pattern) {
+                $result.TestFiles += $file
+
+                # First match wins for type (priority order in $TestTypePatterns)
+                if (-not $result.Type) {
+                    $result.Type = $mapping.Type
+                } elseif ($result.Type -ne $mapping.Type) {
+                    # Multiple test types detected — warn and keep the first (highest priority)
+                    Write-Host "⚠️  Multiple test types detected ($($result.Type) and $($mapping.Type)). Using $($result.Type)." -ForegroundColor Yellow
+                    Write-Host "   To override, use -TestType parameter explicitly." -ForegroundColor Yellow
+                    continue
+                }
+
+                # Detect specific project for unit tests
+                if ($mapping.Type -eq "UnitTest") {
+                    foreach ($projName in $script:UnitTestProjectMap.Keys) {
+                        if ($file -match [regex]::Escape($projName) -or $file -match ($projName -replace '\.', '/')) {
+                            $result.Project = $projName
+                            $result.ProjectPath = $script:UnitTestProjectMap[$projName]
+                        }
+                    }
+                    # Fallback: infer project from directory structure
+                    if (-not $result.Project) {
+                        foreach ($projName in $script:UnitTestProjectMap.Keys) {
+                            $projDir = Split-Path $script:UnitTestProjectMap[$projName]
+                            if ($file -like "$projDir/*") {
+                                $result.Project = $projName
+                                $result.ProjectPath = $script:UnitTestProjectMap[$projName]
+                                break
+                            }
+                        }
+                    }
+                }
+
+                # Detect specific project for device tests
+                if ($mapping.Type -eq "DeviceTest") {
+                    foreach ($projName in $script:DeviceTestProjectMap.Keys) {
+                        $projNamePattern = $projName -replace '\.', '[\./]'
+                        if ($file -match $projNamePattern) {
+                            $result.Project = $script:DeviceTestProjectMap[$projName]
+                            break
+                        }
+                    }
+                }
+
+                break  # file matched a pattern, move to next file
+            }
+        }
+    }
+
+    return $result
+}
+
+# ============================================================
+# Run tests based on detected type
+# ============================================================
+function Invoke-TestRun {
+    <#
+    .SYNOPSIS
+        Runs tests using the appropriate runner for the detected test type.
+    .DESCRIPTION
+        Routes to BuildAndRunHostApp.ps1 for UI tests, dotnet test for unit/XAML tests,
+        or Run-DeviceTests.ps1 for device tests. Uses Start-Emulator.ps1 for consistent
+        device booting across all test types that need a platform.
+    .OUTPUTS
+        Returns the path to the test output log file.
+    #>
+    param(
+        [string]$DetectedTestType,
+        [string]$Filter,
+        [string]$DetectedProject,
+        [string]$DetectedProjectPath,
+        [string]$LogFile
+    )
+
+    # Boot device/simulator once for test types that need a platform.
+    # Both BuildAndRunHostApp.ps1 and Run-DeviceTests.ps1 use Start-Emulator.ps1
+    # internally, but we pre-boot here to ensure a consistent UDID is shared
+    # across multiple test runs in the same gate session.
+    if ($DetectedTestType -in @("UITest", "DeviceTest") -and -not $script:BootedDeviceUdid) {
+        if (-not $Platform) {
+            Write-Host "❌ $DetectedTestType tests require -Platform (android, ios, catalyst, windows)" -ForegroundColor Red
+            exit 1
+        }
+
+        # catalyst/maccatalyst/windows run on host — no emulator needed
+        $emulatorPlatform = switch ($Platform) {
+            "catalyst" { $null }
+            "windows"  { $null }
+            default    { $Platform }
+        }
+
+        if ($emulatorPlatform) {
+            if ($DeviceUdid) {
+                $script:BootedDeviceUdid = $DeviceUdid
+            } else {
+                Write-Host "🔹 Booting $Platform device/simulator (shared across all test runs)..." -ForegroundColor Cyan
+                $startEmulatorScript = Join-Path $RepoRoot ".github/scripts/shared/Start-Emulator.ps1"
+                $emulatorParams = @{ Platform = $emulatorPlatform }
+                $script:BootedDeviceUdid = & $startEmulatorScript @emulatorParams
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "❌ Failed to boot device" -ForegroundColor Red
+                    exit 1
+                }
+            }
+            Write-Host "✅ Device ready: $($script:BootedDeviceUdid)" -ForegroundColor Green
+        } else {
+            $script:BootedDeviceUdid = "host"
+        }
+    }
+
+    switch ($DetectedTestType) {
+        "UITest" {
+            if (-not $Platform) {
+                Write-Host "❌ UI tests require -Platform (android, ios, catalyst, windows)" -ForegroundColor Red
+                exit 1
+            }
+            $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+            $uiParams = @{
+                Platform   = $Platform
+                TestFilter = $Filter
+                Rebuild    = $true
+            }
+            if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
+                $uiParams.DeviceUdid = $script:BootedDeviceUdid
+            }
+            & $buildScript @uiParams 2>&1 | Tee-Object -FilePath $LogFile
+            return Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+        }
+
+        "XamlUnitTest" {
+            $projectPath = Join-Path $RepoRoot "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj"
+            Write-Host "🧪 Running XAML unit tests: $projectPath" -ForegroundColor Cyan
+            Write-Host "   Filter: $Filter" -ForegroundColor Gray
+
+            $testOutputFile = Join-Path $RepoRoot "CustomAgentLogsTmp/UnitTests/test-output.log"
+            $testOutputDir = Split-Path $testOutputFile
+            if (-not (Test-Path $testOutputDir)) {
+                New-Item -ItemType Directory -Force -Path $testOutputDir | Out-Null
+            }
+
+            $testArgs = @(
+                "test", $projectPath,
+                "--configuration", "Debug",
+                "--logger", "console;verbosity=normal"
+            )
+            if ($Filter) {
+                $testArgs += @("--filter", $Filter)
+            }
+
+            & dotnet @testArgs 2>&1 | Tee-Object -FilePath $LogFile
+            # Also save just the test output for result parsing
+            Copy-Item -Path $LogFile -Destination $testOutputFile -Force
+            return $testOutputFile
+        }
+
+        "UnitTest" {
+            $projectPath = if ($DetectedProjectPath) {
+                Join-Path $RepoRoot $DetectedProjectPath
+            } else {
+                # Fallback: try to find project from filter
+                $null
+            }
+
+            if (-not $projectPath -or -not (Test-Path $projectPath)) {
+                Write-Host "❌ Could not determine unit test project to run." -ForegroundColor Red
+                Write-Host "   Detected project: $DetectedProject" -ForegroundColor Yellow
+                Write-Host "   Path: $projectPath" -ForegroundColor Yellow
+                exit 1
+            }
+
+            Write-Host "🧪 Running unit tests: $projectPath" -ForegroundColor Cyan
+            Write-Host "   Filter: $Filter" -ForegroundColor Gray
+
+            $testOutputFile = Join-Path $RepoRoot "CustomAgentLogsTmp/UnitTests/test-output.log"
+            $testOutputDir = Split-Path $testOutputFile
+            if (-not (Test-Path $testOutputDir)) {
+                New-Item -ItemType Directory -Force -Path $testOutputDir | Out-Null
+            }
+
+            $testArgs = @(
+                "test", $projectPath,
+                "--configuration", "Debug",
+                "--logger", "console;verbosity=normal"
+            )
+            if ($Filter) {
+                $testArgs += @("--filter", $Filter)
+            }
+
+            & dotnet @testArgs 2>&1 | Tee-Object -FilePath $LogFile
+            Copy-Item -Path $LogFile -Destination $testOutputFile -Force
+            return $testOutputFile
+        }
+
+        "DeviceTest" {
+            if (-not $Platform) {
+                Write-Host "❌ Device tests require -Platform (android, ios, maccatalyst, windows)" -ForegroundColor Red
+                exit 1
+            }
+
+            $devicePlatform = if ($Platform -eq "catalyst") { "maccatalyst" } else { $Platform }
+            $deviceProject = if ($DetectedProject) { $DetectedProject } else { "Controls" }
+
+            $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+            Write-Host "🧪 Running device tests: $deviceProject on $devicePlatform" -ForegroundColor Cyan
+            Write-Host "   Filter: $Filter" -ForegroundColor Gray
+
+            $testOutputFile = Join-Path $RepoRoot "CustomAgentLogsTmp/DeviceTests/test-output.log"
+            $testOutputDir = Split-Path $testOutputFile
+            if (-not (Test-Path $testOutputDir)) {
+                New-Item -ItemType Directory -Force -Path $testOutputDir | Out-Null
+            }
+
+            $deviceParams = @{
+                Project       = $deviceProject
+                Platform      = $devicePlatform
+                Configuration = "Release"
+            }
+
+            # Pass filter through — detection ensures it's Category= format
+            if ($Filter) {
+                $deviceParams.TestFilter = $Filter
+            }
+
+            if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
+                $deviceParams.DeviceUdid = $script:BootedDeviceUdid
+            }
+
+            $scriptOutput = & $deviceTestScript @deviceParams 2>&1
+            $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
+            $scriptOutput | ForEach-Object { Write-Host $_ }
+            if (Test-Path $LogFile) {
+                Copy-Item -Path $LogFile -Destination $testOutputFile -Force
+            }
+
+            return $testOutputFile
+        }
+
+        default {
+            Write-Host "❌ Unknown test type: $DetectedTestType" -ForegroundColor Red
+            exit 1
+        }
+    }
+}
+
+# ============================================================
+# Parse test results from output (supports all test types)
+# ============================================================
+function Get-TestResultFromOutput {
+    <#
+    .SYNOPSIS
+        Parses test results from a log file. Supports dotnet test, BuildAndRunHostApp,
+        and device test (xharness) output formats.
+    .DESCRIPTION
+        When TestFilter is provided and the log contains device test output with
+        [PASS]/[FAIL] markers, checks only whether the specific filtered test(s)
+        passed — ignoring unrelated test failures.
+    .OUTPUTS
+        Hashtable with keys: Passed (bool), Total, PassCount (alias: Passed count),
+        FailCount (alias: Failed count), Skipped, Error, FailureReason
+    #>
+    param(
+        [string]$LogFile,
+        [string]$TestFilter
+    )
+
+    if (-not (Test-Path $LogFile)) {
+        return @{ Passed = $false; Error = "Test output log not found: $LogFile"; Total = 0; Failed = 0; Skipped = 0 }
+    }
+
+    $content = Get-Content $LogFile -Raw
+
+    # Check for build failures first (before any test results)
+    if ($content -match "Build FAILED" -or $content -match "Build failed with exit code" -or $content -match "error MSB\d+" -or $content -match "error CS\d+") {
+        return @{ Passed = $false; Error = "Build failed before tests could run"; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
+    }
+
+    # --- Device test output: [PASS]/[FAIL] markers from xharness ---
+    # When TestFilter is specified and the log contains device test markers,
+    # check only the filtered test results. Device tests run ALL tests regardless
+    # of filter, so unrelated failures must be ignored.
+    if ($TestFilter -and $content -match '\[PASS\]|\[FAIL\]') {
+        $filterNames = $TestFilter -split '\|'
+        $passedTests = @()
+        $failedTests = @()
+
+        foreach ($name in $filterNames) {
+            $name = $name.Trim()
+            if (-not $name) { continue }
+            # Match lines like: [PASS] Share_MultipleFilesIntent_HasClipData
+            #                    [FAIL] Share_MultipleFilesIntent_HasClipData
+            if ($content -match "\[PASS\]\s+$([regex]::Escape($name))\b") {
+                $passedTests += $name
+            }
+            elseif ($content -match "\[FAIL\]\s+$([regex]::Escape($name))\b") {
+                $failedTests += $name
+            }
+        }
+
+        $totalFound = $passedTests.Count + $failedTests.Count
+        if ($totalFound -gt 0) {
+            if ($failedTests.Count -gt 0) {
+                return @{
+                    Passed = $false
+                    FailCount = $failedTests.Count
+                    Failed = $failedTests.Count
+                    PassCount = $passedTests.Count
+                    Total = $totalFound
+                    Skipped = 0
+                    FailureReason = "Filtered test(s) failed: $($failedTests -join ', ')"
+                }
+            }
+            return @{
+                Passed = $true
+                PassCount = $passedTests.Count
+                Failed = 0
+                FailCount = 0
+                Total = $totalFound
+                Skipped = 0
+            }
+        }
+        # Filter specified but tests not found in output — fall through to general parsing
+    }
+
+    # --- dotnet test output ---
+    # Check for "Test Run Failed" (dotnet test)
+    if ($content -match "Test Run Failed") {
+        $failCount = 0
+        $passCount = 0
+        $skipped = 0
+        if ($content -match "^\s+Failed:\s*(\d+)") { $failCount = [int]$matches[1] }
+        elseif ($content -match "Failed:\s*(\d+)") { $failCount = [int]$matches[1] }
+        if ($content -match "^\s+Passed:\s*(\d+)") { $passCount = [int]$matches[1] }
+        if ($content -match "^\s+Skipped:\s*(\d+)") { $skipped = [int]$matches[1] }
+        return @{ Passed = $false; FailCount = $failCount; PassCount = $passCount; Failed = $failCount; Total = $failCount + $passCount + $skipped; Skipped = $skipped }
+    }
+
+    # Check for "Test Run Successful" (dotnet test)
+    if ($content -match "Test Run Successful") {
+        $passCount = 0
+        $skipped = 0
+        if ($content -match "^\s+Passed:\s*(\d+)") { $passCount = [int]$matches[1] }
+        elseif ($content -match "Total tests:\s*(\d+)") { $passCount = [int]$matches[1] }
+        if ($content -match "^\s+Skipped:\s*(\d+)") { $skipped = [int]$matches[1] }
+        return @{ Passed = $true; PassCount = $passCount; Failed = 0; Skipped = $skipped; Total = $passCount + $skipped }
+    }
+
+    # Check for failures first - but only if count > 0
+    if ($content -match "Failed:\s*(\d+)") {
+        $failCount = [int]$matches[1]
+        if ($failCount -gt 0) {
+            return @{ Passed = $false; FailCount = $failCount; Failed = $failCount; PassCount = 0; Total = $failCount; Skipped = 0 }
+        }
+    }
+
+    # Check for passes
+    if ($content -match "Passed:\s*(\d+)") {
+        $passCount = [int]$matches[1]
+        if ($passCount -gt 0) {
+            return @{ Passed = $true; PassCount = $passCount; Failed = 0; Total = $passCount; Skipped = 0 }
+        }
+    }
+
+    return @{ Passed = $false; Error = "Could not parse test results"; Total = 0; Failed = 0; Skipped = 0 }
+}
+
+
+# ============================================================
+# Auto-detect tests from changed files using shared detection
+# ============================================================
+function Get-AutoDetectedTests {
+    <#
+    .SYNOPSIS
+        Detects all tests in the current diff using the shared Detect-TestsInDiff.ps1 script.
+    .OUTPUTS
+        Array of test group hashtables from Detect-TestsInDiff.ps1
+    #>
+    param([string]$MergeBase)
+
+    $params = @{}
+
+    # Prefer git diff from merge-base (works locally and with PRs)
+    if ($MergeBase) {
+        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+        if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+            $changedFiles = git diff --name-only 2>$null
+            if (-not $changedFiles -or $changedFiles.Count -eq 0) {
+                $changedFiles = git diff --cached --name-only 2>$null
+            }
+        }
+        if ($changedFiles) {
+            $params.ChangedFiles = $changedFiles
+        }
+    }
+
+    # Fall back to PR number if no changed files from git diff
+    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber) {
+        $params.PRNumber = $PRNumber
+    }
+
+    $results = & $DetectTestsScript @params 6>$null
+    return $results
+}
+
+# Keep the old function for backward compatibility but delegate to new detection
 function Get-AutoDetectedTestFilter {
     param([string]$MergeBase)
 
-    $changedFiles = @()
-    if ($MergeBase) {
-        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
-    }
-
-    # If no merge-base, use git status to find unstaged/staged files
-    if (-not $changedFiles -or $changedFiles.Count -eq 0) {
-        $changedFiles = git diff --name-only 2>$null
-        if (-not $changedFiles -or $changedFiles.Count -eq 0) {
-            $changedFiles = git diff --cached --name-only 2>$null
-        }
-    }
-
-    # Find test files (files in test directories that are .cs files)
-    $testFiles = @()
-    foreach ($file in $changedFiles) {
-        if ($file -match "TestCases\.(Shared\.Tests|HostApp).*\.cs$" -and $file -notmatch "^_") {
-            $testFiles += $file
-        }
-    }
-
-    if ($testFiles.Count -eq 0) {
+    $tests = Get-AutoDetectedTests -MergeBase $MergeBase
+    if (-not $tests -or $tests.Count -eq 0) {
         return $null
     }
 
-    # Extract class names from test files
-    $testClassNames = @()
-    foreach ($file in $testFiles) {
-        if ($file -match "TestCases\.Shared\.Tests.*\.cs$") {
-            $fullPath = Join-Path $RepoRoot $file
-            if (Test-Path $fullPath) {
-                $content = Get-Content $fullPath -Raw
-                if ($content -match "public\s+(partial\s+)?class\s+(\w+)") {
-                    $className = $matches[2]
-                    if ($className -notmatch "^_" -and $testClassNames -notcontains $className) {
-                        $testClassNames += $className
-                    }
-                }
-            }
-        }
-    }
-
-    # Fallback: use file names without extension
-    if ($testClassNames.Count -eq 0) {
-        foreach ($file in $testFiles) {
-            $fileName = [System.IO.Path]::GetFileNameWithoutExtension($file)
-            if ($fileName -notmatch "^_" -and $testClassNames -notcontains $fileName) {
-                $testClassNames += $fileName
-            }
-        }
-    }
-
-    if ($testClassNames.Count -eq 0) {
-        return $null
-    }
-
+    # Return the first test's info for single-test backward compatibility
+    $first = $tests[0]
     return @{
-        Filter = if ($testClassNames.Count -eq 1) { $testClassNames[0] } else { $testClassNames -join "|" }
-        ClassNames = $testClassNames
+        Filter = $first.Filter
+        ClassNames = @($first.TestName)
+        TestType = $first.Type
+        Project = $first.Project
+        ProjectPath = $first.ProjectPath
+        AllTests = $tests
     }
 }
 
@@ -337,24 +772,36 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
 
-    # Auto-detect test filter if not provided
+    # Auto-detect tests if filter not provided
+    $AllDetectedTests = @()
+
     if (-not $TestFilter) {
         Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
         $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
 
         if (-not $filterResult) {
             Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
-            Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+            Write-Host "   Searched for: UI tests, unit tests, XAML tests, device tests" -ForegroundColor Yellow
             Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
             exit 1
         }
 
-        $TestFilter = $filterResult.Filter
-        Write-Host "✅ Auto-detected $($filterResult.ClassNames.Count) test class(es):" -ForegroundColor Green
-        foreach ($name in $filterResult.ClassNames) {
-            Write-Host "   - $name" -ForegroundColor White
+        $AllDetectedTests = @($filterResult.AllTests)
+
+        Write-Host "✅ Auto-detected $($AllDetectedTests.Count) test(s):" -ForegroundColor Green
+        foreach ($t in $AllDetectedTests) {
+            $icon = switch ($t.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
+            Write-Host "   $icon [$($t.Type)] $($t.TestName) (filter: $($t.Filter))" -ForegroundColor White
         }
-        Write-Host "   Filter: $TestFilter" -ForegroundColor Cyan
+    } else {
+        $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+        $AllDetectedTests = @(@{
+            Type = $effectiveType
+            TestName = $TestFilter
+            Filter = $TestFilter
+            Project = $null
+            ProjectPath = $null
+        })
     }
 
     # Create output directory
@@ -362,28 +809,44 @@ if ($DetectedFixFiles.Count -eq 0) {
     New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
     $ValidationLog = Join-Path $OutputPath "verification-log.txt"
-    $TestLog = Join-Path $OutputPath "test-failure-verification.log"
 
     # Initialize log
     "" | Set-Content $ValidationLog
     "=========================================" | Add-Content $ValidationLog
     "Verify Tests Fail (Failure Only Mode)" | Add-Content $ValidationLog
     "=========================================" | Add-Content $ValidationLog
+    "Tests: $($AllDetectedTests.Count)" | Add-Content $ValidationLog
     "Platform: $Platform" | Add-Content $ValidationLog
-    "TestFilter: $TestFilter" | Add-Content $ValidationLog
     "MergeBase: $MergeBase" | Add-Content $ValidationLog
     "" | Add-Content $ValidationLog
 
-    Write-Host "🧪 Running tests (expecting them to FAIL)..." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "🧪 Running $($AllDetectedTests.Count) test(s) (expecting them to FAIL)..." -ForegroundColor Cyan
     Write-Host ""
 
-    # Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
-    $buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-    & $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $TestLog
+    # Run ALL detected tests
+    $allResults = @()
+    $testIndex = 0
+    foreach ($testEntry in $AllDetectedTests) {
+        $testIndex++
+        $icon = switch ($testEntry.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
+        Write-Host "─────────────────────────────────────────────────" -ForegroundColor DarkGray
+        Write-Host "$icon Test $testIndex/$($AllDetectedTests.Count): [$($testEntry.Type)] $($testEntry.TestName)" -ForegroundColor Cyan
 
-    # Parse test results using shared function
-    $testOutputLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
-    $testResult = Get-TestResultFromLog -LogFile $testOutputLog
+        $TestLog = Join-Path $OutputPath "test-failure-$($testEntry.TestName).log"
+
+        $testOutputLog = Invoke-TestRun `
+            -DetectedTestType $testEntry.Type `
+            -Filter $testEntry.Filter `
+            -DetectedProject $testEntry.Project `
+            -DetectedProjectPath $testEntry.ProjectPath `
+            -LogFile $TestLog
+
+        $testResult = Get-TestResultFromOutput -LogFile $testOutputLog
+        $testResult.TestName = $testEntry.TestName
+        $testResult.TestType = $testEntry.Type
+        $allResults += $testResult
+    }
 
     # Evaluate results
     Write-Host ""
@@ -392,47 +855,46 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "=========================================="
     Write-Host ""
 
-    if ($testResult.Error) {
+    $allFailed = ($allResults | Where-Object { $_.Passed }).Count -eq 0
+    $hasErrors = ($allResults | Where-Object { $_.Error }).Count -gt 0
+
+    if ($hasErrors) {
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
         Write-Host "║              ERROR PARSING TEST RESULTS                   ║" -ForegroundColor Red
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-        Write-Host "║  $($testResult.Error.PadRight(57)) ║" -ForegroundColor Red
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        foreach ($r in ($allResults | Where-Object { $_.Error })) {
+            Write-Host "  [$($r.TestType)] $($r.TestName): $($r.Error)" -ForegroundColor Red
+        }
         exit 1
     }
 
-    if (-not $testResult.Passed) {
-        # Tests FAILED - this is what we want!
+    # Show per-test results
+    foreach ($r in $allResults) {
+        $icon = switch ($r.TestType) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
+        if (-not $r.Passed) {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+        } else {
+            Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+        }
+    }
+    Write-Host ""
+
+    if ($allFailed) {
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
         Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
         Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-        Write-Host "║  Tests FAILED as expected!                                ║" -ForegroundColor Green
-        Write-Host "║                                                           ║" -ForegroundColor Green
+        Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
         Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
-        Write-Host "║  You can now proceed to write the fix.                    ║" -ForegroundColor Green
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "Failed tests: $($testResult.FailCount)" -ForegroundColor Yellow
         exit 0
     } else {
-        # Tests PASSED - this is bad!
+        $passedCount = ($allResults | Where-Object { $_.Passed }).Count
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
         Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
         Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-        Write-Host "║  Tests PASSED but they should FAIL!                       ║" -ForegroundColor Red
-        Write-Host "║                                                           ║" -ForegroundColor Red
-        Write-Host "║  This means your tests don't actually reproduce the bug.  ║" -ForegroundColor Red
-        Write-Host "║                                                           ║" -ForegroundColor Red
-        Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red
-        Write-Host "║  1. Test scenario doesn't match the issue description     ║" -ForegroundColor Red
-        Write-Host "║  2. Test assertions are wrong or too lenient              ║" -ForegroundColor Red
-        Write-Host "║  3. The bug was already fixed in this branch              ║" -ForegroundColor Red
-        Write-Host "║  4. The bug only happens in specific conditions           ║" -ForegroundColor Red
-        Write-Host "║                                                           ║" -ForegroundColor Red
-        Write-Host "║  Go back and revise your tests!                           ║" -ForegroundColor Red
+        Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
+        Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Passed tests: $($testResult.PassCount)" -ForegroundColor Yellow
         exit 1
     }
 }
@@ -459,23 +921,42 @@ foreach ($file in $FixFiles) {
 }
 
 # Auto-detect test filter from test files if not provided
+$AllDetectedTests = @()
+
 if (-not $TestFilter) {
     Write-Host "🔍 Auto-detecting test filter from changed test files..." -ForegroundColor Cyan
     $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
 
     if (-not $filterResult) {
         Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
-        Write-Host "   Looking for files matching: TestCases.(Shared.Tests|HostApp)/*.cs" -ForegroundColor Yellow
+        Write-Host "   Searched for: UI tests, unit tests, XAML tests, device tests" -ForegroundColor Yellow
         Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
         exit 1
     }
 
-    $TestFilter = $filterResult.Filter
-    Write-Host "✅ Auto-detected $($filterResult.ClassNames.Count) test class(es):" -ForegroundColor Green
-    foreach ($name in $filterResult.ClassNames) {
-        Write-Host "   - $name" -ForegroundColor White
+    $AllDetectedTests = @($filterResult.AllTests)
+
+    Write-Host "✅ Auto-detected $($AllDetectedTests.Count) test(s):" -ForegroundColor Green
+    foreach ($t in $AllDetectedTests) {
+        $icon = switch ($t.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
+        Write-Host "   $icon [$($t.Type)] $($t.TestName) (filter: $($t.Filter))" -ForegroundColor White
     }
-    Write-Host "   Filter: $TestFilter" -ForegroundColor Cyan
+} else {
+    # Explicit filter provided — use single test entry with given/detected type
+    $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+    $AllDetectedTests = @(@{
+        Type = $effectiveType
+        TestName = $TestFilter
+        Filter = $TestFilter
+        Project = $null
+        ProjectPath = $null
+        Runner = switch ($effectiveType) {
+            "UITest" { "BuildAndRunHostApp" }
+            "DeviceTest" { "Run-DeviceTests" }
+            default { "dotnet-test" }
+        }
+        NeedsPlatform = ($effectiveType -in @("UITest", "DeviceTest"))
+    })
 }
 
 # Create output directory
@@ -504,139 +985,68 @@ function Write-MarkdownReport {
         [hashtable]$WithFixResult
     )
     
-    $reportDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $status = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
-    $statusSymbol = if ($VerificationPassed) { "✅" } else { "❌" }
-    
-    $markdown = @"
-### Test Verification Report
+    $woActual = if ($FailedWithoutFix) { "FAIL" } else { "PASS" }
+    $woResult = if ($FailedWithoutFix) { "✅" } else { "❌" }
+    $wActual = if ($PassedWithFix) { "PASS" } else { "FAIL" }
+    $wResult = if ($PassedWithFix) { "✅" } else { "❌" }
+    $mergeBaseShort = if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { "$MergeBase" }
 
-**Date:** $reportDate | **Platform:** $($Platform.ToUpper()) | **Status:** $status
+    $lines = @()
+    $lines += "### Gate Result: $status"
+    $lines += ""
+    $lines += "**Platform:** $($Platform.ToUpper())"
+    $lines += ""
+    $lines += "#### Tests Detected"
+    $lines += ""
+    $lines += "| # | Type | Test Name | Filter |"
+    $lines += "|---|------|-----------|--------|"
+    $i = 0
+    foreach ($t in $AllDetectedTests) {
+        $i++
+        $lines += "| $i | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |"
+    }
+    $lines += ""
+    $lines += "#### Verification"
+    $lines += ""
+    $lines += "| Step | Expected | Actual | Result |"
+    $lines += "|------|----------|--------|--------|"
+    $lines += "| Tests WITHOUT fix | FAIL | $woActual | $woResult |"
+    $lines += "| Tests WITH fix | PASS | $wActual | $wResult |"
+    $lines += ""
+    $lines += "#### Fix Files Reverted"
+    $lines += ""
+    foreach ($f in $RevertableFiles) {
+        $lines += "- ``$f``"
+    }
+    if ($NewFiles.Count -gt 0) {
+        $lines += ""
+        $lines += "#### New Files (Not Reverted)"
+        $lines += ""
+        foreach ($f in $NewFiles) {
+            $lines += "- ``$f``"
+        }
+    }
+    $lines += ""
+    $lines += "---"
+    $lines += ""
+    $lines += "#### Per-Test Results"
+    $lines += ""
+    $lines += "| Type | Test | Without Fix | With Fix |"
+    $lines += "|------|------|-------------|----------|"
+    foreach ($t in $AllDetectedTests) {
+        $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
+        $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
+        $woS = if ($wo -and -not $wo.Passed) { "FAIL ✅" } else { "PASS ❌" }
+        $wS = if ($w -and $w.Passed) { "PASS ✅" } else { "FAIL ❌" }
+        $lines += "| $($t.Type) | $($t.TestName) | $woS | $wS |"
+    }
+    $lines += ""
+    $lines += "---"
+    $lines += ""
+    $lines += "**Base Branch:** $BaseBranchName | **Merge Base:** $mergeBaseShort"
 
-#### Summary
-
-| Check | Expected | Actual | Result |
-|-------|----------|--------|--------|
-| Tests WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
-| Tests WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
-
-#### $statusSymbol Final Verdict
-
-$(if ($VerificationPassed) {
-    @"
-**VERIFICATION PASSED** ✅
-
-The tests correctly detect the issue:
-- ✅ Tests **FAIL** without the fix (as expected - bug is present)
-- ✅ Tests **PASS** with the fix (as expected - bug is fixed)
-
-**Conclusion:** The tests properly validate the fix and catch the bug when it's present.
-"@
-} else {
-    @"
-**VERIFICATION FAILED** ❌
-
-$(if (-not $FailedWithoutFix) {
-    "❌ **Tests PASSED without fix** (should have failed)`n   - The tests don't actually detect the bug`n   - Tests may not be testing the right behavior`n"
-})$(if (-not $PassedWithFix) {
-    "❌ **Tests FAILED with fix** (should have passed)`n   - The fix doesn't resolve the issue`n   - Tests may be broken or testing something else`n"
-})
-**Possible causes:**
-1. Wrong fix files specified
-2. Tests don't actually test the fixed behavior  
-3. The issue was already fixed in base branch
-4. Build caching - try clean rebuild
-5. Test needs different setup or conditions
-"@
-})
-
----
-
-#### Configuration
-
-**Platform:** $Platform
-**Test Filter:** $TestFilter
-**Base Branch:** $BaseBranchName
-**Merge Base:** $(if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { $MergeBase })
-
-### Fix Files
-
-$(($RevertableFiles | ForEach-Object { "- ``$_``" }) -join "`n")
-
-$(if ($NewFiles.Count -gt 0) {
-@"
-
-### New Files (Not Reverted)
-
-$(($NewFiles | ForEach-Object { "- ``$_``" }) -join "`n")
-"@
-})
-
----
-
-#### Test Results Details
-
-### Test Run 1: WITHOUT Fix
-
-**Expected:** Tests should FAIL (bug is present)  
-**Actual:** Tests $(if ($FailedWithoutFix) { "FAILED" } else { "PASSED" }) $(if ($FailedWithoutFix) { "✅" } else { "❌" })
-
-**Test Summary:**
-- Total: $($WithoutFixResult.Total)
-- Passed: $($WithoutFixResult.Passed)
-- Failed: $($WithoutFixResult.Failed)
-- Skipped: $($WithoutFixResult.Skipped)
-
-$(if ($WithoutFixResult.FailureReason) {
-    "**Failure Reason:** ``$($WithoutFixResult.FailureReason)``"
-})
-
-<details>
-<summary>View full test output (without fix)</summary>
-
-``````
-$(Get-Content $WithoutFixLog -Raw)
-``````
-
-</details>
-
----
-
-### Test Run 2: WITH Fix
-
-**Expected:** Tests should PASS (bug is fixed)  
-**Actual:** Tests $(if ($PassedWithFix) { "PASSED" } else { "FAILED" }) $(if ($PassedWithFix) { "✅" } else { "❌" })
-
-**Test Summary:**
-- Total: $($WithFixResult.Total)
-- Passed: $($WithFixResult.Passed)
-- Failed: $($WithFixResult.Failed)
-- Skipped: $($WithFixResult.Skipped)
-
-$(if ($WithFixResult.FailureReason) {
-    "**Failure Reason:** ``$($WithFixResult.FailureReason)``"
-})
-
-<details>
-<summary>View full test output (with fix)</summary>
-
-``````
-$(Get-Content $WithFixLog -Raw)
-``````
-
-</details>
-
----
-
-#### Logs
-
-- Full verification log: ``$ValidationLog``
-- Test output without fix: ``$WithoutFixLog``
-- Test output with fix: ``$WithFixLog``
-- UI test logs: ``CustomAgentLogsTmp/UITests/``
-"@
-
-    $markdown | Set-Content -Path $MarkdownReport -Encoding UTF8
+    ($lines -join "`n") | Set-Content -Path $MarkdownReport -Encoding UTF8
     Write-Host ""
     Write-Host "📄 Markdown report saved to: $MarkdownReport" -ForegroundColor Cyan
 }
@@ -648,8 +1058,11 @@ $(Get-Content $WithFixLog -Raw)
 Write-Log "=========================================="
 Write-Log "Verify Tests Fail Without Fix"
 Write-Log "=========================================="
+Write-Log "Tests detected: $($AllDetectedTests.Count)"
+foreach ($t in $AllDetectedTests) {
+    Write-Log "  - [$($t.Type)] $($t.TestName) (filter: $($t.Filter))"
+}
 Write-Log "Platform: $Platform"
-Write-Log "TestFilter: $TestFilter"
 Write-Log "FixFiles: $($FixFiles -join ', ')"
 Write-Log "BaseBranch: $BaseBranchName"
 Write-Log "MergeBase: $MergeBase"
@@ -741,17 +1154,53 @@ foreach ($file in $RevertableFiles) {
 
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
 
-# Step 2: Run tests WITHOUT fix
+# Step 2: Run ALL tests WITHOUT fix
 Write-Log ""
 Write-Log "=========================================="
 Write-Log "STEP 2: Running tests WITHOUT fix (should FAIL)"
 Write-Log "=========================================="
 
-# Use shared BuildAndRunHostApp.ps1 infrastructure with -Rebuild to ensure clean builds
-$buildScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithoutFixLog
+$withoutFixResults = @()
+$testIndex = 0
+foreach ($testEntry in $AllDetectedTests) {
+    $testIndex++
+    $icon = switch ($testEntry.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
+    Write-Log ""
+    Write-Log "--- Test $testIndex/$($AllDetectedTests.Count): $icon [$($testEntry.Type)] $($testEntry.TestName) ---"
 
-$withoutFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+    $testLogFile = Join-Path $OutputPath "test-without-fix-$($testEntry.TestName).log"
+
+    $testOutputLog = Invoke-TestRun `
+        -DetectedTestType $testEntry.Type `
+        -Filter $testEntry.Filter `
+        -DetectedProject $testEntry.Project `
+        -DetectedProjectPath $testEntry.ProjectPath `
+        -LogFile $testLogFile
+
+    $result = Get-TestResultFromOutput -LogFile $testOutputLog
+    $result.TestName = $testEntry.TestName
+    $result.TestType = $testEntry.Type
+    $withoutFixResults += $result
+
+    if (-not $result.Passed) {
+        Write-Log "  ✅ $($testEntry.TestName) FAILED without fix (expected)"
+    } else {
+        Write-Log "  ❌ $($testEntry.TestName) PASSED without fix (unexpected!)"
+    }
+}
+
+# Combine into a single summary for backward compatibility
+$withoutFixResult = @{
+    Passed = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
+    PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
+    FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
+    Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
+    Skipped = ($withoutFixResults | Measure-Object -Property Skipped -Sum).Sum
+    Total = ($withoutFixResults | Measure-Object -Property Total -Sum).Sum
+}
+
+# Save combined log
+$withoutFixResults | ForEach-Object { "[$($_.TestType)] $($_.TestName): Passed=$($_.Passed) Failed=$($_.Failed)" } | Out-File $WithoutFixLog -Append
 
 # Step 3: Restore fix files from current branch HEAD
 Write-Log ""
@@ -771,15 +1220,52 @@ foreach ($file in $RevertableFiles) {
 
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
 
-# Step 4: Run tests WITH fix
+# Step 4: Run ALL tests WITH fix
 Write-Log ""
 Write-Log "=========================================="
 Write-Log "STEP 4: Running tests WITH fix (should PASS)"
 Write-Log "=========================================="
 
-& $buildScript -Platform $Platform -TestFilter $TestFilter -Rebuild 2>&1 | Tee-Object -FilePath $WithFixLog
+$withFixResults = @()
+$testIndex = 0
+foreach ($testEntry in $AllDetectedTests) {
+    $testIndex++
+    $icon = switch ($testEntry.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
+    Write-Log ""
+    Write-Log "--- Test $testIndex/$($AllDetectedTests.Count): $icon [$($testEntry.Type)] $($testEntry.TestName) ---"
 
-$withFixResult = Get-TestResultFromLog -LogFile (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log")
+    $testLogFile = Join-Path $OutputPath "test-with-fix-$($testEntry.TestName).log"
+
+    $testOutputLog = Invoke-TestRun `
+        -DetectedTestType $testEntry.Type `
+        -Filter $testEntry.Filter `
+        -DetectedProject $testEntry.Project `
+        -DetectedProjectPath $testEntry.ProjectPath `
+        -LogFile $testLogFile
+
+    $result = Get-TestResultFromOutput -LogFile $testOutputLog
+    $result.TestName = $testEntry.TestName
+    $result.TestType = $testEntry.Type
+    $withFixResults += $result
+
+    if ($result.Passed) {
+        Write-Log "  ✅ $($testEntry.TestName) PASSED with fix (expected)"
+    } else {
+        Write-Log "  ❌ $($testEntry.TestName) FAILED with fix (unexpected!)"
+    }
+}
+
+# Combine into a single summary for backward compatibility
+$withFixResult = @{
+    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
+    FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
+    Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
+    Skipped = ($withFixResults | Measure-Object -Property Skipped -Sum).Sum
+    Total = ($withFixResults | Measure-Object -Property Total -Sum).Sum
+}
+
+$withFixResults | ForEach-Object { "[$($_.TestType)] $($_.TestName): Passed=$($_.Passed) Failed=$($_.Failed)" } | Out-File $WithFixLog -Append
 
 # Step 5: Evaluate results
 Write-Log ""
@@ -788,29 +1274,41 @@ Write-Log "VERIFICATION RESULTS"
 Write-Log "=========================================="
 
 $verificationPassed = $false
-$failedWithoutFix = -not $withoutFixResult.Passed
-$passedWithFix = $withFixResult.Passed
+# "Without fix" should FAIL → all tests should NOT pass
+$failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
+# "With fix" should PASS → all tests should pass
+$passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+
+Write-Log ""
+Write-Log "Per-test results:"
+foreach ($t in $AllDetectedTests) {
+    $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
+    $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
+    $woStatus = if ($woResult -and -not $woResult.Passed) { "FAIL ✅" } else { "PASS ❌" }
+    $wStatus = if ($wResult -and $wResult.Passed) { "PASS ✅" } else { "FAIL ❌" }
+    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$woStatus, with fix=$wStatus"
+}
 
 if ($failedWithoutFix) {
-    Write-Log "✅ Tests FAILED without fix (expected - issue detected)"
+    Write-Log ""
+    Write-Log "✅ All tests FAILED without fix (expected - issues detected)"
 } else {
-    Write-Log "❌ Tests PASSED without fix (unexpected!)"
-    Write-Log "   The tests don't detect the issue."
+    Write-Log ""
+    Write-Log "❌ Some tests PASSED without fix (unexpected!)"
 }
 
 if ($passedWithFix) {
-    Write-Log "✅ Tests PASSED with fix (expected - fix works)"
+    Write-Log "✅ All tests PASSED with fix (expected - fixes work)"
 } else {
-    Write-Log "❌ Tests FAILED with fix (unexpected!)"
-    Write-Log "   The fix doesn't resolve the issue, or there's another problem."
+    Write-Log "❌ Some tests FAILED with fix (unexpected!)"
 }
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
 
 Write-Log ""
 Write-Log "Summary:"
-Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'FAIL ✅ (expected)' } else { 'PASS ❌ (should fail!)' })"
-Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'PASS ✅ (expected)' } else { 'FAIL ❌ (should pass!)' })"
+Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'ALL FAIL ✅ (expected)' } else { 'SOME PASS ❌ (should all fail!)' })"
+Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'ALL PASS ✅ (expected)' } else { 'SOME FAIL ❌ (should all pass!)' })"
 
 # Generate markdown report
 Write-MarkdownReport `

@@ -1,15 +1,28 @@
 ---
 name: verify-tests-fail-without-fix
-description: Verifies UI tests catch the bug. Supports two modes - verify failure only (test creation) or full verification (test + fix validation).
+description: Verifies tests catch the bug. Auto-detects test type (UI tests, device tests, unit tests) and dispatches to the appropriate runner. Supports two modes - verify failure only (test creation) or full verification (test + fix validation).
 metadata:
   author: dotnet-maui
-  version: "1.0"
+  version: "2.0"
 compatibility: Requires git, PowerShell, and .NET SDK for building and running tests.
 ---
 
 # Verify Tests Fail Without Fix
 
-Verifies UI tests actually catch the issue. Supports two workflow modes:
+Verifies tests actually catch the issue. Supports **all test types** (UI tests, unit tests, XAML tests, device tests) and two workflow modes.
+
+## Supported Test Types
+
+| Test Type | Auto-Detected From | Runner |
+|-----------|-------------------|--------|
+| **UITest** | `TestCases.Shared.Tests/`, `TestCases.HostApp/` | `BuildAndRunHostApp.ps1` |
+| **DeviceTest** | `DeviceTests/` | `Run-DeviceTests.ps1` |
+| **UnitTest** | `*.UnitTests/`, `Graphics.Tests/` | `dotnet test` |
+| **XamlUnitTest** | `Xaml.UnitTests/` | `dotnet test` |
+
+Test type is **auto-detected** from changed files. Override with `-TestType` if needed.
+
+**`-Platform` is always required.** It selects which platform to verify the fix on.
 
 ## Mode 1: Verify Failure Only (Test Creation)
 
@@ -19,11 +32,11 @@ Use when **creating tests before writing a fix**:
 - Perfect for test-first development
 
 ```bash
-# Auto-detect test filter from changed test files
+# Auto-detect test type and filter
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
 
-# With explicit test filter
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform ios -TestFilter "Issue33356"
+# Explicit test type + filter
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -TestType UnitTest -TestFilter "Maui12345"
 ```
 
 ## Mode 2: Full Verification (Fix Validation)
@@ -79,19 +92,21 @@ The script auto-detects which mode to use based on whether fix files are present
 
 **Verify Failure Only Mode (no fix files):**
 1. Fetches base branch from origin (if available)
-2. Auto-detects test classes from changed test files
-3. Runs tests (should FAIL to prove they catch the bug)
-4. **Updates PR labels** based on result
-5. Reports result
+2. Auto-detects test type from changed files (UITest, UnitTest, XamlUnitTest, DeviceTest)
+3. Auto-detects test classes from changed test files
+4. Routes to the appropriate test runner
+5. Runs tests (should FAIL to prove they catch the bug)
+6. **Updates PR labels** based on result
+7. Reports result
 
 **Full Verification Mode (fix files detected):**
 1. Fetches base branch from origin to ensure accurate diff
 2. Auto-detects fix files (non-test code) from git diff
-3. Auto-detects test classes from `TestCases.Shared.Tests/*.cs`
+3. Auto-detects test type and test classes from changed files
 4. Reverts fix files to base branch
-5. Runs tests (should FAIL without fix)
+5. Runs tests using the appropriate runner (should FAIL without fix)
 6. Restores fix files
-7. Runs tests (should PASS with fix)
+7. Runs tests using the appropriate runner (should PASS with fix)
 8. **Generates markdown reports**:
    - `CustomAgentLogsTmp/TestValidation/verification-report.md` - Full detailed report
    - `CustomAgentLogsTmp/PRState/verification-report.md` - Validate section for agent
@@ -164,6 +179,9 @@ CustomAgentLogsTmp/
 ```bash
 # Require full verification (fail if no fix files detected) - recommended
 -RequireFullVerification
+
+# Explicit test type (auto-detected if omitted)
+-TestType UnitTest    # or XamlUnitTest, DeviceTest, UITest
 
 # Explicit test filter
 -TestFilter "Issue32030|ButtonUITests"

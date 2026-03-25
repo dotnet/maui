@@ -26,13 +26,14 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
 ## Steps
 
-1. **Check if tests exist:**
+1. **Detect tests in PR** using the shared detection script:
    ```bash
-   gh pr view XXXXX --json files --jq '.files[].path' | grep -E "TestCases\.(HostApp|Shared\.Tests)"
+   pwsh .github/scripts/shared/Detect-TestsInDiff.ps1 -PRNumber XXXXX
    ```
-   If NO tests exist → inform user, suggest `write-tests-agent`. Gate is ⚠️ SKIPPED.
+   This auto-detects all test types: UI tests, device tests, unit tests, XAML tests.
+   If NO tests detected → inform user, suggest `write-tests-agent`. Gate is ⚠️ SKIPPED.
 
-2. **Select platform** — must be affected by bug AND available on host (see Platform Selection above).
+2. **Select platform** — must be affected by bug AND available on host (see table above).
 
 3. **Run verification via task agent** (MUST use task agent — never inline):
    ```
@@ -40,7 +41,6 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
    "Invoke the verify-tests-fail-without-fix skill for this PR:
    - Platform: {platform}
-   - TestFilter: 'IssueXXXXX'
    - RequireFullVerification: true
 
    Report back: Did tests FAIL without fix? Did tests PASS with fix? Final status?"
@@ -76,15 +76,29 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 mkdir -p CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/gate
 ```
 
-Write `content.md`:
+Write `content.md` with this exact structure:
+
 ```markdown
 ### Gate Result: {✅ PASSED / ❌ FAILED / ⚠️ SKIPPED}
 
 **Platform:** {platform}
-**Mode:** Full Verification
 
-- Tests FAIL without fix: {✅/❌}
-- Tests PASS with fix: {✅/❌}
+#### Tests Detected
+
+| # | Type | Test Name | Filter |
+|---|------|-----------|--------|
+| 1 | {DeviceTest/UITest/UnitTest} | {TestName} | {filter used} |
+
+#### Verification
+
+| Step | Expected | Actual | Result |
+|------|----------|--------|--------|
+| Tests WITHOUT fix | FAIL | {FAIL/PASS} | {✅/❌} |
+| Tests WITH fix | PASS | {FAIL/PASS} | {✅/❌} |
+
+#### Fix Files Reverted
+
+- `{path/to/fix/file.cs}`
 ```
 
 ---
@@ -92,5 +106,6 @@ Write `content.md`:
 ## Common Mistakes
 
 - ❌ Running inline — MUST use task agent
-- ❌ Using `BuildAndRunHostApp.ps1` — that runs ONE direction; the skill does TWO
+- ❌ Using `BuildAndRunHostApp.ps1` directly — the skill handles routing to the correct runner
 - ❌ Claiming results from a single test run — script does TWO runs automatically
+- ❌ Skipping gate because tests are device tests, not UI tests — the skill supports all test types
