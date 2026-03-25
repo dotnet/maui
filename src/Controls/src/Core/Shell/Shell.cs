@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -1180,6 +1181,10 @@ namespace Microsoft.Maui.Controls
 		Page _previousPage;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		// Preserve internal types used in the Shell MenuItem rendering pipeline.
+		// These are reached through event-driven and interface-dispatch code paths
+		// that the ILLink trimmer cannot statically trace.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
 		public Shell()
 		{
 			Toolbar = new ShellToolbar(this);
