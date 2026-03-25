@@ -5,7 +5,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -55,7 +58,9 @@ static class UpdateComponentCodeWriter
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
-		Dictionary<ElementNode, string>? newIds = null)
+		Dictionary<ElementNode, string>? newIds = null,
+		SourceProductionContext sourceProductionContext = default,
+		ProjectItem? projectItem = null)
 	{
 		if (diff.IsEmpty)
 			return null;
@@ -87,7 +92,7 @@ static class UpdateComponentCodeWriter
 
 				foreach (var propDiff in nodeDiff.PropertyChanges)
 				{
-					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType, compilation, xmlnsCache, typeCache);
+					EmitRootPropertyChange(codeWriter, propDiff, rootNodeType ?? rootType, compilation, xmlnsCache, typeCache, sourceProductionContext, projectItem);
 				}
 				codeWriter.WriteLine();
 				continue;
@@ -115,7 +120,7 @@ static class UpdateComponentCodeWriter
 
 			foreach (var propDiff in nodeDiff.PropertyChanges)
 			{
-				EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType);
+				EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			}
 
 			codeWriter.WriteLine();
@@ -386,7 +391,9 @@ static class UpdateComponentCodeWriter
 		INamedTypeSymbol rootType,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
@@ -406,7 +413,7 @@ static class UpdateComponentCodeWriter
 
 		if (propDiff.NewNode != null)
 		{
-			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType))
+			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
 			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
 			codeWriter.WriteLine("return;");
@@ -435,7 +442,9 @@ static class UpdateComponentCodeWriter
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
-		INamedTypeSymbol rootType)
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
@@ -461,7 +470,7 @@ static class UpdateComponentCodeWriter
 		// Kind == Set
 		if (propDiff.NewNode != null)
 		{
-			if (nodeType != null && TryEmitMarkupNodeChange(codeWriter, propDiff, nodeType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType))
+			if (nodeType != null && TryEmitMarkupNodeChange(codeWriter, propDiff, nodeType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
 			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
 			codeWriter.WriteLine("return;");
@@ -498,7 +507,9 @@ static class UpdateComponentCodeWriter
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
-		INamedTypeSymbol rootType)
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
 		if (propDiff.NewNode is not MarkupNode markupNode)
 			return false;
@@ -506,72 +517,199 @@ static class UpdateComponentCodeWriter
 		var markupString = markupNode.MarkupString;
 		var propName = propDiff.PropertyName.LocalName;
 
-		// Try {DynamicResource Key}
-		if (TryParseDynamicResource(markupString, out var drKey))
-			return TryEmitDynamicResource(codeWriter, drKey, propName, ownerType, targetAccessor, isRoot);
+		// Use ExpandMarkupsVisitor to convert the MarkupNode, reusing the same
+		// classification and parsing logic as InitializeComponent.
+		var expandedNode = ExpandMarkupForUC(markupNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
-		// Try {StaticResource Key}
-		if (TryParseStaticResource(markupString, out var srKey))
-			return TryEmitStaticResource(codeWriter, srKey, propName, ownerType, targetAccessor, isRoot);
-
-		// Try {Binding Path, ...}
-		if (TryParseBinding(markupString, out var bindingProps))
-			return TryEmitBinding(codeWriter, bindingProps, propName, ownerType, targetAccessor, isRoot);
-
-		// Everything else: try as C# expression.
-		// Explicit expressions ({= ...}) and implicit expressions (operators, method calls, member access)
-		// are detected by IsExpression. Bare identifiers like {FirstName} are not — but if we have
-		// an x:DataType and the identifier is NOT a known markup extension, treat as expression.
-		if (IsExpressionForUC(markupString))
+		if (expandedNode is ValueNode valueNode && valueNode.Value is Expression)
+		{
+			// C# expression — generate SetBinding with TypedBinding
 			return TryEmitExpressionBinding(codeWriter, markupString, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache, rootType, markupNode);
+		}
+
+		if (expandedNode is ElementNode elementNode)
+		{
+			// Markup extension (Binding, StaticResource, DynamicResource, etc.)
+			// Resolve the extension type and call the appropriate KnownMarkups handler
+			return TryEmitExpandedMarkupExtension(codeWriter, elementNode, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache);
+		}
+
+		// Fallback: bare string value from escape sequence {}{...}
+		if (expandedNode is ValueNode plainValue && plainValue.Value is string sv)
+		{
+			var bpFieldName = $"{propName}Property";
+			var bpField = FindStaticField(ownerType, bpFieldName);
+			if (bpField != null)
+			{
+				var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+				codeWriter.WriteLine($"{target}.SetValue({bpField.ToFQDisplayString()}, \"{EscapeString(sv)}\");");
+				return true;
+			}
+		}
 
 		return false;
 	}
 
 	/// <summary>
-	/// Determines if a markup string should be treated as a C# expression in the UC context.
-	/// More permissive than <c>CSharpExpressionHelpers.IsExpression</c> because bare identifiers
-	/// like <c>{FirstName}</c> are treated as expressions when not matching a known markup extension.
+	/// Expands a <see cref="MarkupNode"/> using the same logic as <see cref="ExpandMarkupsVisitor"/>,
+	/// converting it to a <see cref="ValueNode"/> (for C# expressions) or <see cref="ElementNode"/>
+	/// (for markup extensions like Binding, StaticResource, etc.).
 	/// </summary>
-	static bool IsExpressionForUC(string markupString)
+	static INode? ExpandMarkupForUC(
+		MarkupNode markupNode,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
-		// Explicit expressions: {= expr}
-		if (CSharpExpressionHelpers.IsExplicitExpression(markupString))
-			return true;
+		var markupString = markupNode.MarkupString;
 
-		var trimmed = markupString.Trim();
-		if (trimmed.Length < 3 || trimmed[0] != '{' || trimmed[trimmed.Length - 1] != '}')
-			return false;
+		// Build a minimal SourceGenContext for ExpandMarkupsVisitor's parser
+		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		var ctx = new SourceGenContext(
+			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
 
-		// Escape sequence {}{...}
-		if (trimmed.StartsWith("{}", StringComparison.Ordinal))
-			return false;
+		// Classification: expression or markup extension?
+		bool TryResolveMarkup(string name)
+		{
+			var ns = markupNode.NamespaceResolver.LookupNamespace("") ?? "";
+			var xmlTypeExt = new XmlType(ns, name + "Extension", null);
+			if (xmlTypeExt.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out _))
+				return true;
+			var xmlType = new XmlType(ns, name, null);
+			return xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out _);
+		}
 
-		// If it starts with a known markup extension name, it's not an expression
-		// (DynamicResource/StaticResource already handled above, but check others too)
-		if (StartsWithKnownMarkupExtension(trimmed))
-			return false;
+		var classification = CSharpExpressionHelpers.ClassifyExpression(
+			markupString,
+			TryResolveMarkup,
+			_ => true); // treat bare identifiers as properties for UC
 
-		// Everything else: treat as expression (bare identifier, method call, operator, etc.)
-		return true;
+		if (classification.IsExpression)
+		{
+			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+			return new ValueNode(new Expression(expressionCode), markupNode.NamespaceResolver, markupNode.LineNumber, markupNode.LinePosition);
+		}
+
+		// Escape sequence: {}{...} → plain string
+		if (markupString.StartsWith("{}", StringComparison.Ordinal))
+			return new ValueNode(markupString.Substring(2), null, markupNode.LineNumber, markupNode.LinePosition);
+
+		// Parse as markup extension using the same parser as ExpandMarkupsVisitor
+		var remaining = markupString;
+		if (!MarkupExpressionParser.MatchMarkup(out var match, remaining, out var len))
+			return null;
+
+		remaining = remaining.Substring(len).TrimStart();
+
+		// Build service provider with same services ExpandMarkupsVisitor uses
+		var serviceProvider = new XamlServiceProvider(markupNode, ctx);
+		serviceProvider.Add(typeof(IXmlNamespaceResolver), markupNode.NamespaceResolver);
+		serviceProvider.Add(typeof(ExpandMarkupsVisitor.SGContextProvider), new ExpandMarkupsVisitor.SGContextProvider(ctx));
+		serviceProvider.Add(typeof(IXmlLineInfoProvider), new UCXmlLineInfoProvider(markupNode));
+
+		try
+		{
+			var parser = new ExpandMarkupsVisitor.MarkupExpansionParser();
+			return parser.Parse(match!, ref remaining, serviceProvider);
+		}
+		catch
+		{
+			return null;
+		}
 	}
 
-	static bool StartsWithKnownMarkupExtension(string trimmed)
+	/// <summary>
+	/// Emits code for an expanded markup extension <see cref="ElementNode"/>.
+	/// Dispatches to the appropriate emitter based on the extension type name.
+	/// </summary>
+	static bool TryEmitExpandedMarkupExtension(
+		IndentedTextWriter codeWriter,
+		ElementNode elementNode,
+		string propName,
+		INamedTypeSymbol ownerType,
+		string targetAccessor,
+		bool isRoot,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
-		int start = 1;
-		while (start < trimmed.Length && char.IsWhiteSpace(trimmed[start]))
-			start++;
-		int end = start;
-		while (end < trimmed.Length && (char.IsLetterOrDigit(trimmed[end]) || trimmed[end] == ':'))
-			end++;
-		if (end <= start)
-			return false;
-		var identifier = trimmed.Substring(start, end - start);
-		// Prefixed identifiers like x:Type are always markup extensions
-		if (identifier.IndexOf(':') >= 0)
-			return true;
-		return CSharpExpressionHelpers.IsKnownMarkupExtensionName(identifier);
+		var typeName = elementNode.XmlType.Name;
+
+		// Normalize: remove "Extension" suffix
+		if (typeName.EndsWith("Extension", StringComparison.Ordinal))
+			typeName = typeName.Substring(0, typeName.Length - "Extension".Length);
+
+		switch (typeName)
+		{
+			case "DynamicResource":
+			{
+				var key = GetElementPropertyValue(elementNode, "Key") ?? GetElementContentValue(elementNode);
+				if (key != null)
+					return TryEmitDynamicResource(codeWriter, key, propName, ownerType, targetAccessor, isRoot);
+				break;
+			}
+			case "StaticResource":
+			{
+				var key = GetElementPropertyValue(elementNode, "Key") ?? GetElementContentValue(elementNode);
+				if (key != null)
+					return TryEmitStaticResource(codeWriter, key, propName, ownerType, targetAccessor, isRoot);
+				break;
+			}
+			case "Binding":
+			{
+				var props = ExtractElementProperties(elementNode, contentPropertyName: "Path");
+				if (!props.ContainsKey("Path"))
+					props["Path"] = ".";
+				return TryEmitBinding(codeWriter, props, propName, ownerType, targetAccessor, isRoot);
+			}
+		}
+
+		codeWriter.WriteLine($"// Markup extension '{elementNode.XmlType.Name}' not yet supported in UC");
+		return false;
 	}
+
+	/// <summary>Gets a named property value from an expanded markup extension ElementNode.</summary>
+	static string? GetElementPropertyValue(ElementNode node, string propertyName)
+	{
+		var xmlName = new XmlName(null, propertyName);
+		if (node.Properties.TryGetValue(xmlName, out var propNode) && propNode is ValueNode vn)
+			return vn.Value?.ToString();
+		return null;
+	}
+
+	/// <summary>Gets the positional (content) value from an expanded markup extension ElementNode.</summary>
+	static string? GetElementContentValue(ElementNode node)
+	{
+		if (node.CollectionItems.Count > 0 && node.CollectionItems[0] is ValueNode vn)
+			return vn.Value?.ToString();
+		return null;
+	}
+
+	/// <summary>Extracts all properties from an expanded ElementNode into a string dictionary.</summary>
+	static Dictionary<string, string> ExtractElementProperties(ElementNode node, string? contentPropertyName = null)
+	{
+		var props = new Dictionary<string, string>(StringComparer.Ordinal);
+		foreach (var kvp in node.Properties)
+		{
+			if (kvp.Value is ValueNode vn && vn.Value is string s && kvp.Key.LocalName != null)
+				props[kvp.Key.LocalName] = s;
+		}
+		// Content property (positional argument)
+		if (contentPropertyName != null && !props.ContainsKey(contentPropertyName))
+		{
+			var content = GetElementContentValue(node);
+			if (content != null)
+				props[contentPropertyName] = content;
+		}
+		return props;
+	}
+
+	/// <summary>Simple IXmlLineInfoProvider for UC's ExpandMarkupForUC.</summary>
+	record UCXmlLineInfoProvider(IXmlLineInfo XmlLineInfo) : IXmlLineInfoProvider;
 
 	/// <summary>
 	/// Emits a <c>SetBinding</c> call with a <c>TypedBinding</c> for a C# expression.
@@ -792,116 +930,6 @@ static class UpdateComponentCodeWriter
 
 		codeWriter.WriteLine(");");
 		return true;
-	}
-
-	// -----------------------------------------------------------------------
-	// Helpers for MarkupNode parsing
-	// -----------------------------------------------------------------------
-
-	/// <summary>
-	/// Parses a <c>{Binding Path, Mode=TwoWay, StringFormat='...'}</c> markup string
-	/// into a dictionary of property name → value pairs.
-	/// </summary>
-	static bool TryParseBinding(string markupString, out Dictionary<string, string> properties)
-	{
-		properties = new Dictionary<string, string>(StringComparer.Ordinal);
-		var trimmed = markupString.Trim();
-		if (!trimmed.StartsWith("{Binding", StringComparison.Ordinal))
-			return false;
-
-		// Must be exactly "{Binding}" or "{Binding " (not "{BindingFoo}")
-		if (trimmed.Length > 8 && trimmed[8] != ' ' && trimmed[8] != '}')
-			return false;
-
-		// Extract content between {Binding and }
-		var content = trimmed.Substring(8, trimmed.Length - 9).Trim();
-		if (content.Length == 0)
-		{
-			properties["Path"] = ".";
-			return true;
-		}
-
-		// Split by comma, respecting single-quoted strings
-		var parts = SplitBindingParts(content);
-
-		// First part without = is the Path (positional argument)
-		for (int i = 0; i < parts.Count; i++)
-		{
-			var part = parts[i].Trim();
-			var eqIndex = part.IndexOf('=');
-			if (eqIndex < 0)
-			{
-				// Positional — must be the first part and is the Path
-				if (i == 0)
-					properties["Path"] = UnquoteSingleQuotes(part);
-			}
-			else
-			{
-				var key = part.Substring(0, eqIndex).Trim();
-				var val = part.Substring(eqIndex + 1).Trim();
-				properties[key] = UnquoteSingleQuotes(val);
-			}
-		}
-
-		if (!properties.ContainsKey("Path"))
-			properties["Path"] = ".";
-
-		return true;
-	}
-
-	/// <summary>
-	/// Splits binding markup content by commas, respecting single-quoted strings.
-	/// e.g. "Name, Mode=TwoWay, StringFormat='Hello, {0}!'" → ["Name", "Mode=TwoWay", "StringFormat='Hello, {0}!'"]
-	/// </summary>
-	static List<string> SplitBindingParts(string content)
-	{
-		var parts = new List<string>();
-		int start = 0;
-		bool inQuote = false;
-		for (int i = 0; i < content.Length; i++)
-		{
-			if (content[i] == '\'')
-				inQuote = !inQuote;
-			else if (content[i] == ',' && !inQuote)
-			{
-				parts.Add(content.Substring(start, i - start));
-				start = i + 1;
-			}
-		}
-		if (start < content.Length)
-			parts.Add(content.Substring(start));
-		return parts;
-	}
-
-	/// <summary>
-	/// Removes surrounding single quotes from a value, e.g. <c>'Hello'</c> → <c>Hello</c>.
-	/// </summary>
-	static string UnquoteSingleQuotes(string value)
-	{
-		if (value.Length >= 2 && value[0] == '\'' && value[value.Length - 1] == '\'')
-			return value.Substring(1, value.Length - 2);
-		return value;
-	}
-
-	static bool TryParseDynamicResource(string markupString, out string key)
-	{
-		key = "";
-		var trimmed = markupString.Trim();
-		if (!trimmed.StartsWith("{DynamicResource ", StringComparison.Ordinal))
-			return false;
-		// {DynamicResource Key} → extract "Key"
-		key = trimmed.Substring("{DynamicResource ".Length, trimmed.Length - "{DynamicResource ".Length - 1).Trim();
-		return key.Length > 0;
-	}
-
-	static bool TryParseStaticResource(string markupString, out string key)
-	{
-		key = "";
-		var trimmed = markupString.Trim();
-		if (!trimmed.StartsWith("{StaticResource ", StringComparison.Ordinal))
-			return false;
-		key = trimmed.Substring("{StaticResource ".Length, trimmed.Length - "{StaticResource ".Length - 1).Trim();
-		return key.Length > 0;
 	}
 
 	/// <summary>
@@ -1139,5 +1167,21 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"// {line}");
 		}
 		codeWriter.WriteLine();
+	}
+
+	// Minimal Roslyn stubs for creating a ProjectItem when none is available (test scenarios)
+	sealed class EmptyAdditionalText : AdditionalText
+	{
+		public static readonly EmptyAdditionalText Instance = new();
+		public override string Path => "";
+		public override SourceText? GetText(System.Threading.CancellationToken ct = default) => null;
+	}
+
+	sealed class EmptyConfigOptions : AnalyzerConfigOptions
+	{
+		public static readonly EmptyConfigOptions Instance = new();
+#pragma warning disable CS8765
+		public override bool TryGetValue(string key, out string? value) { value = null; return false; }
+#pragma warning restore CS8765
 	}
 }
