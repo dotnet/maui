@@ -554,8 +554,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (e.PropertyName == ShellContent.ContentProperty.PropertyName && sender is ShellContent shellContent)
 			{
-				// PropertyChanged fires BEFORE the BindableProperty's propertyChanged callback
-				// (OnContentChanged), so ContentCache may not be updated yet.
+				// INotifyPropertyChanged.PropertyChanged fires AFTER the BindableProperty's
+				// propertyChanged callback (OnContentChanged) in BindableObject.SetValueCore.
+				// For a Page, ContentCache is already updated by the time we get here.
 				if (shellContent.Content is Page newPage)
 				{
 					// Content is a Page — available immediately, no deferral needed.
@@ -564,8 +565,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				else if (shellContent.Content is DataTemplate)
 				{
 					// Content is a DataTemplate — ContentCache is populated by OnContentChanged,
-					// which runs after PropertyChanged completes. Defer to the next run-loop
-					// iteration so GetOrCreateContent() sees the updated ContentCache.
+					// which has already run before this PropertyChanged notification. However,
+					// defer to the next run-loop iteration to ensure any async post-processing
+					// in GetOrCreateContent() sees a fully settled ContentCache.
 					BeginInvokeOnMainThread(() =>
 					{
 						if (_isDisposed)
