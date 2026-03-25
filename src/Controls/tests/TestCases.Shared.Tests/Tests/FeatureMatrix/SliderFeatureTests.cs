@@ -981,5 +981,113 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
+
+		[Test, Order(3)]
+		[Category(UITestCategories.Slider)]
+
+		public void Slider_ValueChangedEvent_NotRaised_Initially()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SliderControl");
+
+			var eventStatus = App.FindElement("ValueChangedEventStatus").GetText();
+			Assert.That(eventStatus, Is.EqualTo("Not Raised"));
+		}
+
+		[Test, Order(4)]
+		[Category(UITestCategories.Slider)]
+		public void Slider_ValueChangedEvent_VerifyArguments_FromOptions()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SliderControl");
+
+			// Initial state
+			Assert.That(App.FindElement("ValueChangedEventStatus").GetText(), Is.EqualTo("Not Raised"));
+
+			// Navigate to Options
+			App.Tap("Options");
+
+			App.WaitForElement("MaximumEntry");
+			App.EnterText("MaximumEntry", "5");
+			App.WaitForElement("ValueEntry");
+
+			// Change value
+			App.ClearText("ValueEntry");
+			App.EnterText("ValueEntry", "2");
+			App.PressEnter();
+
+			App.Tap("Apply");
+
+			App.WaitForElement("SliderControl");
+
+			// Event should be raised
+			Assert.That(App.FindElement("ValueChangedEventStatus").GetText(), Is.EqualTo("Raised"));
+
+			// Validate event arguments
+			Assert.That(App.FindElement("OldValueLabel").GetText(), Is.EqualTo("0.00"));
+			Assert.That(App.FindElement("NewValueLabel").GetText(), Is.EqualTo("2.00"));
+		}
+
+		[Test, Order(5)]
+		[Category(UITestCategories.Slider)]
+		public void Slider_ValueChangedEvent_ClampedToMaximum_VerifyArguments()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("MaximumEntry");
+			App.ClearText("MaximumEntry");
+			App.EnterText("MaximumEntry", "1");
+
+			App.ClearText("ValueEntry");
+			App.EnterText("ValueEntry", "25");
+			App.PressEnter();
+
+			App.Tap("Apply");
+			App.WaitForElementTillPageNavigationSettled("SliderControl");
+
+			Assert.That(App.FindElement("ValueChangedEventStatus").GetText(), Is.EqualTo("Raised"));
+			Assert.That(App.FindElement("OldValueLabel").GetText(), Is.EqualTo("0.00"));
+			Assert.That(App.FindElement("NewValueLabel").GetText(), Is.EqualTo("1.00")); // clamped
+		}
+
+
+		[Test, Order(6)]
+		[Category(UITestCategories.Slider)]
+		public void Slider_ValueBelowMinimum_EventNotRaised_WithClampedValue()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+
+			App.WaitForElement("SliderControl");
+
+			App.Tap("Options");
+			App.WaitForElement("ValueEntry");
+
+			App.ClearText("ValueEntry");
+			App.EnterText("ValueEntry", "-10");
+			App.PressEnter();
+			App.Tap("Apply");
+
+			App.WaitForElement("SliderControl");
+
+			Assert.That(App.FindElement("ValueChangedEventStatus").GetText(), Is.EqualTo("Not Raised"));
+			Assert.That(App.FindElement("OldValueLabel").GetText(), Is.EqualTo("0.00"));
+			Assert.That(App.FindElement("NewValueLabel").GetText(), Is.EqualTo("0.00"));
+		}
+
 	}
 }
