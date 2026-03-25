@@ -1,0 +1,314 @@
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+    Detects potential regressions in a PR by checking if deleted lines were part of prior bug fixes.
+
+.DESCRIPTION
+    This script analyzes a PR's diff to find deleted lines from implementation files,
+    then uses git blame to trace those lines back to their originating commits.
+    It flags lines whose origin commit references an issue number (fixes #XXXX),
+    as these are likely deliberate bug fixes that should not be removed without explanation.
+
+.PARAMETER PRNumber
+    The PR number to analyze. If not provided, attempts to detect from current branch.
+
+.PARAMETER BaseBranch
+    The base branch to diff against. Defaults to 'origin/main'.
+
+.PARAMETER OutputPath
+    Path for the output report. Defaults to CustomAgentLogsTmp/RegressionCheck/report.md
+
+.EXAMPLE
+    pwsh .github/skills/pr-finalize/scripts/Detect-Regressions.ps1 -PRNumber 33908
+    pwsh .github/skills/pr-finalize/scripts/Detect-Regressions.ps1 -PRNumber 33908 -BaseBranch origin/net10.0
+#>
+
+param(
+    [Parameter(Mandatory = $false)]
+    [int]$PRNumber,
+
+    [string]$BaseBranch = "origin/main",
+
+    [string]$OutputPath = "CustomAgentLogsTmp/RegressionCheck/report.md"
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+# --- Helper Functions ---
+
+function Write-Section {
+    param([string]$Title, [string]$Content)
+    Write-Host ""
+    Write-Host "=== $Title ===" -ForegroundColor Cyan
+    Write-Host $Content
+}
+
+function Get-IssueReferences {
+    param([string]$CommitMessage)
+    # Match common patterns: fixes #123, closes #123, resolves #123, issue #123, re: #123, #123
+    $patterns = @(
+        'fixes?\s+#(\d+)',
+        'closes?\s+#(\d+)',
+        'resolves?\s+#(\d+)',
+        'issue\s+#(\d+)',
+        're:\s+#(\d+)',
+        '\(#(\d+)\)'
+    )
+    $issues = @()
+    foreach ($pattern in $patterns) {
+        $matches = [regex]::Matches($CommitMessage, $pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        foreach ($match in $matches) {
+            $issues += $match.Groups[1].Value
+        }
+    }
+    return $issues | Select-Object -Unique
+}
+
+function Is-TrivialLine {
+    param([string]$Line)
+    # Skip blank lines, pure comment lines, opening/closing braces, using statements
+    $trimmed = $Line.Trim()
+    if ($trimmed -eq '' -or $trimmed -eq '{' -or $trimmed -eq '}' -or $trimmed -eq '};') { return $true }
+    if ($trimmed.StartsWith('//') -or $trimmed.StartsWith('*') -or $trimmed.StartsWith('/*')) { return $true }
+    if ($trimmed.StartsWith('using ') -or $trimmed.StartsWith('namespace ')) { return $true }
+    if ($trimmed -match '^(public|private|protected|internal|static|abstract|virtual|override|sealed)?\s*class\s') { return $true }
+    return $false
+}
+
+function Is-TestFile {
+    param([string]$FilePath)
+    return $FilePath -match '(Test|Spec|\.Tests\.|TestCases|DeviceTests|UnitTests|Xaml\.UnitTests)' -or
+           $FilePath -match '(test|spec)' -or
+           $FilePath -match '\.t\.cs$'
+}
+
+function Is-ImplementationFile {
+    param([string]$FilePath)
+    if (Is-TestFile $FilePath) { return $false }
+    return $FilePath -match '\.(cs|xaml|swift|java|kt|m|cpp|h)$'
+}
+
+# --- Main Logic ---
+
+$OutputDir = Split-Path -Parent $OutputPath
+if (-not (Test-Path $OutputDir)) {
+    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+}
+
+Write-Host "🔍 Starting Prior Fix Regression Check" -ForegroundColor Yellow
+
+# Get the PR diff
+$DiffContent = $null
+if ($PRNumber -gt 0) {
+    Write-Host "  Fetching diff for PR #$PRNumber..."
+    try {
+        $DiffContent = gh pr diff $PRNumber 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "gh pr diff failed: $DiffContent"
+        }
+    }
+    catch {
+        Write-Warning "Could not fetch PR diff via gh: $_. Falling back to git diff."
+        $DiffContent = git diff "${BaseBranch}...HEAD" 2>&1
+    }
+}
+else {
+    Write-Host "  No PR number provided. Using git diff against $BaseBranch..."
+    $DiffContent = git diff "${BaseBranch}...HEAD" 2>&1
+}
+
+if (-not $DiffContent) {
+    Write-Warning "No diff content found. Exiting."
+    exit 0
+}
+
+# Parse the diff to find deleted lines per file
+$CurrentFile = $null
+$FileDeletes = @{}  # file -> list of (lineContent, lineNumber)
+$CurrentLineNumber = 0
+$InHunk = $false
+
+foreach ($line in $DiffContent -split "`n") {
+    if ($line -match '^diff --git a/.+ b/(.+)$') {
+        $CurrentFile = $Matches[1]
+        $InHunk = $false
+        continue
+    }
+
+    if ($line -match '^\+\+\+ b/(.+)$') {
+        $CurrentFile = $Matches[1]
+        continue
+    }
+
+    if ($line -match '^--- ') {
+        continue
+    }
+
+    if ($line -match '^@@ -(\d+)') {
+        $CurrentLineNumber = [int]$Matches[1]
+        $InHunk = $true
+        continue
+    }
+
+    if (-not $InHunk -or -not $CurrentFile) { continue }
+    if (-not (Is-ImplementationFile $CurrentFile)) { continue }
+
+    if ($line.StartsWith('-')) {
+        $lineContent = $line.Substring(1)
+        if (-not (Is-TrivialLine $lineContent)) {
+            if (-not $FileDeletes.ContainsKey($CurrentFile)) {
+                $FileDeletes[$CurrentFile] = @()
+            }
+            $FileDeletes[$CurrentFile] += [PSCustomObject]@{
+                LineContent  = $lineContent
+                LineNumber   = $CurrentLineNumber
+            }
+        }
+        $CurrentLineNumber++
+    }
+    elseif ($line.StartsWith('+')) {
+        # don't increment line number for additions
+    }
+    else {
+        $CurrentLineNumber++
+    }
+}
+
+if ($FileDeletes.Count -eq 0) {
+    Write-Host "  No significant deleted lines found in implementation files." -ForegroundColor Green
+    $Report = @"
+### ✅ Prior Fix Regression Check: PASSED
+
+No significant deleted lines were found in implementation files. No prior fix regressions detected.
+"@
+    $Report | Out-File -FilePath $OutputPath -Encoding utf8
+    Write-Host ""
+    Write-Host $Report
+    exit 0
+}
+
+Write-Host "  Found deleted lines in $($FileDeletes.Count) implementation file(s). Checking git blame..."
+
+# For each deleted line, check git blame on the base branch
+$Regressions = @()
+$Checked = 0
+
+foreach ($file in $FileDeletes.Keys) {
+    $deletes = $FileDeletes[$file]
+
+    # Get git blame for this file on the base branch
+    $blameOutput = $null
+    try {
+        # Use the local base branch for blame
+        $baseRef = $BaseBranch -replace '^origin/', ''
+        $blameOutput = git blame "$baseRef" -- $file 2>&1
+    }
+    catch {
+        Write-Warning "  Could not run git blame for $file. Skipping."
+        continue
+    }
+
+    if (-not $blameOutput) { continue }
+
+    $blameLines = $blameOutput -split "`n"
+
+    foreach ($deleteInfo in $deletes) {
+        $Checked++
+        $searchContent = $deleteInfo.LineContent.Trim()
+        if ($searchContent.Length -lt 5) { continue }  # too short to be meaningful
+
+        # Find matching lines in blame output
+        # Format: "<hash> (<author> <date> <time> <tz> <lineno>) <content>"
+        $matchingBlameLines = $blameLines | Where-Object { $_ -match [regex]::Escape($searchContent.Substring(0, [Math]::Min(40, $searchContent.Length))) }
+
+        foreach ($blameLine in $matchingBlameLines) {
+            if ($blameLine -match '^(\^?[0-9a-f]{7,40})\s') {
+                $commitHash = $Matches[1].TrimStart('^')
+                if ($commitHash -match '^0+$') { continue }  # uncommitted
+
+                # Get commit message
+                $commitMsg = $null
+                try {
+                    $commitMsg = git log --format="%s%n%b" -1 $commitHash 2>&1 | Out-String
+                }
+                catch { continue }
+
+                if (-not $commitMsg) { continue }
+
+                # Check if commit references an issue
+                $issueRefs = Get-IssueReferences $commitMsg
+                if ($issueRefs.Count -gt 0) {
+                    $commitSubject = (git log --format="%s" -1 $commitHash 2>&1) -join ""
+                    $prRefs = [regex]::Matches($commitMsg, '\(#(\d+)\)') | ForEach-Object { $_.Groups[1].Value }
+
+                    $Regressions += [PSCustomObject]@{
+                        File           = $file
+                        DeletedLine    = $deleteInfo.LineContent
+                        CommitHash     = $commitHash.Substring(0, 7)
+                        CommitSubject  = $commitSubject
+                        IssueRefs      = $issueRefs -join ', '
+                        PRRefs         = $prRefs -join ', '
+                    }
+                    break  # One match per deleted line is enough
+                }
+            }
+        }
+    }
+}
+
+Write-Host "  Checked $Checked deleted lines. Found $($Regressions.Count) potential regression(s)."
+
+# Generate report
+if ($Regressions.Count -eq 0) {
+    $Report = @"
+### ✅ Prior Fix Regression Check: PASSED
+
+Checked $Checked deleted lines across $($FileDeletes.Count) implementation file(s). No lines were identified as reversions of prior bug fixes.
+"@
+}
+else {
+    $ReportLines = @("### 🔴 Prior Fix Regression Check: FAILED", "")
+    $ReportLines += "**$($Regressions.Count) potential regression(s) detected.** The following deleted lines appear to have been added specifically to fix prior bugs:"
+    $ReportLines += ""
+
+    foreach ($reg in $Regressions) {
+        $prInfo = if ($reg.PRRefs) { " (PR #$($reg.PRRefs))" } else { "" }
+        $ReportLines += @"
+---
+
+**File:** ``$($reg.File)``
+
+**Deleted line:**
+``````diff
+- $($reg.DeletedLine.Trim())
+``````
+
+**Origin:** Added in commit ``$($reg.CommitHash)``$prInfo — _"$($reg.CommitSubject)"_
+
+**References issue(s):** #$($reg.IssueRefs)
+
+**⚠️ Risk:** This line was deliberately added to fix issue(s) #$($reg.IssueRefs). Removing it may reintroduce that bug.
+
+**Required action:** The PR author must confirm this removal is intentional AND explain how issue #$($reg.IssueRefs) is still prevented by other means.
+
+"@
+    }
+
+    $Report = $ReportLines -join "`n"
+}
+
+$Report | Out-File -FilePath $OutputPath -Encoding utf8
+Write-Host ""
+Write-Host $Report
+
+if ($Regressions.Count -gt 0) {
+    Write-Host ""
+    Write-Host "⚠️ Regression check FAILED — $($Regressions.Count) potential regression(s) found. See $OutputPath" -ForegroundColor Red
+    exit 1
+}
+else {
+    Write-Host ""
+    Write-Host "✅ Regression check PASSED" -ForegroundColor Green
+    exit 0
+}
