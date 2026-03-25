@@ -197,6 +197,8 @@ CustomAgentLogsTmp/
 │   └── test-output.log
 ├── DeviceTests/                       # Device test logs
 │   └── test-output.log
+├── UnitTests/                         # Unit/XAML test logs
+│   └── test-output.log
 └── PRState/
     └── 27847/
         └── verify-tests-fail/
