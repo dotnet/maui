@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"eb08989595da316bc819dbd531c6cacf3ce7ae53f1f3999b1a832b578fbd1b6a","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"9a0e480927d61956be62f85669d2e599525442694d280126849fe87e727c31df","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -36,6 +36,8 @@ name: "Evaluate PR Tests"
     types:
     - opened
     - synchronize
+    - reopened
+    - ready_for_review
   workflow_dispatch:
     inputs:
       pr_number:
@@ -47,7 +49,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: evaluate-pr-tests-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number || github.run_id }}
+  group: evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
 
 run-name: "Evaluate PR Tests"
 
@@ -55,7 +57,7 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      (needs.pre_activation.outputs.activated == 'true') && ((github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      (needs.pre_activation.outputs.activated == 'true') && (((github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/evaluate-tests'))) && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id)))
     runs-on: ubuntu-slim
@@ -984,7 +986,7 @@ jobs:
 
   pre_activation:
     if: >
-      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      ((github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/evaluate-tests'))) && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id))
     runs-on: ubuntu-slim

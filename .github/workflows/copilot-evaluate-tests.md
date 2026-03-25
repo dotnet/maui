@@ -2,7 +2,7 @@
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'src/**/tests/**'
       - 'src/**/test/**'
@@ -16,7 +16,7 @@ on:
         type: number
 
 if: >-
-  github.event_name == 'pull_request' ||
+  (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
   github.event_name == 'workflow_dispatch' ||
   (github.event_name == 'issue_comment' &&
    github.event.issue.pull_request &&
@@ -49,7 +49,7 @@ tools:
 network: defaults
 
 concurrency:
-  group: "evaluate-pr-tests-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number || github.run_id }}"
+  group: "evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}"
   cancel-in-progress: true
 
 timeout-minutes: 15

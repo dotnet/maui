@@ -206,7 +206,8 @@ function Test-UITestConventions {
     # --- Naming (only flag files in Issues/ directory that look like issue tests) ---
     $fileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
     if ($TestFile -match "Issues/" -and $fileName -match "^Issue" -and $fileName -notmatch "^Issue\d+$") {
-        $issues += "Issue test file name ``$fileName`` should follow ``IssueXXXXX`` pattern"
+        $safeName = Escape-ForCodeSpan $fileName
+        $issues += "Issue test file name ``$safeName`` should follow ``IssueXXXXX`` pattern"
     }
 
     # --- Inheritance ---
@@ -303,7 +304,8 @@ function Test-UITestConventions {
         # For .xaml files, skip C# attribute checks (they live in code-behind)
         if ($hostFile -notmatch "\.xaml$") {
             if ($hostContent -notmatch "\[Issue\(") {
-                $issues += "HostApp page ``$([System.IO.Path]::GetFileName($hostFile))`` missing ``[Issue()]`` attribute"
+                $safeHost = Escape-ForCodeSpan ([System.IO.Path]::GetFileName($hostFile))
+                $issues += "HostApp page ``$safeHost`` missing ``[Issue()]`` attribute"
             }
         }
         if ($hostContent -match "new\s+Frame\b") {
@@ -412,7 +414,8 @@ function Test-XamlTestConventions {
     # File naming for issues
     $fileName = [System.IO.Path]::GetFileNameWithoutExtension($TestFile)
     if ($TestFile -match "Issues/" -and $fileName -notmatch "^Maui\d+$") {
-        $issues += "Issue test file name ``$fileName`` doesn't follow ``MauiXXXXX`` pattern"
+        $safeName = Escape-ForCodeSpan $fileName
+        $issues += "Issue test file name ``$safeName`` doesn't follow ``MauiXXXXX`` pattern"
     }
 
     return @{ Issues = $issues; Info = $info }
@@ -431,13 +434,22 @@ $report += ""
 $report += "| Category | Count | Files |"
 $report += "|----------|-------|-------|"
 
+function Escape-ForCodeSpan {
+    param([string]$Text)
+    # Neutralise characters that break markdown code spans or line structure.
+    # Backticks are replaced with a visually similar RIGHT SINGLE QUOTATION MARK (U+2019)
+    # so the surrounding `` delimiters stay balanced.  Newlines / carriage-returns are
+    # stripped because they would break table rows or heading lines.
+    return ($Text -replace '`', [char]0x2019 -replace '[\r\n]', '')
+}
+
 function Format-FileList {
     param([string[]]$files)
     if ($files.Count -eq 0) { return "_none_" }
     return ($files | ForEach-Object {
         # Escape markdown metacharacters to prevent injection via crafted filenames.
         # Use double-backtick code spans (`` ... ``) so literal backticks render correctly.
-        $escaped = $_ -replace '\|', '\|' -replace '<', '&lt;' -replace '>', '&gt;'
+        $escaped = (Escape-ForCodeSpan $_) -replace '\|', '\|' -replace '<', '&lt;' -replace '>', '&gt;'
         "````$escaped````"
     }) -join ", "
 }
@@ -483,7 +495,8 @@ if ($uiTestFiles.Count -gt 0) {
             $hostName -eq $baseName
         }
         $result = Test-UITestConventions -TestFile $testFile -HostAppFiles $matchingHostFiles
-        $report += "### ``$baseName``"
+        $safeBase = Escape-ForCodeSpan $baseName
+        $report += "### ``$safeBase``"
         if ($result.Info.Count -gt 0) {
             foreach ($i in $result.Info) { $report += "- ℹ️ $i" }
         }
@@ -506,7 +519,8 @@ if ($unitTestFiles.Count -gt 0) {
     foreach ($testFile in $unitTestFiles) {
         $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testFile)
         $result = Test-UnitTestConventions -TestFile $testFile
-        $report += "### ``$baseName``"
+        $safeBase = Escape-ForCodeSpan $baseName
+        $report += "### ``$safeBase``"
         if ($result.Info.Count -gt 0) {
             foreach ($i in $result.Info) { $report += "- ℹ️ $i" }
         }
@@ -529,7 +543,8 @@ if ($xamlTestFiles.Count -gt 0) {
     foreach ($testFile in ($xamlTestFiles | Where-Object { $_ -match "\.cs$" })) {
         $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testFile)
         $result = Test-XamlTestConventions -TestFile $testFile
-        $report += "### ``$baseName``"
+        $safeBase = Escape-ForCodeSpan $baseName
+        $report += "### ``$safeBase``"
         if ($result.Info.Count -gt 0) {
             foreach ($i in $result.Info) { $report += "- ℹ️ $i" }
         }
