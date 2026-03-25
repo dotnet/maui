@@ -6,10 +6,11 @@
     Checks out a PR branch and restores trusted agent infrastructure (skills,
     instructions) from the base branch. Works for both same-repo and fork PRs.
 
-    For fork PRs on issue_comment triggers, the platform's checkout_pr_branch.cjs
-    runs after user steps and may overwrite restored files. This is acceptable
-    because the agent runs sandboxed (no credentials) and can only post 1 comment.
-    If the fork hasn't rebased, the agent pre-flight catches missing SKILL.md.
+    This script is only invoked for workflow_dispatch triggers. For pull_request
+    and issue_comment, the gh-aw platform's checkout_pr_branch.cjs handles PR
+    checkout automatically (it runs as a platform step after all user steps).
+    workflow_dispatch skips the platform checkout entirely, so this script is
+    the only thing that gets the PR code onto disk.
 
     SECURITY NOTE: This script checks out PR code onto disk. This is safe
     because NO subsequent user steps execute workspace code — the gh-aw
@@ -64,13 +65,9 @@ Write-Host "✅ Checked out PR #$PrNumber"
 git log --oneline -1
 
 # ── Restore agent infrastructure from base branch ────────────────────────────
-# Best-effort restore of skill/instruction files from the base branch.
-# - workflow_dispatch: platform checkout is skipped, so this IS the final state
-# - pull_request: platform checkout ran before us, so this IS the final state
-# - issue_comment (same-repo): platform re-checks out after us, but files match
-# - issue_comment (fork): platform re-checks out fork branch after us, overwriting
-#   these files. If the fork rebased on main, SKILL.md is present and correct.
-#   If not, the agent pre-flight catches missing SKILL.md gracefully.
+# This script only runs for workflow_dispatch (other triggers use the platform's
+# checkout_pr_branch.cjs instead). For workflow_dispatch the platform checkout is
+# skipped, so this restore IS the final workspace state.
 # rm -rf first to prevent fork-added files from surviving the restore.
 
 if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }

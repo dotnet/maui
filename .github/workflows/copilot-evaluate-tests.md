@@ -73,6 +73,9 @@ steps:
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 
+  # Only needed for workflow_dispatch — for pull_request and issue_comment,
+  # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
+  # workflow_dispatch skips the platform checkout entirely, so we must do it here.
   - name: Checkout PR and restore agent infrastructure
     if: github.event_name == 'workflow_dispatch'
     env:
