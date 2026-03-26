@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Platform
     /// Shared DrawerLayout wrapper for FlyoutViewHandler and ShellHandler.
     /// Provides common flyout functionality following Google Material Design guidelines.
     /// </summary>
-#pragma warning disable RS0016 // Add public types and members to the declared API
     public class MauiDrawerLayout : DrawerLayout
     {
         AView? _flyoutView;
@@ -352,9 +351,8 @@ namespace Microsoft.Maui.Platform
                 _sideBySideView = new LinearLayoutCompat(Context!)
                 {
                     Orientation = LinearLayoutCompat.Horizontal,
-                    LayoutParameters = new LayoutParams(
-                        LayoutParams.MatchParent,
-                        LayoutParams.MatchParent)
+                    LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.MatchParent,
+                        ViewGroup.LayoutParams.MatchParent)
                 };
             }
 
@@ -363,10 +361,8 @@ namespace Microsoft.Maui.Platform
             {
                 _contentView.RemoveFromParent();
 
-                var contentParams = new LinearLayoutCompat.LayoutParams(
-                    LinearLayoutCompat.LayoutParams.MatchParent,
-                    LinearLayoutCompat.LayoutParams.MatchParent,
-                    1);  // weight 1 to fill remaining space
+                var contentParams = new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.MatchParent,
+                    ViewGroup.LayoutParams.MatchParent, 1);  // weight 1 to fill remaining space
 
                 _sideBySideView.AddView(_contentView, contentParams);
             }
@@ -377,10 +373,8 @@ namespace Microsoft.Maui.Platform
                 _flyoutView.Visibility = ViewStates.Visible;
                 _flyoutView.RemoveFromParent();
 
-                var flyoutParams = new LinearLayoutCompat.LayoutParams(
-                    (int)FlyoutWidth,
-                    LinearLayoutCompat.LayoutParams.MatchParent,
-                    0);  // weight 0 for fixed width
+                var flyoutParams = new LinearLayoutCompat.LayoutParams((int)FlyoutWidth,
+                    ViewGroup.LayoutParams.MatchParent, 0);  // weight 0 for fixed width
 
                 _sideBySideView.AddView(_flyoutView, 0, flyoutParams);  // Add at index 0 (left)
             }
@@ -412,8 +406,8 @@ namespace Microsoft.Maui.Platform
                 _contentView.RemoveFromParent();
 
                 var contentParams = new LayoutParams(
-                    LayoutParams.MatchParent,
-                    LayoutParams.MatchParent);
+                    ViewGroup.LayoutParams.MatchParent,
+                    ViewGroup.LayoutParams.MatchParent);
 
                 AddView(_contentView, 0, contentParams);
             }
@@ -423,10 +417,8 @@ namespace Microsoft.Maui.Platform
             {
                 _flyoutView.RemoveFromParent();
 
-                var flyoutParams = new LayoutParams(
-                    (int)FlyoutWidth,
-                    LayoutParams.MatchParent,
-                    (int)GravityFlags.Start);
+                var flyoutParams = new LayoutParams((int)FlyoutWidth,
+                    ViewGroup.LayoutParams.MatchParent, (int)GravityFlags.Start);
 
                 AddView(_flyoutView, flyoutParams);
             }

@@ -1,12 +1,8 @@
 #nullable disable
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
-using Android.Hardware.Lights;
-using Android.Runtime;
-using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
@@ -15,13 +11,9 @@ using AndroidX.DrawerLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Layouts;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellFlyoutTemplatedContentRenderer : Java.Lang.Object, IShellFlyoutContentRenderer

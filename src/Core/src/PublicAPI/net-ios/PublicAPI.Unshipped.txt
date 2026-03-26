@@ -2,3 +2,23 @@
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
+Microsoft.Maui.ITabbedView.BarBackground.get -> object!
+Microsoft.Maui.ITabbedView.BarBackgroundColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ITabbedView.BarTextColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ITabbedView.CurrentTab.get -> Microsoft.Maui.ITab?
+Microsoft.Maui.ITabbedView.CurrentTab.set -> void
+Microsoft.Maui.ITabbedView.IsSmoothScrollEnabled.get -> bool
+Microsoft.Maui.ITabbedView.IsSwipePagingEnabled.get -> bool
+Microsoft.Maui.ITabbedView.OffscreenPageLimit.get -> int
+Microsoft.Maui.ITabbedView.SelectedTabColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ITabbedView.TabBarPlacement.get -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.ITabbedView.Tabs.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.ITab!>!
+Microsoft.Maui.ITabbedView.TabsChanged -> System.Collections.Specialized.NotifyCollectionChangedEventHandler?
+Microsoft.Maui.ITabbedView.UnselectedTabColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
