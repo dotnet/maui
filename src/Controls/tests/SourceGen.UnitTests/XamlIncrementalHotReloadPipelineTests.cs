@@ -325,6 +325,33 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V22: Root content swap — VerticalStackLayout → Grid (different direct child of ContentPage)
+	const string PageXamlV22_RootContentSwap = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid>
+		        <Label Text="In Grid" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V23: Add a ScrollView (content container) inside VerticalStackLayout
+	const string PageXamlV23_NewContentContainer = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <ScrollView>
+		            <Label Text="Scrollable" />
+		        </ScrollView>
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -901,6 +928,41 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("OtherViewModel", uc, StringComparison.Ordinal);
 		// Should NOT reference old type
 		Assert.DoesNotContain("MyViewModel", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RootContentSwap_UCReplacesContent()
+	{
+		// ContentPage.Content changes from VerticalStackLayout to Grid
+		// This is a root-level child list change that should use Content property assignment
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV22_RootContentSwap);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Should create a new Grid and set it as Content
+		Assert.Contains("new global::Microsoft.Maui.Controls.Grid()", uc, StringComparison.Ordinal);
+		Assert.Contains(".Content", uc, StringComparison.Ordinal);
+		// Should NOT have a structural fallback for root child changes
+		Assert.DoesNotContain("Root-level child list change not supported", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NewContentContainer_UCCreatesChildWithContentProperty()
+	{
+		// Adding a ScrollView (content container, not Layout) with a child Label
+		// should use Content property assignment, not Children.Add()
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV23_NewContentContainer);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Should create the ScrollView
+		Assert.Contains("new global::Microsoft.Maui.Controls.ScrollView()", uc, StringComparison.Ordinal);
+		// Should set its Content property (not use Add())
+		Assert.Contains(".Content", uc, StringComparison.Ordinal);
+		// Should NOT fall back
+		Assert.DoesNotContain("Non-layout container", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
