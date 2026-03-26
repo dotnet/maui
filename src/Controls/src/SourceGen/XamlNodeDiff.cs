@@ -383,6 +383,8 @@ static class XamlNodeDiff
 		if (oldCount == newCount)
 		{
 			bool positionalMatch = true;
+			bool hasDuplicateTypes = false;
+			var typeCounts = new Dictionary<string, int>();
 			for (int i = 0; i < oldCount; i++)
 			{
 				var oe = (ElementNode)oldNode.CollectionItems[i];
@@ -392,9 +394,67 @@ static class XamlNodeDiff
 					positionalMatch = false;
 					break;
 				}
+				var sig = TypeSignature(oe.XmlType);
+				typeCounts.TryGetValue(sig, out int cnt);
+				typeCounts[sig] = cnt + 1;
+				if (cnt + 1 > 1)
+					hasDuplicateTypes = true;
 			}
 			if (positionalMatch)
-				return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+			{
+				// If no duplicate types, positional is unambiguous — use fast path
+				if (!hasDuplicateTypes)
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+
+				// Duplicate types exist — use cost-based matching to find optimal assignment.
+				// If the optimal assignment is the identity (same as positional), use fast path.
+				// Otherwise fall through to DiffChildrenWithMatching which also uses cost matching.
+				var oldChildren = new ElementNode[oldCount];
+				var newChildren = new ElementNode[oldCount];
+				for (int i = 0; i < oldCount; i++)
+				{
+					oldChildren[i] = (ElementNode)oldNode.CollectionItems[i];
+					newChildren[i] = (ElementNode)newNode.CollectionItems[i];
+				}
+
+				// Build type groups and compute cost-based matching
+				var groups = new Dictionary<string, List<int>>();
+				for (int i = 0; i < oldCount; i++)
+				{
+					var sig = TypeSignature(oldChildren[i].XmlType);
+					if (!groups.TryGetValue(sig, out var list))
+					{
+						list = new List<int>();
+						groups[sig] = list;
+					}
+					list.Add(i);
+				}
+
+				bool isIdentity = true;
+				foreach (var kvp in groups)
+				{
+					if (kvp.Value.Count <= 1)
+						continue; // unique type — positional is optimal
+
+					var indices = kvp.Value;
+					var tempMatched = new List<(int oldIdx, int newIdx)>();
+					var tempRemoved = new List<int>();
+					var tempAdded = new List<int>();
+					MatchTypeGroupByCost(indices, indices, oldChildren, newChildren,
+						tempMatched, tempRemoved, tempAdded);
+					foreach (var (oi, ni) in tempMatched)
+					{
+						if (oi != ni) { isIdentity = false; break; }
+					}
+					if (!isIdentity) break;
+				}
+
+				if (isIdentity)
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+
+				// Optimal matching differs from positional — fall through to general case
+				// which will produce a ChildListChangeDiff with reorder
+			}
 		}
 
 		// General case: type-based matching for reorder/add/remove
@@ -489,7 +549,7 @@ static class XamlNodeDiff
 			list.Add(i);
 		}
 
-		// Match by type and position within type group
+		// Match by type using cost-based matching within each type group
 		var matched = new List<(int oldIdx, int newIdx)>();
 		var addedNewIndices = new List<int>();
 		var removedOldIndices = new List<int>();
@@ -504,18 +564,24 @@ static class XamlNodeDiff
 			oldGroups.TryGetValue(key, out var oldIdxList);
 			newGroups.TryGetValue(key, out var newIdxList);
 
-			int oldLen = oldIdxList?.Count ?? 0;
-			int newLen = newIdxList?.Count ?? 0;
-			int matchCount = oldLen < newLen ? oldLen : newLen;
-
-			for (int i = 0; i < matchCount; i++)
-				matched.Add((oldIdxList![i], newIdxList![i]));
-
-			for (int i = matchCount; i < oldLen; i++)
-				removedOldIndices.Add(oldIdxList![i]);
-
-			for (int i = matchCount; i < newLen; i++)
-				addedNewIndices.Add(newIdxList![i]);
+			if (oldIdxList != null && newIdxList != null)
+			{
+				// Both sides have this type — use cost-based matching
+				MatchTypeGroupByCost(oldIdxList, newIdxList, oldChildren, newChildren,
+					matched, removedOldIndices, addedNewIndices);
+			}
+			else if (oldIdxList != null)
+			{
+				// Type only in old — all removed
+				foreach (var idx in oldIdxList)
+					removedOldIndices.Add(idx);
+			}
+			else if (newIdxList != null)
+			{
+				// Type only in new — all added
+				foreach (var idx in newIdxList)
+					addedNewIndices.Add(idx);
+			}
 		}
 
 		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode)
@@ -778,6 +844,246 @@ static class XamlNodeDiff
 
 	static bool StringEquals(string? a, string? b) =>
 		string.Equals(a, b, StringComparison.Ordinal);
+
+	/// <summary>
+	/// Returns the x:Name value from an element, or null if not set.
+	/// </summary>
+	static string? GetXName(ElementNode node)
+	{
+		var key = new XmlName("x", "Name");
+		if (node.Properties.TryGetValue(key, out var propNode) && propNode is ValueNode vn)
+			return vn.Value?.ToString();
+		return null;
+	}
+
+	/// <summary>
+	/// Counts the number of differing properties (and children) between two elements.
+	/// Used as the "cost" of matching old[i] to new[j] in the sibling matching algorithm.
+	/// </summary>
+	static int CountNodeDiffCost(ElementNode a, ElementNode b)
+	{
+		int cost = 0;
+
+		// Count property differences
+		foreach (var kvp in a.Properties)
+		{
+			if (b.Properties.TryGetValue(kvp.Key, out var bProp))
+			{
+				if (!NodeValueEquals(kvp.Value, bProp))
+					cost++;
+			}
+			else
+				cost++; // removed property
+		}
+		foreach (var kvp in b.Properties)
+		{
+			if (!a.Properties.ContainsKey(kvp.Key))
+				cost++; // added property
+		}
+
+		// Count children differences (rough: just count mismatches)
+		int childMin = Math.Min(a.CollectionItems.Count, b.CollectionItems.Count);
+		int childMax = Math.Max(a.CollectionItems.Count, b.CollectionItems.Count);
+		cost += childMax - childMin; // added/removed children
+		for (int i = 0; i < childMin; i++)
+		{
+			if (!NodeValueEquals(a.CollectionItems[i], b.CollectionItems[i]))
+				cost++;
+		}
+
+		return cost;
+	}
+
+	/// <summary>
+	/// Finds the minimum-cost matching between same-type siblings.
+	/// Priority 1: Match by x:Name (exact identity match, cost 0).
+	/// Priority 2: Compute cost matrix and find min-cost assignment.
+	/// For N≤8, uses brute-force permutation search. For N>8, uses greedy matching.
+	/// Returns a list of (oldIdx, newIdx) pairs for matched elements,
+	/// plus lists of unmatched old (removed) and unmatched new (added) indices.
+	/// </summary>
+	static void MatchTypeGroupByCost(
+		List<int> oldIndices, List<int> newIndices,
+		ElementNode[] oldChildren, ElementNode[] newChildren,
+		List<(int oldIdx, int newIdx)> matched,
+		List<int> removedOldIndices, List<int> addedNewIndices)
+	{
+		int oldLen = oldIndices.Count;
+		int newLen = newIndices.Count;
+
+		// Track which indices are already matched
+		var matchedOld = new bool[oldLen];
+		var matchedNew = new bool[newLen];
+
+		// Priority 1: Match by x:Name
+		for (int oi = 0; oi < oldLen; oi++)
+		{
+			var oldName = GetXName(oldChildren[oldIndices[oi]]);
+			if (oldName == null)
+				continue;
+			for (int ni = 0; ni < newLen; ni++)
+			{
+				if (matchedNew[ni])
+					continue;
+				var newName = GetXName(newChildren[newIndices[ni]]);
+				if (string.Equals(oldName, newName, StringComparison.Ordinal))
+				{
+					matched.Add((oldIndices[oi], newIndices[ni]));
+					matchedOld[oi] = true;
+					matchedNew[ni] = true;
+					break;
+				}
+			}
+		}
+
+		// Collect unmatched indices for cost-based matching
+		var unmatchedOld = new List<int>();
+		var unmatchedNew = new List<int>();
+		for (int i = 0; i < oldLen; i++)
+			if (!matchedOld[i]) unmatchedOld.Add(i);
+		for (int i = 0; i < newLen; i++)
+			if (!matchedNew[i]) unmatchedNew.Add(i);
+
+		if (unmatchedOld.Count > 0 && unmatchedNew.Count > 0)
+		{
+			int uOld = unmatchedOld.Count;
+			int uNew = unmatchedNew.Count;
+			int matchCount = Math.Min(uOld, uNew);
+
+			// Build cost matrix
+			var cost = new int[uOld, uNew];
+			for (int oi = 0; oi < uOld; oi++)
+				for (int ni = 0; ni < uNew; ni++)
+					cost[oi, ni] = CountNodeDiffCost(
+						oldChildren[oldIndices[unmatchedOld[oi]]],
+						newChildren[newIndices[unmatchedNew[ni]]]);
+
+			if (matchCount <= 8)
+			{
+				// Brute-force: try all permutations to find minimum total cost
+				var bestAssignment = MinCostAssignmentBruteForce(cost, uOld, uNew);
+				foreach (var (oi, ni) in bestAssignment)
+					matched.Add((oldIndices[unmatchedOld[oi]], newIndices[unmatchedNew[ni]]));
+
+				// Mark matched
+				var assignedOld = new HashSet<int>();
+				var assignedNew = new HashSet<int>();
+				foreach (var (oi, ni) in bestAssignment)
+				{
+					assignedOld.Add(oi);
+					assignedNew.Add(ni);
+				}
+				for (int i = 0; i < uOld; i++)
+					if (!assignedOld.Contains(i)) removedOldIndices.Add(oldIndices[unmatchedOld[i]]);
+				for (int i = 0; i < uNew; i++)
+					if (!assignedNew.Contains(i)) addedNewIndices.Add(newIndices[unmatchedNew[i]]);
+			}
+			else
+			{
+				// Greedy: repeatedly pick the lowest-cost pair
+				var usedOld = new bool[uOld];
+				var usedNew = new bool[uNew];
+				for (int m = 0; m < matchCount; m++)
+				{
+					int bestOi = -1, bestNi = -1, bestCost = int.MaxValue;
+					for (int oi = 0; oi < uOld; oi++)
+					{
+						if (usedOld[oi]) continue;
+						for (int ni = 0; ni < uNew; ni++)
+						{
+							if (usedNew[ni]) continue;
+							if (cost[oi, ni] < bestCost)
+							{
+								bestCost = cost[oi, ni];
+								bestOi = oi;
+								bestNi = ni;
+							}
+						}
+					}
+					if (bestOi >= 0)
+					{
+						matched.Add((oldIndices[unmatchedOld[bestOi]], newIndices[unmatchedNew[bestNi]]));
+						usedOld[bestOi] = true;
+						usedNew[bestNi] = true;
+					}
+				}
+				for (int i = 0; i < uOld; i++)
+					if (!usedOld[i]) removedOldIndices.Add(oldIndices[unmatchedOld[i]]);
+				for (int i = 0; i < uNew; i++)
+					if (!usedNew[i]) addedNewIndices.Add(newIndices[unmatchedNew[i]]);
+			}
+		}
+		else
+		{
+			// Only one side has unmatched — all are added or removed
+			for (int i = 0; i < unmatchedOld.Count; i++)
+				removedOldIndices.Add(oldIndices[unmatchedOld[i]]);
+			for (int i = 0; i < unmatchedNew.Count; i++)
+				addedNewIndices.Add(newIndices[unmatchedNew[i]]);
+		}
+	}
+
+	/// <summary>
+	/// Brute-force min-cost assignment for small N (≤8).
+	/// Finds the assignment of min(rows,cols) pairs that minimizes total cost.
+	/// </summary>
+	static List<(int row, int col)> MinCostAssignmentBruteForce(int[,] cost, int rows, int cols)
+	{
+		int matchCount = Math.Min(rows, cols);
+		var bestAssignment = new List<(int, int)>();
+		int bestTotalCost = int.MaxValue;
+
+		// Generate all matchCount-permutations from the larger set
+		if (rows <= cols)
+		{
+			// Each old row picks a unique column
+			var assignment = new int[matchCount];
+			var usedCols = new bool[cols];
+			FindBestAssignment(cost, assignment, usedCols, 0, matchCount, cols, 0, ref bestTotalCost, ref bestAssignment, true);
+		}
+		else
+		{
+			// Each new column picks a unique row
+			var assignment = new int[matchCount];
+			var usedRows = new bool[rows];
+			FindBestAssignment(cost, assignment, usedRows, 0, matchCount, rows, 0, ref bestTotalCost, ref bestAssignment, false);
+		}
+
+		return bestAssignment;
+	}
+
+	static void FindBestAssignment(
+		int[,] cost, int[] assignment, bool[] used,
+		int depth, int matchCount, int maxIdx, int currentCost,
+		ref int bestCost, ref List<(int, int)> bestAssignment, bool rowsArePrimary)
+	{
+		if (currentCost >= bestCost)
+			return; // prune
+
+		if (depth == matchCount)
+		{
+			bestCost = currentCost;
+			bestAssignment = new List<(int, int)>(matchCount);
+			for (int i = 0; i < matchCount; i++)
+			{
+				bestAssignment.Add(rowsArePrimary
+					? (i, assignment[i])
+					: (assignment[i], i));
+			}
+			return;
+		}
+
+		for (int idx = 0; idx < maxIdx; idx++)
+		{
+			if (used[idx])
+				continue;
+			assignment[depth] = idx;
+			used[idx] = true;
+			int pairCost = rowsArePrimary ? cost[depth, idx] : cost[idx, depth];
+			FindBestAssignment(cost, assignment, used, depth + 1, matchCount, maxIdx, currentCost + pairCost, ref bestCost, ref bestAssignment, rowsArePrimary);
+			used[idx] = false;
+		}
+	}
 
 	/// <summary>
 	/// Builds a stable child node ID by combining the parent path and the child's type + sibling index.
