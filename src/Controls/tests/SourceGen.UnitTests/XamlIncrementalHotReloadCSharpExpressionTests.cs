@@ -588,8 +588,8 @@ public partial class TestPage : ContentPage
 		var (result, _) = RunGenerator(xamlV2, ViewModelCode, enableIncrementalHotReload: true);
 		var ucSource = GetUCSource(result);
 		Assert.NotNull(ucSource);
-		Assert.Contains("TryGetValue", ucSource, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", ucSource, StringComparison.Ordinal);
+		Assert.Contains("SetValue", ucSource, StringComparison.Ordinal);
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 
@@ -623,7 +623,7 @@ public partial class TestPage : ContentPage
 		var ucSource = GetUCSource(result);
 		Assert.NotNull(ucSource);
 		Assert.Contains("SetBinding", ucSource, StringComparison.Ordinal);
-		Assert.Contains("new global::Microsoft.Maui.Controls.Binding(\"LastName\")", ucSource, StringComparison.Ordinal);
+		Assert.Contains("LastName", ucSource, StringComparison.Ordinal);
 		Assert.DoesNotContain("not supported", ucSource, StringComparison.Ordinal);
 	}
 

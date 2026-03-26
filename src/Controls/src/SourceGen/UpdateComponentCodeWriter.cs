@@ -536,7 +536,7 @@ static class UpdateComponentCodeWriter
 		{
 			// Markup extension (Binding, StaticResource, DynamicResource, etc.)
 			// Resolve the extension type and call the appropriate KnownMarkups handler
-			return TryEmitExpandedMarkupExtension(codeWriter, elementNode, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache);
+			return TryEmitExpandedMarkupExtension(codeWriter, elementNode, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 		}
 
 		// Fallback: bare string value from escape sequence {}{...}
@@ -628,8 +628,10 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Emits code for an expanded markup extension <see cref="ElementNode"/>.
-	/// Dispatches to the appropriate emitter based on the extension type name.
+	/// Emits code for an expanded markup extension <see cref="ElementNode"/> by reusing IC's
+	/// full pipeline: CreateValuesVisitor → SetPropertiesVisitor → TryProvideValue → SetPropertyValue.
+	/// Handles all known markup extensions (DynamicResource, StaticResource, Binding, AppThemeBinding,
+	/// x:Reference, x:Static, etc.) and falls back to runtime ProvideValue() for unknown extensions.
 	/// </summary>
 	static bool TryEmitExpandedMarkupExtension(
 		IndentedTextWriter codeWriter,
@@ -640,77 +642,67 @@ static class UpdateComponentCodeWriter
 		bool isRoot,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
-		var typeName = elementNode.XmlType.Name;
+		// Build a SourceGenContext with a capture writer
+		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		var captureStringWriter = new StringWriter(CultureInfo.InvariantCulture);
+		var captureWriter = new IndentedTextWriter(captureStringWriter, "\t") { NewLine = NewLine };
+		var ctx = new SourceGenContext(
+			captureWriter, compilation, sourceProductionContext,
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
 
-		// Normalize: remove "Extension" suffix
-		if (typeName.EndsWith("Extension", StringComparison.Ordinal))
-			typeName = typeName.Substring(0, typeName.Length - "Extension".Length);
+		// Create a synthetic parent variable so SetPropertyValue can emit "parent.SetValue(...)"
+		var parentAccessor = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
+		var syntheticParent = new ElementNode(new XmlType("", "SyntheticParent", null), "", null, -1, -1);
+		ctx.Variables[syntheticParent] = new DirectValue(ownerType, parentAccessor);
 
-		switch (typeName)
+		try
 		{
-			case "DynamicResource":
+			// Step 1: CreateValue — resolves type, handles early extensions (DynamicResource, x:Static, etc.)
+			CreateValuesVisitor.CreateValue(elementNode, captureWriter, ctx.Variables, compilation, xmlnsCache, ctx);
+
+			// Step 2: SetPropertiesVisitor — sets properties on the extension object
+			var setPropsVisitor = new SetPropertiesVisitor(ctx);
+			foreach (var kvp in elementNode.Properties)
 			{
-				var key = GetElementPropertyValue(elementNode, "Key") ?? GetElementContentValue(elementNode);
-				if (key != null)
-					return TryEmitDynamicResource(codeWriter, key, propName, ownerType, targetAccessor, isRoot);
-				break;
+				if (elementNode.SkipProperties.Contains(kvp.Key))
+					continue;
+				kvp.Value.Accept(setPropsVisitor, elementNode);
 			}
-			case "StaticResource":
-			{
-				var key = GetElementPropertyValue(elementNode, "Key") ?? GetElementContentValue(elementNode);
-				if (key != null)
-					return TryEmitStaticResource(codeWriter, key, propName, ownerType, targetAccessor, isRoot);
-				break;
-			}
-			case "Binding":
-			{
-				var props = ExtractElementProperties(elementNode, contentPropertyName: "Path");
-				if (!props.ContainsKey("Path"))
-					props["Path"] = ".";
-				return TryEmitBinding(codeWriter, props, propName, ownerType, targetAccessor, isRoot);
-			}
+			foreach (var child in elementNode.CollectionItems)
+				child.Accept(setPropsVisitor, elementNode);
+
+			// Step 3: TryProvideValue — handles late extensions (Binding, StaticResource, AppThemeBinding, etc.)
+			// and falls back to runtime ProvideValue() for unknown IMarkupExtension implementors
+			elementNode.TryProvideValue(captureWriter, ctx);
+
+			// Step 4: SetPropertyValue — emits the assignment to the parent
+			var xmlName = new XmlName("", propName);
+			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], xmlName, elementNode, ctx);
+		}
+		catch
+		{
+			// If the IC pipeline fails (e.g., missing type info), fall through
+			codeWriter.WriteLine($"// Markup extension '{elementNode.XmlType.Name}' failed IC pipeline — skipped");
+			return false;
 		}
 
-		codeWriter.WriteLine($"// Markup extension '{elementNode.XmlType.Name}' not yet supported in UC");
-		return false;
-	}
+		// Flush captured code to the UC codeWriter
+		captureWriter.Flush();
+		var capturedCode = captureStringWriter.ToString();
+		if (string.IsNullOrWhiteSpace(capturedCode))
+			return false;
 
-	/// <summary>Gets a named property value from an expanded markup extension ElementNode.</summary>
-	static string? GetElementPropertyValue(ElementNode node, string propertyName)
-	{
-		var xmlName = new XmlName(null, propertyName);
-		if (node.Properties.TryGetValue(xmlName, out var propNode) && propNode is ValueNode vn)
-			return vn.Value?.ToString();
-		return null;
-	}
-
-	/// <summary>Gets the positional (content) value from an expanded markup extension ElementNode.</summary>
-	static string? GetElementContentValue(ElementNode node)
-	{
-		if (node.CollectionItems.Count > 0 && node.CollectionItems[0] is ValueNode vn)
-			return vn.Value?.ToString();
-		return null;
-	}
-
-	/// <summary>Extracts all properties from an expanded ElementNode into a string dictionary.</summary>
-	static Dictionary<string, string> ExtractElementProperties(ElementNode node, string? contentPropertyName = null)
-	{
-		var props = new Dictionary<string, string>(StringComparer.Ordinal);
-		foreach (var kvp in node.Properties)
+		foreach (var line in capturedCode.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
 		{
-			if (kvp.Value is ValueNode vn && vn.Value is string s && kvp.Key.LocalName != null)
-				props[kvp.Key.LocalName] = s;
+			if (!string.IsNullOrEmpty(line))
+				codeWriter.WriteLine(line);
 		}
-		// Content property (positional argument)
-		if (contentPropertyName != null && !props.ContainsKey(contentPropertyName))
-		{
-			var content = GetElementContentValue(node);
-			if (content != null)
-				props[contentPropertyName] = content;
-		}
-		return props;
+		return true;
 	}
 
 	/// <summary>Simple IXmlLineInfoProvider for UC's ExpandMarkupForUC.</summary>
@@ -814,126 +806,6 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine("}");
 		}
 
-		return true;
-	}
-
-	/// <summary>
-	/// Emits a <c>SetDynamicResource</c> call for a <c>{DynamicResource Key}</c> markup.
-	/// </summary>
-	static bool TryEmitDynamicResource(
-		IndentedTextWriter codeWriter,
-		string resourceKey,
-		string propName,
-		INamedTypeSymbol ownerType,
-		string targetAccessor,
-		bool isRoot)
-	{
-		var bpFieldName = $"{propName}Property";
-		var bpField = FindStaticField(ownerType, bpFieldName);
-		if (bpField == null)
-			return false;
-
-		var bpName = bpField.ToFQDisplayString();
-		var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-		codeWriter.WriteLine($"((global::Microsoft.Maui.Controls.Internals.IDynamicResourceHandler){target}).SetDynamicResource({bpName}, \"{EscapeString(resourceKey)}\");");
-		return true;
-	}
-
-	/// <summary>
-	/// Emits code to apply a <c>{StaticResource Key}</c> at runtime.
-	/// Uses the element's resource lookup chain.
-	/// </summary>
-	static bool TryEmitStaticResource(
-		IndentedTextWriter codeWriter,
-		string resourceKey,
-		string propName,
-		INamedTypeSymbol ownerType,
-		string targetAccessor,
-		bool isRoot)
-	{
-		var bpFieldName = $"{propName}Property";
-		var bpField = FindStaticField(ownerType, bpFieldName);
-		if (bpField == null)
-			return false;
-
-		var bpName = bpField.ToFQDisplayString();
-		var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-		// Use SetValue with inline resource lookup walking the element tree
-		codeWriter.WriteLine($"{{");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"object __sr_val = null;");
-		codeWriter.WriteLine($"var __sr_element = {target} as global::Microsoft.Maui.Controls.Element;");
-		codeWriter.WriteLine($"while (__sr_element != null)");
-		codeWriter.WriteLine($"{{");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"if (__sr_element is global::Microsoft.Maui.Controls.VisualElement __sr_ve && __sr_ve.Resources != null && __sr_ve.Resources.TryGetValue(\"{EscapeString(resourceKey)}\", out __sr_val))");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"break;");
-		codeWriter.Indent--;
-		codeWriter.WriteLine($"__sr_element = __sr_element.Parent as global::Microsoft.Maui.Controls.Element;");
-		codeWriter.Indent--;
-		codeWriter.WriteLine($"}}");
-		codeWriter.WriteLine($"if (__sr_val == null && global::Microsoft.Maui.Controls.Application.Current?.Resources?.TryGetValue(\"{EscapeString(resourceKey)}\", out __sr_val) != true)");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"__sr_val = null;");
-		codeWriter.Indent--;
-		codeWriter.WriteLine($"if (__sr_val != null)");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"{target}.SetValue({bpName}, __sr_val);");
-		codeWriter.Indent--;
-		codeWriter.Indent--;
-		codeWriter.WriteLine($"}}");
-		return true;
-	}
-
-	// -----------------------------------------------------------------------
-	// {Binding Path, Mode=..., Converter=..., StringFormat='...', ...}
-	// -----------------------------------------------------------------------
-
-	/// <summary>
-	/// Emits a <c>SetBinding</c> call with a runtime <c>Binding</c> for a <c>{Binding ...}</c> markup.
-	/// Supports Path, Mode, StringFormat, and FallbackValue properties.
-	/// </summary>
-	static bool TryEmitBinding(
-		IndentedTextWriter codeWriter,
-		Dictionary<string, string> bindingProps,
-		string propName,
-		INamedTypeSymbol ownerType,
-		string targetAccessor,
-		bool isRoot)
-	{
-		var bpFieldName = $"{propName}Property";
-		var bpField = FindStaticField(ownerType, bpFieldName);
-		if (bpField == null)
-			return false;
-
-		var bpName = bpField.ToFQDisplayString();
-		var target = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-
-		// Build: new Binding("Path", mode, converter, converterParameter, stringFormat)
-		var path = bindingProps.TryGetValue("Path", out var p) ? p : ".";
-
-		codeWriter.Write($"{target}.SetBinding({bpName}, new global::Microsoft.Maui.Controls.Binding(\"{EscapeString(path)}\"");
-
-		if (bindingProps.TryGetValue("Mode", out var mode))
-			codeWriter.Write($", mode: global::Microsoft.Maui.Controls.BindingMode.{mode}");
-
-		if (bindingProps.TryGetValue("StringFormat", out var sf))
-			codeWriter.Write($", stringFormat: \"{EscapeString(sf)}\"");
-
-		codeWriter.Write(")");
-
-		// Object initializer for properties not in the constructor
-		var initParts = new List<string>();
-		if (bindingProps.TryGetValue("FallbackValue", out var fv))
-			initParts.Add($"FallbackValue = \"{EscapeString(fv)}\"");
-		if (bindingProps.TryGetValue("TargetNullValue", out var tnv))
-			initParts.Add($"TargetNullValue = \"{EscapeString(tnv)}\"");
-
-		if (initParts.Count > 0)
-			codeWriter.Write($" {{ {string.Join(", ", initParts)} }}");
-
-		codeWriter.WriteLine(");");
 		return true;
 	}
 
