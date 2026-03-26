@@ -38,6 +38,11 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        public int CurrentTabIndex =>
+            _shellItem.CurrentItem is not null
+                ? ((IShellItemController)_shellItem).GetItems().IndexOf(_shellItem.CurrentItem)
+                : -1;
+
         // Bar colors are null — Shell applies appearance via IShellBottomNavViewAppearanceTracker
         public Color BarBackgroundColor => null;
         public object BarBackground => null;
@@ -86,6 +91,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 }
             }
         }
+
+        public int CurrentTabIndex =>
+            _shellSection.CurrentItem is not null
+                ? SectionController.GetItems().IndexOf(_shellSection.CurrentItem)
+                : -1;
 
         // Bar colors are null — Shell applies appearance via IShellTabLayoutAppearanceTracker
         public Color BarBackgroundColor => null;

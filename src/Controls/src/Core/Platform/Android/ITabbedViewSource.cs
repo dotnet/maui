@@ -18,6 +18,7 @@ internal interface ITabbedViewSource
 {
     IReadOnlyList<ITab> Tabs { get; }
     ITab CurrentTab { get; set; }
+    int CurrentTabIndex { get; }
     Color BarBackgroundColor { get; }
     object BarBackground { get; }
     Color BarTextColor { get; }
