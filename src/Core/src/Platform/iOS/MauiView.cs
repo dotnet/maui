@@ -62,6 +62,14 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
+		/// <summary>
+		/// Safe area override injected by TemplatedCell2 for CollectionView cells.
+		/// UICollectionView bypasses MAUI's arrange chain, so cells cannot use <see cref="_safeArea"/>.
+		/// Applied as internal padding by <see cref="CrossPlatformArrange"/> and
+		/// <see cref="CrossPlatformMeasure"/> (#33604, #34635).
+		/// </summary>
+		internal SafeAreaPadding CellSafeAreaOverride { get; set; } = SafeAreaPadding.Empty;
+
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
@@ -499,19 +507,23 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The desired size of the view</returns>
 		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			if (_appliesSafeAreaAdjustments)
+			var effectiveSafeArea = _appliesSafeAreaAdjustments ? _safeArea
+				: !CellSafeAreaOverride.IsEmpty ? CellSafeAreaOverride
+				: SafeAreaPadding.Empty;
+
+			if (!effectiveSafeArea.IsEmpty)
 			{
 				// When responding to safe area, we need to adjust the constraints to account for the safe area.
-				widthConstraint -= _safeArea.HorizontalThickness;
-				heightConstraint -= _safeArea.VerticalThickness;
+				widthConstraint -= effectiveSafeArea.HorizontalThickness;
+				heightConstraint -= effectiveSafeArea.VerticalThickness;
 			}
 
 			var crossPlatformSize = CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
 
-			if (_appliesSafeAreaAdjustments)
+			if (!effectiveSafeArea.IsEmpty)
 			{
 				// If we're responding to the safe area, we need to add the safe area back to the size so the container can allocate the correct space
-				crossPlatformSize = new Size(crossPlatformSize.Width + _safeArea.HorizontalThickness, crossPlatformSize.Height + _safeArea.VerticalThickness);
+				crossPlatformSize = new Size(crossPlatformSize.Width + effectiveSafeArea.HorizontalThickness, crossPlatformSize.Height + effectiveSafeArea.VerticalThickness);
 			}
 
 			return crossPlatformSize;
@@ -527,6 +539,10 @@ namespace Microsoft.Maui.Platform
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = AdjustForSafeArea(bounds);
+			}
+			else if (!CellSafeAreaOverride.IsEmpty)
+			{
+				bounds = CellSafeAreaOverride.InsetRect(bounds);
 			}
 
 			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
