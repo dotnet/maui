@@ -125,9 +125,10 @@ Based on the trigger, determine the investigation scope:
 curl -s "https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302,313,314&reasonFilter=pullRequest&branchName=refs/pull/${{inputs.pr_number}}/merge&\$top=5&api-version=7.1"
 ```
 
-**If scheduled run (no inputs)**: Find recent failures on the `main` branch:
+**If scheduled run (no inputs)**: Find recent failures on the `main` branch across ALL three pipelines:
 ```bash
-curl -s "https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&resultFilter=failed&branchName=refs/heads/main&\$top=5&api-version=7.1"
+# Check all three pipelines for failures on main
+curl -s "https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302,313,314&resultFilter=failed&branchName=refs/heads/main&\$top=10&api-version=7.1"
 ```
 If no recent failures on `main`, call `noop` with "No recent CI failures on main — all clear" and stop.
 
@@ -152,9 +153,16 @@ If no recent failures on `main`, call `noop` with "No recent CI failures on main
    - Stack traces and exception messages
    - Test failure names and assertion messages
 
-### Phase 3: Check Helix Test Results (for device test builds)
+### Phase 3: Check Helix Test Results
 
-If the build is from `maui-pr-devicetests` (def 314) or you suspect hidden test failures:
+Helix is used by `maui-pr` (unit tests), `maui-pr-devicetests` (device tests), and `maui-pr-uitests` (UI tests). **Always check Helix** for any build that sends tests to Helix.
+
+**When investigating a PR**: After checking the specific build, also query the OTHER two pipelines for the same PR to give a complete picture:
+```bash
+# Get all builds across all 3 pipelines for a PR
+curl -s "https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302,313,314&reasonFilter=pullRequest&branchName=refs/pull/{PR}/merge&\$top=10&api-version=7.1"
+```
+Report on failures from ALL pipelines, not just the one build you were given.
 
 1. **Find the Helix correlation ID** from the build's custom properties or timeline task outputs
 2. **Query Helix for test results**:
