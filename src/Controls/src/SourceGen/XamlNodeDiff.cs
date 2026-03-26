@@ -311,7 +311,8 @@ static class XamlNodeDiff
 	static bool DiffNode(ElementNode oldNode, ElementNode newNode,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		// Structural check: element type must match
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
@@ -330,14 +331,17 @@ static class XamlNodeDiff
 
 		// Diff properties (simple value attributes)
 		var propDiffs = new List<PropertyDiff>();
-		if (!DiffProperties(oldNode, newNode, propDiffs))
+		if (!DiffProperties(oldNode, newNode, propDiffs, forceBindingRefresh, out var xDataTypeChanged))
 			return false;
 
 		if (propDiffs.Count > 0)
 			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType));
 
+		// If x:DataType changed on this node, propagate to all descendant bindings
+		bool childForceRefresh = forceBindingRefresh || xDataTypeChanged;
+
 		// Diff children
-		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, childForceRefresh);
 	}
 
 	/// <summary>
@@ -349,7 +353,8 @@ static class XamlNodeDiff
 		string parentNodeId,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
 		int newCount = newNode.CollectionItems.Count;
@@ -376,7 +381,7 @@ static class XamlNodeDiff
 		{
 			if (oldCount != newCount)
 				return false;
-			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
 		}
 
 		// All children are elements. Fast path: same count + same positional types → no child list change
@@ -404,7 +409,7 @@ static class XamlNodeDiff
 			{
 				// If no duplicate types, positional is unambiguous — use fast path
 				if (!hasDuplicateTypes)
-					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
 
 				// Duplicate types exist — use cost-based matching to find optimal assignment.
 				// If the optimal assignment is the identity (same as positional), use fast path.
@@ -450,7 +455,7 @@ static class XamlNodeDiff
 				}
 
 				if (isIdentity)
-					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
 
 				// Optimal matching differs from positional — fall through to general case
 				// which will produce a ChildListChangeDiff with reorder
@@ -458,7 +463,7 @@ static class XamlNodeDiff
 		}
 
 		// General case: type-based matching for reorder/add/remove
-		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
 	}
 
 	/// <summary>
@@ -470,7 +475,8 @@ static class XamlNodeDiff
 		string parentNodeId,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		int count = oldNode.CollectionItems.Count;
 		for (int i = 0; i < count; i++)
@@ -480,7 +486,7 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges))
+				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh))
 					return false;
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
@@ -512,7 +518,8 @@ static class XamlNodeDiff
 		string parentNodeId,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
 		int newCount = newNode.CollectionItems.Count;
@@ -587,7 +594,7 @@ static class XamlNodeDiff
 		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode)
 		foreach (var (oldIdx, newIdx) in matched)
 		{
-			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges))
+			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh))
 				return false;
 		}
 
@@ -662,10 +669,16 @@ static class XamlNodeDiff
 	/// Diffs the <see cref="ElementNode.Properties"/> dictionaries of two nodes.
 	/// All property changes are recorded — simple <see cref="ValueNode"/> values, markup extensions,
 	/// and nested elements alike. Only changes to codegen-sensitive <c>x:</c> properties
-	/// (e.g. <c>x:Name</c>, <c>x:Class</c>, <c>x:DataType</c>) trigger structural fallback.
+	/// (e.g. <c>x:Name</c>, <c>x:Class</c>) trigger structural fallback.
+	/// When <paramref name="forceBindingRefresh"/> is <see langword="true"/>, all binding MarkupNode
+	/// properties are treated as changed even if the markup string is identical — this propagates
+	/// <c>x:DataType</c> changes from ancestor nodes.
 	/// </summary>
-	static bool DiffProperties(ElementNode oldNode, ElementNode newNode, List<PropertyDiff> diffs)
+	static bool DiffProperties(ElementNode oldNode, ElementNode newNode, List<PropertyDiff> diffs,
+		bool forceBindingRefresh, out bool xDataTypeChanged)
 	{
+		xDataTypeChanged = false;
+
 		// Check all properties in the old node
 		foreach (var kvp in oldNode.Properties)
 		{
@@ -674,12 +687,24 @@ static class XamlNodeDiff
 
 			if (newNode.Properties.TryGetValue(name, out var newPropNode))
 			{
+				// x:DataType is a compile-time directive, not a runtime property.
+				// Detect change but don't emit a PropertyDiff.
+				if (IsXDataType(name))
+				{
+					if (!NodeValueEquals(oldPropNode, newPropNode))
+						xDataTypeChanged = true;
+					continue;
+				}
+
 				// Codegen-sensitive x: property changed → structural regardless of value
 				if (IsCodegenSensitive(name) && !NodeValueEquals(oldPropNode, newPropNode))
 					return false;
 
 				// Both sides have the property — compare values
-				if (!NodeValueEquals(oldPropNode, newPropNode))
+				bool valueChanged = !NodeValueEquals(oldPropNode, newPropNode);
+				bool forceThisBinding = forceBindingRefresh && IsBindingMarkup(newPropNode);
+
+				if (valueChanged || forceThisBinding)
 				{
 					if (newPropNode is ValueNode newVal)
 					{
@@ -698,6 +723,11 @@ static class XamlNodeDiff
 			else
 			{
 				// Property was removed in new version
+				if (IsXDataType(name))
+				{
+					xDataTypeChanged = true;
+					continue;
+				}
 				if (IsCodegenSensitive(name))
 					return false; // removing x:Name/x:Class/etc. → structural
 				// Carry the old node for complex properties so codegen knows what's being cleared
@@ -711,6 +741,11 @@ static class XamlNodeDiff
 		{
 			if (!oldNode.Properties.ContainsKey(kvp.Key))
 			{
+				if (IsXDataType(kvp.Key))
+				{
+					xDataTypeChanged = true;
+					continue;
+				}
 				if (IsCodegenSensitive(kvp.Key))
 					return false; // adding x:Name/x:Class/etc. → structural
 
@@ -733,6 +768,8 @@ static class XamlNodeDiff
 	/// <summary>
 	/// Returns <see langword="true"/> when <paramref name="name"/> is a codegen-sensitive
 	/// <c>x:</c> attribute whose change requires full code regeneration (structural fallback).
+	/// Note: <c>x:DataType</c> is NOT included — it is handled incrementally by forcing
+	/// all binding MarkupNodes in the subtree to re-emit with the new type.
 	/// </summary>
 	static bool IsCodegenSensitive(XmlName name)
 	{
@@ -743,7 +780,6 @@ static class XamlNodeDiff
 		{
 			case "Name":
 			case "Class":
-			case "DataType":
 			case "ClassModifier":
 			case "FieldModifier":
 			case "TypeArguments":
@@ -753,6 +789,22 @@ static class XamlNodeDiff
 				return false;
 		}
 	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> when the property is <c>x:DataType</c>,
+	/// which is a compile-time directive (not a runtime property) that affects compiled bindings.
+	/// </summary>
+	static bool IsXDataType(XmlName name)
+		=> name.NamespaceURI == "x" && name.LocalName == "DataType";
+
+	/// <summary>
+	/// Returns <see langword="true"/> when the value node is a binding markup extension
+	/// (e.g. <c>{Binding ...}</c>, <c>{TemplateBinding ...}</c>) that depends on <c>x:DataType</c>.
+	/// </summary>
+	static bool IsBindingMarkup(INode node)
+		=> node is MarkupNode mn
+			&& (mn.MarkupString.StartsWith("{Binding", StringComparison.Ordinal)
+				|| mn.MarkupString.StartsWith("{TemplateBinding", StringComparison.Ordinal));
 
 	// -------------------------------------------------------------------------
 	// Helpers

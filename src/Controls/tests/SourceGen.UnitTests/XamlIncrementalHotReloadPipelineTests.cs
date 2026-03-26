@@ -298,6 +298,33 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V21: Same bindings but x:DataType changed to a different ViewModel
+	const string PageXamlV1_BindingWithDataType = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:MyViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="{Binding Name}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	const string PageXamlV21_DataTypeChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:OtherViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="{Binding Title}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -839,6 +866,41 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
 		Assert.Contains("CreateTypedBindingFrom_", uc, StringComparison.Ordinal);
 		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XDataTypeChange_UCRecompilesBindingsWithNewType()
+	{
+		// Changing x:DataType from MyViewModel to OtherViewModel should produce a UC
+		// that re-emits all bindings with the new TypedBinding<OtherViewModel, ...>
+		XamlHotReloadState.Reset();
+		const string viewModels = """
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					public string Name { get; set; }
+				}
+				public class OtherViewModel
+				{
+					public string Title { get; set; }
+				}
+			}
+			""";
+		var (_, run2) = TwoRunsWithSource(
+			PageXamlV1_BindingWithDataType,
+			PageXamlV21_DataTypeChanged,
+			additionalSource: viewModels);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// UC should NOT trigger structural fallback (no "return;" before binding setup)
+		// It should contain SetBinding with TypedBinding for the new type
+		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("OtherViewModel", uc, StringComparison.Ordinal);
+		// Should NOT reference old type
+		Assert.DoesNotContain("MyViewModel", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------

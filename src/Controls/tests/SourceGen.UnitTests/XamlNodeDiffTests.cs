@@ -935,15 +935,36 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XDataType_Changed_ReturnsNull()
+	public void XDataType_Changed_NoBindings_EmptyDiff()
 	{
-		// x:DataType drives compiled bindings → any change is structural
+		// x:DataType changed but no bindings → no property diffs needed (incremental, not structural)
 		var old = Parse(Page("<Label />", extraAttrs: "x:DataType=\"MyViewModel\""));
 		var @new = Parse(Page("<Label />", extraAttrs: "x:DataType=\"OtherViewModel\""));
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Empty(diff.NodeChanges);
+		Assert.Empty(diff.ChildListChanges);
+	}
+
+	[Fact]
+	public void XDataType_Changed_BindingsForceRefreshed()
+	{
+		// x:DataType changed → all binding MarkupNodes should appear as changed
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />", extraAttrs: "x:DataType=\"MyViewModel\""));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />", extraAttrs: "x:DataType=\"OtherViewModel\""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// The Label's Text binding should be forced into the diff even though it's identical
+		Assert.Single(diff.NodeChanges);
+		var nd = diff.NodeChanges[0];
+		Assert.Single(nd.PropertyChanges);
+		Assert.Equal("Text", nd.PropertyChanges[0].PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, nd.PropertyChanges[0].Kind);
+		Assert.NotNull(nd.PropertyChanges[0].NewNode); // MarkupNode
 	}
 
 	[Fact]
