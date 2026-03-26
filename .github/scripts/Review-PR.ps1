@@ -3,13 +3,14 @@
     Runs a PR review using Copilot CLI with skill-based prompts.
 
 .DESCRIPTION
-    Orchestrates a 5-step PR review by invoking Copilot CLI with skill prompts:
+    Orchestrates a PR review by invoking scripts and Copilot CLI:
     
     Step 0: Branch setup        - Create review branch from main, merge PR squashed
-    Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
-    Step 2: pr-finalize skill   - Verify PR title/description match implementation
-    Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize)
-    Step 4: Apply labels        - Apply agent labels based on review results
+    Step 1: Gate                - Run test verification directly (verify-tests-fail.ps1)
+    Step 2: pr-review skill     - 3-phase review (Pre-Flight, Try-Fix, Report)
+    Step 3: pr-finalize skill   - Verify PR title/description match implementation
+    Step 4: Post AI Summary     - Directly runs posting scripts (review + finalize)
+    Step 5: Apply labels        - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
     If squash-merge conflicts, the script posts a comment on the PR and exits.
@@ -438,44 +439,94 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 1: PR Review (4-phase skill)
+#  STEP 1: Gate — Test Verification (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
-$step1Prompt = @"
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+Write-Host "║  STEP 1: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+
+$gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
+
+# Detect tests in PR
+Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
+$detectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+& pwsh -NoProfile -Command "& '$detectScript' -PRNumber $PRNumber | Out-Null" 2>&1 | ForEach-Object { Write-Host "    $_" }
+
+# Determine platform for gate
+$gatePlatform = if ($Platform) { $Platform } else { "android" }
+Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
+
+$verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
+& pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+$gateExitCode = $LASTEXITCODE
+
+$gateResult = if ($gateExitCode -eq 0) { "PASSED" } else { "FAILED" }
+Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $(if ($gateExitCode -eq 0) { "Green" } else { "Red" })
+
+# Copy the verification report to gate/content.md if it exists
+$verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+if (Test-Path $verificationReport) {
+    Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
+} elseif (-not (Test-Path (Join-Path $gateOutputDir "content.md"))) {
+    # Create a minimal gate content if nothing was generated
+    "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
+        Set-Content (Join-Path $gateOutputDir "content.md")
+}
+
+# Restore review branch
+git checkout $reviewBranch 2>$null | Out-Null
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 2: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
+# ═════════════════════════════════════════════════════════════════════════════
+
+$gateStatusForPrompt = if ($gateResult -eq "PASSED") {
+    "Gate ✅ PASSED — tests FAIL without fix, PASS with fix."
+} else {
+    "Gate ❌ FAILED — tests did NOT behave as expected."
+}
+
+$step2Prompt = @"
 Use a skill to review PR #$PRNumber.
 
 $platformInstruction
 $autonomousRules
 
+**Gate result (already completed in a prior step):** $gateStatusForPrompt
+Do NOT re-run gate verification. The gate phase is handled separately.
+
 📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
 "@
 
-Invoke-CopilotStep -StepName "STEP 1: PR REVIEW" -Prompt $step1Prompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 2: PR Finalize
+#  STEP 3: PR Finalize
 # ═════════════════════════════════════════════════════════════════════════════
 
-$step2Prompt = @"
+$step3Prompt = @"
 Use a skill to finalize PR #$PRNumber. Write findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md``.
 $autonomousRules
 "@
 
-Invoke-CopilotStep -StepName "STEP 2: PR FINALIZE" -Prompt $step2Prompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 3: PR FINALIZE" -Prompt $step3Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 3: Post AI Summary Comment (direct script invocation)
+#  STEP 4: Post AI Summary Comment (direct script invocation)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "║  STEP 4: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
@@ -522,12 +573,12 @@ if (Test-Path $finalizeScript) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 4: Apply Labels
+#  STEP 5: Apply Labels
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║  STEP 4: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "║  STEP 5: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"

@@ -10,7 +10,8 @@
 
 ## Prerequisites
 
-- Phases 1-3 (Pre-Flight, Gate, Try-Fix) must be complete before starting
+- Phases 1-2 (Pre-Flight, Try-Fix) must be complete before starting
+- Gate result is available from the prompt (ran separately before this skill)
 
 ---
 
