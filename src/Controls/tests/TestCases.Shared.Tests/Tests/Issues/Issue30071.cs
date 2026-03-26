@@ -15,7 +15,6 @@ public class Issue30071 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
-	[Category(UITestCategories.Editor)]
 	public void Issue30071PlaceholderCharacterSpacingShouldApply()
 	{
 		App.WaitForElement("label");
@@ -24,7 +23,6 @@ public class Issue30071 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
-	[Category(UITestCategories.Editor)]
 	public void Issue30071PlaceholderCharacterSpacingShouldChange()
 	{
 		App.WaitForElement("entry");

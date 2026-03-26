@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, "30071", "Entry Editor Placeholder CharacterSpacing Property Not Working on Windows", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 30071, "Entry Editor Placeholder CharacterSpacing Property Not Working on Windows", PlatformAffected.UWP)]
 
 public class Issue30071 : ContentPage
 {
