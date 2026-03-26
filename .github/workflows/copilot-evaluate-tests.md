@@ -76,22 +76,13 @@ steps:
   # Only needed for workflow_dispatch — for pull_request_target and issue_comment,
   # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
   # workflow_dispatch skips the platform checkout entirely, so we must do it here.
-  # Gate: only check out PRs from authors with write access (the checkout step
-  # runs with GITHUB_TOKEN, so we don't want to check out untrusted fork code).
+  # The script gates on PR author having write access before checkout.
   - name: Checkout PR and restore agent infrastructure
     if: github.event_name == 'workflow_dispatch'
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ inputs.pr_number }}
-    run: |
-      PR_AUTHOR=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json author --jq '.author.login')
-      PERMISSION=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$PR_AUTHOR/permission" --jq '.permission')
-      if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
-        echo "⏭️ PR author '$PR_AUTHOR' has '$PERMISSION' access. workflow_dispatch only processes PRs from authors with write access."
-        exit 1
-      fi
-      echo "✅ PR author '$PR_AUTHOR' has '$PERMISSION' access — proceeding with checkout."
-      pwsh .github/scripts/Checkout-GhAwPr.ps1
+    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
 # Evaluate PR Tests

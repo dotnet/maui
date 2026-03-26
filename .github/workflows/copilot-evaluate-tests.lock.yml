@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"cabc5b0915b4add16085501d23269d5b5267807a442811973b6351cfbe8bc7be","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d983973d21a026cabac2f3fb0750961f00b90b25c3b2329f1735c6f42a877170","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -324,15 +324,7 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         if: github.event_name == 'workflow_dispatch'
         name: Checkout PR and restore agent infrastructure
-        run: |-
-          PR_AUTHOR=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json author --jq '.author.login')
-          PERMISSION=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$PR_AUTHOR/permission" --jq '.permission')
-          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
-            echo "⏭️ PR author '$PR_AUTHOR' has '$PERMISSION' access. workflow_dispatch only processes PRs from authors with write access."
-            exit 1
-          fi
-          echo "✅ PR author '$PR_AUTHOR' has '$PERMISSION' access — proceeding with checkout."
-          pwsh .github/scripts/Checkout-GhAwPr.ps1
+        run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 
       - name: Configure Git credentials
         env:
