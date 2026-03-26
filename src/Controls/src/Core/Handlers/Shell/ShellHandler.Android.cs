@@ -2,22 +2,14 @@
 #if ANDROID
 using System;
 using Android.Content;
-using Android.Views;
-using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
-using AndroidX.Fragment.App;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Microsoft.Maui.Graphics;
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-
 namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>

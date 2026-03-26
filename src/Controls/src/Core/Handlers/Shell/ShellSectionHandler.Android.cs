@@ -1,12 +1,9 @@
 #nullable disable
-#if ANDROID
-#pragma warning disable CS0067 // Event is never used
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -15,16 +12,10 @@ using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
-using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -361,15 +352,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Ensure the container FragmentContainerView is visible when tabs are placed
             var topTabsContainer = FindNavigationLayoutTopTabsContainer();
-            if (topTabsContainer is not null)
-            {
-                topTabsContainer.Visibility = ViewStates.Visible;
-            }
+            topTabsContainer?.Visibility = ViewStates.Visible;
 
-            if (_contentTabLayout is not null)
-            {
-                _contentTabLayout.Visibility = ViewStates.Visible;
-            }
+            _contentTabLayout?.Visibility = ViewStates.Visible;
         }
 
         /// <summary>
@@ -381,17 +366,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Always hide the container FragmentContainerView so it doesn't take space in the AppBarLayout,
             // even if no tabs were placed (initial single-content case)
             var topTabsContainer = FindNavigationLayoutTopTabsContainer();
-            if (topTabsContainer is not null)
-            {
-                topTabsContainer.Visibility = ViewStates.Gone;
-            }
+            topTabsContainer?.Visibility = ViewStates.Gone;
 
             _tabbedViewManager?.RemoveTabs();
 
-            if (_contentTabLayout is not null)
-            {
-                _contentTabLayout.Visibility = ViewStates.Gone;
-            }
+            _contentTabLayout?.Visibility = ViewStates.Gone;
         }
 
         protected override void DisconnectHandler(AView platformView)
@@ -407,11 +386,8 @@ namespace Microsoft.Maui.Controls.Handlers
             RemoveTopTabs();
 
             // Cleanup TabbedViewManager
-            if (_tabbedViewManager is not null)
-            {
-                _tabbedViewManager.SetElement(null);
-                _tabbedViewManager = null;
-            }
+            _tabbedViewManager?.SetElement(null);
+            _tabbedViewManager = null;
             _shellSectionAdapter = null;
 
             // Cleanup adapter
@@ -1275,7 +1251,13 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        // Required by IShellSectionRenderer → IShellObservableFragment interface.
+        // The new handler architecture (ShellItemHandler) does not subscribe to this event;
+        // it was only consumed by the old ShellItemRendererBase.HandleFragmentUpdate().
+#pragma warning disable CS0067
         public event EventHandler AnimationFinished;
+#pragma warning restore CS0067
+
         public event EventHandler Destroyed;
 
         public void Dispose()
@@ -1389,4 +1371,3 @@ namespace Microsoft.Maui.Controls.Handlers
         }
     }
 }
-#endif
