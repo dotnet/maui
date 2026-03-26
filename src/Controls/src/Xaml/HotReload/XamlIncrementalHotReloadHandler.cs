@@ -7,11 +7,12 @@ using System.Reflection;
 // Single assembly-level MetadataUpdateHandler for all XAML page types in user assemblies.
 // The .NET hot-reload infrastructure passes the list of updated types to UpdateApplication();
 // this handler calls the generated UpdateComponent() method on each live instance.
-// TEMPORARILY DISABLED for debugging — using test app's MUH instead
-//#pragma warning disable IL2026
-//[assembly: global::System.Reflection.Metadata.MetadataUpdateHandler(
-//    typeof(global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler))]
-//#pragma warning restore IL2026
+// The handler is a no-op for types compiled without EnableMauiIncrementalHotReload
+// (no UpdateComponent method exists, so the type is silently skipped).
+#pragma warning disable IL2026
+[assembly: global::System.Reflection.Metadata.MetadataUpdateHandler(
+    typeof(global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler))]
+#pragma warning restore IL2026
 
 namespace Microsoft.Maui.Controls.Xaml;
 
