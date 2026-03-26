@@ -442,7 +442,7 @@ function Write-Report([hashtable]$Report) {
     foreach ($c in $Report.Corrections) {
         $current = if ($c.Current) { $c.Current } else { "(none)" }
         $action = if ($c.Current) { "CHANGE" } else { "SET" }
-        $via = if ($c.RelatedPr) { " (via PR #$($c.RelatedPr))" } else { "" }
+        $via = if ($c.ContainsKey('RelatedPr') -and $c.RelatedPr) { " (via PR #$($c.RelatedPr))" } else { "" }
         Write-Host "  [$action] $($c.ItemType) #$($c.Number)$via`: $current → $($c.Resolved)"
     }
     Write-Host ""
