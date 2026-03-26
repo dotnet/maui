@@ -257,9 +257,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
             }
 
-            // Trigger initial appearance update
+            // Trigger initial appearance update — only for the active section.
+            // During SwitchToShellItem, ViewPager2 recreates fragments for ALL sections.
+            // Without this guard, an inactive section (e.g., TabOne with NavStackCount=3)
+            // would override the toolbar with its stale page, wiping the flyout icon.
             var currentContent = VirtualView.CurrentItem;
-            if (currentContent is not null)
+            if (currentContent is not null && IsCurrentlyActiveSection())
             {
                 var page = ((IShellContentController)currentContent).GetOrCreateContent();
                 if (page is not null && shell is not null)
@@ -1033,13 +1036,16 @@ namespace Microsoft.Maui.Controls.Handlers
             var shell = shellItem?.Parent as Shell;
 
             if (shellSection is null || shellItem is null || shell is null)
+            {
                 return;
-            if (shell.CurrentItem != shellItem)
+            }
+
+            if (shell.CurrentItem != shellItem ||
+                shellItem.CurrentItem != shellSection ||
+                shellSection.CurrentItem != _shellContent)
+            {
                 return;
-            if (shellItem.CurrentItem != shellSection)
-                return;
-            if (shellSection.CurrentItem != _shellContent)
-                return;
+            }
 
             // Update toolbar
             if (newStack.Count > 0 && newStack[newStack.Count - 1] is Page currentPage)

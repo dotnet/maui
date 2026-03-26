@@ -2,17 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.Content;
-using AndroidX.Core.Graphics;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Widget;
@@ -22,7 +18,6 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -277,7 +272,7 @@ internal class TabbedViewManager
 
             if (Element.CurrentTab is not null)
             {
-                _previousTabIndex = Element.Tabs.IndexOf(Element.CurrentTab);
+                _previousTabIndex = Element.CurrentTabIndex;
             }
 
             Element.TabsChanged += OnTabsCollectionChanged;
@@ -342,10 +337,10 @@ internal class TabbedViewManager
         _pendingFragment = null;
 
         int id;
-        var rootManager =
-            _context.GetNavigationRootManager();
+        var rootManager = _context.GetNavigationRootManager();
 
         _tabItemStyleLoaded = false;
+
         if (rootManager.RootView is null)
         {
             rootManager.RootViewChanged += RootViewChanged;
@@ -355,16 +350,22 @@ internal class TabbedViewManager
         if (IsBottomTabPlacement)
         {
             id = Resource.Id.navigationlayout_bottomtabs;
+
             if (_tabplacementId == id)
+            {
                 return;
+            }
 
             SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
         }
         else
         {
             id = Resource.Id.navigationlayout_toptabs;
+
             if (_tabplacementId == id)
+            {
                 return;
+            }
 
             SetContentBottomMargin(0);
         }
@@ -378,10 +379,24 @@ internal class TabbedViewManager
                     {
                         if (IsBottomTabPlacement)
                         {
+                            // Detach from old parent before wrapping in new ViewFragment.
+                            // During clear+recreate, the old ViewFragment removal may not have
+                            // completed yet, so the view still has a parent — causing
+                            // "The specified child already has a parent" crash.
+                            if (BottomNavigationView?.Parent is ViewGroup bnvParent)
+                            {
+                                bnvParent.RemoveView(BottomNavigationView);
+                            }
+
                             _tabLayoutFragment = new ViewFragment(BottomNavigationView);
                         }
                         else
                         {
+                            if (TabLayout?.Parent is ViewGroup tabParent)
+                            {
+                                tabParent.RemoveView(TabLayout);
+                            }
+
                             _tabLayoutFragment = new ViewFragment(TabLayout);
                         }
 
@@ -400,6 +415,7 @@ internal class TabbedViewManager
     {
         var rootManager = _context.GetNavigationRootManager();
         var layoutContent = rootManager.RootView?.FindViewById(Resource.Id.navigationlayout_content);
+
         if (layoutContent is not null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
         {
             cl.BottomMargin = bottomMargin;
@@ -473,13 +489,15 @@ internal class TabbedViewManager
         }
 
         var adapter = _viewPager?.Adapter;
+
         if (adapter is not null)
         {
-            var currentTab = Element.CurrentTab;
-            var currentIndex = currentTab is not null ? Element.Tabs.IndexOf(currentTab) : -1;
+            var currentIndex = Element.CurrentTabIndex;
 
             if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Tabs.Count && currentIndex >= 0)
+            {
                 _viewPager.SetCurrentItem(currentIndex, false);
+            }
 
             adapter.NotifyDataSetChanged();
         }
@@ -494,7 +512,9 @@ internal class TabbedViewManager
         if (IsBottomTabPlacement)
         {
             if (_bottomNavigationView is not null && index >= 0 && _bottomNavigationView.SelectedItemId != index)
+            {
                 _bottomNavigationView.SelectedItemId = index;
+            }
         }
         else if (_tabLayout is not null && index >= 0 && index < _tabLayout.TabCount)
         {
@@ -519,6 +539,7 @@ internal class TabbedViewManager
         }
 
         int selectedIndex = tab.Position;
+
         if (Element.Tabs.Count > selectedIndex && selectedIndex >= 0)
         {
             Element.CurrentTab = Element.Tabs[selectedIndex];
@@ -536,7 +557,8 @@ internal class TabbedViewManager
             return;
         }
 
-        var currentIndex = Element.Tabs.IndexOf(Element.CurrentTab);
+        var currentIndex = Element.CurrentTabIndex;
+
         if (currentIndex >= 0)
         {
             _viewPager.SetCurrentItem(currentIndex, Element.IsSmoothScrollEnabled);
@@ -603,8 +625,6 @@ internal class TabbedViewManager
 
         _bottomNavigationView.Visibility = ViewStates.Visible;
 
-        _bottomNavigationView.SetOnItemSelectedListener(_listeners);
-
         int maxItems = _bottomNavigationView.MaxItemCount;
         bool showMore = tabs.Count > maxItems;
         int end = showMore ? maxItems - 1 : tabs.Count;
@@ -635,9 +655,8 @@ internal class TabbedViewManager
             moreItem?.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
         }
 
-        // Set initial selection
-        var currentTab = Element.CurrentTab;
-        var currentIndex = currentTab is not null ? tabs.IndexOf(currentTab) : -1;
+        // Set initial selection using pre-computed index (avoids wrapper comparison issues)
+        var currentIndex = Element.CurrentTabIndex;
         if (currentIndex >= 0 && currentIndex < tabs.Count)
         {
             int targetId = currentIndex >= end ? BottomNavigationViewUtils.MoreTabId : currentIndex;
@@ -647,7 +666,14 @@ internal class TabbedViewManager
         _bottomNavigationView.SetShiftMode(false, false);
 
         if (Element.CurrentTab is null && tabs.Count > 0)
+        {
             Element.CurrentTab = tabs[0];
+        }
+
+        // Set listener AFTER menu population and initial selection.
+        // Adding items to an empty BNV auto-selects item 0, firing OnNavigationItemSelected
+        // before we establish the correct selection — poisoning Shell's CurrentItem.
+        _bottomNavigationView.SetOnItemSelectedListener(_listeners);
     }
 
     async void LoadBottomNavIconAsync(IMenuItem menuItem, ITab tab)
@@ -665,9 +691,8 @@ internal class TabbedViewManager
                 menuItem.SetIcon(result.Value);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"TabbedViewManager: Failed to load icon: {ex.Message}");
         }
     }
 
@@ -676,7 +701,9 @@ internal class TabbedViewManager
         TabLayout tabs = _tabLayout;
 
         if (tabs.TabCount != Element.Tabs.Count)
+        {
             return;
+        }
 
         for (var i = 0; i < Element.Tabs.Count; i++)
         {
@@ -715,9 +742,13 @@ internal class TabbedViewManager
             if (_bottomNavigationView is not null)
             {
                 if (Element.BarBackgroundColor is null)
+                {
                     _bottomNavigationView.SetBackground(null);
+                }
                 else
+                {
                     _bottomNavigationView.SetBackgroundColor(Element.BarBackgroundColor.ToPlatform());
+                }
             }
         }
         else
@@ -791,10 +822,14 @@ internal class TabbedViewManager
         Color barSelectedItemColor = BarSelectedItemColor;
 
         if (barItemColor is null && barTextColor is null && barSelectedItemColor is null)
+        {
             return _originalTabTextColors;
+        }
 
         if (_newTabTextColors is not null)
+        {
             return _newTabTextColors;
+        }
 
         int checkedColor;
         int? defaultColor = null;
@@ -823,7 +858,9 @@ internal class TabbedViewManager
     internal virtual ColorStateList GetItemIconTintColorState(int tabIndex)
     {
         if (tabIndex < 0 || tabIndex >= Element.Tabs.Count)
+        {
             return null;
+        }
 
         var tab = Element.Tabs[tabIndex];
 
@@ -883,16 +920,21 @@ internal class TabbedViewManager
 
     void OnMoreSheetDismissedInternal(BottomSheetDialog dialog)
     {
-        var currentTab = Element.CurrentTab;
-        var index = currentTab is not null ? Element.Tabs.IndexOf(currentTab) : -1;
+        var index = Element.CurrentTabIndex;
 
         var menu = _bottomNavigationView?.Menu;
+
         if (menu is null || index < 0)
+        {
             return;
+        }
 
         int targetIndex = Math.Min(index, menu.Size() - 1);
+
         if (targetIndex < 0)
+        {
             return;
+        }
 
         menu.GetItem(targetIndex)?.SetChecked(true);
     }
@@ -1002,6 +1044,7 @@ internal class TabbedViewManager
         _newTabTextColors = null;
 
         _currentBarTextColorStateList = GetItemTextColorStates() ?? _originalTabTextColors;
+
         if (IsBottomTabPlacement)
         {
             _bottomNavigationView.ItemTextColor = _currentBarTextColorStateList;
@@ -1020,6 +1063,7 @@ internal class TabbedViewManager
     internal virtual void SetIconColorFilter(int tabIndex, TabLayout.Tab tab, bool selected)
     {
         var icon = tab.Icon;
+
         if (icon is null)
         {
             return;
@@ -1234,7 +1278,7 @@ internal class TabbedViewManager
         {
             if (_manager.Element?.CurrentTab is not null)
             {
-                var currentIndex = _manager.Element.Tabs.IndexOf(_manager.Element.CurrentTab);
+                var currentIndex = _manager.Element.CurrentTabIndex;
                 _manager.SetIconColorFilter(currentIndex, tab, false);
             }
         }

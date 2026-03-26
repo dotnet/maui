@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers
         Page _displayedPage;
         bool _isNavigating; // Prevent recursive navigation
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
+        bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
 
         // Shared toolbar components (moved from ShellSectionHandler)
         internal Toolbar _shellToolbar; // Virtual Toolbar view
@@ -318,39 +319,6 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Legacy method kept for compatibility - icon loading now handled by TabbedViewManager.
-        /// </summary>
-        [Obsolete("Icon loading is now handled by TabbedViewManager")]
-        async void SetMenuItemIconAsync(IMenuItem menuItem, ShellSection section)
-        {
-            if (section.Icon is null)
-            {
-                return;
-            }
-
-            try
-            {
-                var context = MauiContext?.Context;
-
-                if (context is null)
-                {
-                    return;
-                }
-
-                var icon = await section.Icon.GetPlatformImageAsync(MauiContext);
-
-                if (icon is not null && menuItem is not null)
-                {
-                    menuItem.SetIcon(icon.Value);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ShellItemHandler: Failed to load icon for {section.Title}: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Switches to a new ShellSection using ViewPager2.
         /// The ViewPager2 adapter handles the fragment management.
         /// </summary>
@@ -386,8 +354,20 @@ namespace Microsoft.Maui.Controls.Handlers
             // Update top tabs: remove old section's tabs and evaluate new section's
             NotifyTopTabsForSectionSwitch(_shellSection, newSection);
 
-            // Update bottom navigation
-            _tabbedViewManager?.SetSelectedTab(index);
+            // Update bottom navigation — skip during shell item switch to prevent
+            // the old BNV's listener from poisoning CurrentItem via ProposeSection
+            if (!_switchingShellItem)
+            {
+                _tabbedViewManager?.SetSelectedTab(index);
+            }
+
+            // Remove stale observer from old section before registering on the new one.
+            // Without this, the old section's observer stays active and can fire late
+            // (e.g., TabOne with CanNavigateBack=True overriding TabTwo's toolbar state).
+            if (_shellSection is not null && _shellSection != newSection)
+            {
+                ((IShellSectionController)_shellSection).RemoveDisplayedPageObserver(this);
+            }
 
             // Track the current section
             _shellSection = newSection;
@@ -413,7 +393,16 @@ namespace Microsoft.Maui.Controls.Handlers
             // SetVirtualView triggers DisconnectHandler → ConnectHandler. Without this flag,
             // DisconnectHandler would destroy toolbar, adapter, and fragment references.
             _preserveFragmentResources = true;
+
+            // Suppress MapCurrentItem → SwitchToSection during SetVirtualView.
+            // SetVirtualView remaps all properties including CurrentItem, which triggers
+            // SwitchToSection while the TabbedViewManager still has the OLD ShellItem's adapter.
+            // That causes SetSelectedTab on the old BNV, firing OnNavigationItemSelected which
+            // poisons the old ShellItem's CurrentItem via ProposeSection.
+            _switchingShellItem = true;
             SetVirtualView(newItem);
+            _switchingShellItem = false;
+
             _preserveFragmentResources = false;
 
             // Rebuild ViewPager2 adapter for new ShellItem's sections
@@ -436,6 +425,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Re-register appearance observer with new ShellItem
             RegisterAppearanceObserver();
+
+            // Reset _displayedPage so the final SwitchToSection → AddDisplayedPageObserver →
+            // UpdateDisplayedPage runs fully (not early-returning due to same page reference).
+            // During SetVirtualView above, MapCurrentItem fired and set _displayedPage, but at
+            // that point the appearance observer was removed — so the toolbar update was lost.
+            _displayedPage = null;
 
             // Switch to the new item's current section
             if (newItem.CurrentItem is not null)
@@ -614,9 +609,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 {
                     await _shellSection.Navigation.PopAsync();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"ShellItemHandler: Error handling back press: {ex}");
                 }
             });
 
