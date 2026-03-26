@@ -358,6 +358,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
+			if (_formsEmptyView is not null && _emptyView is not null)
+			{
+				var margin = _formsEmptyView.Margin;
+				_emptyView.Margin = WinUIHelpers.CreateThickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
+			}
+
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
 
 			UpdateEmptyViewVisibility();
