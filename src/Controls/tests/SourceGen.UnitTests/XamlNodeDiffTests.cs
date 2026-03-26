@@ -143,6 +143,23 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
+	public void AttachedPropertyChanged_ReturnsPropertyDiff()
+	{
+		var old = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"0\" /></Grid>"));
+		var @new = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"1\" /></Grid>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var nodeDiff = Assert.Single(diff.NodeChanges);
+		var propDiff = Assert.Single(nodeDiff.PropertyChanges);
+		// Attached property: LocalName is "Grid.Row" (full dotted name)
+		Assert.Equal("Grid.Row", propDiff.PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, propDiff.Kind);
+		Assert.Equal("1", propDiff.NewValue);
+	}
+
+	[Fact]
 	public void MultipleChangedProperties_ReturnsAllDiffs()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" TextColor=\"Blue\" />"));

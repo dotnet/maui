@@ -488,10 +488,19 @@ static class UpdateComponentCodeWriter
 			{
 				var propName = kvp.Key.LocalName;
 				var rawValue = valueNode.Value?.ToString() ?? string.Empty;
-				var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
-				if (valueExpr != null)
-					codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
+				if (propName.Contains('.'))
+				{
+					// Attached property on a new element — use SetValue pattern
+					var syntheticDiff = new PropertyDiff(kvp.Key, PropertyDiffKind.Set, rawValue);
+					TryEmitAttachedPropertyChange(codeWriter, syntheticDiff, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+				}
+				else
+				{
+					var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					if (valueExpr != null)
+						codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
+				}
 			}
 			else if (kvp.Value is MarkupNode)
 			{
@@ -688,6 +697,14 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine("return;");
 			return;
 		}
+
+		// Attached property detection: "Grid.Row" → DeclaringType.RowProperty
+		if (propName.Contains('.'))
+		{
+			TryEmitAttachedPropertyChange(codeWriter, propDiff, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			return;
+		}
+
 		var rawValue = propDiff.NewValue ?? string.Empty;
 		var valueExpr = BuildValueExpression(rawValue, nodeType, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
@@ -700,6 +717,150 @@ static class UpdateComponentCodeWriter
 		}
 
 		codeWriter.WriteLine($"{castPrefix}{propName} = {valueExpr};");
+	}
+
+	// -----------------------------------------------------------------------
+	// Attached property handling
+	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits code for an attached property change like <c>Grid.Row="1"</c>.
+	/// Resolves the declaring type, finds the BindableProperty field, and emits
+	/// <c>((BindableObject)element).SetValue(Grid.RowProperty, value)</c>.
+	/// </summary>
+	static void TryEmitAttachedPropertyChange(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		string varName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		var propName = propDiff.PropertyName.LocalName;
+		var dotIdx = propName.IndexOf('.');
+		var declaringTypeName = propName.Substring(0, dotIdx);
+		var attachedPropName = propName.Substring(dotIdx + 1);
+
+		// Resolve the declaring type (e.g., "Grid" → Microsoft.Maui.Controls.Grid)
+		var declaringXmlType = new XmlType(propDiff.PropertyName.NamespaceURI, declaringTypeName, null);
+		if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var declaringType)
+			|| declaringType == null)
+		{
+			// Try the default MAUI namespace
+			declaringXmlType = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", declaringTypeName, null);
+			if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out declaringType)
+				|| declaringType == null)
+			{
+				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' — fallback");
+				codeWriter.WriteLine("return;");
+				return;
+			}
+		}
+
+		var bpFieldName = $"{attachedPropName}Property";
+		var bpField = FindStaticField(declaringType, bpFieldName);
+		if (bpField == null)
+		{
+			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' — fallback");
+			codeWriter.WriteLine("return;");
+			return;
+		}
+
+		// Handle markup extension values (e.g., Grid.Row="{Binding RowIndex}")
+		if (propDiff.NewNode != null)
+		{
+			if (TryEmitMarkupNodeChange(codeWriter, propDiff, declaringType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				return;
+			codeWriter.WriteLine($"// Complex attached property '{propName}' — fallback");
+			codeWriter.WriteLine("return;");
+			return;
+		}
+
+		// Simple value — try BuildValueExpression first (works if declaring type has a CLR property)
+		var rawValue = propDiff.NewValue ?? string.Empty;
+		var valueExpr = BuildValueExpression(rawValue, declaringType, attachedPropName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+
+		if (valueExpr == null)
+		{
+			// No CLR property — try resolving type from the BP's static getter (e.g., Grid.GetRow)
+			valueExpr = BuildAttachedValueExpression(rawValue, declaringType, attachedPropName, bpField, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+		}
+
+		if (valueExpr == null)
+		{
+			codeWriter.WriteLine($"// Cannot encode attached '{propName}' = \"{EscapeString(rawValue)}\" — fallback");
+			codeWriter.WriteLine("return;");
+			return;
+		}
+
+		var fqDeclaring = declaringType.ToFQDisplayString();
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.SetValue({fqDeclaring}.{bpFieldName}, {valueExpr});");
+	}
+
+	/// <summary>
+	/// Resolves the value type for an attached BP from its static getter method
+	/// (e.g., <c>Grid.GetRow(BindableObject)</c> → returns <c>int</c>).
+	/// Then uses IC's ConvertTo pipeline to convert the raw XAML string value.
+	/// </summary>
+	static string? BuildAttachedValueExpression(
+		string rawValue,
+		INamedTypeSymbol declaringType,
+		string attachedPropName,
+		IFieldSymbol bpField,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		// Find the static getter: Grid.GetRow(BindableObject) → int
+		var getterName = $"Get{attachedPropName}";
+		IMethodSymbol? getter = null;
+		var current = (ITypeSymbol)declaringType;
+		while (current != null)
+		{
+			foreach (var member in current.GetMembers(getterName))
+			{
+				if (member is IMethodSymbol m && m.IsStatic && m.Parameters.Length == 1)
+				{
+					getter = m;
+					break;
+				}
+			}
+			if (getter != null) break;
+			current = current.BaseType!;
+		}
+
+		if (getter == null)
+			return null;
+
+		var targetType = getter.ReturnType;
+		var fqType = targetType.ToFQDisplayString();
+
+		// Try IC's ConvertTo with a synthetic property-like context
+		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		var ctx = new SourceGenContext(
+			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+
+		var valueNode = new ValueNode(rawValue, null, -1, -1);
+		try
+		{
+			var result = valueNode.ConvertTo(targetType, ctx.Writer, ctx);
+			if (result != null && result != "default" && result != string.Empty)
+				return result;
+		}
+		catch
+		{
+			// fall through
+		}
+
+		// Last resort: TypeDescriptor
+		return BuildTypeDescriptorExpression(rawValue, fqType);
 	}
 
 	// -----------------------------------------------------------------------

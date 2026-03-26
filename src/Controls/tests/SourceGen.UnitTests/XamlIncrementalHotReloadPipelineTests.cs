@@ -352,6 +352,29 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V24: Grid with attached properties
+	const string PageXamlV24_GridWithAttached = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="0" Grid.Column="0" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	const string PageXamlV25_GridAttachedChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="1" Grid.Column="2" />
+		    </Grid>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -963,6 +986,22 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains(".Content", uc, StringComparison.Ordinal);
 		// Should NOT fall back
 		Assert.DoesNotContain("Non-layout container", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyChange_UCUsesSetValue()
+	{
+		// Changing Grid.Row and Grid.Column should emit SetValue() calls
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV24_GridWithAttached, PageXamlV25_GridAttachedChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("SetValue", uc, StringComparison.Ordinal);
+		Assert.Contains("RowProperty", uc, StringComparison.Ordinal);
+		Assert.Contains("ColumnProperty", uc, StringComparison.Ordinal);
+		// Should NOT use direct property assignment (element.Grid.Row = value)
+		Assert.DoesNotContain("__uc_0.Grid.Row", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
