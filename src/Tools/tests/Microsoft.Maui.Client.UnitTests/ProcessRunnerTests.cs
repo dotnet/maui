@@ -43,10 +43,10 @@ public class ProcessRunnerTests
 	}
 
 	[Fact]
-	public void SanitizeArg_ValueWithSpaces_ReturnsQuoted()
+	public void SanitizeArg_ValueWithSpaces_ReturnsUnchanged()
 	{
 		var result = ProcessRunner.SanitizeArg("hello world");
-		Assert.Equal("\"hello world\"", result);
+		Assert.Equal("hello world", result);
 	}
 
 	[Fact]
@@ -69,54 +69,54 @@ public class DoctorServiceParseCommandTests
 	[Fact]
 	public void ParseCommand_SingleWord_ReturnsFileNameOnly()
 	{
-		var (fileName, arguments) = DoctorService.ParseCommand("dotnet");
+		var (fileName, args) = DoctorService.ParseCommand("dotnet");
 		Assert.Equal("dotnet", fileName);
-		Assert.Equal(string.Empty, arguments);
+		Assert.Empty(args);
 	}
 
 	[Fact]
 	public void ParseCommand_MultipleWords_SplitsCorrectly()
 	{
-		var (fileName, arguments) = DoctorService.ParseCommand("dotnet workload install maui");
+		var (fileName, args) = DoctorService.ParseCommand("dotnet workload install maui");
 		Assert.Equal("dotnet", fileName);
-		Assert.Equal("workload install maui", arguments);
+		Assert.Equal(new[] { "workload", "install", "maui" }, args);
 	}
 
 	[Fact]
 	public void ParseCommand_QuotedExecutable_SplitsCorrectly()
 	{
-		var (fileName, arguments) = DoctorService.ParseCommand("\"C:\\Program Files\\tool.exe\" --flag value");
+		var (fileName, args) = DoctorService.ParseCommand("\"C:\\Program Files\\tool.exe\" --flag value");
 		Assert.Equal("C:\\Program Files\\tool.exe", fileName);
-		Assert.Equal("--flag value", arguments);
+		Assert.Equal(new[] { "--flag", "value" }, args);
 	}
 
 	[Fact]
 	public void ParseCommand_QuotedExecutableOnly_ReturnsEmptyArgs()
 	{
-		var (fileName, arguments) = DoctorService.ParseCommand("\"my tool\"");
+		var (fileName, args) = DoctorService.ParseCommand("\"my tool\"");
 		Assert.Equal("my tool", fileName);
-		Assert.Equal(string.Empty, arguments);
+		Assert.Empty(args);
 	}
 
 	[Theory]
-	[InlineData("maui android jdk install", "maui", "android jdk install")]
-	[InlineData("maui android install --accept-licenses", "maui", "android install --accept-licenses")]
-	[InlineData("maui android sdk install platform-tools", "maui", "android sdk install platform-tools")]
-	[InlineData("maui android sdk accept-licenses", "maui", "android sdk accept-licenses")]
+	[InlineData("maui android jdk install", "maui", "android,jdk,install")]
+	[InlineData("maui android install --accept-licenses", "maui", "android,install,--accept-licenses")]
+	[InlineData("maui android sdk install platform-tools", "maui", "android,sdk,install,platform-tools")]
+	[InlineData("maui android sdk accept-licenses", "maui", "android,sdk,accept-licenses")]
 	[InlineData("xcode-select --install", "xcode-select", "--install")]
 	public void ParseCommand_RealFixCommands_SplitsCorrectly(string command, string expectedFile, string expectedArgs)
 	{
-		var (fileName, arguments) = DoctorService.ParseCommand(command);
+		var (fileName, args) = DoctorService.ParseCommand(command);
 		Assert.Equal(expectedFile, fileName);
-		Assert.Equal(expectedArgs, arguments);
+		Assert.Equal(expectedArgs.Split(','), args);
 	}
 
 	[Fact]
 	public void ParseCommand_WhitespaceAroundCommand_TrimsCorrectly()
 	{
-		var (fileName, arguments) = DoctorService.ParseCommand("  dotnet  build  ");
+		var (fileName, args) = DoctorService.ParseCommand("  dotnet  build  ");
 		Assert.Equal("dotnet", fileName);
-		Assert.Equal(" build", arguments);
+		Assert.Equal(new[] { "build" }, args);
 	}
 }
 

@@ -126,8 +126,8 @@ public class DoctorService : IDoctorService
 
 		try
 		{
-			var (fileName, arguments) = ParseCommand(fix.Command);
-			var result = await ProcessRunner.RunAsync(fileName, arguments, cancellationToken: cancellationToken);
+			var (fileName, args) = ParseCommand(fix.Command);
+			var result = await ProcessRunner.RunAsync(fileName, args, cancellationToken: cancellationToken);
 			return result.ExitCode == 0;
 		}
 		catch (Exception ex)
@@ -138,10 +138,10 @@ public class DoctorService : IDoctorService
 	}
 
 	/// <summary>
-	/// Splits a command string into executable and arguments.
+	/// Splits a command string into executable and arguments array.
 	/// Handles quoted executables (e.g., "C:\Program Files\tool.exe" --flag).
 	/// </summary>
-	internal static (string fileName, string arguments) ParseCommand(string command)
+	internal static (string fileName, string[] args) ParseCommand(string command)
 	{
 		var trimmed = command.Trim();
 
@@ -151,16 +151,17 @@ public class DoctorService : IDoctorService
 			if (endQuote > 0)
 			{
 				var fileName = trimmed[1..endQuote];
-				var arguments = trimmed[(endQuote + 1)..].TrimStart();
-				return (fileName, arguments);
+				var rest = trimmed[(endQuote + 1)..].Trim();
+				var args = string.IsNullOrEmpty(rest) ? [] : rest.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+				return (fileName, args);
 			}
 		}
 
-		var spaceIndex = trimmed.IndexOf(' ', StringComparison.Ordinal);
-		if (spaceIndex < 0)
-			return (trimmed, string.Empty);
+		var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		if (parts.Length == 0)
+			return (trimmed, []);
 
-		return (trimmed[..spaceIndex], trimmed[(spaceIndex + 1)..]);
+		return (parts[0], parts[1..]);
 	}
 
 	async Task<HealthCheck> CheckDotNetSdkAsync(CancellationToken cancellationToken)
@@ -184,7 +185,7 @@ public class DoctorService : IDoctorService
 			};
 		}
 
-		var result = await ProcessRunner.RunAsync("dotnet", "--version",
+		var result = await ProcessRunner.RunAsync("dotnet", ["--version"],
 			timeout: TimeSpan.FromSeconds(10), cancellationToken: cancellationToken);
 
 		if (!result.Success)
@@ -216,7 +217,7 @@ public class DoctorService : IDoctorService
 
 	async Task<HealthCheck> CheckMauiWorkloadAsync(CancellationToken cancellationToken)
 	{
-		var result = await ProcessRunner.RunAsync("dotnet", "workload list",
+		var result = await ProcessRunner.RunAsync("dotnet", ["workload", "list"],
 			timeout: TimeSpan.FromSeconds(30), cancellationToken: cancellationToken);
 
 		if (!result.Success)

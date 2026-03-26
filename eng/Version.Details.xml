@@ -179,9 +179,9 @@
       <Sha>bfbac237157e59cdbd19334325b2af80bd6e9828</Sha>
     </Dependency>
     <!-- dotnet/android-tools: Android SDK tooling (SdkManager, AdbRunner, EmulatorRunner, etc.) -->
-    <Dependency Name="Xamarin.Android.Tools.AndroidSdk" Version="1.0.136-ci.main.214">
+    <Dependency Name="Xamarin.Android.Tools.AndroidSdk" Version="1.0.143-preview.8">
       <Uri>https://github.com/dotnet/android-tools</Uri>
-      <Sha>091e3a66c0cfcb4fcaaaaa7bc9c5fa85947eecb6</Sha>
+      <Sha>ec5040ad5158f240a67d887133dd56cfa5eb74ba</Sha>
     </Dependency>
     <!-- dotnet/macios-devtools: Apple platform tooling (SimctlOutputParser, XcodeManager, etc.) -->
     <Dependency Name="Xamarin.Apple.Tools.MaciOS" Version="1.0.11">

@@ -68,7 +68,7 @@ public class JdkManager : IJdkManager
 
 		try
 		{
-			var result = ProcessRunner.RunSync(javaBin, "-version", timeout: TimeSpan.FromSeconds(10));
+			var result = ProcessRunner.RunSync(javaBin, ["-version"], timeout: TimeSpan.FromSeconds(10));
 			// Java version output is on stderr
 			var output = result.StandardError + result.StandardOutput;
 
@@ -303,7 +303,7 @@ public class JdkManager : IJdkManager
 			// Use tar for tar.gz extraction
 			var result = await ProcessRunner.RunAsync(
 				"tar",
-				$"-xzf \"{archivePath}\" -C \"{targetPath}\" --strip-components=1",
+				["-xzf", archivePath, "-C", targetPath, "--strip-components=1"],
 				timeout: TimeSpan.FromMinutes(5),
 				cancellationToken: cancellationToken);
 

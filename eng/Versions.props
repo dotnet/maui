@@ -66,6 +66,9 @@
     <XamarinAndroidToolsAndroidSdkPackageVersion>1.0.143-preview.8</XamarinAndroidToolsAndroidSdkPackageVersion>
     <!-- dotnet/macios-devtools: Apple platform tooling consumed by Microsoft.Maui.Client -->
     <XamarinAppleToolsMaciOSPackageVersion>1.0.11</XamarinAppleToolsMaciOSPackageVersion>
+    <!-- Microsoft.Maui.Client CLI tool dependencies -->
+    <SystemCommandLinePackageVersion>2.0.0-beta4.22272.1</SystemCommandLinePackageVersion>
+    <SpectreConsolePackageVersion>0.49.1</SpectreConsolePackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>36.1.2</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.105</MicrosoftNETSdkAndroidManifest90100PackageVersion>

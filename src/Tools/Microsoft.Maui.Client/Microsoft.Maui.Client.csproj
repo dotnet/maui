@@ -39,10 +39,10 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageReference Include="Spectre.Console" Version="0.49.1" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="System.CommandLine" Version="$(SystemCommandLinePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageReference Include="Spectre.Console" Version="$(SpectreConsolePackageVersion)" />
+    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <!-- Platform tooling: versions managed via eng/Versions.props + darc (see eng/Version.Details.xml) -->
     <PackageReference Include="Xamarin.Android.Tools.AndroidSdk" Version="$(XamarinAndroidToolsAndroidSdkPackageVersion)" />
   </ItemGroup>

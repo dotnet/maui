@@ -28,7 +28,7 @@ public static class ProcessRunner
 	static readonly TimeSpan InputTaskCleanupTimeout = TimeSpan.FromSeconds(2);
 	static readonly TimeSpan OutputStreamCompletionTimeout = TimeSpan.FromSeconds(5);
 	/// <summary>
-	/// Validates and quotes a process argument value to prevent command injection.
+	/// Validates a process argument value to prevent command injection.
 	/// Rejects values containing shell metacharacters that could escape argument boundaries.
 	/// </summary>
 	internal static string SanitizeArg(string value)
@@ -40,18 +40,15 @@ public static class ProcessRunner
 		if (value.IndexOfAny(forbidden) >= 0)
 			throw new ArgumentException($"Argument contains forbidden characters: {value}", nameof(value));
 
-		// Quote the value if it contains spaces
-		if (value.Contains(' ', StringComparison.Ordinal))
-			return $"\"{value}\"";
-
 		return value;
 	}
 	/// <summary>
 	/// Runs a process synchronously and captures output.
+	/// Uses ProcessStartInfo.ArgumentList to avoid shell quoting issues.
 	/// </summary>
 	public static ProcessResult RunSync(
 		string fileName,
-		string arguments = "",
+		string[] args,
 		string? workingDirectory = null,
 		Dictionary<string, string>? environmentVariables = null,
 		TimeSpan? timeout = null,
@@ -65,13 +62,15 @@ public static class ProcessRunner
 		process.StartInfo = new ProcessStartInfo
 		{
 			FileName = fileName,
-			Arguments = arguments,
 			WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
 			UseShellExecute = false,
 			RedirectStandardOutput = true,
 			RedirectStandardError = true,
 			CreateNoWindow = true
 		};
+
+		foreach (var arg in args)
+			process.StartInfo.ArgumentList.Add(arg);
 
 		if (environmentVariables != null)
 		{
@@ -138,10 +137,11 @@ public static class ProcessRunner
 
 	/// <summary>
 	/// Runs a process asynchronously and captures output.
+	/// Uses ProcessStartInfo.ArgumentList to avoid shell quoting issues.
 	/// </summary>
 	public static async Task<ProcessResult> RunAsync(
 		string fileName,
-		string arguments = "",
+		string[] args,
 		string? workingDirectory = null,
 		Dictionary<string, string>? environmentVariables = null,
 		TimeSpan? timeout = null,
@@ -156,7 +156,6 @@ public static class ProcessRunner
 		process.StartInfo = new ProcessStartInfo
 		{
 			FileName = fileName,
-			Arguments = arguments,
 			WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
 			UseShellExecute = false,
 			RedirectStandardOutput = true,
@@ -164,6 +163,9 @@ public static class ProcessRunner
 			RedirectStandardInput = continuousInput != null,
 			CreateNoWindow = true
 		};
+
+		foreach (var arg in args)
+			process.StartInfo.ArgumentList.Add(arg);
 
 		if (environmentVariables != null)
 		{
@@ -292,16 +294,17 @@ public static class ProcessRunner
 			return false;
 
 		// Reconstruct command line args (skip the first which is the exe path)
-		var args = Environment.GetCommandLineArgs().Skip(1)
-			.Select(a => a.Contains(' ', StringComparison.Ordinal) ? $"\"{a}\"" : a);
+		var args = Environment.GetCommandLineArgs().Skip(1);
 
 		var psi = new ProcessStartInfo
 		{
 			FileName = processPath,
-			Arguments = string.Join(" ", args),
 			Verb = "runas",
 			UseShellExecute = true,
 		};
+
+		foreach (var arg in args)
+			psi.ArgumentList.Add(arg);
 
 		try
 		{
@@ -345,7 +348,7 @@ public static class ProcessRunner
 		try
 		{
 			var whichCommand = PlatformDetector.IsWindows ? "where" : "which";
-			var result = RunSync(whichCommand, command, timeout: TimeSpan.FromSeconds(5));
+			var result = RunSync(whichCommand, [command], timeout: TimeSpan.FromSeconds(5));
 			return result.ExitCode == 0;
 		}
 		catch (Exception ex)
@@ -363,7 +366,7 @@ public static class ProcessRunner
 		try
 		{
 			var whichCommand = PlatformDetector.IsWindows ? "where" : "which";
-			var result = RunSync(whichCommand, command, timeout: TimeSpan.FromSeconds(5));
+			var result = RunSync(whichCommand, [command], timeout: TimeSpan.FromSeconds(5));
 			if (result.ExitCode == 0)
 			{
 				var path = result.StandardOutput.Trim().Split('\n').FirstOrDefault()?.Trim();

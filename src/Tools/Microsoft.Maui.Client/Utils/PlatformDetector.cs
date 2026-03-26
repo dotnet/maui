@@ -35,7 +35,7 @@ public static class PlatformDetector
 				// Try to get macOS version from sw_vers
 				try
 				{
-					var result = ProcessRunner.RunSync("sw_vers", "-productVersion");
+					var result = ProcessRunner.RunSync("sw_vers", ["-productVersion"]);
 					if (result.ExitCode == 0)
 						return result.StandardOutput.Trim();
 				}
