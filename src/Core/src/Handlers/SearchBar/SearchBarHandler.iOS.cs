@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UITextField? _editor;
+		UIButton? _clearButton;
 		readonly MauiSearchBarProxy _proxy = new();
 
 		public UITextField? QueryEditor => _editor;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			var searchBar = new MauiSearchBar() { BarStyle = UIBarStyle.Default };
 
 			_editor = searchBar.GetSearchTextField();
-
+			_clearButton = _editor?.ValueForKey(new Foundation.NSString("clearButton")) as UIButton;
 
 			return searchBar;
 		}
@@ -142,6 +143,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButton(searchBar);
+			if (handler is SearchBarHandler searchBarHandler)
+				handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(searchBar.Text), searchBarHandler._clearButton);
+
 		}
 
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -263,6 +267,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
+					handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text), handler._clearButton);
 				}
 			}
 
