@@ -222,10 +222,14 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// Intentionally left empty. Previously this called RemoveTabs() which
-		// destroyed tab fragments, causing them to not restore properly after
-		// modal navigation. Tabs should remain visible and intact.
-		// TODO: This method can be removed in .NET 11.
+		// Don't remove tabs during modal navigation — tabs should remain visible so they
+		// restore properly when the modal is dismissed.
+		// For non-modal navigation (e.g. NavigationPage.PushAsync), tabs must be removed so that
+		// the newly pushed page can use the full available height.
+		if (Element?.Navigation?.ModalStack?.Count > 0)
+			return;
+
+		RemoveTabs();
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
