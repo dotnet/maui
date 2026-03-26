@@ -12,7 +12,8 @@
     Modes:
     1. Single PR:   -PrNumber 33818 [-Tag 10.0.50]
     2. Single tag:  -Tag 10.0.50 [-PreviousTag 10.0.41]
-    3. All SRs:     -AllSRs -MajorVersion 10
+
+    Safety: PRs merged before 2026-01-01 are always skipped.
 
 .PARAMETER PrNumber
     Analyze and fix a single PR (and its linked issues).
@@ -22,9 +23,6 @@
 
 .PARAMETER PreviousTag
     Previous release tag. Auto-detected if omitted.
-
-.PARAMETER AllSRs
-    Analyze all SR releases for the given major version.
 
 .PARAMETER MajorVersion
     Major .NET version (default: 10).
@@ -39,10 +37,9 @@
     Actually apply milestone fixes. Without this flag, only a dry-run report is produced.
 
 .EXAMPLE
-    ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -RepoPath ~/Projects/maui
+    ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -RepoPath ~/Projects/maui -Verbose
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -Apply
     ./Fix-MilestoneDrift.ps1 -Tag 10.0.50 -RepoPath ~/Projects/maui
-    ./Fix-MilestoneDrift.ps1 -AllSRs -MajorVersion 10 -RepoPath ~/Projects/maui
 #>
 
 [CmdletBinding()]
@@ -50,12 +47,14 @@ param(
     [int]$PrNumber,
     [string]$Tag,
     [string]$PreviousTag,
-    [switch]$AllSRs,
     [int]$MajorVersion = 10,
     [string]$RepoPath = ".",
     [string]$Output,
     [switch]$Apply
 )
+
+# Safety: never process PRs merged before 2026
+$script:MergedAfterCutoff = [datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -190,6 +189,14 @@ function Get-AllMilestones {
 function Get-PrInfo([int]$PrNum) {
     try {
         $pr = Invoke-GhApi "repos/dotnet/maui/pulls/$PrNum"
+        # Safety: skip PRs merged before cutoff date
+        if ($pr.merged_at) {
+            $mergedAt = [datetime]::Parse($pr.merged_at).ToUniversalTime()
+            if ($mergedAt -lt $script:MergedAfterCutoff) {
+                Write-Warning "PR #$PrNum merged $($pr.merged_at) — before cutoff ($($script:MergedAfterCutoff.ToString('yyyy-MM-dd'))). Skipping."
+                return $null
+            }
+        }
         return @{
             Number    = $PrNum
             Title     = $pr.title
@@ -495,29 +502,6 @@ if ($PrNumber -gt 0) {
     if ($Output) { Save-ReportJson $report $Output }
     Invoke-ApplyCorrections $report $Apply.IsPresent
 }
-elseif ($AllSRs) {
-    $allTags = Get-AllTags $RepoPath
-    $srTags = $allTags | Where-Object { Test-IsSrTag $_ $MajorVersion } |
-              Sort-Object { Get-PatchVersion $_ }
-
-    Write-Host "Found $($srTags.Count) release tags for .NET ${MajorVersion}: $($srTags -join ', ')`n"
-    $totalCorrections = 0
-
-    foreach ($srTag in $srTags) {
-        try {
-            $report = Invoke-AnalyzeRelease $srTag $null $RepoPath
-            Write-Report $report
-            if ($Output) { Save-ReportJson $report $Output }
-            Invoke-ApplyCorrections $report $Apply.IsPresent
-            $totalCorrections += $report.Corrections.Count
-        } catch {
-            Write-Warning "Error analyzing ${srTag}: $_"
-        }
-    }
-    Write-Host "`n$('═' * 70)"
-    Write-Host "  TOTAL across all releases: $totalCorrections corrections needed"
-    Write-Host "$('═' * 70)`n"
-}
 elseif ($Tag) {
     $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath
     Write-Report $report
@@ -526,7 +510,7 @@ elseif ($Tag) {
     Invoke-ApplyCorrections $report $Apply.IsPresent
 }
 else {
-    Write-Host "Error: -PrNumber, -Tag, or -AllSRs is required." -ForegroundColor Red
+    Write-Host "Error: -PrNumber or -Tag is required." -ForegroundColor Red
     Get-Help $MyInvocation.MyCommand.Path -Detailed
     exit 1
 }
