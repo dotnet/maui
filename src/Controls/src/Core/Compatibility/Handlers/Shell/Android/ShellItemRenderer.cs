@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 				}
 			}
-			else if (e.IsOneOf(BaseShellItem.BadgeTextProperty, BaseShellItem.BadgeColorProperty))
+			else if (e.IsOneOf(BaseShellItem.BadgeTextProperty, BaseShellItem.BadgeColorProperty, BaseShellItem.BadgeTextColorProperty))
 			{
 				var shellSection = (ShellSection)sender;
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
@@ -541,6 +541,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (badgeColor is not null)
 				{
 					badge.BackgroundColor = badgeColor.ToPlatform();
+				}
+
+				var badgeTextColor = shellSection.BadgeTextColor;
+				if (badgeTextColor is not null)
+				{
+					badge.BadgeTextColor = badgeTextColor.ToPlatform();
 				}
 			}
 		}

@@ -95,6 +95,7 @@ namespace Microsoft.Maui.Platform
 		WeakReference<object>? _data;
 		string? _badgeText;
 		WBrush? _badgeBackground;
+		WBrush? _badgeForeground;
 
 		public object? Content
 		{
@@ -265,6 +266,12 @@ namespace Microsoft.Maui.Platform
 		{
 			get => _badgeBackground;
 			set { this.SetProperty(ref _badgeBackground, value, OnPropertyChanged); }
+		}
+
+		public WBrush? BadgeForeground
+		{
+			get => _badgeForeground;
+			set { this.SetProperty(ref _badgeForeground, value, OnPropertyChanged); }
 		}
 
 		public bool HasBadge => !string.IsNullOrEmpty(_badgeText);

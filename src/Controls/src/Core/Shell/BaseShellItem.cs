@@ -71,6 +71,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BadgeColorProperty =
 			BindableProperty.Create(nameof(BadgeColor), typeof(Color), typeof(BaseShellItem), null, BindingMode.OneWay);
 
+		/// <summary>Bindable property for <see cref="BadgeTextColor"/>.</summary>
+		public static readonly BindableProperty BadgeTextColorProperty =
+			BindableProperty.Create(nameof(BadgeTextColor), typeof(Color), typeof(BaseShellItem), null, BindingMode.OneWay);
+
 		public BaseShellItem()
 		{
 			DeclaredChildren.CollectionChanged += (_, args) =>
@@ -178,6 +182,27 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Color)GetValue(BadgeColorProperty);
 			set => SetValue(BadgeColorProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the foreground (text) color of the badge displayed on this Shell navigation item.
+		/// When set to <see langword="null"/>, the platform default text color is used (typically white).
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// Platform support:
+		/// </para>
+		/// <list type="bullet">
+		/// <item><description><b>Android</b>: Maps to <c>BadgeDrawable.BadgeTextColor</c>.</description></item>
+		/// <item><description><b>iOS/MacCatalyst</b>: Maps to <c>UITabBarItem.SetBadgeTextAttributes</c>.</description></item>
+		/// <item><description><b>Windows</b>: Maps to <c>InfoBadge.Foreground</c>.</description></item>
+		/// </list>
+		/// </remarks>
+		public Color BadgeTextColor
+		{
+			get => (Color)GetValue(BadgeTextColorProperty);
+			set => SetValue(BadgeTextColorProperty, value);
 		}
 
 

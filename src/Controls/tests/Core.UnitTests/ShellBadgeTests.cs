@@ -193,5 +193,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("99", section2.BadgeText);
 			Assert.Equal(Colors.Blue, section2.BadgeColor);
 		}
+
+		[Fact]
+		public void BadgeTextColorDefaultsToNull()
+		{
+			var shellSection = new ShellSection();
+			Assert.Null(shellSection.BadgeTextColor);
+		}
+
+		[Fact]
+		public void BadgeTextColorCanBeSet()
+		{
+			var shellSection = new ShellSection();
+			shellSection.BadgeTextColor = Colors.White;
+			Assert.Equal(Colors.White, shellSection.BadgeTextColor);
+		}
+
+		[Fact]
+		public void BadgeTextColorCanBeCleared()
+		{
+			var shellSection = new ShellSection();
+			shellSection.BadgeTextColor = Colors.Black;
+			shellSection.BadgeTextColor = null;
+			Assert.Null(shellSection.BadgeTextColor);
+		}
+
+		[Fact]
+		public void BadgeTextColorPropertyChangedFires()
+		{
+			var shellSection = new ShellSection();
+			bool fired = false;
+			shellSection.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(BaseShellItem.BadgeTextColor))
+					fired = true;
+			};
+			shellSection.BadgeTextColor = Colors.Yellow;
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public void BadgeTextColorBindablePropertyHasCorrectMetadata()
+		{
+			Assert.Equal(nameof(BaseShellItem.BadgeTextColor), BaseShellItem.BadgeTextColorProperty.PropertyName);
+			Assert.Equal(typeof(Color), BaseShellItem.BadgeTextColorProperty.ReturnType);
+			Assert.Equal(typeof(BaseShellItem), BaseShellItem.BadgeTextColorProperty.DeclaringType);
+			Assert.Null(BaseShellItem.BadgeTextColorProperty.DefaultValue);
+		}
+
+		[Fact]
+		public void BadgeTextColorSupportsDataBinding()
+		{
+			var shellSection = new ShellSection();
+			var binding = new Binding("TextColor");
+			shellSection.SetBinding(BaseShellItem.BadgeTextColorProperty, binding);
+
+			shellSection.BindingContext = new { TextColor = Colors.Cyan };
+			Assert.Equal(Colors.Cyan, shellSection.BadgeTextColor);
+		}
 	}
 }

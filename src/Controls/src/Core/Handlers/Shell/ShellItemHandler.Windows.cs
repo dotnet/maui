@@ -282,6 +282,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					vm.Icon = iconSource?.CreateIconElement();
 					vm.BadgeText = bsi.BadgeText;
 					vm.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+					vm.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
 				}
 			});
 
@@ -320,7 +321,8 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnShellSectionBadgePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName != BaseShellItem.BadgeTextProperty.PropertyName &&
-				e.PropertyName != BaseShellItem.BadgeColorProperty.PropertyName)
+				e.PropertyName != BaseShellItem.BadgeColorProperty.PropertyName &&
+				e.PropertyName != BaseShellItem.BadgeTextColorProperty.PropertyName)
 				return;
 
 			if (sender is not BaseShellItem bsi)
@@ -333,6 +335,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					navItem.BadgeText = bsi.BadgeText;
 					navItem.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+					navItem.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
 					return;
 				}
 
@@ -344,6 +347,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						{
 							subItem.BadgeText = bsi.BadgeText;
 							subItem.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+							subItem.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
 							return;
 						}
 					}

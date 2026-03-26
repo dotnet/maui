@@ -15,6 +15,7 @@
                 <InfoBadge
                     Value="{Binding BadgeValue}"
                     Background="{Binding BadgeBackground}"
+                    Foreground="{Binding BadgeForeground}"
                     Visibility="{Binding BadgeVisibility}" />
             </NavigationViewItem.InfoBadge>
         </NavigationViewItem>

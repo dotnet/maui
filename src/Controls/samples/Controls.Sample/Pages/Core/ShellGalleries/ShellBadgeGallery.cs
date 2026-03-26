@@ -69,6 +69,14 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 
 						new BoxView { HeightRequest = 1, Color = Colors.LightGray },
 
+						new Label { Text = "Badge Text Color", FontAttributes = FontAttributes.Bold },
+						CreateTextColorButton("White", Colors.White),
+						CreateTextColorButton("Black", Colors.Black),
+						CreateTextColorButton("Yellow", Colors.Yellow),
+						CreateTextColorButton("Default (clear)", null),
+
+						new BoxView { HeightRequest = 1, Color = Colors.LightGray },
+
 						new Label { Text = "Quick Actions", FontAttributes = FontAttributes.Bold },
 						CreateApplyButton("Notification Dot (empty badge)", OnSetDotBadge),
 						CreateApplyButton("Increment Current Badge", OnIncrementBadge),
@@ -103,6 +111,26 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 				if (section is not null)
 				{
 					section.BadgeColor = color;
+					UpdateBadgeStatus();
+				}
+			};
+			return btn;
+		}
+
+		Button CreateTextColorButton(string colorName, Color? color)
+		{
+			var btn = new Button
+			{
+				Text = $"Set Badge Text Color: {colorName}",
+				BackgroundColor = color ?? Colors.LightGray,
+				TextColor = color is not null ? Colors.White : Colors.Black
+			};
+			btn.Clicked += (s, e) =>
+			{
+				var section = GetCurrentShellSection();
+				if (section is not null)
+				{
+					section.BadgeTextColor = color;
 					UpdateBadgeStatus();
 				}
 			};

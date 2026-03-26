@@ -283,7 +283,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				TabBar.Items[index].Enabled = shellSection.IsEnabled;
 			}
 			else if (e.PropertyName == BaseShellItem.BadgeTextProperty.PropertyName ||
-					 e.PropertyName == BaseShellItem.BadgeColorProperty.PropertyName)
+					 e.PropertyName == BaseShellItem.BadgeColorProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeTextColorProperty.PropertyName)
 			{
 				var shellSection = (ShellSection)sender;
 				var renderer = RendererForShellContent(shellSection);
@@ -353,6 +354,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// Reset to system default
 				tabBarItem.BadgeColor = null;
+			}
+
+			var badgeTextColor = shellSection.BadgeTextColor;
+			if (badgeTextColor is not null)
+			{
+				var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+			}
+			else
+			{
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
 			}
 		}
 

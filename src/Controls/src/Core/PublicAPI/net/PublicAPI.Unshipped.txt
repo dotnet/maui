@@ -45,6 +45,8 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.set -> void
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeText.get -> string
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResourcesChangedEventArgs(System.Collections.Generic.IEnumerable<string> keys, System.Func<string, object> resolver) -> void
@@ -54,4 +56,5 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 ~static Microsoft.Maui.Controls.VisualStateManager.InvalidateVisualStates(Microsoft.Maui.Controls.VisualElement visualElement) -> void
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
