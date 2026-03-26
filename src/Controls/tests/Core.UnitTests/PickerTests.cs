@@ -471,8 +471,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.RemoveRange(4 - removeCount, removeCount);
 
 			Assert.Equal(4 - removeCount, picker.Items.Count);
-			Assert.Equal(items.Count - 1, picker.SelectedIndex);
-			Assert.Equal(items[^1], picker.SelectedItem);
+			// When the selected item is removed, selection should be cleared
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]
