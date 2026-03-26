@@ -8,9 +8,8 @@
     Step 0: Branch setup        - Create review branch from main, merge PR squashed
     Step 1: Gate                - Run test verification directly (verify-tests-fail.ps1)
     Step 2: pr-review skill     - 3-phase review (Pre-Flight, Try-Fix, Report)
-    Step 3: pr-finalize skill   - Verify PR title/description match implementation
-    Step 4: Post AI Summary     - Directly runs posting scripts (review + finalize)
-    Step 5: Apply labels        - Apply agent labels based on review results
+    Step 3: Post AI Summary     - Directly runs posting scripts
+    Step 4: Apply labels        - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
     If squash-merge conflicts, the script posts a comment on the PR and exits.
@@ -507,26 +506,12 @@ Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 3: PR Finalize
-# ═════════════════════════════════════════════════════════════════════════════
-
-$step3Prompt = @"
-Use a skill to finalize PR #$PRNumber. Write findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md``.
-$autonomousRules
-"@
-
-Invoke-CopilotStep -StepName "STEP 3: PR FINALIZE" -Prompt $step3Prompt | Out-Null
-
-# Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
-git checkout $reviewBranch 2>$null | Out-Null
-
-# ═════════════════════════════════════════════════════════════════════════════
-#  STEP 4: Post AI Summary Comment (direct script invocation)
+#  STEP 3: Post AI Summary Comment (direct script invocation)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  STEP 4: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
@@ -554,31 +539,13 @@ if (Test-Path $reviewScript) {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
 }
 
-# 3b: Post PR finalize section (title, description, code review)
-$finalizeScript = Join-Path $summaryScriptsDir "post-pr-finalize-comment.ps1"
-if (Test-Path $finalizeScript) {
-    try {
-        Write-Host "  📝 Posting PR finalize summary..." -ForegroundColor Cyan
-        $finalizeArgs = @('-PRNumber', $PRNumber) + $dryRunFlag
-        if ($aiSummaryCommentId) {
-            $finalizeArgs += @('-ExistingCommentId', $aiSummaryCommentId)
-        }
-        & $finalizeScript @finalizeArgs
-        Write-Host "  ✅ PR finalize summary posted" -ForegroundColor Green
-    } catch {
-        Write-Host "  ⚠️ PR finalize summary posting failed (non-fatal): $_" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  ⚠️ post-pr-finalize-comment.ps1 not found — skipping finalize summary" -ForegroundColor Yellow
-}
-
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 5: Apply Labels
+#  STEP 4: Apply Labels
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║  STEP 5: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "║  STEP 4: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
