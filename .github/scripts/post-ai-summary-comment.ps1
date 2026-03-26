@@ -80,10 +80,9 @@ if (-not (Test-Path $PRAgentDir)) {
     throw "No PRAgent directory found. Ensure PRAgent/*/content.md files exist."
 }
 
-# Load each phase content file
+# Load each phase content file (gate is posted separately, not included here)
 $phaseFiles = @{
     "pre-flight" = Join-Path $PRAgentDir "pre-flight/content.md"
-    "gate" = Join-Path $PRAgentDir "gate/content.md"
     "try-fix" = Join-Path $PRAgentDir "try-fix/content.md"
     "report" = Join-Path $PRAgentDir "report/content.md"
 }
@@ -112,7 +111,7 @@ $syntheticParts = @()
 
 # Determine phase statuses based on which files exist and content
 $phaseStatusMap = @{}
-foreach ($phase in @("pre-flight", "gate", "try-fix", "report")) {
+foreach ($phase in @("pre-flight", "try-fix", "report")) {
     if ($phaseContentMap.ContainsKey($phase)) {
         $phaseStatusMap[$phase] = "✅ COMPLETE"
     } else {
@@ -125,7 +124,6 @@ $statusTable = @"
 | Phase | Status |
 |-------|--------|
 | Pre-Flight | $($phaseStatusMap['pre-flight']) |
-| Gate | $($phaseStatusMap['gate']) |
 | Fix | $($phaseStatusMap['try-fix']) |
 | Report | $($phaseStatusMap['report']) |
 "@
@@ -137,16 +135,6 @@ if ($phaseContentMap.ContainsKey('pre-flight')) {
 <details><summary><strong>📋 Pre-Flight — Issue Summary</strong></summary>
 
 $($phaseContentMap['pre-flight'])
-
-</details>
-"@
-}
-
-if ($phaseContentMap.ContainsKey('gate')) {
-    $syntheticParts += @"
-<details><summary><strong>🚦 Gate — Test Verification</strong></summary>
-
-$($phaseContentMap['gate'])
 
 </details>
 "@

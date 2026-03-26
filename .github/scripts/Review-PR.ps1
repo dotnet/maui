@@ -475,6 +475,30 @@ if (Test-Path $verificationReport) {
         Set-Content (Join-Path $gateOutputDir "content.md")
 }
 
+# Post gate result as a separate PR comment immediately
+$gateContentFile = Join-Path $gateOutputDir "content.md"
+if (Test-Path $gateContentFile) {
+    $gateBody = "<!-- AI Gate -->`n## 🚦 Gate — Test Verification`n`n$(Get-Content $gateContentFile -Raw)"
+    if ($DryRun) {
+        Write-Host "  [DRY RUN] Would post gate comment:" -ForegroundColor Magenta
+        Write-Host $gateBody
+    } else {
+        try {
+            # Update existing gate comment or create new one
+            $existingComment = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- AI Gate -->")) | .id' 2>$null | Select-Object -First 1
+            if ($existingComment) {
+                gh api "repos/dotnet/maui/issues/comments/$existingComment" -X PATCH -f body="$gateBody" 2>$null | Out-Null
+                Write-Host "  ✅ Gate comment updated (ID: $existingComment)" -ForegroundColor Green
+            } else {
+                gh pr comment $PRNumber --body "$gateBody" 2>$null | Out-Null
+                Write-Host "  ✅ Gate comment posted" -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
+        }
+    }
+}
+
 # Restore review branch
 git checkout $reviewBranch 2>$null | Out-Null
 
