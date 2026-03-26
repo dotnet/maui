@@ -3,13 +3,13 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 34583, "ScrollView orientation change resets scroll position on iOS", PlatformAffected.iOS)]
 public class Issue34583 : ContentPage
 {
-	private const double ReproScrollX = 700;
-	private const double ReproScrollY = 480;
-	private readonly Label _orientationLabel;
-	private readonly Label _offsetLabel;
-	private readonly Label _lastActionLabel;
-	private readonly ScrollView _bugScrollView;
-	private string _lastAction = string.Empty;
+	const double ReproScrollX = 700;
+	const double ReproScrollY = 480;
+	readonly Label _orientationLabel;
+	readonly Label _offsetLabel;
+	readonly Label _lastActionLabel;
+	readonly ScrollView _bugScrollView;
+	string _lastAction = string.Empty;
 
 	public Issue34583()
 	{
@@ -126,7 +126,7 @@ public class Issue34583 : ContentPage
 		RefreshState("Launch the app, tap 'Scroll To Repro Offset', then tap 'Set Neither'.");
 	}
 
-	private Grid CreateScrollContent()
+	Grid CreateScrollContent()
 	{
 		return new Grid
 		{
@@ -207,7 +207,7 @@ public class Issue34583 : ContentPage
 		};
 	}
 
-	private async void OnScrollToSampleClicked(object sender, EventArgs e)
+	async void OnScrollToSampleClicked(object sender, EventArgs e)
 	{
 		var orientationChanged = _bugScrollView.Orientation != ScrollOrientation.Both;
 		_bugScrollView.Orientation = ScrollOrientation.Both;
@@ -222,13 +222,13 @@ public class Issue34583 : ContentPage
 		RefreshState($"Scrolled to approx. X={ReproScrollX:0}, Y={ReproScrollY:0}.");
 	}
 
-	private void OnSetBothClicked(object sender, EventArgs e)
+	void OnSetBothClicked(object sender, EventArgs e)
 	{
 		_bugScrollView.Orientation = ScrollOrientation.Both;
 		RefreshState("Orientation set to Both.");
 	}
 
-	private async void OnSetNeitherClicked(object sender, EventArgs e)
+	async void OnSetNeitherClicked(object sender, EventArgs e)
 	{
 		var beforeX = _bugScrollView.ScrollX;
 		var beforeY = _bugScrollView.ScrollY;
@@ -239,19 +239,19 @@ public class Issue34583 : ContentPage
 		RefreshState($"Set Orientation to Neither. Before: X={beforeX:0.##}, Y={beforeY:0.##}. After: X={_bugScrollView.ScrollX:0.##}, Y={_bugScrollView.ScrollY:0.##}.");
 	}
 
-	private async void OnResetClicked(object sender, EventArgs e)
+	async void OnResetClicked(object sender, EventArgs e)
 	{
 		_bugScrollView.Orientation = ScrollOrientation.Both;
 		await _bugScrollView.ScrollToAsync(0, 0, false);
 		RefreshState("Reset orientation to Both and scrolled back to the origin.");
 	}
 
-	private void OnScrollViewScrolled(object sender, ScrolledEventArgs e)
+	void OnScrollViewScrolled(object sender, ScrolledEventArgs e)
 	{
 		RefreshState(_lastAction);
 	}
 
-	private void RefreshState(string action)
+	void RefreshState(string action)
 	{
 		_lastAction = action ?? string.Empty;
 		_orientationLabel.Text = $"Orientation: {_bugScrollView.Orientation}";
