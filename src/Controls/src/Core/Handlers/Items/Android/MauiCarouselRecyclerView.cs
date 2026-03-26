@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!IsSwipeEnabled)
+			{
 				return false;
+			}
 
 			return base.OnInterceptTouchEvent(ev);
 		}
@@ -296,6 +298,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							SetCurrentItem(carouselPosition);
 							UpdatePosition(carouselPosition);
 						}
+
+						ScrollToPosition(carouselPosition);
 
 						//If we are adding or removing the last item we need to update
 						//the inset that we give to items so they are centered

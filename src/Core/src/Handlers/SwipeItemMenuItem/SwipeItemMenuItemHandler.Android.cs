@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Util;
 using Android.Widget;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using ATextAlignment = Android.Views.TextAlignment;
@@ -102,8 +103,21 @@ namespace Microsoft.Maui.Handlers
 
 			int contentHeight = mauiSwipeView.MeasuredHeight;
 			int contentWidth = (int)handler.MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
+			int maxIconSize = Math.Min(contentHeight, contentWidth) / 2;
 
-			return Math.Min(contentHeight, contentWidth) / 2;
+			if (imageSourcePart.Source is IFontImageSource fontImageSource)
+			{
+				var fontManager = handler.GetRequiredService<IFontManager>();
+				var fontSize = fontManager.GetFontSize(fontImageSource.Font);
+				var requestedIconSize = (int)TypedValue.ApplyDimension(
+					fontSize.Unit,
+					fontSize.Value,
+					handler.MauiContext.Context.Resources?.DisplayMetrics);
+
+				return Math.Min(requestedIconSize, maxIconSize);
+			}
+
+			return maxIconSize;
 		}
 
 		void UpdateSize()
