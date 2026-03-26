@@ -61,13 +61,25 @@ Write-Host "✅ Loaded gate content ($($gateContent.Length) chars)" -ForegroundC
 # BUILD COMMENT BODY
 # ============================================================================
 
+# Get latest commit info
+$commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>$null | ConvertFrom-Json
+$commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
+$commitSha = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
+$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$($commitJson.sha)" } else { "#" }
+
 $commentBody = @"
 $MARKER
 
+## 🚦 Gate — Test Verification
+
 <details>
-<summary>🚦 <strong>Gate — Test Verification</strong></summary>
+<summary>📊 <strong>Expand Full Gate</strong> — <a href="$commitUrl"><code>$commitSha</code></a> · <strong>$commitTitle</strong></summary>
+
+---
 
 $gateContent
+
+---
 
 </details>
 "@
