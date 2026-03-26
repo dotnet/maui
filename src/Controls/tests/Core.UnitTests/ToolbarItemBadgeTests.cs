@@ -249,5 +249,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			item.SetBinding(ToolbarItem.BadgeTextColorProperty, "TextColor");
 			Assert.Equal(Colors.Magenta, item.BadgeTextColor);
 		}
+
+		[Fact]
+		public void SetBadgeTextEmptyStringForDotBadge()
+		{
+			var item = new ToolbarItem();
+			item.BadgeText = "";
+			Assert.Equal("", item.BadgeText);
+		}
+
+		[Fact]
+		public void EmptyStringBadgeIsDistinctFromNull()
+		{
+			var item = new ToolbarItem();
+			item.BadgeText = "";
+			Assert.NotNull(item.BadgeText);
+			item.BadgeText = null;
+			Assert.Null(item.BadgeText);
+		}
+
+		[Fact]
+		public void EmptyStringBadgeFiresPropertyChanged()
+		{
+			var item = new ToolbarItem();
+			bool fired = false;
+			item.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(ToolbarItem.BadgeText))
+					fired = true;
+			};
+			item.BadgeText = "";
+			Assert.True(fired);
+		}
 	}
 }

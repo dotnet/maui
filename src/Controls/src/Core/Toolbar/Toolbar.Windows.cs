@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 
 				// For text-only toolbar items (no icon), wrap the label in a Grid
 				// with InfoBadge overlay so badges are still visible.
-				if (item.IconImageSource.IsNullOrEmpty() && !string.IsNullOrEmpty(item.BadgeText))
+				if (item.IconImageSource.IsNullOrEmpty() && item.BadgeText is not null)
 				{
 					var textBlock = new Microsoft.UI.Xaml.Controls.TextBlock { Text = item.Text ?? string.Empty };
 					var grid = new WGrid();
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls
 									}
 								}
 							}
-							else if (!string.IsNullOrEmpty(toolbarItem.BadgeText))
+							else if (toolbarItem.BadgeText is not null)
 							{
 								// Text-only item that didn't have a badge before - wrap content
 								var textBlock = new Microsoft.UI.Xaml.Controls.TextBlock { Text = toolbarItem.Text ?? string.Empty };
@@ -193,13 +193,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Updates an InfoBadge control to reflect the current badge state of a ToolbarItem.
-		/// On Windows, numeric badge text displays as a count; non-numeric text displays as a dot indicator.
+		/// On Windows, numeric badge text displays as a count; non-numeric text and empty string display as a dot indicator.
+		/// Setting BadgeText to null hides the badge; setting to empty string shows a dot.
 		/// </summary>
 		static void UpdateInfoBadge(InfoBadge badge, ToolbarItem item)
 		{
 			var badgeText = item.BadgeText;
 
-			if (string.IsNullOrEmpty(badgeText))
+			if (badgeText is null)
 			{
 				badge.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 				return;
@@ -207,10 +208,12 @@ namespace Microsoft.Maui.Controls
 
 			badge.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 
-			if (int.TryParse(badgeText, out var value) && value >= 0)
+			if (badgeText.Length == 0)
+				badge.Value = -1; // Empty string shows as dot indicator
+			else if (int.TryParse(badgeText, out var value) && value >= 0)
 				badge.Value = value;
 			else
-				badge.Value = -1; // Dot indicator for non-numeric text
+				badge.Value = -1; // Non-numeric text also shows as dot indicator
 
 			if (item.BadgeColor is not null)
 			{

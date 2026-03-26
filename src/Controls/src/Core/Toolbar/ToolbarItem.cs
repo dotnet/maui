@@ -81,7 +81,7 @@ public class ToolbarItem : MenuItem
 
 	/// <summary>
 	/// Gets or sets the badge text displayed on this toolbar item.
-	/// Set to a non-empty string to show a badge, or <see langword="null"/> / empty to hide it.
+	/// Set to a non-empty string to show a text/count badge, an empty string to show a dot indicator, or <see langword="null"/> to hide the badge.
 	/// This is a bindable property.
 	/// </summary>
 	/// <remarks>
@@ -89,9 +89,9 @@ public class ToolbarItem : MenuItem
 	/// Badge rendering varies by platform:
 	/// </para>
 	/// <list type="bullet">
-	/// <item><description><b>Android</b>: Uses Material Design <c>BadgeDrawable</c> via <c>BadgeUtils</c>. Supports numeric and text badges on primary toolbar items.</description></item>
-	/// <item><description><b>iOS/MacCatalyst</b>: Uses the native <c>UIBarButtonItem.badge</c> API introduced in iOS 26. On earlier iOS versions, the badge is silently ignored.</description></item>
-	/// <item><description><b>Windows</b>: Uses WinUI <c>InfoBadge</c> overlaid on the toolbar button. Numeric values display as counts; non-numeric text displays as a dot indicator.</description></item>
+	/// <item><description><b>Android</b>: Uses Material Design <c>BadgeDrawable</c> via <c>BadgeUtils</c>. Supports numeric and text badges on primary toolbar items. Empty string shows a small dot indicator.</description></item>
+	/// <item><description><b>iOS/MacCatalyst</b>: Uses the native <c>UIBarButtonItem.badge</c> API introduced in iOS 26. On earlier iOS versions, the badge is silently ignored. Empty string shows a dot indicator.</description></item>
+	/// <item><description><b>Windows</b>: Uses WinUI <c>InfoBadge</c> overlaid on the toolbar button. Numeric values display as counts; non-numeric text and empty string display as a dot indicator.</description></item>
 	/// </list>
 	/// <para>
 	/// Badges are only displayed on primary toolbar items (items with <see cref="Order"/> set to <see cref="ToolbarItemOrder.Primary"/> or <see cref="ToolbarItemOrder.Default"/>).

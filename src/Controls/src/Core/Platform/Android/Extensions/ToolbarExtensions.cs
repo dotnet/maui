@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var badgeText = toolbarItem.BadgeText;
 			var menuItemId = menuItem.ItemId;
 
-			if (string.IsNullOrEmpty(badgeText))
+			if (badgeText is null)
 			{
 				CleanupBadgeDrawable(toolbar, menuItemId);
 				return;
@@ -301,7 +301,10 @@ namespace Microsoft.Maui.Controls.Platform
 				CleanupBadgeDrawable(toolbar, menuItemId);
 
 				var badge = BadgeDrawable.Create(context);
-				badge.Text = badgeText;
+				if (badgeText.Length > 0)
+					badge.Text = badgeText;
+				else
+					badge.ClearNumber(); // Empty string shows as dot indicator
 
 				var badgeColor = toolbarItem.BadgeColor;
 				if (badgeColor is not null)

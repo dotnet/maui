@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				var badgeText = item.BadgeText;
 
-				if (string.IsNullOrEmpty(badgeText))
+				if (badgeText is null)
 				{
 #pragma warning disable CA1416 // Validate platform compatibility
 					this.Badge = null;
@@ -217,7 +217,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 #pragma warning disable CA1416 // Validate platform compatibility
 				UIBarButtonItemBadge badge;
-				if (int.TryParse(badgeText, out var count) && count >= 0)
+				if (badgeText.Length == 0)
+					badge = UIBarButtonItemBadge.Create(0); // Empty string shows as dot indicator
+				else if (int.TryParse(badgeText, out var count) && count >= 0)
 					badge = UIBarButtonItemBadge.Create((nuint)count);
 				else
 					badge = UIBarButtonItemBadge.Create(badgeText);
