@@ -1,0 +1,55 @@
+name: Fix Milestone Drift
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Single PR number to check/fix (leave empty for tag-based mode)'
+        required: false
+        type: string
+      tag:
+        description: 'Release tag to analyze (e.g., "10.0.50"). Auto-detected for single PR.'
+        required: false
+        type: string
+      apply:
+        description: 'Apply milestone changes (default: dry-run only)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  fix-milestones:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Run milestone drift check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ARGS=""
+
+          if [ -n "${{ inputs.pr_number }}" ]; then
+            ARGS="-PrNumber ${{ inputs.pr_number }}"
+          fi
+
+          if [ -n "${{ inputs.tag }}" ]; then
+            ARGS="$ARGS -Tag ${{ inputs.tag }}"
+          fi
+
+          if [ "${{ inputs.apply }}" = "true" ]; then
+            ARGS="$ARGS -Apply"
+          fi
+
+          ARGS="$ARGS -RepoPath . -Verbose"
+
+          echo "Running: pwsh .github/scripts/Fix-MilestoneDrift.ps1 $ARGS"
+          pwsh -Command ".github/scripts/Fix-MilestoneDrift.ps1 $ARGS"
