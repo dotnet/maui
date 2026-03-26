@@ -7,14 +7,14 @@ public class Issue34636 : ContentPage
 {
     static readonly IReadOnlyList<MonkeyItem> MonkeyData = new[]
     {
-        new MonkeyItem("Baboon", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/baboon.jpg", "Africa & Asia"),
-        new MonkeyItem("Capuchin Monkey", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/capuchin.jpg", "Central & South America"),
-        new MonkeyItem("Blue Monkey", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/bluemonkey.jpg", "Central and East Africa"),
-        new MonkeyItem("Squirrel Monkey", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/saimiri.jpg", "Central & South America"),
-        new MonkeyItem("Golden Lion Tamarin", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/tamarin.jpg", "Brazil"),
-        new MonkeyItem("Howler Monkey", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/alouatta.jpg", "South America"),
-        new MonkeyItem("Japanese Macaque", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/macasa.jpg", "Japan"),
-        new MonkeyItem("Mandrill", "https://raw.githubusercontent.com/jamesmontemagno/app-monkeys/master/mandrill.jpg", "Southern Cameroon, Gabon, Equatorial Guinea, and Congo"),
+        new MonkeyItem("Baboon", Colors.Red, "Africa & Asia"),
+        new MonkeyItem("Capuchin Monkey", Colors.Blue, "Central & South America"),
+        new MonkeyItem("Blue Monkey", Colors.Green, "Central and East Africa"),
+        new MonkeyItem("Squirrel Monkey", Colors.Orange, "Central & South America"),
+        new MonkeyItem("Golden Lion Tamarin", Colors.Purple, "Brazil"),
+        new MonkeyItem("Howler Monkey", Colors.Brown, "South America"),
+        new MonkeyItem("Japanese Macaque", Colors.Teal, "Japan"),
+        new MonkeyItem("Mandrill", Colors.Indigo, "Southern Cameroon, Gabon, Equatorial Guinea, and Congo"),
     };
 
     readonly ObservableCollection<MonkeyItem> _items = new(MonkeyData);
@@ -34,14 +34,13 @@ public class Issue34636 : ContentPage
             ItemsLayout = _itemsLayout,
             ItemTemplate = new DataTemplate(() =>
             {
-                var image = new Image
+                var boxView = new BoxView
                 {
                     HeightRequest = 60,
-                    WidthRequest = 60,
-                    Aspect = Aspect.AspectFill
+                    WidthRequest = 60
                 };
-                image.SetBinding(Image.SourceProperty, nameof(MonkeyItem.ImageUrl));
-                Grid.SetRowSpan(image, 2);
+                boxView.SetBinding(BoxView.ColorProperty, nameof(MonkeyItem.Color));
+                Grid.SetRowSpan(boxView, 2);
 
                 var nameLabel = new Label
                 {
@@ -72,7 +71,7 @@ public class Issue34636 : ContentPage
                         new ColumnDefinition { Width = GridLength.Auto },
                         new ColumnDefinition { Width = GridLength.Star }
                     },
-                    Children = { image, nameLabel, locationLabel }
+                    Children = { boxView, nameLabel, locationLabel }
                 };
             })
         };
@@ -106,5 +105,5 @@ public class Issue34636 : ContentPage
         Grid.SetRow(_collectionView, 1);
     }
 
-    record MonkeyItem(string Name, string ImageUrl, string Location);
+    record MonkeyItem(string Name, Color Color, string Location);
 }
