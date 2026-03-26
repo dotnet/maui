@@ -1,3 +1,5 @@
+using System;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Maui.Controls.Sample.Pages.Base;
@@ -114,21 +116,20 @@ public class ToolbarBadgePage : BasePage
 		};
 	}
 
-	static Frame CreateSection(string title, params View[] children)
+	static Border CreateSection(string title, params View[] children)
 	{
 		var stack = new VerticalStackLayout { Spacing = 8 };
 		stack.Children.Add(new Label { Text = title, FontAttributes = FontAttributes.Bold, FontSize = 14 });
 		foreach (var child in children)
 			stack.Children.Add(child);
 
-		return new Frame
+		return new Border
 		{
 			Content = stack,
 			Padding = 12,
 			Margin = new Thickness(0, 4),
-			CornerRadius = 8,
-			HasShadow = false,
-			BorderColor = Colors.LightGray
+			StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+			Stroke = Colors.LightGray
 		};
 	}
 
@@ -152,7 +153,7 @@ public class ToolbarBadgePage : BasePage
 		_statusLabel.Text = string.IsNullOrEmpty(text) ? "Badge text: (empty/dot)" : $"Badge text: '{text}'";
 	}
 
-	void SetBadgeColor(Color color)
+	void SetBadgeColor(Color? color)
 	{
 		_colorItem.BadgeColor = color;
 		_statusLabel.Text = color is null ? "Badge color: platform default" : $"Badge color: {color}";
