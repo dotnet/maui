@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		const byte ExtrasVsm = 0x01;
 		const byte ExtrasHandler = 0xFF;
 
+		const ulong VsmMask = 0x0100000000000000UL;
+		const ulong ImplicitVsmMask = 0x0000000004000000UL;
+
 		public const ushort ManualTriggerBaseline = 2;
 
 		public const ushort StyleImplicit = 0x080;
@@ -45,8 +48,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
-		public bool IsVsm => (_value & 0x0100000000000000) != 0;
-		public bool IsVsmImplicit => (_value & 0x0000000004000000) != 0;
+		public bool IsVsm => (_value & VsmMask) != 0;
+		public bool IsVsmImplicit => (_value & ImplicitVsmMask) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
 		public ushort TriggerIndex => GetTriggerIndex();
 		public bool IsDynamicResource => ((_value >> 24) & 0x02) != 0;
@@ -192,8 +195,7 @@ namespace Microsoft.Maui.Controls
 				return this;
 			}
 
-			// Clear the implicitVsm bit (0x04 at byte offset 24) and set the full vsm bit (0x01 at byte offset 56)
-			var newValue = (_value & ~(0x04UL << 24)) | (0x01UL << 56);
+			var newValue = (_value & ~ImplicitVsmMask) | VsmMask;
 			return new SetterSpecificity(newValue);
 		}
 

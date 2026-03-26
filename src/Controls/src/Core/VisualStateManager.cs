@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 					if (group.CurrentState is { } state)
 					{
 						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
-						// Custom developer-defined states keep downgraded priority (#34363).
+						// Custom developer-defined states keep downgraded priority.
 						var unapplySpecificity = IsSystemDrivenState(state.Name)
 							? baseSpecificity.WithFullVsmPriority()
 							: baseSpecificity;
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Returns <see langword="true"/> for states that the MAUI framework drives automatically
-		/// (Disabled, Focused, Unfocused, Selected, PointerOver).
+		/// (Disabled, Focused, Unfocused, Selected, PointerOver, Pressed).
 		/// Only these states promote an implicit-style VSM setter to full VSM priority (fix for #34363),
 		/// preventing custom developer-defined states from unexpectedly overriding manually-set values.
 		/// </summary>
@@ -167,7 +167,8 @@ namespace Microsoft.Maui.Controls
 			stateName == CommonStates.Focused ||
 			stateName == CommonStates.Unfocused ||
 			stateName == CommonStates.Selected ||
-			stateName == CommonStates.PointerOver;
+			stateName == CommonStates.PointerOver ||
+			stateName == ButtonElement.PressedVisualState;
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="element"/> has any visual state groups defined.
@@ -784,7 +785,7 @@ namespace Microsoft.Maui.Controls
 				group.VisualElement = clone.VisualElement;
 				clone.Add(group.Clone());
 			}
-			
+
 			// Preserve specificity when cloning (issue #27202)
 			if (groups is VisualStateGroupList sourceList)
 			{
