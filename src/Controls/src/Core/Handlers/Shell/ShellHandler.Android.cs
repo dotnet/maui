@@ -54,37 +54,6 @@ namespace Microsoft.Maui.Controls.Handlers
         // Pending fragment transaction (from RunOrWaitForResume, same as FlyoutViewHandler)
         IDisposable _pendingFragment;
 
-        public static PropertyMapper<Shell, ShellHandler> Mapper =
-            new PropertyMapper<Shell, ShellHandler>(ElementMapper)
-            {
-                [nameof(Shell.CurrentItem)] = MapCurrentItem,
-                [nameof(Shell.FlyoutIsPresented)] = MapFlyoutIsPresented,
-                [nameof(Shell.FlyoutBehavior)] = MapFlyoutBehavior,
-                [nameof(Shell.FlyoutWidth)] = MapFlyoutWidth,
-                [nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
-                [nameof(Shell.FlowDirection)] = MapFlowDirection,
-                [nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
-                [nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
-                [nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
-                [nameof(Shell.FlyoutBackgroundImage)] = MapFlyoutBackgroundImage,
-                [nameof(Shell.FlyoutBackgroundImageAspect)] = MapFlyoutBackgroundImage,
-                [nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
-                [nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
-                [nameof(Shell.FlyoutFooter)] = MapFlyoutFooter,
-                [nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
-                [nameof(Shell.FlyoutHeaderBehavior)] = MapFlyoutHeaderBehavior,
-                [nameof(Shell.FlyoutVerticalScrollMode)] = MapFlyoutVerticalScrollMode,
-                [nameof(Shell.FlyoutContent)] = MapFlyoutContent,
-                [nameof(Shell.FlyoutContentTemplate)] = MapFlyoutContent,
-            };
-
-        public static CommandMapper<Shell, ShellHandler> CommandMapper =
-            new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);
-
-        public ShellHandler() : base(Mapper, CommandMapper)
-        {
-        }
-
         protected override MauiDrawerLayout CreatePlatformView()
         {
             // Create MauiDrawerLayout (same as FlyoutViewHandler)
@@ -286,7 +255,7 @@ namespace Microsoft.Maui.Controls.Handlers
             handler.SwitchToItem(shell.CurrentItem, animate: true);
         }
 
-        public static void MapFlyoutIsPresented(ShellHandler handler, Shell shell)
+        public static void MapIsPresented(ShellHandler handler, Shell shell)
         {
             // Use MauiDrawerLayout's open/close methods
             if (handler.MauiDrawerLayout is not null)
@@ -540,7 +509,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        public static void MapFlyoutContent(ShellHandler handler, Shell shell)
+        public static void MapFlyout(ShellHandler handler, Shell shell)
         {
             // Update the flyout content when it changes
             if (handler._flyoutContentRenderer is ShellFlyoutTemplatedContentRenderer templatedRenderer)
