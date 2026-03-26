@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Services;
@@ -19,18 +19,18 @@ public static class DoctorCommand
 		var command = new Command("doctor", "Check system for MAUI development readiness")
 		{
 			// Options
-			new Option<bool>("--fix", "Attempt to automatically fix issues"),
-			new Option<string>("--platform", "Check only specific platform (dotnet, android, apple, windows)")
+			new Option<bool>("--fix") { Description = "Attempt to automatically fix issues" },
+			new Option<string>("--platform") { Description = "Check only specific platform (dotnet, android, apple, windows)" }
 		};
 
-		command.SetHandler(async (InvocationContext context) =>
+		command.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var doctorService = Program.DoctorService;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var fix = context.GetOption<bool>("fix");
-			var platform = context.GetOption<string>("platform");
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var fix = parseResult.GetOption<bool>("fix");
+			var platform = parseResult.GetOption<string>("platform");
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
@@ -40,14 +40,14 @@ public static class DoctorCommand
 				{
 					report = await spectre.StatusAsync("Running health checks...", async () =>
 						string.IsNullOrEmpty(platform)
-							? await doctorService.RunAllChecksAsync(context.GetCancellationToken())
-							: await doctorService.RunCategoryChecksAsync(platform, context.GetCancellationToken()));
+							? await doctorService.RunAllChecksAsync(cancellationToken)
+							: await doctorService.RunCategoryChecksAsync(platform, cancellationToken));
 				}
 				else
 				{
 					report = string.IsNullOrEmpty(platform)
-						? await doctorService.RunAllChecksAsync(context.GetCancellationToken())
-						: await doctorService.RunCategoryChecksAsync(platform, context.GetCancellationToken());
+						? await doctorService.RunAllChecksAsync(cancellationToken)
+						: await doctorService.RunCategoryChecksAsync(platform, cancellationToken);
 				}
 
 				// Output the report
@@ -70,7 +70,7 @@ public static class DoctorCommand
 								{
 									var issue = fixableIssues[i];
 									var task = ctx.AddTask($"Fixing: {issue.Name}");
-									var success = await doctorService.TryFixAsync(issue.Fix!, context.GetCancellationToken());
+									var success = await doctorService.TryFixAsync(issue.Fix!, cancellationToken);
 									task.Complete(success ? $"Fixed: {issue.Name}" : $"Failed: {issue.Name}");
 								}
 							});
@@ -81,7 +81,7 @@ public static class DoctorCommand
 							foreach (var issue in fixableIssues)
 							{
 								formatter.WriteProgress($"Fixing: {issue.Name}");
-								await doctorService.TryFixAsync(issue.Fix!, context.GetCancellationToken());
+								await doctorService.TryFixAsync(issue.Fix!, cancellationToken);
 							}
 						}
 					}
@@ -89,12 +89,12 @@ public static class DoctorCommand
 
 				// Set exit code based on results
 				var hasErrors = report.Checks.Any(c => c.Status == Models.CheckStatus.Error);
-				context.ExitCode = hasErrors ? 1 : 0;
+				return hasErrors ? 1 : 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 

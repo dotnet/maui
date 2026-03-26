@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Services;
@@ -18,31 +18,31 @@ public static class DeviceCommand
 	{
 		var command = new Command("device", "Manage devices and emulators");
 
-		command.AddCommand(CreateListCommand());
+		command.Add(CreateListCommand());
 
 		return command;
 	}
 
 	static Command CreateListCommand()
 	{
-		var platformOption = new Option<string>("--platform", () => "all", "Filter by platform (android, apple, windows, all)");
+		var platformOption = new Option<string>("--platform") { Description = "Filter by platform (android, apple, windows, all)", DefaultValueFactory = _ => "all" };
 		var command = new Command("list", "List available devices")
 		{
 			platformOption
 		};
 
-		command.SetHandler(async (InvocationContext context) =>
+		command.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var deviceManager = Program.DeviceManager;
-			var formatter = Program.GetFormatter(context);
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var platform = context.ParseResult.GetValueForOption(platformOption);
+			var formatter = Program.GetFormatter(parseResult);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var platform = parseResult.GetValue(platformOption);
 
 			try
 			{
 				var devices = platform == "all"
-					? await deviceManager.GetAllDevicesAsync(context.GetCancellationToken())
-					: await deviceManager.GetDevicesByPlatformAsync(platform!, context.GetCancellationToken());
+					? await deviceManager.GetAllDevicesAsync(cancellationToken)
+					: await deviceManager.GetDevicesByPlatformAsync(platform!, cancellationToken);
 
 				if (useJson)
 				{
@@ -53,16 +53,17 @@ public static class DeviceCommand
 					if (!devices.Any())
 					{
 						formatter.WriteWarning("No devices found.");
-						return;
+						return 0;
 					}
 
 					formatter.WriteResult(new DeviceListResult { Devices = devices.ToList() });
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 

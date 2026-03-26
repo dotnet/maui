@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Reflection;
 using Microsoft.Maui.Client.Output;
 
@@ -17,9 +17,9 @@ public static class VersionCommand
 	{
 		var command = new Command("version", "Display version information");
 
-		command.SetHandler((InvocationContext context) =>
+		command.SetAction((ParseResult parseResult) =>
 		{
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
 
 			var assembly = Assembly.GetExecutingAssembly();
 			var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
@@ -28,7 +28,7 @@ public static class VersionCommand
 
 			if (useJson)
 			{
-				var formatter = Program.GetFormatter(context);
+				var formatter = Program.GetFormatter(parseResult);
 				formatter.Write(new
 				{
 					version = version,
@@ -38,7 +38,7 @@ public static class VersionCommand
 			}
 			else
 			{
-				var formatter = Program.GetFormatter(context);
+				var formatter = Program.GetFormatter(parseResult);
 				formatter.WriteVersion(version, $".NET {Environment.Version}", Environment.OSVersion.ToString());
 			}
 		});

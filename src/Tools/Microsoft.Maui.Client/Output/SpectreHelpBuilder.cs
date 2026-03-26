@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Help;
-using System.CommandLine.Invocation;
 using Spectre.Console;
 
 namespace Microsoft.Maui.Client.Output;
@@ -14,11 +12,6 @@ namespace Microsoft.Maui.Client.Output;
 /// </summary>
 static class SpectreHelpBuilder
 {
-	/// <summary>
-	/// Writes colorized help for a command to the console.
-	/// </summary>
-	internal static void WriteHelp(HelpContext context) => WriteHelp(context.Command);
-
 	/// <summary>
 	/// Writes colorized help for a command to the console.
 	/// </summary>
@@ -76,7 +69,7 @@ static class SpectreHelpBuilder
 		}
 
 		// Subcommands
-		var subcommands = command.Subcommands.Where(c => !c.IsHidden).OrderBy(c => c.Name).ToList();
+		var subcommands = command.Subcommands.Where(c => !c.Hidden).OrderBy(c => c.Name).ToList();
 		if (subcommands.Count > 0)
 		{
 			console.MarkupLine("[yellow]Commands:[/]");
@@ -92,7 +85,7 @@ static class SpectreHelpBuilder
 		}
 
 		// Arguments
-		var arguments = command.Arguments.Where(a => !a.IsHidden).ToList();
+		var arguments = command.Arguments.Where(a => !a.Hidden).ToList();
 		if (arguments.Count > 0)
 		{
 			console.MarkupLine("[yellow]Arguments:[/]");
@@ -123,13 +116,13 @@ static class SpectreHelpBuilder
 		}
 		parts.Add(string.Join(" ", path));
 
-		if (command.Subcommands.Any(c => !c.IsHidden))
+		if (command.Subcommands.Any(c => !c.Hidden))
 			parts.Add("[command]");
 
 		if (GetVisibleOptions(command).Any())
 			parts.Add("[options]");
 
-		foreach (var arg in command.Arguments.Where(a => !a.IsHidden))
+		foreach (var arg in command.Arguments.Where(a => !a.Hidden))
 			parts.Add($"<{arg.Name}>");
 
 		return string.Join(" ", parts);
@@ -138,14 +131,14 @@ static class SpectreHelpBuilder
 	static IEnumerable<Option> GetVisibleOptions(Command command)
 	{
 		// Include the command's own options and any global options from parents
-		var options = command.Options.Where(o => !o.IsHidden).ToList();
+		var options = command.Options.Where(o => !o.Hidden).ToList();
 
 		// For root command, global options are already included
 		// For subcommands, add inherited global options
 		var parent = command.Parents.OfType<Command>().FirstOrDefault();
 		if (parent != null)
 		{
-			foreach (var globalOpt in parent.Options.Where(o => !o.IsHidden))
+			foreach (var globalOpt in parent.Options.Where(o => !o.Hidden))
 			{
 				if (!options.Any(o => o.Name == globalOpt.Name))
 					options.Add(globalOpt);

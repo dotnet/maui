@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Help;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Client.Commands;
@@ -51,76 +49,68 @@ public class Program
 		if (TryShowSpectreHelp(args, rootCommand))
 			return 0;
 
-		var parser = new CommandLineBuilder(rootCommand)
-			.UseHelp()
-			.UseEnvironmentVariableDirective()
-			.UseParseDirective()
-			.UseSuggestDirective()
-			.RegisterWithDotnetSuggest()
-			.UseTypoCorrections()
-			.UseParseErrorReporting()
-			.UseVersionOption()
-			.UseExceptionHandler((exception, context) =>
+		var parseResult = rootCommand.Parse(args);
+
+		try
+		{
+			return await parseResult.InvokeAsync();
+		}
+		catch (Exception exception)
+		{
+			var formatter = GetFormatter(parseResult);
+			var isCi = parseResult.GetValue(GlobalOptions.CiOption);
+
+			formatter.WriteError(exception);
+
+			// In CI mode, fail fast
+			if (isCi)
 			{
-				var formatter = GetFormatter(context);
-				var isCi = context.ParseResult.GetValueForOption(GlobalOptions.CiOption);
+				Environment.Exit(1);
+			}
 
-				formatter.WriteError(exception);
-				context.ExitCode = 1;
-
-				// In CI mode, fail fast
-				if (isCi)
-				{
-					Environment.Exit(1);
-				}
-			})
-			.Build();
-
-		return await parser.InvokeAsync(args);
+			return 1;
+		}
 	}
 
 	static RootCommand BuildRootCommand()
 	{
-		var rootCommand = new RootCommand("MAUI Development Tools - Device management and environment setup")
-		{
-			Name = "maui"
-		};
+		var rootCommand = new RootCommand("MAUI Development Tools - Device management and environment setup");
 
 		// Global options
-		rootCommand.AddGlobalOption(GlobalOptions.JsonOption);
-		rootCommand.AddGlobalOption(GlobalOptions.VerboseOption);
-		rootCommand.AddGlobalOption(GlobalOptions.DryRunOption);
-		rootCommand.AddGlobalOption(GlobalOptions.CiOption);
+		rootCommand.Add(GlobalOptions.JsonOption);
+		rootCommand.Add(GlobalOptions.VerboseOption);
+		rootCommand.Add(GlobalOptions.DryRunOption);
+		rootCommand.Add(GlobalOptions.CiOption);
 
 		// Top-level commands (per spec)
-		rootCommand.AddCommand(DoctorCommand.Create());
-		rootCommand.AddCommand(DeviceCommand.Create());
-		rootCommand.AddCommand(VersionCommand.Create());
+		rootCommand.Add(DoctorCommand.Create());
+		rootCommand.Add(DeviceCommand.Create());
+		rootCommand.Add(VersionCommand.Create());
 
 		// Platform-specific command groups
-		rootCommand.AddCommand(AndroidCommands.Create());
+		rootCommand.Add(AndroidCommands.Create());
 
 		return rootCommand;
 	}
 
-	internal static IOutputFormatter GetFormatter(InvocationContext context)
+	internal static IOutputFormatter GetFormatter(ParseResult parseResult)
 	{
-		var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-		var verbose = context.ParseResult.GetValueForOption(GlobalOptions.VerboseOption);
+		var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+		var verbose = parseResult.GetValue(GlobalOptions.VerboseOption);
 
 		return useJson
 			? new JsonOutputFormatter(Console.Out)
 			: new SpectreOutputFormatter(verbose: verbose);
 	}
 
-	internal static bool IsVerbose(InvocationContext context) =>
-		context.ParseResult.GetValueForOption(GlobalOptions.VerboseOption);
+	internal static bool IsVerbose(ParseResult parseResult) =>
+		parseResult.GetValue(GlobalOptions.VerboseOption);
 
-	internal static bool IsDryRun(InvocationContext context) =>
-		context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
+	internal static bool IsDryRun(ParseResult parseResult) =>
+		parseResult.GetValue(GlobalOptions.DryRunOption);
 
-	internal static bool IsCiMode(InvocationContext context) =>
-		context.ParseResult.GetValueForOption(GlobalOptions.CiOption);
+	internal static bool IsCiMode(ParseResult parseResult) =>
+		parseResult.GetValue(GlobalOptions.CiOption);
 
 	static readonly string[] s_helpAliases = ["--help", "-h", "-?", "/h", "/?"];
 
@@ -171,31 +161,31 @@ public class Program
 /// </summary>
 public static class GlobalOptions
 {
-	public static readonly Option<bool> JsonOption = new(
-		aliases: new[] { "--json" },
-		description: "Output in JSON format for machine consumption")
+	public static readonly Option<bool> JsonOption = new("--json")
 	{
-		Arity = ArgumentArity.ZeroOrOne
+		Description = "Output in JSON format for machine consumption",
+		Arity = ArgumentArity.ZeroOrOne,
+		Recursive = true
 	};
 
-	public static readonly Option<bool> VerboseOption = new(
-		aliases: new[] { "-v", "--verbose" },
-		description: "Enable verbose output")
+	public static readonly Option<bool> VerboseOption = new("-v", "--verbose")
 	{
-		Arity = ArgumentArity.ZeroOrOne
+		Description = "Enable verbose output",
+		Arity = ArgumentArity.ZeroOrOne,
+		Recursive = true
 	};
 
-	public static readonly Option<bool> DryRunOption = new(
-		aliases: new[] { "--dry-run" },
-		description: "Show what would be done without making changes")
+	public static readonly Option<bool> DryRunOption = new("--dry-run")
 	{
-		Arity = ArgumentArity.ZeroOrOne
+		Description = "Show what would be done without making changes",
+		Arity = ArgumentArity.ZeroOrOne,
+		Recursive = true
 	};
 
-	public static readonly Option<bool> CiOption = new(
-		aliases: new[] { "--ci" },
-		description: "CI mode - non-interactive, fail on first error")
+	public static readonly Option<bool> CiOption = new("--ci")
 	{
-		Arity = ArgumentArity.ZeroOrOne
+		Description = "CI mode - non-interactive, fail on first error",
+		Arity = ArgumentArity.ZeroOrOne,
+		Recursive = true
 	};
 }

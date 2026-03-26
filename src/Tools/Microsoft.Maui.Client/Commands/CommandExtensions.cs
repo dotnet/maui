@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 
 namespace Microsoft.Maui.Client.Commands;
 
@@ -14,13 +14,14 @@ internal static class CommandExtensions
 {
 	/// <summary>
 	/// Gets the value for a command-local option by name, avoiding the verbose
-	/// <c>(Option&lt;T&gt;)context.ParseResult.CommandResult.Command.Options.First(o => o.Name == "...")</c> pattern.
+	/// <c>(Option&lt;T&gt;)parseResult.CommandResult.Command.Options.First(o => o.Name == "...")</c> pattern.
 	/// </summary>
-	public static T? GetOption<T>(this InvocationContext context, string name)
+	public static T? GetOption<T>(this ParseResult parseResult, string name)
 	{
-		var option = context.ParseResult.CommandResult.Command.Options.FirstOrDefault(o => o.Name == name);
+		var option = parseResult.CommandResult.Command.Options.FirstOrDefault(o =>
+			o.Name == name || o.Name == $"--{name}");
 		if (option is Option<T> typed)
-			return context.ParseResult.GetValueForOption(typed);
+			return parseResult.GetValue(typed);
 		return default;
 	}
 }

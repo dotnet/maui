@@ -16,14 +16,14 @@ public class AndroidCommandsTests
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
 		var installCommand = androidCommand.Subcommands.First(c => c.Name == "install");
-		var packagesOption = installCommand.Options.First(o => o.Name == "packages");
+		var packagesOption = installCommand.Options.First(o => o.Name == "--packages");
 
 		// Act
 		var parseResult = installCommand.Parse("install --packages platform-tools,build-tools;35.0.0,platforms;android-35");
 
 		// Assert
 		Assert.Empty(parseResult.Errors);
-		var packages = parseResult.GetValueForOption((Option<string[]>)packagesOption);
+		var packages = parseResult.GetValue((Option<string[]>)packagesOption);
 		Assert.NotNull(packages);
 		// The raw value will be a single string with commas - the handler splits it
 		Assert.Single(packages);
@@ -36,14 +36,14 @@ public class AndroidCommandsTests
 		// Arrange
 		var androidCommand = AndroidCommands.Create();
 		var installCommand = androidCommand.Subcommands.First(c => c.Name == "install");
-		var packagesOption = installCommand.Options.First(o => o.Name == "packages");
+		var packagesOption = installCommand.Options.First(o => o.Name == "--packages");
 
 		// Act
 		var parseResult = installCommand.Parse("install --packages platform-tools --packages build-tools;35.0.0");
 
 		// Assert
 		Assert.Empty(parseResult.Errors);
-		var packages = parseResult.GetValueForOption((Option<string[]>)packagesOption);
+		var packages = parseResult.GetValue((Option<string[]>)packagesOption);
 		Assert.NotNull(packages);
 		Assert.Equal(2, packages.Length);
 	}
@@ -56,10 +56,10 @@ public class AndroidCommandsTests
 		var installCommand = androidCommand.Subcommands.First(c => c.Name == "install");
 
 		// Assert
-		Assert.Contains(installCommand.Options, o => o.Name == "sdk-path");
-		Assert.Contains(installCommand.Options, o => o.Name == "jdk-path");
-		Assert.Contains(installCommand.Options, o => o.Name == "jdk-version");
-		Assert.Contains(installCommand.Options, o => o.Name == "packages");
+		Assert.Contains(installCommand.Options, o => o.Name == "--sdk-path");
+		Assert.Contains(installCommand.Options, o => o.Name == "--jdk-path");
+		Assert.Contains(installCommand.Options, o => o.Name == "--jdk-version");
+		Assert.Contains(installCommand.Options, o => o.Name == "--packages");
 	}
 
 	[Fact]
@@ -69,10 +69,10 @@ public class AndroidCommandsTests
 		var androidCommand = AndroidCommands.Create();
 		var emulatorCommand = androidCommand.Subcommands.First(c => c.Name == "emulator");
 		var createCommand = emulatorCommand.Subcommands.First(c => c.Name == "create");
-		var packageOption = createCommand.Options.First(o => o.Name == "package");
+		var packageOption = createCommand.Options.First(o => o.Name == "--package");
 
 		// Assert
-		Assert.False(packageOption.IsRequired);
+		Assert.False(packageOption.Required);
 	}
 
 	[Fact]
@@ -145,8 +145,8 @@ public class AndroidCommandsTests
 		var startCommand = emulatorCommand.Subcommands.First(c => c.Name == "start");
 
 		// Assert
-		Assert.Contains(startCommand.Options, o => o.Name == "cold-boot");
-		Assert.Contains(startCommand.Options, o => o.Name == "wait");
+		Assert.Contains(startCommand.Options, o => o.Name == "--cold-boot");
+		Assert.Contains(startCommand.Options, o => o.Name == "--wait");
 	}
 
 	[Fact]
@@ -185,8 +185,8 @@ public class AndroidCommandsTests
 		var listCommand = sdkCommand.Subcommands.First(c => c.Name == "list");
 
 		// Assert
-		Assert.Contains(listCommand.Options, o => o.Name == "available");
-		Assert.Contains(listCommand.Options, o => o.Name == "all");
+		Assert.Contains(listCommand.Options, o => o.Name == "--available");
+		Assert.Contains(listCommand.Options, o => o.Name == "--all");
 	}
 
 	[Fact]

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Providers.Android;
@@ -15,37 +15,38 @@ public static partial class AndroidCommands
 {
 	static Command CreateInstallCommand()
 	{
-		var packagesOption = new Option<string[]>("--packages", "SDK packages to install (replaces defaults; comma-separated or multiple --packages flags)")
+		var packagesOption = new Option<string[]>("--packages")
 		{
+			Description = "SDK packages to install (replaces defaults; comma-separated or multiple --packages flags)",
 			AllowMultipleArgumentsPerToken = true
 		};
 
 		var command = new Command("install", "Set up Android development environment")
 		{
-			new Option<string>("--sdk-path", "Custom SDK installation path"),
-			new Option<string>("--jdk-path", "Custom JDK installation path"),
-			new Option<int>("--jdk-version", () => 17, "JDK version to install (17 or 21)"),
-			new Option<bool>("--accept-licenses", "Non-interactively accept all SDK licenses"),
+			new Option<string>("--sdk-path") { Description = "Custom SDK installation path" },
+			new Option<string>("--jdk-path") { Description = "Custom JDK installation path" },
+			new Option<int>("--jdk-version") { Description = "JDK version to install (17 or 21)", DefaultValueFactory = _ => 17 },
+			new Option<bool>("--accept-licenses") { Description = "Non-interactively accept all SDK licenses" },
 			packagesOption
 		};
 
-		command.SetHandler(async (InvocationContext context) =>
+		command.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var sdkPath = context.GetOption<string>("sdk-path");
-			var jdkPath = context.GetOption<string>("jdk-path");
-			var jdkVersion = context.GetOption<int>("jdk-version");
-			var rawPackages = context.GetOption<string[]>("packages");
-			var acceptLicenses = context.GetOption<bool>("accept-licenses");
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var sdkPath = parseResult.GetOption<string>("sdk-path");
+			var jdkPath = parseResult.GetOption<string>("jdk-path");
+			var jdkVersion = parseResult.GetOption<int>("jdk-version");
+			var rawPackages = parseResult.GetOption<string[]>("packages");
+			var acceptLicenses = parseResult.GetOption<bool>("accept-licenses");
 
 			// Support comma-separated packages: "pkg1,pkg2,pkg3" becomes ["pkg1", "pkg2", "pkg3"]
 			var packages = rawPackages?
 				.SelectMany(p => p.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
 				.ToArray();
-			var formatter = Program.GetFormatter(context);
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
@@ -58,7 +59,7 @@ public static partial class AndroidCommands
 					formatter.WriteProgress($"Accept licenses: {acceptLicenses}");
 					if (packages?.Any() == true)
 						formatter.WriteProgress($"Extra packages: {string.Join(", ", packages)}");
-					return;
+					return 0;
 				}
 
 				if (!useJson && formatter is SpectreOutputFormatter spectre)
@@ -67,12 +68,12 @@ public static partial class AndroidCommands
 					if (TryRequestElevation(androidProvider, formatter, useJson))
 					{
 						formatter.WriteSuccess("Android environment installed successfully (elevated)");
-						return;
+						return 0;
 					}
 
 					// Resolve package list: explicit --packages or interactive selection
-					var isCi = Program.IsCiMode(context);
-					var pkgList = await ResolveInstallPackagesAsync(packages, spectre, androidProvider, isCi, context.GetCancellationToken());
+					var isCi = Program.IsCiMode(parseResult);
+					var pkgList = await ResolveInstallPackagesAsync(packages, spectre, androidProvider, isCi, cancellationToken);
 
 					await spectre.LiveProgressAsync(async (ctx) =>
 					{
@@ -83,7 +84,7 @@ public static partial class AndroidCommands
 							var jdkManager = Program.JdkManager;
 							await jdkManager.InstallAsync(jdkVersion, jdkPath,
 								onProgress: (pct, msg) => jdkTask.Update(pct, $"JDK: {msg}"),
-								context.GetCancellationToken());
+								cancellationToken);
 							jdkTask.Complete($"OpenJDK {jdkVersion} installed");
 						}
 						else
@@ -110,7 +111,7 @@ public static partial class AndroidCommands
 									};
 									sdkTask.Update(Math.Max(0, pct), label);
 								},
-								context.GetCancellationToken());
+								cancellationToken);
 							sdkTask.Complete("SDK Tools installed");
 						}
 						else
@@ -123,7 +124,7 @@ public static partial class AndroidCommands
 						licenseTask.SetIndeterminate("Checking licenses...");
 						await androidProvider.AcceptLicensesAsync(
 							onProgress: msg => licenseTask.SetIndeterminate(msg),
-							context.GetCancellationToken());
+							cancellationToken);
 						licenseTask.Complete("Licenses accepted");
 
 						// Step 4: Install packages
@@ -135,7 +136,7 @@ public static partial class AndroidCommands
 								var pct = (double)idx / total * 100;
 								pkgTask.Update(pct, $"Installing {pkg} ({idx + 1}/{total})");
 							},
-							context.GetCancellationToken());
+							cancellationToken);
 						pkgTask.Complete($"{pkgList.Count} packages installed");
 					});
 				}
@@ -152,10 +153,11 @@ public static partial class AndroidCommands
 						jdkVersion: jdkVersion,
 						additionalPackages: packages is { Length: > 0 } ? packages : null,
 						progress: progress,
-						cancellationToken: context.GetCancellationToken());
+						cancellationToken: cancellationToken);
 				}
 
 				formatter.WriteSuccess("Android environment installed successfully");
+				return 0;
 			}
 			catch (UnauthorizedAccessException uaEx) when (PlatformDetector.IsWindows)
 			{
@@ -165,16 +167,16 @@ public static partial class AndroidCommands
 				if (ProcessRunner.RelaunchElevated())
 				{
 					formatter.WriteSuccess("Android environment installed successfully (elevated)");
-					return;
+					return 0;
 				}
 
 				formatter.WriteError(uaEx);
-				context.ExitCode = 1;
+				return 1;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 

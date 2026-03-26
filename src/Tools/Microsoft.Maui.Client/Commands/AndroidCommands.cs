@@ -19,10 +19,10 @@ public static partial class AndroidCommands
 	{
 		var command = new Command("android", "Android SDK and device management");
 
-		command.AddCommand(CreateInstallCommand());
-		command.AddCommand(CreateJdkCommand());
-		command.AddCommand(CreateSdkCommand());
-		command.AddCommand(CreateEmulatorCommand());
+		command.Add(CreateInstallCommand());
+		command.Add(CreateJdkCommand());
+		command.Add(CreateSdkCommand());
+		command.Add(CreateEmulatorCommand());
 
 		return command;
 	}

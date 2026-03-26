@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Providers.Android;
@@ -19,16 +19,16 @@ public static partial class AndroidCommands
 
 		// emulator list
 		var listCommand = new Command("list", "List available emulators");
-		listCommand.SetHandler(async (InvocationContext context) =>
+		listCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
-				var avds = await androidProvider.GetAvdsAsync(context.GetCancellationToken());
+				var avds = await androidProvider.GetAvdsAsync(cancellationToken);
 
 				if (useJson)
 				{
@@ -39,7 +39,7 @@ public static partial class AndroidCommands
 					if (!avds.Any())
 					{
 						formatter.WriteWarning("No emulators found.");
-						return;
+						return 0;
 					}
 
 					formatter.WriteTable(
@@ -48,47 +48,46 @@ public static partial class AndroidCommands
 						("Target", a => a.Target ?? "—"),
 						("Device", a => a.DeviceProfile ?? "—"));
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
 		// emulator create
-		var nameArg = new Argument<string>("name", "AVD name (prompted interactively if omitted)");
-		nameArg.Arity = ArgumentArity.ZeroOrOne;
-		nameArg.SetDefaultValue(string.Empty);
+		var nameArg = new Argument<string>("name") { Description = "AVD name (prompted interactively if omitted)", Arity = ArgumentArity.ZeroOrOne, DefaultValueFactory = _ => string.Empty };
 		var createCommand = new Command("create", "Create a new emulator")
 		{
 			nameArg,
-			new Option<string>("--package", "System image package (auto-detects most recent if not specified)"),
-			new Option<string>("--device", "Device definition"),
-			new Option<bool>("--force", "Overwrite existing emulator with the same name")
+			new Option<string>("--package") { Description = "System image package (auto-detects most recent if not specified)" },
+			new Option<string>("--device") { Description = "Device definition" },
+			new Option<bool>("--force") { Description = "Overwrite existing emulator with the same name" }
 		};
-		createCommand.SetHandler(async (InvocationContext context) =>
+		createCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(nameArg);
-			var package = context.GetOption<string>("package");
-			var device = context.GetOption<string>("device");
-			var force = context.GetOption<bool>("force");
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var name = parseResult.GetValue(nameArg);
+			var package = parseResult.GetOption<string>("package");
+			var device = parseResult.GetOption<string>("device");
+			var force = parseResult.GetOption<bool>("force");
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
-				var isCi = Program.IsCiMode(context);
+				var isCi = Program.IsCiMode(parseResult);
 
 				// --- Step 1: System image selection ---
 				if (string.IsNullOrEmpty(package) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre)
 				{
 					var sysImages = await spectre.StatusAsync("Finding installed system images...", async () =>
 					{
-						var installed = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+						var installed = await androidProvider.GetInstalledPackagesAsync(cancellationToken);
 						return installed.Where(p => p.Path.StartsWith("system-images;", StringComparison.Ordinal)).ToList();
 					});
 
@@ -116,7 +115,7 @@ public static partial class AndroidCommands
 				}
 				else if (string.IsNullOrEmpty(package))
 				{
-					package = await androidProvider.GetMostRecentSystemImageAsync(context.GetCancellationToken());
+					package = await androidProvider.GetMostRecentSystemImageAsync(cancellationToken);
 					if (string.IsNullOrEmpty(package))
 					{
 						throw new InvalidOperationException(
@@ -182,13 +181,13 @@ public static partial class AndroidCommands
 					formatter.WriteInfo($"[dry-run] Would create AVD: {name}");
 					formatter.WriteProgress($"Package: {package}");
 					formatter.WriteProgress($"Device: {device}");
-					return;
+					return 0;
 				}
 
 				if (string.IsNullOrEmpty(package))
 					throw new InvalidOperationException("No system image package specified. Provide one via --package or run interactively.");
 
-				await androidProvider.CreateAvdAsync(name, device, package, force, context.GetCancellationToken());
+				await androidProvider.CreateAvdAsync(name, device, package, force, cancellationToken);
 
 				if (useJson)
 				{
@@ -198,44 +197,43 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"Created AVD: {name} (device: {device})");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
 		// emulator start
-		var startNameArg = new Argument<string>("name", "AVD name to start (prompted interactively if omitted)");
-		startNameArg.Arity = ArgumentArity.ZeroOrOne;
-		startNameArg.SetDefaultValue(string.Empty);
+		var startNameArg = new Argument<string>("name") { Description = "AVD name to start (prompted interactively if omitted)", Arity = ArgumentArity.ZeroOrOne, DefaultValueFactory = _ => string.Empty };
 		var startCommand = new Command("start", "Start an emulator")
 		{
 			startNameArg,
-			new Option<bool>("--cold-boot", "Perform a cold boot"),
-			new Option<bool>("--wait", "Wait for boot completion")
+			new Option<bool>("--cold-boot") { Description = "Perform a cold boot" },
+			new Option<bool>("--wait") { Description = "Wait for boot completion" }
 		};
-		startCommand.SetHandler(async (InvocationContext context) =>
+		startCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(startNameArg);
-			var coldBoot = context.GetOption<bool>("cold-boot");
-			var wait = context.GetOption<bool>("wait");
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var name = parseResult.GetValue(startNameArg);
+			var coldBoot = parseResult.GetOption<bool>("cold-boot");
+			var wait = parseResult.GetOption<bool>("wait");
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
-				var isCi = Program.IsCiMode(context);
+				var isCi = Program.IsCiMode(parseResult);
 
 				// Interactive AVD selection if name not provided
 				if (string.IsNullOrEmpty(name) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre0)
 				{
 					var avds = await spectre0.StatusAsync("Finding emulators...", async () =>
-						await androidProvider.GetAvdsAsync(context.GetCancellationToken()));
+						await androidProvider.GetAvdsAsync(cancellationToken));
 
 					if (!avds.Any())
 					{
@@ -266,20 +264,20 @@ public static partial class AndroidCommands
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would start AVD: {name}");
-					return;
+					return 0;
 				}
 
 				if (!useJson && formatter is SpectreOutputFormatter spectre)
 				{
 					await spectre.StatusAsync($"Starting {name}...", async () =>
 					{
-						await androidProvider.StartAvdAsync(name, coldBoot, wait, context.GetCancellationToken());
+						await androidProvider.StartAvdAsync(name, coldBoot, wait, cancellationToken);
 					});
 				}
 				else
 				{
 					formatter.WriteProgress($"Starting {name}...");
-					await androidProvider.StartAvdAsync(name, coldBoot, wait, context.GetCancellationToken());
+					await androidProvider.StartAvdAsync(name, coldBoot, wait, cancellationToken);
 				}
 
 				if (useJson)
@@ -290,41 +288,40 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"Started AVD: {name}");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
-		command.AddCommand(listCommand);
-		command.AddCommand(createCommand);
-		command.AddCommand(startCommand);
+		command.Add(listCommand);
+		command.Add(createCommand);
+		command.Add(startCommand);
 
 		// emulator stop
-		var stopNameArg = new Argument<string>("name", "Emulator name (prompted interactively if omitted)");
-		stopNameArg.Arity = ArgumentArity.ZeroOrOne;
-		stopNameArg.SetDefaultValue(string.Empty);
+		var stopNameArg = new Argument<string>("name") { Description = "Emulator name (prompted interactively if omitted)", Arity = ArgumentArity.ZeroOrOne, DefaultValueFactory = _ => string.Empty };
 		var stopCommand = new Command("stop", "Stop a running emulator")
 		{
 			stopNameArg
 		};
-		stopCommand.SetHandler(async (InvocationContext context) =>
+		stopCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(stopNameArg);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var name = parseResult.GetValue(stopNameArg);
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
-				var isCi = Program.IsCiMode(context);
+				var isCi = Program.IsCiMode(parseResult);
 
 				// Find running emulators
-				var devices = await androidProvider.GetDevicesAsync(context.GetCancellationToken());
+				var devices = await androidProvider.GetDevicesAsync(cancellationToken);
 				var runningEmulators = devices.Where(d => d.IsEmulator).ToList();
 
 				// Interactive selection if name not provided
@@ -384,19 +381,19 @@ public static partial class AndroidCommands
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would stop emulator: {name} ({serial})");
-					return;
+					return 0;
 				}
 
 				if (!useJson && formatter is SpectreOutputFormatter spectreStop2)
 				{
 					await spectreStop2.StatusAsync($"Stopping {name}...", async () =>
 					{
-						await androidProvider.StopEmulatorAsync(serial, context.GetCancellationToken());
+						await androidProvider.StopEmulatorAsync(serial, cancellationToken);
 					});
 				}
 				else
 				{
-					await androidProvider.StopEmulatorAsync(serial, context.GetCancellationToken());
+					await androidProvider.StopEmulatorAsync(serial, cancellationToken);
 				}
 
 				if (useJson)
@@ -407,41 +404,40 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"Stopped emulator: {name} ({serial})");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
-		command.AddCommand(stopCommand);
+		command.Add(stopCommand);
 
 		// emulator delete
-		var deleteNameArg = new Argument<string>("name", "AVD name to delete (prompted interactively if omitted)");
-		deleteNameArg.Arity = ArgumentArity.ZeroOrOne;
-		deleteNameArg.SetDefaultValue(string.Empty);
+		var deleteNameArg = new Argument<string>("name") { Description = "AVD name to delete (prompted interactively if omitted)", Arity = ArgumentArity.ZeroOrOne, DefaultValueFactory = _ => string.Empty };
 		var deleteCommand = new Command("delete", "Delete an emulator")
 		{
 			deleteNameArg
 		};
-		deleteCommand.SetHandler(async (InvocationContext context) =>
+		deleteCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var name = context.ParseResult.GetValueForArgument(deleteNameArg);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var name = parseResult.GetValue(deleteNameArg);
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
-				var isCi = Program.IsCiMode(context);
+				var isCi = Program.IsCiMode(parseResult);
 
 				// Interactive selection if name not provided
 				if (string.IsNullOrEmpty(name) && !useJson && !isCi && formatter is SpectreOutputFormatter spectreDel)
 				{
 					var avds = await spectreDel.StatusAsync("Finding emulators...", async () =>
-						await androidProvider.GetAvdsAsync(context.GetCancellationToken()));
+						await androidProvider.GetAvdsAsync(cancellationToken));
 
 					if (!avds.Any())
 					{
@@ -472,10 +468,10 @@ public static partial class AndroidCommands
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would delete AVD: {name}");
-					return;
+					return 0;
 				}
 
-				await androidProvider.DeleteAvdAsync(name, context.GetCancellationToken());
+				await androidProvider.DeleteAvdAsync(name, cancellationToken);
 
 				if (useJson)
 				{
@@ -485,14 +481,15 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"Deleted AVD: {name}");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
-		command.AddCommand(deleteCommand);
+		command.Add(deleteCommand);
 
 		return command;
 	}

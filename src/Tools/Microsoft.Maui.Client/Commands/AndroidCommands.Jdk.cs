@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Providers.Android;
@@ -19,14 +19,14 @@ public static partial class AndroidCommands
 
 		// jdk check
 		var checkCommand = new Command("check", "Check JDK installation status");
-		checkCommand.SetHandler(async (InvocationContext context) =>
+		checkCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var jdkManager = Program.JdkManager;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var formatter = Program.GetFormatter(parseResult);
 
-			var healthCheck = await jdkManager.CheckHealthAsync(context.GetCancellationToken());
+			var healthCheck = await jdkManager.CheckHealthAsync(cancellationToken);
 
 			if (useJson)
 			{
@@ -46,29 +46,29 @@ public static partial class AndroidCommands
 		// jdk install
 		var installCommand = new Command("install", "Install OpenJDK")
 		{
-			new Option<int>("--version", () => 17, "JDK version (17 or 21)"),
-			new Option<string>("--path", "Installation path")
+			new Option<int>("--version") { Description = "JDK version (17 or 21)", DefaultValueFactory = _ => 17 },
+			new Option<string>("--path") { Description = "Installation path" }
 		};
-		installCommand.SetHandler(async (InvocationContext context) =>
+		installCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var jdkManager = Program.JdkManager;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var version = context.GetOption<int>("version");
-			var path = context.GetOption<string>("path");
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var version = parseResult.GetOption<int>("version");
+			var path = parseResult.GetOption<string>("path");
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would install OpenJDK {version}");
-					return;
+					return 0;
 				}
 
 				formatter.WriteProgress($"Installing OpenJDK {version}...");
-				await jdkManager.InstallAsync(version, path, context.GetCancellationToken());
+				await jdkManager.InstallAsync(version, path, cancellationToken);
 
 				if (useJson)
 				{
@@ -78,31 +78,32 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"OpenJDK {version} installed to {jdkManager.DetectedJdkPath}");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
 		// jdk list
 		var listCommand = new Command("list", "List available JDK versions");
-		listCommand.SetHandler((InvocationContext context) =>
+		listCommand.SetAction((ParseResult parseResult) =>
 		{
 			var jdkManager = Program.JdkManager;
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
 
 			var versions = jdkManager.GetAvailableVersions().ToList();
 
 			if (useJson)
 			{
-				var formatter = Program.GetFormatter(context);
+				var formatter = Program.GetFormatter(parseResult);
 				formatter.Write(new { versions = versions });
 			}
 			else
 			{
-				var formatter = Program.GetFormatter(context);
+				var formatter = Program.GetFormatter(parseResult);
 				formatter.WriteTable(
 					versions,
 					("Version", v => v.ToString()),
@@ -110,9 +111,9 @@ public static partial class AndroidCommands
 			}
 		});
 
-		command.AddCommand(checkCommand);
-		command.AddCommand(installCommand);
-		command.AddCommand(listCommand);
+		command.Add(checkCommand);
+		command.Add(installCommand);
+		command.Add(listCommand);
 
 		return command;
 	}

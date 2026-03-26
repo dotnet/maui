@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Microsoft.Maui.Client.Models;
 using Microsoft.Maui.Client.Output;
 using Microsoft.Maui.Client.Providers.Android;
@@ -19,14 +19,14 @@ public static partial class AndroidCommands
 
 		// sdk check
 		var checkCommand = new Command("check", "Check Android SDK installation status");
-		checkCommand.SetHandler(async (InvocationContext context) =>
+		checkCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var formatter = Program.GetFormatter(parseResult);
 
-			var checks = await androidProvider.CheckHealthAsync(context.GetCancellationToken());
+			var checks = await androidProvider.CheckHealthAsync(cancellationToken);
 			var sdkCheck = checks.FirstOrDefault(c => c.Name == "Android SDK");
 
 			if (sdkCheck != null)
@@ -48,33 +48,36 @@ public static partial class AndroidCommands
 		});
 
 		// sdk install
-		var sdkInstallPkgsArg = new Argument<string[]>("packages", "SDK packages to install (prompted interactively if omitted)");
-		sdkInstallPkgsArg.Arity = ArgumentArity.ZeroOrMore;
-		sdkInstallPkgsArg.SetDefaultValue(Array.Empty<string>());
+		var sdkInstallPkgsArg = new Argument<string[]>("packages")
+		{
+			Description = "SDK packages to install (prompted interactively if omitted)",
+			Arity = ArgumentArity.ZeroOrMore,
+			DefaultValueFactory = _ => Array.Empty<string>()
+		};
 		var installCommand = new Command("install", "Install SDK packages")
 		{
 			sdkInstallPkgsArg
 		};
-		installCommand.SetHandler(async (InvocationContext context) =>
+		installCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var packages = context.ParseResult.GetValueForArgument(sdkInstallPkgsArg);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var packages = parseResult.GetValue(sdkInstallPkgsArg);
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
-				var isCi = Program.IsCiMode(context);
+				var isCi = Program.IsCiMode(parseResult);
 
 				// Interactive selection if no packages specified
 				if ((packages == null || packages.Length == 0) && !useJson && !isCi && formatter is SpectreOutputFormatter spectre)
 				{
 					var (installed, available) = await spectre.StatusAsync("Fetching available packages...", async () =>
 					{
-						var inst = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
-						var avail = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+						var inst = await androidProvider.GetInstalledPackagesAsync(cancellationToken);
+						var avail = await androidProvider.GetAvailablePackagesAsync(cancellationToken);
 						return (inst, avail);
 					});
 
@@ -176,7 +179,7 @@ public static partial class AndroidCommands
 					if (packages.Length == 0)
 					{
 						spectre.WriteWarning("No components selected. Nothing to install.");
-						return;
+						return 0;
 					}
 
 					spectre.WriteInfo($"Will install: {string.Join(", ", packages)}");
@@ -195,13 +198,13 @@ public static partial class AndroidCommands
 						formatter.Write(new { success = true, installed = packages, elevated = true });
 					else
 						formatter.WriteSuccess("Packages installed successfully (elevated)");
-					return;
+					return 0;
 				}
 
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would install: {string.Join(", ", packages)}");
-					return;
+					return 0;
 				}
 
 				if (!useJson && formatter is SpectreOutputFormatter spectreInstall)
@@ -217,14 +220,14 @@ public static partial class AndroidCommands
 							.SpinnerStyle(new Style(Color.Blue))
 							.StartAsync($"[blue]Installing:[/] {Markup.Escape(pkg)}  {counter}", async _ =>
 							{
-								await androidProvider.InstallPackagesAsync(new[] { pkg }, true, context.GetCancellationToken());
+								await androidProvider.InstallPackagesAsync(new[] { pkg }, true, cancellationToken);
 							});
 						spectreInstall.Console.MarkupLine($"  [green]✓[/] {Markup.Escape(pkg)}");
 					}
 				}
 				else
 				{
-					await androidProvider.InstallPackagesAsync(packages, true, context.GetCancellationToken());
+					await androidProvider.InstallPackagesAsync(packages, true, cancellationToken);
 				}
 
 				if (useJson)
@@ -235,28 +238,29 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"Installed: {string.Join(", ", packages)}");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
 		// sdk list
 		var listCommand = new Command("list", "List SDK packages")
 		{
-			new Option<bool>("--available", "List packages available for installation"),
-			new Option<bool>("--all", "List both installed and available packages")
+			new Option<bool>("--available") { Description = "List packages available for installation" },
+			new Option<bool>("--all") { Description = "List both installed and available packages" }
 		};
-		listCommand.SetHandler(async (InvocationContext context) =>
+		listCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var showAvailable = context.GetOption<bool>("available");
-			var showAll = context.GetOption<bool>("all");
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var showAvailable = parseResult.GetOption<bool>("available");
+			var showAll = parseResult.GetOption<bool>("all");
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
@@ -265,15 +269,15 @@ public static partial class AndroidCommands
 				if (showAll)
 				{
 					// Get both installed and available
-					var installed = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
-					var available = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
+					var installed = await androidProvider.GetInstalledPackagesAsync(cancellationToken);
+					var available = await androidProvider.GetAvailablePackagesAsync(cancellationToken);
 					packages.AddRange(installed);
 					packages.AddRange(available);
 				}
 				else if (showAvailable)
 				{
-					var available = await androidProvider.GetAvailablePackagesAsync(context.GetCancellationToken());
-					var installed = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+					var available = await androidProvider.GetAvailablePackagesAsync(cancellationToken);
+					var installed = await androidProvider.GetInstalledPackagesAsync(cancellationToken);
 					var installedPaths = new HashSet<string>(installed.Select(p => p.Path), StringComparer.OrdinalIgnoreCase);
 
 					// Mark available packages that are already installed
@@ -281,7 +285,7 @@ public static partial class AndroidCommands
 				}
 				else
 				{
-					packages = await androidProvider.GetInstalledPackagesAsync(context.GetCancellationToken());
+					packages = await androidProvider.GetInstalledPackagesAsync(cancellationToken);
 				}
 
 				if (useJson)
@@ -293,7 +297,7 @@ public static partial class AndroidCommands
 					if (!packages.Any())
 					{
 						formatter.WriteWarning(showAvailable ? "No packages available." : "No packages installed.");
-						return;
+						return 0;
 					}
 
 					var spectre = formatter as SpectreOutputFormatter;
@@ -357,27 +361,28 @@ public static partial class AndroidCommands
 						WriteGroupedPackages(packages, showAvailable ? "Available packages" : "Installed packages");
 					}
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
 		// sdk accept-licenses
 		var acceptLicensesCommand = new Command("accept-licenses", "Accept Android SDK licenses interactively");
-		acceptLicensesCommand.SetHandler(async (InvocationContext context) =>
+		acceptLicensesCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
 				// Check if licenses already accepted
-				var accepted = await androidProvider.AreLicensesAcceptedAsync(context.GetCancellationToken());
+				var accepted = await androidProvider.AreLicensesAcceptedAsync(cancellationToken);
 				if (accepted)
 				{
 					if (useJson)
@@ -393,7 +398,7 @@ public static partial class AndroidCommands
 					{
 						formatter.WriteSuccess("SDK licenses are already accepted");
 					}
-					return;
+					return 0;
 				}
 
 				// Get the command for interactive license acceptance
@@ -413,8 +418,7 @@ public static partial class AndroidCommands
 					{
 						formatter.WriteError(new Exception("Android SDK not found. Run 'maui android install' first."));
 					}
-					context.ExitCode = 1;
-					return;
+					return 1;
 				}
 
 				if (useJson)
@@ -454,7 +458,7 @@ public static partial class AndroidCommands
 					using var process = System.Diagnostics.Process.Start(processInfo);
 					if (process != null)
 					{
-						await process.WaitForExitAsync(context.GetCancellationToken());
+						await process.WaitForExitAsync(cancellationToken);
 
 						if (process.ExitCode == 0)
 						{
@@ -466,19 +470,20 @@ public static partial class AndroidCommands
 						}
 					}
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
-		command.AddCommand(checkCommand);
-		command.AddCommand(installCommand);
-		command.AddCommand(listCommand);
-		command.AddCommand(acceptLicensesCommand);
-		command.AddCommand(CreateSdkUninstallCommand());
+		command.Add(checkCommand);
+		command.Add(installCommand);
+		command.Add(listCommand);
+		command.Add(acceptLicensesCommand);
+		command.Add(CreateSdkUninstallCommand());
 
 		return command;
 	}
@@ -487,28 +492,28 @@ public static partial class AndroidCommands
 	{
 		var command = new Command("uninstall", "Uninstall SDK packages")
 		{
-			new Argument<string[]>("packages", "Package names to uninstall") { Arity = ArgumentArity.OneOrMore }
+			new Argument<string[]>("packages") { Description = "Package names to uninstall", Arity = ArgumentArity.OneOrMore }
 		};
 
-		command.SetHandler(async (InvocationContext context) =>
+		command.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 		{
 			var androidProvider = Program.AndroidProvider;
 
-			var useJson = context.ParseResult.GetValueForOption(GlobalOptions.JsonOption);
-			var dryRun = context.ParseResult.GetValueForOption(GlobalOptions.DryRunOption);
-			var packages = context.ParseResult.GetValueForArgument(
-				(Argument<string[]>)context.ParseResult.CommandResult.Command.Arguments.First());
-			var formatter = Program.GetFormatter(context);
+			var useJson = parseResult.GetValue(GlobalOptions.JsonOption);
+			var dryRun = parseResult.GetValue(GlobalOptions.DryRunOption);
+			var packages = parseResult.GetValue(
+				(Argument<string[]>)parseResult.CommandResult.Command.Arguments.First())!;
+			var formatter = Program.GetFormatter(parseResult);
 
 			try
 			{
 				if (dryRun)
 				{
 					formatter.WriteInfo($"[dry-run] Would uninstall: {string.Join(", ", packages)}");
-					return;
+					return 0;
 				}
 
-				await androidProvider.UninstallPackagesAsync(packages, context.GetCancellationToken());
+				await androidProvider.UninstallPackagesAsync(packages, cancellationToken);
 
 				if (useJson)
 				{
@@ -518,11 +523,12 @@ public static partial class AndroidCommands
 				{
 					formatter.WriteSuccess($"Uninstalled: {string.Join(", ", packages)}");
 				}
+				return 0;
 			}
 			catch (Exception ex)
 			{
 				formatter.WriteError(ex);
-				context.ExitCode = 1;
+				return 1;
 			}
 		});
 
