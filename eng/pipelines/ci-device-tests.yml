@@ -136,10 +136,13 @@ stages:
           skipProvisioning: true
           skipXcode: false
           skipSimulatorSetup: false
-  # Just use the old way for Windows Device Tests
+  # Use the old way for Windows Device Tests
   - template: common/device-tests.yml
     parameters:
-      windowsPool: ${{ parameters.windowsPoolPublic }}
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        windowsPool: ${{ parameters.windowsPoolInternal }}
+      ${{ else }}:
+        windowsPool: ${{ parameters.windowsPoolPublic }}
       targetFrameworkVersion: ${{ targetFrameworkVersion }}
       windowsVersions: [ 'packaged', 'unpackaged' ]
       skipProvisioning: true

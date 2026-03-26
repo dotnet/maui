@@ -63,44 +63,83 @@ parameters:
     type: boolean
     default: false
 
-  - name: androidPool
+  # Internal pools (dnceng)
+  - name: androidPoolInternal
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI
-      demands:
-        - Agent.OSArchitecture -equals ARM64
-  
-  - name: androidPoolLinux
+      name: Azure Pipelines
+      vmImage: macOS-15-arm64
+
+  - name: androidPoolLinuxInternal
     type: object
     default:
       name: MAUI-DNCENG
       demands:
         - ImageOverride -equals 1ESPT-Ubuntu22.04
 
-  - name: iosPool
+  - name: iosPoolInternal
     type: object
     default:
-      name: MAUI
-      vmImage: MAUI      
-      demands:
-        - Agent.OSArchitecture -equals ARM64
-  
-  - name: windowsBuildPool
+      name: Azure Pipelines
+      vmImage: macOS-15-arm64
+
+  - name: windowsBuildPoolInternal
     type: object
     default:
-      name: NetCore-Public
+      name: NetCore1ESPool-Internal
       demands:
-        - ImageOverride -equals 1es-windows-2022-open
-    
-  - name: windowsPool
+        - ImageOverride -equals 1es-windows-2022
+
+  - name: windowsPoolInternal
+    type: object
+    default:
+      name: NetCore1ESPool-Internal
+      demands:
+        - ImageOverride -equals 1es-windows-2022
+
+  - name: macosPoolInternal
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: macOS-14
+
+  # Public pools (dnceng-public)
+  - name: androidPoolPublic
+    type: object
+    default:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+
+  - name: androidPoolLinuxPublic
+    type: object
+    default:
+      name: MAUI-DNCENG
+      demands:
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
+
+  - name: iosPoolPublic
+    type: object
+    default:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+
+  - name: windowsBuildPoolPublic
     type: object
     default:
       name: NetCore-Public
       demands:
         - ImageOverride -equals 1es-windows-2022-open
 
-  - name: macosPool
+  - name: windowsPoolPublic
+    type: object
+    default:
+      name: NetCore-Public
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
+
+  - name: macosPoolPublic
     type: object
     default:
       name: Azure Pipelines
@@ -110,12 +149,21 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
-      androidPool: ${{ parameters.androidPool }}
-      androidLinuxPool: ${{ parameters.androidPoolLinux }}
-      iosPool: ${{ parameters.iosPool }}
-      windowsPool: ${{ parameters.windowsPool }}
-      windowsBuildPool: ${{ parameters.windowsBuildPool }}
-      macosPool: ${{ parameters.macosPool }}
+      # Select pools based on pipeline - internal vs public
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        androidPool: ${{ parameters.androidPoolInternal }}
+        androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
+        iosPool: ${{ parameters.iosPoolInternal }}
+        windowsPool: ${{ parameters.windowsPoolInternal }}
+        windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
+        macosPool: ${{ parameters.macosPoolInternal }}
+      ${{ else }}:
+        androidPool: ${{ parameters.androidPoolPublic }}
+        androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
+        iosPool: ${{ parameters.iosPoolPublic }}
+        windowsPool: ${{ parameters.windowsPoolPublic }}
+        windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
+        macosPool: ${{ parameters.macosPoolPublic }}
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
@@ -135,5 +183,3 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
-
-
