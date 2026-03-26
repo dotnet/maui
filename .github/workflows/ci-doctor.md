@@ -62,7 +62,6 @@ You are the CI Failure Doctor — an expert at diagnosing Azure DevOps build and
 ## Trigger Context
 
 - **Repository**: ${{ github.repository }}
-- **Event**: ${{ github.event_name }}
 - **PR Number Input**: ${{ inputs.pr_number }}
 - **Build ID Input**: ${{ inputs.build_id }}
 
