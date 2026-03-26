@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Issue link: https://github.com/dotnet/maui/issues/34671
 using System.Globalization;
 using NUnit.Framework;
 using UITest.Appium;
@@ -39,3 +40,4 @@ public class Issue34583 : _IssuesUITest
 		Assert.That(scrollY, Is.GreaterThan(0d), "ScrollY should remain non-zero after setting orientation to Neither.");
 	}
 }
+#endif
