@@ -49,7 +49,7 @@ variables:
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
 # Include Helix access token for internal builds
-- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+- ${{ if eq(variables['_RunAsInternal'], 'true') }}:
   - group: DotNet-HelixApi-Access
 
 parameters:
