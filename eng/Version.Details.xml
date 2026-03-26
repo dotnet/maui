@@ -183,11 +183,6 @@
       <Uri>https://github.com/dotnet/android-tools</Uri>
       <Sha>ec5040ad5158f240a67d887133dd56cfa5eb74ba</Sha>
     </Dependency>
-    <!-- dotnet/macios-devtools: Apple platform tooling (SimctlOutputParser, XcodeManager, etc.) -->
-    <Dependency Name="Xamarin.Apple.Tools.MaciOS" Version="1.0.11">
-      <Uri>https://github.com/dotnet/macios-devtools</Uri>
-      <Sha>5295c1f4fcadb3216af0d903b3896dea15c2d37a</Sha>
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.25523.113">
