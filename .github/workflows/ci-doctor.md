@@ -27,6 +27,7 @@ network:
     - "dev.azure.com"
     - "helix.dot.net"
     - "dnceng-public.visualstudio.com"
+    - "blob.core.windows.net"
 
 engine:
   id: copilot
