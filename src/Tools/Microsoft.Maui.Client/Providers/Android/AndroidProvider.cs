@@ -336,7 +336,7 @@ public class AndroidProvider : IAndroidProvider
 	}
 
 	public async Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17,
-		IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+		IEnumerable<string>? additionalPackages = null, bool acceptLicenses = false, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
 		// Step 1: Install JDK if not present
 		if (!IsJdkInstalled)
@@ -364,10 +364,17 @@ public class AndroidProvider : IAndroidProvider
 			progress?.Report("Step 2/4: Android SDK already installed ✓");
 		}
 
-		// Step 3: Accept licenses
-		progress?.Report("Step 3/4: Accepting SDK licenses...");
-		await AcceptLicensesAsync(cancellationToken);
-		progress?.Report("SDK licenses accepted ✓");
+		// Step 3: Accept licenses (only if --accept-licenses was passed)
+		if (acceptLicenses)
+		{
+			progress?.Report("Step 3/4: Accepting SDK licenses...");
+			await AcceptLicensesAsync(cancellationToken);
+			progress?.Report("SDK licenses accepted ✓");
+		}
+		else
+		{
+			progress?.Report("Step 3/4: Skipping license acceptance (use --accept-licenses to accept)");
+		}
 
 		// Step 4: Install packages
 		// When packages are explicitly provided, use only those (caller knows what they need).

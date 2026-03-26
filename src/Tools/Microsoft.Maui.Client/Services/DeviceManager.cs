@@ -129,7 +129,7 @@ public class DeviceManager : IDeviceManager
 	public async Task<Device> GetRunningDeviceOrThrowAsync(CancellationToken cancellationToken = default)
 	{
 		var devices = await GetAllDevicesAsync(cancellationToken);
-		var runningDevice = devices.FirstOrDefault(d => d.State == DeviceState.Booted);
+		var runningDevice = devices.FirstOrDefault(d => d.IsRunning);
 
 		if (runningDevice == null)
 		{

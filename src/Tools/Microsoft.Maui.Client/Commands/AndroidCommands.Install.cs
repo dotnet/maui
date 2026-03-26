@@ -119,13 +119,16 @@ public static partial class AndroidCommands
 							sdkTask.Complete("SDK Tools already installed");
 						}
 
-						// Step 3: Accept licenses
-						var licenseTask = ctx.AddTask("Accepting licenses");
-						licenseTask.SetIndeterminate("Checking licenses...");
-						await androidProvider.AcceptLicensesAsync(
-							onProgress: msg => licenseTask.SetIndeterminate(msg),
-							cancellationToken);
-						licenseTask.Complete("Licenses accepted");
+						// Step 3: Accept licenses (only if --accept-licenses)
+						if (acceptLicenses)
+						{
+							var licenseTask = ctx.AddTask("Accepting licenses");
+							licenseTask.SetIndeterminate("Checking licenses...");
+							await androidProvider.AcceptLicensesAsync(
+								onProgress: msg => licenseTask.SetIndeterminate(msg),
+								cancellationToken);
+							licenseTask.Complete("Licenses accepted");
+						}
 
 						// Step 4: Install packages
 						var pkgTask = ctx.AddTask($"Installing packages (0/{pkgList.Count})");
@@ -152,6 +155,7 @@ public static partial class AndroidCommands
 						jdkPath: jdkPath,
 						jdkVersion: jdkVersion,
 						additionalPackages: packages is { Length: > 0 } ? packages : null,
+						acceptLicenses: acceptLicenses,
 						progress: progress,
 						cancellationToken: cancellationToken);
 				}

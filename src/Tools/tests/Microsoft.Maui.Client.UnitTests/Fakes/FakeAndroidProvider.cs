@@ -159,7 +159,7 @@ public class FakeAndroidProvider : IAndroidProvider
 		return Task.CompletedTask;
 	}
 
-	public Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+	public Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, bool acceptLicenses = false, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
 	{
 		InstallCalls.Add((sdkPath, jdkPath, jdkVersion, additionalPackages?.ToList()));
 		InstallCallback?.Invoke(sdkPath, jdkPath, jdkVersion, additionalPackages, progress, cancellationToken);

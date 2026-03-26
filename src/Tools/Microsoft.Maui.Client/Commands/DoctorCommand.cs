@@ -20,7 +20,7 @@ public static class DoctorCommand
 		{
 			// Options
 			new Option<bool>("--fix") { Description = "Attempt to automatically fix issues" },
-			new Option<string>("--platform") { Description = "Check only specific platform (dotnet, android, apple, windows)" }
+			new Option<string>("--platform") { Description = "Check only specific platform (dotnet, android, windows)" }
 		};
 
 		command.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
@@ -84,10 +84,15 @@ public static class DoctorCommand
 								await doctorService.TryFixAsync(issue.Fix!, cancellationToken);
 							}
 						}
+
+						// Re-run checks after fixes to get accurate exit code
+						report = string.IsNullOrEmpty(platform)
+							? await doctorService.RunAllChecksAsync(cancellationToken)
+							: await doctorService.RunCategoryChecksAsync(platform, cancellationToken);
 					}
 				}
 
-				// Set exit code based on results
+				// Set exit code based on (post-fix) results
 				var hasErrors = report.Checks.Any(c => c.Status == Models.CheckStatus.Error);
 				return hasErrors ? 1 : 0;
 			}

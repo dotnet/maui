@@ -130,7 +130,7 @@ public interface IAndroidProvider : IDisposable
 	/// <summary>
 	/// Installs the Android development environment.
 	/// </summary>
-	Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+	Task InstallAsync(string? sdkPath = null, string? jdkPath = null, int jdkVersion = 17, IEnumerable<string>? additionalPackages = null, bool acceptLicenses = false, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Installs Android SDK command-line tools with structured progress reporting.
