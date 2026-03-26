@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Controls
@@ -56,7 +58,23 @@ namespace Microsoft.Maui.Controls
 					var img = new WImage();
 					img.SetBinding(WImage.SourceProperty, "Value");
 					img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
-					button.Content = img;
+
+					// Wrap icon in a Grid with InfoBadge overlay for badge support
+					var grid = new WGrid();
+#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
+					grid.Children.Add(img);
+
+					var infoBadge = new InfoBadge
+					{
+						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+						Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
+					};
+					UpdateInfoBadge(infoBadge, item);
+					grid.Children.Add(infoBadge);
+#pragma warning restore RS0030
+
+					button.Content = grid;
 				}
 
 				button.Command = new MenuItemCommand(item);
@@ -96,11 +114,69 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor))
+			{
+				if (sender is ToolbarItem toolbarItem)
+				{
+					foreach (var command in commandBar.PrimaryCommands)
+					{
+						if (command is AppBarButton button && ReferenceEquals(button.DataContext, toolbarItem))
+						{
+							if (button.Content is WGrid grid)
+							{
+#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
+								foreach (var child in grid.Children)
+#pragma warning restore RS0030
+								{
+									if (child is InfoBadge badge)
+									{
+										UpdateInfoBadge(badge, toolbarItem);
+										break;
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+				return;
+			}
+
 			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
 			{
 				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
 				SetDefaultLabelPosition(commandBar, toolbarItems);
 			}
+		}
+
+		/// <summary>
+		/// Updates an InfoBadge control to reflect the current badge state of a ToolbarItem.
+		/// On Windows, numeric badge text displays as a count; non-numeric text displays as a dot indicator.
+		/// </summary>
+		static void UpdateInfoBadge(InfoBadge badge, ToolbarItem item)
+		{
+			var badgeText = item.BadgeText;
+
+			if (string.IsNullOrEmpty(badgeText))
+			{
+				badge.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+				return;
+			}
+
+			badge.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+
+			if (int.TryParse(badgeText, out var value) && value >= 0)
+				badge.Value = value;
+			else
+				badge.Value = -1; // Dot indicator for non-numeric text
+
+			if (item.BadgeColor is not null)
+			{
+				badge.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+					item.BadgeColor.ToWindowsColor());
+			}
+			else
+				badge.ClearValue(InfoBadge.BackgroundProperty);
 		}
 
 		private static void SetDefaultLabelPosition(CommandBar commandBar, IList<ToolbarItem> toolbarItems)
