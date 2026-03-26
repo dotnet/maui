@@ -20,6 +20,7 @@ public class Issue7993 : _IssuesUITest
 		App.WaitForElement("VerticalOffset: 0");
 		App.Tap("ScrollToEnd");
 		App.WaitForElement("19");
+		App.WaitForNoElement("VerticalOffset: 0");
 		App.Tap("NewItemsSource");
 		App.WaitForElement("VerticalOffset: 0");
 	}

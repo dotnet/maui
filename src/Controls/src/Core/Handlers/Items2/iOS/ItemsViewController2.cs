@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using PassKit;
@@ -296,14 +297,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
-			// iOS/MacCatalyst: ReloadData does not reset ContentOffset (unlike Android/Windows).
-			// Only reset when actually scrolled away from origin to avoid unnecessary layout passes
-			// during initial loading where UpdateItemsSource can be called multiple times.
+			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
+			// ResetScrollTracking must run before the assignment so the UIKit-triggered
+			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
 			if (CollectionView.ContentOffset != CoreGraphics.CGPoint.Empty)
 			{
+				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
 				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
-				CollectionView.LayoutIfNeeded();
-				Delegator?.Scrolled(CollectionView);
 			}
 
 			(ItemsView as IView)?.InvalidateMeasure();
