@@ -1,5 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using CoreAnimation;
+using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 
@@ -104,6 +109,62 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 			});
 
 			Assert.Equal(UIUserInterfaceLayoutDirection.LeftToRight, labelFlowDirection);
+		}
+
+		[Fact]
+		public async Task RemoveContentMaskDoesNotThrowWhenDisposed()
+		{
+			// Verify that removing a subview with an active clip mask does not throw
+			// ObjectDisposedException when the underlying CAShapeLayer is already disposed.
+			// Regression test for https://github.com/FFIDX-Success/ATP-Support/issues/561
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var contentView = new Microsoft.Maui.Platform.ContentView();
+				contentView.Frame = new CGRect(0, 0, 200, 200);
+
+				var content = new UIView { Tag = Microsoft.Maui.Platform.ContentView.ContentTag };
+				content.Frame = new CGRect(0, 0, 200, 200);
+				contentView.AddSubview(content);
+
+				// Set a clip to trigger _contentMask creation via UpdateClip
+				contentView.Clip = new BorderStrokeStub();
+				contentView.LayoutSubviews();
+
+				// Dispose the content mask's native handle (simulating iOS deallocating the layer)
+				if (content.Layer.Mask is CAShapeLayer mask)
+				{
+					mask.Dispose();
+				}
+
+				// This should not throw ObjectDisposedException
+				var ex = Record.Exception(() => content.RemoveFromSuperview());
+				Assert.Null(ex);
+			});
+		}
+
+		/// <summary>
+		/// Minimal IBorderStroke stub for testing clip mask creation.
+		/// </summary>
+		class BorderStrokeStub : IBorderStroke
+		{
+			public IShape Shape { get; set; } = new RectangleShape();
+			public Paint Stroke { get; set; }
+			public double StrokeThickness { get; set; } = 1;
+			public LineCap StrokeLineCap { get; set; }
+			public LineJoin StrokeLineJoin { get; set; }
+			public float[] StrokeDashPattern { get; set; }
+			public float StrokeDashOffset { get; set; }
+			public float StrokeMiterLimit { get; set; }
+		}
+
+		class RectangleShape : IShape
+		{
+			public PathF PathForBounds(Rect bounds)
+			{
+				var path = new PathF();
+				path.AppendRectangle(bounds);
+				return path;
+			}
 		}
 	}
 }
