@@ -64,9 +64,12 @@ Write-Host "✅ Loaded gate content ($($gateContent.Length) chars)" -ForegroundC
 $commentBody = @"
 $MARKER
 
-## 🚦 Gate — Test Verification
+<details>
+<summary>🚦 <strong>Gate — Test Verification</strong></summary>
 
 $gateContent
+
+</details>
 "@
 
 # ============================================================================

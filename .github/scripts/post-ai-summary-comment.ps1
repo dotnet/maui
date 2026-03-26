@@ -121,10 +121,6 @@ $MARKER
 
 ---
 
-$statusTable
-
----
-
 $phaseContent
 
 ---
