@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -108,7 +109,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			return btn;
 		}
 
-		void OnSetBadgeCurrentTab(object sender, EventArgs e)
+		void OnSetBadgeCurrentTab(object? sender, EventArgs e)
 		{
 			var section = GetCurrentShellSection();
 			if (section is not null)
@@ -118,7 +119,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			}
 		}
 
-		void OnSetBadgeAllTabs(object sender, EventArgs e)
+		void OnSetBadgeAllTabs(object? sender, EventArgs e)
 		{
 			var sections = GetAllShellSections();
 			if (sections is null)
@@ -131,7 +132,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			UpdateBadgeStatus();
 		}
 
-		void OnClearAllBadges(object sender, EventArgs e)
+		void OnClearAllBadges(object? sender, EventArgs e)
 		{
 			var sections = GetAllShellSections();
 			if (sections is null)
@@ -145,7 +146,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			UpdateBadgeStatus();
 		}
 
-		void OnSetDotBadge(object sender, EventArgs e)
+		void OnSetDotBadge(object? sender, EventArgs e)
 		{
 			var section = GetCurrentShellSection();
 			if (section is not null)
@@ -156,7 +157,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			}
 		}
 
-		void OnIncrementBadge(object sender, EventArgs e)
+		void OnIncrementBadge(object? sender, EventArgs e)
 		{
 			var section = GetCurrentShellSection();
 			if (section is not null)
@@ -169,7 +170,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			}
 		}
 
-		void OnDecrementBadge(object sender, EventArgs e)
+		void OnDecrementBadge(object? sender, EventArgs e)
 		{
 			var section = GetCurrentShellSection();
 			if (section is not null)
