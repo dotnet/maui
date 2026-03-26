@@ -85,9 +85,9 @@ public class DoctorServiceTests
 	}
 
 	[Fact]
-	public async Task RunAllChecksAsync_SetsStatusBasedOnChecks()
+	public async Task RunCategoryChecksAsync_SetsStatusBasedOnChecks()
 	{
-		// Arrange - all OK
+		// Arrange - all OK android checks only (avoids environment-dependent dotnet checks)
 		var fakeAndroid = new FakeAndroidProvider
 		{
 			HealthChecks = new List<HealthCheck>
@@ -98,10 +98,10 @@ public class DoctorServiceTests
 
 		var service = new DoctorService(fakeAndroid);
 
-		// Act
-		var report = await service.RunAllChecksAsync();
+		// Act - use category check to isolate from dotnet/workload environment checks
+		var report = await service.RunCategoryChecksAsync("android");
 
-		// Assert - status should reflect worst check
+		// Assert - status should reflect worst check (all OK → not unhealthy)
 		Assert.NotEqual(HealthStatus.Unhealthy, report.Status);
 	}
 
