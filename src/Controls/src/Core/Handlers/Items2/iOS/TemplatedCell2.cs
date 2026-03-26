@@ -6,7 +6,6 @@ using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
@@ -202,65 +201,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Inject per-cell safe area insets into the MauiView for CrossPlatformArrange
 				// to apply as internal padding. UICollectionView bypasses MAUI's arrange chain,
 				// so cells cannot use the standard safe area flow (#33604, #34635).
-				if (virtualView is ISafeAreaView2 safeView && PlatformView is MauiView mauiView)
-				{
-					var insets = ComputeCellSafeAreaInsets(safeView);
-					mauiView.CellSafeAreaOverride = insets != UIEdgeInsets.Zero
-						? insets.ToSafeAreaInsets()
-						: SafeAreaPadding.Empty;
-				}
-				else if (PlatformView is MauiView mv && !mv.CellSafeAreaOverride.IsEmpty)
-				{
-					// Clear stale override from a previous template that implemented ISafeAreaView2.
-					mv.CellSafeAreaOverride = SafeAreaPadding.Empty;
-				}
+				MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
 
 				virtualView.Arrange(frame);
 			}
-		}
-
-		/// <summary>
-		/// Computes per-cell safe area insets based on geometric overlap with the window's unsafe regions.
-		/// Returns <see cref="UIEdgeInsets.Zero"/> when all edges share the same region (e.g., default
-		/// Container×4), as the parent layout chain handles uniform safe area (#33604, #34635).
-		/// </summary>
-		UIEdgeInsets ComputeCellSafeAreaInsets(ISafeAreaView2 safeView)
-		{
-			var window = Window;
-			if (window is null)
-				return UIEdgeInsets.Zero;
-
-			var windowSA = window.SafeAreaInsets;
-			if (windowSA == UIEdgeInsets.Zero)
-				return UIEdgeInsets.Zero;
-
-			var leftRegion = safeView.GetSafeAreaRegionsForEdge(0);
-			var topRegion = safeView.GetSafeAreaRegionsForEdge(1);
-			var rightRegion = safeView.GetSafeAreaRegionsForEdge(2);
-			var bottomRegion = safeView.GetSafeAreaRegionsForEdge(3);
-
-			// Uniform edges (Container×4, None×4, All×4) are handled by the parent layout chain.
-			bool allSameRegion = leftRegion == topRegion
-				&& topRegion == rightRegion
-				&& rightRegion == bottomRegion;
-
-			if (allSameRegion)
-				return UIEdgeInsets.Zero;
-
-			// Only apply insets for Container edges; SoftInput-only edges are excluded.
-			var cellInWindow = ConvertRectToView(Bounds, window);
-			var windowBounds = window.Bounds;
-
-			nfloat left = SafeAreaEdges.IsContainer(leftRegion) && windowSA.Left > 0
-				? (nfloat)Math.Max(0, (double)(windowSA.Left - cellInWindow.X)) : 0;
-			nfloat top = SafeAreaEdges.IsContainer(topRegion) && windowSA.Top > 0
-				? (nfloat)Math.Max(0, (double)(windowSA.Top - cellInWindow.Y)) : 0;
-			nfloat right = SafeAreaEdges.IsContainer(rightRegion) && windowSA.Right > 0
-				? (nfloat)Math.Max(0, (double)(cellInWindow.Right - (windowBounds.Width - windowSA.Right))) : 0;
-			nfloat bottom = SafeAreaEdges.IsContainer(bottomRegion) && windowSA.Bottom > 0
-				? (nfloat)Math.Max(0, (double)(cellInWindow.Bottom - (windowBounds.Height - windowSA.Bottom))) : 0;
-
-			return new UIEdgeInsets(top, left, bottom, right);
 		}
 
 		public override void PrepareForReuse()
