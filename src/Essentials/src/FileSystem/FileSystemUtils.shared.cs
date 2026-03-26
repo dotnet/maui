@@ -29,12 +29,12 @@ namespace Microsoft.Maui.Storage
 			if (string.IsNullOrEmpty(relativePath))
 				return true;
 
-			if (Path.IsPathRooted(relativePath))
+			if (Path.IsPathRooted(relativePath!))
 				return false;
 
 			// Check for ".." as a path segment, not as a substring,
 			// so that filenames like "foo..bar.js" are not rejected.
-			var segments = relativePath.Split(new[] { '\\', '/' }, StringSplitOptions.None);
+			var segments = relativePath!.Split(new[] { '\\', '/' }, StringSplitOptions.None);
 			foreach (var segment in segments)
 			{
 				if (string.Equals(segment, "..", StringComparison.Ordinal))
@@ -67,15 +67,10 @@ namespace Microsoft.Maui.Storage
 				if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
 					normalizedRoot += Path.DirectorySeparatorChar;
 
-				// Use case-insensitive comparison on Windows where the file system is case-insensitive.
-				var comparison = OperatingSystem.IsWindows()
-					? StringComparison.OrdinalIgnoreCase
-					: StringComparison.Ordinal;
-
-				// The full path must either be exactly the root (for empty relative paths)
-				// or start with the root + separator (for paths within the root).
-				if (!fullPath.StartsWith(normalizedRoot, comparison) &&
-					!string.Equals(fullPath + Path.DirectorySeparatorChar, normalizedRoot, comparison))
+				// Use case-insensitive comparison to handle platforms with case-insensitive
+				// file systems (e.g., Windows, macOS) without requiring platform detection.
+				if (!fullPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase) &&
+					!string.Equals(fullPath + Path.DirectorySeparatorChar, normalizedRoot, StringComparison.OrdinalIgnoreCase))
 					return null;
 
 				return fullPath;

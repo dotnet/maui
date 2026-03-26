@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Maui.Storage;
 using Tizen.Applications;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -22,20 +21,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		public IDirectoryContents GetDirectoryContents(string subpath)
-		{
-			var resolvedPath = FileSystemUtils.Combine(_resDir, subpath);
-			if (resolvedPath is null)
-				return NotFoundDirectoryContents.Singleton;
-			return new TizenMauiAssetDirectoryContents(resolvedPath);
-		}
+			=> new TizenMauiAssetDirectoryContents(Path.Combine(_resDir, subpath));
 
 		public IFileInfo GetFileInfo(string subpath)
-		{
-			var resolvedPath = FileSystemUtils.Combine(_resDir, subpath);
-			if (resolvedPath is null)
-				return new NotFoundFileInfo(subpath);
-			return new TizenMauiAssetFileInfo(resolvedPath);
-		}
+			=> new TizenMauiAssetFileInfo(Path.Combine(_resDir, subpath));
 
 		public IChangeToken Watch(string filter)
 			=> NullChangeToken.Singleton;
