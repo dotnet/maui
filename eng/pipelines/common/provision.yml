@@ -202,16 +202,8 @@ steps:
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
-        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
-        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
-          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
-        else
-          DOWNLOAD_ARGS="-downloadPlatform iOS"
-        fi
-
         RC=0
-        sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
+        sudo xcodebuild -downloadPlatform iOS || RC=$?
         if [[ "$RC" != "0" ]]; then
           echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
           sudo xcrun simctl runtime delete all
@@ -227,6 +219,9 @@ steps:
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
         fi
+
+        echo "Installing the iOS 26.2 simulator as well"
+        sudo xcodebuild -downloadPlatform iOS -buildVersion 26.2
 
         # Verify the simulator runtime was actually installed
         echo "Verifying simulator runtimes..."
