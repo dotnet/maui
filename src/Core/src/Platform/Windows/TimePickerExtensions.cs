@@ -86,10 +86,11 @@ public static class TimePickerExtensions
 		platformTimePicker.RefreshThemeResources();
 	}
 
+	static readonly string[] s_timePickerTextBlockNames = { "HourTextBlock", "MinuteTextBlock", "PeriodTextBlock" };
+
 	static void UpdateCharacterSpacingInTimePicker(this TimePicker platformTimePicker)
 	{
-		string[] partNames = { "HourTextBlock", "MinuteTextBlock", "PeriodTextBlock" };
-		foreach (var partName in partNames)
+		foreach (var partName in s_timePickerTextBlockNames)
 		{
 			SetCharacterSpacingToBlocks(platformTimePicker, partName);
 		}

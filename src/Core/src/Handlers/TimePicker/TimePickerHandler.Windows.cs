@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded(object sender, RoutedEventArgs e)
 		{
-			//Need to update character spacing after the control is loaded
+			// Need to update character spacing after the control is loaded
 			PlatformView.UpdateCharacterSpacing(VirtualView);
 		}
 
