@@ -328,20 +328,29 @@ static class UpdateComponentCodeWriter
 		// Create instance
 		codeWriter.WriteLine($"var {varName} = new {fqName}();");
 
-		// Set simple properties
+		// Set properties
 		foreach (var kvp in element.Properties)
 		{
 			if (kvp.Key.NamespaceURI == "x")
 				continue; // skip x:Name, x:Class, etc.
-			if (kvp.Value is not ValueNode valueNode)
-				continue; // skip complex properties (already validated by CanCreateIncrementally)
 
-			var propName = kvp.Key.LocalName;
-			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
-			var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			if (kvp.Value is ValueNode valueNode)
+			{
+				var propName = kvp.Key.LocalName;
+				var rawValue = valueNode.Value?.ToString() ?? string.Empty;
+				var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
-			if (valueExpr != null)
-				codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
+				if (valueExpr != null)
+					codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
+			}
+			else if (kvp.Value is MarkupNode)
+			{
+				// Markup extension (Binding, StaticResource, DynamicResource, etc.)
+				// Reuse the same pipeline as property changes on existing elements.
+				var syntheticDiff = new PropertyDiff(kvp.Key, PropertyDiffKind.Set, null, kvp.Value);
+				TryEmitMarkupNodeChange(codeWriter, syntheticDiff, typeSymbol, varName, isRoot: false,
+					compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			}
 		}
 
 		// Recursively create children (only for Layout containers that support Add())

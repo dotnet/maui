@@ -244,6 +244,32 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V18: Add a new child with a Binding markup extension
+	const string PageXamlV18_NewChildWithBinding = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Label Text="{Binding Name}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V19: Add a new child with StaticResource and DynamicResource
+	const string PageXamlV19_NewChildWithResources = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Label TextColor="{DynamicResource PrimaryColor}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -709,6 +735,40 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		// Grid ColumnDefinitions/RowDefinitions may use a collection converter
 		// At minimum, verify UC is generated (not null) and doesn't fall back to TypeDescriptor
 		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NewChildWithBinding_UCContainsBindingSetup()
+	{
+		// V1 → V18: Add a Label with Text="{Binding Name}"
+		// The new element should have its Binding property set up, not skipped.
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV18_NewChildWithBinding);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// The UC should create a new Label
+		Assert.Contains("new global::Microsoft.Maui.Controls.Label()", uc, StringComparison.Ordinal);
+		// Should contain binding setup (SetBinding or Binding constructor) on the new element
+		Assert.True(
+			uc.Contains("SetBinding", StringComparison.Ordinal) ||
+			uc.Contains("Binding", StringComparison.Ordinal),
+			$"Expected Binding setup in UC for new element, got:\n{uc}");
+	}
+
+	[Fact]
+	public void NewChildWithDynamicResource_UCContainsResourceSetup()
+	{
+		// V1 → V19: Add a Label with TextColor="{DynamicResource PrimaryColor}"
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV19_NewChildWithResources);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Label()", uc, StringComparison.Ordinal);
+		// Should contain DynamicResource setup on the new element
+		Assert.Contains("SetDynamicResource", uc, StringComparison.Ordinal);
+		Assert.Contains("PrimaryColor", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
