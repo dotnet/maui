@@ -228,11 +228,6 @@ function Test-PhaseContentComplete {
                 $validationWarnings += "Pre-Flight missing 'Platforms Affected' section (non-critical)"
             }
         }
-        "Gate" {
-            if ($PhaseContent -notmatch 'Result:') {
-                $validationWarnings += "Gate phase missing 'Result' field (non-critical)"
-            }
-        }
         "Fix" {
             if ($PhaseContent -notmatch 'Selected Fix:') {
                 $validationErrors += "Fix phase missing 'Selected Fix' field"
@@ -286,7 +281,6 @@ if ($Content -match '##\s+✅\s+Final Recommendation:\s+APPROVE') {
 # Extract phase statuses from content
 $phaseStatuses = @{
     "Pre-Flight" = "⏳ PENDING"
-    "Gate" = "⏳ PENDING"
     "Fix" = "⏳ PENDING"
     "Report" = "⏳ PENDING"
 }
@@ -381,11 +375,6 @@ $preFlightContent = Get-SectionByPattern -Sections $allSections -Patterns @(
     '🔍.*Pre-Flight'
 ) -Debug:$debugMode
 
-$gateContent = Get-SectionByPattern -Sections $allSections -Patterns @(
-    '🚦.*Gate',
-    '📋.*Gate'
-) -Debug:$debugMode
-
 $fixContent = Get-SectionByPattern -Sections $allSections -Patterns @(
     '🔧.*Fix',
     '📋.*Fix'
@@ -434,7 +423,6 @@ if (-not $SkipValidation) {
     $phases = @(
         @{ Name = "Pre-Flight"; Content = $preFlightContent; Status = $phaseStatuses["Pre-Flight"] },
         @{ Name = "Tests"; Content = $testsContent; Status = $phaseStatuses["Tests"] },
-        @{ Name = "Gate"; Content = $gateContent; Status = $phaseStatuses["Gate"] },
         @{ Name = "Fix"; Content = $fixContent; Status = $phaseStatuses["Fix"] },
         @{ Name = "Report"; Content = $reportContent; Status = $phaseStatuses["Report"] }
     )
@@ -600,7 +588,6 @@ $existingComment = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[
 
 $existingPreFlightSessions = @()
 $existingTestsSessions = @()
-$existingGateSessions = @()
 $existingFixSessions = @()
 $existingReportSessions = @()
 
@@ -636,9 +623,6 @@ if ($existingComment) {
     $preFlightMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "🔍" -PhaseName "Pre-Flight"
     if ($preFlightMatch) { $existingPreFlightSessions = Get-ExistingReviewSessions -PhaseContent $preFlightMatch }
     
-    $gateMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "🚦" -PhaseName "Gate"
-    if ($gateMatch) { $existingGateSessions = Get-ExistingReviewSessions -PhaseContent $gateMatch }
-    
     $fixMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "🔧" -PhaseName "Fix"
     if ($fixMatch) { $existingFixSessions = Get-ExistingReviewSessions -PhaseContent $fixMatch }
     
@@ -650,13 +634,11 @@ if ($existingComment) {
 
 # Create NEW review sessions from current content
 $newPreFlightSession = New-ReviewSession -PhaseContent $preFlightContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
-$newGateSession = New-ReviewSession -PhaseContent $gateContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
 $newFixSession = New-ReviewSession -PhaseContent $fixContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
 $newReportSession = New-ReviewSession -PhaseContent $reportContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
 
 # Merge existing sessions with new session (if new content exists)
 $allPreFlightSessions = if ($newPreFlightSession) { Merge-ReviewSessions -ExistingSessions $existingPreFlightSessions -NewSession $newPreFlightSession -NewCommitSha $latestCommitSha } else { $existingPreFlightSessions -join "`n`n---`n`n" }
-$allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions $existingGateSessions -NewSession $newGateSession -NewCommitSha $latestCommitSha } else { $existingGateSessions -join "`n`n---`n`n" }
 $allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession -NewCommitSha $latestCommitSha } else { $existingFixSessions -join "`n`n---`n`n" }
 $allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession -NewCommitSha $latestCommitSha } else { $existingReportSessions -join "`n`n---`n`n" }
 
@@ -692,13 +674,11 @@ $Content
 
 # Build phase sections (only non-empty ones)
 $preFlightSection = New-PhaseSection -Icon "🔍" -PhaseName "Pre-Flight" -Subtitle "Context & Validation" -Content $allPreFlightSessions -Status $phaseStatuses['Pre-Flight']
-$gateSection = New-PhaseSection -Icon "🚦" -PhaseName "Gate" -Subtitle "Test Verification" -Content $allGateSessions -Status $phaseStatuses['Gate']
 $fixSection = New-PhaseSection -Icon "🔧" -PhaseName "Fix" -Subtitle "Analysis & Comparison" -Content $allFixSessions -Status $phaseStatuses['Fix']
 $reportSection = New-PhaseSection -Icon "📋" -PhaseName "Report" -Subtitle "Final Recommendation" -Content $allReportSessions -Status $phaseStatuses['Report']
 
 # Collect non-null sections
 if ($preFlightSection) { $phaseSections += $preFlightSection }
-if ($gateSection) { $phaseSections += $gateSection }
 if ($fixSection) { $phaseSections += $fixSection }
 if ($reportSection) { $phaseSections += $reportSection }
 
