@@ -22,6 +22,10 @@ public class Issue34504 : _IssuesUITest
 
 		var labelRect = App.WaitForElement("SpanLabel").GetRect();
 
+		// Ensure the label wrapped to multiple lines; if it's single-line the tap
+		// cannot exercise the second-line bug and the test would be a false-positive.
+		Assert.That(labelRect.Height, Is.GreaterThan(40), "SpanLabel must be tall enough to indicate multi-line text before tapping the second line.");
+
 		// Tap near the bottom of the label to hit the second wrapped line of a span.
 		App.TapCoordinates(labelRect.X + labelRect.Width / 2, labelRect.Y + labelRect.Height * 0.75f);
 

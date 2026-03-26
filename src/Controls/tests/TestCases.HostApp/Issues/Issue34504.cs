@@ -135,6 +135,8 @@ public class Issue34504 : NavigationPage
 		{
 			FormattedText = fs,
 			BackgroundColor = Colors.Transparent,
+			LineBreakMode = LineBreakMode.WordWrap,
+			MaximumWidthRequest = 300,
 		};
 	}
 }

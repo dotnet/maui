@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using CoreFoundation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -22,7 +21,14 @@ namespace Microsoft.Maui.Controls
 				labelHandler.PlatformView is UILabel platformLabel &&
 				platformLabel.Bounds.Width == 0 && size.Width > 0)
 			{
-				platformLabel.BeginInvokeOnMainThread(() => RecalculateSpanPositions(size));
+				platformLabel.BeginInvokeOnMainThread(() =>
+				{
+					var bounds = platformLabel.Bounds;
+					if (bounds.Width > 0 && bounds.Height > 0)
+					{
+						RecalculateSpanPositions(new Size(bounds.Width, bounds.Height));
+					}
+				});
 			}
 			else
 			{
