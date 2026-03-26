@@ -99,18 +99,17 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "✅ Checked out PR #$PrNumber"
 git log --oneline -1
 
-# ── Restore agent infrastructure from base branch ────────────────────────────
+# ── Restore .github/ from base branch ────────────────────────────────────────
 # This script only runs for workflow_dispatch (other triggers use the platform's
 # checkout_pr_branch.cjs instead). For workflow_dispatch the platform checkout is
 # skipped, so this restore IS the final workspace state.
 # rm -rf first to prevent fork-added files from surviving the restore.
 
-if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
-if (Test-Path '.github/instructions/') { Remove-Item -Recurse -Force '.github/instructions/' }
+if (Test-Path '.github/') { Remove-Item -Recurse -Force '.github/' }
 
-git checkout $BaseSha -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1
+git checkout $BaseSha -- .github/ 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Restored agent infrastructure from base branch ($BaseSha)"
+    Write-Host "✅ Restored .github/ from base branch ($BaseSha)"
 } else {
-    Write-Host "⚠️ Could not restore agent infrastructure from base branch — files may come from the PR branch"
+    Write-Host "⚠️ Could not restore .github/ from base branch — files may come from the PR branch"
 }
