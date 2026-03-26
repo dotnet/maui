@@ -32,8 +32,14 @@ namespace Microsoft.Maui.Storage
 			if (Path.IsPathRooted(relativePath))
 				return false;
 
-			if (relativePath.Contains("..", StringComparison.Ordinal))
-				return false;
+			// Check for ".." as a path segment, not as a substring,
+			// so that filenames like "foo..bar.js" are not rejected.
+			var segments = relativePath.Split(new[] { '\\', '/' }, StringSplitOptions.None);
+			foreach (var segment in segments)
+			{
+				if (string.Equals(segment, "..", StringComparison.Ordinal))
+					return false;
+			}
 
 			return true;
 		}
@@ -50,16 +56,36 @@ namespace Microsoft.Maui.Storage
 				return null;
 
 			var combined = Path.Combine(rootDirectory, relativePath);
-			var fullPath = Path.GetFullPath(combined);
 
-			var normalizedRoot = Path.GetFullPath(rootDirectory);
-			if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
-				normalizedRoot += Path.DirectorySeparatorChar;
+			// When the root directory is absolute, resolve and verify the full path
+			// stays within the root using the file system's canonical paths.
+			if (Path.IsPathRooted(rootDirectory))
+			{
+				var fullPath = Path.GetFullPath(combined);
 
-			if (!fullPath.StartsWith(normalizedRoot, StringComparison.Ordinal))
-				return null;
+				var normalizedRoot = Path.GetFullPath(rootDirectory);
+				if (!normalizedRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+					normalizedRoot += Path.DirectorySeparatorChar;
 
-			return fullPath;
+				// Use case-insensitive comparison on Windows where the file system is case-insensitive.
+				var comparison = OperatingSystem.IsWindows()
+					? StringComparison.OrdinalIgnoreCase
+					: StringComparison.Ordinal;
+
+				// The full path must either be exactly the root (for empty relative paths)
+				// or start with the root + separator (for paths within the root).
+				if (!fullPath.StartsWith(normalizedRoot, comparison) &&
+					!string.Equals(fullPath + Path.DirectorySeparatorChar, normalizedRoot, comparison))
+					return null;
+
+				return fullPath;
+			}
+
+			// For relative roots (e.g., app-package or asset-relative paths like
+			// Android's "HybridTestRoot" or "wwwroot"), preserve the relative semantics.
+			// IsValidRelativePath has already ensured the relativePath is not rooted
+			// and does not contain "..", so the combined path stays within the root.
+			return NormalizePath(combined);
 		}
 	}
 }

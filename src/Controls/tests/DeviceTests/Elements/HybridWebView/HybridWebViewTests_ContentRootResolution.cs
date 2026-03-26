@@ -100,13 +100,13 @@ public partial class HybridWebViewTests_ContentRootResolution : HybridWebViewTes
 		});
 
 	// ============================================================
-	// Encoded separators — should not bypass path resolution
+	// Encoded separators — should not affect path resolution
 	// ============================================================
 
 	[Theory]
 	[InlineData("%2F%2Fimages%2Flogo.png")]
 	[InlineData("%2e%2e/readme.txt")]
-	public Task EncodedSeparators_DoNotBypassResolution(string path) =>
+	public Task EncodedSeparators_DoNotAffectResolution(string path) =>
 		RunUrlResolutionTest(path, "relative", result =>
 		{
 			Assert.NotEqual(200, result.status);

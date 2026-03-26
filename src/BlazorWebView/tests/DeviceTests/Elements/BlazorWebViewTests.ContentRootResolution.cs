@@ -121,13 +121,13 @@ public partial class BlazorWebViewTests
 		});
 
 	// ============================================================
-	// Encoded separators — should not bypass path resolution
+	// Encoded separators — should not affect path resolution
 	// ============================================================
 
 	[Theory]
 	[InlineData("%2F%2Fimages%2Flogo.png")]
 	[InlineData("%2e%2e/readme.txt")]
-	public Task Blazor_EncodedSeparators_DoNotBypassResolution(string path) =>
+	public Task Blazor_EncodedSeparators_DoNotAffectResolution(string path) =>
 		RunUrlResolutionTest(path, "relative", result =>
 		{
 			Assert.True(
