@@ -100,12 +100,6 @@ namespace Microsoft.Maui
 
 				sizeThatFits = imageButton.ImageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
-			else if (platformView is MauiLabel)
-			{
-				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint >= 0 ? widthConstraint : float.PositiveInfinity;
-				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint >= 0 ? heightConstraint : float.PositiveInfinity;
-				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
-			}
 			else
 			{
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));

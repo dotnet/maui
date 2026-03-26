@@ -67,7 +67,7 @@ public class Issue28660 : ContentPage
 					Text="At any time, but not later than one month before the expiration date.",
 					HeightRequest=100,
 					FontSize = 16,
-					AutomationId = "ExplicitLabelSize",
+					AutomationId = "ExplicitHeightLabel",
 				},
 			}
 		};

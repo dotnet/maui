@@ -214,10 +214,6 @@ namespace Microsoft.Maui.Platform
 				{
 					returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 				}
-				else if (child is MauiLabel)
-				{
-					returnSize = SizeThatFits(new CGSize(widthConstraint, heightConstraint));
-				}
 				else
 				{
 					returnSize = SizeThatFits(originalSpec);
