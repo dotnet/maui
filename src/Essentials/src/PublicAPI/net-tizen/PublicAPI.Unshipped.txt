@@ -18,6 +18,7 @@ static Microsoft.Maui.Devices.HapticFeedback.SetDefault(Microsoft.Maui.Devices.I
 static Microsoft.Maui.Devices.Sensors.Accelerometer.SetDefault(Microsoft.Maui.Devices.Sensors.IAccelerometer? implementation) -> void
 static Microsoft.Maui.Devices.Sensors.Barometer.SetDefault(Microsoft.Maui.Devices.Sensors.IBarometer? implementation) -> void
 static Microsoft.Maui.Devices.Sensors.Compass.SetDefault(Microsoft.Maui.Devices.Sensors.ICompass? implementation) -> void
+static Microsoft.Maui.Devices.Sensors.Geocoding.SetDefault(Microsoft.Maui.Devices.Sensors.IGeocoding? implementation) -> void
 static Microsoft.Maui.Devices.Sensors.Geolocation.SetDefault(Microsoft.Maui.Devices.Sensors.IGeolocation? implementation) -> void
 static Microsoft.Maui.Devices.Sensors.Gyroscope.SetDefault(Microsoft.Maui.Devices.Sensors.IGyroscope? implementation) -> void
 static Microsoft.Maui.Devices.Sensors.Magnetometer.SetDefault(Microsoft.Maui.Devices.Sensors.IMagnetometer? implementation) -> void
