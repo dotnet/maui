@@ -351,33 +351,35 @@ internal partial class ElementWrapper : ContentControl
 		}
 	}
 
-	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+	CollectionViewHandler2? GetCollectionViewHandler()
 	{
-		EnsurePlatformViewCreated();
-
-		// Access handler through view parent chain (same pattern as iOS)
-		CollectionViewHandler2? handler = null;
 		if (VirtualView is View view &&
 			view.Parent is ItemsView itemsView &&
 			itemsView.Handler is CollectionViewHandler2 cvHandler)
 		{
-			handler = cvHandler;
+			return cvHandler;
 		}
-
+		return null;
+	}
+	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+	{
+		EnsurePlatformViewCreated();
+		var handler = GetCollectionViewHandler();
 		// Check if we should use cached first item size
 		var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
-
-		// Always measure to allow content to load and render
-		var measuredSize = base.MeasureOverride(availableSize);
-
 		if (!cachedSize.IsEmpty)
 		{
-			// For MeasureFirstItem: Return cached size for uniform layout
+			// For MeasureFirstItem: Constrain the child to the cached first item size
+			// so all items are measured uniformly. Pass the cached size as availableSize
+			// to force the content to layout within these bounds, then return the cached
+			// size so WinUI's layout (StackLayout/UniformGridLayout) sees uniform DesiredSize.
+			base.MeasureOverride(cachedSize);
 			return cachedSize;
 		}
-
-		// Cache the size if this is the first item being measured
-		if (handler != null && !IsHeaderOrFooter)
+		// Measure normally with the original available size
+		var measuredSize = base.MeasureOverride(availableSize);
+		// Cache the size if this is the first item being measured and the size is valid
+		if (handler != null && !IsHeaderOrFooter && measuredSize.Width > 0 && measuredSize.Height > 0)
 		{
 			var currentCached = handler.GetCachedFirstItemSize();
 			if (currentCached.IsEmpty)
@@ -396,7 +398,6 @@ internal partial class ElementWrapper : ContentControl
 							InvalidateMeasure();
 						}
 					}
-
 					void OnContentUnloaded(object? sender, RoutedEventArgs e)
 					{
 						// Unwire both events to prevent memory leaks
@@ -406,16 +407,40 @@ internal partial class ElementWrapper : ContentControl
 							element.Unloaded -= OnContentUnloaded;
 						}
 					}
-
 					// Subscribe once
 					content.SizeChanged += OnContentSizeChanged;
 					content.Unloaded += OnContentUnloaded;
 				}
-
 				handler.SetCachedFirstItemSize(measuredSize);
 			}
 		}
-
 		return measuredSize;
+	}
+
+	protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+	{
+		var handler = GetCollectionViewHandler();
+		var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
+		if (!cachedSize.IsEmpty && !IsHeaderOrFooter)
+		{
+			// For MeasureFirstItem: Enforce the cached first item size during arrangement.
+			// Even though MeasureOverride returns the cached size as DesiredSize, WinUI layouts
+			// may arrange items at a different size (e.g., UniformGridLayout with Fill stretch).
+			// Also, MAUI views with explicit HeightRequest/WidthRequest set via bindings can
+			// render larger than the measure constraint. Clipping to the cached size ensures
+			// truly uniform item sizing, matching Android's MeasureSpecMode.Exactly approach.
+			base.ArrangeOverride(cachedSize);
+			Clip = new Microsoft.UI.Xaml.Media.RectangleGeometry
+			{
+				Rect = new global::Windows.Foundation.Rect(0, 0, cachedSize.Width, cachedSize.Height)
+			};
+			return cachedSize;
+		}
+		// Clear any clip from a previously cached state (recycled container scenario)
+		if (Clip is not null)
+		{
+			Clip = null;
+		}
+		return base.ArrangeOverride(finalSize);
 	}
 }
