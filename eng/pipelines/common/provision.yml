@@ -197,10 +197,6 @@ steps:
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
         echo installing simulator runtimes...
-        # XCODE variable is in major.minor format (e.g., 26.1)
-        XCODE_MAJOR_MINOR=$(XCODE)
-        MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
-        MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
         RC=0
         sudo xcodebuild -downloadPlatform iOS || RC=$?
@@ -217,11 +213,11 @@ steps:
             echo "    still $C simulators left..."
           done
           echo "Re-trying simulator runtime installation..."
-          sudo xcodebuild $DOWNLOAD_ARGS
+          sudo xcodebuild -downloadPlatform iOS
         fi
 
         echo "Installing the iOS 26.2 simulator as well"
-        sudo xcodebuild -downloadPlatform iOS -buildVersion 26.2
+        sudo xcodebuild -downloadPlatform iOS -buildVersion 26.2 -architectureVariant universal
 
         # Verify the simulator runtime was actually installed
         echo "Verifying simulator runtimes..."
