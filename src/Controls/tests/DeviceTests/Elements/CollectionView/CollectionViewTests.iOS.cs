@@ -321,13 +321,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// Regression test for https://github.com/dotnet/maui/issues/34635
-		// PR #33908 changed RespondsToSafeArea() to exclude UICollectionView from the
-		// UIScrollView descendant check, allowing CV cell content views to respond to
-		// safe area. This caused Window.SafeAreaInsets (title bar ~41px on macOS) to be
-		// applied to every cell, shifting content by 41px.
-		// The fix ensures CV cell content views are treated as UIScrollView descendants
-		// (since UICollectionView inherits from UIScrollView), so they do NOT respond
-		// to safe area independently.
 		[Fact("CollectionView cell MauiViews should be treated as UIScrollView descendants and not apply safe area independently")]
 		[Category(TestCategory.CollectionView)]
 		public async Task CollectionViewCellContentShouldBeScrollViewDescendant()
