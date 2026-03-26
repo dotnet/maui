@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -251,6 +252,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (var item in toolbarItems)
 				item.PropertyChanged -= toolbarItemChanged;
+
+			// Clean up all badge drawables when the toolbar is being disposed
+			foreach (var key in _badgeDrawables.Keys.ToArray())
+				CleanupBadgeDrawable(key);
 		}
 
 		internal static void UpdateToolbarItemBadge(AToolbar toolbar, IMenuItem menuItem, ToolbarItem toolbarItem)
@@ -282,6 +287,12 @@ namespace Microsoft.Maui.Controls.Platform
 				if (toolbarItem.BadgeText != expectedBadgeText)
 					return;
 
+				// Guard against recycled menu items: verify this menuItemId still
+				// maps to the same ToolbarItem we intended to update
+				if (_menuItemToolbarItemMap.TryGetValue(menuItemId, out var currentToolbarItem) &&
+					!ReferenceEquals(currentToolbarItem, toolbarItem))
+					return;
+
 				var anchorView = toolbar.FindViewById(menuItemId);
 				if (anchorView == null)
 					return;
@@ -295,6 +306,10 @@ namespace Microsoft.Maui.Controls.Platform
 				var badgeColor = toolbarItem.BadgeColor;
 				if (badgeColor is not null)
 					badge.BackgroundColor = badgeColor.ToPlatform();
+
+				var badgeTextColor = toolbarItem.BadgeTextColor;
+				if (badgeTextColor is not null)
+					badge.BadgeTextColor = badgeTextColor.ToPlatform();
 
 				try
 				{
@@ -604,7 +619,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			// Handle badge property changes without rebuilding the menu item
-			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor))
+			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
 			{
 				int badgeIndex = 0;
 				foreach (var ti in toolbarItems)

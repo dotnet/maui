@@ -20,8 +20,8 @@ public class Issue8305_Toolbar : _IssuesUITest
 		// Verify toolbar items are present
 		App.WaitForElement("BadgeTextItem");
 
-		// Take a screenshot showing badges
-		VerifyScreenshot();
+		// Take a screenshot showing badges (retryTimeout for async Android badge rendering)
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -51,8 +51,8 @@ public class Issue8305_Toolbar : _IssuesUITest
 		var text = App.FindElement("StatusLabel").GetText();
 		Assert.That(text, Is.EqualTo("All badges cleared"));
 
-		// Take a screenshot showing no badges
-		VerifyScreenshot();
+		// Take a screenshot showing no badges (retryTimeout for async Android badge rendering)
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -68,7 +68,7 @@ public class Issue8305_Toolbar : _IssuesUITest
 		var text = App.FindElement("StatusLabel").GetText();
 		Assert.That(text, Is.EqualTo("Badge color: Red"));
 
-		// Take a screenshot showing red badge color
-		VerifyScreenshot();
+		// Take a screenshot showing red badge color (retryTimeout for async Android badge rendering)
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

@@ -179,5 +179,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("5", item.BadgeText);
 			Assert.Null(item.BadgeColor);
 		}
+
+		[Fact]
+		public void BadgeTextColorDefaultIsNull()
+		{
+			var item = new ToolbarItem();
+			Assert.Null(item.BadgeTextColor);
+		}
+
+		[Fact]
+		public void SetBadgeTextColor()
+		{
+			var item = new ToolbarItem();
+			item.BadgeTextColor = Colors.White;
+			Assert.Equal(Colors.White, item.BadgeTextColor);
+		}
+
+		[Fact]
+		public void ClearBadgeTextColor()
+		{
+			var item = new ToolbarItem();
+			item.BadgeTextColor = Colors.Black;
+			item.BadgeTextColor = null;
+			Assert.Null(item.BadgeTextColor);
+		}
+
+		[Fact]
+		public void BadgeTextColorPropertyChangedFires()
+		{
+			var item = new ToolbarItem();
+			bool fired = false;
+			item.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
+					fired = true;
+			};
+			item.BadgeTextColor = Colors.Yellow;
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public void BadgeTextColorDoesNotFireWhenSameValue()
+		{
+			var item = new ToolbarItem { BadgeTextColor = Colors.White };
+			int fireCount = 0;
+			item.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
+					fireCount++;
+			};
+			item.BadgeTextColor = Colors.White;
+			Assert.Equal(0, fireCount);
+		}
+
+		[Fact]
+		public void BadgeTextColorBindableProperty()
+		{
+			var item = new ToolbarItem();
+			item.SetValue(ToolbarItem.BadgeTextColorProperty, Colors.Cyan);
+			Assert.Equal(Colors.Cyan, item.BadgeTextColor);
+		}
+
+		[Fact]
+		public void BadgeTextColorDataBinding()
+		{
+			var vm = new { TextColor = Colors.Magenta };
+			var item = new ToolbarItem();
+			item.BindingContext = vm;
+			item.SetBinding(ToolbarItem.BadgeTextColorProperty, "TextColor");
+			Assert.Equal(Colors.Magenta, item.BadgeTextColor);
+		}
 	}
 }

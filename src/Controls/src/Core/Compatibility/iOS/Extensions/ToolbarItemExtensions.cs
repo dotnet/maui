@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							UpdateTextAndStyle(item);
 					}
 				}
-				else if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor))
+				else if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
 					UpdateBadge(item);
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
@@ -224,6 +224,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (item.BadgeColor is not null)
 					badge.BackgroundColor = item.BadgeColor.ToPlatform();
+
+				if (item.BadgeTextColor is not null)
+					badge.ForegroundColor = item.BadgeTextColor.ToPlatform();
 
 				this.Badge = badge;
 #pragma warning restore CA1416

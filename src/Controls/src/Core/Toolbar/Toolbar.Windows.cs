@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
@@ -77,6 +77,28 @@ namespace Microsoft.Maui.Controls
 					button.Content = grid;
 				}
 
+				// For text-only toolbar items (no icon), wrap the label in a Grid
+				// with InfoBadge overlay so badges are still visible.
+				if (item.IconImageSource.IsNullOrEmpty() && !string.IsNullOrEmpty(item.BadgeText))
+				{
+					var textBlock = new Microsoft.UI.Xaml.Controls.TextBlock { Text = item.Text ?? string.Empty };
+					var grid = new WGrid();
+#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
+					grid.Children.Add(textBlock);
+
+					var infoBadge = new InfoBadge
+					{
+						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+						Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
+					};
+					UpdateInfoBadge(infoBadge, item);
+					grid.Children.Add(infoBadge);
+#pragma warning restore RS0030
+
+					button.Content = grid;
+				}
+
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
@@ -114,7 +136,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor))
+			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
 			{
 				if (sender is ToolbarItem toolbarItem)
 				{
@@ -134,6 +156,26 @@ namespace Microsoft.Maui.Controls
 										break;
 									}
 								}
+							}
+							else if (!string.IsNullOrEmpty(toolbarItem.BadgeText))
+							{
+								// Text-only item that didn't have a badge before - wrap content
+								var textBlock = new Microsoft.UI.Xaml.Controls.TextBlock { Text = toolbarItem.Text ?? string.Empty };
+								var newGrid = new WGrid();
+#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
+								newGrid.Children.Add(textBlock);
+
+								var newBadge = new InfoBadge
+								{
+									HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+									VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+									Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
+								};
+								UpdateInfoBadge(newBadge, toolbarItem);
+								newGrid.Children.Add(newBadge);
+#pragma warning restore RS0030
+
+								button.Content = newGrid;
 							}
 							break;
 						}
@@ -177,6 +219,14 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 				badge.ClearValue(InfoBadge.BackgroundProperty);
+
+			if (item.BadgeTextColor is not null)
+			{
+				badge.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+					item.BadgeTextColor.ToWindowsColor());
+			}
+			else
+				badge.ClearValue(InfoBadge.ForegroundProperty);
 		}
 
 		private static void SetDefaultLabelPosition(CommandBar commandBar, IList<ToolbarItem> toolbarItems)

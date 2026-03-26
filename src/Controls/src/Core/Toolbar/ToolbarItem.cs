@@ -26,6 +26,10 @@ public class ToolbarItem : MenuItem
 	public static readonly BindableProperty BadgeColorProperty = BindableProperty.Create(
 		nameof(BadgeColor), typeof(Color), typeof(ToolbarItem), default(Color));
 
+	/// <summary>Bindable property for <see cref="BadgeTextColor"/>.</summary>
+	public static readonly BindableProperty BadgeTextColorProperty = BindableProperty.Create(
+		nameof(BadgeTextColor), typeof(Color), typeof(ToolbarItem), default(Color));
+
 	/// <summary>
 	/// Constructs and initializes a new instance of the ToolbarItem class.
 	/// </summary>
@@ -112,5 +116,26 @@ public class ToolbarItem : MenuItem
 	{
 		get => (Color)GetValue(BadgeColorProperty);
 		set => SetValue(BadgeColorProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the foreground (text) color of the badge displayed on this toolbar item.
+	/// When set to <see langword="null"/>, the platform default text color is used (typically white).
+	/// This is a bindable property.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// Platform support:
+	/// </para>
+	/// <list type="bullet">
+	/// <item><description><b>Android</b>: Maps to <c>BadgeDrawable.BadgeTextColor</c>.</description></item>
+	/// <item><description><b>iOS/MacCatalyst 26+</b>: Maps to <c>UIBarButtonItemBadge.ForegroundColor</c>.</description></item>
+	/// <item><description><b>Windows</b>: Maps to <c>InfoBadge.Foreground</c>.</description></item>
+	/// </list>
+	/// </remarks>
+	public Color BadgeTextColor
+	{
+		get => (Color)GetValue(BadgeTextColorProperty);
+		set => SetValue(BadgeTextColorProperty, value);
 	}
 }

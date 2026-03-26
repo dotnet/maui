@@ -97,6 +97,12 @@ public class ToolbarBadgePage : BasePage
 						new Button { Text = "Green", Command = new Command(() => SetBadgeColor(Colors.Green)) },
 						new Button { Text = "Platform Default (null)", Command = new Command(() => SetBadgeColor(null)) }
 					),
+					CreateSection("Badge Text Color",
+						new Button { Text = "White Text", Command = new Command(() => SetBadgeTextColor(Colors.White)) },
+						new Button { Text = "Black Text", Command = new Command(() => SetBadgeTextColor(Colors.Black)) },
+						new Button { Text = "Yellow Text", Command = new Command(() => SetBadgeTextColor(Colors.Yellow)) },
+						new Button { Text = "Platform Default (null)", Command = new Command(() => SetBadgeTextColor(null)) }
+					),
 					CreateSection("Visibility",
 						new Button { Text = "Clear All Badges", Command = new Command(ClearAll) },
 						new Button { Text = "Restore All Badges", Command = new Command(RestoreAll) }
@@ -157,6 +163,15 @@ public class ToolbarBadgePage : BasePage
 	{
 		_colorItem.BadgeColor = color;
 		_statusLabel.Text = color is null ? "Badge color: platform default" : $"Badge color: {color}";
+	}
+
+	void SetBadgeTextColor(Color? color)
+	{
+		// Apply text color to all toolbar items to demonstrate the effect
+		_numericItem.BadgeTextColor = color;
+		_textItem.BadgeTextColor = color;
+		_colorItem.BadgeTextColor = color;
+		_statusLabel.Text = color is null ? "Badge text color: platform default" : $"Badge text color: {color}";
 	}
 
 	void ClearAll()
