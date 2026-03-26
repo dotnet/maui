@@ -33,10 +33,9 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <para>
 /// Property value encoding strategy (in priority order):
 /// <list type="bullet">
-/// <item><c>string</c> — direct string literal.</item>
-/// <item><c>bool</c> — <c>true</c> / <c>false</c> literal.</item>
-/// <item><c>int</c>, <c>double</c>, <c>float</c>, <c>decimal</c> — numeric literal.</item>
-/// <item>All other types — <c>TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString("value")</c>.</item>
+/// <item>IC compile-time converters (Color, Thickness, Enum, GridLength, etc.) — same pipeline as <c>InitializeComponent</c>.</item>
+/// <item>Language primitives (<c>string</c>, <c>bool</c>, <c>int</c>, <c>double</c>, etc.) — inline literal.</item>
+/// <item>Fallback — <c>TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString("value")</c>.</item>
 /// <item>Property not found on type — return (skip patch).</item>
 /// </list>
 /// </para>
@@ -75,7 +74,7 @@ static class UpdateComponentCodeWriter
 		int addedCounter = 0;
 		foreach (var change in diff.ChildListChanges)
 		{
-			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, compilation, xmlnsCache, typeCache);
+			EmitChildListChange(codeWriter, change, changeIdx++, ref addedCounter, newIds, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			codeWriter.WriteLine();
 		}
 
@@ -223,7 +222,10 @@ static class UpdateComponentCodeWriter
 		Dictionary<ElementNode, string>? newIds,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
 		bool isRoot = string.IsNullOrEmpty(change.ParentNodeId);
 
@@ -276,7 +278,7 @@ static class UpdateComponentCodeWriter
 			else // Added
 			{
 				var newElement = entry.NewElement!;
-				EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache);
+				EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			}
 		}
 
@@ -305,7 +307,10 @@ static class UpdateComponentCodeWriter
 		ref int addedCounter,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
 		// Resolve XmlType → C# type
 		if (!element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol)
@@ -333,7 +338,7 @@ static class UpdateComponentCodeWriter
 
 			var propName = kvp.Key.LocalName;
 			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
-			var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName);
+			var valueExpr = BuildValueExpression(rawValue, typeSymbol, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 			if (valueExpr != null)
 				codeWriter.WriteLine($"{varName}.{propName} = {valueExpr};");
@@ -372,7 +377,7 @@ static class UpdateComponentCodeWriter
 							childNodeId = childId;
 						else
 							childNodeId = $"{nodeId}_{i}"; // fallback
-						EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache);
+						EmitNewElement(codeWriter, childElement, childLayoutVar, childNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 					}
 				}
 			}
@@ -421,7 +426,7 @@ static class UpdateComponentCodeWriter
 		}
 
 		var rawValue = propDiff.NewValue ?? string.Empty;
-		var valueExpr = BuildValueExpression(rawValue, rootType, propName);
+		var valueExpr = BuildValueExpression(rawValue, rootType, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		if (valueExpr == null)
 		{
@@ -477,7 +482,7 @@ static class UpdateComponentCodeWriter
 			return;
 		}
 		var rawValue = propDiff.NewValue ?? string.Empty;
-		var valueExpr = BuildValueExpression(rawValue, nodeType, propName);
+		var valueExpr = BuildValueExpression(rawValue, nodeType, propName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		if (valueExpr == null)
 		{
@@ -1016,75 +1021,53 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Returns a C# expression string for <paramref name="rawXamlValue"/>.
-	/// Returns <see langword="null"/> when no inline encoding is possible.
+	/// Returns a C# expression string for <paramref name="rawXamlValue"/> using the same
+	/// type converter pipeline as InitializeComponent (Color, Thickness, Enum, GridLength, etc.).
+	/// Falls back to <c>TypeDescriptor.GetConverter</c> at runtime only when no compile-time
+	/// converter is registered.
+	/// Returns <see langword="null"/> when no encoding is possible at all.
 	/// </summary>
-	static string? BuildValueExpression(string rawXamlValue, INamedTypeSymbol? nodeType, string propertyName)
+	static string? BuildValueExpression(
+		string rawXamlValue,
+		INamedTypeSymbol? nodeType,
+		string propertyName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
 	{
-		// Look up the C# property type
-		ITypeSymbol? propType = null;
-		if (nodeType != null)
-		{
-			var member = FindProperty(nodeType, propertyName);
-			propType = member?.Type;
-		}
-
-		if (propType == null)
-		{
-			// Type is unresolvable — cannot generate safe code; fall through to goto fallback
+		if (nodeType == null)
 			return null;
-		}
 
-		var fqName = propType.ToFQDisplayString();
-
-		// Direct string
-		if (fqName == "string" || fqName == "System.String" || fqName == "global::System.String")
-			return $"\"{EscapeString(rawXamlValue)}\"";
-
-		// bool
-		if (fqName is "bool" or "global::System.Boolean")
-		{
-			if (rawXamlValue.Equals("true", StringComparison.OrdinalIgnoreCase)) return "true";
-			if (rawXamlValue.Equals("false", StringComparison.OrdinalIgnoreCase)) return "false";
+		var property = FindProperty(nodeType, propertyName);
+		if (property == null)
 			return null;
+
+		// Build a lightweight SourceGenContext for the converter pipeline
+		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		var ctx = new SourceGenContext(
+			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+
+		// Create a synthetic ValueNode to feed into IC's ConvertTo
+		var valueNode = new ValueNode(rawXamlValue, null, -1, -1);
+
+		// Use the IC's full conversion: TypeConverterAttribute lookup → known SG converters → ValueForLanguagePrimitive
+		try
+		{
+			var result = valueNode.ConvertTo(property, ctx.Writer, ctx, null);
+			if (result != null && result != "default" && result != string.Empty)
+				return result;
+		}
+		catch
+		{
+			// Converter threw — fall through to runtime fallback
 		}
 
-		// Integer types
-		if (fqName is "int" or "global::System.Int32" or "long" or "global::System.Int64"
-			or "short" or "global::System.Int16" or "byte" or "global::System.Byte")
-		{
-			var trimmed = rawXamlValue.Trim();
-			if (long.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
-				return trimmed;
-			return null; // invalid numeric — fallback
-		}
-
-		// Float/double — reject NaN/Infinity which parse successfully but produce invalid C# literals
-		if (fqName is "float" or "global::System.Single")
-		{
-			var trimmed = rawXamlValue.Trim();
-			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var fVal)
-				&& !double.IsNaN(fVal) && !double.IsInfinity(fVal))
-				return $"{trimmed}f";
-			return null;
-		}
-		if (fqName is "double" or "global::System.Double")
-		{
-			var trimmed = rawXamlValue.Trim();
-			if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var dVal)
-				&& !double.IsNaN(dVal) && !double.IsInfinity(dVal))
-				return trimmed;
-			return null;
-		}
-		if (fqName is "decimal" or "global::System.Decimal")
-		{
-			var trimmed = rawXamlValue.Trim();
-			if (decimal.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
-				return $"{trimmed}m";
-			return null;
-		}
-
-		// All other types: use TypeDescriptor at runtime
+		// Last resort: runtime TypeDescriptor (handles types not covered by SG converters)
+		var fqName = property.Type.ToFQDisplayString();
 		return BuildTypeDescriptorExpression(rawXamlValue, fqName);
 	}
 

@@ -146,6 +146,104 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// --- Type converter test variants ---
+
+	// V10: Label with BackgroundColor (Color converter)
+	const string PageXamlV10_ColorProperty = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" BackgroundColor="Red" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V11: Label with BackgroundColor changed to Blue
+	const string PageXamlV11_ColorChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" BackgroundColor="Blue" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V12: Label with Padding (Thickness converter)
+	const string PageXamlV12_ThicknessProperty = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" Padding="10,20,30,40" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V13: Label with Padding changed
+	const string PageXamlV13_ThicknessChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" Padding="5" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V14: Label with FontSize (double) and FontAttributes (enum)
+	const string PageXamlV14_EnumAndDouble = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" FontSize="24" FontAttributes="Bold" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V15: Label with FontSize and FontAttributes changed
+	const string PageXamlV15_EnumAndDoubleChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" FontSize="18" FontAttributes="Italic" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V16: Grid with ColumnDefinitions (GridLength converter)
+	const string PageXamlV16_GridLength = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid ColumnDefinitions="*,2*,Auto" RowDefinitions="100,*">
+		        <Label Text="Hello" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V17: Grid with ColumnDefinitions changed
+	const string PageXamlV17_GridLengthChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid ColumnDefinitions="*,*,*" RowDefinitions="50,*">
+		        <Label Text="Hello" />
+		    </Grid>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -558,6 +656,59 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.True(hasSelf);
 		Assert.Equal(xaml, storedXaml);
 		Assert.Equal(1, storedVer);
+	}
+
+	// -----------------------------------------------------------------------
+	// Type converter tests — verify UC uses compile-time converters from IC
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void SecondRun_ColorPropertyChange_EmitsColorConverterExpression()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV10_ColorProperty, PageXamlV11_ColorChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Should contain a Color expression, NOT TypeDescriptor.GetConverter
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+		// The Color converter should emit something like Color.FromArgb or new Color
+		Assert.Contains("Color", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ThicknessPropertyChange_EmitsThicknessExpression()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV12_ThicknessProperty, PageXamlV13_ThicknessChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+		// Should contain Thickness constructor
+		Assert.Contains("Thickness", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_EnumPropertyChange_EmitsEnumLiteral()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV14_EnumAndDouble, PageXamlV15_EnumAndDoubleChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+		// FontAttributes is an enum — should emit FontAttributes.Italic
+		Assert.Contains("Italic", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_GridLengthChange_EmitsGridLengthExpression()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV16_GridLength, PageXamlV17_GridLengthChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Grid ColumnDefinitions/RowDefinitions may use a collection converter
+		// At minimum, verify UC is generated (not null) and doesn't fall back to TypeDescriptor
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
