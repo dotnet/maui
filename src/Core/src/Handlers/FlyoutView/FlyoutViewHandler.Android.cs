@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Android.App.Roles;
-using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.View;
-using AndroidX.DrawerLayout.Widget;
-using AndroidX.Fragment.App;
-using AndroidX.Lifecycle;
-using Microsoft.Maui.Platform;
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 namespace Microsoft.Maui.Handlers
 {
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, MauiDrawerLayout>

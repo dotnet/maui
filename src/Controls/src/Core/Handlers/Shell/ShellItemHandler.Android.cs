@@ -1,31 +1,20 @@
 #nullable disable
-#if ANDROID
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Android.Content;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
-using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
-using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
-using LP = Android.Views.ViewGroup.LayoutParams;
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -1387,4 +1376,3 @@ namespace Microsoft.Maui.Controls.Handlers
         }
     }
 }
-#endif
