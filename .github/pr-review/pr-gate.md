@@ -50,19 +50,6 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
 ---
 
-## Expected Result
-
-```
-╔═══════════════════════════════════════════════════════════╗
-║              VERIFICATION PASSED ✅                       ║
-╠═══════════════════════════════════════════════════════════╣
-║  - FAIL without fix (as expected)                         ║
-║  - PASS with fix (as expected)                            ║
-╚═══════════════════════════════════════════════════════════╝
-```
-
----
-
 ## If Gate Fails
 
 - **Tests PASS without fix** → Tests don't catch the bug. Inform user, suggest `write-tests-agent`.
@@ -72,33 +59,38 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
 ## Output File
 
+> 🚨 **CRITICAL OUTPUT RULES:**
+> - Write gate results ONLY to `gate/content.md` — NEVER copy gate results into other phases (pre-flight, try-fix, report)
+> - Use the EXACT template below — no extra explanations, no "Reason:" paragraphs, no "Notes:" sections
+> - Keep it SHORT — the template is the complete output
+
 ```bash
 mkdir -p CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/gate
 ```
 
-Write `content.md` with this exact structure:
+Write `content.md` using this **exact** template (fill in values, don't add anything else):
 
 ```markdown
 ### Gate Result: {✅ PASSED / ❌ FAILED / ⚠️ SKIPPED}
 
 **Platform:** {platform}
 
-#### Tests Detected
-
 | # | Type | Test Name | Filter |
 |---|------|-----------|--------|
-| 1 | {DeviceTest/UITest/UnitTest} | {TestName} | {filter used} |
-
-#### Verification
+| 1 | {type} | {name} | `{filter}` |
 
 | Step | Expected | Actual | Result |
 |------|----------|--------|--------|
-| Tests WITHOUT fix | FAIL | {FAIL/PASS} | {✅/❌} |
-| Tests WITH fix | PASS | {FAIL/PASS} | {✅/❌} |
+| Without fix | FAIL | {FAIL/PASS} | {✅/❌} |
+| With fix | PASS | {FAIL/PASS} | {✅/❌} |
+```
 
-#### Fix Files Reverted
+If gate is SKIPPED (no tests found), write only:
 
-- `{path/to/fix/file.cs}`
+```markdown
+### Gate Result: ⚠️ SKIPPED
+
+No tests detected in PR. Suggest adding tests via `write-tests-agent`.
 ```
 
 ---
@@ -106,6 +98,6 @@ Write `content.md` with this exact structure:
 ## Common Mistakes
 
 - ❌ Running inline — MUST use task agent
-- ❌ Using `BuildAndRunHostApp.ps1` directly — the skill handles routing to the correct runner
-- ❌ Claiming results from a single test run — script does TWO runs automatically
+- ❌ Adding verbose explanations to gate/content.md — use the exact template above
+- ❌ Copying gate results into try-fix/content.md or report/content.md — gate results belong ONLY in gate/content.md
 - ❌ Skipping gate because tests are device tests, not UI tests — the skill supports all test types

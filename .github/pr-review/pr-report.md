@@ -4,6 +4,8 @@
 
 > 🚨 **DO NOT post any comments.** This phase only produces output files.
 
+> 🚨 **DO NOT duplicate content from other phases.** Reference gate/try-fix results by status only (e.g., "Gate: ✅ PASSED") — do NOT copy their full output into report/content.md.
+
 ---
 
 ## Prerequisites

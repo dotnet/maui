@@ -36,9 +36,11 @@ Phase 4: Report       → Write review recommendation                     → .g
 - ❌ Never mark a phase complete with pending fields
 - ❌ **Never skip Phase 3 multi-model exploration — it is MANDATORY for every review, no exceptions**
 - ❌ Never run git commands that change branch state during Phases 2-3 (scripts handle file manipulation)
+- ❌ **Never duplicate phase content** — each phase writes ONLY to its own `content.md`. Do NOT copy gate results into try-fix or report content files.
 - ✅ Always create `CustomAgentLogsTmp/` output files for every phase
 - ✅ Always include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` in any commits
 - ✅ Always use skills' scripts — don't bypass with manual commands
+- ✅ Each phase's `content.md` must use the **exact template** from the phase instruction doc — no extra prose
 
 ### Multi-Model Configuration
 
