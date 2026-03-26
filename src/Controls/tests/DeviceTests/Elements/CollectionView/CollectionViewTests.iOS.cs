@@ -328,7 +328,7 @@ namespace Microsoft.Maui.DeviceTests
 		// The fix ensures CV cell content views are treated as UIScrollView descendants
 		// (since UICollectionView inherits from UIScrollView), so they do NOT respond
 		// to safe area independently.
-		[Fact("https://github.com/dotnet/maui/issues/34635")]
+		[Fact("CollectionView cell MauiViews should be treated as UIScrollView descendants and not apply safe area independently")]
 		[Category(TestCategory.CollectionView)]
 		public async Task CollectionViewCellContentShouldBeScrollViewDescendant()
 		{
