@@ -20,7 +20,7 @@ variables:
   value: powershell -ExecutionPolicy ByPass -NoProfile $(Build.SourcesDirectory)\eng\common\msbuild.ps1 -ci
 - name: _msbuildMacOsCommand
   value: $(Build.SourcesDirectory)/eng/common/msbuild.sh --ci
-- name: _BuildOfficalId
+- name: _BuildOfficialId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
 - name: TreatWarningsAsErrors
   value: false

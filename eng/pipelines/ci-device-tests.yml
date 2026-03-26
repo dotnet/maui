@@ -5,6 +5,7 @@ trigger:
     - release/*
     - net*.0
     - inflight/*
+    - darc-*
   tags:
     include:
     - '*'
@@ -47,6 +48,9 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - template: /eng/pipelines/common/variables.yml@self
 - template: /eng/pipelines/arcade/variables.yml@self
+# Include Helix access token for internal builds
+- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+  - group: DotNet-HelixApi-Access
 
 parameters:
 
