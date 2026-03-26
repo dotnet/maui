@@ -4,29 +4,17 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.Views;
-using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.Content;
-using AndroidX.Core.Graphics;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
-using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
-using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
-using Microsoft.Maui.Graphics;
-using AColor = Android.Graphics.Color;
-using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 
@@ -309,6 +297,7 @@ public class TabbedPageManager
 	protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
 	{
 		var index = Element.Children.IndexOf(Element.CurrentPage);
+
 		if (BottomNavigationView is not null)
 		{
 			_tabbedViewManager.SetSelectedTab(index);
@@ -405,6 +394,11 @@ public class TabbedPageManager
 					_tabbedPage.CurrentPage = adapter.Page;
 			}
 		}
+
+		public int CurrentTabIndex =>
+			_tabbedPage.CurrentPage is not null
+				? _tabbedPage.Children.IndexOf(_tabbedPage.CurrentPage)
+				: -1;
 
 		public Color BarBackgroundColor => _tabbedPage.BarBackgroundColor;
 		public object BarBackground => _tabbedPage.BarBackground;
