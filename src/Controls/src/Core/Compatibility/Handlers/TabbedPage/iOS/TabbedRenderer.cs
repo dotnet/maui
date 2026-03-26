@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
@@ -28,6 +29,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IMauiContext _mauiContext;
 		UITabBarAppearance _tabBarAppearance;
 		WeakReference<VisualElement> _element;
+
+		// iOS 26+: cached unselected tint color for re-application during layout
+		UIColor _pendingUnselectedTintColor;
+		UIColor _pendingSelectedTintColor;
 
 		Brush _currentBarBackground;
 
@@ -136,6 +141,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// in narrow viewports (< 667 points) before Element is set. Guard against this.
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
+
+			// iOS 26+: Re-apply unselected item colors on every layout pass.
+			// The liquid glass tab bar resets subview tint colors during layout.
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				&& _pendingUnselectedTintColor is not null && TabBar is not null)
+			{
+				TabBar.UnselectedItemTintColor = _pendingUnselectedTintColor;
+				TabBar.ApplyPreColoredImagesForIOS26(_pendingUnselectedTintColor, _pendingSelectedTintColor);
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -190,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateTabBarItem(page);
 			}
 		}
-		
+
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
@@ -610,15 +624,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Tabbed is not TabbedPage tabbed)
 				return;
+
+			var unselectedTabColor = tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null;
+			var barTextColor = tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null;
+
 			TabBar.UpdateiOS15TabBarAppearance(
 				ref _tabBarAppearance,
 				_defaultBarColor,
 				_defaultBarTextColor,
 				tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? tabbed.SelectedTabColor : null,
-				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
+				unselectedTabColor,
 				tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor : null,
-				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
-				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
+				barTextColor,
+				barTextColor);
+
+			// Cache the effective colors for iOS 26 layout re-application
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				_pendingUnselectedTintColor = unselectedTabColor?.ToPlatform()
+					?? barTextColor?.ToPlatform()
+					?? _defaultBarTextColor;
+
+				var selectedTabColor2 = tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? tabbed.SelectedTabColor : null;
+				_pendingSelectedTintColor = selectedTabColor2?.ToPlatform()
+					?? barTextColor?.ToPlatform()
+					?? _defaultBarTextColor;
+			}
 		}
 
 		#region IPlatformViewHandler

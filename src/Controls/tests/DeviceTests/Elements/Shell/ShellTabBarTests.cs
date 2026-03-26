@@ -23,8 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ForegroundColorSetsIconAndTitleColorSetsTitle()
 		{
 #if IOS || MACCATALYST
-			// Skip on iOS 26+ due to UITabBar internal API changes
-			// See: https://github.com/dotnet/maui/issues/33004
+			// Pixel-based tab bar color verification doesn't work on iOS 26+ due to UITabBar rendering changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				return;
 #endif
@@ -54,8 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ShellTabBarTitleColorInitializesCorrectly(string colorHex)
 		{
 #if IOS || MACCATALYST
-			// Skip on iOS 26+ due to UITabBar internal API changes
-			// See: https://github.com/dotnet/maui/issues/33004
+			// Pixel-based tab bar color verification doesn't work on iOS 26+ due to UITabBar rendering changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				return;
 #endif
@@ -78,8 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ShellTabBarForegroundInitializesCorrectly(string colorHex)
 		{
 #if IOS || MACCATALYST
-			// Skip on iOS 26+ due to UITabBar internal API changes
-			// See: https://github.com/dotnet/maui/issues/33004
+			// Pixel-based tab bar color verification doesn't work on iOS 26+ due to UITabBar rendering changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				return;
 #endif
@@ -100,8 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ShellTabBarUnselectedColorInitializesCorrectly(string colorHex)
 		{
 #if IOS || MACCATALYST
-			// Skip on iOS 26+ due to UITabBar internal API changes
-			// See: https://github.com/dotnet/maui/issues/33004
+			// Pixel-based tab bar color verification doesn't work on iOS 26+ due to UITabBar rendering changes
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				return;
 #endif
@@ -114,6 +110,39 @@ namespace Microsoft.Maui.DeviceTests
 					await ValidateTabBarTextColor(shell.Items[0].Items[1], expectedColor, true);
 					await ValidateTabBarIconColor(shell.Items[0].Items[1], expectedColor, true);
 				});
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/32125
+		// On iOS 26+, Shell.TabBarUnselectedColor was not applied to unselected tabs
+		[Fact(DisplayName = "Shell TabBar UnselectedColor and TitleColor work together")]
+		public async Task ShellTabBarUnselectedAndTitleColorWorkTogether()
+		{
+			var titleColor = Color.FromArgb("#FFFF0000");
+			var unselectedColor = Color.FromArgb("#FF808080");
+			await RunShellTabBarTests(shell =>
+			{
+				Shell.SetTabBarTitleColor(shell, titleColor);
+				Shell.SetTabBarUnselectedColor(shell, unselectedColor);
+			},
+			async (shell) =>
+			{
+#if IOS || MACCATALYST
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					// On iOS 26+, verify the UnselectedItemTintColor property directly
+					// because pixel-based verification doesn't work with the new tab bar rendering
+					await ValidateTabBarUnselectedTintColorProperty(shell.CurrentSection, unselectedColor);
+				}
+				else
+#endif
+				{
+					// Selected tab should use title color
+					await ValidateTabBarTextColor(shell.CurrentSection, titleColor, true);
+					// Unselected tab should use unselected color
+					await ValidateTabBarTextColor(shell.Items[0].Items[1], unselectedColor, true);
+					await ValidateTabBarIconColor(shell.Items[0].Items[1], unselectedColor, true);
+				}
+			});
 		}
 
 		async Task RunShellTabBarTests(Action<Shell> setup, Func<Shell, Task> runTest)

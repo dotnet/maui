@@ -81,8 +81,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task BarTextColor()
 		{
 #if IOS || MACCATALYST
-			// Skip on iOS 26+ due to UITabBar internal API changes
-			// See: https://github.com/dotnet/maui/issues/33004
+			// Pixel-based text color verification doesn't work on iOS 26+ due to UITabBar rendering changes.
+			// Property-based tests (UnselectedItemTintColorSetFromBarTextColor) verify the fix instead.
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				return;
 #endif
@@ -96,20 +96,11 @@ namespace Microsoft.Maui.DeviceTests
 			tabbedPage.BarTextColor = Colors.Red;
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
 			{
-				// Pre iOS15 you couldn't set the text color of the unselected tab
-				// so only android/windows currently set the color of both
-
-#if IOS
-				bool unselectedMatchesSelected = false;
-#else
-				bool unselectedMatchesSelected = true;
-#endif
-
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, unselectedMatchesSelected);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
 				tabbedPage.BarTextColor = Colors.Blue;
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Blue, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, unselectedMatchesSelected);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, true);
 			});
 		}
 
@@ -121,8 +112,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SelectedAndUnselectedTabColor()
 		{
 #if IOS || MACCATALYST
-			// Skip on iOS 26+ due to UITabBar internal API changes
-			// See: https://github.com/dotnet/maui/issues/33004
+			// Pixel-based text color verification doesn't work on iOS 26+ due to UITabBar rendering changes.
+			// Property-based tests (UnselectedItemTintColorSetFromUnselectedTabColor) verify the fix instead.
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				return;
 #endif
@@ -135,15 +126,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
 			{
-				// Pre iOS15 you couldn't set the text color of the unselected tab
-				// so only android/windows currently set the color of both
-#if IOS
-				bool unselectedMatchesTabColor = false;
-#else
-				bool unselectedMatchesTabColor = true;
-#endif
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, unselectedMatchesTabColor);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, true);
 
@@ -151,9 +135,50 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(tabbedPage.CurrentPage);
 
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, unselectedMatchesTabColor);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
+			});
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/34605
+		// On iOS 26.2+, BarTextColor was only applied to the selected tab, not unselected tabs
+		[Fact(DisplayName = "BarTextColor applies to unselected tabs without UnselectedTabColor set"
+#if MACCATALYST
+			, Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
+		public async Task BarTextColorAppliesToUnselectedTabsWithoutExplicitUnselectedColor()
+		{
+#if IOS || MACCATALYST
+			// Pixel-based text color verification doesn't work on iOS 26+ due to UITabBar rendering changes.
+			// Property-based tests (UnselectedItemTintColorSetFromBarTextColor) verify the fix instead.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true, pages: new[]
+			{
+				new ContentPage() { Title = "Tab A", IconImageSource = "white.png" },
+				new ContentPage() { Title = "Tab B", IconImageSource = "white.png" },
+				new ContentPage() { Title = "Tab C", IconImageSource = "white.png" }
+			});
+
+			// Set ONLY BarTextColor (no SelectedTabColor or UnselectedTabColor)
+			tabbedPage.BarTextColor = Colors.Orange;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				// All tabs (selected and unselected) should use the BarTextColor
+				await ValidateTabBarTextColor(tabbedPage, "Tab A", Colors.Orange, true);
+				await ValidateTabBarTextColor(tabbedPage, "Tab B", Colors.Orange, true);
+				await ValidateTabBarTextColor(tabbedPage, "Tab C", Colors.Orange, true);
+
+				// Switch selected tab and verify colors still correct
+				tabbedPage.CurrentPage = tabbedPage.Children[2];
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+				await ValidateTabBarTextColor(tabbedPage, "Tab A", Colors.Orange, true);
+				await ValidateTabBarTextColor(tabbedPage, "Tab C", Colors.Orange, true);
 			});
 		}
 
@@ -378,7 +403,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if IOS 
+#if IOS
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
 #elif WINDOWS
 		[Theory(Skip = "Test doesn't work on Windows")]

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -13,6 +14,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIColor _defaultTint;
 		UIColor _defaultUnselectedTint;
 		UITabBarAppearance _tabBarAppearance;
+
+		// iOS 26+ stores pending colors to re-apply during layout
+		UIColor _pendingUnselectedTintColor;
+		UIColor _pendingSelectedTintColor;
+
 		public virtual void ResetAppearance(UITabBarController controller)
 		{
 			if (_defaultTint == null)
@@ -22,6 +28,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabBar.BarTintColor = _defaultBarTint;
 			tabBar.TintColor = _defaultTint;
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
+			_pendingUnselectedTintColor = null;
+			_pendingSelectedTintColor = null;
 		}
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
@@ -50,6 +58,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void UpdateLayout(UITabBarController controller)
 		{
+			// iOS 26+: Re-apply colors on every layout pass.
+			// The liquid glass tab bar resets subview properties during layout.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				var tabBar = controller.TabBar;
+				if (_pendingSelectedTintColor is not null)
+					tabBar.TintColor = _pendingSelectedTintColor;
+				if (_pendingUnselectedTintColor is not null)
+				{
+					tabBar.UnselectedItemTintColor = _pendingUnselectedTintColor;
+					tabBar.ApplyPreColoredImagesForIOS26(_pendingUnselectedTintColor, _pendingSelectedTintColor);
+				}
+			}
 		}
 
 		#region IDisposable Support
@@ -75,6 +96,55 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+
+			// iOS 26+: The UITabBarAppearance Normal state (TitleTextAttributes, IconColor) is
+			// ignored by the liquid glass tab bar. Skip the full appearance pipeline and use
+			// direct UITabBar properties plus subview coloring instead.
+			// See: https://github.com/dotnet/maui/issues/32125, https://github.com/dotnet/maui/issues/34605
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				var tabBar = controller.TabBar;
+
+				// Background color via appearance (this still works on iOS 26)
+				if (_tabBarAppearance == null)
+				{
+					_tabBarAppearance = new UITabBarAppearance();
+					_tabBarAppearance.ConfigureWithDefaultBackground();
+				}
+				if (backgroundColor is not null)
+					_tabBarAppearance.BackgroundColor = backgroundColor.ToPlatform();
+
+				tabBar.StandardAppearance = _tabBarAppearance;
+				tabBar.ScrollEdgeAppearance = _tabBarAppearance;
+
+				// Selected color via TintColor (works on iOS 26)
+				var selectedColor = foregroundColor ?? titleColor;
+				if (selectedColor is not null)
+				{
+					_pendingSelectedTintColor = selectedColor.ToPlatform();
+					tabBar.TintColor = _pendingSelectedTintColor;
+				}
+				else
+				{
+					_pendingSelectedTintColor = null;
+					tabBar.TintColor = _defaultTint;
+				}
+
+				// Unselected color: set property + pre-colored images for visual rendering
+				if (unselectedColor is not null)
+				{
+					_pendingUnselectedTintColor = unselectedColor.ToPlatform();
+					tabBar.UnselectedItemTintColor = _pendingUnselectedTintColor;
+					tabBar.ApplyPreColoredImagesForIOS26(_pendingUnselectedTintColor, _pendingSelectedTintColor);
+				}
+				else
+				{
+					_pendingUnselectedTintColor = null;
+					tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
+				}
+
+				return;
+			}
 
 			controller.TabBar
 				.UpdateiOS15TabBarAppearance(
