@@ -1,4 +1,7 @@
 #nullable enable
+*REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+*REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
 static Microsoft.Maui.Accessibility.SemanticScreenReader.SetDefault(Microsoft.Maui.Accessibility.ISemanticScreenReader? implementation) -> void
 static Microsoft.Maui.ApplicationModel.ActivityStateManager.SetDefault(Microsoft.Maui.ApplicationModel.IActivityStateManager? implementation) -> void
 static Microsoft.Maui.ApplicationModel.Browser.SetDefault(Microsoft.Maui.ApplicationModel.IBrowser? implementation) -> void
@@ -28,6 +31,7 @@ static Microsoft.Maui.Devices.Vibration.SetDefault(Microsoft.Maui.Devices.IVibra
 static Microsoft.Maui.Media.MediaPicker.SetDefault(Microsoft.Maui.Media.IMediaPicker? implementation) -> void
 static Microsoft.Maui.Media.Screenshot.SetDefault(Microsoft.Maui.Media.IScreenshot? implementation) -> void
 static Microsoft.Maui.Media.TextToSpeech.SetDefault(Microsoft.Maui.Media.ITextToSpeech? implementation) -> void
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
 static Microsoft.Maui.Storage.FilePicker.SetDefault(Microsoft.Maui.Storage.IFilePicker? implementation) -> void
 static Microsoft.Maui.Storage.Preferences.SetDefault(Microsoft.Maui.Storage.IPreferences? implementation) -> void
 static Microsoft.Maui.Storage.SecureStorage.SetDefault(Microsoft.Maui.Storage.ISecureStorage? implementation) -> void
