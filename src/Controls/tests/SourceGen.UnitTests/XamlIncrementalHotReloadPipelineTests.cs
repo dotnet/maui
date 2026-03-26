@@ -270,6 +270,34 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V20: x:DataType known — Binding should produce a compiled TypedBinding
+	const string PageXamlV1_WithDataType = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:MyViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	const string PageXamlV20_NewChildWithCompiledBinding = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:MyViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Label Text="{Binding Name}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -291,8 +319,20 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		string xamlV1,
 		string xamlV2,
 		bool enableIHR = true)
+		=> TwoRunsWithSource(xamlV1, xamlV2, additionalSource: null, enableIHR);
+
+	// Helper that allows injecting extra C# source (e.g., a ViewModel type for x:DataType)
+	(GeneratorDriverRunResult run1, GeneratorDriverRunResult run2) TwoRunsWithSource(
+		string xamlV1,
+		string xamlV2,
+		string? additionalSource,
+		bool enableIHR = true)
 	{
 		var compilation = CreateCompilation();
+		if (additionalSource != null)
+			compilation = compilation.AddSyntaxTrees(
+				CSharpSyntaxTree.ParseText(additionalSource));
+
 		var fileV1 = MakeFile(xamlV1, enableIHR);
 		var fileV2 = MakeFile(xamlV2, enableIHR);
 
@@ -769,6 +809,36 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		// Should contain DynamicResource setup on the new element
 		Assert.Contains("SetDynamicResource", uc, StringComparison.Ordinal);
 		Assert.Contains("PrimaryColor", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NewChildWithCompiledBinding_UCContainsTypedBinding()
+	{
+		// V1 (with x:DataType) → V20: Add a Label with Text="{Binding Name}"
+		// When x:DataType is known, the UC should emit a compiled TypedBinding
+		// with a local helper method (CreateTypedBindingFrom_*).
+		XamlHotReloadState.Reset();
+		const string viewModel = """
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					public string Name { get; set; }
+				}
+			}
+			""";
+		var (_, run2) = TwoRunsWithSource(
+			PageXamlV1_WithDataType,
+			PageXamlV20_NewChildWithCompiledBinding,
+			additionalSource: viewModel);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Label()", uc, StringComparison.Ordinal);
+		// Compiled binding should produce TypedBinding and the helper method
+		Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("CreateTypedBindingFrom_", uc, StringComparison.Ordinal);
+		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------

@@ -543,6 +543,9 @@ static class UpdateComponentCodeWriter
 
 		if (expandedNode is ElementNode elementNode)
 		{
+			// Preserve parent chain so the IC pipeline can walk up to find x:DataType, etc.
+			elementNode.Parent = markupNode.Parent;
+
 			// Markup extension (Binding, StaticResource, DynamicResource, etc.)
 			// Resolve the extension type and call the appropriate KnownMarkups handler
 			return TryEmitExpandedMarkupExtension(codeWriter, elementNode, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
@@ -711,6 +714,21 @@ static class UpdateComponentCodeWriter
 			if (!string.IsNullOrEmpty(line))
 				codeWriter.WriteLine(line);
 		}
+
+		// Flush any local methods (e.g., compiled binding helpers like CreateTypedBindingFrom_*)
+		// These are emitted as static local functions inside the UC method body.
+		foreach (var localMethod in ctx.LocalMethods)
+		{
+			codeWriter.WriteLine();
+			foreach (var mline in localMethod.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
+			{
+				if (string.IsNullOrWhiteSpace(mline))
+					codeWriter.InnerWriter.WriteLine();
+				else
+					codeWriter.WriteLine(mline);
+			}
+		}
+
 		return true;
 	}
 
