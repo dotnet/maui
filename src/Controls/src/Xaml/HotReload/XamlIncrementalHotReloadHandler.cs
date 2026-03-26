@@ -70,6 +70,9 @@ internal static class XamlIncrementalHotReloadHandler
 		if (updatedTypes is null)
 			return;
 
+		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
+			return;
+
 		foreach (var type in updatedTypes)
 		{
 			var instances = XamlComponentRegistry.GetInstances(type);
