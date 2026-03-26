@@ -45,10 +45,6 @@
     <ObjcBindingApiDefinition Include="..\AppleNative\ApiDefinitions.cs" />
     <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
   </ItemGroup>
-  <!-- Phi Silica + Semantic Search APIs require experimental WinAppSDK (library only — does not affect Versions.props) -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <MicrosoftWindowsAppSDKPackageVersion>2.0.0-experimental6</MicrosoftWindowsAppSDKPackageVersion>
-  </PropertyGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>

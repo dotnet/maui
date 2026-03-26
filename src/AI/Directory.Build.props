@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="../../Directory.Build.props" />
+
+  <!-- Phi Silica + Semantic Search APIs require experimental WinAppSDK.
+       This override is scoped to AI projects only and does not affect Versions.props. -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <MicrosoftWindowsAppSDKPackageVersion>2.0.0-experimental6</MicrosoftWindowsAppSDKPackageVersion>
+  </PropertyGroup>
+</Project>

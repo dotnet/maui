@@ -66,14 +66,6 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <!-- Windows Copilot Runtime Semantic Search requires experimental WinAppSDK (sample only — does not affect Versions.props) -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <MicrosoftWindowsAppSDKPackageVersion>2.0.0-experimental6</MicrosoftWindowsAppSDKPackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);ENABLE_OPENAI_CLIENT</DefineConstants>
   </PropertyGroup>
