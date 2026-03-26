@@ -251,5 +251,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shellSection.BindingContext = new { TextColor = Colors.Cyan };
 			Assert.Equal(Colors.Cyan, shellSection.BadgeTextColor);
 		}
+
+		[Fact]
+		public void SetBadgeTextEmptyStringForDotBadge()
+		{
+			var shellSection = new ShellSection();
+			shellSection.BadgeText = "";
+			Assert.Equal("", shellSection.BadgeText);
+		}
+
+		[Fact]
+		public void EmptyStringBadgeIsDistinctFromNull()
+		{
+			var shellSection = new ShellSection();
+			shellSection.BadgeText = "";
+			Assert.NotNull(shellSection.BadgeText);
+			shellSection.BadgeText = null;
+			Assert.Null(shellSection.BadgeText);
+		}
+
+		[Fact]
+		public void EmptyStringBadgeFiresPropertyChanged()
+		{
+			var shellSection = new ShellSection();
+			bool fired = false;
+			shellSection.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(BaseShellItem.BadgeText))
+					fired = true;
+			};
+			shellSection.BadgeText = "";
+			Assert.True(fired);
+		}
 	}
 }

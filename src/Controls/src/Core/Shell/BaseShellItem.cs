@@ -166,7 +166,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// Setting this property to a non-null, non-empty value will display a badge on the tab item.
-		/// Set to <see langword="null"/> or empty string to hide the badge.
+		/// Set to an empty string to show a dot indicator (small badge with no text).
+		/// Set to <see langword="null"/> to hide the badge.
 		/// On Windows, only numeric values are displayed as numbers; non-numeric text (e.g., "New") shows as a dot indicator.
 		/// </remarks>
 		public string BadgeText

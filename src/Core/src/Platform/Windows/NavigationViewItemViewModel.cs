@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Platform
 			set { this.SetProperty(ref _badgeForeground, value, OnPropertyChanged); }
 		}
 
-		public bool HasBadge => !string.IsNullOrEmpty(_badgeText);
+		public bool HasBadge => _badgeText is not null;
 
 		public int BadgeValue => int.TryParse(_badgeText, out var v) && v >= 0 ? v : -1;
 

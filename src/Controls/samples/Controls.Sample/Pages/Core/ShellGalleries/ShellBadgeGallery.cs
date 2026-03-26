@@ -55,6 +55,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 						new Label { Text = "Apply Badge to Tab", FontAttributes = FontAttributes.Bold },
 						CreateApplyButton("Set Badge on Current Tab", OnSetBadgeCurrentTab),
 						CreateApplyButton("Set Badge on All Tabs", OnSetBadgeAllTabs),
+						CreateApplyButton("Set Dot Badge (empty string)", OnSetDotBadge),
 						CreateApplyButton("Clear All Badges", OnClearAllBadges),
 
 						new BoxView { HeightRequest = 1, Color = Colors.LightGray },
@@ -179,8 +180,8 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			var section = GetCurrentShellSection();
 			if (section is not null)
 			{
-				// A non-null but empty-looking badge on some platforms shows as a dot
-				section.BadgeText = " ";
+				// Empty string shows as a dot indicator on all platforms
+				section.BadgeText = "";
 				UpdateBadgeStatus();
 			}
 		}

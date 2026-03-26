@@ -521,7 +521,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var badgeText = shellSection.BadgeText;
 			var menuItemId = index;
 
-			if (string.IsNullOrEmpty(badgeText))
+			if (badgeText is null)
 			{
 				_bottomView.RemoveBadge(menuItemId);
 			}
@@ -536,7 +536,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				var badge = _bottomView.GetOrCreateBadge(menuItemId);
-				badge.Text = badgeText;
+				if (badgeText.Length > 0)
+					badge.Text = badgeText;
+				else
+					badge.ClearNumber(); // Empty string shows as dot indicator
 
 				if (badgeColor is not null)
 				{

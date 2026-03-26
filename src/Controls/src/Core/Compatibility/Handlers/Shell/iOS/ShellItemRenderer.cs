@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
 		{
 			var badgeText = shellSection.BadgeText;
-			tabBarItem.BadgeValue = string.IsNullOrEmpty(badgeText) ? null : badgeText;
+			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
 
 			var badgeColor = shellSection.BadgeColor;
 			if (badgeColor is not null)
