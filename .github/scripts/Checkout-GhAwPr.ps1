@@ -3,30 +3,24 @@
     Shared PR checkout for gh-aw (GitHub Agentic Workflows).
 
 .DESCRIPTION
-    Checks out a PR branch and restores trusted agent infrastructure (skills,
-    instructions) from the base branch. Works for both same-repo and fork PRs.
+    Checks out a PR branch and merges the base branch to produce the same
+    combined state as a pull_request merge commit. This gives the agent the
+    PR's code changes plus anything new on main (skills, instructions, etc.).
 
-    This script is only invoked for workflow_dispatch triggers. For pull_request
-    and issue_comment, the gh-aw platform's checkout_pr_branch.cjs handles PR
-    checkout automatically (it runs as a platform step after all user steps).
-    workflow_dispatch skips the platform checkout entirely, so this script is
-    the only thing that gets the PR code onto disk.
+    This script is only invoked for workflow_dispatch triggers. For
+    pull_request_target and issue_comment, the gh-aw platform's
+    checkout_pr_branch.cjs handles PR checkout automatically.
+    workflow_dispatch skips the platform checkout entirely, so this script
+    is the only thing that gets the PR code onto disk.
 
-    SECURITY: Before checkout, the script verifies the PR author has write
-    access (write, maintain, or admin) to the repository. This prevents
-    checking out untrusted fork code in a context that has GITHUB_TOKEN.
-    Fork PRs are evaluated via pull_request_target instead (where the platform
-    handles checkout safely inside a sandboxed container).
-
-    SECURITY NOTE: This script checks out PR code onto disk. This is safe
-    because NO subsequent user steps execute workspace code — the gh-aw
-    platform copies the workspace into a sandboxed container with scrubbed
-    credentials before starting the agent. The classic "pwn-request" attack
-    requires checkout + execution; we only do checkout.
+    SECURITY: Before checkout, the script verifies the PR is not from a
+    fork and that the author has write access (write, maintain, or admin).
+    Fork PRs are evaluated via pull_request_target instead (where the
+    platform handles checkout safely inside a sandboxed container).
 
     DO NOT add steps after this that run scripts from the workspace
-    (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual
-    fork code execution vulnerability. See:
+    (e.g., ./build.sh, pwsh ./script.ps1). That would create a code
+    execution vulnerability. See:
     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
 
 .NOTES
@@ -48,11 +42,9 @@ if (-not $env:PR_NUMBER -or $env:PR_NUMBER -eq '0') {
 
 $PrNumber = $env:PR_NUMBER
 
-# ── Verify PR author has write access ────────────────────────────────────────
-# workflow_dispatch runs with GITHUB_TOKEN. Only check out code from trusted
-# authors of same-repo PRs. Fork PRs are handled by pull_request_target instead.
+# ── Verify PR is same-repo and author has write access ───────────────────────
 
-$PrInfo = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY --json author,isCrossRepository --jq '{author: .author.login, isFork: .isCrossRepository}'  | ConvertFrom-Json
+$PrInfo = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY --json author,isCrossRepository --jq '{author: .author.login, isFork: .isCrossRepository}' | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to fetch PR #$PrNumber metadata"
     exit 1
@@ -78,8 +70,6 @@ if ($Permission -notin $AllowedRoles) {
 Write-Host "✅ PR #$PrNumber by '$($PrInfo.author)' ($Permission access, same-repo)"
 
 # ── Save base branch SHA ─────────────────────────────────────────────────────
-# Must be captured BEFORE checkout replaces HEAD.
-# Exported for potential use by downstream platform steps (e.g., checkout_pr_branch.cjs)
 
 $BaseSha = git rev-parse HEAD
 if ($LASTEXITCODE -ne 0) {
@@ -87,6 +77,7 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 Add-Content -Path $env:GITHUB_ENV -Value "BASE_SHA=$BaseSha"
+Write-Host "Base branch SHA: $BaseSha"
 
 # ── Checkout PR branch ──────────────────────────────────────────────────────
 
@@ -99,17 +90,18 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "✅ Checked out PR #$PrNumber"
 git log --oneline -1
 
-# ── Restore .github/ from base branch ────────────────────────────────────────
-# This script only runs for workflow_dispatch (other triggers use the platform's
-# checkout_pr_branch.cjs instead). For workflow_dispatch the platform checkout is
-# skipped, so this restore IS the final workspace state.
-# rm -rf first to prevent fork-added files from surviving the restore.
+# ── Merge base branch into PR branch ────────────────────────────────────────
+# Produces the same combined state as a pull_request merge commit:
+# PR's changes + anything new on main. If the PR modifies a skill, the PR's
+# version wins. If it doesn't, main's version is used. This lets contributors
+# iterate on skills via workflow_dispatch while keeping everything else current.
 
-if (Test-Path '.github/') { Remove-Item -Recurse -Force '.github/' }
-
-git checkout $BaseSha -- .github/ 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Restored .github/ from base branch ($BaseSha)"
+Write-Host "Merging base branch ($BaseSha) into PR branch..."
+git merge $BaseSha --no-edit 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "⚠️ Merge conflict — PR may have conflicts with the base branch."
+    Write-Host "   The agent will run with the PR branch as-is (without base branch updates)."
+    git merge --abort 2>&1
 } else {
-    Write-Host "⚠️ Could not restore .github/ from base branch — files may come from the PR branch"
+    Write-Host "✅ Merged base branch into PR — workspace has PR changes + latest main"
 }
