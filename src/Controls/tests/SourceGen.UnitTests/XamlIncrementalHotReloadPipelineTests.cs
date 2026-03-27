@@ -1324,6 +1324,60 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 }
 
 	[Fact]
+	public void ConverterResourceAdded_UCEmitsNewInstance()
+	{
+		// Adding a converter resource (custom type) should emit a new instance in UC.
+		// Previously, custom types returned null from BuildResourceValueExpression and were skipped.
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class StatusColorConverter : Microsoft.Maui.Controls.IValueConverter
+				{
+					public object? Convert(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+					public object? ConvertBack(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+				}
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <local:StatusColorConverter x:Key="StatusConverter" />
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// UC must add the converter resource to the dictionary
+		Assert.Contains("StatusConverter", uc, StringComparison.Ordinal);
+		Assert.Contains("new global::TestApp.StatusColorConverter()", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void ConverterSwap_UCCompilesCleanly()
 	{
 		// Swapping StaticResource converter key in a Binding should produce

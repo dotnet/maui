@@ -741,6 +741,15 @@ static class UpdateComponentCodeWriter
 			return BuildTypeDescriptorExpression(rawValue, fqName);
 		}
 
+		// For custom types (converters, etc.) with no value content,
+		// emit a new instance if the type has a parameterless constructor
+		if (element.CollectionItems.Count == 0 || element.CollectionItems.All(c => c is not ValueNode))
+		{
+			var hasParameterlessCtor = typeSymbol.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public);
+			if (hasParameterlessCtor)
+				return $"new {fqName}()";
+		}
+
 		return null;
 	}
 
