@@ -495,7 +495,21 @@ function Get-TestResultFromOutput {
 
     $content = Get-Content $LogFile -Raw
 
-    # Check for build failures first (before any test results)
+    # Check for environment/infrastructure errors (not real test failures)
+    $envErrorPatterns = @(
+        @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
+        @{ Pattern = "APP_LAUNCH_FAILURE|exit code:?\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
+        @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start" }
+        @{ Pattern = "no such element.*could not be located"; Message = "Test element not found (app may not have loaded)" }
+    )
+    foreach ($envErr in $envErrorPatterns) {
+        if ($content -match $envErr.Pattern) {
+            return @{ Passed = $false; EnvError = $true; Error = $envErr.Message; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
+        }
+    }
+
+    # Check for build failures (before any test results)
     if ($content -match "Build FAILED" -or $content -match "Build failed with exit code" -or $content -match "error MSB\d+" -or $content -match "error CS\d+") {
         return @{ Passed = $false; Error = "Build failed before tests could run"; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
     }
@@ -557,7 +571,31 @@ function Get-TestResultFromOutput {
         elseif ($content -match "Failed:\s*(\d+)") { $failCount = [int]$matches[1] }
         if ($content -match "^\s+Passed:\s*(\d+)") { $passCount = [int]$matches[1] }
         if ($content -match "^\s+Skipped:\s*(\d+)") { $skipped = [int]$matches[1] }
-        return @{ Passed = $false; FailCount = $failCount; PassCount = $passCount; Failed = $failCount; Total = $failCount + $passCount + $skipped; Skipped = $skipped }
+
+        # Extract failure details: test name, duration, error message
+        $failureDetails = @()
+        # Match: "Failed TestName [duration]" followed by "Error Message:" block
+        $failedTestMatches = [regex]::Matches($content, '(?m)^\s*Failed\s+(\S+)\s*\[([^\]]+)\]')
+        foreach ($m in $failedTestMatches) {
+            $failureDetails += "$($m.Groups[1].Value) [$($m.Groups[2].Value)]"
+        }
+        # Extract error messages
+        $errorMsgMatches = [regex]::Matches($content, '(?ms)Error Message:\s*\n\s*(.+?)(?=\n\s*Stack Trace:|\n\s*$|\n\s*\d+\))')
+        $errorMessages = @()
+        foreach ($m in $errorMsgMatches) {
+            $msg = $m.Groups[1].Value.Trim()
+            if ($msg.Length -gt 200) { $msg = $msg.Substring(0, 200) + "..." }
+            $errorMessages += $msg
+        }
+
+        $failureReason = if ($failureDetails.Count -gt 0) { $failureDetails -join "; " } else { $null }
+        $failureMessage = if ($errorMessages.Count -gt 0) { $errorMessages -join "; " } else { $null }
+
+        return @{
+            Passed = $false; FailCount = $failCount; PassCount = $passCount; Failed = $failCount
+            Total = $failCount + $passCount + $skipped; Skipped = $skipped
+            FailureReason = $failureReason; FailureMessage = $failureMessage
+        }
     }
 
     # Check for "Test Run Successful" (dotnet test)
@@ -989,11 +1027,10 @@ function Write-MarkdownReport {
         [hashtable]$WithFixResult
     )
     
-    $status = if ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
-    $woActual = if ($FailedWithoutFix) { "FAIL" } else { "PASS" }
-    $woResult = if ($FailedWithoutFix) { "✅" } else { "❌" }
-    $wActual = if ($PassedWithFix) { "PASS" } else { "FAIL" }
-    $wResult = if ($PassedWithFix) { "✅" } else { "❌" }
+    # Check for environment errors in results
+    $hasEnvError = ($withoutFixResults | Where-Object { $_.EnvError }) -or ($withFixResults | Where-Object { $_.EnvError })
+    
+    $status = if ($hasEnvError) { "⚠️ ENV ERROR" } elseif ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
     $mergeBaseShort = if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { "$MergeBase" }
 
     $lines = @()
@@ -1015,8 +1052,48 @@ function Write-MarkdownReport {
     $lines += ""
     $lines += "| Step | Expected | Actual | Result |"
     $lines += "|------|----------|--------|--------|"
-    $lines += "| Tests WITHOUT fix | FAIL | $woActual | $woResult |"
-    $lines += "| Tests WITH fix | PASS | $wActual | $wResult |"
+
+    # Without fix row
+    $woResult = $withoutFixResults | Select-Object -First 1
+    if ($woResult.EnvError) {
+        $lines += "| Without fix | FAIL | ENV ERROR | ⚠️ |"
+    } elseif ($FailedWithoutFix) {
+        $lines += "| Without fix | FAIL | FAIL | ✅ |"
+    } else {
+        $lines += "| Without fix | FAIL | PASS | ❌ |"
+    }
+
+    # With fix row
+    $wResult = $withFixResults | Select-Object -First 1
+    if ($wResult.EnvError) {
+        $lines += "| With fix | PASS | ENV ERROR | ⚠️ |"
+    } elseif ($PassedWithFix) {
+        $lines += "| With fix | PASS | PASS | ✅ |"
+    } else {
+        $lines += "| With fix | PASS | FAIL | ❌ |"
+    }
+
+    # Show failure details if any
+    $allResults = @($withoutFixResults) + @($withFixResults)
+    $detailLines = @()
+    foreach ($r in $allResults) {
+        if ($r.EnvError -and $r.Error) {
+            $detailLines += "- ⚠️ **Environment error:** $($r.Error)"
+        }
+        if ($r.FailureReason) {
+            $detailLines += "- ❌ **Failed:** $($r.FailureReason)"
+        }
+        if ($r.FailureMessage) {
+            $detailLines += "- 📋 **Error:** $($r.FailureMessage)"
+        }
+    }
+    if ($detailLines.Count -gt 0) {
+        $lines += ""
+        $lines += "#### Details"
+        $lines += ""
+        $lines += ($detailLines | Select-Object -Unique)
+    }
+
     $lines += ""
     $lines += "#### Fix Files Reverted"
     $lines += ""
@@ -1030,20 +1107,6 @@ function Write-MarkdownReport {
         foreach ($f in $NewFiles) {
             $lines += "- ``$f``"
         }
-    }
-    $lines += ""
-    $lines += "---"
-    $lines += ""
-    $lines += "#### Per-Test Results"
-    $lines += ""
-    $lines += "| Type | Test | Without Fix | With Fix |"
-    $lines += "|------|------|-------------|----------|"
-    foreach ($t in $AllDetectedTests) {
-        $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
-        $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
-        $woS = if ($wo -and -not $wo.Passed) { "FAIL ✅" } else { "PASS ❌" }
-        $wS = if ($w -and $w.Passed) { "PASS ✅" } else { "FAIL ❌" }
-        $lines += "| $($t.Type) | $($t.TestName) | $woS | $wS |"
     }
     $lines += ""
     $lines += "---"
