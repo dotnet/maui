@@ -18,6 +18,15 @@ namespace Microsoft.Maui.Handlers
 
 			_editor = searchBar.GetSearchTextField();
 
+			// On iOS/MacCatalyst 26+, UISearchBar defaults InsetsLayoutMarginsFromSafeArea to
+			// true, which causes an unexpected left margin equal to the safe area inset when
+			// the search bar is placed inside a Grid in iPad windowed/split-screen mode (#34551).
+			// Setting this once at creation is sufficient because UIKit respects the value for
+			// the lifetime of the view and does not reset it internally.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				searchBar.InsetsLayoutMarginsFromSafeArea = false;
+			}
 
 			return searchBar;
 		}
