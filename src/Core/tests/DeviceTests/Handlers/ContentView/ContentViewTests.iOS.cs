@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 		{
 			// Verify that removing a subview with an active clip mask does not throw
 			// ObjectDisposedException when the underlying CAShapeLayer is already disposed.
-			// Regression test for https://github.com/FFIDX-Success/ATP-Support/issues/561
+			// Related: https://github.com/dotnet/macios/issues/10562
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var contentView = new Microsoft.Maui.Platform.ContentView();
@@ -130,11 +130,11 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 				contentView.Clip = new BorderStrokeStub();
 				contentView.LayoutSubviews();
 
-				// Dispose the content mask's native handle (simulating iOS deallocating the layer)
-				if (content.Layer.Mask is CAShapeLayer mask)
-				{
-					mask.Dispose();
-				}
+				// Verify the mask was created, then dispose its native handle
+				// (simulating iOS deallocating the layer during view teardown)
+				var mask = Assert.IsType<CAShapeLayer>(content.Layer.Mask);
+				mask.Dispose();
+				Assert.True(mask.Handle == IntPtr.Zero);
 
 				// This should not throw ObjectDisposedException
 				var ex = Record.Exception(() => content.RemoveFromSuperview());
