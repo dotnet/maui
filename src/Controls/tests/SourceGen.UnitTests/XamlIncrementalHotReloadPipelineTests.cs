@@ -1061,6 +1061,96 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.DoesNotContain("SetValue", uc, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void ResourceAdded_UCDoesNotEmitUnreachableCode()
+	{
+		// Adding a resource in ContentPage.Resources should not produce CS0162 (unreachable code)
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Must contain __version = 1 (version was incremented)
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// Must NOT have "return;" before __version assignment (causes CS0162)
+		var versionIdx = uc!.IndexOf("__version = 1", StringComparison.Ordinal);
+		var bodyStart = uc.IndexOf("{", uc.IndexOf("__version == 0"), StringComparison.Ordinal);
+		var bodySection = uc.Substring(bodyStart, versionIdx - bodyStart);
+		Assert.DoesNotContain("return;", bodySection, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceRemoved_UCDoesNotEmitUnreachableCode()
+	{
+		// Removing a resource from ContentPage.Resources should not produce CS0162
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		var versionIdx = uc!.IndexOf("__version = 1", StringComparison.Ordinal);
+		var bodyStart = uc.IndexOf("{", uc.IndexOf("__version == 0"), StringComparison.Ordinal);
+		var bodySection = uc.Substring(bodyStart, versionIdx - bodyStart);
+		Assert.DoesNotContain("return;", bodySection, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
 	// Helpers
 	// -----------------------------------------------------------------------

@@ -255,8 +255,7 @@ static class UpdateComponentCodeWriter
 
 		if (!isLayout && contentPropertyName == null)
 		{
-			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — skipped");
 			return;
 		}
 
@@ -627,8 +626,7 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine($"this.ClearValue({rootType.ToFQDisplayString()}.{bpFieldName});");
 				return;
 			}
-			codeWriter.WriteLine($"// Property '{propName}' cleared on root — fallback to runtime reload");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");
 			return;
 		}
 
@@ -636,8 +634,7 @@ static class UpdateComponentCodeWriter
 		{
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
-			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — skipped (not yet supported)");
 			return;
 		}
 
@@ -646,8 +643,7 @@ static class UpdateComponentCodeWriter
 
 		if (valueExpr == null)
 		{
-			codeWriter.WriteLine($"// Cannot encode root '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Cannot encode root '{propName}' = \"{EscapeString(rawValue)}\" inline — skipped");
 			return;
 		}
 
@@ -683,8 +679,7 @@ static class UpdateComponentCodeWriter
 					return;
 				}
 			}
-			codeWriter.WriteLine($"// Property '{propName}' cleared — fallback to runtime reload");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Property '{propName}' cleared — skipped (no BP found)");
 			return;
 		}
 
@@ -702,8 +697,7 @@ static class UpdateComponentCodeWriter
 		{
 			if (nodeType != null && TryEmitMarkupNodeChange(codeWriter, propDiff, nodeType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
-			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — skipped (not yet supported)");
 			return;
 		}
 
@@ -712,9 +706,8 @@ static class UpdateComponentCodeWriter
 
 		if (valueExpr == null)
 		{
-			// Cannot encode value inline — use runtime fallback
-			codeWriter.WriteLine($"// Cannot encode '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback to runtime reload");
-			codeWriter.WriteLine("return;");
+			// Cannot encode value inline — skip this property
+			codeWriter.WriteLine($"// Cannot encode '{propName}' = \"{EscapeString(rawValue)}\" inline — skipped");
 			return;
 		}
 
@@ -757,8 +750,7 @@ static class UpdateComponentCodeWriter
 			if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out declaringType)
 				|| declaringType == null)
 			{
-				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' — fallback");
-				codeWriter.WriteLine("return;");
+				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' — skipped");
 				return;
 			}
 		}
@@ -767,8 +759,7 @@ static class UpdateComponentCodeWriter
 		var bpField = FindStaticField(declaringType, bpFieldName);
 		if (bpField == null)
 		{
-			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' — skipped");
 			return;
 		}
 
@@ -779,8 +770,7 @@ static class UpdateComponentCodeWriter
 			var markupOwner = elementType ?? declaringType;
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, markupOwner, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
-			codeWriter.WriteLine($"// Complex attached property '{propName}' — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Complex attached property '{propName}' — skipped");
 			return;
 		}
 
@@ -796,8 +786,7 @@ static class UpdateComponentCodeWriter
 
 		if (valueExpr == null)
 		{
-			codeWriter.WriteLine($"// Cannot encode attached '{propName}' = \"{EscapeString(rawValue)}\" — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Cannot encode attached '{propName}' = \"{EscapeString(rawValue)}\" — skipped");
 			return;
 		}
 
