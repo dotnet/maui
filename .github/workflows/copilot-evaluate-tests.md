@@ -14,17 +14,13 @@ on:
         description: 'PR number to evaluate'
         required: true
         type: number
-  roles: all
 
 if: >-
-  (github.event_name == 'pull_request_target' &&
-   github.event.pull_request.draft == false &&
-   contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)) ||
+  (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
   github.event_name == 'workflow_dispatch' ||
   (github.event_name == 'issue_comment' &&
    github.event.issue.pull_request &&
-   startsWith(github.event.comment.body, '/evaluate-tests') &&
-   contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+   startsWith(github.event.comment.body, '/evaluate-tests'))
 
 permissions:
   contents: read
@@ -114,7 +110,7 @@ If the file is **missing**, the fork PR branch is likely not rebased on the late
 
 ❌ **Cannot evaluate**: this PR's branch does not include the evaluate-pr-tests skill (`.github/skills/evaluate-pr-tests/SKILL.md` is missing).
 
-**Fix**: rebase your fork on the latest `main` branch, or use the **workflow_dispatch** trigger (Actions tab → "Evaluate PR Tests" → "Run workflow" → enter PR number) which handles this automatically.
+**Fix**: rebase your fork on the latest `main` branch and push again. The evaluation will trigger automatically once the skill file is available.
 ```
 
 Then stop — do not proceed with the evaluation.

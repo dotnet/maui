@@ -3,9 +3,9 @@
     Shared PR checkout for gh-aw (GitHub Agentic Workflows).
 
 .DESCRIPTION
-    Checks out a PR branch and merges the base branch to produce the same
-    combined state as a pull_request merge commit. This gives the agent the
-    PR's code changes plus anything new on main (skills, instructions, etc.).
+    Checks out a PR branch and restores trusted agent infrastructure (skills,
+    instructions) from the base branch. This gives the agent the PR's code
+    changes with the latest skills and instructions from main.
 
     This script is only invoked for workflow_dispatch triggers. For
     pull_request_target and issue_comment, the gh-aw platform's
@@ -90,18 +90,17 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "✅ Checked out PR #$PrNumber"
 git log --oneline -1
 
-# ── Merge base branch into PR branch ────────────────────────────────────────
-# Produces the same combined state as a pull_request merge commit:
-# PR's changes + anything new on main. If the PR modifies a skill, the PR's
-# version wins. If it doesn't, main's version is used. This lets contributors
-# iterate on skills via workflow_dispatch while keeping everything else current.
+# ── Restore agent infrastructure from base branch ────────────────────────────
+# Replace skills and instructions with base branch versions to ensure the agent
+# always uses trusted infrastructure from main. Uses git checkout to read files
+# directly from the commit tree — works in shallow clones (no history traversal).
 
-Write-Host "Merging base branch ($BaseSha) into PR branch..."
-git merge $BaseSha --no-edit 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "⚠️ Merge conflict — PR may have conflicts with the base branch."
-    Write-Host "   The agent will run with the PR branch as-is (without base branch updates)."
-    git merge --abort 2>&1
+if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
+if (Test-Path '.github/instructions/') { Remove-Item -Recurse -Force '.github/instructions/' }
+
+git checkout $BaseSha -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ Restored agent infrastructure from base branch ($BaseSha)"
 } else {
-    Write-Host "✅ Merged base branch into PR — workspace has PR changes + latest main"
+    Write-Host "⚠️ Could not restore agent infrastructure from base branch — files may come from the PR branch"
 }
