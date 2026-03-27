@@ -140,7 +140,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return;
 				}
 
-				var itemsCount = items.Count;
+				// When looping is enabled in CarouselView, Items. Count returns
+				// the FakeCount instead of the actual item count.
+				// Use items.Count for CollectionView to account for this
+				// behavior: otherwise, use ItemCount for other types.
+				var itemsCount = VirtualView is CollectionView ? items.Count : ItemCount;
 
 				if (itemsCount == 0)
 				{
