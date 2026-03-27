@@ -85,30 +85,37 @@ internal static class XamlIncrementalHotReloadHandler
 
 			foreach (var instance in instances)
 			{
-				try
-				{
-					System.Diagnostics.Debug.WriteLine(
-						$"[XamlIncrementalHotReload] Calling UpdateComponent() on {type.Name} (instance {instance.GetHashCode():X8})");
+				var capturedInstance = instance;
+				var capturedMethod = ucMethod;
+				var capturedType = type;
 
-					ucMethod.Invoke(instance, null);
-				}
-#pragma warning disable CA1031 // Do not catch general exception types
-				catch (Exception ex)
+				// UI mutations must run on the main thread.
+				global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 				{
-					// Fallback: attempt full-page reload per spec (clear BindingContext → InitializeComponent → restore).
-					System.Diagnostics.Debug.WriteLine(
-						$"[XamlIncrementalHotReload] UpdateComponent failed for {type.Name}: {ex.InnerException?.Message ?? ex.Message}. Falling back to full reload.");
 					try
 					{
-						FallbackReload(instance, type);
+						System.Diagnostics.Debug.WriteLine(
+							$"[XamlIncrementalHotReload] Calling UpdateComponent() on {capturedType.Name} (instance {capturedInstance.GetHashCode():X8})");
+
+						capturedMethod.Invoke(capturedInstance, null);
 					}
-					catch (Exception fallbackEx)
+#pragma warning disable CA1031 // Do not catch general exception types
+					catch (Exception ex)
 					{
 						System.Diagnostics.Debug.WriteLine(
-							$"[XamlIncrementalHotReload] Fallback reload also failed for {type.Name}: {fallbackEx.Message}");
+							$"[XamlIncrementalHotReload] UpdateComponent failed for {capturedType.Name}: {ex.InnerException?.Message ?? ex.Message}. Falling back to full reload.");
+						try
+						{
+							FallbackReload(capturedInstance, capturedType);
+						}
+						catch (Exception fallbackEx)
+						{
+							System.Diagnostics.Debug.WriteLine(
+								$"[XamlIncrementalHotReload] Fallback reload also failed for {capturedType.Name}: {fallbackEx.Message}");
+						}
 					}
-				}
 #pragma warning restore CA1031
+				});
 			}
 		}
 	}
