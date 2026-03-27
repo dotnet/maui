@@ -151,6 +151,27 @@ namespace Microsoft.Maui.Platform
 					_webViewOwnsGesture = _touchStartedInWebView &&
 						RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canScrollUpAtStart) &&
 						canScrollUpAtStart;
+					if (_webViewOwnsGesture)
+					{
+						// Forward to base so SwipeRefreshLayout records the initial pointer ID
+						// and Y position – required for correct mid-gesture intercept if the
+						// web content scrolls to the top during the same drag.
+						base.OnInterceptTouchEvent(ev);
+						return false;
+					}
+					break;
+				case MotionEventActions.Move:
+					// Re-evaluate scrollability so that once the WebView reaches the top,
+					// RefreshLayout can start intercepting mid-gesture.
+					if (_touchStartedInWebView && _webViewOwnsGesture && _activeTouchWebView is not null)
+					{
+						if (!RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canStillScrollUp) || !canStillScrollUp)
+						{
+							_webViewOwnsGesture = false;
+						}
+					}
+					if (_touchStartedInWebView && _webViewOwnsGesture)
+						return false;
 					break;
 				case MotionEventActions.Cancel:
 				case MotionEventActions.Up:
@@ -158,11 +179,6 @@ namespace Microsoft.Maui.Platform
 					_touchStartedInWebView = false;
 					_webViewOwnsGesture = false;
 					break;
-			}
-
-			if (_touchStartedInWebView && _webViewOwnsGesture)
-			{
-				return false;
 			}
 
 			return base.OnInterceptTouchEvent(ev);
