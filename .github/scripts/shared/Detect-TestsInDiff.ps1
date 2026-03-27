@@ -313,14 +313,21 @@ foreach ($key in @($testGroups.Keys)) {
 
     # Try to find added [Fact] or [Test] methods from the diff
     $addedMethods = @()
+    # Cache PR files API response once before the inner loop
+    if ($PRNumber -and -not $script:_cachedPRFiles) {
+        $script:_cachedPRFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate 2>$null | ConvertFrom-Json
+        if (-not $script:_cachedPRFiles) { $script:_cachedPRFiles = @() }
+    }
+    $effectiveMergeBase = if ($mergeBase) { $mergeBase } else { "HEAD~1" }
     foreach ($file in $group.Files) {
         $patch = $null
-        if ($PRNumber) {
-            # Get per-file patch from GitHub API
-            $patch = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --jq ".[] | select(.filename == `"$file`") | .patch" 2>$null
-        } else {
+        if ($PRNumber -and $script:_cachedPRFiles) {
+            # Look up patch from cached API response
+            $fileEntry = $script:_cachedPRFiles | Where-Object { $_.filename -eq $file } | Select-Object -First 1
+            $patch = if ($fileEntry) { $fileEntry.patch } else { $null }
+        } elseif (-not $PRNumber) {
             # Try from git diff
-            $patch = git diff $mergeBase HEAD -- $file 2>$null
+            $patch = git diff $effectiveMergeBase HEAD -- $file 2>$null
         }
 
         if ($patch) {

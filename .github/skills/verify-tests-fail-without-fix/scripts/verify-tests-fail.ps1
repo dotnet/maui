@@ -27,7 +27,7 @@
 
 .PARAMETER Platform
     Target platform: "android", "ios", "catalyst" (MacCatalyst), or "windows"
-    Required for UITest and DeviceTest types. Optional for UnitTest and XamlUnitTest.
+    Required for all test types.
 
 .PARAMETER TestType
     Explicit test type override. If not provided, auto-detected from changed files.
@@ -833,7 +833,9 @@ if ($DetectedFixFiles.Count -eq 0) {
         Write-Host "─────────────────────────────────────────────────" -ForegroundColor DarkGray
         Write-Host "$icon Test $testIndex/$($AllDetectedTests.Count): [$($testEntry.Type)] $($testEntry.TestName)" -ForegroundColor Cyan
 
-        $TestLog = Join-Path $OutputPath "test-failure-$($testEntry.TestName).log"
+        $sanitizedName = ($testEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
+        if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
+        $TestLog = Join-Path $OutputPath "test-failure-$sanitizedName.log"
 
         $testOutputLog = Invoke-TestRun `
             -DetectedTestType $testEntry.Type `
@@ -842,7 +844,7 @@ if ($DetectedFixFiles.Count -eq 0) {
             -DetectedProjectPath $testEntry.ProjectPath `
             -LogFile $TestLog
 
-        $testResult = Get-TestResultFromOutput -LogFile $testOutputLog
+        $testResult = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $testEntry.Filter
         $testResult.TestName = $testEntry.TestName
         $testResult.TestType = $testEntry.Type
         $allResults += $testResult
@@ -1168,7 +1170,9 @@ foreach ($testEntry in $AllDetectedTests) {
     Write-Log ""
     Write-Log "--- Test $testIndex/$($AllDetectedTests.Count): $icon [$($testEntry.Type)] $($testEntry.TestName) ---"
 
-    $testLogFile = Join-Path $OutputPath "test-without-fix-$($testEntry.TestName).log"
+    $sanitizedName = ($testEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
+    if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
+    $testLogFile = Join-Path $OutputPath "test-without-fix-$sanitizedName.log"
 
     $testOutputLog = Invoke-TestRun `
         -DetectedTestType $testEntry.Type `
@@ -1177,7 +1181,7 @@ foreach ($testEntry in $AllDetectedTests) {
         -DetectedProjectPath $testEntry.ProjectPath `
         -LogFile $testLogFile
 
-    $result = Get-TestResultFromOutput -LogFile $testOutputLog
+    $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $testEntry.Filter
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
     $withoutFixResults += $result
@@ -1234,7 +1238,9 @@ foreach ($testEntry in $AllDetectedTests) {
     Write-Log ""
     Write-Log "--- Test $testIndex/$($AllDetectedTests.Count): $icon [$($testEntry.Type)] $($testEntry.TestName) ---"
 
-    $testLogFile = Join-Path $OutputPath "test-with-fix-$($testEntry.TestName).log"
+    $sanitizedName = ($testEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
+    if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
+    $testLogFile = Join-Path $OutputPath "test-with-fix-$sanitizedName.log"
 
     $testOutputLog = Invoke-TestRun `
         -DetectedTestType $testEntry.Type `
@@ -1243,7 +1249,7 @@ foreach ($testEntry in $AllDetectedTests) {
         -DetectedProjectPath $testEntry.ProjectPath `
         -LogFile $testLogFile
 
-    $result = Get-TestResultFromOutput -LogFile $testOutputLog
+    $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $testEntry.Filter
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
     $withFixResults += $result

@@ -141,8 +141,7 @@ The script auto-detects which mode to use based on whether fix files are present
 3. Auto-detects test classes from changed test files
 4. Routes to the appropriate test runner
 5. Runs tests (should FAIL to prove they catch the bug)
-6. **Updates PR labels** based on result
-7. Reports result
+6. Reports result
 
 **Full Verification Mode (fix files detected):**
 1. Fetches base branch from origin to ensure accurate diff
@@ -155,27 +154,13 @@ The script auto-detects which mode to use based on whether fix files are present
 8. **Generates markdown reports**:
    - `CustomAgentLogsTmp/TestValidation/verification-report.md` - Full detailed report
    - `CustomAgentLogsTmp/PRState/verification-report.md` - Validate section for agent
-9. **Updates PR labels** based on result
-10. Reports result
+9. Reports result
 
-## PR Labels
-
-The skill automatically manages two labels on the PR to indicate verification status:
-
-| Label | Color | When Applied |
-|-------|-------|--------------|
-| `s/ai-reproduction-confirmed` | 🟢 Green (#2E7D32) | Tests correctly FAIL without fix (AI verified tests catch the bug) |
-| `s/ai-reproduction-failed` | 🟠 Orange (#E65100) | Tests PASS without fix (AI verified tests don't catch the bug) |
-
-**Behavior:**
-- When verification passes, adds `s/ai-reproduction-confirmed` and removes `s/ai-reproduction-failed` if present
-- When verification fails, adds `s/ai-reproduction-failed` and removes `s/ai-reproduction-confirmed` if present
-- If a PR is re-verified after fixing tests, labels are updated accordingly
-- No label = AI hasn't verified tests yet
+**Note:** PR label management (`s/ai-reproduction-confirmed` / `s/ai-reproduction-failed`) is handled by `Review-PR.ps1`, not by this script.
 
 ## Output Files
 
-The skill generates output files under `CustomAgentLogsTmp/PRState/<PRNumber>/verify-tests-fail/`:
+The skill generates output files under `CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/gate/verify-tests-fail/`:
 
 | File | Description |
 |------|-------------|
@@ -201,7 +186,9 @@ CustomAgentLogsTmp/
 │   └── test-output.log
 └── PRState/
     └── 27847/
-        └── verify-tests-fail/
+        └── PRAgent/
+            └── gate/
+                └── verify-tests-fail/
             ├── verification-report.md  # Full detailed report
             ├── verification-log.txt
             ├── test-without-fix.log

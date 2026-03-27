@@ -2,7 +2,8 @@
 
 > **⛔ This phase MUST pass before continuing to Try-Fix. If it fails, stop and inform user.**
 
-> 🚨 Gate verification MUST run via task agent — never inline.
+> In CI (Review-PR.ps1), the gate runs `verify-tests-fail.ps1` directly as a script step.
+> For manual usage, you can invoke it yourself or via a task agent.
 
 ---
 
@@ -35,7 +36,13 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
 2. **Select platform** — must be affected by bug AND available on host (see table above).
 
-3. **Run verification via task agent** (MUST use task agent — never inline):
+3. **Run verification** via `verify-tests-fail.ps1`:
+   ```bash
+   pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 \
+     -Platform {platform} -RequireFullVerification
+   ```
+   In CI, `Review-PR.ps1` calls this script directly. For manual usage, you can also invoke
+   it via a task agent for isolation:
    ```
    Invoke the `task` agent with this prompt:
 
@@ -45,8 +52,6 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
    Report back: Did tests FAIL without fix? Did tests PASS with fix? Final status?"
    ```
-
-**Why task agent?** Running inline allows substituting commands and fabricating results. Task agent runs in isolation.
 
 ---
 
@@ -97,7 +102,6 @@ No tests detected in PR. Suggest adding tests via `write-tests-agent`.
 
 ## Common Mistakes
 
-- ❌ Running inline — MUST use task agent
 - ❌ Adding verbose explanations to gate/content.md — use the exact template above
 - ❌ Copying gate results into try-fix/content.md or report/content.md — gate results belong ONLY in gate/content.md
 - ❌ Skipping gate because tests are device tests, not UI tests — the skill supports all test types
