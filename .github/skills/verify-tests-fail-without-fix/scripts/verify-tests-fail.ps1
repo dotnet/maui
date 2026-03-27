@@ -353,11 +353,17 @@ function Invoke-TestRun {
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             $scriptOutput | ForEach-Object { Write-Host $_ }
 
-            # Copy test-output.log to a unique file so subsequent runs don't overwrite it
+            # The actual test results are in test-output.log (written by BuildAndRunHostApp.ps1).
+            # Copy to a unique file immediately so the next run can't overwrite it.
             $sharedLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
             $uniqueLog = "$LogFile.testresult"
             if (Test-Path $sharedLog) {
                 Copy-Item $sharedLog $uniqueLog -Force
+                Write-Host "  📄 Test results saved to: $uniqueLog" -ForegroundColor Gray
+            } else {
+                Write-Host "  ⚠️ test-output.log not found — test may not have run" -ForegroundColor Yellow
+                # Fall back to the script output log
+                $uniqueLog = $LogFile
             }
             return $uniqueLog
         }
