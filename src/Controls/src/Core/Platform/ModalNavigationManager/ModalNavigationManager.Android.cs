@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
-		readonly List<string> _modals = [];
+		readonly Stack<string> _modals = [];
 
 		partial void InitializePlatform()
 		{
@@ -93,24 +93,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Task<Page> PopModalPlatformAsync(bool animated)
 		{
-			// If we are popping multiple pages and animation is disabled, 
-			// remove pages from the bottom of the stack to avoid visual flickering.
-			var poppingToRootWithoutAnimation = _isPoppingModalStackToRoot && !animated;
-			Page modal = poppingToRootWithoutAnimation ? _platformModalPages[0] : CurrentPlatformModalPage;
-
+			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
-			if (_modals.Count == 0)
-			{
-				return Task.FromResult(modal);
-			}
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
-			var dialogFragmentId = poppingToRootWithoutAnimation ? _modals[0] : _modals[^1];
-			if (poppingToRootWithoutAnimation)
-				_modals.RemoveAt(0);
-			else
-				_modals.RemoveAt(_modals.Count - 1);
 
+			var dialogFragmentId = _modals.Pop();
 			var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
 
 			// If for the dialog is null what we want to do?
@@ -131,7 +119,17 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				dialogFragment.DismissNow();
+				// When batch-dismissing modals (e.g., PopToRoot), use DismissNow() to
+				// remove the fragment synchronously. This prevents intermediate modals
+				// from briefly flashing on screen between sequential pops.
+				bool isBatchPopping = _window.Page is Shell shell
+					&& shell.CurrentItem?.CurrentItem?.IsPoppingModalStack == true;
+
+				if (isBatchPopping)
+					dialogFragment.DismissNow();
+				else
+					dialogFragment.Dismiss();
+
 				source.TrySetResult(modal);
 			}
 
@@ -190,7 +188,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 			var dialogFragmentId = AView.GenerateViewId().ToString();
-			_modals.Add(dialogFragmentId);
+			_modals.Push(dialogFragmentId);
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
 			if (animated)

@@ -217,7 +217,6 @@ namespace Microsoft.Maui.Controls
 		List<Page> _navStack = new List<Page> { null };
 		internal bool IsPushingModalStack { get; private set; }
 		internal bool IsPoppingModalStack { get; private set; }
-		internal bool IsPoppingModalStackToRoot { get; set; }
 
 		/// <summary>
 		/// Creates a new <see cref="ShellSection"/> instance.
@@ -1106,39 +1105,30 @@ namespace Microsoft.Maui.Controls
 				return returnedPage;
 			}
 
-			protected override async Task OnPopToRootAsync(bool animated)
+			protected override Task OnPopToRootAsync(bool animated)
 			{
-				_owner.IsPoppingModalStackToRoot = true;
-				try
+				if (!_owner.IsVisibleSection)
 				{
-					if (!_owner.IsVisibleSection)
-					{
-						await _owner.OnPopToRootAsync(animated);
-						return;
-					}
-
-					var shell = _owner.Shell;
-					var targetState =
-						ShellNavigationManager.GetNavigationState(
-							shell.CurrentItem,
-							_owner,
-							_owner.CurrentItem,
-							null,
-							null);
-
-					var navigationParameters = new ShellNavigationParameters()
-					{
-						Animated = animated,
-						TargetState = targetState,
-						PopAllPagesNotSpecifiedOnTargetState = true
-					};
-
-					await _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
+					return _owner.OnPopToRootAsync(animated);
 				}
-				finally
+
+				var shell = _owner.Shell;
+				var targetState =
+					ShellNavigationManager.GetNavigationState(
+						shell.CurrentItem,
+						_owner,
+						_owner.CurrentItem,
+						null,
+						null);
+
+				var navigationParameters = new ShellNavigationParameters()
 				{
-					_owner.IsPoppingModalStackToRoot = false;
-				}
+					Animated = animated,
+					TargetState = targetState,
+					PopAllPagesNotSpecifiedOnTargetState = true
+				};
+
+				return _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
 			}
 
 			protected override Task OnPushAsync(Page page, bool animated)
