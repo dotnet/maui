@@ -202,33 +202,19 @@ namespace Microsoft.Maui.Handlers
 		}
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
-			// Use WindowNative.GetWindowHandle directly (non-throwing) so the
-			// IntPtr.Zero guard below is reachable. GetWindowHandle() extension
-			// throws NullReferenceException when the handle is zero, which would
-			// make the early-return dead code and cause a regression during
-			// ConnectHandler or AppWindow.Changed.
 			var hwnd = WindowNative.GetWindowHandle(PlatformView);
 			if (hwnd == IntPtr.Zero)
-			{
 				return;
-			}
-
-			var bounds = hwnd.GetExtendedFrameBounds();
 
 			var size = appWindow.Size;
 			var pos = appWindow.Position;
 
 			if (appWindow.Presenter is OverlappedPresenter presenter &&
-			 presenter.IsMaximizable &&
-			 presenter.State == OverlappedPresenterState.Maximized &&
-			 bounds.Width > 0 && bounds.Height > 0)
+				presenter.State == OverlappedPresenterState.Maximized &&
+				PlatformMethods.TryGetExtendedFrameBounds(hwnd, out var dwmRect))
 			{
-				// If the window is maximized, we need to use the bounds of the window
-				// instead of the size and position of the app window.
-				// Only apply when GetExtendedFrameBounds returned a valid (non-empty) rect;
-				// if DWM failed (returned EmptyRect), keep the AppWindow values as fallback.
-				size = new SizeInt32((int)bounds.Width, (int)bounds.Height);
-				pos = new PointInt32((int)bounds.X, (int)bounds.Y);
+				size = new SizeInt32(dwmRect.Right - dwmRect.Left, dwmRect.Bottom - dwmRect.Top);
+				pos = new PointInt32(dwmRect.Left, dwmRect.Top);
 			}
 
 			var density = PlatformView.GetDisplayDensity();
