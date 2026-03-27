@@ -611,8 +611,8 @@ static class UpdateComponentCodeWriter
 
 	/// <summary>
 	/// Emits code to patch the page's <c>Resources</c> dictionary from the new XAML node.
-	/// Clears existing page-level resources, then re-adds all keyed resources from the new node.
-	/// <c>MergedDictionaries</c> (styles, etc.) are NOT affected by <c>Clear()</c>.
+	/// Removes old resource keys not present in the new XAML, then adds/updates all new keyed resources.
+	/// Tracks resource keys via <see cref="XamlComponentRegistry"/> so subsequent patches know what to remove.
 	/// </summary>
 	/// <returns><see langword="true"/> if resource emission was handled; <see langword="false"/> to fall through.</returns>
 	static bool TryEmitResourceDictionaryChange(
@@ -655,8 +655,19 @@ static class UpdateComponentCodeWriter
 		if (keyedResources.Count == 0)
 			return false;
 
-		// Clear page-level resources (not MergedDictionaries) and re-add all
-		codeWriter.WriteLine("this.Resources.Clear();");
+		// Remove old resource keys that are no longer in the new XAML
+		codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
+		using (PrePost.NewBlock(codeWriter))
+		{
+			// Build a set of new keys to check against
+			var newKeysList = string.Join(", ", keyedResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
+			codeWriter.WriteLine($"if (!new string[] {{ {newKeysList} }}.Contains(__rk))");
+			codeWriter.Indent++;
+			codeWriter.WriteLine("this.Resources.Remove(__rk);");
+			codeWriter.Indent--;
+		}
+
+		// Add/update all new keyed resources
 		foreach (var (key, elem) in keyedResources)
 		{
 			var valueExpr = BuildResourceValueExpression(elem, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
@@ -665,6 +676,10 @@ static class UpdateComponentCodeWriter
 			else
 				codeWriter.WriteLine($"// Cannot encode resource '{key}' — skipped");
 		}
+
+		// Register new key set for next patch
+		var keysArrayExpr = string.Join(", ", keyedResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
+		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
 
 		return true;
 	}

@@ -1190,6 +1190,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.NotNull(uc);
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
 		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
 		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 	}
 
@@ -1230,12 +1231,11 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var uc = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(uc);
-		// Uses Clear + re-add pattern — removed key won't be re-added
+		// Uses targeted remove — old keys not in new set are removed
 		Assert.Contains("Resources", uc, StringComparison.Ordinal);
-		Assert.Contains("Clear", uc, StringComparison.Ordinal);
+		Assert.Contains("Remove", uc, StringComparison.Ordinal);
 		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
-		// SecondaryColor should NOT be in the UC (it was removed)
-		Assert.DoesNotContain("SecondaryColor", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
 		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 	}
 
