@@ -56,16 +56,14 @@ namespace Microsoft.Maui.Handlers
 			if (entry.Background is ImageSourcePaint image)
 			{
 				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
 					.FireAndForget(handler);
 				return;
 			}
 
-			platformView.RemoveBackgroundLayer();
-
 			if (entry.Background.IsNullOrEmpty())
 			{
+				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;
 				return;
 			}
@@ -237,8 +235,8 @@ namespace Microsoft.Maui.Handlers
 
 					VirtualView.UpdateText(platformView.Text);
 				}
-			}	
-				
+			}
+
 			void OnEditingEnded(object? sender, EventArgs e)
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)

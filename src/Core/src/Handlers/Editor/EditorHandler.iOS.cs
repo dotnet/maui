@@ -92,16 +92,14 @@ namespace Microsoft.Maui.Handlers
 			if (editor.Background is ImageSourcePaint image)
 			{
 				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
 					.FireAndForget(handler);
 				return;
 			}
 
-			platformView.RemoveBackgroundLayer();
-
 			if (editor.Background.IsNullOrEmpty())
 			{
+				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;
 				return;
 			}
