@@ -48,10 +48,6 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Always reset the background so a previously-set color is never left "stuck",
-				// even when CoreWebView2 hasn't finished initializing yet.
-				platformWebView.DefaultBackgroundColor = Colors.Transparent.ToWindowsColor();
-
 				if (platformWebView.CoreWebView2 is not null)
 				{
 					platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Auto;
