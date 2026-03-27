@@ -206,11 +206,24 @@ public class TabbedPageManager
 
 	protected virtual void OnPagePropertyChanged(Page page, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == Page.TitleProperty.PropertyName ||
-			e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+		if (Element is null)
 		{
-			// Refresh the tab display via TabbedViewManager
-			_tabbedViewManager.RefreshTabs();
+			return;
+		}
+
+		var index = Element.Children.IndexOf(page);
+		if (index < 0)
+		{
+			return;
+		}
+
+		if (e.PropertyName == Page.TitleProperty.PropertyName)
+		{
+			_tabbedViewManager.UpdateTabTitle(index, page.Title);
+		}
+		else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+		{
+			_tabbedViewManager.UpdateTabIcon(index);
 		}
 	}
 
