@@ -189,10 +189,22 @@ $$"""
 								if (elem.Properties.TryGetValue(xKeyName, out var keyNode)
 									&& keyNode is ValueNode kv && kv.Value is string keyStr)
 								{
-									// Only register keys for value-type resources we can encode (Color, String, etc.)
-									// Skip custom types (converters, etc.) that IC creates via new()
+									// Register keys for resources we can encode in UC:
+									// Value-type resources have a single ValueNode child (Color, String, etc.)
 									if (elem.CollectionItems.Count == 1 && elem.CollectionItems[0] is ValueNode)
+									{
 										resourceKeys.Add(keyStr);
+									}
+									// Custom types (converters, etc.) with a public parameterless constructor
+									else if (elem.CollectionItems.Count == 0 || elem.CollectionItems.All(c => c is not ValueNode))
+									{
+										if (elem.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resTypeSymbol)
+											&& resTypeSymbol != null
+											&& resTypeSymbol.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public))
+										{
+											resourceKeys.Add(keyStr);
+										}
+									}
 								}
 							}
 						}
