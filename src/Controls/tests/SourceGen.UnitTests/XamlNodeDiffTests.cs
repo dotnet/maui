@@ -160,6 +160,23 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
+	public void AttachedPropertyChangedToBinding_ReturnsMarkupNodeDiff()
+	{
+		var old = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"0\" /></Grid>"));
+		var @new = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"{Binding RowIndex}\" /></Grid>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var nodeDiff = Assert.Single(diff.NodeChanges);
+		var propDiff = Assert.Single(nodeDiff.PropertyChanges);
+		Assert.Equal("Grid.Row", propDiff.PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, propDiff.Kind);
+		// Binding creates a MarkupNode, not a plain value
+		Assert.NotNull(propDiff.NewNode);
+	}
+
+	[Fact]
 	public void MultipleChangedProperties_ReturnsAllDiffs()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" TextColor=\"Blue\" />"));

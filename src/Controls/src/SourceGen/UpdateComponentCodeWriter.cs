@@ -493,7 +493,7 @@ static class UpdateComponentCodeWriter
 				{
 					// Attached property on a new element — use SetValue pattern
 					var syntheticDiff = new PropertyDiff(kvp.Key, PropertyDiffKind.Set, rawValue);
-					TryEmitAttachedPropertyChange(codeWriter, syntheticDiff, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					TryEmitAttachedPropertyChange(codeWriter, syntheticDiff, varName, typeSymbol, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 				}
 				else
 				{
@@ -689,19 +689,21 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Kind == Set
+		// Attached property detection: "Grid.Row" → DeclaringType.RowProperty
+		// Must be checked before generic MarkupNode handling, because the IC pipeline
+		// needs the declaring type (Grid) to resolve the BP field for SetBinding.
+		if (propName.Contains('.'))
+		{
+			TryEmitAttachedPropertyChange(codeWriter, propDiff, varName, nodeType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			return;
+		}
+
 		if (propDiff.NewNode != null)
 		{
 			if (nodeType != null && TryEmitMarkupNodeChange(codeWriter, propDiff, nodeType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
 			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
 			codeWriter.WriteLine("return;");
-			return;
-		}
-
-		// Attached property detection: "Grid.Row" → DeclaringType.RowProperty
-		if (propName.Contains('.'))
-		{
-			TryEmitAttachedPropertyChange(codeWriter, propDiff, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			return;
 		}
 
@@ -732,6 +734,7 @@ static class UpdateComponentCodeWriter
 		IndentedTextWriter codeWriter,
 		PropertyDiff propDiff,
 		string varName,
+		INamedTypeSymbol? elementType,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
@@ -770,9 +773,11 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Handle markup extension values (e.g., Grid.Row="{Binding RowIndex}")
+		// Use the element type (not declaring type) so IC pipeline resolves the attached BP via dotted XmlName
 		if (propDiff.NewNode != null)
 		{
-			if (TryEmitMarkupNodeChange(codeWriter, propDiff, declaringType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+			var markupOwner = elementType ?? declaringType;
+			if (TryEmitMarkupNodeChange(codeWriter, propDiff, markupOwner, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
 			codeWriter.WriteLine($"// Complex attached property '{propName}' — fallback");
 			codeWriter.WriteLine("return;");
@@ -907,7 +912,7 @@ static class UpdateComponentCodeWriter
 
 			// Markup extension (Binding, StaticResource, DynamicResource, etc.)
 			// Resolve the extension type and call the appropriate KnownMarkups handler
-			return TryEmitExpandedMarkupExtension(codeWriter, elementNode, propName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			return TryEmitExpandedMarkupExtension(codeWriter, elementNode, propDiff.PropertyName, ownerType, targetAccessor, isRoot, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 		}
 
 		// Fallback: bare string value from escape sequence {}{...}
@@ -1007,7 +1012,7 @@ static class UpdateComponentCodeWriter
 	static bool TryEmitExpandedMarkupExtension(
 		IndentedTextWriter codeWriter,
 		ElementNode elementNode,
-		string propName,
+		XmlName propertyXmlName,
 		INamedTypeSymbol ownerType,
 		string targetAccessor,
 		bool isRoot,
@@ -1052,8 +1057,7 @@ static class UpdateComponentCodeWriter
 			elementNode.TryProvideValue(captureWriter, ctx);
 
 			// Step 4: SetPropertyValue — emits the assignment to the parent
-			var xmlName = new XmlName("", propName);
-			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], xmlName, elementNode, ctx);
+			SetPropertyHelpers.SetPropertyValue(captureWriter, ctx.Variables[syntheticParent], propertyXmlName, elementNode, ctx);
 		}
 		catch
 		{

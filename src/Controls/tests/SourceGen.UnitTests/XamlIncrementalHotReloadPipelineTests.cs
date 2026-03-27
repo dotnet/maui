@@ -375,6 +375,32 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V26: Grid with attached property using binding (before)
+	const string PageXamlV26_GridAttachedWithBinding = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="TestApp.MyViewModel">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="0" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V27: Grid with attached property changed to binding
+	const string PageXamlV27_GridAttachedBindingChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="TestApp.MyViewModel">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="{Binding RowIndex}" />
+		    </Grid>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -1002,6 +1028,37 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("ColumnProperty", uc, StringComparison.Ordinal);
 		// Should NOT use direct property assignment (element.Grid.Row = value)
 		Assert.DoesNotContain("__uc_0.Grid.Row", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyWithBinding_UCEmitsSetBinding()
+	{
+		// Changing Grid.Row from "0" to "{Binding RowIndex}" should emit a SetBinding or Binding call
+		XamlHotReloadState.Reset();
+		const string viewModel = """
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					public int RowIndex { get; set; }
+				}
+			}
+			""";
+		var (_, run2) = TwoRunsWithSource(
+			PageXamlV26_GridAttachedWithBinding,
+			PageXamlV27_GridAttachedBindingChanged,
+			additionalSource: viewModel);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Should emit a SetBinding with Grid.RowProperty on the Label
+		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("Grid.RowProperty", uc, StringComparison.Ordinal);
+		Assert.Contains("RowIndex", uc, StringComparison.Ordinal);
+		// Target element should be Label (not Grid)
+		Assert.Contains("Label", uc, StringComparison.Ordinal);
+		// Should NOT use SetValue (that's for literal values, not bindings)
+		Assert.DoesNotContain("SetValue", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
