@@ -12,7 +12,8 @@ namespace Maui.Controls.Sample.Issues
 			var boxViewLabel = new Label
 			{
 				Text = "BoxView with different corner radius values on each corner",
-				HorizontalOptions = LayoutOptions.Center
+				HorizontalOptions = LayoutOptions.Center,
+				AutomationId = "Issue34402Label"
 			};
 
 			var boxView = new BoxView
@@ -21,14 +22,14 @@ namespace Maui.Controls.Sample.Issues
 				Color = Colors.CornflowerBlue,
 				WidthRequest = 200,
 				HeightRequest = 200,
-				AutomationId = "MyBoxView",
 				FlowDirection = FlowDirection.LeftToRight
 			};
 
 			var graphicsViewLabel = new Label
 			{
 				Text = "GraphicsView with a triangle drawable",
-				HorizontalOptions = LayoutOptions.Center
+				HorizontalOptions = LayoutOptions.Center,
+				AutomationId = "Issue34402GraphicsViewLabel"
 			};
 
 			var graphicsView = new GraphicsView
@@ -36,7 +37,6 @@ namespace Maui.Controls.Sample.Issues
 				Drawable = new TriangleDrawable(),
 				WidthRequest = 200,
 				HeightRequest = 100,
-				AutomationId = "MyGraphicsView",
 				FlowDirection = FlowDirection.LeftToRight
 			};
 

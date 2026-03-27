@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.BoxView)]
 		public void BoxViewFlowDirectionShouldMirrorOnRTL()
 		{
-			App.WaitForElement("MyBoxView");
+			App.WaitForElement("Issue34402Label");
 			VerifyScreenshot("BoxView_LTR_Initial");
 
 			App.Tap("BoxViewRtlButton");
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsViewFlowDirectionShouldMirrorOnRTL()
 		{
-			App.WaitForElement("MyGraphicsView");
+			App.WaitForElement("Issue34402GraphicsViewLabel");
 			VerifyScreenshot("GraphicsView_LTR_Initial");
 
 			App.Tap("GraphicsViewRtlButton");
