@@ -17,6 +17,8 @@ public class Issue34591 : _IssuesUITest
 		App.WaitForElement("UpdateTextButton");
 		App.Tap("UpdateTextButton");
 
-		App.WaitForElement("Test");
+		var rect = App.WaitForElement("ResultLabel").GetRect();
+		Assert.That(rect.Height, Is.GreaterThan(0),
+			"Label should have non-zero height after setting text from null");
 	}
 }
