@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoreAnimation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -74,9 +76,38 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				handler.PlatformView?.UpdateBackground(button);
+				EnsureBackgroundLayerZOrder(handler.PlatformView);
 			}
 		}
+#else
+		public static void MapBackground(IButtonHandler handler, IButton button)
+		{
+			handler.PlatformView?.UpdateBackground(button);
+			EnsureBackgroundLayerZOrder(handler.PlatformView);
+		}
 #endif
+
+		// UIButton manages its imageView and titleLabel as sublayers dynamically (e.g., when
+		// SetImage is called). UIKit can re-add those layers at index 0, pushing a gradient
+		// layer inserted at index 0 to a higher index and rendering it on top of the image.
+		// Setting ZPosition = -1 on the background layer ensures it always renders behind
+		// UIButton's content layers (which default to ZPosition = 0), regardless of sublayer
+		// index shuffling by UIKit.
+		static void EnsureBackgroundLayerZOrder(UIButton? button)
+		{
+			var sublayers = button?.Layer?.Sublayers;
+			if (sublayers is null)
+				return;
+
+			foreach (var sublayer in sublayers)
+			{
+				if (sublayer.Name == ViewExtensions.BackgroundLayerName)
+				{
+					sublayer.ZPosition = -1;
+					break;
+				}
+			}
+		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
@@ -217,16 +248,6 @@ namespace Microsoft.Maui.Handlers
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				button.SetImage(platformImage, UIControlState.Normal);
-
-				// Ensure the image is above any background/gradient subviews, but keep the title label
-				// above the image in case they overlap (e.g., with custom ContentLayout or insets).
-				var imageView = button.ImageView;
-				if (imageView is not null)
-					button.BringSubviewToFront(imageView);
-
-				var titleLabel = button.TitleLabel;
-				if (titleLabel is not null)
-					button.BringSubviewToFront(titleLabel);
 
 				// UIButton.SetImage(image, forState:) does not immediately assign the image to UIButton.ImageView.Image.
 				// Instead, the image is set internally and only applied to ImageView when the button is rendered.
