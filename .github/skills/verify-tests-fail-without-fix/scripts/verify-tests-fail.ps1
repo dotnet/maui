@@ -349,7 +349,11 @@ function Invoke-TestRun {
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
             }
-            & $buildScript @uiParams 2>&1 | Tee-Object -FilePath $LogFile
+            # Capture output to variable first, then write to log file.
+            # Tee-Object pipeline can break and prevent the return statement from executing.
+            $scriptOutput = & $buildScript @uiParams 2>&1
+            $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
+            $scriptOutput | ForEach-Object { Write-Host $_ }
             return Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
         }
 
@@ -373,8 +377,9 @@ function Invoke-TestRun {
                 $testArgs += @("--filter", $Filter)
             }
 
-            & dotnet @testArgs 2>&1 | Tee-Object -FilePath $LogFile
-            # Also save just the test output for result parsing
+            $scriptOutput = & dotnet @testArgs 2>&1
+            $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
+            $scriptOutput | ForEach-Object { Write-Host $_ }
             Copy-Item -Path $LogFile -Destination $testOutputFile -Force
             return $testOutputFile
         }
@@ -412,7 +417,9 @@ function Invoke-TestRun {
                 $testArgs += @("--filter", $Filter)
             }
 
-            & dotnet @testArgs 2>&1 | Tee-Object -FilePath $LogFile
+            $scriptOutput = & dotnet @testArgs 2>&1
+            $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
+            $scriptOutput | ForEach-Object { Write-Host $_ }
             Copy-Item -Path $LogFile -Destination $testOutputFile -Force
             return $testOutputFile
         }
