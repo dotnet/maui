@@ -384,5 +384,8 @@ namespace Microsoft.Maui.Platform
 		{
 			uiSearchBar.ReturnKeyType = searchBar.ReturnType.ToPlatform();
 		}
+
+		internal static UIButton? GetClearButton(this UISearchBar searchBar) =>
+			searchBar.GetSearchTextField()?.ValueForKey(new NSString("clearButton")) as UIButton;
 	}
 }
