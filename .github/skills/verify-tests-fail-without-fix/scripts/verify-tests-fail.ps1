@@ -604,8 +604,10 @@ function Get-AutoDetectedTests {
 
     $params = @{}
 
-    # Prefer git diff from merge-base (works locally and with PRs)
-    if ($MergeBase) {
+    # Prefer PR number (GitHub API gives exact PR files, not polluted by branch diff)
+    if ($PRNumber) {
+        $params.PRNumber = $PRNumber
+    } elseif ($MergeBase) {
         $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
         if (-not $changedFiles -or $changedFiles.Count -eq 0) {
             $changedFiles = git diff --name-only 2>$null
