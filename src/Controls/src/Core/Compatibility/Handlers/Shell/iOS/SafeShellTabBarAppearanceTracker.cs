@@ -62,13 +62,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// The liquid glass tab bar resets subview properties during layout.
 			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 			{
-				Console.WriteLine("DEBUG: UpdateLayout iOS 26+ path");
 				var tabBar = controller.TabBar;
 				if (_pendingSelectedTintColor is not null)
 					tabBar.TintColor = _pendingSelectedTintColor;
 				if (_pendingUnselectedTintColor is not null)
 				{
-					Console.WriteLine("DEBUG: Calling ApplyPreColoredImagesForIOS26");
 					tabBar.UnselectedItemTintColor = _pendingUnselectedTintColor;
 					tabBar.ApplyPreColoredImagesForIOS26(_pendingUnselectedTintColor, _pendingSelectedTintColor);
 				}

@@ -201,13 +201,11 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 
-				// Set per-item title text attributes for unselected state
-				if (unselectedColor is not null)
-				{
-					item.SetTitleTextAttributes(
-						new UIStringAttributes { ForegroundColor = unselectedColor, ParagraphStyle = NSParagraphStyle.Default },
-						UIControlState.Normal);
-				}
+				// Note: SetTitleTextAttributes for Normal state is intentionally not called on iOS 26+.
+				// Apple's Liquid Glass design system ignores the Normal state appearance to ensure visual
+				// consistency with the glass material. Icon coloring via AlwaysOriginal rendering (above)
+				// is the supported workaround. Text color customization for unselected tabs is not available
+				// on iOS 26+. See: https://github.com/dotnet/maui/issues/32125
 
 				if (selectedColor is not null)
 				{
@@ -216,10 +214,6 @@ namespace Microsoft.Maui.Platform
 						UIControlState.Selected);
 				}
 			}
-
-			// On iOS 26, SetTitleTextAttributes for Normal state is ignored by the liquid glass compositing.
-			// Walk the tab bar subviews to find text labels and apply colors directly.
-			ApplyDirectTextColorsForIOS26(tabBar, unselectedColor, selectedColor);
 		}
 
 		// Stores original template images per tab bar item so we always tint from
@@ -267,71 +261,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return resizedImage;
-		}
-
-static void ApplyDirectTextColorsForIOS26(UITabBar tabBar, UIColor? unselectedColor, UIColor? selectedColor)
-	{
-		if (unselectedColor == null && selectedColor == null)
-			return;
-
-		Console.WriteLine($"=== TEXT COLOR DEBUG START ===");
-		Console.WriteLine($"  unselectedColor: {unselectedColor}");
-		Console.WriteLine($"  selectedColor: {selectedColor}");
-		Console.WriteLine($"  tabBar: {tabBar}");
-		Console.WriteLine($"  tabBar.Items.Length: {tabBar.Items?.Length ?? 0}");
-		
-		var items = tabBar.Items ?? [];
-		if (items.Length == 0)
-		{
-			Console.WriteLine("  No items in tabBar!");
-			return;
-		}
-
-		var selectedItem = tabBar.SelectedItem;
-		var queue = new Queue<UIView>();
-		queue.Enqueue(tabBar);
-		
-		int viewCount = 0;
-		int labelCount = 0;
-		while (queue.Count > 0)
-		{
-			var view = queue.Dequeue();
-			viewCount++;
-			
-			// Log every 10th view
-			if (viewCount % 10 == 0)
-				Console.WriteLine($"  Processed {viewCount} views, found {labelCount} labels...");
-			
-			// Color any UILabel we find
-			if (view is UILabel label)
-			{
-				var oldColor = label.TextColor;
-				label.TextColor = unselectedColor ?? UIColor.Black;
-				labelCount++;
-				Console.WriteLine($"  [LABEL #{labelCount}] Changed from {oldColor} to {label.TextColor}");
-			}
-			
-			// Enqueue all subviews for processing
-			foreach (var subview in view.Subviews)
-			{
-				queue.Enqueue(subview);
-			}
-		}
-		
-		Console.WriteLine($"  FINAL: Walked {viewCount} views total, colored {labelCount} labels");
-		Console.WriteLine($"=== TEXT COLOR DEBUG END ===");
-	}
-
-
-
-					buttonIndex++;
-				}
-
-				foreach (var subview in view.Subviews)
-				{
-					queue.Enqueue(subview);
-				}
-			}
 		}
 	}
 }
