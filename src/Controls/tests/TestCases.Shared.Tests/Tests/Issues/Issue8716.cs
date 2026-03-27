@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // A fix for this issue is already available for Windows platform in an open PR (https://github.com/dotnet/maui/pull/29441), so the test is restricted on Windows for now. 
+﻿#if ANDROID // The fix is available on Android only. iOS and macCatalyst are tracked separately in https://github.com/dotnet/maui/issues/34693. A fix for Windows is available in an open PR (https://github.com/dotnet/maui/pull/29441), so the test is restricted on Windows, iOS and macCatalyst for now.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
