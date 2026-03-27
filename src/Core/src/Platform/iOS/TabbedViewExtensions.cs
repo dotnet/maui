@@ -216,6 +216,10 @@ namespace Microsoft.Maui.Platform
 						UIControlState.Selected);
 				}
 			}
+
+			// On iOS 26, SetTitleTextAttributes for Normal state is ignored by the liquid glass compositing.
+			// Walk the tab bar subviews to find text labels and apply colors directly.
+			ApplyDirectTextColorsForIOS26(tabBar, unselectedColor, selectedColor);
 		}
 
 		// Stores original template images per tab bar item so we always tint from
@@ -263,6 +267,55 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return resizedImage;
+		}
+
+static void ApplyDirectTextColorsForIOS26(UITabBar tabBar, UIColor? unselectedColor, UIColor? selectedColor)
+	{
+		if (unselectedColor == null && selectedColor == null)
+			return;
+
+		Console.WriteLine("DEBUG: ApplyDirectTextColorsForIOS26 START - walking tab bar hierarchy");
+		
+		var items = tabBar.Items ?? [];
+		if (items.Length == 0)
+			return;
+
+		var selectedItem = tabBar.SelectedItem;
+		var queue = new Queue<UIView>();
+		queue.Enqueue(tabBar);
+		
+		int labelCount = 0;
+		while (queue.Count > 0)
+		{
+			var view = queue.Dequeue();
+			
+			// Color any UILabel we find
+			if (view is UILabel label)
+			{
+				label.TextColor = unselectedColor ?? UIColor.Black;
+				labelCount++;
+				Console.WriteLine($"DEBUG: Colored label #{labelCount}");
+			}
+			
+			// Enqueue all subviews for processing
+			foreach (var subview in view.Subviews)
+			{
+				queue.Enqueue(subview);
+			}
+		}
+		
+		Console.WriteLine($"DEBUG: ApplyDirectTextColorsForIOS26 DONE - colored {labelCount} labels");
+	}
+
+
+					buttonIndex++;
+				}
+
+				foreach (var subview in view.Subviews)
+				{
+					queue.Enqueue(subview);
+				}
+			}
 		}
 	}
 }
