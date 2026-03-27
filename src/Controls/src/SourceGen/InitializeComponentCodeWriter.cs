@@ -177,6 +177,31 @@ $$"""
 								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
 							}
 						}
+						// Register resource keys for hot reload (so UC can remove stale keys)
+						var resourceKeys = new System.Collections.Generic.List<string>();
+						var xKeyName = new XmlName("x", "Key");
+						if (root!.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
+						{
+							var elements = resourcesNode is ListNode ln ? ln.CollectionItems.OfType<ElementNode>() :
+								resourcesNode is ElementNode singleEn ? new[] { singleEn } : System.Array.Empty<ElementNode>();
+							foreach (var elem in elements)
+							{
+								if (elem.Properties.TryGetValue(xKeyName, out var keyNode)
+									&& keyNode is ValueNode kv && kv.Value is string keyStr)
+								{
+									// Only register keys for value-type resources we can encode (Color, String, etc.)
+									// Skip custom types (converters, etc.) that IC creates via new()
+									if (elem.CollectionItems.Count == 1 && elem.CollectionItems[0] is ValueNode)
+										resourceKeys.Add(keyStr);
+								}
+							}
+						}
+						if (resourceKeys.Count > 0)
+						{
+							var keysArray = string.Join(", ", resourceKeys.Select(k => $"\"{k}\""));
+							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
+						}
+
 						// Set __version to the latest version from state (so fresh instances skip all UC patches)
 						var assemblyName = compilation.AssemblyName ?? string.Empty;
 						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, xamlItem.ProjectItem.RelativePath ?? string.Empty);

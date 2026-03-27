@@ -560,6 +560,298 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
 	}
 
+	[Fact]
+	public void ResourceAdded_AppliedViaHotReload()
+	{
+		AssertHotReloadSupported();
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (icV1, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
+		Assert.NotNull(ucV2);
+
+		var (peV1, pdbV1, compilationV1) = CompileSources(PageStub, icV1);
+
+		var alc = new AssemblyLoadContext("E2EResourceAdd", isCollectible: true);
+		try
+		{
+			var assembly = alc.LoadFromStream(new MemoryStream(peV1), new MemoryStream(pdbV1));
+			var pageType = assembly.GetType(PageClass)!;
+			var instance = Activator.CreateInstance(pageType)!;
+			var page = (ContentPage)instance;
+
+			// V1: only AccentColor
+			Assert.True(page.Resources.ContainsKey("AccentColor"));
+			Assert.False(page.Resources.ContainsKey("SecondaryColor"));
+
+			// Compile V2 and apply delta
+			var treesV2 = new[]
+			{
+				CSharpSyntaxTree.ParseText(PageStub, path: "PageStub.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(icV2, path: "IC.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(StripGeneratedCodeAttribute(ucV2), path: "UC.cs", encoding: System.Text.Encoding.UTF8),
+			};
+			var compilationV2 = CreateMauiCompilation(treesV2);
+			var v2Errors = compilationV2.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+			if (v2Errors.Length > 0)
+				Assert.Fail($"V2 compilation failed:\n{string.Join("\n", v2Errors.Select(e => $"{e.Id}: {e.GetMessage()}"))}");
+
+			var baseline = EmitBaseline.CreateInitialBaseline(
+				compilationV1,
+				ModuleMetadata.CreateFromImage(peV1),
+				debugInformationProvider: handle => default,
+				localSignatureProvider: handle => default,
+				hasPortableDebugInformation: true);
+
+			var oldPageType = compilationV1.GetTypeByMetadataName(PageClass)!;
+			var newPageType = compilationV2.GetTypeByMetadataName(PageClass)!;
+			var edits = new List<SemanticEdit>();
+			var oldIC = oldPageType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().First();
+			var newIC = newPageType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().First();
+			edits.Add(new SemanticEdit(SemanticEditKind.Update, oldIC.PartialImplementationPart ?? oldIC, newIC.PartialImplementationPart ?? newIC));
+			edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, newPageType.GetMembers("UpdateComponent").Single()));
+
+			using var mdDelta = new MemoryStream();
+			using var ilDelta = new MemoryStream();
+			using var pdbDelta = new MemoryStream();
+			var diffResult = compilationV2.EmitDifference(baseline, edits,
+				isAddedSymbol: s => s.Name == "UpdateComponent",
+				mdDelta, ilDelta, pdbDelta, System.Threading.CancellationToken.None);
+			Assert.True(diffResult.Success, $"EmitDifference failed:\n{string.Join("\n", diffResult.Diagnostics)}");
+
+			MetadataUpdater.ApplyUpdate(assembly, mdDelta.ToArray(), ilDelta.ToArray(), pdbDelta.ToArray());
+
+			var updateMethod = pageType.GetMethod("UpdateComponent", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			Assert.NotNull(updateMethod);
+			updateMethod!.Invoke(instance, null);
+
+			// V2: both resources exist
+			Assert.True(page.Resources.ContainsKey("AccentColor"), "AccentColor should still exist");
+			Assert.True(page.Resources.ContainsKey("SecondaryColor"), "SecondaryColor should be added");
+			Assert.Equal(Microsoft.Maui.Graphics.Colors.Red, page.Resources["SecondaryColor"]);
+		}
+		finally
+		{
+			alc.Unload();
+		}
+	}
+
+	[Fact]
+	public void ResourceRemoved_AppliedViaHotReload()
+	{
+		AssertHotReloadSupported();
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (icV1, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
+		Assert.NotNull(ucV2);
+
+		var (peV1, pdbV1, compilationV1) = CompileSources(PageStub, icV1);
+
+		var alc = new AssemblyLoadContext("E2EResourceRemove", isCollectible: true);
+		try
+		{
+			var assembly = alc.LoadFromStream(new MemoryStream(peV1), new MemoryStream(pdbV1));
+			var pageType = assembly.GetType(PageClass)!;
+			var instance = Activator.CreateInstance(pageType)!;
+			var page = (ContentPage)instance;
+
+			// V1: both resources
+			Assert.True(page.Resources.ContainsKey("AccentColor"));
+			Assert.True(page.Resources.ContainsKey("SecondaryColor"));
+
+			// Compile V2 and apply delta
+			var treesV2 = new[]
+			{
+				CSharpSyntaxTree.ParseText(PageStub, path: "PageStub.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(icV2, path: "IC.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(StripGeneratedCodeAttribute(ucV2), path: "UC.cs", encoding: System.Text.Encoding.UTF8),
+			};
+			var compilationV2 = CreateMauiCompilation(treesV2);
+			var v2Errors = compilationV2.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+			if (v2Errors.Length > 0)
+				Assert.Fail($"V2 compilation failed:\n{string.Join("\n", v2Errors.Select(e => $"{e.Id}: {e.GetMessage()}"))}");
+
+			var baseline = EmitBaseline.CreateInitialBaseline(
+				compilationV1,
+				ModuleMetadata.CreateFromImage(peV1),
+				debugInformationProvider: handle => default,
+				localSignatureProvider: handle => default,
+				hasPortableDebugInformation: true);
+
+			var oldPageType = compilationV1.GetTypeByMetadataName(PageClass)!;
+			var newPageType = compilationV2.GetTypeByMetadataName(PageClass)!;
+			var edits = new List<SemanticEdit>();
+			var oldIC = oldPageType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().First();
+			var newIC = newPageType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().First();
+			edits.Add(new SemanticEdit(SemanticEditKind.Update, oldIC.PartialImplementationPart ?? oldIC, newIC.PartialImplementationPart ?? newIC));
+			edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, newPageType.GetMembers("UpdateComponent").Single()));
+
+			using var mdDelta = new MemoryStream();
+			using var ilDelta = new MemoryStream();
+			using var pdbDelta = new MemoryStream();
+			var diffResult = compilationV2.EmitDifference(baseline, edits,
+				isAddedSymbol: s => s.Name == "UpdateComponent",
+				mdDelta, ilDelta, pdbDelta, System.Threading.CancellationToken.None);
+			Assert.True(diffResult.Success, $"EmitDifference failed:\n{string.Join("\n", diffResult.Diagnostics)}");
+
+			MetadataUpdater.ApplyUpdate(assembly, mdDelta.ToArray(), ilDelta.ToArray(), pdbDelta.ToArray());
+
+			var updateMethod = pageType.GetMethod("UpdateComponent", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			Assert.NotNull(updateMethod);
+			updateMethod!.Invoke(instance, null);
+
+			// V2: SecondaryColor removed, AccentColor remains
+			Assert.True(page.Resources.ContainsKey("AccentColor"), "AccentColor should still exist");
+			Assert.False(page.Resources.ContainsKey("SecondaryColor"), "SecondaryColor should be removed");
+		}
+		finally
+		{
+			alc.Unload();
+		}
+	}
+
+	[Fact]
+	public void ResourceValueChanged_AppliedViaHotReload()
+	{
+		AssertHotReloadSupported();
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">Red</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (icV1, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
+		Assert.NotNull(ucV2);
+
+		var (peV1, pdbV1, compilationV1) = CompileSources(PageStub, icV1);
+
+		var alc = new AssemblyLoadContext("E2EResourceChange", isCollectible: true);
+		try
+		{
+			var assembly = alc.LoadFromStream(new MemoryStream(peV1), new MemoryStream(pdbV1));
+			var pageType = assembly.GetType(PageClass)!;
+			var instance = Activator.CreateInstance(pageType)!;
+			var page = (ContentPage)instance;
+
+			// V1: AccentColor is DarkBlue
+			Assert.Equal(Microsoft.Maui.Graphics.Colors.DarkBlue, page.Resources["AccentColor"]);
+
+			// Compile V2 and apply delta
+			var treesV2 = new[]
+			{
+				CSharpSyntaxTree.ParseText(PageStub, path: "PageStub.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(icV2, path: "IC.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(StripGeneratedCodeAttribute(ucV2), path: "UC.cs", encoding: System.Text.Encoding.UTF8),
+			};
+			var compilationV2 = CreateMauiCompilation(treesV2);
+			var v2Errors = compilationV2.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+			if (v2Errors.Length > 0)
+				Assert.Fail($"V2 compilation failed:\n{string.Join("\n", v2Errors.Select(e => $"{e.Id}: {e.GetMessage()}"))}");
+
+			var baseline = EmitBaseline.CreateInitialBaseline(
+				compilationV1,
+				ModuleMetadata.CreateFromImage(peV1),
+				debugInformationProvider: handle => default,
+				localSignatureProvider: handle => default,
+				hasPortableDebugInformation: true);
+
+			var oldPageType = compilationV1.GetTypeByMetadataName(PageClass)!;
+			var newPageType = compilationV2.GetTypeByMetadataName(PageClass)!;
+			var edits = new List<SemanticEdit>();
+			var oldIC = oldPageType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().First();
+			var newIC = newPageType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().First();
+			edits.Add(new SemanticEdit(SemanticEditKind.Update, oldIC.PartialImplementationPart ?? oldIC, newIC.PartialImplementationPart ?? newIC));
+			edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, newPageType.GetMembers("UpdateComponent").Single()));
+
+			using var mdDelta = new MemoryStream();
+			using var ilDelta = new MemoryStream();
+			using var pdbDelta = new MemoryStream();
+			var diffResult = compilationV2.EmitDifference(baseline, edits,
+				isAddedSymbol: s => s.Name == "UpdateComponent",
+				mdDelta, ilDelta, pdbDelta, System.Threading.CancellationToken.None);
+			Assert.True(diffResult.Success, $"EmitDifference failed:\n{string.Join("\n", diffResult.Diagnostics)}");
+
+			MetadataUpdater.ApplyUpdate(assembly, mdDelta.ToArray(), ilDelta.ToArray(), pdbDelta.ToArray());
+
+			var updateMethod = pageType.GetMethod("UpdateComponent", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			Assert.NotNull(updateMethod);
+			updateMethod!.Invoke(instance, null);
+
+			// V2: AccentColor changed to Red
+			Assert.Equal(Microsoft.Maui.Graphics.Colors.Red, page.Resources["AccentColor"]);
+		}
+		finally
+		{
+			alc.Unload();
+		}
+	}
+
 	// -----------------------------------------------------------------------
 	// OptionsProvider (same as in pipeline tests)
 	// -----------------------------------------------------------------------
