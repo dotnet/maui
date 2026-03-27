@@ -477,10 +477,13 @@ if (Test-Path $verificationReport) {
 
 # Post gate result as a separate PR comment
 $postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
-$dryRunFlag = if ($DryRun) { @('-DryRun') } else { @() }
 if (Test-Path $postGateScript) {
     try {
-        & $postGateScript -PRNumber $PRNumber @dryRunFlag
+        if ($DryRun) {
+            & $postGateScript -PRNumber $PRNumber -DryRun
+        } else {
+            & $postGateScript -PRNumber $PRNumber
+        }
     } catch {
         Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
     }
@@ -528,15 +531,18 @@ Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
-$dryRunFlag = if ($DryRun) { @('-DryRun') } else { @() }
 
-# 3a: Post PR review phases (pre-flight, gate, try-fix, report)
+# Post PR review phases (pre-flight, try-fix, report)
 $aiSummaryCommentId = $null
 $reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
 if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
-        $reviewOutput = & $reviewScript -PRNumber $PRNumber @dryRunFlag
+        if ($DryRun) {
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -DryRun
+        } else {
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber
+        }
         # Capture comment ID from script output (format: COMMENT_ID=<id>)
         $idLine = $reviewOutput | Where-Object { $_ -match '^COMMENT_ID=' } | Select-Object -Last 1
         if ($idLine -match '^COMMENT_ID=(\d+)$') {
