@@ -460,12 +460,23 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName ||
-                e.PropertyName == BaseShellItem.TitleProperty.PropertyName ||
-                e.PropertyName == BaseShellItem.IconProperty.PropertyName)
+            var index = ((IShellItemController)VirtualView).GetItems().IndexOf(shellSection);
+            if (index < 0)
             {
-                // Refresh all tabs when a section property changes
-                _tabbedViewManager.RefreshTabs();
+                return;
+            }
+
+            if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName)
+            {
+                _tabbedViewManager.UpdateTabTitle(index, shellSection.Title);
+            }
+            else if (e.PropertyName == BaseShellItem.IconProperty.PropertyName)
+            {
+                _tabbedViewManager.UpdateTabIcon(index);
+            }
+            else if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName)
+            {
+                _tabbedViewManager.UpdateTabEnabled(index, shellSection.IsEnabled);
             }
         }
 

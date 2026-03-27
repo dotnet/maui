@@ -524,11 +524,110 @@ internal class TabbedViewManager
 
     /// <summary>
     /// Triggers a full refresh of tab items from the <see cref="ITabbedView.Tabs"/> collection.
-    /// Used when individual tab properties change (title, icon, isEnabled).
+    /// Use only for structural changes (add/remove tabs). For individual property changes,
+    /// use <see cref="UpdateTabTitle"/>, <see cref="UpdateTabIcon"/>, or <see cref="UpdateTabEnabled"/>.
     /// </summary>
     public void RefreshTabs()
     {
         OnTabsCollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+
+    /// <summary>
+    /// Updates the title of a specific tab in-place without rebuilding the menu.
+    /// Matches the approach used by the old ShellItemRenderer and TabbedPageRenderer.
+    /// </summary>
+    public void UpdateTabTitle(int index, string title)
+    {
+        if (Element is null || index < 0 || index >= Element.Tabs.Count)
+        {
+            return;
+        }
+
+        if (IsBottomTabPlacement)
+        {
+            if (_bottomNavigationView is null)
+            {
+                return;
+            }
+
+            var menuItem = _bottomNavigationView.Menu.FindItem(index);
+            if (menuItem is not null)
+            {
+                BottomNavigationViewUtils.SetMenuItemTitle(menuItem, title);
+            }
+        }
+        else
+        {
+            if (_tabLayout is null)
+            {
+                return;
+            }
+
+            var tab = _tabLayout.GetTabAt(index);
+            tab?.SetText(title);
+        }
+    }
+
+    /// <summary>
+    /// Updates the icon of a specific tab in-place without rebuilding the menu.
+    /// </summary>
+    public void UpdateTabIcon(int index)
+    {
+        if (Element is null || index < 0 || index >= Element.Tabs.Count)
+        {
+            return;
+        }
+
+        var tab = Element.Tabs[index];
+
+        if (IsBottomTabPlacement)
+        {
+            if (_bottomNavigationView is null)
+            {
+                return;
+            }
+
+            var menuItem = _bottomNavigationView.Menu.FindItem(index);
+            if (menuItem is not null)
+            {
+                LoadBottomNavIconAsync(menuItem, tab);
+            }
+        }
+        else
+        {
+            if (_tabLayout is null)
+            {
+                return;
+            }
+
+            var tabLayoutTab = _tabLayout.GetTabAt(index);
+            if (tabLayoutTab is not null)
+            {
+                SetTabIconImageSource(tab, tabLayoutTab);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the enabled state of a specific tab in-place without rebuilding the menu.
+    /// </summary>
+    public void UpdateTabEnabled(int index, bool enabled)
+    {
+        if (Element is null || index < 0 || index >= Element.Tabs.Count)
+        {
+            return;
+        }
+
+        if (IsBottomTabPlacement)
+        {
+            if (_bottomNavigationView is null)
+            {
+                return;
+            }
+
+            var menuItem = _bottomNavigationView.Menu.FindItem(index);
+            menuItem?.SetEnabled(enabled);
+        }
     }
 
     protected virtual void TabSelected(TabLayout.Tab tab)
