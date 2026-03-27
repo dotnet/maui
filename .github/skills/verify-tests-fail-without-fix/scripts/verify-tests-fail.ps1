@@ -469,6 +469,42 @@ function Invoke-TestRun {
 }
 
 # ============================================================
+# Run test with retry on environment errors
+# ============================================================
+function Invoke-TestRunWithRetry {
+    param(
+        [hashtable]$TestEntry,
+        [string]$LogFile,
+        [int]$MaxRetries = 3
+    )
+
+    for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+        $logFileAttempt = if ($attempt -gt 1) { "$LogFile.attempt$attempt" } else { $LogFile }
+
+        $testOutputLog = Invoke-TestRun `
+            -DetectedTestType $TestEntry.Type `
+            -Filter $TestEntry.Filter `
+            -DetectedProject $TestEntry.Project `
+            -DetectedProjectPath $TestEntry.ProjectPath `
+            -LogFile $logFileAttempt
+
+        $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
+
+        if (-not $result.EnvError) {
+            return $result
+        }
+
+        if ($attempt -lt $MaxRetries) {
+            Write-Host "  ⚠️ Environment error (attempt $attempt/$MaxRetries): $($result.Error) — retrying..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 5
+        } else {
+            Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
+            return $result
+        }
+    }
+}
+
+# ============================================================
 # Parse test results from output (supports all test types)
 # ============================================================
 function Get-TestResultFromOutput {
@@ -877,14 +913,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
         $TestLog = Join-Path $OutputPath "test-failure-$sanitizedName.log"
 
-        $testOutputLog = Invoke-TestRun `
-            -DetectedTestType $testEntry.Type `
-            -Filter $testEntry.Filter `
-            -DetectedProject $testEntry.Project `
-            -DetectedProjectPath $testEntry.ProjectPath `
-            -LogFile $TestLog
-
-        $testResult = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $testEntry.Filter
+        $testResult = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $TestLog
         $testResult.TestName = $testEntry.TestName
         $testResult.TestType = $testEntry.Type
         $allResults += $testResult
@@ -1239,19 +1268,14 @@ foreach ($testEntry in $AllDetectedTests) {
     if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
     $testLogFile = Join-Path $OutputPath "test-without-fix-$sanitizedName.log"
 
-    $testOutputLog = Invoke-TestRun `
-        -DetectedTestType $testEntry.Type `
-        -Filter $testEntry.Filter `
-        -DetectedProject $testEntry.Project `
-        -DetectedProjectPath $testEntry.ProjectPath `
-        -LogFile $testLogFile
-
-    $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $testEntry.Filter
+    $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
     $withoutFixResults += $result
 
-    if (-not $result.Passed) {
+    if ($result.EnvError) {
+        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR without fix: $($result.Error)"
+    } elseif (-not $result.Passed) {
         Write-Log "  ✅ $($testEntry.TestName) FAILED without fix (expected)"
     } else {
         Write-Log "  ❌ $($testEntry.TestName) PASSED without fix (unexpected!)"
@@ -1307,19 +1331,14 @@ foreach ($testEntry in $AllDetectedTests) {
     if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
     $testLogFile = Join-Path $OutputPath "test-with-fix-$sanitizedName.log"
 
-    $testOutputLog = Invoke-TestRun `
-        -DetectedTestType $testEntry.Type `
-        -Filter $testEntry.Filter `
-        -DetectedProject $testEntry.Project `
-        -DetectedProjectPath $testEntry.ProjectPath `
-        -LogFile $testLogFile
-
-    $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $testEntry.Filter
+    $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
     $withFixResults += $result
 
-    if ($result.Passed) {
+    if ($result.EnvError) {
+        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR with fix: $($result.Error)"
+    } elseif ($result.Passed) {
         Write-Log "  ✅ $($testEntry.TestName) PASSED with fix (expected)"
     } else {
         Write-Log "  ❌ $($testEntry.TestName) FAILED with fix (unexpected!)"
