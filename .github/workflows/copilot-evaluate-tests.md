@@ -17,11 +17,14 @@ on:
   roles: all
 
 if: >-
-  (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
+  (github.event_name == 'pull_request_target' &&
+   github.event.pull_request.draft == false &&
+   contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)) ||
   github.event_name == 'workflow_dispatch' ||
   (github.event_name == 'issue_comment' &&
    github.event.issue.pull_request &&
-   startsWith(github.event.comment.body, '/evaluate-tests'))
+   startsWith(github.event.comment.body, '/evaluate-tests') &&
+   contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
 
 permissions:
   contents: read

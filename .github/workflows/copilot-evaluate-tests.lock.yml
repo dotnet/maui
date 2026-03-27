@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d983973d21a026cabac2f3fb0750961f00b90b25c3b2329f1735c6f42a877170","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0a92e9e40d797284a9013f14f8f3074270993227a4841a7ffc3b3542d1d524ef","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -56,9 +56,13 @@ run-name: "Evaluate PR Tests"
 jobs:
   activation:
     if: >
-      (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      (github.event_name == 'pull_request_target' &&
+      github.event.pull_request.draft == false &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)) ||
+      github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/evaluate-tests'))
+      startsWith(github.event.comment.body, '/evaluate-tests') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-slim
     permissions:
       contents: read
