@@ -349,12 +349,17 @@ function Invoke-TestRun {
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
             }
-            # Capture output to variable first, then write to log file.
-            # Tee-Object pipeline can break and prevent the return statement from executing.
             $scriptOutput = & $buildScript @uiParams 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             $scriptOutput | ForEach-Object { Write-Host $_ }
-            return Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+
+            # Copy test-output.log to a unique file so subsequent runs don't overwrite it
+            $sharedLog = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"
+            $uniqueLog = "$LogFile.testresult"
+            if (Test-Path $sharedLog) {
+                Copy-Item $sharedLog $uniqueLog -Force
+            }
+            return $uniqueLog
         }
 
         "XamlUnitTest" {
@@ -380,8 +385,7 @@ function Invoke-TestRun {
             $scriptOutput = & dotnet @testArgs 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             $scriptOutput | ForEach-Object { Write-Host $_ }
-            Copy-Item -Path $LogFile -Destination $testOutputFile -Force
-            return $testOutputFile
+            return $LogFile
         }
 
         "UnitTest" {
@@ -420,8 +424,7 @@ function Invoke-TestRun {
             $scriptOutput = & dotnet @testArgs 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             $scriptOutput | ForEach-Object { Write-Host $_ }
-            Copy-Item -Path $LogFile -Destination $testOutputFile -Force
-            return $testOutputFile
+            return $LogFile
         }
 
         "DeviceTest" {
@@ -461,11 +464,14 @@ function Invoke-TestRun {
             $scriptOutput = & $deviceTestScript @deviceParams 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             $scriptOutput | ForEach-Object { Write-Host $_ }
+
+            # Copy to unique file so subsequent runs don't overwrite
+            $uniqueLog = "$LogFile.testresult"
             if (Test-Path $LogFile) {
-                Copy-Item -Path $LogFile -Destination $testOutputFile -Force
+                Copy-Item -Path $LogFile -Destination $uniqueLog -Force
             }
 
-            return $testOutputFile
+            return $uniqueLog
         }
 
         default {
