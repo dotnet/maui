@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			var searchBar = new MauiSearchBar() { BarStyle = UIBarStyle.Default };
 
 			_editor = searchBar.GetSearchTextField();
-			_clearButton = _editor?.ValueForKey(new Foundation.NSString("clearButton")) as UIButton;
+			_clearButton = searchBar.GetClearButton();
 
 			return searchBar;
 		}
