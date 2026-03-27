@@ -1184,6 +1184,31 @@ static class UpdateComponentCodeWriter
 			foreach (var child in elementNode.CollectionItems)
 				child.Accept(setPropsVisitor, elementNode);
 
+			// Step 2.5: Patch StaticResource lookups that failed in the UC's synthetic tree.
+			// When a Binding has Converter={StaticResource X}, the IC pipeline can't resolve it
+			// because the UC tree has no parent chain to walk up for Resources. Emit runtime lookups
+			// BEFORE TryProvideValue creates the TypedBinding (which reads extension.Converter).
+			if (ctx.Variables.TryGetValue(elementNode, out var extVar))
+			{
+				foreach (var kvp in elementNode.Properties)
+				{
+					if (kvp.Value is ElementNode propElement
+						&& propElement.XmlType.Name == "StaticResourceExtension"
+						&& propElement.CollectionItems.Count == 1
+						&& propElement.CollectionItems[0] is ValueNode keyVal
+						&& keyVal.Value is string resourceKey)
+					{
+						var propLocalName = kvp.Key.LocalName;
+						var propSymbol = extVar.Type.GetAllProperties(propLocalName, ctx).FirstOrDefault();
+						if (propSymbol != null)
+						{
+							var castType = propSymbol.Type.ToFQDisplayString();
+							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})this.Resources[\"{EscapeString(resourceKey)}\"];");
+						}
+					}
+				}
+			}
+
 			// Step 3: TryProvideValue — handles late extensions (Binding, StaticResource, AppThemeBinding, etc.)
 			// and falls back to runtime ProvideValue() for unknown IMarkupExtension implementors
 			elementNode.TryProvideValue(captureWriter, ctx);
