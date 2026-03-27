@@ -1280,6 +1280,49 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 	}
 
+
+[Fact]
+public void ResourceWithConverters_UCDoesNotRegisterUnencodableKeys()
+{
+// When resources include custom types (converters) that can't be encoded as C# expressions,
+// the UC should NOT register those keys — otherwise they get removed on next patch.
+XamlHotReloadState.Reset();
+const string xamlV1 = """
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.MainPage">
+    <ContentPage.Resources>
+        <Color x:Key="AccentColor">DarkBlue</Color>
+    </ContentPage.Resources>
+    <Label Text="Hello" />
+</ContentPage>
+""";
+const string xamlV2 = """
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.MainPage">
+    <ContentPage.Resources>
+        <Color x:Key="AccentColor">Red</Color>
+        <Color x:Key="SecondaryColor">Green</Color>
+    </ContentPage.Resources>
+    <Label Text="Hello" />
+</ContentPage>
+""";
+
+var (_, run2) = TwoRuns(xamlV1, xamlV2);
+var uc = FindUCSource(run2, "uc.xsg");
+
+Assert.NotNull(uc);
+// Only emittable keys (Color values) should be in RegisterResourceKeys
+Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
+Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+// The registered keys should only contain the color keys
+Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+}
+
 	// -----------------------------------------------------------------------
 	// Helpers (pipeline)
 	// -----------------------------------------------------------------------

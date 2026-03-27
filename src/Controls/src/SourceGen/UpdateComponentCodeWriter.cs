@@ -655,30 +655,40 @@ static class UpdateComponentCodeWriter
 		if (keyedResources.Count == 0)
 			return false;
 
-		// Remove old resource keys that are no longer in the new XAML
+		// Pre-compute which resources can actually be encoded as C# expressions.
+		// Resources we can't encode (custom types, converters, etc.) are left untouched.
+		var emittableResources = new List<(string key, string valueExpr)>();
+		foreach (var (key, elem) in keyedResources)
+		{
+			var valueExpr = BuildResourceValueExpression(elem, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			if (valueExpr != null)
+				emittableResources.Add((key, valueExpr));
+			else
+				codeWriter.WriteLine($"// Cannot encode resource '{key}' \u2014 left untouched");
+		}
+
+		if (emittableResources.Count == 0)
+			return false;
+
+		// Remove old resource keys that are no longer in the new XAML (only keys we manage)
 		codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
 		using (PrePost.NewBlock(codeWriter))
 		{
-			// Build a set of new keys to check against
-			var newKeysList = string.Join(", ", keyedResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
+			var newKeysList = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
 			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {newKeysList} }}, __rk) < 0)");
 			codeWriter.Indent++;
 			codeWriter.WriteLine("this.Resources.Remove(__rk);");
 			codeWriter.Indent--;
 		}
 
-		// Add/update all new keyed resources
-		foreach (var (key, elem) in keyedResources)
+		// Add/update emittable resources
+		foreach (var (key, valueExpr) in emittableResources)
 		{
-			var valueExpr = BuildResourceValueExpression(elem, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
-			if (valueExpr != null)
-				codeWriter.WriteLine($"this.Resources[\"{EscapeString(key)}\"] = {valueExpr};");
-			else
-				codeWriter.WriteLine($"// Cannot encode resource '{key}' — skipped");
+			codeWriter.WriteLine($"this.Resources[\"{EscapeString(key)}\"] = {valueExpr};");
 		}
 
-		// Register new key set for next patch
-		var keysArrayExpr = string.Join(", ", keyedResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
+		// Register only the keys we manage for next patch
+		var keysArrayExpr = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
 
 		return true;
