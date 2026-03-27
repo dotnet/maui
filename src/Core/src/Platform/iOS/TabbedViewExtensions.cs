@@ -274,27 +274,41 @@ static void ApplyDirectTextColorsForIOS26(UITabBar tabBar, UIColor? unselectedCo
 		if (unselectedColor == null && selectedColor == null)
 			return;
 
-		Console.WriteLine("DEBUG: ApplyDirectTextColorsForIOS26 START - walking tab bar hierarchy");
+		Console.WriteLine($"=== TEXT COLOR DEBUG START ===");
+		Console.WriteLine($"  unselectedColor: {unselectedColor}");
+		Console.WriteLine($"  selectedColor: {selectedColor}");
+		Console.WriteLine($"  tabBar: {tabBar}");
+		Console.WriteLine($"  tabBar.Items.Length: {tabBar.Items?.Length ?? 0}");
 		
 		var items = tabBar.Items ?? [];
 		if (items.Length == 0)
+		{
+			Console.WriteLine("  No items in tabBar!");
 			return;
+		}
 
 		var selectedItem = tabBar.SelectedItem;
 		var queue = new Queue<UIView>();
 		queue.Enqueue(tabBar);
 		
+		int viewCount = 0;
 		int labelCount = 0;
 		while (queue.Count > 0)
 		{
 			var view = queue.Dequeue();
+			viewCount++;
+			
+			// Log every 10th view
+			if (viewCount % 10 == 0)
+				Console.WriteLine($"  Processed {viewCount} views, found {labelCount} labels...");
 			
 			// Color any UILabel we find
 			if (view is UILabel label)
 			{
+				var oldColor = label.TextColor;
 				label.TextColor = unselectedColor ?? UIColor.Black;
 				labelCount++;
-				Console.WriteLine($"DEBUG: Colored label #{labelCount}");
+				Console.WriteLine($"  [LABEL #{labelCount}] Changed from {oldColor} to {label.TextColor}");
 			}
 			
 			// Enqueue all subviews for processing
@@ -304,8 +318,10 @@ static void ApplyDirectTextColorsForIOS26(UITabBar tabBar, UIColor? unselectedCo
 			}
 		}
 		
-		Console.WriteLine($"DEBUG: ApplyDirectTextColorsForIOS26 DONE - colored {labelCount} labels");
+		Console.WriteLine($"  FINAL: Walked {viewCount} views total, colored {labelCount} labels");
+		Console.WriteLine($"=== TEXT COLOR DEBUG END ===");
 	}
+
 
 
 					buttonIndex++;
