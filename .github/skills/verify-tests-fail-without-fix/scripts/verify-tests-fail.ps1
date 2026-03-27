@@ -481,6 +481,17 @@ function Invoke-TestRunWithRetry {
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         $logFileAttempt = if ($attempt -gt 1) { "$LogFile.attempt$attempt" } else { $LogFile }
 
+        # Clear stale test output files before each run to prevent
+        # reading results from the previous run
+        $staleOutputPaths = @(
+            (Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/test-output.log"),
+            (Join-Path $RepoRoot "CustomAgentLogsTmp/DeviceTests/test-output.log"),
+            (Join-Path $RepoRoot "CustomAgentLogsTmp/UnitTests/test-output.log")
+        )
+        foreach ($stale in $staleOutputPaths) {
+            if (Test-Path $stale) { Remove-Item $stale -Force }
+        }
+
         $testOutputLog = Invoke-TestRun `
             -DetectedTestType $TestEntry.Type `
             -Filter $TestEntry.Filter `
