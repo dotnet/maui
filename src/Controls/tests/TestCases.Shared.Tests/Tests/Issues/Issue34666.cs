@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Issue link: https://github.com/dotnet/maui/issues/34701
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,3 +23,4 @@ public class Issue34666 : _IssuesUITest
 		App.WaitForElement("Gelada");
 	}
 }
+#endif
