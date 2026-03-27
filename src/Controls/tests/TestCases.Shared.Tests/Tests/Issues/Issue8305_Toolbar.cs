@@ -14,11 +14,8 @@ public class Issue8305_Toolbar : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void ToolbarItemBadgesDisplay()
 	{
-		// Wait for the page to load
+		// Wait for the page to load (toolbar items aren't directly accessible via Appium on all platforms)
 		App.WaitForElement("StatusLabel");
-
-		// Verify toolbar items are present
-		App.WaitForElement("BadgeTextItem");
 
 		// Take a screenshot showing badges (retryTimeout for async Android badge rendering)
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
