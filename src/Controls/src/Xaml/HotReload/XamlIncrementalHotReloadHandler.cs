@@ -98,6 +98,12 @@ internal static class XamlIncrementalHotReloadHandler
 							$"[XamlIncrementalHotReload] Calling UpdateComponent() on {capturedType.Name} (instance {capturedInstance.GetHashCode():X8})");
 
 						capturedMethod.Invoke(capturedInstance, null);
+
+						// Force a layout/render pass so property changes become visible.
+						if (capturedInstance is global::Microsoft.Maui.Controls.VisualElement ve)
+						{
+							ve.InvalidateMeasure();
+						}
 					}
 #pragma warning disable CA1031 // Do not catch general exception types
 					catch (Exception ex)
