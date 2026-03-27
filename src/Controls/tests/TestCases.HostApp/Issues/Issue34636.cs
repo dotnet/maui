@@ -15,6 +15,14 @@ public class Issue34636 : ContentPage
         new MonkeyItem("Howler Monkey", Colors.Brown, "South America"),
         new MonkeyItem("Japanese Macaque", Colors.Teal, "Japan"),
         new MonkeyItem("Mandrill", Colors.Indigo, "Southern Cameroon, Gabon, Equatorial Guinea, and Congo"),
+        new MonkeyItem("Proboscis Monkey", Colors.Red, "Borneo"),
+        new MonkeyItem("Red-shanked Douc", Colors.Blue, "Vietnam, Laos"),
+        new MonkeyItem("Gray-shanked Douc", Colors.Green, "Vietnam"),
+        new MonkeyItem("Golden Snub-nosed Monkey", Colors.Orange, "China"),
+        new MonkeyItem("Black Snub-nosed Monkey", Colors.Purple, "China"),
+        new MonkeyItem("Tonkin Snub-nosed Monkey", Colors.Brown, "Vietnam"),
+        new MonkeyItem("Thomas's Langur", Colors.Teal, "Indonesia"),
+        new MonkeyItem("Purple-faced Langur", Colors.Indigo, "Sri Lanka"),
     };
 
     readonly ObservableCollection<MonkeyItem> _items = new(MonkeyData);
@@ -28,8 +36,6 @@ public class Issue34636 : ContentPage
         _collectionView = new CollectionView
         {
             AutomationId = "MonkeyCollectionView",
-            BackgroundColor = Colors.LightGray,
-            VerticalOptions = LayoutOptions.Fill,
             ItemsSource = _items,
             ItemsLayout = _itemsLayout,
             ItemTemplate = new DataTemplate(() =>
@@ -76,34 +82,58 @@ public class Issue34636 : ContentPage
             })
         };
 
-        var changeSpacingButton = new Button
+        var instructions = new StackLayout
+        {
+            Children =
+            {
+                new Label { Text = "1. The Monkeys are displayed in a single column list." },
+                new Label { Text = "2. The test passes if the spacing between the Monkeys changes vertically according to the set value." }
+            }
+        };
+
+        var updateButton = new Button
         {
             AutomationId = "ChangeSpacingButton",
-            Text = "Change spacing to 70"
+            Text = "Update"
         };
-        changeSpacingButton.Clicked += (_, _) =>
+        updateButton.Clicked += (_, _) =>
         {
             _itemsLayout.ItemSpacing = 70;
-            changeSpacingButton.Text = "Spacing changed to 70";
         };
 
         Content = new Grid
         {
+            Margin = new Thickness(20),
             RowDefinitions =
             {
+                new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Auto },
                 new RowDefinition { Height = GridLength.Star }
             },
             Children =
             {
-                changeSpacingButton,
+                instructions,
+                updateButton,
                 _collectionView
             }
         };
 
-        Grid.SetRow(changeSpacingButton, 0);
-        Grid.SetRow(_collectionView, 1);
+        Grid.SetRow(instructions, 0);
+        Grid.SetRow(updateButton, 1);
+        Grid.SetRow(_collectionView, 2);
     }
 
-    record MonkeyItem(string Name, Color Color, string Location);
+    class MonkeyItem
+    {
+        public string Name { get; set; }
+        public Color Color { get; set; }
+        public string Location { get; set; }
+
+        public MonkeyItem(string name, Color color, string location)
+        {
+            Name = name;
+            Color = color;
+            Location = location;
+        }
+    }
 }
