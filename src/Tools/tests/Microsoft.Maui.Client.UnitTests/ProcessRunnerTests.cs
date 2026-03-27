@@ -149,9 +149,13 @@ public class JdkManagerValidateInstallPathTests
 	public void ValidateInstallPath_ShallowPath_Throws()
 	{
 		// A 2-segment path like "/Users/foo" or "C:\Users" should be rejected
+		// On Windows, "C:\Users" matches a known system directory; on Unix, "/Users" is too shallow
 		var shallowPath = OperatingSystem.IsWindows() ? "C:\\Users" : "/Users";
 		var ex = Assert.Throws<MauiToolException>(() => JdkManager.ValidateInstallPath(shallowPath));
-		Assert.Contains("too shallow", ex.Message);
+		Assert.True(
+			ex.Message.Contains("too shallow", StringComparison.OrdinalIgnoreCase) ||
+			ex.Message.Contains("system directory", StringComparison.OrdinalIgnoreCase),
+			$"Expected 'too shallow' or 'system directory' in: {ex.Message}");
 	}
 
 	[Fact]
