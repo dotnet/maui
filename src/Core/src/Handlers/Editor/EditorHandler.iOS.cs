@@ -94,17 +94,16 @@ namespace Microsoft.Maui.Handlers
 				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
 					.FireAndForget(handler);
-				return;
 			}
-
-			if (editor.Background.IsNullOrEmpty())
+			else if (editor.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;
-				return;
 			}
-
-			platformView.UpdateBackground(editor);
+			else
+			{
+				platformView.UpdateBackground(editor);
+			}
 		}
 
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>

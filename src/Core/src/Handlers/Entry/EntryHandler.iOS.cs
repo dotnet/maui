@@ -60,15 +60,16 @@ namespace Microsoft.Maui.Handlers
 					.FireAndForget(handler);
 				return;
 			}
-
-			if (entry.Background.IsNullOrEmpty())
+			else if (entry.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;
 				return;
 			}
-
-			platformView.UpdateBackground(entry);
+			else
+			{
+				platformView.UpdateBackground(entry);
+			}
 		}
 
 		public static void MapTextColor(IEntryHandler handler, IEntry entry)
