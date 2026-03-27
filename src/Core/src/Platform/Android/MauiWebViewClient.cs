@@ -66,7 +66,11 @@ namespace Microsoft.Maui.Platform
 			handler.SyncPlatformCookiesToVirtualView(url);
 
 			handler?.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
-			RefreshViewWebViewScrollCapture.InjectObserver(view);
+
+			// Only inject the scroll-capture observer when the WebView is hosted inside
+			// a RefreshView – avoids unnecessary JS overhead for standalone WebViews.
+			if (RefreshViewWebViewScrollCapture.IsAttached(view))
+				RefreshViewWebViewScrollCapture.InjectObserver(view);
 
 			base.OnPageFinished(view, url);
 		}
