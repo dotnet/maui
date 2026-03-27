@@ -1151,8 +1151,137 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.DoesNotContain("return;", bodySection, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void ResourceAdded_UCEmitsResourceDictionaryAdd()
+	{
+		// Adding a resource should emit this.Resources["key"] = value
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceRemoved_UCEmitsResourceDictionaryRemove()
+	{
+		// Removing a resource should emit this.Resources.Remove("key")
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Uses Clear + re-add pattern — removed key won't be re-added
+		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("Clear", uc, StringComparison.Ordinal);
+		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+		// SecondaryColor should NOT be in the UC (it was removed)
+		Assert.DoesNotContain("SecondaryColor", uc, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceValueChanged_UCEmitsResourceUpdate()
+	{
+		// Changing a resource value should emit this.Resources["key"] = newValue
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
-	// Helpers
+	// Helpers (pipeline)
 	// -----------------------------------------------------------------------
 
 	static string? FindUCSource(GeneratorDriverRunResult result, string hintFragment)

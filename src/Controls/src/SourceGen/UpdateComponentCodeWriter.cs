@@ -605,6 +605,120 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
+	// -----------------------------------------------------------------------
+	// Resource dictionary patching
+	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits code to patch the page's <c>Resources</c> dictionary from the new XAML node.
+	/// Clears existing page-level resources, then re-adds all keyed resources from the new node.
+	/// <c>MergedDictionaries</c> (styles, etc.) are NOT affected by <c>Clear()</c>.
+	/// </summary>
+	/// <returns><see langword="true"/> if resource emission was handled; <see langword="false"/> to fall through.</returns>
+	static bool TryEmitResourceDictionaryChange(
+		IndentedTextWriter codeWriter,
+		INode newNode,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		// Collect resource elements from the new node
+		var resourceElements = new List<ElementNode>();
+		if (newNode is ListNode listNode)
+		{
+			foreach (var item in listNode.CollectionItems)
+			{
+				if (item is ElementNode en)
+					resourceElements.Add(en);
+			}
+		}
+		else if (newNode is ElementNode singleElement)
+		{
+			resourceElements.Add(singleElement);
+		}
+
+		if (resourceElements.Count == 0)
+			return false;
+
+		// Verify all resources have x:Key — required for dictionary patching
+		var keyedResources = new List<(string key, ElementNode element)>();
+		foreach (var elem in resourceElements)
+		{
+			if (elem.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode keyVal && keyVal.Value is string key)
+				keyedResources.Add((key, elem));
+			// Resources without x:Key (e.g., implicit styles) are skipped
+		}
+
+		if (keyedResources.Count == 0)
+			return false;
+
+		// Clear page-level resources (not MergedDictionaries) and re-add all
+		codeWriter.WriteLine("this.Resources.Clear();");
+		foreach (var (key, elem) in keyedResources)
+		{
+			var valueExpr = BuildResourceValueExpression(elem, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			if (valueExpr != null)
+				codeWriter.WriteLine($"this.Resources[\"{EscapeString(key)}\"] = {valueExpr};");
+			else
+				codeWriter.WriteLine($"// Cannot encode resource '{key}' — skipped");
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Builds a C# expression for a resource element value.
+	/// For known types (Color, etc.), uses the IC compile-time converter pipeline.
+	/// </summary>
+	static string? BuildResourceValueExpression(
+		ElementNode element,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		// Resolve the element type (e.g., Color, x:String, etc.)
+		if (!element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol)
+			|| typeSymbol == null)
+			return null;
+
+		var fqName = typeSymbol.ToFQDisplayString();
+
+		// For value-typed resources (Color, x:Double, x:String, etc.),
+		// the value is typically in the element's CollectionItems as a ValueNode
+		if (element.CollectionItems.Count == 1 && element.CollectionItems[0] is ValueNode valueNode)
+		{
+			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
+
+			// Use the IC converter pipeline via a synthetic property lookup
+			var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+			var ctx = new SourceGenContext(
+				new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
+				xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+
+			try
+			{
+				var result = valueNode.ConvertTo(typeSymbol, ctx.Writer, ctx, null);
+				if (result != null && result != "default" && result != string.Empty)
+					return result;
+			}
+			catch
+			{
+				// Converter threw — fall through
+			}
+
+			// Fallback: TypeDescriptor
+			return BuildTypeDescriptorExpression(rawValue, fqName);
+		}
+
+		return null;
+	}
+
 	static void EmitRootPropertyChange(
 		IndentedTextWriter codeWriter,
 		PropertyDiff propDiff,
@@ -632,6 +746,10 @@ static class UpdateComponentCodeWriter
 
 		if (propDiff.NewNode != null)
 		{
+			// Resource dictionary: emit Clear() + re-add all keyed resources
+			if (propName == "Resources" && TryEmitResourceDictionaryChange(codeWriter, propDiff.NewNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				return;
+
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
 			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — skipped (not yet supported)");
