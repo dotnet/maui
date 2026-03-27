@@ -487,6 +487,79 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
 	}
 
+	[Fact]
+	public void ResourceAdded_CompilesCleanly()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
+		Assert.NotNull(ucV2);
+
+		// IC + UC + stub should compile together without errors
+		var (pe, _, _) = CompileSources(PageStub, icV2, StripGeneratedCodeAttribute(ucV2!));
+		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
+	}
+
+	[Fact]
+	public void ResourceRemoved_CompilesCleanly()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
+		Assert.NotNull(ucV2);
+
+		var (pe, _, _) = CompileSources(PageStub, icV2, StripGeneratedCodeAttribute(ucV2!));
+		Assert.True(pe.Length > 0, "Compiled assembly should not be empty");
+	}
+
 	// -----------------------------------------------------------------------
 	// OptionsProvider (same as in pipeline tests)
 	// -----------------------------------------------------------------------

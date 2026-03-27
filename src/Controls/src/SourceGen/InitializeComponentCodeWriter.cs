@@ -97,8 +97,10 @@ static class InitializeComponentCodeWriter
 			{
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
 				{
+					codeWriter.WriteLine("#pragma warning disable CS0414 // __version is read by UpdateComponent (generated on XAML edit)");
 					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 					codeWriter.WriteLine("private int __version = 0;");
+					codeWriter.WriteLine("#pragma warning restore CS0414");
 					codeWriter.WriteLine();
 				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";

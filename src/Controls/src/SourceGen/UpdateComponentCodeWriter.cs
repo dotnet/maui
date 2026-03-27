@@ -661,7 +661,7 @@ static class UpdateComponentCodeWriter
 		{
 			// Build a set of new keys to check against
 			var newKeysList = string.Join(", ", keyedResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
-			codeWriter.WriteLine($"if (!new string[] {{ {newKeysList} }}.Contains(__rk))");
+			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {newKeysList} }}, __rk) < 0)");
 			codeWriter.Indent++;
 			codeWriter.WriteLine("this.Resources.Remove(__rk);");
 			codeWriter.Indent--;
