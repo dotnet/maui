@@ -868,10 +868,11 @@ if ($DetectedFixFiles.Count -eq 0) {
         $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
 
         if (-not $filterResult) {
-            Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
+            Write-Host "⚠️ No tests detected in this PR." -ForegroundColor Yellow
             Write-Host "   Searched for: UI tests, unit tests, XAML tests, device tests" -ForegroundColor Yellow
-            Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
-            exit 1
+            Write-Host "   Consider adding tests via write-tests-agent." -ForegroundColor Cyan
+            # Exit code 2 = no tests found (distinct from 1 = verification failed)
+            exit 2
         }
 
         $AllDetectedTests = @($filterResult.AllTests)
@@ -1011,10 +1012,11 @@ if (-not $TestFilter) {
     $filterResult = Get-AutoDetectedTestFilter -MergeBase $MergeBase
 
     if (-not $filterResult) {
-        Write-Host "❌ Could not auto-detect test filter. No test files found in changed files." -ForegroundColor Red
+        Write-Host "⚠️ No tests detected in this PR." -ForegroundColor Yellow
         Write-Host "   Searched for: UI tests, unit tests, XAML tests, device tests" -ForegroundColor Yellow
-        Write-Host "   Please provide -TestFilter parameter explicitly." -ForegroundColor Yellow
-        exit 1
+        Write-Host "   Consider adding tests via write-tests-agent." -ForegroundColor Cyan
+        # Exit code 2 = no tests found (distinct from 1 = verification failed)
+        exit 2
     }
 
     $AllDetectedTests = @($filterResult.AllTests)

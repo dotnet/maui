@@ -462,17 +462,40 @@ $verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix
 & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
 $gateExitCode = $LASTEXITCODE
 
-$gateResult = if ($gateExitCode -eq 0) { "PASSED" } else { "FAILED" }
-Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $(if ($gateExitCode -eq 0) { "Green" } else { "Red" })
+# Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
+$gateResult = switch ($gateExitCode) {
+    0 { "PASSED" }
+    2 { "SKIPPED" }
+    default { "FAILED" }
+}
+$gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
+Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 
 # Copy the verification report to gate/content.md if it exists
 $verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
 if (Test-Path $verificationReport) {
     Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
 } elseif (-not (Test-Path (Join-Path $gateOutputDir "content.md"))) {
-    # Create a minimal gate content if nothing was generated
-    "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
-        Set-Content (Join-Path $gateOutputDir "content.md")
+    # Create gate content based on result
+    if ($gateResult -eq "SKIPPED") {
+        $skipContent = @"
+### Gate Result: ⚠️ SKIPPED
+
+No tests were detected in this PR.
+
+**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``:
+
+``````
+@copilot write tests for this PR
+``````
+
+The agent will analyze the issue, determine the appropriate test type (UI test, device test, unit test, or XAML test), and create tests that verify the fix.
+"@
+        $skipContent | Set-Content (Join-Path $gateOutputDir "content.md")
+    } else {
+        "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
+            Set-Content (Join-Path $gateOutputDir "content.md")
+    }
 }
 
 # Post gate result as a separate PR comment
@@ -498,10 +521,10 @@ git checkout $reviewBranch 2>$null | Out-Null
 #  STEP 2: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
 # ═════════════════════════════════════════════════════════════════════════════
 
-$gateStatusForPrompt = if ($gateResult -eq "PASSED") {
-    "Gate ✅ PASSED — tests FAIL without fix, PASS with fix."
-} else {
-    "Gate ❌ FAILED — tests did NOT behave as expected."
+$gateStatusForPrompt = switch ($gateResult) {
+    "PASSED" { "Gate ✅ PASSED — tests FAIL without fix, PASS with fix." }
+    "SKIPPED" { "Gate ⚠️ SKIPPED — no tests detected in this PR. Consider suggesting the author add tests." }
+    default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
 $step2Prompt = @"
