@@ -1503,6 +1503,303 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 		Assert.Contains("this.Resources[\"InvertedStatusConverter\"]", uc, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void StyleChange_UCGeneratesPatch()
+	{
+		// Changing an inline Style's Setters should produce a UC patch.
+		// The Style subtree is complex, so the UC may rebuild it structurally.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Style>
+			                <Style TargetType="Label">
+			                    <Setter Property="TextColor" Value="Red" />
+			                </Style>
+			            </Label.Style>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Style>
+			                <Style TargetType="Label">
+			                    <Setter Property="TextColor" Value="Blue" />
+			                    <Setter Property="FontSize" Value="24" />
+			                </Style>
+			            </Label.Style>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// UC must reference the Style property in some form
+		Assert.Contains("Style", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void StyleResourceChange_UCUpdatesResourceDictionary()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Style x:Key="MyLabelStyle" TargetType="Label">
+			            <Setter Property="TextColor" Value="Red" />
+			        </Style>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" Style="{StaticResource MyLabelStyle}" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Style x:Key="MyLabelStyle" TargetType="Label">
+			            <Setter Property="TextColor" Value="Blue" />
+			            <Setter Property="FontSize" Value="24" />
+			        </Style>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" Style="{StaticResource MyLabelStyle}" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("MyLabelStyle", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TriggerAdded_UCGeneratesPatch()
+	{
+		// Adding a Trigger to an Entry should produce a UC patch.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Type here" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Type here">
+			            <Entry.Triggers>
+			                <Trigger TargetType="Entry" Property="IsFocused" Value="True">
+			                    <Setter Property="BackgroundColor" Value="LightYellow" />
+			                </Trigger>
+			            </Entry.Triggers>
+			        </Entry>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("Trigger", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void DataTriggerChange_UCGeneratesPatch()
+	{
+		// Changing a DataTrigger's Setter values should produce a UC patch.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Triggers>
+			                <DataTrigger TargetType="Label" Binding="{Binding IsActive}" Value="True">
+			                    <Setter Property="TextColor" Value="Green" />
+			                </DataTrigger>
+			            </Label.Triggers>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Triggers>
+			                <DataTrigger TargetType="Label" Binding="{Binding IsActive}" Value="True">
+			                    <Setter Property="TextColor" Value="Red" />
+			                    <Setter Property="FontAttributes" Value="Bold" />
+			                </DataTrigger>
+			            </Label.Triggers>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("Trigger", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void VisualStateManagerChange_UCGeneratesPatch()
+	{
+		// Changing VSM Setters should produce a UC patch.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Button Text="Click">
+			            <VisualStateManager.VisualStateGroups>
+			                <VisualStateGroup Name="CommonStates">
+			                    <VisualState Name="Normal">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="White" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                    <VisualState Name="Pressed">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="LightGray" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                </VisualStateGroup>
+			            </VisualStateManager.VisualStateGroups>
+			        </Button>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Button Text="Click">
+			            <VisualStateManager.VisualStateGroups>
+			                <VisualStateGroup Name="CommonStates">
+			                    <VisualState Name="Normal">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="White" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                    <VisualState Name="Pressed">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="DarkGray" />
+			                            <Setter Property="Scale" Value="0.95" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                </VisualStateGroup>
+			            </VisualStateManager.VisualStateGroups>
+			        </Button>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("VisualState", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void BehaviorAdded_UCGeneratesPatch()
+	{
+		// Adding a Behavior to an Entry. Behaviors are a complex collection property
+		// that the UC processes through the IC pipeline.
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class NumericValidationBehavior : Microsoft.Maui.Controls.Behavior<Microsoft.Maui.Controls.Entry>
+				{
+				}
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Enter number" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Enter number">
+			            <Entry.Behaviors>
+			                <local:NumericValidationBehavior />
+			            </Entry.Behaviors>
+			        </Entry>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// Behavior is a complex property — UC should mention it (even as skipped comment)
+		Assert.Contains("Behavior", uc, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
 	// Helpers (pipeline)
 	// -----------------------------------------------------------------------

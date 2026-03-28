@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls.Xaml;
 [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 public static class XamlIncrementalHotReloadHandler
 {
-	static readonly List<WeakReference> s_instances = new();
+	// Two-level table: Type → list of weak references to instances of that type.
+	// Track() is O(instances-of-type) instead of O(all-instances),
+	// and UpdateApplication() skips types with no tracked instances entirely.
+	static readonly Dictionary<Type, List<WeakReference>> s_instancesByType = new();
 
 	/// <summary>
 	/// Call from page constructors (after InitializeComponent) to register the
@@ -34,15 +37,22 @@ public static class XamlIncrementalHotReloadHandler
 		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
-		lock (s_instances)
+		var type = instance.GetType();
+		lock (s_instancesByType)
 		{
-			// InitializeComponent may run multiple times; avoid duplicate tracking
-			for (int i = 0; i < s_instances.Count; i++)
+			if (!s_instancesByType.TryGetValue(type, out var list))
 			{
-				if (ReferenceEquals(s_instances[i].Target, instance))
+				list = new List<WeakReference>();
+				s_instancesByType[type] = list;
+			}
+
+			// InitializeComponent may run multiple times; avoid duplicate tracking
+			for (int i = 0; i < list.Count; i++)
+			{
+				if (ReferenceEquals(list[i].Target, instance))
 					return;
 			}
-			s_instances.Add(new WeakReference(instance));
+			list.Add(new WeakReference(instance));
 		}
 	}
 
@@ -80,18 +90,17 @@ public static class XamlIncrementalHotReloadHandler
 				continue;
 
 			List<WeakReference> snapshot;
-			lock (s_instances)
+			lock (s_instancesByType)
 			{
-				snapshot = new List<WeakReference>(s_instances);
+				if (!s_instancesByType.TryGetValue(type, out var list) || list.Count == 0)
+					continue;
+				snapshot = new List<WeakReference>(list);
 			}
 
 			foreach (var weakRef in snapshot)
 			{
-				if (!weakRef.IsAlive)
-					continue;
-
 				var instance = weakRef.Target;
-				if (instance is null || instance.GetType() != type)
+				if (instance is null)
 					continue;
 
 				var capturedInstance = instance;
@@ -116,10 +125,18 @@ public static class XamlIncrementalHotReloadHandler
 			}
 		}
 
-		// Cleanup dead refs
-		lock (s_instances)
+		// Cleanup dead refs across all types
+		lock (s_instancesByType)
 		{
-			s_instances.RemoveAll(w => !w.IsAlive);
+			var emptyTypes = new List<Type>();
+			foreach (var kvp in s_instancesByType)
+			{
+				kvp.Value.RemoveAll(w => !w.IsAlive);
+				if (kvp.Value.Count == 0)
+					emptyTypes.Add(kvp.Key);
+			}
+			foreach (var t in emptyTypes)
+				s_instancesByType.Remove(t);
 		}
 	}
 }
