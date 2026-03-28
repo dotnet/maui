@@ -218,8 +218,8 @@ partial class TestPage : ContentPage
 	public void Enabled_DiagnosticsAndIHR_BothFeaturesPresent()
 	{
 		// The test driver always sets EnableMauiXamlDiagnostics=true, so EnableDiagnostics is
-		// always true in tests. Verify that the runtime-HR fallback block and the new IHR
-		// block coexist without conflict.
+		// always true in tests. When IHR is enabled, the runtime-HR fallback is suppressed
+		// because XIHR handles updates via UpdateComponent, not InitializeComponentRuntime.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -232,10 +232,12 @@ partial class TestPage : ContentPage
 """;
 		var (_, text) = RunGenerator(xaml, CodeBehind, enableIncrementalHotReload: true);
 		Assert.NotNull(text);
-		// Both should be present
-		Assert.Contains("ResourceProvider2", text, StringComparison.Ordinal);  // diagnostics/runtime-HR fallback
-		Assert.Contains("__version", text, StringComparison.Ordinal);           // IHR new field
-		Assert.Contains("XamlComponentRegistry.Register", text, StringComparison.Ordinal); // IHR register
+		// Runtime-HR fallback should NOT be present when IHR is active
+		Assert.DoesNotContain("ResourceProvider2", text, StringComparison.Ordinal);
+		// IHR features should be present
+		Assert.Contains("__version", text, StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry.Register", text, StringComparison.Ordinal);
+		Assert.Contains("XamlIncrementalHotReloadHandler.Track", text, StringComparison.Ordinal);
 	}
 
 	// helpers

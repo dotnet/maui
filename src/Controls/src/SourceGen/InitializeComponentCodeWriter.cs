@@ -125,7 +125,7 @@ static class InitializeComponentCodeWriter
 
 				using (newblock())
 				{
-					if (xamlItem.ProjectItem.EnableDiagnostics)
+					if (xamlItem.ProjectItem.EnableDiagnostics && !xamlItem.ProjectItem.EnableIncrementalHotReload)
 					{
 						codeWriter.WriteLine(
 $$"""
