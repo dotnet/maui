@@ -1,3 +1,4 @@
 #nullable enable
+~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.ScrollTo(Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> System.Threading.Tasks.Task
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
