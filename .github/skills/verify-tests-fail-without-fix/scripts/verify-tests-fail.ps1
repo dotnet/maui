@@ -1114,25 +1114,51 @@ function Write-MarkdownReport {
         $lines += "| With fix | PASS | FAIL | ❌ |"
     }
 
-    # Show failure details if any
-    $allResults = @($withoutFixResults) + @($withFixResults)
-    $detailLines = @()
-    foreach ($r in $allResults) {
-        if ($r.EnvError -and $r.Error) {
-            $detailLines += "- ⚠️ **Environment error:** $($r.Error)"
-        }
+    # Per-test execution details
+    $lines += ""
+    $lines += "#### Test Execution"
+    $lines += ""
+
+    # Without fix details
+    $lines += "**Without fix** (expect FAIL):"
+    $lines += ""
+    foreach ($r in $withoutFixResults) {
+        $durStr = if ($r.Duration) { "$([math]::Round($r.Duration.TotalSeconds)) s" } else { "—" }
+        $icon = if ($r.EnvError) { "⚠️" } elseif (-not $r.Passed) { "✅" } else { "❌" }
+        $statusWord = if ($r.EnvError) { "ENV ERROR" } elseif (-not $r.Passed) { "FAIL" } else { "PASS" }
+        $counts = if ($r.Total -gt 0) { " ($($r.Total) total, $($r.PassCount) passed, $($r.FailCount) failed)" } else { "" }
+        $lines += "- $icon **$($r.TestName)**: $statusWord$counts — $durStr"
         if ($r.FailureReason) {
-            $detailLines += "- ❌ **Failed:** $($r.FailureReason)"
+            $lines += "  - Failed: ``$($r.FailureReason)``"
         }
         if ($r.FailureMessage) {
-            $detailLines += "- 📋 **Error:** $($r.FailureMessage)"
+            $msgTrunc = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
+            $lines += "  - Error: ``$msgTrunc``"
+        }
+        if ($r.EnvError -and $r.Error) {
+            $lines += "  - Environment: ``$($r.Error)``"
         }
     }
-    if ($detailLines.Count -gt 0) {
-        $lines += ""
-        $lines += "#### Details"
-        $lines += ""
-        $lines += ($detailLines | Select-Object -Unique)
+
+    $lines += ""
+    $lines += "**With fix** (expect PASS):"
+    $lines += ""
+    foreach ($r in $withFixResults) {
+        $durStr = if ($r.Duration) { "$([math]::Round($r.Duration.TotalSeconds)) s" } else { "—" }
+        $icon = if ($r.EnvError) { "⚠️" } elseif ($r.Passed) { "✅" } else { "❌" }
+        $statusWord = if ($r.EnvError) { "ENV ERROR" } elseif ($r.Passed) { "PASS" } else { "FAIL" }
+        $counts = if ($r.Total -gt 0) { " ($($r.Total) total, $($r.PassCount) passed, $($r.FailCount) failed)" } else { "" }
+        $lines += "- $icon **$($r.TestName)**: $statusWord$counts — $durStr"
+        if ($r.FailureReason) {
+            $lines += "  - Failed: ``$($r.FailureReason)``"
+        }
+        if ($r.FailureMessage) {
+            $msgTrunc = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
+            $lines += "  - Error: ``$msgTrunc``"
+        }
+        if ($r.EnvError -and $r.Error) {
+            $lines += "  - Environment: ``$($r.Error)``"
+        }
     }
 
     $lines += ""
@@ -1280,17 +1306,20 @@ foreach ($testEntry in $AllDetectedTests) {
     if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
     $testLogFile = Join-Path $OutputPath "test-without-fix-$sanitizedName.log"
 
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+    $sw.Stop()
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
+    $result.Duration = $sw.Elapsed
     $withoutFixResults += $result
 
     if ($result.EnvError) {
-        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR without fix: $($result.Error)"
+        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR without fix: $($result.Error) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
     } elseif (-not $result.Passed) {
-        Write-Log "  ✅ $($testEntry.TestName) FAILED without fix (expected)"
+        Write-Log "  ✅ $($testEntry.TestName) FAILED without fix (expected) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
     } else {
-        Write-Log "  ❌ $($testEntry.TestName) PASSED without fix (unexpected!)"
+        Write-Log "  ❌ $($testEntry.TestName) PASSED without fix (unexpected!) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
     }
 }
 
@@ -1343,17 +1372,20 @@ foreach ($testEntry in $AllDetectedTests) {
     if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
     $testLogFile = Join-Path $OutputPath "test-with-fix-$sanitizedName.log"
 
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+    $sw.Stop()
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
+    $result.Duration = $sw.Elapsed
     $withFixResults += $result
 
     if ($result.EnvError) {
-        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR with fix: $($result.Error)"
+        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR with fix: $($result.Error) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
     } elseif ($result.Passed) {
-        Write-Log "  ✅ $($testEntry.TestName) PASSED with fix (expected)"
+        Write-Log "  ✅ $($testEntry.TestName) PASSED with fix (expected) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
     } else {
-        Write-Log "  ❌ $($testEntry.TestName) FAILED with fix (unexpected!)"
+        Write-Log "  ❌ $($testEntry.TestName) FAILED with fix (unexpected!) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
     }
 }
 
