@@ -218,6 +218,7 @@ $$"""
 						var assemblyName = compilation.AssemblyName ?? string.Empty;
 						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, xamlItem.ProjectItem.RelativePath ?? string.Empty);
 						codeWriter.WriteLine($"__version = {latestVersion};");
+						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
 				}
 			}

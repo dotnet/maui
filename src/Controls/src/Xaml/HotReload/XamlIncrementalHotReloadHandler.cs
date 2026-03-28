@@ -8,8 +8,8 @@ using System.Reflection;
 // The .NET hot-reload infrastructure passes the list of updated types to UpdateApplication();
 // this handler calls the generated UpdateComponent() method on each live instance.
 #pragma warning disable IL2026
-// [assembly: global::System.Reflection.Metadata.MetadataUpdateHandler(
-//     typeof(global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler))]
+[assembly: global::System.Reflection.Metadata.MetadataUpdateHandler(
+    typeof(global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler))]
 #pragma warning restore IL2026
 
 namespace Microsoft.Maui.Controls.Xaml;
@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Xaml;
 /// Tracks live page instances via weak references and invokes the generated
 /// <c>UpdateComponent()</c> method on the main thread when metadata is updated.
 /// </summary>
-internal static class XamlIncrementalHotReloadHandler
+/// <remarks>This type is public for source-generator access only. It is not intended to be used directly.</remarks>
+[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+public static class XamlIncrementalHotReloadHandler
 {
 	static readonly List<WeakReference> s_instances = new();
 
@@ -29,8 +31,17 @@ internal static class XamlIncrementalHotReloadHandler
 	/// </summary>
 	public static void Track(object instance)
 	{
+		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
+			return;
+
 		lock (s_instances)
 		{
+			// InitializeComponent may run multiple times; avoid duplicate tracking
+			for (int i = 0; i < s_instances.Count; i++)
+			{
+				if (ReferenceEquals(s_instances[i].Target, instance))
+					return;
+			}
 			s_instances.Add(new WeakReference(instance));
 		}
 	}

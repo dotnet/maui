@@ -9,3 +9,7 @@ static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.ReRoot(object! page, s
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(object! page, string! nodeIdPrefix) -> void
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetComponent(object! page, string! nodeId) -> object?
 static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterComponent(object! element, string! nodeId) -> void
+Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler
+static Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.ClearCache(System.Type![]? updatedTypes) -> void
+static Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(object! instance) -> void
+static Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.UpdateApplication(System.Type![]? updatedTypes) -> void
