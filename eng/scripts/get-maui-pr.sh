@@ -411,7 +411,7 @@ get_package_dotnet_version() {
     fi
     
     # Default to current stable if can't determine
-    echo "9"
+    echo "10"
 }
 
 # Check if version matches target framework

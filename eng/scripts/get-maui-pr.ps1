@@ -418,7 +418,7 @@ function Get-PackageDotNetVersion {
     }
     
     # Default to current stable if can't determine
-    return 9
+    return 10
 }
 
 # Update target frameworks
