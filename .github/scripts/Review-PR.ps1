@@ -514,6 +514,29 @@ if (Test-Path $postGateScript) {
     Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
 }
 
+# Apply gate result label
+$gatePassLabel = "s/agent-gate-passed"
+$gateFaillabel = "s/agent-gate-failed"
+$gateSkipLabel = "s/agent-gate-skipped"
+$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
+
+$addLabel = switch ($gateResult) {
+    "PASSED"  { $gatePassLabel }
+    "SKIPPED" { $gateSkipLabel }
+    default   { $gateFaillabel }
+}
+$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
+
+if (-not $DryRun) {
+    foreach ($lbl in $removeLabels) {
+        gh pr edit $PRNumber --remove-label $lbl 2>$null | Out-Null
+    }
+    gh pr edit $PRNumber --add-label $addLabel 2>$null | Out-Null
+    Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+} else {
+    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+}
+
 # Restore review branch
 git checkout $reviewBranch 2>$null | Out-Null
 
