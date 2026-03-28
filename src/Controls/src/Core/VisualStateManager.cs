@@ -152,6 +152,48 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		/// Forces unapply and reapply of the current visual state setters for the specified <paramref name="visualElement"/>.
+		/// Use when visual state setters have been mutated in-place and the changes need to be reflected on the element.
+		/// </summary>
+		/// <param name="visualElement">The visual element whose visual states should be reapplied.</param>
+		public static void InvalidateVisualStates(VisualElement visualElement)
+		{
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			if (context is null)
+			{
+				return;
+			}
+
+			var vsgSpecificityValue = context.Values.GetSpecificityAndValue();
+			var groups = (VisualStateGroupList)vsgSpecificityValue.Value;
+			if (groups?.IsDefault != false)
+			{
+				return;
+			}
+
+			var vsgSpecificity = vsgSpecificityValue.Key;
+			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+
+			foreach (VisualStateGroup group in groups)
+			{
+				if (group.CurrentState is not { } state)
+				{
+					continue;
+				}
+
+				foreach (Setter setter in state.Setters)
+				{
+					setter.UnApply(visualElement, specificity);
+				}
+
+				foreach (Setter setter in state.Setters)
+				{
+					setter.Apply(visualElement, specificity);
+				}
+			}
+		}
+
 		internal static void UpdateStateTriggers(VisualElement visualElement)
 		{
 			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
@@ -751,7 +793,7 @@ namespace Microsoft.Maui.Controls
 				group.VisualElement = clone.VisualElement;
 				clone.Add(group.Clone());
 			}
-			
+
 			// Preserve specificity when cloning (issue #27202)
 			if (groups is VisualStateGroupList sourceList)
 			{

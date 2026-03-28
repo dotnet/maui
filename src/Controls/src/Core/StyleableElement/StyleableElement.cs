@@ -53,5 +53,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		IList<string> IStyleSelectable.Classes => StyleClass;
+
+		/// <summary>
+		/// Forces unapply and reapply of the current merged style.
+		/// Use when a <see cref="Style"/> has been mutated in-place and needs to be reflected on the element.
+		/// </summary>
+		public void InvalidateStyle() => _mergedStyle.Reapply();
 	}
 }

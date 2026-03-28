@@ -25,6 +25,12 @@ namespace Microsoft.Maui.Controls
 			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
+		/// <summary>
+		/// Forces unapply and reapply of the current merged style.
+		/// Use when a <see cref="Style"/> has been mutated in-place and needs to be reflected on the element.
+		/// </summary>
+		public void InvalidateStyle() => _mergedStyle.Reapply();
+
 		/// <summary>Gets a value indicating whether this image source is empty.</summary>
 		public virtual bool IsEmpty => false;
 

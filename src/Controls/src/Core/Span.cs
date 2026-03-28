@@ -17,6 +17,12 @@ namespace Microsoft.Maui.Controls
 			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
+		/// <summary>
+		/// Forces unapply and reapply of the current merged style.
+		/// Use when a <see cref="Style"/> has been mutated in-place and needs to be reflected on the element.
+		/// </summary>
+		public void InvalidateStyle() => _mergedStyle.Reapply();
+
 		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty = BindableProperty.Create(nameof(Style), typeof(Style), typeof(Span), default(Style),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Span)bindable)._mergedStyle.Style = (Style)newvalue, defaultBindingMode: BindingMode.OneWay);
