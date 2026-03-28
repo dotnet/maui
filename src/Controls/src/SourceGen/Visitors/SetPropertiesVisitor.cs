@@ -18,6 +18,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	   XmlName.xArguments,
 		XmlName.xClass,
 		XmlName.xClassModifier,
+		XmlName.xCode,
 		XmlName.xDataType,
 		XmlName.xFactoryMethod,
 		XmlName.xFieldModifier,
@@ -29,7 +30,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 	public bool StopOnDataTemplate => true;
 	public bool VisitNodeOnDataTemplate => true;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => GeneratorHelpers.IsXCodeElement(node);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -82,6 +83,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		if (GeneratorHelpers.IsXCodeElement(node))
+			return;
 		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (node, type) => context.Variables[node];
 		XmlName propertyName = XmlName.Empty;
 
