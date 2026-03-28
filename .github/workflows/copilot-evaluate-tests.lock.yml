@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"8f1686e10a1aa945094b88478506817bd12164bc35d1582570ad8dca9e420b93","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"10204a6c8e2082405538d6953d80a166a21e0415f9de81d79562e5447d5c9cdd","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -43,6 +43,11 @@ name: "Evaluate PR Tests"
         description: PR number to evaluate
         required: true
         type: number
+      suppress_comment:
+        default: false
+        description: Dry-run — evaluate but do not post a comment on the PR
+        required: false
+        type: boolean
 
 permissions: {}
 
@@ -148,6 +153,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_SUPPRESS_COMMENT: ${{ inputs.suppress_comment }}
           GH_AW_IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || '' }}
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
@@ -209,6 +215,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_INPUTS_SUPPRESS_COMMENT: ${{ inputs.suppress_comment }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -228,6 +235,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_SUPPRESS_COMMENT: ${{ inputs.suppress_comment }}
           GH_AW_IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || '' }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
         with:
@@ -250,6 +258,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_SUPPRESS_COMMENT: process.env.GH_AW_INPUTS_SUPPRESS_COMMENT,
                 GH_AW_IS_PR_COMMENT: process.env.GH_AW_IS_PR_COMMENT,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }

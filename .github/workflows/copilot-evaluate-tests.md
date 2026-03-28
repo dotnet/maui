@@ -14,6 +14,11 @@ on:
         description: 'PR number to evaluate'
         required: true
         type: number
+      suppress_comment:
+        description: 'Dry-run — evaluate but do not post a comment on the PR'
+        required: false
+        type: boolean
+        default: false
 
 if: >-
   (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
@@ -115,6 +120,22 @@ If the file is **missing**, the fork PR branch is likely not rebased on the late
 
 Then stop — do not proceed with the evaluation.
 
+## Dry-run mode
+
+When triggered via `workflow_dispatch` with `suppress_comment` = `${{ inputs.suppress_comment }}`:
+- If **true**, perform the full evaluation but **do not** post a comment on the PR. Write the evaluation to the workflow log only. This is useful for testing the skill without spamming the PR.
+- If **false** (default), post the comment as normal.
+
+## When no action is needed
+
+If there is nothing to evaluate (PR has no test files, PR is a docs-only change, etc.), you **must** call the `noop` tool with a message explaining why:
+
+```json
+{"noop": {"message": "No action needed: [brief explanation, e.g. 'PR contains no test files']"}}
+```
+
+Do not post a comment and do not silently exit — always use `noop` so the workflow run shows a clear reason.
+
 ## Running the skill
 
 1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). If `gh` CLI is unavailable, use the GitHub MCP tools instead.
@@ -124,7 +145,9 @@ Then stop — do not proceed with the evaluation.
 
 ## Posting Results
 
-Call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
+If dry-run mode is active (`suppress_comment` is true), log the evaluation report to stdout and stop — do **not** call `add_comment`.
+
+Otherwise, call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
 
 ```markdown
 ## 🧪 PR Test Evaluation
