@@ -1109,6 +1109,73 @@ function Write-MarkdownReport {
         $lines += "| $icon **$($t.TestName)** ``$($t.Filter)`` | $woCell | $wCell |"
     }
 
+    # ── Per-test logs (collapsible) ──
+    foreach ($t in $AllDetectedTests) {
+        $sanitizedName = ($t.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
+        if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
+
+        $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
+        $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
+        $icon = switch ($t.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "" } }
+
+        # Without fix log
+        $woLogFile = Join-Path $OutputPath "test-without-fix-$sanitizedName.log"
+        $woStatus = if ($woResult.EnvError) { "⚠️ ENV ERROR" } elseif (-not $woResult.Passed) { "FAIL ✅" } else { "PASS ❌" }
+        $woDur = if ($woResult.Duration) { " · $([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
+        $lines += ""
+        $lines += "<details>"
+        $lines += "<summary>🔴 <strong>Without fix</strong> — $icon $($t.TestName): $woStatus$woDur</summary>"
+        $lines += ""
+        if (Test-Path $woLogFile) {
+            $logContent = Get-Content $woLogFile -Raw -ErrorAction SilentlyContinue
+            if ($logContent) {
+                # Truncate if too large for a PR comment (GitHub limit ~65k chars total)
+                if ($logContent.Length -gt 15000) {
+                    $logContent = $logContent.Substring($logContent.Length - 15000)
+                    $lines += "*(truncated to last 15,000 chars)*"
+                    $lines += ""
+                }
+                $lines += '```'
+                $lines += $logContent
+                $lines += '```'
+            } else {
+                $lines += "*Log file empty*"
+            }
+        } else {
+            $lines += "*No log file found*"
+        }
+        $lines += ""
+        $lines += "</details>"
+
+        # With fix log
+        $wLogFile = Join-Path $OutputPath "test-with-fix-$sanitizedName.log"
+        $wStatus = if ($wResult.EnvError) { "⚠️ ENV ERROR" } elseif ($wResult.Passed) { "PASS ✅" } else { "FAIL ❌" }
+        $wDur = if ($wResult.Duration) { " · $([math]::Round($wResult.Duration.TotalSeconds))s" } else { "" }
+        $lines += ""
+        $lines += "<details>"
+        $lines += "<summary>🟢 <strong>With fix</strong> — $icon $($t.TestName): $wStatus$wDur</summary>"
+        $lines += ""
+        if (Test-Path $wLogFile) {
+            $logContent = Get-Content $wLogFile -Raw -ErrorAction SilentlyContinue
+            if ($logContent) {
+                if ($logContent.Length -gt 15000) {
+                    $logContent = $logContent.Substring($logContent.Length - 15000)
+                    $lines += "*(truncated to last 15,000 chars)*"
+                    $lines += ""
+                }
+                $lines += '```'
+                $lines += $logContent
+                $lines += '```'
+            } else {
+                $lines += "*Log file empty*"
+            }
+        } else {
+            $lines += "*No log file found*"
+        }
+        $lines += ""
+        $lines += "</details>"
+    }
+
     # ── Failure details (only if something went wrong) ──
     $failureLines = @()
     foreach ($r in $withoutFixResults) {
