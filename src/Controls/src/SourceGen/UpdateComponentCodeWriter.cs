@@ -1562,7 +1562,10 @@ static class UpdateComponentCodeWriter
 		var newHandler = propDiff.NewValue;
 		if (newHandler == null || !IsValidCSharpIdentifier(newHandler))
 		{
-			codeWriter.WriteLine($"// Event '{propName}' handler is not a valid identifier — skipped");
+			// Still unsubscribe old handler even if new is invalid
+			if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
+				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+			codeWriter.WriteLine($"// Event '{propName}' new handler is not a valid identifier — skipped subscribe");
 			return true;
 		}
 

@@ -1007,7 +1007,7 @@ static class SetPropertyHelpers
 			// TransformedExpression already has identifiers prefixed with __source. where needed
 			// Add null-forgiving operator if expression contains ?. to suppress nullability warnings
 			var getterExpression = analysis.TransformedExpression;
-			if (getterExpression.Contains("?."))
+			if (getterExpression.Contains("?.") && !getterExpression.EndsWith("!", StringComparison.Ordinal))
 				getterExpression += "!";
 			writer.WriteLine($"__source => ({getterExpression}, true),");
 			

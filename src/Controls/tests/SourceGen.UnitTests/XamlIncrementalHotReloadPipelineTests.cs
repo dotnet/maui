@@ -2109,6 +2109,50 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 		Assert.Contains("not a valid identifier", uc, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void ResourceChange_NonEmittableKeyNotRemoved()
+	{
+		// When a Color resource becomes a Style (non-emittable), the key must NOT be removed
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="Primary">Red</Color>
+			        <Color x:Key="Accent">Blue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Test" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Style x:Key="Primary" TargetType="Label">
+			            <Setter Property="TextColor" Value="Red" />
+			        </Style>
+			        <Color x:Key="Accent">Green</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Test" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// The key array in the removal guard must include "Primary" even though it's non-emittable.
+		// This prevents the old Color resource from being removed while the new Style can't be emitted.
+		Assert.Contains("\"Primary\"", uc, StringComparison.Ordinal);
+		Assert.Contains("\"Accent\"", uc, StringComparison.Ordinal);
+		// Accent (still a Color) should be updated
+		Assert.Contains("Resources[\"Accent\"]", uc, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
 	// Helpers (pipeline)
 	// -----------------------------------------------------------------------
