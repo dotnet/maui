@@ -352,8 +352,6 @@ function Invoke-TestRun {
             # Capture all output — includes build, deploy, and test results
             $scriptOutput = & $buildScript @uiParams 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
-            $scriptOutput | ForEach-Object { Write-Host $_ }
-            # Parser reads directly from $LogFile — no dependency on shared test-output.log
             return $LogFile
         }
 
@@ -379,7 +377,6 @@ function Invoke-TestRun {
 
             $scriptOutput = & dotnet @testArgs 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
-            $scriptOutput | ForEach-Object { Write-Host $_ }
             return $LogFile
         }
 
@@ -418,7 +415,6 @@ function Invoke-TestRun {
 
             $scriptOutput = & dotnet @testArgs 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
-            $scriptOutput | ForEach-Object { Write-Host $_ }
             return $LogFile
         }
 
@@ -458,7 +454,6 @@ function Invoke-TestRun {
 
             $scriptOutput = & $deviceTestScript @deviceParams 2>&1
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
-            $scriptOutput | ForEach-Object { Write-Host $_ }
             return $LogFile
         }
 
@@ -1291,22 +1286,25 @@ foreach ($file in $RevertableFiles) {
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
 
 # Step 2: Run ALL tests WITHOUT fix
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║  STEP 2: Running tests WITHOUT fix (expect FAIL)          ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 Write-Log ""
-Write-Log "=========================================="
 Write-Log "STEP 2: Running tests WITHOUT fix (should FAIL)"
-Write-Log "=========================================="
 
 $withoutFixResults = @()
 $testIndex = 0
 foreach ($testEntry in $AllDetectedTests) {
     $testIndex++
     $icon = switch ($testEntry.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
-    Write-Log ""
-    Write-Log "--- Test $testIndex/$($AllDetectedTests.Count): $icon [$($testEntry.Type)] $($testEntry.TestName) ---"
 
     $sanitizedName = ($testEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
     if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
     $testLogFile = Join-Path $OutputPath "test-without-fix-$sanitizedName.log"
+
+    # AzDO collapsible group for raw test output
+    Write-Host "##[group]🔴 WITHOUT FIX $testIndex/$($AllDetectedTests.Count): $icon $($testEntry.TestName) (filter: $($testEntry.Filter))"
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
@@ -1316,13 +1314,27 @@ foreach ($testEntry in $AllDetectedTests) {
     $result.Duration = $sw.Elapsed
     $withoutFixResults += $result
 
-    if ($result.EnvError) {
-        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR without fix: $($result.Error) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
-    } elseif (-not $result.Passed) {
-        Write-Log "  ✅ $($testEntry.TestName) FAILED without fix (expected) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
-    } else {
-        Write-Log "  ❌ $($testEntry.TestName) PASSED without fix (unexpected!) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
+    # Print raw log inside the collapsible group so it's available but not noisy
+    if (Test-Path $testLogFile) {
+        $logLines = Get-Content $testLogFile -ErrorAction SilentlyContinue
+        $lineCount = if ($logLines) { $logLines.Count } else { 0 }
+        Write-Host "  ── Log ($lineCount lines) ──" -ForegroundColor DarkGray
+        if ($logLines) { $logLines | ForEach-Object { Write-Host "  $_" } }
     }
+    Write-Host "##[endgroup]"
+
+    # Print result OUTSIDE the group so it's always visible
+    $durStr = "$([math]::Round($sw.Elapsed.TotalSeconds))s"
+    $counts = if ($result.Total -gt 0) { " ($($result.Total) total, $($result.Failed) failed)" } else { "" }
+    if ($result.EnvError) {
+        Write-Host "  ⚠️ $($testEntry.TestName): ENV ERROR$counts — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif (-not $result.Passed) {
+        Write-Host "  ✅ $($testEntry.TestName): FAILED$counts — $durStr (expected)" -ForegroundColor Green
+        if ($result.FailureReason) { Write-Host "     └─ $($result.FailureReason)" -ForegroundColor DarkGray }
+    } else {
+        Write-Host "  ❌ $($testEntry.TestName): PASSED$counts — $durStr (unexpected!)" -ForegroundColor Red
+    }
+    Write-Log "  [$($testEntry.Type)] $($testEntry.TestName): Passed=$($result.Passed) Failed=$($result.Failed) [$durStr]"
 }
 
 # Combine into a single summary for backward compatibility
@@ -1357,22 +1369,25 @@ foreach ($file in $RevertableFiles) {
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
 
 # Step 4: Run ALL tests WITH fix
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  STEP 4: Running tests WITH fix (expect PASS)            ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Log ""
-Write-Log "=========================================="
 Write-Log "STEP 4: Running tests WITH fix (should PASS)"
-Write-Log "=========================================="
 
 $withFixResults = @()
 $testIndex = 0
 foreach ($testEntry in $AllDetectedTests) {
     $testIndex++
     $icon = switch ($testEntry.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "❓" } }
-    Write-Log ""
-    Write-Log "--- Test $testIndex/$($AllDetectedTests.Count): $icon [$($testEntry.Type)] $($testEntry.TestName) ---"
 
     $sanitizedName = ($testEntry.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
     if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
     $testLogFile = Join-Path $OutputPath "test-with-fix-$sanitizedName.log"
+
+    # AzDO collapsible group for raw test output
+    Write-Host "##[group]🟢 WITH FIX $testIndex/$($AllDetectedTests.Count): $icon $($testEntry.TestName) (filter: $($testEntry.Filter))"
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
@@ -1382,13 +1397,27 @@ foreach ($testEntry in $AllDetectedTests) {
     $result.Duration = $sw.Elapsed
     $withFixResults += $result
 
-    if ($result.EnvError) {
-        Write-Log "  ⚠️ $($testEntry.TestName) ENV ERROR with fix: $($result.Error) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
-    } elseif ($result.Passed) {
-        Write-Log "  ✅ $($testEntry.TestName) PASSED with fix (expected) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
-    } else {
-        Write-Log "  ❌ $($testEntry.TestName) FAILED with fix (unexpected!) [$([math]::Round($sw.Elapsed.TotalSeconds))s]"
+    # Print raw log inside the collapsible group
+    if (Test-Path $testLogFile) {
+        $logLines = Get-Content $testLogFile -ErrorAction SilentlyContinue
+        $lineCount = if ($logLines) { $logLines.Count } else { 0 }
+        Write-Host "  ── Log ($lineCount lines) ──" -ForegroundColor DarkGray
+        if ($logLines) { $logLines | ForEach-Object { Write-Host "  $_" } }
     }
+    Write-Host "##[endgroup]"
+
+    # Print result OUTSIDE the group so it's always visible
+    $durStr = "$([math]::Round($sw.Elapsed.TotalSeconds))s"
+    $counts = if ($result.Total -gt 0) { " ($($result.Total) total, $($result.Failed) failed)" } else { "" }
+    if ($result.EnvError) {
+        Write-Host "  ⚠️ $($testEntry.TestName): ENV ERROR$counts — $durStr — $($result.Error)" -ForegroundColor Yellow
+    } elseif ($result.Passed) {
+        Write-Host "  ✅ $($testEntry.TestName): PASSED$counts — $durStr (expected)" -ForegroundColor Green
+    } else {
+        Write-Host "  ❌ $($testEntry.TestName): FAILED$counts — $durStr (unexpected!)" -ForegroundColor Red
+        if ($result.FailureReason) { Write-Host "     └─ $($result.FailureReason)" -ForegroundColor DarkGray }
+    }
+    Write-Log "  [$($testEntry.Type)] $($testEntry.TestName): Passed=$($result.Passed) Failed=$($result.Failed) [$durStr]"
 }
 
 # Combine into a single summary for backward compatibility
@@ -1404,10 +1433,12 @@ $withFixResult = @{
 $withFixResults | ForEach-Object { "[$($_.TestType)] $($_.TestName): Passed=$($_.Passed) Failed=$($_.Failed)" } | Out-File $WithFixLog -Append
 
 # Step 5: Evaluate results
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor White
+Write-Host "║                  GATE SUMMARY                             ║" -ForegroundColor White
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor White
 Write-Log ""
-Write-Log "=========================================="
 Write-Log "VERIFICATION RESULTS"
-Write-Log "=========================================="
 
 $verificationPassed = $false
 # "Without fix" should FAIL → all tests should NOT pass
@@ -1415,29 +1446,34 @@ $failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 
 # "With fix" should PASS → all tests should pass
 $passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
 
-Write-Log ""
-Write-Log "Per-test results:"
+# Print a clear comparison table
+Write-Host ""
+Write-Host "  Test Name              │ Without Fix │  With Fix  " -ForegroundColor White
+Write-Host "  ───────────────────────┼─────────────┼────────────" -ForegroundColor DarkGray
 foreach ($t in $AllDetectedTests) {
     $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
     $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
-    $woStatus = if ($woResult -and -not $woResult.Passed) { "FAIL ✅" } else { "PASS ❌" }
-    $wStatus = if ($wResult -and $wResult.Passed) { "PASS ✅" } else { "FAIL ❌" }
-    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$woStatus, with fix=$wStatus"
-}
 
-if ($failedWithoutFix) {
-    Write-Log ""
-    Write-Log "✅ All tests FAILED without fix (expected - issues detected)"
-} else {
-    Write-Log ""
-    Write-Log "❌ Some tests PASSED without fix (unexpected!)"
-}
+    $woIcon = if ($woResult.EnvError) { "⚠️ ENV ERR" } elseif (-not $woResult.Passed) { "✅ FAIL   " } else { "❌ PASS   " }
+    $wIcon = if ($wResult.EnvError) { "⚠️ ENV ERR" } elseif ($wResult.Passed) { "✅ PASS  " } else { "❌ FAIL  " }
 
-if ($passedWithFix) {
-    Write-Log "✅ All tests PASSED with fix (expected - fixes work)"
-} else {
-    Write-Log "❌ Some tests FAILED with fix (unexpected!)"
+    $nameDisplay = $t.TestName
+    if ($nameDisplay.Length -gt 22) { $nameDisplay = $nameDisplay.Substring(0, 19) + "..." }
+    $nameDisplay = $nameDisplay.PadRight(22)
+
+    $woColor = if ($woResult.EnvError) { "Yellow" } elseif (-not $woResult.Passed) { "Green" } else { "Red" }
+    $wColor = if ($wResult.EnvError) { "Yellow" } elseif ($wResult.Passed) { "Green" } else { "Red" }
+
+    Write-Host "  $nameDisplay │ " -NoNewline -ForegroundColor White
+    Write-Host "$woIcon" -NoNewline -ForegroundColor $woColor
+    Write-Host "  │ " -NoNewline -ForegroundColor White
+    Write-Host "$wIcon" -ForegroundColor $wColor
+
+    Write-Log "  [$($t.Type)] $($t.TestName): without fix=$(if (-not $woResult.Passed) {'FAIL ✅'} else {'PASS ❌'}), with fix=$(if ($wResult.Passed) {'PASS ✅'} else {'FAIL ❌'})"
 }
+Write-Host "  ───────────────────────┼─────────────┼────────────" -ForegroundColor DarkGray
+Write-Host "  Expected               │   FAIL      │   PASS     " -ForegroundColor DarkGray
+Write-Host ""
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
 
