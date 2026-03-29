@@ -528,11 +528,19 @@ $addLabel = switch ($gateResult) {
 $removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
 
 if (-not $DryRun) {
+    # Ensure label exists in the repo (gh label create is idempotent)
+    $labelColor = switch ($gateResult) { "PASSED" { "0E8A16" } "SKIPPED" { "FBCA04" } default { "D93F0B" } }
+    gh label create $addLabel --color $labelColor --force --repo dotnet/maui 2>$null | Out-Null
+
     foreach ($lbl in $removeLabels) {
-        gh pr edit $PRNumber --remove-label $lbl 2>$null | Out-Null
+        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
     }
-    gh pr edit $PRNumber --add-label $addLabel 2>$null | Out-Null
-    Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+    $addOutput = gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+    } else {
+        Write-Host "  ⚠️ Failed to apply label $addLabel : $addOutput" -ForegroundColor Yellow
+    }
 } else {
     Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
 }
