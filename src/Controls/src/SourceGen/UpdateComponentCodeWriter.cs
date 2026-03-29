@@ -771,7 +771,10 @@ static class UpdateComponentCodeWriter
 			var bp = FindStaticField(rootType, bpFieldName);
 			if (bp != null)
 			{
-				codeWriter.WriteLine($"this.ClearValue({rootType.ToFQDisplayString()}.{bpFieldName});");
+				var fqType = rootType.ToFQDisplayString();
+				// Remove any existing binding before clearing (prevents zombie bindings)
+				codeWriter.WriteLine($"this.RemoveBinding({fqType}.{bpFieldName});");
+				codeWriter.WriteLine($"this.ClearValue({fqType}.{bpFieldName});");
 				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");
@@ -799,6 +802,8 @@ static class UpdateComponentCodeWriter
 			return;
 		}
 
+		// Remove any existing binding before setting a static value
+		EmitRemoveBindingIfNeeded(codeWriter, "this", rootType, propName);
 		codeWriter.WriteLine($"this.{propName} = {valueExpr};");
 	}
 
@@ -819,6 +824,12 @@ static class UpdateComponentCodeWriter
 
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
+			if (propName.Contains('.'))
+			{
+				// Attached property clear: "Grid.Row" → Grid.RowProperty
+				EmitAttachedPropertyClear(codeWriter, propDiff, varName, compilation, xmlnsCache, typeCache);
+				return;
+			}
 			// Use ClearValue via the BindableObject API when we know the bindable property field
 			if (nodeType != null)
 			{
@@ -827,7 +838,10 @@ static class UpdateComponentCodeWriter
 				var bp = FindStaticField(nodeType, bpFieldName);
 				if (bp != null)
 				{
-					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({nodeType.ToFQDisplayString()}.{bpFieldName});");
+					var fqType = nodeType.ToFQDisplayString();
+					// Remove any existing binding before clearing (prevents zombie bindings)
+					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
+					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
 					return;
 				}
 			}
@@ -863,12 +877,58 @@ static class UpdateComponentCodeWriter
 			return;
 		}
 
+		// Remove any existing binding before setting a static value
+		EmitRemoveBindingIfNeeded(codeWriter, varName, nodeType, propName);
 		codeWriter.WriteLine($"{castPrefix}{propName} = {valueExpr};");
 	}
 
 	// -----------------------------------------------------------------------
 	// Attached property handling
 	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits code to clear an attached property (e.g., <c>Grid.Row</c> removed from XAML).
+	/// Resolves the declaring type (Grid) rather than the element type (Button).
+	/// </summary>
+	static void EmitAttachedPropertyClear(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		string varName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	{
+		var propName = propDiff.PropertyName.LocalName;
+		var dotIdx = propName.IndexOf('.');
+		var declaringTypeName = propName.Substring(0, dotIdx);
+		var attachedPropName = propName.Substring(dotIdx + 1);
+
+		// Resolve the declaring type (e.g., "Grid" → Microsoft.Maui.Controls.Grid)
+		var declaringXmlType = new XmlType(propDiff.PropertyName.NamespaceURI, declaringTypeName, null);
+		if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var declaringType)
+			|| declaringType == null)
+		{
+			declaringXmlType = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", declaringTypeName, null);
+			if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out declaringType)
+				|| declaringType == null)
+			{
+				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' for clear — skipped");
+				return;
+			}
+		}
+
+		var bpFieldName = $"{attachedPropName}Property";
+		var bpField = FindStaticField(declaringType, bpFieldName);
+		if (bpField == null)
+		{
+			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' for clear — skipped");
+			return;
+		}
+
+		var fqDeclaring = declaringType.ToFQDisplayString();
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqDeclaring}.{bpFieldName});");
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqDeclaring}.{bpFieldName});");
+	}
 
 	/// <summary>
 	/// Emits code for an attached property change like <c>Grid.Row="1"</c>.
@@ -1266,6 +1326,7 @@ static class UpdateComponentCodeWriter
 
 	/// <summary>
 	/// Emits a <c>SetBinding</c> call with a <c>TypedBinding</c> for a C# expression.
+	/// Delegates to <see cref="SetPropertyHelpers.SetExpressionBindingForUC"/> for shared codegen.
 	/// </summary>
 	static bool TryEmitExpressionBinding(
 		IndentedTextWriter codeWriter,
@@ -1286,82 +1347,15 @@ static class UpdateComponentCodeWriter
 		if (bpField == null)
 			return false;
 
-		// Find x:DataType by walking up the parent chain
+		// Resolve x:DataType using shared resolver
 		if (!TryResolveXDataType(markupNode, compilation, xmlnsCache, typeCache, out var dataTypeSymbol) || dataTypeSymbol == null)
 			return false;
 
 		var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
-
-		// Transform quotes
-		var transformedExpression = CSharpExpressionHelpers.TransformQuotesWithSemantics(
-			expressionCode, compilation, dataTypeSymbol, rootType);
-
-		// Analyze expression
-		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType);
-		var handlers = analysis.Handlers;
-
-		// Resolve expression result type
-		var expressionType = ResolveExpressionTypeForUC(expressionCode, dataTypeSymbol, compilation);
-		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
-		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
+		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
 		var bpName = bpField.ToFQDisplayString();
 
-		// Wrap in scoped block if we have captures
-		bool hasCaptures = analysis.Captures.Count > 0;
-		if (hasCaptures)
-		{
-			codeWriter.WriteLine("{");
-			codeWriter.Indent++;
-			foreach (var capture in analysis.Captures)
-			{
-				codeWriter.WriteLine($"var {capture.CaptureVariable} = this.{capture.InvocationExpression};");
-			}
-		}
-
-		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-		codeWriter.WriteLine($"{setBindingTarget}.SetBinding({bpName},");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
-		codeWriter.Indent++;
-
-		// Getter
-		var getterExpression = analysis.TransformedExpression;
-		if (getterExpression.Contains("?."))
-			getterExpression += "!";
-		codeWriter.WriteLine($"__source => ({getterExpression}, true),");
-
-		// Setter
-		if (analysis.IsSettable)
-			codeWriter.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
-		else
-			codeWriter.WriteLine("null,");
-
-		// Handlers array
-		if (handlers.Count == 0)
-		{
-			codeWriter.WriteLine("null));");
-		}
-		else
-		{
-			codeWriter.WriteLine($"new global::System.Tuple<global::System.Func<{sourceTypeName}, object>, string>[] {{");
-			codeWriter.Indent++;
-			for (int i = 0; i < handlers.Count; i++)
-			{
-				var handler = handlers[i];
-				var comma = i < handlers.Count - 1 ? "," : "";
-				codeWriter.WriteLine($"new(static __source => {handler.ParentExpression}, \"{handler.PropertyName}\"){comma}");
-			}
-			codeWriter.Indent--;
-			codeWriter.WriteLine("}));");
-		}
-		codeWriter.Indent -= 2;
-
-		if (hasCaptures)
-		{
-			codeWriter.Indent--;
-			codeWriter.WriteLine("}");
-		}
-
+		SetPropertyHelpers.SetExpressionBindingForUC(codeWriter, setBindingTarget, bpName, expressionCode, dataTypeSymbol, rootType, compilation);
 		return true;
 	}
 
@@ -1414,38 +1408,6 @@ static class UpdateComponentCodeWriter
 		}
 
 		return false;
-	}
-
-	/// <summary>
-	/// Resolves the result type of a C# expression for TypedBinding TProperty.
-	/// Simplified version that tries member lookup on the data type.
-	/// </summary>
-	static ITypeSymbol? ResolveExpressionTypeForUC(string expression, ITypeSymbol dataType, Compilation compilation)
-	{
-		// Simple property access: "PropertyName"
-		var trimmed = expression.Trim();
-		var members = dataType.GetMembers(trimmed);
-		foreach (var member in members)
-		{
-			if (member is IPropertySymbol prop)
-				return prop.Type;
-			if (member is IFieldSymbol field)
-				return field.Type;
-		}
-
-		// Method call: "MethodName()" — strip parens and look up return type
-		if (trimmed.EndsWith("()", StringComparison.Ordinal))
-		{
-			var methodName = trimmed.Substring(0, trimmed.Length - 2);
-			foreach (var member in dataType.GetMembers(methodName))
-			{
-				if (member is IMethodSymbol method)
-					return method.ReturnType;
-			}
-		}
-
-		// Complex expression — fall back to object
-		return compilation.GetSpecialType(SpecialType.System_Object);
 	}
 
 	/// <summary>
@@ -1505,6 +1467,22 @@ static class UpdateComponentCodeWriter
 			return $"global::System.ComponentModel.TypeDescriptor.GetConverter(null)?.ConvertFromInvariantString(\"{EscapeString(rawValue)}\")";
 
 		return $"({fqTypeName})global::System.ComponentModel.TypeDescriptor.GetConverter(typeof({fqTypeName})).ConvertFromInvariantString(\"{EscapeString(rawValue)}\")!";
+	}
+
+	/// <summary>
+	/// Emits <c>RemoveBinding</c> if the property has a corresponding BindableProperty field.
+	/// This prevents zombie bindings from overwriting newly set static values.
+	/// </summary>
+	static void EmitRemoveBindingIfNeeded(IndentedTextWriter codeWriter, string varName, INamedTypeSymbol? nodeType, string propName)
+	{
+		if (nodeType == null)
+			return;
+		var bpFieldName = $"{propName}Property";
+		var bp = FindStaticField(nodeType, bpFieldName);
+		if (bp == null)
+			return;
+		var fqType = nodeType.ToFQDisplayString();
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
 	}
 
 	static IPropertySymbol? FindProperty(INamedTypeSymbol type, string name)

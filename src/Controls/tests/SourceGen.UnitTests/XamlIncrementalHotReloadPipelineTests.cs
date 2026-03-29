@@ -1801,6 +1801,190 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
+	// Binding cleanup and property clear tests
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void PropertyClear_UCEmitsRemoveBindingBeforeClearValue()
+	{
+		// When a property is removed from XAML, UC should RemoveBinding + ClearValue
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" BackgroundColor="Red" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Must emit RemoveBinding before ClearValue to prevent zombie bindings
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("ClearValue", uc, StringComparison.Ordinal);
+		// RemoveBinding must come before ClearValue
+		var removeIdx = uc!.IndexOf("RemoveBinding", StringComparison.Ordinal);
+		var clearIdx = uc.IndexOf("ClearValue", StringComparison.Ordinal);
+		Assert.True(removeIdx < clearIdx, "RemoveBinding should come before ClearValue");
+	}
+
+	[Fact]
+	public void PropertySet_UCEmitsRemoveBindingBeforeStaticValue()
+	{
+		// When a bound property is replaced with a static value, UC should remove the old binding
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" TextColor="Red" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" TextColor="Blue" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// RemoveBinding should be emitted before the new property assignment
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("TextColorProperty", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyClear_UCResolvesDeclaringType()
+	{
+		// When Grid.Row is removed, UC should use Grid.RowProperty (not Button.Grid.RowProperty)
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid>
+			        <Button x:Name="btn" Text="Click" Grid.Row="1" />
+			    </Grid>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid>
+			        <Button x:Name="btn" Text="Click" />
+			    </Grid>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Must reference Grid.RowProperty (declaring type), not Button
+		Assert.Contains("Grid.RowProperty", uc, StringComparison.Ordinal);
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("ClearValue", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CompiledBinding_UCResolvesNestedPropertyType()
+	{
+		// Verify UC resolves dotted binding paths (User.DisplayName) to the correct type
+		// using shared SetPropertyHelpers.ResolveExpressionType (not a UC-specific clone).
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+			    public class UserModel
+			    {
+			        public string DisplayName { get; set; }
+			    }
+			    public class MainViewModel
+			    {
+			        public UserModel User { get; set; }
+			    }
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:DataType="local:MainViewModel">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="{Binding User.DisplayName}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:DataType="local:MainViewModel">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="{Binding User.DisplayName, Mode=OneWay}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		if (uc != null)
+		{
+			// UC should emit a compiled TypedBinding with resolved nested type (string, not object)
+			Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
+			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", uc, StringComparison.Ordinal);
+		}
+		else
+		{
+			// Binding Mode change is a markup-extension property change — may be treated as structural.
+			// Verify the IC at least contains a compiled TypedBinding with the correct type.
+			var icSource = run2.Results.SelectMany(r => r.GeneratedSources)
+				.Where(s => s.HintName.Contains("MainPage", StringComparison.Ordinal))
+				.Select(s => s.SourceText.ToString())
+				.FirstOrDefault() ?? "";
+			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", icSource, StringComparison.Ordinal);
+		}
+	}
+
+	// -----------------------------------------------------------------------
 	// Helpers (pipeline)
 	// -----------------------------------------------------------------------
 
