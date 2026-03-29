@@ -131,10 +131,13 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 				contentView.LayoutSubviews();
 
 				// Verify the mask was created, then dispose its native handle
-				// (simulating iOS deallocating the layer during view teardown)
-				var mask = Assert.IsType<CAShapeLayer>(content.Layer.Mask);
+				// (simulating iOS deallocating the layer during view teardown).
+				// _contentMask is a StaticCAShapeLayer (subclass of CAShapeLayer), so use
+				// IsAssignableFrom rather than IsType to accept subclasses.
+				Assert.IsAssignableFrom<CAShapeLayer>(content.Layer.Mask);
+				var mask = (CAShapeLayer)content.Layer.Mask!;
 				mask.Dispose();
-				Assert.True(mask.Handle == IntPtr.Zero);
+				Assert.Equal(IntPtr.Zero, mask.Handle);
 
 				// This should not throw ObjectDisposedException
 				var ex = Record.Exception(() => content.RemoveFromSuperview());
