@@ -42,7 +42,10 @@ namespace Microsoft.Maui
 
 		static BitmapImage GetAppPackage(string filename)
 		{
-			return new BitmapImage(new Uri("ms-appx:///" + filename));
+			// Handle LogicalName with path separators (e.g., "challenges/groceries.png")
+			// Extract just the filename since Windows app package has flattened resources
+			var resourceName = Path.GetFileName(filename);
+			return new BitmapImage(new Uri("ms-appx:///" + resourceName));
 		}
 
 		static async Task<BitmapImage?> GetLocal(string filename)
