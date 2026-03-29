@@ -2044,6 +2044,71 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 		Assert.DoesNotContain("Clicked +=", uc, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void AttachedPropertySet_UCEmitsRemoveBindingBeforeSetValue()
+	{
+		// Changing Grid.Row on a child should emit RemoveBinding before SetValue
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid><Label x:Name="lbl" Grid.Row="0" Text="Hello" /></Grid>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid><Label x:Name="lbl" Grid.Row="2" Text="Hello" /></Grid>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Must have RemoveBinding before SetValue for the attached property
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("SetValue", uc, StringComparison.Ordinal);
+		var removeIdx = uc!.IndexOf("RemoveBinding", StringComparison.Ordinal);
+		var setIdx = uc.IndexOf("SetValue", StringComparison.Ordinal);
+		Assert.True(removeIdx < setIdx, "RemoveBinding must come before SetValue for attached properties");
+	}
+
+	[Fact]
+	public void EventHandler_InvalidIdentifier_UCSkips()
+	{
+		// If an event handler name contains special chars, UC should skip it safely
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" Clicked="bad;handler" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Should NOT emit += with the invalid handler name
+		Assert.DoesNotContain("+= bad;handler", uc, StringComparison.Ordinal);
+		Assert.Contains("not a valid identifier", uc, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
 	// Helpers (pipeline)
 	// -----------------------------------------------------------------------

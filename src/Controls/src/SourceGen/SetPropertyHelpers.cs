@@ -918,13 +918,16 @@ static class SetPropertyHelpers
 		writer.WriteLine($"{targetAccessor}.SetBinding({bpFieldFqn},");
 		writer.Indent++;
 		writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
-		writer.Indent++;;
+		writer.Indent++;
 
 		var getterExpression = analysis.TransformedExpression;
-		if (getterExpression.Contains("?."))
+		if (getterExpression.Contains("?.") && !getterExpression.EndsWith("!", StringComparison.Ordinal))
 			getterExpression += "!";
 		writer.WriteLine($"__source => ({getterExpression}, true),");
 
+		// UC intentionally skips the ExpressionNotSettable diagnostic (Descriptors.ExpressionNotSettable)
+		// that IC emits for TwoWay-default BPs with non-settable expressions. During hot reload,
+		// the developer is iterating rapidly and a warning would be noise — the IC already warned at build time.
 		if (analysis.IsSettable && IsExpressionWritable(expression, dataTypeSymbol, context: null))
 			writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
 		else

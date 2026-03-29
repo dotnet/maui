@@ -647,12 +647,15 @@ static class UpdateComponentCodeWriter
 		if (emittableResources.Count == 0)
 			return false;
 
-		// Remove old resource keys that are no longer in the new XAML (only keys we manage)
+		// Remove old resource keys that are no longer in the new XAML (only keys we manage).
+		// Include ALL keyed resources (not just emittable) so we don't accidentally remove
+		// a resource that became non-emittable but is still present in the XAML.
+		var allNewKeys = new HashSet<string>(keyedResources.Select(kr => kr.key), StringComparer.Ordinal);
 		codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
 		using (PrePost.NewBlock(codeWriter))
 		{
-			var newKeysList = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
-			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {newKeysList} }}, __rk) < 0)");
+			var allKeysList = string.Join(", ", allNewKeys.Select(k => $"\"{EscapeString(k)}\""));
+			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {allKeysList} }}, __rk) < 0)");
 			codeWriter.Indent++;
 			codeWriter.WriteLine("this.Resources.Remove(__rk);");
 			codeWriter.Indent--;
@@ -743,6 +746,16 @@ static class UpdateComponentCodeWriter
 		if (TryEmitEventChange(codeWriter, propDiff, rootType, "this.", rootType))
 			return;
 
+		// Attached properties on root element (e.g., Shell.NavBarIsVisible on ContentPage)
+		if (propName.Contains('.'))
+		{
+			if (propDiff.Kind == PropertyDiffKind.Clear)
+				EmitAttachedPropertyClear(codeWriter, propDiff, "this", compilation, xmlnsCache, typeCache);
+			else
+				TryEmitAttachedPropertyChange(codeWriter, propDiff, "this", rootType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			return;
+		}
+
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
 			var bpFieldName = $"{propName}Property";
@@ -751,8 +764,8 @@ static class UpdateComponentCodeWriter
 			{
 				var fqType = rootType.ToFQDisplayString();
 				// Remove any existing binding before clearing (prevents zombie bindings)
-				codeWriter.WriteLine($"this.RemoveBinding({fqType}.{bpFieldName});");
-				codeWriter.WriteLine($"this.ClearValue({fqType}.{bpFieldName});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
 				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");
@@ -882,6 +895,11 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 		var dotIdx = propName.IndexOf('.');
+		if (dotIdx <= 0 || dotIdx >= propName.Length - 1)
+		{
+			codeWriter.WriteLine($"// Invalid attached property format '{propName}' — skipped");
+			return;
+		}
 		var declaringTypeName = propName.Substring(0, dotIdx);
 		var attachedPropName = propName.Substring(dotIdx + 1);
 
@@ -931,6 +949,11 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 		var dotIdx = propName.IndexOf('.');
+		if (dotIdx <= 0 || dotIdx >= propName.Length - 1)
+		{
+			codeWriter.WriteLine($"// Invalid attached property format '{propName}' — skipped");
+			return;
+		}
 		var declaringTypeName = propName.Substring(0, dotIdx);
 		var attachedPropName = propName.Substring(dotIdx + 1);
 
@@ -985,6 +1008,8 @@ static class UpdateComponentCodeWriter
 		}
 
 		var fqDeclaring = declaringType.ToFQDisplayString();
+		// Remove any existing binding before setting the new value (prevents zombie bindings)
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqDeclaring}.{bpFieldName});");
 		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.SetValue({fqDeclaring}.{bpFieldName}, {valueExpr});");
 	}
 
@@ -1504,8 +1529,7 @@ static class UpdateComponentCodeWriter
 	/// <summary>
 	/// Tries to emit event handler subscribe/unsubscribe for a property diff.
 	/// Returns <see langword="true"/> if the property is an event and was handled.
-	/// <paramref name="varPrefix"/> should end with <c>.</c> (e.g., <c>"this."</c> or <c>"((Button)v!).").
-	/// </paramref>
+	/// <paramref name="varPrefix"/> should end with <c>.</c> (e.g., <c>"this."</c> or <c>"((Button)v!)."</c>).
 	/// </summary>
 	static bool TryEmitEventChange(
 		IndentedTextWriter codeWriter,
@@ -1527,25 +1551,39 @@ static class UpdateComponentCodeWriter
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
 			// Event handler removed — unsubscribe old handler if known
-			if (propDiff.OldValue != null)
+			if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
 				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
 			else
-				codeWriter.WriteLine($"// Event '{propName}' cleared — old handler unknown, cannot unsubscribe");
+				codeWriter.WriteLine($"// Event '{propName}' cleared — old handler unknown or invalid, cannot unsubscribe");
 			return true;
 		}
 
 		// Kind == Set: unsubscribe old, subscribe new
 		var newHandler = propDiff.NewValue;
-		if (newHandler == null)
+		if (newHandler == null || !IsValidCSharpIdentifier(newHandler))
 		{
-			codeWriter.WriteLine($"// Event '{propName}' changed to complex value — skipped");
+			codeWriter.WriteLine($"// Event '{propName}' handler is not a valid identifier — skipped");
 			return true;
 		}
 
-		if (propDiff.OldValue != null)
+		if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
 			codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
 
 		codeWriter.WriteLine($"{varPrefix}{propName} += {newHandler};");
+		return true;
+	}
+
+	static bool IsValidCSharpIdentifier(string name)
+	{
+		if (string.IsNullOrEmpty(name))
+			return false;
+		if (!char.IsLetter(name[0]) && name[0] != '_')
+			return false;
+		for (int i = 1; i < name.Length; i++)
+		{
+			if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
+				return false;
+		}
 		return true;
 	}
 
