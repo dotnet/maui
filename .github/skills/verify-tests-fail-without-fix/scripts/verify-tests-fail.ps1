@@ -1074,108 +1074,88 @@ function Write-MarkdownReport {
     $lines = @()
     $lines += "### Gate Result: $status"
     $lines += ""
-    $lines += "**Platform:** $($Platform.ToUpper())"
+    $lines += "**Platform:** $($Platform.ToUpper()) · **Base:** $BaseBranchName · **Merge base:** ``$mergeBaseShort``"
     $lines += ""
-    $lines += "#### Tests Detected"
-    $lines += ""
-    $lines += "| # | Type | Test Name | Filter |"
-    $lines += "|---|------|-----------|--------|"
-    $i = 0
+
+    # ── Side-by-side per-test comparison table ──
+    $lines += "| Test | Without Fix (expect FAIL) | With Fix (expect PASS) |"
+    $lines += "|------|--------------------------|------------------------|"
+
     foreach ($t in $AllDetectedTests) {
-        $i++
-        $lines += "| $i | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |"
-    }
-    $lines += ""
-    $lines += "#### Verification"
-    $lines += ""
-    $lines += "| Step | Expected | Actual | Result |"
-    $lines += "|------|----------|--------|--------|"
+        $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
+        $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
 
-    # Without fix row
-    $woResult = $withoutFixResults | Select-Object -First 1
-    if ($woResult.EnvError) {
-        $lines += "| Without fix | FAIL | ENV ERROR | ⚠️ |"
-    } elseif ($FailedWithoutFix) {
-        $lines += "| Without fix | FAIL | FAIL | ✅ |"
-    } else {
-        $lines += "| Without fix | FAIL | PASS | ❌ |"
-    }
+        # Without fix cell
+        $woDur = if ($woResult.Duration) { "$([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
+        if ($woResult.EnvError) {
+            $woCell = "⚠️ ENV ERROR"
+        } elseif (-not $woResult.Passed) {
+            $woCell = "✅ FAIL — $woDur"
+        } else {
+            $woCell = "❌ PASS — $woDur"
+        }
 
-    # With fix row
-    $wResult = $withFixResults | Select-Object -First 1
-    if ($wResult.EnvError) {
-        $lines += "| With fix | PASS | ENV ERROR | ⚠️ |"
-    } elseif ($PassedWithFix) {
-        $lines += "| With fix | PASS | PASS | ✅ |"
-    } else {
-        $lines += "| With fix | PASS | FAIL | ❌ |"
+        # With fix cell
+        $wDur = if ($wResult.Duration) { "$([math]::Round($wResult.Duration.TotalSeconds))s" } else { "" }
+        if ($wResult.EnvError) {
+            $wCell = "⚠️ ENV ERROR"
+        } elseif ($wResult.Passed) {
+            $wCell = "✅ PASS — $wDur"
+        } else {
+            $wCell = "❌ FAIL — $wDur"
+        }
+
+        $icon = switch ($t.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "" } }
+        $lines += "| $icon **$($t.TestName)** ``$($t.Filter)`` | $woCell | $wCell |"
     }
 
-    # Per-test execution details
-    $lines += ""
-    $lines += "#### Test Execution"
-    $lines += ""
-
-    # Without fix details
-    $lines += "**Without fix** (expect FAIL):"
-    $lines += ""
+    # ── Failure details (only if something went wrong) ──
+    $failureLines = @()
     foreach ($r in $withoutFixResults) {
-        $durStr = if ($r.Duration) { "$([math]::Round($r.Duration.TotalSeconds)) s" } else { "—" }
-        $icon = if ($r.EnvError) { "⚠️" } elseif (-not $r.Passed) { "✅" } else { "❌" }
-        $statusWord = if ($r.EnvError) { "ENV ERROR" } elseif (-not $r.Passed) { "FAIL" } else { "PASS" }
-        $counts = if ($r.Total -gt 0) { " ($($r.Total) total, $($r.PassCount) passed, $($r.FailCount) failed)" } else { "" }
-        $lines += "- $icon **$($r.TestName)**: $statusWord$counts — $durStr"
-        if ($r.FailureReason) {
-            $lines += "  - Failed: ``$($r.FailureReason)``"
+        if ($r.Passed) {
+            $failureLines += "- ❌ **$($r.TestName)** PASSED without fix (should fail) — tests don't catch the bug"
         }
-        if ($r.FailureMessage) {
-            $msgTrunc = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
-            $lines += "  - Error: ``$msgTrunc``"
-        }
-        if ($r.EnvError -and $r.Error) {
-            $lines += "  - Environment: ``$($r.Error)``"
-        }
+        if ($r.EnvError) { $failureLines += "- ⚠️ **$($r.TestName)** without fix: ``$($r.Error)``" }
     }
-
-    $lines += ""
-    $lines += "**With fix** (expect PASS):"
-    $lines += ""
     foreach ($r in $withFixResults) {
-        $durStr = if ($r.Duration) { "$([math]::Round($r.Duration.TotalSeconds)) s" } else { "—" }
-        $icon = if ($r.EnvError) { "⚠️" } elseif ($r.Passed) { "✅" } else { "❌" }
-        $statusWord = if ($r.EnvError) { "ENV ERROR" } elseif ($r.Passed) { "PASS" } else { "FAIL" }
-        $counts = if ($r.Total -gt 0) { " ($($r.Total) total, $($r.PassCount) passed, $($r.FailCount) failed)" } else { "" }
-        $lines += "- $icon **$($r.TestName)**: $statusWord$counts — $durStr"
-        if ($r.FailureReason) {
-            $lines += "  - Failed: ``$($r.FailureReason)``"
+        if (-not $r.Passed -and -not $r.EnvError) {
+            $failureLines += "- ❌ **$($r.TestName)** FAILED with fix (should pass)"
+            if ($r.FailureReason) { $failureLines += "  - ``$($r.FailureReason)``" }
+            if ($r.FailureMessage) {
+                $msg = if ($r.FailureMessage.Length -gt 200) { $r.FailureMessage.Substring(0, 200) + "..." } else { $r.FailureMessage }
+                $failureLines += "  - ``$msg``"
+            }
         }
-        if ($r.FailureMessage) {
-            $msgTrunc = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
-            $lines += "  - Error: ``$msgTrunc``"
-        }
-        if ($r.EnvError -and $r.Error) {
-            $lines += "  - Environment: ``$($r.Error)``"
-        }
+        if ($r.EnvError) { $failureLines += "- ⚠️ **$($r.TestName)** with fix: ``$($r.Error)``" }
     }
 
+    if ($failureLines.Count -gt 0) {
+        $lines += ""
+        $lines += "<details>"
+        $lines += "<summary>⚠️ Issues found</summary>"
+        $lines += ""
+        $lines += ($failureLines -join "`n")
+        $lines += ""
+        $lines += "</details>"
+    }
+
+    # ── Fix files (collapsible) ──
     $lines += ""
-    $lines += "#### Fix Files Reverted"
+    $lines += "<details>"
+    $lines += "<summary>📁 Fix files reverted ($($RevertableFiles.Count) files)</summary>"
     $lines += ""
     foreach ($f in $RevertableFiles) {
         $lines += "- ``$f``"
     }
     if ($NewFiles.Count -gt 0) {
         $lines += ""
-        $lines += "#### New Files (Not Reverted)"
-        $lines += ""
+        $lines += "**New files (not reverted):**"
         foreach ($f in $NewFiles) {
             $lines += "- ``$f``"
         }
     }
     $lines += ""
-    $lines += "---"
-    $lines += ""
-    $lines += "**Base Branch:** $BaseBranchName | **Merge Base:** $mergeBaseShort"
+    $lines += "</details>"
 
     ($lines -join "`n") | Set-Content -Path $MarkdownReport -Encoding UTF8
     Write-Host ""
