@@ -1984,6 +1984,66 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 		}
 	}
 
+	[Fact]
+	public void EventHandler_UCEmitsUnsubscribeAndSubscribe()
+	{
+		// Changing Clicked="OnClicked" to Clicked="OnClicked2" should emit -= old, += new
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Clicked="OnClicked" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Clicked="OnClicked2" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked += OnClicked2", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void EventHandler_UCEmitsUnsubscribeOnClear()
+	{
+		// Removing Clicked="OnClicked" should emit -= OnClicked
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" Clicked="OnClicked" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked +=", uc, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
 	// Helpers (pipeline)
 	// -----------------------------------------------------------------------

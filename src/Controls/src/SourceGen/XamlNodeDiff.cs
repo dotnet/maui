@@ -21,7 +21,7 @@ enum PropertyDiffKind
 /// <summary>
 /// Describes a change to a single property on an element node.
 /// </summary>
-readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null)
+readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null, string? oldValue = null)
 {
 	/// <summary>The XAML attribute name of the changed property (e.g. <c>Text</c>, <c>TextColor</c>).</summary>
 	public XmlName PropertyName { get; } = propertyName;
@@ -42,6 +42,12 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 	/// The code writer inspects this to decide how to emit the property assignment.
 	/// </summary>
 	public INode? NewNode { get; } = newNode;
+
+	/// <summary>
+	/// The previous string value, used for event handler unsubscription during hot reload.
+	/// Only populated when the old value was a simple <see cref="ValueNode"/>.
+	/// </summary>
+	public string? OldValue { get; } = oldValue;
 }
 
 /// <summary>
@@ -709,7 +715,8 @@ static class XamlNodeDiff
 					if (newPropNode is ValueNode newVal)
 					{
 						// New is a simple value (regardless of what old was: value, binding, etc.)
-						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, newVal.Value?.ToString()));
+						var oldVal = oldPropNode is ValueNode ov ? ov.Value?.ToString() : null;
+						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, newVal.Value?.ToString(), oldValue: oldVal));
 					}
 					else
 					{
@@ -732,7 +739,8 @@ static class XamlNodeDiff
 					return false; // removing x:Name/x:Class/etc. → structural
 				// Carry the old node for complex properties so codegen knows what's being cleared
 				var oldNodeRef = oldPropNode is not ValueNode ? oldPropNode : null;
-				diffs.Add(new PropertyDiff(name, PropertyDiffKind.Clear, null, oldNodeRef));
+				var oldClearVal = oldPropNode is ValueNode ovClear ? ovClear.Value?.ToString() : null;
+				diffs.Add(new PropertyDiff(name, PropertyDiffKind.Clear, null, oldNodeRef, oldClearVal));
 			}
 		}
 

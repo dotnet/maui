@@ -251,7 +251,7 @@ static class UpdateComponentCodeWriter
 		bool isLayout = parentType != null && InheritsFrom(parentType, "global::Microsoft.Maui.Controls.Layout");
 		string? contentPropertyName = null;
 		if (!isLayout && parentType != null)
-			contentPropertyName = FindContentPropertyName(parentType);
+			contentPropertyName = parentType.GetContentPropertyName(context: null);
 
 		if (!isLayout && contentPropertyName == null)
 		{
@@ -390,29 +390,6 @@ static class UpdateComponentCodeWriter
 
 		// Register the new child
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{entry.NewNodeId}\", {childVar});");
-	}
-
-	/// <summary>
-	/// Finds the content property name for a type by walking the [ContentProperty] attribute
-	/// on the type and its base types.
-	/// </summary>
-	static string? FindContentPropertyName(INamedTypeSymbol type)
-	{
-		var current = type;
-		while (current != null)
-		{
-			foreach (var attr in current.GetAttributes())
-			{
-				if (attr.AttributeClass?.Name is "ContentPropertyAttribute"
-					&& attr.ConstructorArguments.Length == 1
-					&& attr.ConstructorArguments[0].Value is string name)
-				{
-					return name;
-				}
-			}
-			current = current.BaseType;
-		}
-		return null;
 	}
 
 	/// <summary>
@@ -565,7 +542,7 @@ static class UpdateComponentCodeWriter
 		else
 		{
 			// Content property container — set the first element child as content
-			var contentProp = FindContentPropertyName(typeSymbol);
+			var contentProp = typeSymbol.GetContentPropertyName(context: null);
 			if (contentProp == null)
 			{
 				codeWriter.WriteLine($"// Non-layout container '{typeSymbol.Name}' has no [ContentProperty] — fallback");
@@ -721,10 +698,7 @@ static class UpdateComponentCodeWriter
 			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
 
 			// Use the IC converter pipeline via a synthetic property lookup
-			var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-			var ctx = new SourceGenContext(
-				new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-				xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+			var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 			try
 			{
@@ -764,6 +738,10 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		var propName = propDiff.PropertyName.LocalName;
+
+		// Event handlers: unsubscribe old, subscribe new
+		if (TryEmitEventChange(codeWriter, propDiff, rootType, "this.", rootType))
+			return;
 
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
@@ -821,6 +799,10 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		var propName = propDiff.PropertyName.LocalName;
+
+		// Event handlers: unsubscribe old, subscribe new
+		if (TryEmitEventChange(codeWriter, propDiff, nodeType, castPrefix, rootType))
+			return;
 
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
@@ -1048,10 +1030,7 @@ static class UpdateComponentCodeWriter
 		var fqType = targetType.ToFQDisplayString();
 
 		// Try IC's ConvertTo with a synthetic property-like context
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-		var ctx = new SourceGenContext(
-			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 		var valueNode = new ValueNode(rawValue, null, -1, -1);
 		try
@@ -1149,10 +1128,7 @@ static class UpdateComponentCodeWriter
 		var markupString = markupNode.MarkupString;
 
 		// Build a minimal SourceGenContext for ExpandMarkupsVisitor's parser
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-		var ctx = new SourceGenContext(
-			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 		// Classification: expression or markup extension?
 		bool TryResolveMarkup(string name)
@@ -1225,12 +1201,9 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		// Build a SourceGenContext with a capture writer
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
 		var captureStringWriter = new StringWriter(CultureInfo.InvariantCulture);
 		var captureWriter = new IndentedTextWriter(captureStringWriter, "\t") { NewLine = NewLine };
-		var ctx = new SourceGenContext(
-			captureWriter, compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem, captureWriter);
 
 		// Create a synthetic parent variable so SetPropertyValue can emit "parent.SetValue(...)"
 		var parentAccessor = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
@@ -1436,10 +1409,7 @@ static class UpdateComponentCodeWriter
 			return null;
 
 		// Build a lightweight SourceGenContext for the converter pipeline
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-		var ctx = new SourceGenContext(
-			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 		// Create a synthetic ValueNode to feed into IC's ConvertTo
 		var valueNode = new ValueNode(rawXamlValue, null, -1, -1);
@@ -1501,19 +1471,7 @@ static class UpdateComponentCodeWriter
 	}
 
 	static IFieldSymbol? FindStaticField(INamedTypeSymbol type, string name)
-	{
-		var current = (ITypeSymbol)type;
-		while (current != null)
-		{
-			foreach (var member in current.GetMembers(name))
-			{
-				if (member is IFieldSymbol field && field.IsStatic)
-					return field;
-			}
-			current = current.BaseType!;
-		}
-		return null;
-	}
+		=> type.GetAllFields(name, context: null).FirstOrDefault(f => f.IsStatic);
 
 	/// <summary>
 	/// Checks whether <paramref name="type"/> inherits from a type with the given fully-qualified
@@ -1544,6 +1502,54 @@ static class UpdateComponentCodeWriter
 			.Replace("\v", "\\v");
 
 	/// <summary>
+	/// Tries to emit event handler subscribe/unsubscribe for a property diff.
+	/// Returns <see langword="true"/> if the property is an event and was handled.
+	/// <paramref name="varPrefix"/> should end with <c>.</c> (e.g., <c>"this."</c> or <c>"((Button)v!).").
+	/// </paramref>
+	/// </summary>
+	static bool TryEmitEventChange(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		INamedTypeSymbol? nodeType,
+		string varPrefix,
+		INamedTypeSymbol rootType)
+	{
+		if (nodeType == null)
+			return false;
+
+		var propName = propDiff.PropertyName.LocalName;
+
+		// Check if this property name matches an event on the target type
+		var eventSymbol = nodeType.GetAllEvents(context: null).FirstOrDefault(e => e.Name == propName);
+		if (eventSymbol == null)
+			return false;
+
+		if (propDiff.Kind == PropertyDiffKind.Clear)
+		{
+			// Event handler removed — unsubscribe old handler if known
+			if (propDiff.OldValue != null)
+				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+			else
+				codeWriter.WriteLine($"// Event '{propName}' cleared — old handler unknown, cannot unsubscribe");
+			return true;
+		}
+
+		// Kind == Set: unsubscribe old, subscribe new
+		var newHandler = propDiff.NewValue;
+		if (newHandler == null)
+		{
+			codeWriter.WriteLine($"// Event '{propName}' changed to complex value — skipped");
+			return true;
+		}
+
+		if (propDiff.OldValue != null)
+			codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+
+		codeWriter.WriteLine($"{varPrefix}{propName} += {newHandler};");
+		return true;
+	}
+
+	/// <summary>
 	/// Emits the diff summary as a C# comment block at the top of the method body.
 	/// This makes the diff visible when inspecting generated source files in the IDE.
 	/// </summary>
@@ -1572,5 +1578,25 @@ static class UpdateComponentCodeWriter
 #pragma warning disable CS8765
 		public override bool TryGetValue(string key, out string? value) { value = null; return false; }
 #pragma warning restore CS8765
+	}
+
+	/// <summary>
+	/// Creates a <see cref="SourceGenContext"/> for UC value conversion.
+	/// Uses a dummy writer since UC only needs the context for type resolution and converters.
+	/// </summary>
+	static SourceGenContext CreateConversionContext(
+		Compilation compilation,
+		SourceProductionContext sourceProductionContext,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		ProjectItem? projectItem,
+		IndentedTextWriter? writer = null)
+	{
+		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		return new SourceGenContext(
+			writer ?? new IndentedTextWriter(new StringWriter()),
+			compilation, sourceProductionContext,
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
 	}
 }
