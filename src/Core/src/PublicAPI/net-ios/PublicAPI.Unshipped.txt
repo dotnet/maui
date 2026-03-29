@@ -4,3 +4,4 @@ override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstra
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
+override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
