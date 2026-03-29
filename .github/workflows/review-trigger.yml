@@ -22,6 +22,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 jobs:
   trigger-review:
@@ -84,14 +85,23 @@ jobs:
             exit 1
           fi
 
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
       - name: Queue Azure DevOps pipeline
+        id: queue
         shell: bash
         env:
-          REVIEW_PR_AZDO_PAT: ${{ secrets.REVIEW_PR_AZDO_PAT }}
           PR_NUMBER: ${{ steps.parse.outputs.pr_number }}
           PLATFORM: ${{ steps.parse.outputs.platform }}
         run: |
-          AUTH=$(printf ':%s' "$REVIEW_PR_AZDO_PAT" | base64 -w0)
+          TOKEN=$(az account get-access-token \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798 \
+            --query accessToken -o tsv)
 
           echo "Queuing review pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM})"
 
@@ -112,16 +122,11 @@ jobs:
 
           HTTP_CODE=$(curl -s -o /tmp/response.json -w "%{http_code}" -X POST \
             "https://devdiv.visualstudio.com/DevDiv/_apis/build/builds?api-version=7.0" \
-            -H "Authorization: Basic ${AUTH}" \
+            -H "Authorization: Bearer ${TOKEN}" \
             -H "Content-Type: application/json" \
             -d @/tmp/request.json)
 
           RESP_BODY=$(cat /tmp/response.json)
-
-          echo "response_body<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$RESP_BODY" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
 
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             BUILD_ID=$(echo "$RESP_BODY" | jq -r '.id')
@@ -137,7 +142,6 @@ jobs:
             echo "$RESP_BODY"
             echo "success=false" >> "$GITHUB_OUTPUT"
           fi
-        id: queue
 
       - name: Add reaction to comment
         if: github.event_name == 'issue_comment' && always()
