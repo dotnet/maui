@@ -22,7 +22,7 @@
 #
 # Assesses issue quality and health for backlog grooming
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"de7d75d573324450a377921ecc579fc428cdb1c3822d0e33bbbe3715d24132f3","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"59a7ad664904e9a5defa9cd5eef90906f2cee57ba5ad81c7c6638c0f2e585a49","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
 
 name: "Assess Issue Quality"
 "on":
@@ -146,7 +146,6 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_INPUTS_ISSUE_NUMBER: ${{ inputs.issue_number }}
           GH_AW_IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || '' }}
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
@@ -207,9 +206,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_54492A5B: ${{ github.event.issue.number || inputs.issue_number }}
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_INPUTS_ISSUE_NUMBER: ${{ inputs.issue_number }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -229,7 +226,6 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_INPUTS_ISSUE_NUMBER: ${{ inputs.issue_number }}
           GH_AW_IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || '' }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
         with:
@@ -252,7 +248,6 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_INPUTS_ISSUE_NUMBER: process.env.GH_AW_INPUTS_ISSUE_NUMBER,
                 GH_AW_IS_PR_COMMENT: process.env.GH_AW_IS_PR_COMMENT,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
@@ -328,7 +323,12 @@ jobs:
           ISSUE_NUMBER: ${{ inputs.issue_number }}
         if: github.event_name == 'workflow_dispatch'
         name: Gate — verify issue is open
-        run: "STATE=$(gh issue view \"$ISSUE_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state -q '.state')\nif [ \"$STATE\" != \"OPEN\" ]; then\n  echo \"⏭️ Issue #$ISSUE_NUMBER is $STATE. Skipping assessment.\"\n  exit 1\nfi\necho \"✅ Issue #$ISSUE_NUMBER is open\""
+        run: "STATE=$(gh issue view \"$ISSUE_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state -q '.state')\nif [ \"$STATE\" != \"OPEN\" ]; then\n  echo \"⏭️ Issue #$ISSUE_NUMBER is $STATE. Skipping assessment.\"\n  exit 1\nfi\necho \"✅ Issue #$ISSUE_NUMBER is open\"\n"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        name: Run issue assessment
+        run: "echo \"📋 Assessing issue #$ISSUE_NUMBER...\"\n\n# Run assessment and save JSON output\npwsh .github/skills/backlog-groom/scripts/assess-issue.ps1 \\\n  -IssueNumber \"$ISSUE_NUMBER\" \\\n  -OutputFormat json \\\n  > /tmp/assessment.json 2>/tmp/assessment-stderr.log\n\n# Also run summary for logs\npwsh .github/skills/backlog-groom/scripts/assess-issue.ps1 \\\n  -IssueNumber \"$ISSUE_NUMBER\" \\\n  -OutputFormat summary \\\n  2>&1 || true\n\n# Copy to workspace so agent can read it\ncp /tmp/assessment.json \"$GITHUB_WORKSPACE/assessment.json\"\necho \"✅ Assessment saved to assessment.json\"\necho \"--- JSON preview ---\"\nhead -30 \"$GITHUB_WORKSPACE/assessment.json\""
 
       - name: Configure Git credentials
         env:
