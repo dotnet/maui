@@ -1,13 +1,13 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title/description match implementation AND performing code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title/description match implementation AND performing code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use azdo-build-investigator and ci-analysis).
 ---
 
 # PR Finalize
 
 Ensures PR title and description accurately reflect the implementation, and performs a **code review** for best practices before merge.
 
-**Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
+**Standalone skill** - Can be used on any PR, not just PRs reviewed by the pr-review skill.
 
 ## Two-Phase Workflow
 
@@ -33,13 +33,13 @@ Ensures PR title and description accurately reflect the implementation, and perf
 
 | Action | Allowed? | Why |
 |--------|----------|-----|
-| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
-| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Correct workflow:**
-1. **This skill**: Analyze PR, produce findings in your response to the user
-2. **User explicitly asks to post comment**: Then invoke `ai-summary-comment` skill
+1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
+2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
 
 **Only humans control when comments are posted.** Your job is to analyze and present findings.
 
@@ -127,16 +127,10 @@ Examples:
 ## Description Requirements
 
 PR description should:
-1. Start with the required NOTE block (so users can test PR artifacts)
-2. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
-3. Match the actual implementation
+1. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
+2. Match the actual implementation
 
 ```markdown
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
 ### Description of Change
 [Must match actual implementation]
 
@@ -229,11 +223,6 @@ Example: "Before: Safe area applied by default (opt-out). After: Only views impl
 Use structured template only when existing description is inadequate:
 
 ```markdown
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
 ### Root Cause
 
 [Why the bug occurred - be specific about the code path]
@@ -371,13 +360,13 @@ gh pr diff XXXXX -- path/to/file.cs
 
 | Action | Allowed? | Why |
 |--------|----------|-----|
-| `gh pr review --comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
-| `gh pr comment` | ❌ **NEVER** | Use ai-summary-comment skill instead |
+| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Workflow:**
-1. **This skill**: Analyze PR, produce findings in your response
-2. **User asks to post**: Then invoke `ai-summary-comment` skill to post
+1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
+2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
 
 The user controls when comments are posted. Your job is to analyze and present findings.
 

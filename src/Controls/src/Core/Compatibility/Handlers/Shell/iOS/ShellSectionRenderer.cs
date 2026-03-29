@@ -36,18 +36,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		IShellSectionController ShellSectionController => ShellSection;
 
+		UINavigationController MoreNavigationController => (ParentViewController as UITabBarController)?.MoreNavigationController;
+
 		public UIViewController ViewController => this;
 
 		#endregion IShellContentRenderer
 
 		#region IAppearanceObserver
 
+		ShellAppearance _shellAppearance;
+
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
+			_shellAppearance = appearance;
 			if (appearance == null)
+			{
 				_appearanceTracker.ResetAppearance(this);
+				if (MoreNavigationController is not null)
+				{
+					_appearanceTracker.ResetAppearance(MoreNavigationController);
+				}
+			}
 			else
+			{
 				_appearanceTracker.SetAppearance(this, appearance);
+				if (MoreNavigationController is not null)
+				{
+					_appearanceTracker.SetAppearance(MoreNavigationController, appearance);
+				}
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -69,6 +86,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellSectionRootRenderer _renderer;
 		ShellSection _shellSection;
 		bool _ignorePopCall;
+
+		// Prevents multiple concurrent GoToAsync("..") dispatches from SendPop().
+		// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+		// and combinations that may cause SendPop() to be called multiple times.
+		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
+		// until it completes (success or cancel).
+		bool _sendPopPending;
 
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
@@ -115,23 +139,44 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
 				return true;
 
-			// Stacks out of sync = user-initiated navigation
+			// Stacks out of sync: treat as user-initiated back (e.g., swipe-back).
+			// On iOS 26+, this can also fire during ShouldPopItem and programmatic PopViewController;
+			// SendPop() contains the _sendPopPending guard to prevent any double-dispatch in those cases.
 			return SendPop();
 		}
 
-		internal bool SendPop()
+		internal bool SendPop(UIViewController topViewController = null)
 		{
 			// this means the pop is already done, nothing we can do
 			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
 				return true;
 
+			// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+			// and fire multiple times for a single user back action. Guard against multiple
+			// concurrent GoToAsync("..") dispatches to prevent navigating to the wrong page.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				if (_sendPopPending)
+				{
+					return false;
+				}
+				_sendPopPending = true;
+			}
+
+			topViewController ??= TopViewController;
 			foreach (var tracker in _trackers)
 			{
-				if (tracker.Value.ViewController == TopViewController)
+				if (tracker.Value.ViewController == topViewController)
 				{
 					var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Value.Page);
+					var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
 					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 					var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+
+					if (!enabled)
+					{
+						return false;
+					}
 
 					if (command != null)
 					{
@@ -139,14 +184,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
+						_sendPopPending = false;  // reset before returning
+						return false;
+					}
 
+					// Allow the page to intercept back navigation via OnBackButtonPressed
+					if (tracker.Value.Page?.SendBackButtonPressed() == true)
+					{
 						return false;
 					}
 
 					break;
 				}
 			}
-
 
 			// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
 			// Shane: ^ not sure if this is true anymore because of how
@@ -155,7 +205,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var navItemsCount = NavigationBar.Items.Length;
 
-				await _context.Shell.GoToAsync("..", true);
+				try
+				{
+					await _context.Shell.GoToAsync("..", true);
+				}
+				finally
+				{
+					_sendPopPending = false;
+				}
 
 				// This means the navigation was cancelled
 				if (NavigationBar.Items.Length == navItemsCount)
@@ -191,6 +248,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_popCompletionTask?.TrySetResult(false);
 			_popCompletionTask = null;
 
+			_sendPopPending = false;
 
 			base.ViewDidDisappear(animated);
 		}
@@ -224,6 +282,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateShadowImages();
 				_firstLayoutCompleted = true;
 			}
+		}
+
+		public override void DidMoveToParentViewController(UIViewController parent)
+		{
+			if (_shellAppearance is not null && MoreNavigationController is not null)
+			{
+				_appearanceTracker?.SetAppearance(MoreNavigationController, _shellAppearance);
+			}
+			base.DidMoveToParentViewController(parent);
 		}
 
 		public override void ViewDidLoad()
@@ -611,6 +678,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else
 			{
@@ -623,10 +692,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_pendingViewControllers = null;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
-				return tabBarController.MoreNavigationController.PopViewController(animated);
+				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
+				HandleMoreNavigationCompletionTasks(viewController);
+				return viewController;
 			}
 
 			return base.PopViewController(animated);
+		}
+
+		private void HandleMoreNavigationCompletionTasks(UIViewController viewController)
+		{
+			var tasks = _completionTasks;
+			var popTask = _popCompletionTask;
+
+			if (tasks.TryGetValue(viewController, out var source))
+			{
+				source.TrySetResult(true);
+				tasks.Remove(viewController);
+			}
+			else if (popTask != null)
+			{
+				popTask.TrySetResult(true);
+			}
 		}
 
 		UIViewController[] ActiveViewControllers() =>

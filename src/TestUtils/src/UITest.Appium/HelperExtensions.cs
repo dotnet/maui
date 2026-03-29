@@ -1714,7 +1714,7 @@ namespace UITest.Appium
 				{ "isResetAfterEachTest", isResetAfterEachTest }
 			});
 		}
-		
+
 		/// <summary>
 		/// Send the currently running app for this session to the background.
 		/// </summary>
@@ -2347,11 +2347,32 @@ namespace UITest.Appium
 			return app switch
 			{
 				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumIOSApp iOSApp => IsIOS26OrHigher(iOSApp) ? AppiumQuery.ByAccessibilityId("BackButton") : AppiumQuery.ByAccessibilityId("Back"),
 				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
 				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
 				_ => throw new ArgumentException("Unsupported app type", nameof(app))
 			};
+		}
+
+		/// <summary>
+		/// Checks if the iOS app is running on iOS 26 or higher.
+		/// </summary>
+		/// <param name="iOSApp">The iOS app instance.</param>
+		/// <returns>True if running on iOS 26 or higher, false otherwise.</returns>
+		public static bool IsIOS26OrHigher(AppiumIOSApp iOSApp)
+		{
+			var platformVersion = (string?)iOSApp.Driver.Capabilities.GetCapability("platformVersion");
+			if (string.IsNullOrEmpty(platformVersion))
+				return false;
+
+			// Parse major version from strings like "26.0", "26", "17.2", etc.
+			var versionParts = platformVersion.Split('.');
+			if (versionParts.Length > 0 && int.TryParse(versionParts[0], out int majorVersion))
+			{
+				return majorVersion >= 26;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -2845,6 +2866,33 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Taps the clear button in a search bar control with platform-specific implementations.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="automationId">The automation ID of the search bar.</param>
+		/// <param name="timeout">Optional timeout for waiting for the clear button. Default is null, which uses the default timeout.</param>
+		public static void TapSearchBarClearButton(this IApp app, string automationId, TimeSpan? timeout = null)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"), timeout: timeout);
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("Clear text", timeout: timeout);
+				app.Tap("Clear text");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				var searchBar = app.WaitForElement(AppiumQuery.ByAccessibilityId(automationId), timeout: timeout);
+				var rect = searchBar.GetRect();
+				app.Tap(automationId);
+				app.TapCoordinates(rect.Right - 84, rect.Y + rect.Height / 2);
+			}
+		}
+
+		/// <summary>
 		/// Taps an element and retries until another element appears and is ready for interaction.
 		/// Sometimes elements may appear but are not yet ready for interaction; this helper method retries the tap until the target element is interactable or the retry limit is reached.
 		/// </summary>
@@ -2943,6 +2991,36 @@ namespace UITest.Appium
 			}
 
 			return 1.0;
+		}
+
+		/// Enters text into the search handler element for the shell.
+		/// This method is used to enter the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static void EnterTextInShellSearchHandler(this IApp app, string text)
+		{
+			if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement("TextBox");
+				app.EnterText("TextBox", text);
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
+			{
+				IQuery query;
+				if (app is AppiumAndroidApp)
+				{
+					query = AppiumQuery.ByXPath("//android.widget.EditText");
+				}
+				else
+				{
+					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+				}
+
+				app.WaitForElement(query);
+				app.EnterText(query, text);
+			}
 		}
 
 		/// <summary>

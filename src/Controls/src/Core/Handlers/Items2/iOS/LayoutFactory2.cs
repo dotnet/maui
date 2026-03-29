@@ -93,7 +93,7 @@ internal static class LayoutFactory2
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -151,7 +151,7 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -345,7 +345,17 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				var page = (offset.X + sectionMargin) / (env.Container.ContentSize.Width - sectionMargin * 2);
+				// Calculate page index accounting for ItemSpacing
+				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
+
+				var effectiveItemWidth = env.Container.ContentSize.Width - sectionMargin * 2 + itemSpacing;
+
+				if (effectiveItemWidth <= 0)
+				{
+					return;
+				}
+
+				double page = (offset.X + sectionMargin) / effectiveItemWidth;
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
@@ -450,11 +460,15 @@ internal static class LayoutFactory2
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+		LayoutGroupingInfo? _groupingInfo;
+		LayoutHeaderFooterInfo? _headerFooterInfo;
 
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
+			_groupingInfo = groupingInfo;
+			_headerFooterInfo = headerFooterInfo;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
@@ -556,6 +570,33 @@ internal static class LayoutFactory2
 			// none of them fit at least half in the viewport. So just fall back to the first item
 			return Items.SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport, alignment,
 					Configuration.ScrollDirection);
+		}
+
+		public override CGSize CollectionViewContentSize
+		{
+			get
+			{
+				if (CollectionView != null)
+				{
+					bool hasGlobalHeaders = _headerFooterInfo?.HasHeader == true || _headerFooterInfo?.HasFooter == true;
+					bool hasGroupHeaders = _groupingInfo?.HasHeader == true || _groupingInfo?.HasFooter == true;
+
+					if (hasGlobalHeaders || hasGroupHeaders)
+					{
+						return base.CollectionViewContentSize;
+					}
+
+					if (CollectionView.NumberOfSections() > 0 &&
+				CollectionView.NumberOfItemsInSection(0) > 0)
+					{
+						return base.CollectionViewContentSize;
+					}
+
+					return CGSize.Empty;
+				}
+
+				return base.CollectionViewContentSize;
+			}
 		}
 
 		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)

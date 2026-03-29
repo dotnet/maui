@@ -98,11 +98,6 @@ namespace Microsoft.Maui.Media
 			}
 			else
 			{
-				if (!pickExisting)
-				{
-					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
-				}
-
 				var sourceType = pickExisting
 					? UIImagePickerControllerSourceType.PhotoLibrary
 					: UIImagePickerControllerSourceType.Camera;
@@ -137,10 +132,9 @@ namespace Microsoft.Maui.Media
 
 				picker.Delegate = new PhotoPickerDelegate
 				{
-					CompletedHandler = async info =>
+					CompletedHandler = info =>
 					{
 						GetFileResult(info, tcs, options);
-						await picker.DismissViewControllerAsync(true);
 					}
 				};
 			}
@@ -283,17 +277,17 @@ namespace Microsoft.Maui.Media
 					{
 						using var originalStream = await result.OpenReadAsync();
 						using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, result.FileName);
-						
+
 						// Create a temp file for the rotated image
 						var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(result.FileName)}";
 						var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
-						
+
 						using (var fileStream = File.Create(tempFilePath))
 						{
 							rotatedStream.Position = 0;
 							await rotatedStream.CopyToAsync(fileStream);
 						}
-						
+
 						var rotatedResult = new FileResult(tempFilePath)
 						{
 							FileName = result.FileName,
@@ -316,7 +310,7 @@ namespace Microsoft.Maui.Media
 				var compressedResults = new List<FileResult>();
 				foreach (var result in fileResults)
 				{
-					var compressedResult = await CompressedUIImageFileResult.CreateCompressedFromFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? false, options?.PreserveMetaData ?? true);
+					var compressedResult = new PHPickerProcessedFileResult(result, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100, options?.RotateImage ?? false, options?.PreserveMetaData ?? true);
 					compressedResults.Add(compressedResult);
 				}
 				return compressedResults;
@@ -365,7 +359,7 @@ namespace Microsoft.Maui.Media
 					if (!assetUrl.Scheme.Equals("assets-library", StringComparison.OrdinalIgnoreCase))
 					{
 						var docResult = new UIDocumentFileResult(assetUrl);
-						
+
 						// Apply rotation if needed and this is a photo
 						if (ImageProcessor.IsRotationNeeded(options) && IsImageFile(docResult.FileName))
 						{
@@ -380,7 +374,7 @@ namespace Microsoft.Maui.Media
 								// If rotation fails, continue with the original file
 							}
 						}
-						
+
 						return docResult;
 					}
 
@@ -411,7 +405,7 @@ namespace Microsoft.Maui.Media
 					{
 						img = img.NormalizeOrientation();
 					}
-					
+
 					return new CompressedUIImageFileResult(img, null, options?.MaximumWidth, options?.MaximumHeight, options?.CompressionQuality ?? 100);
 				}
 			}
@@ -423,7 +417,7 @@ namespace Microsoft.Maui.Media
 
 			string originalFilename = PHAssetResource.GetAssetResources(phAsset).FirstOrDefault()?.OriginalFilename;
 			var assetResult = new PHAssetFileResult(assetUrl, phAsset, originalFilename);
-			
+
 			// Apply rotation if needed and this is a photo
 			if (ImageProcessor.IsRotationNeeded(options) && IsImageFile(assetResult.FileName))
 			{
@@ -438,41 +432,41 @@ namespace Microsoft.Maui.Media
 					// If rotation fails, continue with the original file
 				}
 			}
-			
+
 			return assetResult;
 		}
-		
+
 		// Helper method to check if a file is an image based on extension
 		static bool IsImageFile(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
 				return false;
-				
+
 			var ext = Path.GetExtension(fileName)?.ToLowerInvariant();
 			return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".heic" || ext == ".heif";
 		}
-		
+
 		// Helper method to rotate an image file
 		static async Task<FileResult> RotateImageFile(FileResult original)
 		{
 			if (original == null)
 				return null;
-				
+
 			try
 			{
 				using var originalStream = await original.OpenReadAsync();
 				using var rotatedStream = await ImageProcessor.RotateImageAsync(originalStream, original.FileName);
-				
+
 				// Create a temp file for the rotated image
 				var tempFileName = $"{Guid.NewGuid()}{Path.GetExtension(original.FileName)}";
 				var tempFilePath = Path.Combine(Path.GetTempPath(), tempFileName);
-				
+
 				using (var fileStream = File.Create(tempFilePath))
 				{
 					rotatedStream.Position = 0;
 					await rotatedStream.CopyToAsync(fileStream);
 				}
-				
+
 				return new FileResult(tempFilePath, original.FileName);
 			}
 			catch (Exception ex)
@@ -481,21 +475,18 @@ namespace Microsoft.Maui.Media
 				return original;
 			}
 		}
-		
+
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }
-
 			public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
-			{
-				picker.DismissViewController(true, null);
-				CompletedHandler?.Invoke(info);
-			}
+            {
+				picker.DismissViewController(true, () => CompletedHandler?.Invoke(info));
+            }
 
 			public override void Canceled(UIImagePickerController picker)
 			{
-				picker.DismissViewController(true, null);
-				CompletedHandler?.Invoke(null);
+				picker.DismissViewController(true, () => CompletedHandler?.Invoke(null));
 			}
 		}
 	}
@@ -506,8 +497,8 @@ namespace Microsoft.Maui.Media
 
 		public override void DidFinishPicking(PHPickerViewController picker, PHPickerResult[] results)
 		{
-			picker.DismissViewController(true, null);
-			CompletedHandler?.Invoke(results?.Length > 0 ? results : []);
+			var captured = results?.Length > 0 ? results : [];
+            picker.DismissViewController(true, () => CompletedHandler?.Invoke(captured));
 		}
 	}
 
@@ -616,17 +607,13 @@ namespace Microsoft.Maui.Media
 		bool ShouldUsePngFormat()
 		{
 			// Use PNG if:
-			// 1. High quality (>=90) and no resizing needed (preserves original format)
-			// 2. Original file was PNG
-			// 3. Image might have transparency (PNG supports alpha channel)
+			// 1. Original file was PNG
+			// 2. High quality (>=90) and no resizing needed (preserves original format)
 
-			bool highQualityNoResize = compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue;
 			bool originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
-									(originalFileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-									 originalFileName.EndsWith(".PNG", StringComparison.OrdinalIgnoreCase));
+									Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
 
-			// For very high quality or when original was PNG, preserve PNG format
-			return (compressionQuality >= 95 && !maximumWidth.HasValue && !maximumHeight.HasValue) || originalWasPng;
+			return originalWasPng || (compressionQuality >= 90 && !maximumWidth.HasValue && !maximumHeight.HasValue);
 		}
 
 		internal override Task<Stream> PlatformOpenReadAsync()
@@ -736,6 +723,125 @@ namespace Microsoft.Maui.Media
 		public void Dispose()
 		{
 			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
+
+	/// <summary>
+	/// Wrapper that applies compression lazily when the stream is opened.
+	/// This avoids iOS resource limits when processing multiple photos.
+	/// </summary>
+	class PHPickerProcessedFileResult : FileResult, IDisposable
+	{
+		readonly FileResult _originalResult;
+		readonly int? _maximumWidth;
+		readonly int? _maximumHeight;
+		readonly int _compressionQuality;
+		readonly bool _rotateImage;
+		readonly bool _preserveMetaData;
+
+		// Cached result of the first call to PlatformOpenReadAsync to avoid re-processing
+		byte[] _cachedData;
+
+		internal PHPickerProcessedFileResult(FileResult originalResult, int? maximumWidth, int? maximumHeight, int compressionQuality, bool rotateImage, bool preserveMetaData)
+			: base()
+		{
+			_originalResult = originalResult;
+			_maximumWidth = maximumWidth;
+			_maximumHeight = maximumHeight;
+			_compressionQuality = compressionQuality;
+			_rotateImage = rotateImage;
+			_preserveMetaData = preserveMetaData;
+
+			// Copy metadata from original, adjusting extension for compressed output
+			var originalFileName = originalResult.FileName;
+			var originalFullPath = originalResult.FullPath;
+			var originalContentType = originalResult.ContentType;
+
+			// Preserve the original format: PNG stays PNG, everything else compresses to JPEG.
+			// When no compression is applied (quality == 100), preserve the original extension as-is.
+			var originalWasPng = !string.IsNullOrEmpty(originalFileName) &&
+				Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase);
+			string outputExtension;
+			if (compressionQuality == 100)
+				outputExtension = Path.GetExtension(originalFileName ?? string.Empty);
+			else if (originalWasPng)
+				outputExtension = ".png";
+			else
+				outputExtension = ".jpg";
+
+			FileName = !string.IsNullOrEmpty(originalFileName) && !string.IsNullOrEmpty(outputExtension)
+				? Path.ChangeExtension(originalFileName, outputExtension)
+				: originalFileName;
+
+			FullPath = !string.IsNullOrEmpty(originalFullPath) && !string.IsNullOrEmpty(outputExtension)
+				? Path.ChangeExtension(originalFullPath, outputExtension)
+				: originalFullPath;
+
+			ContentType = string.Equals(outputExtension, ".png", StringComparison.OrdinalIgnoreCase)
+				? "image/png"
+				: string.Equals(outputExtension, ".jpg", StringComparison.OrdinalIgnoreCase) || string.Equals(outputExtension, ".jpeg", StringComparison.OrdinalIgnoreCase)
+					? "image/jpeg"
+					: originalContentType;
+		}
+
+		internal override async Task<Stream> PlatformOpenReadAsync()
+		{
+			// Return cached result on subsequent calls to avoid re-processing
+			if (_cachedData is not null)
+				return new MemoryStream(_cachedData, writable: false);
+
+			// Load the original stream into memory once to avoid multiple expensive NSItemProvider loads.
+			byte[] originalData;
+			using (var originalStream = await _originalResult.OpenReadAsync())
+			using (var buffer = new MemoryStream())
+			{
+				await originalStream.CopyToAsync(buffer);
+				originalData = buffer.ToArray();
+			}
+
+			Stream processedStream = null;
+			try
+			{
+				// processedStream is always an independent MemoryStream from ImageProcessor.ProcessImageAsync;
+				// it does not reference or depend on originalStream after this call completes.
+				using var originalForProcessing = new MemoryStream(originalData, writable: false);
+				processedStream = await ImageProcessor.ProcessImageAsync(
+					originalForProcessing,
+					_maximumWidth,
+					_maximumHeight,
+					_compressionQuality,
+					_originalResult.FileName,
+					_rotateImage,
+					_preserveMetaData);
+			}
+			catch
+			{
+				// Swallow processing exceptions and fall back to the original data.
+				processedStream = null;
+			}
+
+			if (processedStream is null)
+			{
+				// Fall back to the original data if processing failed or returned null.
+				_cachedData = originalData;
+			}
+			else
+			{
+				using (processedStream)
+				using (var buffer = new MemoryStream())
+				{
+					await processedStream.CopyToAsync(buffer);
+					_cachedData = buffer.ToArray();
+				}
+			}
+
+			return new MemoryStream(_cachedData, writable: false);
+		}
+
+		public void Dispose()
+		{
+			(_originalResult as IDisposable)?.Dispose();
 			GC.SuppressFinalize(this);
 		}
 	}
