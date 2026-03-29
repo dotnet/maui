@@ -1,6 +1,8 @@
 ---
 description: Assesses issue quality and health for backlog grooming
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   issue_comment:
     types: [created]
   workflow_dispatch:
@@ -12,6 +14,7 @@ on:
 
 if: >-
   github.event_name == 'workflow_dispatch' ||
+  (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
   (github.event_name == 'issue_comment' &&
    !github.event.issue.pull_request &&
    (startsWith(github.event.comment.body, '/assess') || startsWith(github.event.comment.body, '/groom')))
@@ -49,6 +52,12 @@ concurrency:
 timeout-minutes: 10
 
 steps:
+  - name: Gate — skip on pull_request (this workflow is for issues only)
+    if: github.event_name == 'pull_request'
+    run: |
+      echo "⏭️ This workflow assesses issues, not PRs. Use /assess or workflow_dispatch on an issue."
+      exit 1
+
   - name: Gate — verify issue is open
     if: github.event_name == 'workflow_dispatch'
     env:

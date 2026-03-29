@@ -22,13 +22,19 @@
 #
 # Assesses issue quality and health for backlog grooming
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"5daba4cb813c24471bde709422b13e04bd4e674d3f788f6de36259704a378694","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"de7d75d573324450a377921ecc579fc428cdb1c3822d0e33bbbe3715d24132f3","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
 
 name: "Assess Issue Quality"
 "on":
   issue_comment:
     types:
     - created
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - ready_for_review
   workflow_dispatch:
     inputs:
       issue_number:
@@ -48,9 +54,9 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      needs.pre_activation.outputs.activated == 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      needs.pre_activation.outputs.activated == 'true' && ((github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || (github.event_name == 'issue_comment' &&
       !github.event.issue.pull_request &&
-      (startsWith(github.event.comment.body, '/assess') || startsWith(github.event.comment.body, '/groom'))))
+      (startsWith(github.event.comment.body, '/assess') || startsWith(github.event.comment.body, '/groom')))) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository_id))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -312,6 +318,11 @@ jobs:
         run: bash ${RUNNER_TEMP}/gh-aw/actions/configure_gh_for_ghe.sh
         env:
           GH_TOKEN: ${{ github.token }}
+      - if: github.event_name == 'pull_request'
+        name: Gate — skip on pull_request (this workflow is for issues only)
+        run: |
+          echo "⏭️ This workflow assesses issues, not PRs. Use /assess or workflow_dispatch on an issue."
+          exit 1
       - env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ inputs.issue_number }}
@@ -977,9 +988,9 @@ jobs:
 
   pre_activation:
     if: >
-      github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
+      (github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || (github.event_name == 'issue_comment' &&
       !github.event.issue.pull_request &&
-      (startsWith(github.event.comment.body, '/assess') || startsWith(github.event.comment.body, '/groom')))
+      (startsWith(github.event.comment.body, '/assess') || startsWith(github.event.comment.body, '/groom')))) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository_id)
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
