@@ -413,8 +413,13 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
+		// Save reference before cleanup nulls the field
+		var oldCollectionViewSource = _collectionViewSource;
+
+		// Safe cleanup: unsubscribe events, clean up collections and factory.
 		CleanUpCollectionViewSource();
 
+		// Create the new CollectionViewSource
 		_collectionViewSource = CreateCollectionViewSource();
 		_itemsSource = _collectionViewSource?.Source as IList;
 
@@ -423,13 +428,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			incc.CollectionChanged += ItemsChanged;
 		}
 
-		PlatformView.ItemsSource = null;
-		PlatformView.ItemsSource = _collectionViewSource?.View;
-
-		_scrollViewer?.ChangeView(0, 0, null, disableAnimation: true);
-		_previousHorizontalOffset = 0;
-		_previousVerticalOffset = 0;
-
+		// Set up the new ItemTemplate
 		if (VirtualView.ItemTemplate is not null)
 		{
 			_itemFactory = new ItemFactory(Element);
@@ -439,6 +438,19 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			PlatformView.ItemTemplate = null;
 		}
+
+		PlatformView.ItemsSource = _collectionViewSource?.View;
+
+		// Now safely null the old Source — PlatformView no longer references it,
+		// so the CollectionChanged(Reset) it fires won't cause WinUI side effects.
+		if (oldCollectionViewSource is not null)
+		{
+			oldCollectionViewSource.Source = null;
+		}
+
+		_scrollViewer?.ChangeView(0, 0, null, disableAnimation: true);
+		_previousHorizontalOffset = 0;
+		_previousVerticalOffset = 0;
 
 		UpdateEmptyViewVisibility();
 	}
