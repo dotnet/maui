@@ -75,7 +75,7 @@ $commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$($commit
 $commentBody = @"
 $MARKER
 
-## 🚦 Gate — Test Verification
+## 🚦 Gate - Test Before and After Fix
 
 <details>
 <summary>📊 <strong>Expand Full Gate</strong> — <a href="$commitUrl"><code>$commitSha</code></a> · <strong>$commitTitle</strong></summary>

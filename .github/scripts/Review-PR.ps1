@@ -438,7 +438,7 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 1: Gate — Test Verification (script, no copilot agent)
+#  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""

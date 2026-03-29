@@ -1,4 +1,4 @@
-# PR Gate — Test Verification
+# PR Gate - Test Before and After Fix
 
 > **⛔ This phase MUST pass before continuing to Try-Fix. If it fails, stop and inform user.**
 
