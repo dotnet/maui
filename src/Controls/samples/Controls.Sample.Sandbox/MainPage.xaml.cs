@@ -292,6 +292,13 @@ public partial class DetailsPage : ContentPage
 // APPEARANCE TEST: Each page has different Shell.BackgroundColor
 public partial class Content1Page : ContentPage
 {
+	bool isTabTitleChanged = false;
+	bool isBottomTabTitleChanged = false;
+
+	Button changeTabTitleButton;
+	Button changeBottomTabTitleButton;
+	Button toggleEnabledButton;
+
 	public Content1Page()
 	{
 		Title = "Content 1";
@@ -301,15 +308,114 @@ public partial class Content1Page : ContentPage
 		Shell.SetForegroundColor(this, Colors.White);
 		Shell.SetTitleColor(this, Colors.White);
 
-		Content = new VerticalStackLayout
+		changeTabTitleButton = new Button
 		{
-			Spacing = 20,
-			Padding = new Thickness(30, 0),
-			Children =
+			Text = "Change Tab Titles",
+			HorizontalOptions = LayoutOptions.Center,
+		};
+
+		changeTabTitleButton.Clicked += (s, e) =>
+		{
+			if (!isTabTitleChanged)
 			{
-				new Label
+				var section = Shell.Current?.CurrentItem?.CurrentItem;
+				if (section?.Items is not null)
 				{
-					Text = "Content 1 - RED Toolbar",
+					int counter = 1;
+					foreach (var content in section.Items)
+					{
+						content.Title = $"Renamed {counter++}";
+					}
+				}
+				isTabTitleChanged = true;
+				changeTabTitleButton.Text = "Restore Tab Titles";
+			}
+			else
+			{
+				var section = Shell.Current?.CurrentItem?.CurrentItem;
+				if (section?.Items is not null)
+				{
+					var originals = new[] { "Content 1", "Content 2", "Content 3" };
+					for (int i = 0; i < section.Items.Count && i < originals.Length; i++)
+					{
+						section.Items[i].Title = originals[i];
+					}
+				}
+				isTabTitleChanged = false;
+				changeTabTitleButton.Text = "Change Tab Titles";
+			}
+		};
+
+		changeBottomTabTitleButton = new Button
+		{
+			Text = "Change Bottom Tab Titles",
+			HorizontalOptions = LayoutOptions.Center,
+			BackgroundColor = Colors.Orange,
+			TextColor = Colors.White,
+		};
+
+		changeBottomTabTitleButton.Clicked += (s, e) =>
+		{
+			if (!isBottomTabTitleChanged)
+			{
+				var shellItem = Shell.Current?.CurrentItem;
+				if (shellItem?.Items is not null)
+				{
+					int counter = 1;
+					foreach (var tab in shellItem.Items)
+					{
+						tab.Title = $"BTab {counter++}";
+					}
+				}
+				isBottomTabTitleChanged = true;
+				changeBottomTabTitleButton.Text = "Restore Bottom Tab Titles";
+			}
+			else
+			{
+				var shellItem = Shell.Current?.CurrentItem;
+				if (shellItem?.Items is not null)
+				{
+					var originals = new[] { "Home", "Tests", "Multi-Tab Test", "Search" };
+					for (int i = 0; i < shellItem.Items.Count && i < originals.Length; i++)
+					{
+						shellItem.Items[i].Title = originals[i];
+					}
+				}
+				isBottomTabTitleChanged = false;
+				changeBottomTabTitleButton.Text = "Change Bottom Tab Titles";
+			}
+		};
+
+		toggleEnabledButton = new Button
+		{
+			Text = "Disable Last Bottom Tab",
+			HorizontalOptions = LayoutOptions.Center,
+			BackgroundColor = Colors.Purple,
+			TextColor = Colors.White,
+		};
+
+		toggleEnabledButton.Clicked += (s, e) =>
+		{
+			var shellItem = Shell.Current?.CurrentItem;
+			if (shellItem?.Items is not null && shellItem.Items.Count > 1)
+			{
+				var lastTab = shellItem.Items[shellItem.Items.Count - 1];
+				lastTab.IsEnabled = !lastTab.IsEnabled;
+				toggleEnabledButton.Text = lastTab.IsEnabled ? "Disable Last Bottom Tab" : "Enable Last Bottom Tab";
+			}
+		};
+
+		Content = new ScrollView
+		{
+			Content = new VerticalStackLayout
+			{
+				Spacing = 20,
+				Padding = new Thickness(30, 0),
+				Children =
+				{
+					new Label
+					{
+						Text = "Content 1 - RED Toolbar",
 					FontSize = 24,
 					FontAttributes = FontAttributes.Bold,
 					HorizontalOptions = LayoutOptions.Center,
@@ -342,6 +448,10 @@ public partial class Content1Page : ContentPage
 					Text = "GoToAsync to Content2",
 					HorizontalOptions = LayoutOptions.Center,
 					Command = new Command(async () => await Shell.Current.GoToAsync("//MultiTab/Content2"))
+				},
+				changeTabTitleButton,
+				changeBottomTabTitleButton,
+				toggleEnabledButton,
 				}
 			}
 		};
