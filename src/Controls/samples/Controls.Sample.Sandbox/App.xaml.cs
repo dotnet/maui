@@ -11,7 +11,7 @@ public partial class App : Application
 	{
 		// Test mode selection:
 		// "shell"      - Test Shell handler migration
-		// "tabbedpage" - Test TabbedPage with BottomNavigationManager
+		// "tabbedpage" - Test TabbedPage with TabbedViewManager
 		// "navigation" - Test NavigationPage
 
 		string testMode = "shell";
