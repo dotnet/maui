@@ -237,9 +237,22 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					ParentContext = context,
 				};
 
+				// Seed the template context with the parent's BindingContextDataType for the template
+				// root node. This preserves the CrossedTemplateBoundary flag so that bindings inside
+				// the template that inherit from outside get the correct warning.
+				if (context.BindingContextDataTypes.TryGetValue(parentNode, out var parentDataType)
+					&& parentDataType.Kind == BindingContextDataTypeKind.Resolved)
+				{
+					templateContext.BindingContextDataTypes[parentNode] = parentDataType with
+					{
+						CrossedTemplateBoundary = true,
+					};
+				}
+
 				//inflate the template
 				node.Accept(new CreateValuesVisitor(templateContext), null);
 				node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
+				node.Accept(new PropagateDataTypeVisitor(templateContext), null);
 				// node.Accept(new SetFieldVisitor(templateContext), null);
 				node.Accept(new SetResourcesVisitor(templateContext), null);
 				node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
