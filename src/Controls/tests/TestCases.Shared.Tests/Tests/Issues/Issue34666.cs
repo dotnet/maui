@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // Issue link: https://github.com/dotnet/maui/issues/34701
+#if TEST_FAILS_ON_WINDOWS // The issue also affects Windows; tracked for follow-up in: https://github.com/dotnet/maui/issues/34701
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
