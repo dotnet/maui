@@ -224,4 +224,151 @@ public partial class NoCodePage : ContentPage
 
 		Assert.Null(xcode);
 	}
+
+	[Fact]
+	public void XCode_UsingDirectives_ArePromotedToFileTop()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.UsingsPage">
+    <x:Code><![CDATA[
+        using System.Net.Http;
+        using System.Threading.Tasks;
+
+        async Task<string> FetchAsync()
+        {
+            using var client = new HttpClient();
+            return await client.GetStringAsync("https://example.com");
+        }
+    ]]></x:Code>
+    <Label Text="Test" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class UsingsPage : ContentPage
+{
+    public UsingsPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+		var xcode = GetXCodeOutput(result);
+
+		Assert.NotNull(xcode);
+
+		// using directives should appear before the namespace declaration
+		var namespaceIndex = xcode!.IndexOf("namespace TestApp", StringComparison.Ordinal);
+		var usingHttpIndex = xcode.IndexOf("using System.Net.Http;", StringComparison.Ordinal);
+		var usingTasksIndex = xcode.IndexOf("using System.Threading.Tasks;", StringComparison.Ordinal);
+		Assert.True(usingHttpIndex >= 0, "using System.Net.Http should be in output");
+		Assert.True(usingTasksIndex >= 0, "using System.Threading.Tasks should be in output");
+		Assert.True(usingHttpIndex < namespaceIndex, "using directive should appear before namespace");
+		Assert.True(usingTasksIndex < namespaceIndex, "using directive should appear before namespace");
+
+		// "using var client" is a using statement, not a directive — it stays inside the class
+		var classIndex = xcode.IndexOf("partial class UsingsPage", StringComparison.Ordinal);
+		var usingVarIndex = xcode.IndexOf("using var client", StringComparison.Ordinal);
+		Assert.True(usingVarIndex > classIndex, "using statement should remain inside the class body");
+
+		// Method body should still be present
+		Assert.Contains("FetchAsync", xcode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XCode_DuplicateUsings_AreDeduped()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.DedupePage">
+    <x:Code><![CDATA[
+        using System.Net.Http;
+    ]]></x:Code>
+    <x:Code><![CDATA[
+        using System.Net.Http;
+        string Name = "test";
+    ]]></x:Code>
+    <Label Text="Test" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class DedupePage : ContentPage
+{
+    public DedupePage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+		var xcode = GetXCodeOutput(result);
+
+		Assert.NotNull(xcode);
+		// Should appear exactly once
+		var count = xcode!.Split("using System.Net.Http;").Length - 1;
+		Assert.Equal(1, count);
+		Assert.Contains("Name", xcode, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XCode_UsingStatic_IsPromoted()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.StaticUsingPage">
+    <x:Code><![CDATA[
+        using static System.Math;
+
+        double Compute() => Abs(-42);
+    ]]></x:Code>
+    <Label Text="Test" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class StaticUsingPage : ContentPage
+{
+    public StaticUsingPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind);
+		var xcode = GetXCodeOutput(result);
+
+		Assert.NotNull(xcode);
+		var namespaceIndex = xcode!.IndexOf("namespace TestApp", StringComparison.Ordinal);
+		var usingStaticIndex = xcode.IndexOf("using static System.Math;", StringComparison.Ordinal);
+		Assert.True(usingStaticIndex >= 0, "using static should be in output");
+		Assert.True(usingStaticIndex < namespaceIndex, "using static should appear before namespace");
+		Assert.Contains("Compute", xcode, StringComparison.Ordinal);
+	}
 }
