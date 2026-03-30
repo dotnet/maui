@@ -79,6 +79,9 @@ parameters:
     - name: MauiBlazorWebView.DeviceTests
       path: src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj
       packageId: Microsoft.Maui.MauiBlazorWebView.DeviceTests
+    - name: Essentials.AI.DeviceTests
+      path: src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj
+      packageId: com.microsoft.maui.ai.devicetests
 
 stages:
 - stage: devicetests_build
@@ -465,7 +468,7 @@ stages:
 
           # Save unpackaged publish output before packaged builds overwrite artifacts/bin
           - pwsh: |
-              $artifactNames = @("Controls.DeviceTests", "Core.DeviceTests", "Graphics.DeviceTests", "Essentials.DeviceTests", "MauiBlazorWebView.DeviceTests")
+              $artifactNames = @("Controls.DeviceTests", "Core.DeviceTests", "Graphics.DeviceTests", "Essentials.DeviceTests", "MauiBlazorWebView.DeviceTests", "Essentials.AI.DeviceTests")
               foreach ($name in $artifactNames) {
                 $publishDir = Get-ChildItem -Path "$(Build.SourcesDirectory)/artifacts/bin/$name" -Filter "publish" -Recurse -Directory | Select-Object -First 1
                 if ($publishDir) {
@@ -498,7 +501,8 @@ stages:
                 @{ Name = "Core.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Core/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Core.DeviceTests" },
                 @{ Name = "Graphics.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Graphics/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Graphics.DeviceTests" },
                 @{ Name = "Essentials.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/Essentials/test/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Essentials.DeviceTests" },
-                @{ Name = "MauiBlazorWebView.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/MauiBlazorWebView.DeviceTests" }
+                @{ Name = "MauiBlazorWebView.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/BlazorWebView/tests/DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/MauiBlazorWebView.DeviceTests" },
+                @{ Name = "Essentials.AI.DeviceTests"; ProjectDir = "$(Build.SourcesDirectory)/src/AI/tests/Essentials.AI.DeviceTests"; ArtifactDir = "$(Build.SourcesDirectory)/artifacts/bin/Essentials.AI.DeviceTests" }
               )
               
               foreach ($project in $projects) {

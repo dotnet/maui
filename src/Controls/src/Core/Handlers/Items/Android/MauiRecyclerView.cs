@@ -425,9 +425,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (args.Mode == ScrollToMode.Position)
 			{
 				// Do not use `IGroupableItemsViewSource` since `UngroupedItemsSource` also implements that interface
-				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource)
+				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource ungroupedSource)
 				{
-					return args.Index;
+					return ungroupedSource.HasHeader ? args.Index + 1 : args.Index;
 				}
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
@@ -522,6 +522,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				UpdateItemSpacing();
 			}
+		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			// If ItemsView is disabled, don't handle touch events
+			if (ItemsView?.IsEnabled == false)
+			{
+				return false;
+			}
+
+			return base.OnTouchEvent(e);
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent e)
+		{
+			// If ItemsView is disabled, intercept all touch events to prevent interactions
+			if (ItemsView?.IsEnabled == false)
+			{
+				return true;
+			}
+
+			return base.OnInterceptTouchEvent(e);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

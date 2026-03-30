@@ -989,36 +989,27 @@ namespace Microsoft.Maui.Graphics.Platform
 			float y,
 			HorizontalAlignment horizontalAlignment)
 		{
-			if (horizontalAlignment == HorizontalAlignment.Left)
-			{
-				DrawString(value, x, y);
-			}
-			else if (horizontalAlignment == HorizontalAlignment.Right)
+			if (horizontalAlignment == HorizontalAlignment.Right)
 			{
 				var size = GetStringSize(value, _font, _fontSize);
 				x -= size.Width;
-				DrawString(value, x, y);
 			}
-			else
+			else if (horizontalAlignment == HorizontalAlignment.Center)
 			{
 				var size = GetStringSize(value, _font, _fontSize);
-				x -= (size.Width / 2f);
-				DrawString(value, x, y);
+				x -= size.Width / 2f;
 			}
+			DrawString(value, x, y);
 		}
 
 		private void DrawString(string value, float x, float y)
 		{
-			_context.SetFillColor(_fontColor);
-			_context.SetFont(_font?.ToCGFont() ?? FontExtensions.GetDefaultCGFont());
-			_context.SetFontSize(_fontSize);
-			_context.SetTextDrawingMode(CGTextDrawingMode.Fill);
-			_context.TextMatrix = FlipTransform;
-#pragma warning disable BI1234 // Type or member is obsolete
-#pragma warning disable CA1422, CA1416 // Validate platform compatibility
-			_context.ShowTextAtPoint(x, y, value);
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore BI1234, CA1416 // Type or member is obsolete
+			using var font = _font?.ToCTFont(_fontSize) ?? FontExtensions.GetDefaultCTFont(_fontSize);
+			var attributes = new CTStringAttributes { Font = font, ForegroundColor = _fontColor.AsCGColor() };
+			using var attributedString = new NSAttributedString(value, attributes);
+			using var textLine = new CTLine(attributedString);
+			_context.TextMatrix = new CGAffineTransform(1, 0, 0, -1, x, y);
+			textLine.Draw(_context);
 		}
 
 		public override void DrawString(
