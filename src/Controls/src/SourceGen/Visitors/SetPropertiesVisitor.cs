@@ -1,3 +1,4 @@
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,11 +36,59 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
+	// Track properties that have been set to detect duplicates
+	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+	void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+	{
+		if (!setProperties.TryGetValue(parentNode, out var props))
+		{
+			props = new HashSet<XmlName>();
+			setProperties[parentNode] = props;
+		}
+
+		if (!props.Add(propertyName))
+		{
+			var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
+			var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
+		}
+	}
+
+	/// <summary>
+	/// Resolves the type of an implicit content property and, when the property is a non-collection
+	/// non-Object type, calls <see cref="CheckForDuplicateProperty"/> to emit a diagnostic if it has
+	/// already been assigned.
+	/// </summary>
+	/// <param name="lookupName">XmlName used for the <c>GetBindableProperty</c> lookup (namespace may differ from <paramref name="trackingName"/>).</param>
+	/// <param name="trackingName">XmlName used as the deduplication key (always uses the parent element's namespace).</param>
+	void CheckImplicitContentForDuplicate(
+		ILocalValue parentVar,
+		ElementNode parentNode,
+		XmlName lookupName,
+		XmlName trackingName,
+		IXmlLineInfo lineInfo)
+	{
+		bool attached = false;
+		var localName = lookupName.LocalName;
+		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, context, lineInfo);
+		ITypeSymbol? propertyType = null;
+
+		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+			|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+
+		bool isObject = propertyType != null && propertyType.SpecialType == SpecialType.System_Object;
+		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+			CheckForDuplicateProperty(parentNode, trackingName, lineInfo);
+	}
+
 	public void Visit(ValueNode node, INode parentNode)
 	{
 		//TODO support Label text as element
 
 		// if it's implicit content property, get the content property name
+		bool isImplicitContentProperty = false;
+		ILocalValue? parentVar = null;
 		if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (!parentNode.IsCollectionItem(node))
@@ -47,9 +96,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			string? contentProperty;
 			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
-			var parentVariable = Context.Variables[(ElementNode)parentNode];
-			if ((contentProperty = parentVariable.Type.GetContentPropertyName(context)) != null)
+			parentVar = Context.Variables[(ElementNode)parentNode];
+			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
+			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				isImplicitContentProperty = true;
+			}
 			else
 				return;
 		}
@@ -63,13 +115,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
 
-		// Check that parent has a variable before accessing
-		var parentElement = (ElementNode)parentNode;
-		if (!Context.Variables.TryGetValue(parentElement, out var parentVar))
-		{
-			var parentKey = parentElement.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode vn ? vn.Value?.ToString() : "(none)";
-			throw new System.InvalidOperationException($"SetPropertiesVisitor.Visit(ValueNode): Parent '{parentElement.XmlType.Name}' x:Key='{parentKey}' not in Variables for propertyName='{propertyName}'");
-		}
+		parentVar ??= Context.Variables.TryGetValue((ElementNode)parentNode, out var pv) ? pv : null;
+		// Parent element not yet in Variables — can occur for markup extensions or nodes
+		// processed before their parent is fully initialized. Silently skip; the assignment
+		// will be handled through another visitor pass.
+		if (parentVar == null)
+			return;
 
 		// Try to set runtime name (for x:Name with RuntimeNameProperty attribute)
 		if (TrySetRuntimeName(propertyName, parentVar, node))
@@ -78,6 +129,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		// Skip x:Name after TrySetRuntimeName has had a chance to process it
 		if (propertyName == XmlName.xName)
 			return;
+
+		// Check for duplicate property assignment for implicit content properties
+		if (isImplicitContentProperty)
+			CheckImplicitContentForDuplicate(parentVar, (ElementNode)parentNode, propertyName, propertyName, node);
 
 		SetPropertyHelpers.SetPropertyValue(Writer, parentVar, propertyName, node, Context);
 	}
@@ -182,9 +237,22 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					ParentContext = context,
 				};
 
+				// Seed the template context with the parent's BindingContextDataType for the template
+				// root node. This preserves the CrossedTemplateBoundary flag so that bindings inside
+				// the template that inherit from outside get the correct warning.
+				if (context.BindingContextDataTypes.TryGetValue(parentNode, out var parentDataType)
+					&& parentDataType.Kind == BindingContextDataTypeKind.Resolved)
+				{
+					templateContext.BindingContextDataTypes[parentNode] = parentDataType with
+					{
+						CrossedTemplateBoundary = true,
+					};
+				}
+
 				//inflate the template
 				node.Accept(new CreateValuesVisitor(templateContext), null);
 				node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
+				node.Accept(new PropagateDataTypeVisitor(templateContext), null);
 				// node.Accept(new SetFieldVisitor(templateContext), null);
 				node.Accept(new SetResourcesVisitor(templateContext), null);
 				node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
@@ -207,6 +275,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var key1 = ((ElementNode)parentNode).Properties.TryGetValue(XmlName.xKey, out var kn1) && kn1 is ValueNode vn1 ? vn1.Value?.ToString() : "(none)";
 				throw new System.InvalidOperationException($"SetPropertiesVisitor.Visit(ElementNode) propertyName != Empty: Parent '{((ElementNode)parentNode).XmlType.Name}' x:Key='{key1}' not in Variables");
 			}
+
 			SetPropertyHelpers.SetPropertyValue(Writer, pVar1, propertyName, node, Context);
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ElementNode)
@@ -225,8 +294,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var name = new XmlName(node.NamespaceURI, contentProperty);
 				if (skips.Contains(name))
 					return;
-				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
+				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(name))
 					return;
+
+				// Only check for duplicate property assignment if the property is not a collection
+				// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
+				var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				CheckImplicitContentForDuplicate(parentVar, (ElementNode)parentNode, name, contentPropertyName, node);
+
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
 			else if (parentVar.Type.CanAdd(context))

@@ -233,12 +233,25 @@ static class SetPropertyHelpers
 				ParentContext = context
 			};
 
+			// Seed the lambda context with the parent's BindingContextDataType.
+			// The CrossedTemplateBoundary flag from the main context already carries the
+			// correct value. When the node declares its own x:DataType, the visitor will
+			// override this seed.
+			if (context.BindingContextDataTypes.TryGetValue(node, out var nodeDataType)
+				&& nodeDataType.Kind == BindingContextDataTypeKind.Resolved)
+			{
+				lambdaContext.BindingContextDataTypes[node] = nodeDataType;
+			}
+
 			// First pass: Create all values (node and its descendants) using CreateValuesVisitor
 			// This mirrors the normal flow: CreateValuesVisitor walks the entire tree first
 			node.Accept(new CreateValuesVisitor(lambdaContext), null);
 
 			// Second pass: Set namescopes and register names in the namescope
 			node.Accept(new SetNamescopesAndRegisterNamesVisitor(lambdaContext), null);
+
+			// Propagate x:DataType through the tree
+			node.Accept(new PropagateDataTypeVisitor(lambdaContext), null);
 
 			// Third pass: Set resources in ResourceDictionary
 			node.Accept(new SetResourcesVisitor(lambdaContext), null);
@@ -534,7 +547,7 @@ static class SetPropertyHelpers
 		}
 	}
 
-	static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
+	internal static bool CanGet(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
 	{
 		propertyType = null;
 		if ((propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault()) == null)
@@ -546,7 +559,7 @@ static class SetPropertyHelpers
 		return true;
 	}
 
-	static bool CanGetValue(ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
+	internal static bool CanGetValue(ILocalValue parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
 	{
 		propertyType = null;
 		if (bpFieldSymbol == null)

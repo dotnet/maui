@@ -130,7 +130,8 @@ $$"""
 			return;
 		}
 
-""");
+"""
+);
 					}
 					Visit(root, sgcontext);
 
@@ -176,6 +177,7 @@ $$"""
 		rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 		rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null); //set namescopes for {x:Reference} and FindByName
 		rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);
+		rootnode.Accept(new PropagateDataTypeVisitor(visitorContext), null);
 		// rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
 		rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 		rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);

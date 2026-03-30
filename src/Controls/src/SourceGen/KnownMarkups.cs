@@ -355,8 +355,16 @@ internal class KnownMarkups
 		{
 			ITypeSymbol? xRefSourceType = TryResolveXReferenceSourceType(markupNode, context);
 			dataTypeSymbol = xRefSourceType;
-			if (dataTypeSymbol is null)
-				TryGetXDataType(markupNode, context, out dataTypeSymbol);
+			if (dataTypeSymbol is null && TryGetBindingContextDataType(markupNode, context, out var bcDataType))
+			{
+				dataTypeSymbol = bcDataType.Symbol;
+
+				if (bcDataType.CrossedTemplateBoundary)
+				{
+					var location = LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)markupNode, "x:DataType");
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingWithXDataTypeFromOuterScope, location));
+				}
+			}
 
 			if (dataTypeSymbol is not null)
 			{
@@ -480,151 +488,6 @@ internal class KnownMarkups
 			}
 		}
 
-		static bool TryGetXDataType(ElementNode node, SourceGenContext context, out ITypeSymbol? dataTypeSymbol)
-		{
-			dataTypeSymbol = null;
-
-			if (!TryFindXDataTypeNode(node, context, out INode? dataTypeNode, out bool xDataTypeIsInOuterScope)
-				|| dataTypeNode is null)
-			{
-				return false;
-			}
-
-			var location = LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, "x:DataType");
-
-			if (xDataTypeIsInOuterScope)
-			{
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.BindingWithXDataTypeFromOuterScope, location));
-				// continue compilation - this is a warning
-			}
-
-			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
-			{
-				// TODO report warning
-				// context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType NullExtension"));
-				// context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				return false;
-			}
-
-			// TypeExtension would already provide the type value, so we can just grab it from the context
-			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "TypeExtension"))
-			{
-				// it is possible that the dataTypeNode belongs to the parent context
-				// this is the case for example in this scenario:
-				//
-				//    <DataTemplate x:DataType="local:ItemViewModel">
-				//        <Label Text="{Binding ItemTitle}" />
-				//    </DataTemplate>
-				//
-				SourceGenContext? ctx = context;
-				while (ctx is not null)
-				{
-					if (ctx.Types.TryGetValue(dataTypeNode, out dataTypeSymbol))
-					{
-						return true;
-					}
-
-					ctx = ctx.ParentContext;
-				}
-
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType TypeExtension which cannot be resolved"));
-				return false;
-			}
-
-			string? dataTypeName = (dataTypeNode as ValueNode)?.Value as string;
-			if (dataTypeName is null)
-			{
-				// TODO
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, $"dataTypeNode is not a value node, got {dataTypeNode} instead"));
-				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-				// throw new Exception($"dataTypeNode {dataTypeNode} is not a value node"); // TODO
-				return false;
-			}
-
-			XmlType? dataType = null;
-			try
-			{
-				dataType = TypeArgumentsParser.ParseSingle(dataTypeName, node.NamespaceResolver, dataTypeNode as IXmlLineInfo);
-			}
-			catch (XamlParseException)
-			{
-				var prefix = dataTypeName.Contains(":") ? dataTypeName.Substring(0, dataTypeName.IndexOf(":", StringComparison.Ordinal)) : "";
-				// throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-				throw new Exception($"XmlnsUndeclared {prefix}"); // TODO
-			}
-
-			if (dataType is null)
-			{
-				// TODO
-				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-				// throw new Exception($"cannot parse {dataTypeName}"); // TODO
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot parse x:DataType value"));
-				return false;
-			}
-
-			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) && symbol is not null)
-			{
-				// TODO report the right diagnostic
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot resolve x:DataType type"));
-				return false;
-			}
-
-			dataTypeSymbol = symbol;
-			return true;
-		}
-
-		static bool TryFindXDataTypeNode(ElementNode elementNode, SourceGenContext context, out INode? dataTypeNode, out bool isInOuterScope)
-		{
-			isInOuterScope = false;
-			dataTypeNode = null;
-
-			// Special handling for BindingContext={Binding ...}
-			// The order of checks is:
-			// - x:DataType on the binding itself
-			// - SKIP looking for x:DataType on the parent
-			// - continue looking for x:DataType on the parent's parent...
-			ElementNode? skipNode = null;
-			if (IsBindingContextBinding(elementNode))
-			{
-				skipNode = GetParent(elementNode);
-			}
-
-			ElementNode? node = elementNode;
-			while (node is not null)
-			{
-				if (node != skipNode && node.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
-				{
-					return true;
-				}
-
-				if (DoesNotInheritDataType(node, context))
-				{
-					return false;
-				}
-
-				// When the binding is inside of a DataTemplate and the x:DataType is in the parent scope,
-				// it is usually a bug.
-				if (node.RepresentsType(XamlParser.MauiUri, "DataTemplate"))
-				{
-					isInOuterScope = true;
-				}
-
-				node = GetParent(node);
-			}
-
-			return false;
-		}
-
-		static bool DoesNotInheritDataType(ElementNode node, SourceGenContext context)
-		{
-			return GetParent(node) is ElementNode parentNode
-				&& parentNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? parentTypeSymbol)
-				&& parentTypeSymbol is not null
-				&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
-				&& parentTypeSymbol.GetAllProperties(propertyName.LocalName, context).FirstOrDefault() is IPropertySymbol propertySymbol
-				&& propertySymbol.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "global::Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
-		}
-
 		static ElementNode? GetParent(ElementNode node)
 		{
 			return node switch
@@ -633,6 +496,56 @@ internal class KnownMarkups
 				{ Parent: ElementNode parentNode } => parentNode,
 				_ => null,
 			};
+		}
+
+		/// <summary>
+		/// Looks up the pre-computed BindingContextDataType for a binding markup node.
+		/// Handles the BindingContext={Binding} skip: when the binding target is the
+		/// BindingContext property itself, the node's own x:DataType describes the RESULT,
+		/// not the source — so we look up the grandparent's type instead.
+		/// </summary>
+		static bool TryGetBindingContextDataType(ElementNode markupNode, SourceGenContext context, out BindingContextDataType result)
+		{
+			result = default!;
+
+			if (IsBindingContextBinding(markupNode))
+			{
+				// The binding is BindingContext="{Binding ...}". The parent element's x:DataType
+				// describes what BindingContext will become after the binding resolves — not the
+				// source to resolve against. We need the grandparent's data type.
+				var parent = GetParent(markupNode);
+				if (parent is null)
+					return false;
+
+				var grandparent = GetParent(parent);
+				if (grandparent is not null
+					&& TryGetBindingContextDataTypeFromContext(grandparent, context, out result))
+				{
+					return true;
+				}
+
+				return false;
+			}
+
+			return TryGetBindingContextDataTypeFromContext(markupNode, context, out result);
+		}
+
+		static bool TryGetBindingContextDataTypeFromContext(ElementNode node, SourceGenContext context, out BindingContextDataType result)
+		{
+			// Walk up the context chain (handles template child contexts)
+			SourceGenContext? ctx = context;
+			while (ctx is not null)
+			{
+				if (ctx.BindingContextDataTypes.TryGetValue(node, out result)
+					&& result.Kind == BindingContextDataTypeKind.Resolved)
+				{
+					return true;
+				}
+				ctx = ctx.ParentContext;
+			}
+
+			result = default!;
+			return false;
 		}
 
 		static bool IsBindingContextBinding(ElementNode node)
