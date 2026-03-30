@@ -20,6 +20,8 @@ public partial class Maui34712 : ContentPage
 			var page = new Maui34712(XamlInflator.SourceGen);
 			Assert.NotNull(page);
 			Assert.Equal("Hello from x:Code", page.GetMessage());
+			// Verify that using System.Globalization was promoted correctly
+			Assert.NotNull(page.GetFormattedDate());
 		}
 
 		[Fact]
@@ -59,7 +61,12 @@ public partial class Maui34712 : ContentPage
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34712">
     <x:Code><![CDATA[
+        using System.Globalization;
+
         public string GetMessage() => "Hello from x:Code";
+
+        public string GetFormattedDate()
+            => DateTime.Now.ToString("d", CultureInfo.InvariantCulture);
     ]]></x:Code>
     <Label x:Name="testLabel" Text="Test" />
 </ContentPage>
