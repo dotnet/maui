@@ -61,6 +61,7 @@ public partial class Maui34712 : ContentPage
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34712">
     <x:Code><![CDATA[
+        using System;
         using System.Globalization;
 
         public string GetMessage() => "Hello from x:Code";
