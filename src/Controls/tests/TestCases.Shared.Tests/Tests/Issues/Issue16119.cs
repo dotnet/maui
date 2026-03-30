@@ -20,6 +20,7 @@ public class Issue16119 : _IssuesUITest
 	{
 		App.WaitForElement("Issue16119DescriptionLabel");
 		App.Tap("Menu Flyout Item");
+		App.WaitForElement("Hello World");
 
 		VerifyScreenshot();
 	}
