@@ -38,7 +38,7 @@ if (inflator == XamlInflator.XamlC)
 // Multiple [Obsolete(error:true)] members produce multiple LoggedErrors wrapped in AggregateException,
 // so use ThrowsAny rather than Throws (which requires an exact type match).
 var ex = Assert.ThrowsAny<Exception>(() => MockCompiler.Compile(typeof(Maui23961Error), treatWarningsAsErrors: false));
-Assert.Contains("XC0619", ex.Message);
+Assert.Contains("XC0619", ex.Message, StringComparison.Ordinal);
 }
 else if (inflator == XamlInflator.SourceGen)
 {

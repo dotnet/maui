@@ -39,7 +39,7 @@ if (inflator == XamlInflator.XamlC)
 // Compile with warnings allowed and capture the emitted warnings
 MockCompiler.Compile(typeof(Maui23961), out _, out _, out var warnings, treatWarningsAsErrors: false);
 // Verify the diagnostic messages include the custom [Obsolete] message text
-Assert.Contains(warnings, w => w.Message.Contains("[Test Message]"));
+Assert.Contains(warnings, w => w.Message.Contains("[Test Message]", StringComparison.Ordinal));
 }
 else
 {
