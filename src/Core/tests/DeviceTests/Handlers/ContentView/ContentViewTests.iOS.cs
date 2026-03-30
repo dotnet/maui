@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -132,19 +133,27 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 
 				// Verify the mask was created
 				Assert.IsAssignableFrom<CAShapeLayer>(content.Layer.Mask);
-				var mask = (CAShapeLayer)content.Layer.Mask!;
 
-				// Simulate iOS deallocating the layer during view teardown:
-				// 1. Clear the native reference so the retain count drops
-				// 2. Dispose the managed wrapper so Handle becomes IntPtr.Zero
-				// The ContentView's internal _contentMask field still references
-				// the disposed object, which is exactly the bug scenario.
-				content.Layer.Mask = null;
-				mask.Dispose();
-				Assert.True(mask.Handle == IntPtr.Zero, "Disposed mask should have a zeroed Handle");
+				// Create a deterministically-disposed CAShapeLayer.
+				// A freshly-created layer with zero native retains is guaranteed
+				// to have Handle == IntPtr.Zero after Dispose(), regardless of
+				// platform-specific retain-count or GC timing behavior.
+				var disposedLayer = new CAShapeLayer();
+				disposedLayer.Dispose();
+				Assert.True(disposedLayer.Handle == IntPtr.Zero, "Disposed layer must have a zeroed Handle");
 
-				// This should not throw ObjectDisposedException —
-				// RemoveContentMask guards against disposed masks via Handle check.
+				// Use reflection to inject the disposed layer into the private
+				// _contentMask field, simulating the race condition where iOS
+				// deallocates the native layer during view teardown while our
+				// managed field still holds a reference.
+				var field = typeof(Microsoft.Maui.Platform.ContentView)
+					.GetField("_contentMask", BindingFlags.NonPublic | BindingFlags.Instance);
+				Assert.NotNull(field);
+				field!.SetValue(contentView, disposedLayer);
+
+				// RemoveFromSuperview triggers WillRemoveSubview → RemoveContentMask.
+				// Without the Handle guard, this would throw ObjectDisposedException
+				// when calling RemoveFromSuperLayer() on the disposed mask.
 				var ex = Record.Exception(() => content.RemoveFromSuperview());
 				Assert.Null(ex);
 			});
