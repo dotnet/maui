@@ -16,10 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void ShouldOverrideUrlLoading_Called()
 		{
-			VerifyInternetConnectivity();
-			App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(15),
-				predicate: e => e.GetText() == "SUCCESS");
-			var text = App.FindElement("StatusLabel").GetText();
+			var statusLabel = App.WaitForElement("StatusLabel");
+			var text = statusLabel.GetText();
 			Assert.That(text, Is.EqualTo("SUCCESS"), $"Expected ShouldOverrideUrlLoading to be called and update the status label text to 'SUCCESS', but got '{text}' instead.");
 		}
 	}

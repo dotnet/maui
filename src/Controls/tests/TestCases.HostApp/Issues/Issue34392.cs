@@ -4,9 +4,10 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using AWebView = Android.Webkit.WebView;
 #endif
+
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34392, "MAUI Handler not working with Custom WebView on Android (ShouldOverrideUrlLoading behavior)", PlatformAffected.Android, isInternetRequired: true)]
+[Issue(IssueTracker.Github, 34392, "MAUI Handler not working with Custom WebView on Android (ShouldOverrideUrlLoading behavior)", PlatformAffected.Android)]
 public class Issue34392 : TestContentPage
 {
     public static Label StatusIndicator { get; private set; }
@@ -58,9 +59,9 @@ public class Issue34392 : TestContentPage
             { "Authorization", "Bearer sample-token-12345" }
         };
 
-        customWebView.Source = new UrlWebViewSource
+        customWebView.Source = new HtmlWebViewSource
         {
-            Url = "https://www.microsoft.com"
+            Html = "<html><body><h1>Custom WebView Test</h1><script>setTimeout(function(){ window.location.href = 'https://example.com/test'; }, 500);</script></body></html>"
         };
     }
 }
@@ -95,6 +96,7 @@ public class Issue34392_CustomWebViewHandler : WebViewHandler
 public class Issue34392_CustomWebViewClient : MauiWebViewClient
 {
 	private readonly Dictionary<string, string> _headerParams;
+	private bool _alreadyRedirected;
 
 	public Issue34392_CustomWebViewClient(WebViewHandler handler, Dictionary<string, string> headers)
 		: base(handler)
@@ -111,9 +113,15 @@ public class Issue34392_CustomWebViewClient : MauiWebViewClient
 		{
 			if (Issue34392.StatusIndicator != null)
 			{
-				Issue34392.StatusIndicator.Text = $"SUCCESS";
+				Issue34392.StatusIndicator.Text = "SUCCESS";
 			}
 		});
+
+		// Prevent infinite redirect loop — only load with custom headers once
+		if (_alreadyRedirected)
+			return true;
+
+		_alreadyRedirected = true;
 
 		if (_headerParams.Count > 0)
 		{
