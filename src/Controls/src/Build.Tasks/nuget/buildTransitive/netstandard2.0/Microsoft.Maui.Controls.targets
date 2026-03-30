@@ -231,14 +231,57 @@
 		<CompileDependsOn>
 			$(CompileDependsOn);
 			XamlC;
+			_XamlCValidateOnly;
 		</CompileDependsOn>
 	</PropertyGroup>
 
+	<!-- XamlC: Runs in non-validate-only mode (typically Release). KEEP BODY IN SYNC WITH _XamlCValidateOnly -->
 	<Target Name="XamlC"
 		AfterTargets="AfterCompile"
-		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
+		Inputs="$(IntermediateOutputPath)$(TargetFileName);@(MauiXaml)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
-		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' AND '$(_MauiXamlCValidateOnly)' != 'True'">
+		<PropertyGroup>
+			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and ('$(PublishAot)' == 'true' or '$(TrimMode)' == 'full')">true</MauiStrictXamlCompilation>
+			<_MauiXamlCWarningsNotAsErrors>$(WarningsNotAsErrors)</_MauiXamlCWarningsNotAsErrors>
+			<_MauiXamlCWarningsNotAsErrors Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCWarningsNotAsErrors);XC0022;XC0023;XC0025</_MauiXamlCWarningsNotAsErrors>
+
+      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == '' and '$(GenerateFullPaths)' == 'true'">true</_MauiXamlCGenerateFullPaths>
+      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == ''">false</_MauiXamlCGenerateFullPaths>
+      <_MauiXamlCFullPathPrefix Condition="'$(_MauiXamlCFullPathPrefix)' == '' and '$(_MauiXamlCGenerateFullPaths)' == 'true'">$(MSBuildProjectDirectory)</_MauiXamlCFullPathPrefix>
+		</PropertyGroup>
+		<XamlCTask
+			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
+			ReferencePath = "@(ReferencePath)"
+			OptimizeIL = "true"
+			DebugSymbols = "$(DebugSymbols)"
+			DebugType = "$(DebugType)"
+			DefaultCompile = "true"
+      CompileBindingsWithSource = "$(MauiEnableXamlCBindingWithSourceCompilation)"
+			ValidateOnly = "$(_MauiXamlCValidateOnly)"
+			TargetFramework = "$(TargetFramework)"
+			KeepXamlResources = "$(MauiKeepXamlResources)"
+
+      WarningLevel = "$(WarningLevel)"
+      TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
+      NoWarn = "$(NoWarn)"
+      WarningsAsErrors = "$(WarningsAsErrors)"
+      WarningsNotAsErrors = "$(_MauiXamlCWarningsNotAsErrors)"
+      GenerateFullPaths = "$(_MauiXamlCGenerateFullPaths)"
+      FullPathPrefix = "$(_MauiXamlCFullPathPrefix)" />
+      
+		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
+		<ItemGroup>
+			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />
+		</ItemGroup>
+	</Target>
+
+	<!-- _XamlCValidateOnly: Runs in validate-only mode (typically Debug). KEEP BODY IN SYNC WITH XamlC -->
+	<Target Name="_XamlCValidateOnly"
+		AfterTargets="AfterCompile"
+		Inputs="@(MauiXaml)"
+		Outputs="$(IntermediateOutputPath)XamlC.stamp"
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' AND '$(_MauiXamlCValidateOnly)' == 'True'">
 		<PropertyGroup>
 			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and ('$(PublishAot)' == 'true' or '$(TrimMode)' == 'full')">true</MauiStrictXamlCompilation>
 			<_MauiXamlCWarningsNotAsErrors>$(WarningsNotAsErrors)</_MauiXamlCWarningsNotAsErrors>
@@ -306,7 +349,7 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
-  <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
+  <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC;_XamlCValidateOnly">
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>
