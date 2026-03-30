@@ -137,7 +137,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 				Assert.IsAssignableFrom<CAShapeLayer>(content.Layer.Mask);
 				var mask = (CAShapeLayer)content.Layer.Mask!;
 				mask.Dispose();
-				Assert.Equal(IntPtr.Zero, mask.Handle);
+				Assert.True(mask.Handle == IntPtr.Zero, "Disposed mask should have a zeroed Handle");
 
 				// This should not throw ObjectDisposedException
 				var ex = Record.Exception(() => content.RemoveFromSuperview());
