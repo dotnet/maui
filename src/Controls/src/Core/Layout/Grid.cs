@@ -406,16 +406,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is Grid grid)
 			{
 				grid.InvalidateMeasure();
-#if WINDOWS
-				// Windows requires explicit parent invalidation for Grid.Row/Column/RowSpan/ColumnSpan changes.
-				// Unlike iOS/Android, Windows doesn't auto-propagate layout invalidation up the hierarchy,
-				// causing dynamic attached property changes to not arrange its children correctly.
-				if (grid.Parent is Grid containerGrid)
+				if (grid.Parent is Layout parentLayout)
 				{
-					containerGrid.InvalidateMeasure();
-					return;
+					parentLayout.InvalidateMeasure();
 				}
-#endif
 			}
 			else if (bindable is Element element && element.Parent is Grid parentGrid)
 			{
