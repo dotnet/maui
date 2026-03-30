@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static T Prepare<T>(T view)
 			where T : View
 		{
-			view.Handler = new AnimationReadyHandler();
+			view.Handler = new AnimationReadyHandler<TTicker>(new TestAnimationManager(new TTicker()));
 
 			return view;
 		}
