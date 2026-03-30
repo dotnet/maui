@@ -151,6 +151,7 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == BackgroundColorProperty.PropertyName ||
 				propertyName == ColorProperty.PropertyName ||
+				propertyName == FillProperty.PropertyName ||
 				propertyName == IsVisibleProperty.PropertyName ||
 				propertyName == BackgroundProperty.PropertyName ||
 				propertyName == CornerRadiusProperty.PropertyName)
