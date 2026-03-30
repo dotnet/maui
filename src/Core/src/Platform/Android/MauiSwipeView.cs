@@ -654,10 +654,12 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
+					// AtMost lets custom SwipeItemView content size itself; Exactly forces precise dimensions for default SwipeItems.
+					var measureMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
+
 					child.Measure(
-						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
-					);
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, measureMode),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, measureMode));
 
 					child.Layout(l, t, r, b);
 
