@@ -75,17 +75,10 @@ public partial class BlazorWebViewTests
 		result.bodyPreview.Contains("testhtmlloaded", StringComparison.Ordinal) ||
 		result.bodyPreview.Contains("There is no content at", StringComparison.Ordinal);
 
-	// ============================================================
-	// Host page — should load correctly
-	// ============================================================
-
-	[Fact]
-	public Task HostPage_LoadsSuccessfully() =>
-		RunUrlResolutionTest("", "relative", result =>
-		{
-			Assert.Equal(200, result.status);
-			Assert.True(result.bodyLength > 0, "Host page should return content");
-		});
+	// NOTE: No HostPage_LoadsSuccessfully test here because the Blazor host page
+	// is only served for navigation requests (ResourceContext.Document), not for
+	// fetch() requests. RunTest already verifies the host page loads by waiting
+	// for the Blazor component to render before running the test lambda.
 
 	// ============================================================
 	// Rooted paths — Path.Combine drops the root when the second
