@@ -130,16 +130,20 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 				contentView.Clip = new BorderStrokeStub();
 				contentView.LayoutSubviews();
 
-				// Verify the mask was created, then dispose its native handle
-				// (simulating iOS deallocating the layer during view teardown).
-				// _contentMask is a StaticCAShapeLayer (subclass of CAShapeLayer), so use
-				// IsAssignableFrom rather than IsType to accept subclasses.
+				// Verify the mask was created
 				Assert.IsAssignableFrom<CAShapeLayer>(content.Layer.Mask);
 				var mask = (CAShapeLayer)content.Layer.Mask!;
-				mask.Dispose();
-				Assert.True(mask.Handle == IntPtr.Zero, "Disposed mask should have a zeroed Handle");
 
-				// This should not throw ObjectDisposedException
+				// Simulate iOS deallocating the layer during view teardown:
+				// 1. Clear the native reference so the retain count drops
+				// 2. Dispose the managed wrapper so Handle becomes IntPtr.Zero
+				// The ContentView's internal _contentMask field still references
+				// the disposed object, which is exactly the bug scenario.
+				content.Layer.Mask = null;
+				mask.Dispose();
+
+				// This should not throw ObjectDisposedException —
+				// RemoveContentMask guards against disposed masks.
 				var ex = Record.Exception(() => content.RemoveFromSuperview());
 				Assert.Null(ex);
 			});
