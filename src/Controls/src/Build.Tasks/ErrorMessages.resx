@@ -270,8 +270,12 @@
   </data>
   <data name="StaticResourceSyntax" xml:space="preserve">
     <value>A key is required in {StaticResource}.</value>
-  </data>  
+  </data>
   <data name="XSharedNotSupported" xml:space="preserve">
     <value>x:Shared is only supported with SourceGen inflator. Remove the attribute or switch to SourceGen.</value>
+  </data>
+  <data name="DuplicatePropertyAssignment" xml:space="preserve">
+    <value>Property '{0}' is being set multiple times. Only the last value will be used.</value>
+    <comment>0 is property name (e.g. "Border.Content" or "Label.Text")</comment>
   </data>
 </root>
