@@ -130,61 +130,65 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync<BorderHandler>(border);
 			await CreateHandlerAsync<LayoutHandler>(grid);
 
-			// This test validates both PR #17087 (Android RoundRectangle fix) and Issue #31330 fix:
-			// - PR #17087: RoundRectangle.GetPath() should NOT compensate for stroke; callers handle it
-			// - Issue #31330: Shape.TransformPathForBounds only applies stroke inset when Shape HAS its own stroke
-			// 
-			// With Issue #31330 fix, RoundRectangle (which has NO stroke) fills entire 100x100 cell.
-			// Border renders its 4px stroke on top of this path.
-			//
-			// Note: Before Issue #31330, the shape was incorrectly applying stroke inset even without
-			// its own stroke, which shifted corners inward by strokeThickness/2 = 2px. The test points
-			// need to account for this change.
+			Point[] corners = new Point[4]
+			{
+				new Point(0, 0),    // upper-left corner
+				new Point(100, 0),  // upper-right corner
+				new Point(0, 100),  // lower-left corner
+				new Point(100, 100) // lower-right corner
+			};
 
 			var points = new Point[16];
 			var colors = new Color[16];
+			int index = 0;
 
-			// For rounded corners, test along the 45-degree diagonal
-			// At 45°, corner curve is at: radius - (radius / sqrt(2)) ≈ 5.86 for radius=20
-			var outerXY = radius - (radius / Math.Sqrt(2));
-			var innerXY = outerXY + strokeThickness;
+			// To calculate the x and y offsets (from the corner) for the 45° point on a circular arc,
+			// use the formula: offset = radius - radius / sqrt(2).
+			var xy = radius - (radius / Math.Sqrt(2));
 
-			// Test all 4 corners with 4 test points each
-			Point[] corners = new Point[4]
-			{
-				new Point(0, 0),    // upper-left
-				new Point(100, 0),  // upper-right
-				new Point(0, 100),  // lower-left
-				new Point(100, 100) // lower-right
-			};
+			// The inner stroke edge follows a concentric arc with radius (radius - strokeThickness).
+			// At 45°, the inner edge offset from the corner is: radius - (radius - strokeThickness) / sqrt(2).
+			// Note: this is NOT outerXY + strokeThickness, because the stroke width is measured radially
+			// (perpendicular to the arc), not linearly along both X and Y axes.
+			var innerXY = radius - ((radius - strokeThickness) / Math.Sqrt(2));
 
 			for (int i = 0; i < corners.Length; i++)
 			{
-				int xdir = (i == 0 || i == 2) ? 1 : -1;  // +1 for left, -1 for right
-				int ydir = (i == 0 || i == 1) ? 1 : -1;  // +1 for top, -1 for bottom
+				int xdir = i == 0 || i == 2 ? 1 : -1;
+				int ydir = i == 0 || i == 1 ? 1 : -1;
 
-				var baseX = corners[i].X;
-				var baseY = corners[i].Y;
+				// This marks the outside edge of the rounded corner (path line at 45°).
+				var outerX = corners[i].X + (xdir * xy);
+				var outerY = corners[i].Y + (ydir * xy);
 
-				// With the new fix, corners are 2px further out than before (no incorrect inset)
-				// Adjust test points to account for the shape now filling the entire cell
-				// Original test used: outside at -0.25, stroke at +1.25, stroke at -1.25 from inner, bg at +0.25 from inner
+				// Inner edge of the stroke at 45° (concentric arc).
+				var innerX = corners[i].X + (xdir * innerXY);
+				var innerY = corners[i].Y + (ydir * innerXY);
 
-				// Point 1: Outside corner (in grid's white background)
-				points[i * 4] = new Point(baseX + xdir * (outerXY - 2), baseY + ydir * (outerXY - 2));
-				colors[i * 4] = Colors.White;
+				// Verify that the color outside of the rounded corner is the parent's color (White).
+				// Use 1.5dp margin (not 0.25) to stay clear of antialiasing at the stroke edge:
+				// at density=2 the stroke outer edge is at ~11.7px, and 0.25dp gives only ~0.7px
+				// clearance — inside the 1px antialiasing blend zone, causing intermittent failures.
+				points[index] = new Point(outerX - (xdir * 1.5), outerY - (ydir * 1.5));
+				colors[index] = Colors.White;
+				index++;
 
-				// Point 2: In stroke, near outer edge
-				points[i * 4 + 1] = new Point(baseX + xdir * (outerXY + 0.25), baseY + ydir * (outerXY + 0.25));
-				colors[i * 4 + 1] = stroke;
+				// Verify that the rounded corner stroke is where we expect it to be
+				points[index] = new Point(outerX + (xdir * 1.25), outerY + (ydir * 1.25));
+				colors[index] = stroke;
+				index++;
 
-				// Point 3: In stroke, near inner edge  
-				points[i * 4 + 2] = new Point(baseX + xdir * (outerXY + 2), baseY + ydir * (outerXY + 2));
-				colors[i * 4 + 2] = stroke;
+				points[index] = new Point(innerX - (xdir * 1.25), innerY - (ydir * 1.25));
+				colors[index] = stroke;
+				index++;
 
-				// Point 4: Inside border (in red background)
-				points[i * 4 + 3] = new Point(baseX + xdir * (innerXY + 0.25), baseY + ydir * (innerXY + 0.25));
-				colors[i * 4 + 3] = border.BackgroundColor;
+				// Verify that the background color starts where we'd expect it to start.
+				// Use 1.5dp margin to stay clear of antialiasing at the inner stroke edge:
+				// on iOS @1x context (1pt=1px), innerX+0.25 gives only ~0.14px clearance from the
+				// 9.858pt inner edge — inside the antialiasing blend zone (near-zero tolerance on iOS).
+				points[index] = new Point(innerX + (xdir * 1.5), innerY + (ydir * 1.5));
+				colors[index] = border.BackgroundColor;
+				index++;
 			}
 
 			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);
