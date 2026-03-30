@@ -39,6 +39,12 @@ namespace Microsoft.Maui.Controls
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
+		/// <summary>
+		/// Gets the explicit value of <see cref="IsEnabled"/> set directly on this element,
+		/// before coercion by <see cref="IsEnabledCore"/> which factors in parent state.
+		/// </summary>
+		internal bool IsExplicitlyEnabled => _isEnabledExplicit;
+
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
 			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
