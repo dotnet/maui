@@ -7,8 +7,10 @@ using Microsoft.Maui.Graphics.Win2D;
 #else
 using Microsoft.Maui.Graphics.Platform;
 #endif
+using Microsoft.Maui.Primitives;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
 
@@ -51,24 +53,49 @@ namespace Microsoft.Maui.Platform
 
 		internal bool IsInnerPath { get; private set; }
 
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			var measured = base.MeasureOverride(availableSize);
+
+			// On Windows, when content inside a Border has the same WidthRequest/HeightRequest
+			// as the Border itself, AdjustForExplicitSize expands the content's measured size
+			// back to its explicit request even after the stroke inset reduces the constraint.
+			// This inflates MeasureContent's result by StrokeThickness*2, so the parent
+			// allocates an oversized layout slot and the border renders with its right/bottom
+			// strokes clipped. Capping here at the Border's explicit dimensions corrects the
+			// reported desired size and ensures the parent allocates the right amount.
+			if (_borderStroke is not null && Content is not null &&
+			 CrossPlatformLayout is IBorderView borderView)
+			{
+				var explicitWidth = borderView.Width;
+				var explicitHeight = borderView.Height;
+
+				if (Dimension.IsExplicitSet(explicitWidth))
+				{
+					measured.Width = Math.Min(measured.Width, explicitWidth);
+				}
+
+				if (Dimension.IsExplicitSet(explicitHeight))
+				{
+					measured.Height = Math.Min(measured.Height, explicitHeight);
+				}
+			}
+
+			return measured;
+		}
+
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			var actual = base.ArrangeOverride(finalSize);
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 
-			if (_borderStroke is not null && Content is not null)
-			{
-				actual.Width -= _borderStroke.StrokeThickness * 2;
-				actual.Height -= _borderStroke.StrokeThickness * 2;
-			}
-
 			var size = new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
 
 			// We need to update the clip since the content's position might have changed
 			UpdateClip(_borderStroke?.Shape, size.Width, size.Height);
 
-			return size;
+			return actual;
 		}
 
 		public ContentPanel()
@@ -212,8 +239,11 @@ namespace Microsoft.Maui.Platform
 			var pathGeometry = compositor.CreatePathGeometry(path);
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
-			// The clip needs to consider the content's offset in case it is in a different position because of a different alignment.
-			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
+			// The clip needs to consider the content's layout slot position, using GetLayoutSlot for
+			// a synchronous arrange-time value rather than the composition ActualOffset which can
+			// lag behind and produce an incorrect offset on the first layout pass.
+			var layoutSlot = LayoutInformation.GetLayoutSlot(Content);
+			geometricClip.Offset = new Vector2(strokeThickness - (float)layoutSlot.X, strokeThickness - (float)layoutSlot.Y);
 
 			visual.Clip = geometricClip;
 		}
