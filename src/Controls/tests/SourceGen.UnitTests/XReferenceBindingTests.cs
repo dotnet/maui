@@ -103,9 +103,11 @@ public class ItemModel
 	}
 
 	[Fact]
-	public void XReferenceNonExistentProperty_ReportsDiagnostic()
+	public void XReferenceNonExistentProperty_FallsBackToRuntime()
 	{
-		// A binding to a non-existent property on a referenced element should report MAUIG2045
+		// A binding to a non-existent property on a referenced element falls back to
+		// runtime binding without reporting MAUIG2045 — x:Reference bindings suppress
+		// property-not-found diagnostics since the binding may work via reflection.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -131,10 +133,8 @@ public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
 			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
-		// Should report property not found on Slider
-		var diagnostic = result.Diagnostics.FirstOrDefault(
-			d => d.Id == "MAUIG2045" && d.GetMessage().Contains("NonExistentProperty", StringComparison.Ordinal));
-		Assert.NotNull(diagnostic);
+		// x:Reference bindings suppress MAUIG2045 — silently fall back to runtime
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
 	}
 
 	[Fact]

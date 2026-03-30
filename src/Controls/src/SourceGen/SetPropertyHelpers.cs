@@ -234,14 +234,13 @@ static class SetPropertyHelpers
 			};
 
 			// Seed the lambda context with the parent's BindingContextDataType.
-			// For DataTemplates in ResourceDictionaries, this preserves the outer scope warning.
+			// The CrossedTemplateBoundary flag from the main context already carries the
+			// correct value. When the node declares its own x:DataType, the visitor will
+			// override this seed.
 			if (context.BindingContextDataTypes.TryGetValue(node, out var nodeDataType)
 				&& nodeDataType.Kind == BindingContextDataTypeKind.Resolved)
 			{
-				lambdaContext.BindingContextDataTypes[node] = nodeDataType with
-				{
-					CrossedTemplateBoundary = true,
-				};
+				lambdaContext.BindingContextDataTypes[node] = nodeDataType;
 			}
 
 			// First pass: Create all values (node and its descendants) using CreateValuesVisitor
