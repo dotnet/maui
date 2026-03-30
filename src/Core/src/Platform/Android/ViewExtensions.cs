@@ -659,6 +659,12 @@ namespace Microsoft.Maui.Platform
 						action();
 						localDisposable.Dispose();
 					}
+					else if (localDisposable is not null)
+					{
+						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
+						// Restore disposable so the next ViewAttachedToWindow can retry.
+						disposable = localDisposable;
+					}
 				});
 			};
 

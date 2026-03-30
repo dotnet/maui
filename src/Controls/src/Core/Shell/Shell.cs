@@ -1781,8 +1781,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// On Windows, the Loaded event has already fired (IsLoaded=true), so SendNavigatedTo runs immediately without altering the flow.
-			if (CurrentPage.IsLoaded)
+			// Check if the Loaded event has actually been fired (not just IsLoaded which checks platform attachment).
+			// On Android, IsLoaded (PlatformView.IsAttachedToWindow) can be true before the Loaded event
+			// is dispatched via the UI thread looper. Using IsLoadedFired ensures we wait for the actual event.
+			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
+			if (CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
 			}
@@ -1820,7 +1823,7 @@ namespace Microsoft.Maui.Controls
 			}
       
       // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
-			if (CurrentPage != null && !CurrentPage.IsLoaded)
+			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;
 			}
