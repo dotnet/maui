@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -19,8 +20,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Forces unapply and reapply of the current merged style.
-		/// Use when a <see cref="Style"/> has been mutated in-place and needs to be reflected on the element.
+		/// This method is intended for infrastructure use (e.g., Hot Reload) and should not be used in application code.
 		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void InvalidateStyle() => _mergedStyle.Reapply();
 
 		/// <summary>Bindable property for <see cref="Style"/>.</summary>

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -154,9 +155,10 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Forces unapply and reapply of the current visual state setters for the specified <paramref name="visualElement"/>.
-		/// Use when visual state setters have been mutated in-place and the changes need to be reflected on the element.
+		/// This method is intended for infrastructure use (e.g., Hot Reload) and should not be used in application code.
 		/// </summary>
 		/// <param name="visualElement">The visual element whose visual states should be reapplied.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void InvalidateVisualStates(VisualElement visualElement)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
