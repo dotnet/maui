@@ -18,16 +18,6 @@ namespace Microsoft.Maui.Handlers
 
 			_editor = searchBar.GetSearchTextField();
 
-			// On iPadOS 26, in windowed or split-screen mode, the window chrome (traffic lights)
-			// introduces a left safe area inset. UIKit applies this inset to the search bar's
-			// layout margins via InsetsLayoutMarginsFromSafeArea. Because MAUI already accounts
-			// for safe area at the layout level, this results in a double-inset — an unexpected
-			// extra left margin (#34551). Setting this to false at creation prevents it;
-			// UIKit does not override it later.
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && OperatingSystem.IsIOSVersionAtLeast(26))
-			{
-				searchBar.InsetsLayoutMarginsFromSafeArea = false;
-			}
 
 			return searchBar;
 		}

@@ -20,6 +20,11 @@ namespace Microsoft.Maui.Platform
 
 		public MauiSearchBar(CGRect frame) : base(frame)
 		{
+			// MAUI manages safe area at the layout level for all views. Opting out of UIKit's
+			// automatic safe-area-to-layout-margins propagation prevents a double-inset
+			// on iPadOS 26+ windowed mode where the window chrome adds a left safe-area
+			// inset that UIKit would otherwise fold into the search bar's layout margins (#34551).
+			InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		protected MauiSearchBar(NSObjectFlag t) : base(t)
