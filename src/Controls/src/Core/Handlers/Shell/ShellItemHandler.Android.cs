@@ -432,11 +432,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Hook up property change events for a shell section.
-        /// Listens for IsEnabled, Title, and Icon changes to update the bottom navigation tabs.
+        /// Kept as empty virtual for backward compatibility — property changes are now
+        /// handled via ShellSectionHandler mapper (Title, Icon, IsEnabled).
         /// </summary>
         protected virtual void HookChildEvents(ShellSection shellSection)
         {
-            shellSection.PropertyChanged += OnShellSectionPropertyChanged;
         }
 
         /// <summary>
@@ -449,34 +449,57 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            shellSection.PropertyChanged -= OnShellSectionPropertyChanged;
             ((IShellSectionController)shellSection).RemoveDisplayedPageObserver(this);
         }
 
-        void OnShellSectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        /// <summary>
+        /// Updates a specific bottom tab's title in-place. Called from ShellSectionHandler mapper.
+        /// </summary>
+        internal void UpdateBottomTabTitle(ShellSection section)
         {
-            if (sender is not ShellSection shellSection || ((ElementHandler)this).VirtualView is null || _tabbedViewManager is null)
+            if (_tabbedViewManager is null || section is null)
             {
                 return;
             }
 
-            var index = ((IShellItemController)VirtualView).GetItems().IndexOf(shellSection);
-            if (index < 0)
+            var index = ((IShellItemController)VirtualView).GetItems().IndexOf(section);
+            if (index >= 0)
+            {
+                _tabbedViewManager.UpdateTabTitle(index, section.Title);
+            }
+        }
+
+        /// <summary>
+        /// Updates a specific bottom tab's icon in-place. Called from ShellSectionHandler mapper.
+        /// </summary>
+        internal void UpdateBottomTabIcon(ShellSection section)
+        {
+            if (_tabbedViewManager is null || section is null)
             {
                 return;
             }
 
-            if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName)
-            {
-                _tabbedViewManager.UpdateTabTitle(index, shellSection.Title);
-            }
-            else if (e.PropertyName == BaseShellItem.IconProperty.PropertyName)
+            var index = ((IShellItemController)VirtualView).GetItems().IndexOf(section);
+            if (index >= 0)
             {
                 _tabbedViewManager.UpdateTabIcon(index);
             }
-            else if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName)
+        }
+
+        /// <summary>
+        /// Updates a specific bottom tab's enabled state in-place. Called from ShellSectionHandler mapper.
+        /// </summary>
+        internal void UpdateBottomTabEnabled(ShellSection section)
+        {
+            if (_tabbedViewManager is null || section is null)
             {
-                _tabbedViewManager.UpdateTabEnabled(index, shellSection.IsEnabled);
+                return;
+            }
+
+            var index = ((IShellItemController)VirtualView).GetItems().IndexOf(section);
+            if (index >= 0)
+            {
+                _tabbedViewManager.UpdateTabEnabled(index, section.IsEnabled);
             }
         }
 
@@ -644,12 +667,6 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 VirtualView.PropertyChanged += OnShellItemPropertyChanged;
                 ((IShellItemController)VirtualView).ItemsCollectionChanged += OnShellItemsChanged;
-
-                // Hook property change events for all existing sections
-                foreach (var section in ((IShellItemController)VirtualView).GetItems())
-                {
-                    HookChildEvents(section);
-                }
             }
 
             // Initialize shell context and appearance tracker early
@@ -675,24 +692,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnShellItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            // Unhook removed sections
-            if (e.OldItems is not null)
-            {
-                foreach (ShellSection section in e.OldItems)
-                {
-                    UnhookChildEvents(section);
-                }
-            }
-
-            // Hook new sections
-            if (e.NewItems is not null)
-            {
-                foreach (ShellSection section in e.NewItems)
-                {
-                    HookChildEvents(section);
-                }
-            }
-
             // The adapter's _sections reference may be a live ReadOnlyCollection,
             // but when items change visibility, positions shift and the position-based
             // renderer cache becomes stale. Use UpdateSections() to clear the cache,
@@ -742,12 +741,6 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 VirtualView.PropertyChanged -= OnShellItemPropertyChanged;
                 ((IShellItemController)VirtualView).ItemsCollectionChanged -= OnShellItemsChanged;
-
-                // Unhook property change events for all sections
-                foreach (var section in ((IShellItemController)VirtualView).GetItems())
-                {
-                    UnhookChildEvents(section);
-                }
             }
 
             if (_shellSection is not null)

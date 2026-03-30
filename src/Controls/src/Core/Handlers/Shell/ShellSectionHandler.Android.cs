@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using Android.OS;
 using Android.Views;
@@ -77,6 +76,9 @@ namespace Microsoft.Maui.Controls.Handlers
         public static PropertyMapper<ShellSection, ShellSectionHandler> Mapper = new PropertyMapper<ShellSection, ShellSectionHandler>(ElementMapper)
         {
             [nameof(ShellSection.CurrentItem)] = MapCurrentItem,
+            [nameof(BaseShellItem.Title)] = MapTitle,
+            [nameof(BaseShellItem.Icon)] = MapIcon,
+            [nameof(BaseShellItem.IsEnabled)] = MapIsEnabled,
         };
 
         /// <summary>
@@ -162,9 +164,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Subscribe to visible items collection changes (fires on add/remove AND visibility changes)
             SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
-
-            // Subscribe to PropertyChanged on each ShellContent for title updates
-            HookShellContentEvents();
 
             // Wait for the view to be attached before setting up the adapter
             // This ensures the parent fragment is set
@@ -378,8 +377,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // Unsubscribe from events
             _rootLayout.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
 
-            UnhookShellContentEvents();
-
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
             // Remove top tabs via TabbedViewManager
@@ -445,22 +442,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Unhook old items, hook new items for property change tracking
-            if (e.OldItems is not null)
-            {
-                foreach (ShellContent item in e.OldItems)
-                    item.PropertyChanged -= OnShellContentPropertyChanged;
-            }
-            if (e.NewItems is not null)
-            {
-                foreach (ShellContent item in e.NewItems)
-                    item.PropertyChanged += OnShellContentPropertyChanged;
-            }
-            if (e.Action == NotifyCollectionChangedAction.Reset)
-            {
-                HookShellContentEvents();
-            }
-
             // When items go from 0 → N, we must create a fresh adapter because
             // FragmentStateAdapter saves internal fragment state when items are removed.
             // Reusing the same adapter with new items that have matching IDs triggers
@@ -497,43 +478,88 @@ namespace Microsoft.Maui.Controls.Handlers
             UpdateViewPagerUserInput();
         }
 
-        void HookShellContentEvents()
+        /// <summary>
+        /// Maps Title property changes. Both ShellContent.Title and ShellSection.Title resolve
+        /// to "Title", so this single handler updates top tabs (ShellContent titles) and
+        /// notifies the parent ShellItemHandler to update the bottom tab title.
+        /// </summary>
+        static void MapTitle(ShellSectionHandler handler, ShellSection section)
         {
-            if (VirtualView?.Items is null)
-                return;
-
-            foreach (var item in VirtualView.Items)
-                item.PropertyChanged += OnShellContentPropertyChanged;
-        }
-
-        void UnhookShellContentEvents()
-        {
-            if (VirtualView?.Items is null)
-                return;
-
-            foreach (var item in VirtualView.Items)
-                item.PropertyChanged -= OnShellContentPropertyChanged;
-        }
-
-        void OnShellContentPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == ShellContent.TitleProperty.PropertyName && sender is ShellContent shellContent)
+            if (handler.IsConnectingHandler())
             {
-                UpdateTabTitle(shellContent);
+                // On initial load, SetupBottomNavigationView already populates tab titles.
+                // Skip redundant mapping during handler connection.
+                return;
+            }
+
+            // Update top tab titles (ShellContent titles in TabLayout)
+            UpdateTabTitle(handler, section);
+
+            // Update bottom tab title (ShellSection title in BottomNavigationView)
+            var shellItem = section?.FindParentOfType<ShellItem>();
+            if (shellItem?.Handler is ShellItemHandler itemHandler)
+            {
+                itemHandler.UpdateBottomTabTitle(section);
             }
         }
 
-        internal void UpdateTabTitle(ShellContent shellContent)
+        /// <summary>
+        /// Maps Icon property changes. Notifies the parent ShellItemHandler to update
+        /// the bottom tab icon for this section.
+        /// </summary>
+        static void MapIcon(ShellSectionHandler handler, ShellSection section)
         {
-            if (_contentTabLayout is null || VirtualView is null)
-                return;
-
-            var visibleItems = SectionController.GetItems();
-            int index = visibleItems.IndexOf(shellContent);
-            if (index >= 0)
+            if (handler.IsConnectingHandler())
             {
-                var tab = _contentTabLayout.GetTabAt(index);
-                tab?.SetText(new Java.Lang.String(shellContent.Title));
+                // On initial load, SetupBottomNavigationView already populates tab icons.
+                // Skip redundant mapping during handler connection.
+                return;
+            }
+
+            var shellItem = section?.FindParentOfType<ShellItem>();
+            if (shellItem?.Handler is ShellItemHandler itemHandler)
+            {
+                itemHandler.UpdateBottomTabIcon(section);
+            }
+        }
+
+        /// <summary>
+        /// Maps IsEnabled property changes. Notifies the parent ShellItemHandler to update
+        /// the bottom tab enabled state for this section.
+        /// </summary>
+        static void MapIsEnabled(ShellSectionHandler handler, ShellSection section)
+        {
+            if (handler.IsConnectingHandler())
+            {
+                // On initial load, SetupBottomNavigationView already populates tab enabled state.
+                // Skip redundant mapping during handler connection.
+                return;
+            }
+
+            var shellItem = section?.FindParentOfType<ShellItem>();
+            if (shellItem?.Handler is ShellItemHandler itemHandler)
+            {
+                itemHandler.UpdateBottomTabEnabled(section);
+            }
+        }
+
+        /// <summary>
+        /// Updates all top tab titles from current visible ShellContent items.
+        /// Called via mapper when a child ShellContent.Title changes — ShellContent.OnPropertyChanged
+        /// propagates the change to the parent ShellSection handler via UpdateValue("Title").
+        /// </summary>
+        static void UpdateTabTitle(ShellSectionHandler handler, ShellSection section)
+        {
+            if (handler._contentTabLayout is null || section is null)
+            {
+                return;
+            }
+
+            var visibleItems = ((IShellSectionController)section).GetItems();
+            for (int i = 0; i < visibleItems.Count; i++)
+            {
+                var tab = handler._contentTabLayout.GetTabAt(i);
+                tab?.SetText(new Java.Lang.String(visibleItems[i].Title));
             }
         }
 
