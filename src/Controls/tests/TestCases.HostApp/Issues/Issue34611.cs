@@ -3,21 +3,21 @@
 [Issue(IssueTracker.Github, 34611, "Entry and Editor BackgroundColor not reset to Null", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue34611 : TestContentPage
 {
-	UITestEntry _entry;
-	UITestEditor _editor;
+	Entry _entry;
+	Editor _editor;
 
 	protected override void Init()
 	{
 		Title = "Issue34611";
 
-		_entry = new UITestEntry
+		_entry = new Entry
 		{
 			AutomationId = "TestEntry",
 			Text = "Entry background should reset",
 			Placeholder = "Entry"
 		};
 
-		_editor = new UITestEditor
+		_editor = new Editor
 		{
 			AutomationId = "TestEditor",
 			Text = "Editor background should reset",
