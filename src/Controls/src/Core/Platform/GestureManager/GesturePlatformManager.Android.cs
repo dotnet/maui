@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _inputTransparent;
 		bool _isEnabled;
 		bool? _focusableDefaultValue;
-		RecyclerView.IOnItemTouchListener? _recyclerViewTouchListener;
+		GestureItemTouchListener? _recyclerViewTouchListener;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -225,11 +225,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (shouldAddTouchEvent)
 			{
-				// For RecyclerView-based views (CollectionView, ListView), use AddOnItemTouchListener
+				// For RecyclerView-based views (e.g., CollectionView), use AddOnItemTouchListener
 				// instead of the Touch event. Child item views (made clickable by SelectableViewHolder's
 				// SetOnClickListener) consume touch events, preventing them from reaching the
 				// Touch event handler. OnItemTouchListener.OnInterceptTouchEvent fires BEFORE children
-				// get the event, ensuring TapGestureRecognizers on the CollectionView/ListView receive
+				// get the event, ensuring TapGestureRecognizers on the CollectionView receive
 				// all touch events regardless of child handling.
 				if (platformView is RecyclerView recyclerView)
 				{
@@ -429,7 +429,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_recyclerViewTouchListener is not null && platformView is RecyclerView recyclerView)
 			{
 				recyclerView.RemoveOnItemTouchListener(_recyclerViewTouchListener);
-				(_recyclerViewTouchListener as Java.Lang.Object)?.Dispose();
+				_recyclerViewTouchListener.Dispose();
 				_recyclerViewTouchListener = null;
 			}
 		}

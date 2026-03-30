@@ -20,7 +20,6 @@ public class Issue5825 : _IssuesUITest
 		App.DoubleTap("CollectionViewItem");
 
 		// Verify the command fired
-		var resultText = App.FindElement("ResultLabel").GetText();
-		Assert.That(resultText, Is.EqualTo("Success"));
+		App.WaitForTextToBePresentInElement("ResultLabel", "Success");
 	}
 }
