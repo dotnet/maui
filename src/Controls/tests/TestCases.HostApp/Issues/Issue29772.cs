@@ -22,7 +22,7 @@ public class Issue29772 : ContentPage
 
 		carouselView = new CarouselView
 		{
-			BackgroundColor = Colors.Red,
+			BackgroundColor = Colors.Green,
 			HeightRequest = 400,
 			WidthRequest = 300,
 			ItemsSource = ViewModel.Items,
