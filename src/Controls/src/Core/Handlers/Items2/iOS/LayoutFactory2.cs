@@ -131,7 +131,8 @@ internal static class LayoutFactory2
 			section.InterGroupSpacing = new NFloat(itemSpacing);
 			// Disable section-level safe area insets — MAUI handles safe area via CellSafeAreaOverride.
 			// On iOS 26.1+, the default (.automatic → .safeArea) actively insets cells at section level.
-			section.ContentInsetsReference = UIContentInsetsReference.None;
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
@@ -179,7 +180,8 @@ internal static class LayoutFactory2
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
-			section.ContentInsetsReference = UIContentInsetsReference.None;
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
@@ -334,7 +336,8 @@ internal static class LayoutFactory2
 			}
 
 			var section = NSCollectionLayoutSection.Create(group: group);
-			section.ContentInsetsReference = UIContentInsetsReference.None;
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			if (itemsView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 			{
