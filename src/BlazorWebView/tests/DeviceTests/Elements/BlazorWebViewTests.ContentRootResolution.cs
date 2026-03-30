@@ -81,6 +81,20 @@ public partial class BlazorWebViewTests
 	// for the Blazor component to render before running the test lambda.
 
 	// ============================================================
+	// Positive test — a known-good asset must still load after the
+	// path-hardening changes so we don't accidentally block legit
+	// requests
+	// ============================================================
+
+	[Fact]
+	public Task Blazor_KnownFrameworkAsset_LoadsSuccessfully() =>
+		RunUrlResolutionTest("_framework/blazor.webview.js", "relative", result =>
+		{
+			Assert.Equal(200, result.status);
+			Assert.True(result.bodyLength > 0, "Framework script should return content");
+		});
+
+	// ============================================================
 	// Rooted paths — Path.Combine drops the root when the second
 	// argument starts with a separator, so these should not resolve
 	// ============================================================
