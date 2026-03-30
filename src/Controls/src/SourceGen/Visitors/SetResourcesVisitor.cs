@@ -30,9 +30,6 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		if (GeneratorHelpers.IsXCodeElement(node))
-			return;
-
 		//Set ResourcesDictionaries to their parents
 		if (IsResourceDictionary(node) && node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
@@ -65,8 +62,6 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public bool SkipChildren(INode node, INode parentNode)
 	{
-		if (GeneratorHelpers.IsXCodeElement(node))
-			return true;
 		if (node is not ElementNode enode)
 			return false;
 		if (parentNode is ElementNode node1

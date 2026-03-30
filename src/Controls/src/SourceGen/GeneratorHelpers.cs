@@ -226,7 +226,14 @@ static class GeneratorHelpers
 
 		XmlnsHelper.ParseXmlns(rootClass.Value, out var rootType, out var rootClrNamespace, out _, out _);
 		if (rootType == null || rootClrNamespace == null)
-			return null;
+		{
+			if (projItem.RelativePath is string path)
+			{
+				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
+				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
+			}
+			return (projItem, string.Empty, diagnostics);
+		}
 
 		var source = XCodeCodeWriter.GenerateXCode(rootClrNamespace, rootType, codeBlocks.ToArray());
 		return (projItem, source, diagnostics);

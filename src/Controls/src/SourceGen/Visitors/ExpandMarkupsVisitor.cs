@@ -30,7 +30,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 	public bool StopOnDataTemplate => false;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => true;
-	public bool SkipChildren(INode node, INode parentNode) => GeneratorHelpers.IsXCodeElement(node);
+	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)

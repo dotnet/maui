@@ -18,7 +18,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => GeneratorHelpers.IsXCodeElement(node);
+	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -46,9 +46,6 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		if (GeneratorHelpers.IsXCodeElement(node))
-			return;
-
 		ILocalValue namescope;
 		IDictionary<string, ILocalValue> namesInNamescope;
 		var setNameScope = false;

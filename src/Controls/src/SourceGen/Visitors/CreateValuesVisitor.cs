@@ -20,7 +20,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => GeneratorHelpers.IsXCodeElement(node);
+	public bool SkipChildren(INode node, INode parentNode) => false;
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -351,8 +351,6 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		if (GeneratorHelpers.IsXCodeElement(node))
-			return;
 		CreateValue(node, Writer, Context.Variables, Context.Compilation, Context.XmlnsCache, Context);
 	}
 
