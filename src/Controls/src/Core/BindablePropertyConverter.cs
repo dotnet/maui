@@ -137,7 +137,7 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 			return style.TargetType;
 		}
 
-		throw new XamlParseException($"Unable to find a TragetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
+		throw new XamlParseException($"Unable to find a TargetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
 
 	}
 

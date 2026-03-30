@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,8 +16,6 @@ public enum FontAttributes
 	/// <summary>The font is italic.</summary>
 	Italic = 1 << 1
 }
-
-#nullable enable
 
 /// <summary>Converts a string into a <see cref="Microsoft.Maui.Controls.FontAttributes"/> object.</summary>
 public sealed class FontAttributesConverter : TypeConverter
@@ -103,6 +100,6 @@ public sealed class FontAttributesConverter : TypeConverter
 			parts.Add(nameof(FontAttributes.Italic));
 		}
 
-		return string.Join("' ", parts);
+		return string.Join(", ", parts);
 	}
 }
