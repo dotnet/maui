@@ -1861,7 +1861,6 @@ namespace Microsoft.Maui.Controls
 #nullable enable
 		Semantics? _semantics;
 		bool _isLoadedFired;
-		internal bool IsLoadedFired => _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
