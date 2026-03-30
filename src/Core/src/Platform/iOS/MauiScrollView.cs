@@ -318,13 +318,14 @@ namespace Microsoft.Maui.Platform
 					var orientation = scrollView.Orientation;
 
 					// Clamp width if horizontal scrolling is disabled and content is larger than frame
-					if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither && contentSize.Width > frameSize.Width)
+					if (orientation is ScrollOrientation.Vertical && contentSize.Width > frameSize.Width)
 					{
 						contentSize = new CGSize(frameSize.Width, contentSize.Height);
 					}
 
-					// Clamp height if vertical scrolling is disabled and content is larger than frame
-					if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither && contentSize.Height > frameSize.Height)
+					// Clamp height when vertical scrolling is disabled but horizontal scrolling is enabled (Horizontal only)
+					// and the content is larger than the frame
+					if (orientation is ScrollOrientation.Horizontal && contentSize.Height > frameSize.Height)
 					{
 						contentSize = new CGSize(contentSize.Width, frameSize.Height);
 					}
