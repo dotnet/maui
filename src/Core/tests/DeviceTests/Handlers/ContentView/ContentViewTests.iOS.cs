@@ -141,9 +141,10 @@ namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 				// the disposed object, which is exactly the bug scenario.
 				content.Layer.Mask = null;
 				mask.Dispose();
+				Assert.True(mask.Handle == IntPtr.Zero, "Disposed mask should have a zeroed Handle");
 
 				// This should not throw ObjectDisposedException —
-				// RemoveContentMask guards against disposed masks.
+				// RemoveContentMask guards against disposed masks via Handle check.
 				var ex = Record.Exception(() => content.RemoveFromSuperview());
 				Assert.Null(ex);
 			});
