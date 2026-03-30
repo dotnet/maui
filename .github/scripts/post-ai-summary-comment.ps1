@@ -153,8 +153,13 @@ if ($DryRun) {
 # ============================================================================
 
 Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
-$existingCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" `
-    --jq ".[] | select(.body | contains(`"$MARKER`")) | .id" 2>$null | Select-Object -First 1
+# Use --paginate to search ALL comments (not just first 30), pick the LAST matching one
+$existingCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
+    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | .id" 2>$null
+
+if ($existingCommentId -eq "null" -or [string]::IsNullOrWhiteSpace($existingCommentId)) {
+    $existingCommentId = $null
+}
 
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {
@@ -168,7 +173,7 @@ try {
             Write-Host "✅ Review comment updated" -ForegroundColor Green
             Write-Output "COMMENT_ID=$existingCommentId"
         } catch {
-            Write-Host "⚠️ Could not update — creating new: $_" -ForegroundColor Yellow
+            Write-Host "⚠️ Could not update comment $existingCommentId : $_" -ForegroundColor Yellow
             $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
             $newId = ($newJson | ConvertFrom-Json).id
             Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green

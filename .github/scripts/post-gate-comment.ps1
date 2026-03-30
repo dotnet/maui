@@ -106,8 +106,15 @@ if ($DryRun) {
 # ============================================================================
 
 Write-Host "Checking for existing gate comment..." -ForegroundColor Yellow
-$existingCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" `
-    --jq ".[] | select(.body | contains(`"$MARKER`")) | .id" 2>$null | Select-Object -First 1
+# Use --paginate to search ALL comments (not just first 30), pick the LAST matching one
+# so we always update the most recent gate comment
+$existingCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
+    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | .id" 2>$null
+
+# gh --jq returns "null" as a string when the array is empty
+if ($existingCommentId -eq "null" -or [string]::IsNullOrWhiteSpace($existingCommentId)) {
+    $existingCommentId = $null
+}
 
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {
@@ -121,7 +128,23 @@ try {
             Write-Host "✅ Gate comment updated" -ForegroundColor Green
             Write-Output "COMMENT_ID=$existingCommentId"
         } catch {
-            Write-Host "⚠️ Could not update — creating new: $_" -ForegroundColor Yellow
+            Write-Host "⚠️ Could not update comment $existingCommentId (may be owned by different user): $_" -ForegroundColor Yellow
+            # Try to find a comment we CAN update (owned by current authenticated user)
+            $botLogin = gh api user --jq .login 2>$null
+            if ($botLogin) {
+                $ownCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
+                    --jq "[.[] | select((.body | contains(`"$MARKER`")) and .user.login == `"$botLogin`")] | last | .id" 2>$null
+                if ($ownCommentId -and $ownCommentId -ne "null") {
+                    Write-Host "  Retrying with own comment (ID: $ownCommentId)..." -ForegroundColor Yellow
+                    gh api --method PATCH "repos/dotnet/maui/issues/comments/$ownCommentId" --input $tempFile 2>&1 | Out-Null
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host "✅ Gate comment updated (own comment)" -ForegroundColor Green
+                        Write-Output "COMMENT_ID=$ownCommentId"
+                        return
+                    }
+                }
+            }
+            Write-Host "  Creating new comment as fallback..." -ForegroundColor Yellow
             $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
             $newId = ($newJson | ConvertFrom-Json).id
             Write-Host "✅ Gate comment posted (ID: $newId)" -ForegroundColor Green
