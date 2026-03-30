@@ -224,6 +224,10 @@
 
 	<!-- XamlC -->
 	<PropertyGroup>
+		<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
+		<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
+		<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True'">True</_MauiXamlCValidateOnly>
+
 		<CompileDependsOn>
 			$(CompileDependsOn);
 			XamlC;
@@ -236,10 +240,6 @@
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
 		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
 		<PropertyGroup>
-			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
-			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
-			<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
-
 			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and ('$(PublishAot)' == 'true' or '$(TrimMode)' == 'full')">true</MauiStrictXamlCompilation>
 			<_MauiXamlCWarningsNotAsErrors>$(WarningsNotAsErrors)</_MauiXamlCWarningsNotAsErrors>
 			<_MauiXamlCWarningsNotAsErrors Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCWarningsNotAsErrors);XC0022;XC0023;XC0025</_MauiXamlCWarningsNotAsErrors>
