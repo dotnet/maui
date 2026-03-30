@@ -22,7 +22,6 @@ Microsoft.Maui.Controls.LongPressingEventArgs
 Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
-static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length = 250, Microsoft.Maui.Easing? easing = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.LayoutToAsync(this Microsoft.Maui.Controls.VisualElement! view, Microsoft.Maui.Graphics.Rect bounds, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.RelRotateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double drotation, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
