@@ -34,7 +34,7 @@ public partial class TabbedPageTopTabsTestPage : TabbedPage
         await DisplayAlertAsync("TabbedPage Top Tabs Info",
             "This page tests the TOP tab placement.\n\n" +
             "Top tabs use TabLayout + TabLayoutMediator.\n" +
-            "Bottom tabs use BottomNavigationManager (shared with Shell).\n\n" +
+            "Bottom tabs use TabbedViewManager (shared with Shell).\n\n" +
             "TabbedPageManager handles both placements, but only bottom tabs share code with Shell's ShellItemHandler.",
             "OK");
     }

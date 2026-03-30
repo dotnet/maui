@@ -32,8 +32,8 @@ public partial class TabbedPageTestPage : TabbedPage
     async void OnInfoClicked(object? sender, EventArgs e)
     {
         await DisplayAlertAsync("TabbedPage Test Info",
-            "This page tests the BottomNavigationManager refactoring.\n\n" +
-            "Both Shell's ShellItemHandler and TabbedPage's TabbedPageManager now use the shared BottomNavigationManager class for:\n" +
+            "This page tests the TabbedViewManager refactoring.\n\n" +
+            "Both Shell's ShellItemHandler and TabbedPage's TabbedPageManager now use the shared TabbedViewManager class for:\n" +
             "• Tab setup and menu creation\n" +
             "• Tab selection callbacks\n" +
             "• Color management\n" +
