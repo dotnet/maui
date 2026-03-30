@@ -476,6 +476,57 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.NotEqual(expectedXamlC, actualXamlC);
 		}
 
+		[Fact]
+		public void CSharpOnlyChange_DoesNotTriggerXamlCInDebug()
+		{
+			SetUp();
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile);
+
+			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
+			AssertExists(xamlCStamp);
+
+			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
+
+			//Build again, after adding a C# file (no XAML changes), XamlC should NOT re-run in Debug mode
+			project.Add(AddFile("NewClass.cs", "Compile", "namespace Test { public class NewClass { } }"));
+			project.Save(projectFile);
+			Build(projectFile);
+			AssertExists(xamlCStamp);
+
+			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
+			Assert.Equal(expectedXamlC, actualXamlC);
+		}
+
+		[Fact]
+		public void CSharpOnlyChange_DoesTriggerXamlCInRelease()
+		{
+			SetUp();
+			intermediateDirectory = IOPath.Combine(tempDirectory, "obj", "Release", GetTfm());
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: "-c Release");
+
+			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
+			AssertExists(xamlCStamp);
+
+			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
+
+			//Build again, after adding a C# file (no XAML changes), XamlC SHOULD re-run in Release mode
+			project.Add(AddFile("NewClass.cs", "Compile", "namespace Test { public class NewClass { } }"));
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: "-c Release");
+			AssertExists(xamlCStamp);
+
+			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
+			Assert.NotEqual(expectedXamlC, actualXamlC);
+		}
+
 		[Fact(Skip = "source gen changes")]
 		public void TouchXamlFile()
 		{
@@ -554,6 +605,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
 			Assert.False(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+			Assert.False(log.Contains("Building target \"_XamlCValidateOnly\"", StringComparison.Ordinal), "_XamlCValidateOnly should be skipped if there are no .xaml files.");
 		}
 
 		/// <summary>
