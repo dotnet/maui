@@ -471,8 +471,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				var horizontalPadding = ItemsLayout is GridItemsLayout ? 0 : -spacingDecoration.HorizontalOffset;
-				var verticalPadding = ItemsLayout is GridItemsLayout ? 0 : -spacingDecoration.VerticalOffset;
+				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
+				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
+				// Horizontal & vertical spacing should only exist between items. 
+				var horizontalPadding = -spacingDecoration.HorizontalOffset;
+				var verticalPadding = -spacingDecoration.VerticalOffset;
 				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
 			}
 		}
