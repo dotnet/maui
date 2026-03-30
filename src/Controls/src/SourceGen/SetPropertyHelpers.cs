@@ -233,12 +233,26 @@ static class SetPropertyHelpers
 				ParentContext = context
 			};
 
+			// Seed the lambda context with the parent's BindingContextDataType.
+			// For DataTemplates in ResourceDictionaries, this preserves the outer scope warning.
+			if (context.BindingContextDataTypes.TryGetValue(node, out var nodeDataType)
+				&& nodeDataType.Kind == BindingContextDataTypeKind.Resolved)
+			{
+				lambdaContext.BindingContextDataTypes[node] = nodeDataType with
+				{
+					CrossedTemplateBoundary = true,
+				};
+			}
+
 			// First pass: Create all values (node and its descendants) using CreateValuesVisitor
 			// This mirrors the normal flow: CreateValuesVisitor walks the entire tree first
 			node.Accept(new CreateValuesVisitor(lambdaContext), null);
 
 			// Second pass: Set namescopes and register names in the namescope
 			node.Accept(new SetNamescopesAndRegisterNamesVisitor(lambdaContext), null);
+
+			// Propagate x:DataType through the tree
+			node.Accept(new PropagateDataTypeVisitor(lambdaContext), null);
 
 			// Third pass: Set resources in ResourceDictionary
 			node.Accept(new SetResourcesVisitor(lambdaContext), null);
