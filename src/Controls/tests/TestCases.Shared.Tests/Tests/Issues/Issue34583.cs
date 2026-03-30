@@ -21,6 +21,7 @@ public class Issue34583 : _IssuesUITest
 	{
 		App.WaitForElement("ScrollToReproOffsetButton");
 		App.Tap("ScrollToReproOffsetButton");
+		App.WaitForTextToBePresentInElement("LastActionLabel", "Scrolled to approx");
 		App.WaitForElement("SetNeitherButton");
 		App.Tap("SetNeitherButton");
 

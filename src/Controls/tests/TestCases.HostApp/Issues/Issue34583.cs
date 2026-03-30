@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 34583, "ScrollView orientation change resets scroll position on iOS", PlatformAffected.iOS)]
@@ -255,7 +257,7 @@ public class Issue34583 : ContentPage
 	{
 		_lastAction = action ?? string.Empty;
 		_orientationLabel.Text = $"Orientation: {_bugScrollView.Orientation}";
-		_offsetLabel.Text = $"ScrollX: {_bugScrollView.ScrollX:0.##} | ScrollY: {_bugScrollView.ScrollY:0.##}";
+		_offsetLabel.Text = $"ScrollX: {_bugScrollView.ScrollX.ToString("0.##", CultureInfo.InvariantCulture)} | ScrollY: {_bugScrollView.ScrollY.ToString("0.##", CultureInfo.InvariantCulture)}";
 		_lastActionLabel.Text = $"Action: {_lastAction}";
 	}
 }

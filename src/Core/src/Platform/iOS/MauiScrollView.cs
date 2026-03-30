@@ -323,7 +323,8 @@ namespace Microsoft.Maui.Platform
 						contentSize = new CGSize(frameSize.Width, contentSize.Height);
 					}
 
-					// Clamp height if vertical scrolling is disabled and content is larger than frame
+					// Clamp height when vertical scrolling is disabled but horizontal scrolling is enabled (Horizontal only)
+					// and the content is larger than the frame
 					if (orientation is ScrollOrientation.Horizontal && contentSize.Height > frameSize.Height)
 					{
 						contentSize = new CGSize(contentSize.Width, frameSize.Height);
