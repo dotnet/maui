@@ -6,9 +6,4 @@ public partial class SandboxShell : Shell
 	{
 		InitializeComponent();
 	}
-
-	async void OnTestMenuItemClicked(object? sender, EventArgs e)
-	{
-		await DisplayAlertAsync("MenuItem", "Test Action was clicked!", "OK");
-	}
 }
