@@ -107,99 +107,16 @@ Then deliver your verdict:
 
 ---
 
-## MAUI-Specific Review Checklist
+## MAUI-Specific Review Rules
 
-This is the core of the skill. Walk through each applicable section for every review.
+Apply the rules in `references/review-rules.md` to each changed file. The rules are distilled from real code reviews across 142 high-discussion PRs and cover 20 categories:
 
-### Platform Code Patterns
+**Platform & Lifecycle:** Handler lifecycle, platform-specific code, Android, iOS/macCatalyst, Windows
+**Architecture:** Memory management, threading, safe area, layout, navigation, CollectionView
+**Code Quality:** Error handling, null safety, performance, XAML & bindings, API design
+**Ecosystem:** Testing, build & MSBuild, image handling, gestures, accessibility
 
-| Rule | Details |
-|------|---------|
-| **File extensions determine compilation targets** | `.android.cs` → Android only. `.ios.cs` → iOS AND MacCatalyst. `.maccatalyst.cs` → MacCatalyst only. `.windows.cs` → Windows only. |
-| **MacCatalyst double-compilation** | Both `.ios.cs` and `.maccatalyst.cs` files compile for MacCatalyst. There is no precedence — if both exist, both compile. Check for duplicate definitions. |
-| **Android namespace collisions** | `View`, `Color`, `Context` exist in both MAUI and Android namespaces. Use type aliases: `using AView = Android.Views.View;`, `using AColor = Android.Graphics.Color;` |
-| **Platform-specific code in shared files** | If a `.cs` file (no platform suffix) uses `#if ANDROID`/`#if IOS`, check that the non-platform path is correct too. |
-
-### Handler Lifecycle
-
-| Rule | Details |
-|------|---------|
-| **ConnectHandler / DisconnectHandler symmetry** | Everything registered in `ConnectHandler` must be unregistered in `DisconnectHandler`. Listeners, event handlers, callbacks — check for leaks. |
-| **Dispose Java.Lang.Object derivatives** | Android listeners that extend `Java.Lang.Object` must be disposed to prevent leaks: `_listener?.Dispose(); _listener = null;` |
-| **Null guards after disconnect** | Handler code must guard against `PlatformView` being null after `DisconnectHandler` runs. |
-| **Mapper initialization** | Mapper methods should initialize state fully, not assume defaults. They can be called at any time, not just on initial setup. |
-| **Base class calls** | `ConnectHandler` should call `base.ConnectHandler()` before custom setup. `DisconnectHandler` should clean up before calling `base.DisconnectHandler()`. |
-
-### CollectionView Handler Detection
-
-There are TWO handler implementations. Which one applies depends on platform:
-
-| Platform | Active Handler | Location |
-|----------|----------------|----------|
-| **Android** | Items/ (only implementation) | `Handlers/Items/Android/` |
-| **Windows** | Items/ (only implementation) | `Handlers/Items/*.Windows.cs` |
-| **iOS/MacCatalyst** | Items2/ (current) | `Handlers/Items2/iOS/` |
-
-- Items2/ has **NO Android or Windows code** — never apply Android fixes there
-- Items/ iOS code is **deprecated** — only touch if PR explicitly modifies it
-- If a PR modifies CollectionView files, verify it's editing the correct handler for the target platform
-
-### Safe Area
-
-| Rule | Details |
-|------|---------|
-| **Opt-in model** | Only views implementing `ISafeAreaView` or `ISafeAreaView2` should get safe area insets applied |
-| **Non-safe-area views** | Must return `SafeAreaPadding.Empty`, not device insets |
-| **No double-padding** | Check for safe area insets being applied at multiple levels of the view hierarchy (e.g., both a Page and its inner ContentPresenter) |
-| **macCatalyst defaults** | `UseSafeArea` defaults to `true` on macCatalyst (vs `false` on iOS) — watch for platform assumption bugs |
-| **Raw vs adjusted insets** | Never compare raw UIKit `SafeAreaInsets` against adjusted `_safeArea` (filtered by `GetSafeAreaForEdge`). Compare raw-to-raw or adjusted-to-adjusted. |
-
-### Threading and Memory
-
-| Rule | Details |
-|------|---------|
-| **Android UI thread** | All Android View APIs must be called on the UI thread. Use `platformView.Post(() => { })` from background threads. |
-| **Modern threading APIs** | Use `MainThread.BeginInvokeOnMainThread()` or `Dispatcher.Dispatch()`. NOT `Device.BeginInvokeOnMainThread` (obsolete). |
-| **Event handler cleanup** | Unsubscribe all event handlers in `DisconnectHandler` to prevent the handler from being kept alive. |
-| **Circular references** | Watch for handler ↔ virtual view strong reference cycles. Use weak references where appropriate. |
-
-### Public API Changes
-
-| Rule | Details |
-|------|---------|
-| **PublicAPI.Unshipped.txt** | New public APIs must be added to `PublicAPI.Unshipped.txt`. Never disable analyzers to bypass this. |
-| **BOM and header** | PublicAPI files must start with `#nullable enable` (any BOM at file start, not as a symbol line). |
-| **Obsolete APIs in new code** | New code must NOT use: `Application.MainPage` (use `Window.Page`), `Frame` (use `Border`), `Device.BeginInvokeOnMainThread` (use `Dispatcher.Dispatch`). |
-| **Branching** | API additions belong on `net10.0` branch. Bug fixes without API changes go on `main`. |
-
-### Test Changes
-
-| Rule | Details |
-|------|---------|
-| **UI tests: two-project requirement** | Every UI test needs a HostApp page (`TestCases.HostApp/Issues/IssueXXXXX.cs`) AND an NUnit test (`TestCases.Shared.Tests/Tests/Issues/IssueXXXXX.cs`). |
-| **HostApp: prefer C# over XAML** | Only use XAML when testing XAML-specific features (bindings, templates, styles). |
-| **Screenshot tests** | Use `VerifyScreenshot(retryTimeout: ...)` — never `Task.Delay()` before `VerifyScreenshot()`. Use `UITestEntry`/`UITestEditor` to avoid cursor blink. |
-| **Single category per test** | Only ONE `[Category(UITestCategories.XYZ)]` per test method. |
-| **No inline #if in tests** | Move platform-specific logic to extension methods, don't use `#if ANDROID` in test methods. |
-| **XAML unit tests** | Issue tests go in `Issues/MauiXXXXX.xaml` + `.xaml.cs`. Use `[Values] XamlInflator inflator` for all three inflator paths. |
-| **Test base classes** | Use `TestShell` for Shell tests, `_IssuesUITest` for UI tests. Check what's available before rolling your own. |
-
-### Template Changes
-
-| Rule | Details |
-|------|---------|
-| **Conditional compilation markers** | Platform `#if` directives (WINDOWS, ANDROID, etc.) MUST be wrapped in `//-:cnd:noEmit` ... `//+:cnd:noEmit`. Template parameters (`#if (IncludeSampleContent)`) must NOT be wrapped. |
-| **Auto-generated files** | Never commit `cgmanifest.json` or `templatestrings.json` — they're auto-generated in CI. |
-
-### What NOT to Flag
-
-Do not waste the reviewer's time on these:
-
-- **Style/formatting** — CI catches these via `dotnet format`
-- **Missing XML docs on non-public APIs** — Not required by convention
-- **Test naming preferences** — Unless names are genuinely misleading
-- **Micro-optimizations in cold paths** — Readability wins unless it's a hot path
-- **Using `var` vs explicit types** — Project convention allows both
+The rules file also includes a **"What NOT to Flag"** section — respect it to avoid noise.
 
 ---
 
