@@ -158,7 +158,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (items is null)
 				return;
 
-			for (int i = 0; i < items.Count && i < TabBar.Items.Length; i++)
+			// When there are more tabs than iOS can display (> 5), iOS creates a "More" tab.
+			// Only iterate visible tab items, excluding the system "More" tab.
+			int visibleTabs = Math.Min(items.Count, TabBar.Items.Length);
+			if (items.Count > TabBar.Items.Length)
+				visibleTabs = TabBar.Items.Length - 1;
+
+			for (int i = 0; i < visibleTabs; i++)
 			{
 				if (!items[i].IsEnabled)
 					UpdateTabBarItemEnabled(TabBar.Items[i], false);
