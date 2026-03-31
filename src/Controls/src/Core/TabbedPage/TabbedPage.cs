@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="MultiPage{T}"/> that displays an array of tabs across the top of the screen, each of which loads content onto the screen.</summary>
 	[ContentProperty(nameof(Children))]
 #if IOS || MACCATALYST
-	[ElementHandler(typeof(Handlers.Compatibility.NavigationRenderer))]
+	[ElementHandler(typeof(Handlers.Compatibility.TabbedRenderer))]
 #elif WINDOWS || ANDROID || TIZEN
 	[ElementHandler(typeof(TabbedViewHandler))]
 #endif
