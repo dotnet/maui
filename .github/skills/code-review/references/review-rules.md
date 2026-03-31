@@ -289,6 +289,47 @@ and Windows. Items2/ is the current handler for iOS/MacCatalyst (Items/ iOS is d
 
 ---
 
+## 21. Regression Prevention (Lessons from Reverts & Candidate Failures)
+
+Rules distilled from 30 reverted PRs and 50 candidate-branch failures. When a PR touches these areas, apply extra scrutiny.
+
+| Check | What to look for |
+|-------|-----------------|
+| **CollectionView changes need broad scenario coverage** | CV is the single highest-regression component (15 candidate failures). Any change to layout, scroll, spacing, cell alignment, Header/Footer, or `KeepLastItemInView` must be tested across all four: empty collection, single item, many items, and with grouping. A fix for one layout scenario routinely breaks another. (CollectionView candidate failures, multiple PRs) |
+| **Style/theme changes have cascading effects** | `ApplyToDerivedTypes`, implicit styles, and `AppThemeBinding` interact in non-obvious ways. A fix to one style propagation path often breaks another — this pattern caused two separate reverts for PR #9648 and broke source gen in PR #32728. When touching style resolution or `AppThemeColor`, test: explicit style, implicit style, derived-type style, and dark/light theme switching. |
+| **Test the fix scenario AND adjacent scenarios** | Most reverts happen because the fix works for the reported issue but breaks a neighboring case. ToolbarItem image fix (PR #28833, reverted twice) fixed one image mode while breaking others. Entry `SelectionLength` (PR #26213) fixed selection but broke focus. Require authors to enumerate what adjacent behaviors they checked. |
+| **Never remove `InternalsVisibleTo` without auditing NuGet consumers** | IVT removal looks like cleanup but silently breaks community packages that depend on internal APIs. At least one revert went all the way back to a release branch because of this. Flag any `InternalsVisibleTo` deletion and ask: "Have you checked whether any published NuGet consumers reference this?" |
+| **ToolbarItem/Image changes must be tested across all image source types** | Font images, file images, and tinted images each go through different code paths. PR #28833 (reverted twice) and PR #26048 show this pattern. When modifying `ImageSourceExtensions` or any ToolbarItem rendering code, verify all three modes: `FontImageSource`, `FileImageSource`, and `BitmapImageSource` with tinting. |
+| **Entry/Editor focus and selection state is fragile** | `CursorPosition`, `SelectionLength`, keyboard show/hide, and focus order interact tightly on every platform. PR #26213 shows how a `SelectionLength` change broke Entry focus. Flag any handler change that touches these properties and ask whether focus behavior was verified after the change — especially when the keyboard is dismissed and re-shown. |
+| **Measurement timing on iOS lags behind property changes** | `UIButton.TitleLabel.Bounds` and `UIView` frame values are not updated synchronously after a property change — the layout pass hasn't run yet. PR #25122 (tj-devel709) shows the correct pattern: measure the title manually instead of reading `.Bounds`. Flag any iOS handler code that reads frame/bounds immediately after setting a property, without deferring to the next layout pass. |
+| **Template changes need all-template validation** | A template fix for MAUI app can break Blazor hybrid or multi-project templates. `MapStaticAssets` vs `UseStaticFiles` (candidate failure) shows how a single API swap breaks one template variant silently. Any `src/Templates/` change must be validated against all template IDs: `maui`, `maui-blazor`, `maui-blazor-web`, `mauilib`, `maui-multiproject`. |
+| **Candidate-branch PRs must not mix concerns** | PureWeen's explicit rule (PR #33838): candidate fixes should not bundle unrelated flakiness fixes. A PR that mixes "fix the regression" with "also fix this flaky test" makes bisection impossible and obscures what actually fixed the candidate failure. Flag mixed-concern candidate PRs. |
+| **Screenshot tests must prove content was drawn, not just that clipping worked** | mattleibow on PR #28353: "give this label a negative margin so that we can see that the image is drawn at all." A clipping test that passes when the view renders nothing is not a useful test. Flag screenshot tests for `GraphicsView`, `Image`, or any drawing surface that don't verify the content region itself — use a visible element inside the clip boundary as a sentinel. |
+| **Arithmetic in index/position calculations needs explicit parentheses** | mattleibow on PR #23369: "This line of code is a bit ambiguous for a quick read." Silent operator-precedence bugs in scroll offset, index math, or spacing calculations are hard to spot and have caused gesture/tap regressions. Flag expressions like `a + b * c` or `offset - padding / 2` without explicit parentheses when they appear in position or size computations. |
+| **Major dependency upgrades need broad platform validation** | WindowsAppSDK upgrade (PR #32174) was reverted because it broke too many things simultaneously. Flag PRs that bump `WindowsAppSDK`, `Microsoft.Maui.*` NuGet versions, or other platform SDK dependencies, and ask whether CI was green on all platforms (Android, iOS, MacCatalyst, Windows) before merge, not just the changed platform. |
+| **ContentPresenter BindingContext propagation breaks explicit TemplateBindings** | Propagating `BindingContext` through `ContentPresenter` overwrites `{TemplateBinding}` values that were set explicitly. This was a reverted PR. Flag any handler or renderer change that sets or propagates `BindingContext` on a `ContentPresenter` or control template root without verifying that `TemplateBinding` expressions still resolve correctly. |
+
+---
+
+## 22. Most Frequently Regressed Components
+
+Components ranked by regression frequency from 366 analyzed PRs (reverts + candidate fixes + regression fixes):
+
+| Component | Regressions | Key Risk Areas |
+|-----------|-------------|----------------|
+| CollectionView | 15 | Layout, scroll position, spacing, cell alignment, Header/Footer |
+| Image/Graphics | 15 | Aspect ratio, CornerRadius, Background, DrawString |
+| Theme/Style | 8 | AppThemeBinding, implicit styles, ApplyToDerivedTypes |
+| CarouselView | 7 | ScrollTo, CurrentItem, ItemSpacing, loop mode |
+| Gesture/Tap | 7 | TapGestureRecognizer, SwipeView, outside-tap dismiss |
+| Button/Entry | 7 | Dynamic resize, focus/selection, AppThemeBinding colors |
+| Toolbar | 5 | Icon color, back button, BarTextColor across modes |
+| Shell/TabBar | 4 | TabBarIsVisible, Shell crashes, section rendering |
+
+Use this table as a triage guide: PRs touching these components warrant a more thorough pass through sections 1–21 above, with particular attention to the adjacent-scenario rule (§21 row 3) and the component-specific rows in this section.
+
+---
+
 ## What NOT to Flag
 
 Do not waste reviewer time on these:
