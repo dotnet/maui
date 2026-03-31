@@ -551,10 +551,41 @@ function Get-TestResultFromOutput {
 
     $content = Get-Content $LogFile -Raw
 
-    # Check for environment/infrastructure errors (not real test failures)
+    # ── First, check if tests actually ran and produced results ──
+    # This must come BEFORE env error checks because xharness can report
+    # exit code 83 (APP_LAUNCH_FAILURE) even when tests ran successfully
+    # (e.g., due to cleanup/teardown issues after test completion).
+
+    # Device test output: check Passed/Failed counts from Run-DeviceTests.ps1
+    # Format: "  Passed: 57\n  Failed: 0"
+    $hasDeviceResults = $false
+    if ($content -match "Passed:\s*(\d+)" -and $content -match "Failed:\s*(\d+)") {
+        $lastPassMatch = [regex]::Matches($content, "Passed:\s*(\d+)") | Select-Object -Last 1
+        $lastFailMatch = [regex]::Matches($content, "Failed:\s*(\d+)") | Select-Object -Last 1
+        $devicePassCount = [int]$lastPassMatch.Groups[1].Value
+        $deviceFailCount = [int]$lastFailMatch.Groups[1].Value
+        $deviceTotal = $devicePassCount + $deviceFailCount
+
+        # If tests actually ran (total > 0), trust the results over exit codes
+        if ($deviceTotal -gt 0) {
+            $hasDeviceResults = $true
+            if ($deviceFailCount -gt 0) {
+                return @{
+                    Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
+                    PassCount = $devicePassCount; Total = $deviceTotal; Skipped = 0
+                    FailureReason = "Device tests: $deviceFailCount of $deviceTotal failed"
+                }
+            }
+            return @{
+                Passed = $true; PassCount = $devicePassCount; Failed = 0
+                FailCount = 0; Total = $deviceTotal; Skipped = 0
+            }
+        }
+    }
+
+    # ── Environment/infrastructure errors (only if no real test results above) ──
     $envErrorPatterns = @(
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
-        @{ Pattern = "APP_LAUNCH_FAILURE|exit code:?\s*83"; Message = "App failed to launch (XHarness exit 83)" }
         @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
         @{ Pattern = "Application test run crashed"; Message = "App crashed during test run" }
         @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
