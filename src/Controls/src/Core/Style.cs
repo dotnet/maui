@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls
 				// FullName is everything before the first comma
 				Debug.Assert(_assemblyQualifiedTargetTypeName is not null, "Either _targetType or _assemblyQualifiedTargetTypeName must be set");
 
-				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(',', StringComparison.Ordinal);
+				var commaIndex = _assemblyQualifiedTargetTypeName.IndexOf(',');
 				return commaIndex > 0
 					? _assemblyQualifiedTargetTypeName.Substring(0, commaIndex)
 					: _assemblyQualifiedTargetTypeName;

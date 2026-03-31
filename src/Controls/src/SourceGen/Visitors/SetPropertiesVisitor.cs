@@ -61,7 +61,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 		{
 			var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
 			var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
+			Context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
 		}
 	}
 
@@ -81,14 +81,14 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 	{
 		bool attached = false;
 		var localName = lookupName.LocalName;
-		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, context, lineInfo);
+		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, Context, lineInfo);
 		ITypeSymbol? propertyType = null;
 
-		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
-			|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, Context, out propertyType))
+			|| SetPropertyHelpers.CanGet(parentVar, localName, Context, out propertyType, out _);
 
 		bool isObject = propertyType != null && propertyType.SpecialType == SpecialType.System_Object;
-		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(Context))
 			CheckForDuplicateProperty(parentNode, trackingName, lineInfo);
 	}
 
@@ -107,7 +107,7 @@ class SetPropertiesVisitor : IXamlNodeVisitor
 			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
 			parentVar = Context.Variables[(ElementNode)parentNode];
-			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
+			if ((contentProperty = parentVar.Type.GetContentPropertyName(Context)) != null)
 			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
 				isImplicitContentProperty = true;
