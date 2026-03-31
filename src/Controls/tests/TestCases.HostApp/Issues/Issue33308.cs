@@ -15,6 +15,7 @@ public class Issue33308 : ContentPage
 		var cardsCarousel = new CarouselView
 		{
 			Loop = false,
+			AutomationId = "CardsCarousel",
 			ItemsSource = cards,
 			VerticalScrollBarVisibility = ScrollBarVisibility.Never,
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)

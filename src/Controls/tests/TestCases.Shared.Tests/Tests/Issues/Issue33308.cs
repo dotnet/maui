@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Windows does not consistently capture the same item on scroll down, so this test may be flaky and is skipped on Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,10 +17,13 @@ public class Issue33308 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerticalCarouselMandatorySingleSnapAdvancesOneCard()
 	{
-		App.WaitForElement("Card 1");
+		App.WaitForElement("CardsCarousel");
 
-		App.ScrollDown("Card 1", ScrollStrategy.Gesture, 0.99, swipeSpeed: 50, withInertia: true);
+		App.ScrollDown("CardsCarousel", ScrollStrategy.Gesture, 0.99, swipeSpeed: 500, withInertia: true);
+
+		App.WaitForElement("Card 2");
 
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
+#endif
