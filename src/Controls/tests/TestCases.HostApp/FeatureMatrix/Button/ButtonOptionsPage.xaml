@@ -3,289 +3,321 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.ButtonOptionsPage"
-             x:DataType="local:ButtonViewModal"
+             x:DataType="local:ButtonViewModel"
              Title="ButtonOptionsPage">
-       <ContentPage.ToolbarItems>
-              <ToolbarItem Text="Apply"
-                           Clicked="ApplyButton_Clicked"
-                           AutomationId="Apply"/>
-       </ContentPage.ToolbarItems>
-              <Grid ColumnSpacing="3"
-                    RowSpacing="-2"
-                    Padding="1"
-                    RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
-                    ColumnDefinitions="Auto,Auto">
-
-              <!-- Text -->
-              <Label Grid.Row="0"
-                     Grid.Column="0"
-                     Text="Text:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="0"
-                     Grid.Column="1"
-                     Text="{Binding Text}"
-                     AutomationId="TextEntry"
-                     VerticalOptions="Center"/>
-
-              <!-- Text Color -->
-              <Label Grid.Row="1"
-                     Grid.Column="0"
-                     Text="TextColor:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="1"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="TextColor"
-                                  AutomationId="TextColorRedButton"
-                                  Content="Red"
-                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
-
-                     <RadioButton GroupName="TextColor"
-                                  AutomationId="TextColorGreenButton"
-                                  Content="Green"
-                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
-              </HorizontalStackLayout>
-
-              <!-- BorderColor -->
-              <Label Grid.Row="2"
-                     Grid.Column="0"
-                     Text="BorderColor:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="2"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="BorderColor"
-                                  Content="Red"
-                                  AutomationId="BorderColorRedButton"
-                                  CheckedChanged="OnBorderColorRadioButtonCheckedChanged"/>
-                     <RadioButton GroupName="BorderColor"
-                                  Content="Green"
-                                  AutomationId="BorderColorGreenButton"
-                                  CheckedChanged="OnBorderColorRadioButtonCheckedChanged"/>
-              </HorizontalStackLayout>
-
-              <!-- BorderWidth -->
-              <Label Grid.Row="3"
-                     Grid.Column="0"
-                     Text="BorderWidth:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="3"
-                     Grid.Column="1"
-                     AutomationId="BorderWidthEntry"
-                     Text="{Binding BorderWidth}"
-                     VerticalOptions="Center"/>
-
-              <!-- CharacterSpacing -->
-              <Label Grid.Row="4"
-                     Grid.Column="0"
-                     Text="CharacterSpacing:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="4"
-                     Grid.Column="1"
-                     AutomationId="CharacterSpacingEntry"
-                     Text="{Binding CharacterSpacing}"
-                     VerticalOptions="Center"/>
-
-              <!-- CornerRadius -->
-              <Label Grid.Row="5"
-                     Grid.Column="0"
-                     Text="CornerRadius:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="5"
-                     Grid.Column="1"
-                     AutomationId="CornerRadiusEntry"
-                     Text="{Binding CornerRadius}"
-                     VerticalOptions="Center"/>
-
-              <!-- Flow Direction -->
-              <Label Grid.Row="6"
-                     Grid.Column="0"
-                     Text="Flow Direction:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="6"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton AutomationId="FlowDirectionLeftToRightButton"
-                                  GroupName="FlowDirection"
-                                  Content="Left to Right"
-                                  CheckedChanged="OnFlowDirectionChanged"/>
-                     <RadioButton AutomationId="FlowDirectionRightToLeftButton"
-                                  GroupName="FlowDirection"
-                                  Content="Right to Left"
-                                  CheckedChanged="OnFlowDirectionChanged"/>
-              </HorizontalStackLayout>
-
-              <!-- Font Attributes -->
-              <Label Grid.Row="7"
-                     Grid.Column="0"
-                     Text="FontAttributes:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="7"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="FontAttributes"
-                                  Content="Italic"
-                                  AutomationId="FontAttributesItalicButton"
-                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
-
-                     <RadioButton GroupName="FontAttributes"
-                                  Content="Bold"
-                                  AutomationId="FontAttributesBoldButton"
-                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
-
-                     <RadioButton GroupName="FontAttributes"
-                                  Content="None"
-                                  AutomationId="FontAttributesNoneButton"
-                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
-              </HorizontalStackLayout>
-
-              <!-- Font Family -->
-              <Label Grid.Row="8"
-                     Grid.Column="0"
-                     Text="FontFamily:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="8"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="FontFamily"
-                                  AutomationId="FontFamilyDokdoButton"
-                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
-                                  Content="Dokdo"/>
-
-                     <RadioButton GroupName="FontFamily"
-                                  AutomationId="FontFamilyMontserratBoldButton"
-                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
-                                  Content="MontserratBold"/>
-              </HorizontalStackLayout>
-
-              <!-- Font Size -->
-              <Label Grid.Row="9"
-                     Grid.Column="0"
-                     Text="FontSize:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="9"
-                     Grid.Column="1"
-                     AutomationId="FontSizeEntry"
-                     Text="{Binding FontSize}"
-                     VerticalOptions="Center"/>
-
-              <!-- IsEnabled -->
-              <Label Grid.Row="10"
-                     Grid.Column="0"
-                     Text="IsEnabled:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="10"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="IsEnabled"
-                                  AutomationId="IsEnabledTrueButton"
-                                  Content="True"
-                                  CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
-                     <RadioButton GroupName="IsEnabled"
-                                  AutomationId="IsEnabledFalseButton"
-                                  Content="False"
-                                  CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
-
-              </HorizontalStackLayout>
-
-              <!-- IsVisible -->
-              <Label Grid.Row="11"
-                     Grid.Column="0"
-                     Text="IsVisible:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="11"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="IsVisible"
-                                  AutomationId="IsVisibleTrueButton"
-                                  Content="True"
-                                  CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
-                     <RadioButton GroupName="IsVisible"
-                                  AutomationId="IsVisibleFalseButton"
-                                  Content="False"
-                                  CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
-              </HorizontalStackLayout>
-
-              <!-- LineBreakMode -->
-              <Label Grid.Row="12"
-                     Grid.Column="0"
-                     Text="LineBreakMode:"/>
-              <VerticalStackLayout Grid.Row="12"
-                                   Grid.Column="1"
-                                   VerticalOptions="Center">
-                     <HorizontalStackLayout>
-                            <RadioButton GroupName="LineBreakMode"
-                                         AutomationId="LineBreakModeCharacterWrapButton"
-                                         CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
-                                         Content="CharacterWrap"/>
-                            <RadioButton GroupName="LineBreakMode"
-                                         AutomationId="LineBreakModeHeadTruncationButton"
-                                         CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
-                                         Content="HeadTruncation"/>
+       <Grid Padding="2"
+             ColumnDefinitions="*, *"
+             RowDefinitions="Auto, Auto"
+             ColumnSpacing="8">
+              <VerticalStackLayout Grid.ColumnSpan="2"
+                                   Grid.Row="0">
+                     <!-- Add Apply button -->
+                     <Button Text="Apply"
+                             FontSize="10"
+                             Clicked="ApplyButton_Clicked"
+                             AutomationId="Apply"/>
+              </VerticalStackLayout>
+              <!-- Left Column -->
+              <VerticalStackLayout Grid.Column="0"
+                                   Grid.Row="1"
+                                   Spacing="2">
+                     <!-- Text -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="Text:"
+                                   FontSize="10"/>
+                            <Entry Text="{Binding Text}"
+                                   FontSize="10"
+                                   AutomationId="TextEntry"/>
                      </HorizontalStackLayout>
-                     <HorizontalStackLayout>
-                            <RadioButton GroupName="LineBreakMode"
-                                         AutomationId="LineBreakModeMiddleTruncationButton"
-                                         CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
-                                         Content="MiddleTruncation"/>
-                            <RadioButton GroupName="LineBreakMode"
-                                         AutomationId="LineBreakModeTailTruncationButton"
-                                         CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
-                                         Content="TailTruncation"/>
+
+                     <!-- BorderColor -->
+                     <Label Text="BorderColor:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="BorderColor"
+                                         Content="Default"
+                                         AutomationId="BorderColorDefaultButton"
+                                         FontSize="10"
+                                         CheckedChanged="OnBorderColorRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="BorderColor"
+                                         Content="Red"
+                                         AutomationId="BorderColorRedButton"
+                                         FontSize="10"
+                                         CheckedChanged="OnBorderColorRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="BorderColor"
+                                         Content="Green"
+                                         AutomationId="BorderColorGreenButton"
+                                         FontSize="10"
+                                         CheckedChanged="OnBorderColorRadioButtonCheckedChanged"/>
                      </HorizontalStackLayout>
-                     <RadioButton GroupName="LineBreakMode"
-                                  AutomationId="LineBreakModeWordWrapButton"
-                                  CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
-                                  Content="WordWrap"/>
+
+                     <!-- CharacterSpacing -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="CharacterSpacing:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="CharacterSpacingEntry"
+                                   Text="{Binding CharacterSpacing}"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Font Attributes -->
+                     <Label Text="FontAttributes:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="FontAttributes"
+                                         Content="Italic"
+                                         FontSize="10"
+                                         AutomationId="FontAttributesItalicButton"
+                                         CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="FontAttributes"
+                                         Content="Bold"
+                                         FontSize="10"
+                                         AutomationId="FontAttributesBoldButton"
+                                         CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="FontAttributes"
+                                         Content="None"
+                                         FontSize="10"
+                                         AutomationId="FontAttributesNoneButton"
+                                         CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Font Size -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="FontSize:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="FontSizeEntry"
+                                   Text="{Binding FontSize}"/>
+                     </HorizontalStackLayout>
+
+                     <!-- IsVisible -->
+                     <Label Text="IsVisible:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="IsVisible"
+                                         AutomationId="IsVisibleTrueButton"
+                                         Content="True"
+                                         FontSize="10"
+                                         CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="IsVisible"
+                                         AutomationId="IsVisibleFalseButton"
+                                         Content="False"
+                                         FontSize="10"
+                                         CheckedChanged="OnIsVisibleRadioButtonCheckedChanged"/>
+                     </HorizontalStackLayout>
+
+                     <!-- LineBreakMode -->
+                     <Label Text="LineBreakMode:"
+                            FontSize="10"/>
+                     <VerticalStackLayout Spacing="1">
+                            <HorizontalStackLayout Spacing="1">
+                                   <RadioButton GroupName="LineBreakMode"
+                                                FontSize="10"
+                                                AutomationId="LineBreakModeCharacterWrapButton"
+                                                CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
+                                                Content="CharacterWrap"/>
+                                   <RadioButton GroupName="LineBreakMode"
+                                                FontSize="10"
+                                                AutomationId="LineBreakModeHeadTruncationButton"
+                                                CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
+                                                Content="HeadTruncation"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="1">
+                                   <RadioButton GroupName="LineBreakMode"
+                                                FontSize="10"
+                                                AutomationId="LineBreakModeMiddleTruncationButton"
+                                                CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
+                                                Content="MiddleTruncation"/>
+                                   <RadioButton GroupName="LineBreakMode"
+                                                FontSize="10"
+                                                AutomationId="LineBreakModeTailTruncationButton"
+                                                CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
+                                                Content="TailTruncation"/>
+                            </HorizontalStackLayout>
+                            <RadioButton GroupName="LineBreakMode"
+                                         FontSize="10"
+                                         AutomationId="LineBreakModeWordWrapButton"
+                                         CheckedChanged="OnLineBreakModeRadioButtonCheckedChanged"
+                                         Content="WordWrap"/>
+                     </VerticalStackLayout>
+
+                     <!-- Shadow -->
+                     <Label Text="Shadow:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="Shadow"
+                                         FontSize="10"
+                                         AutomationId="ShadowTrueButton"
+                                         Content="True"
+                                         CheckedChanged="OnShadowRadioButtonCheckedChanged"
+                                         Value="1"/>
+                            <RadioButton GroupName="Shadow"
+                                         FontSize="10"
+                                         AutomationId="ShadowFalseButton"
+                                         Content="False"
+                                         CheckedChanged="OnShadowRadioButtonCheckedChanged"
+                                         Value="0"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Background Color -->
+                     <Label Text="Background Color:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <Button Text="None"
+                                    FontSize="10"
+                                    AutomationId="BackgroundColorNone"
+                                    Clicked="BackgroundColorButton_Clicked"
+                                    Padding="4"/>
+                            <Button Text="Red"
+                                    BackgroundColor="Red"
+                                    TextColor="White"
+                                    FontSize="10"
+                                    AutomationId="BackgroundColorRed"
+                                    Clicked="BackgroundColorButton_Clicked"
+                                    Padding="4"/>
+                            <Button Text="Green"
+                                    BackgroundColor="Green"
+                                    TextColor="White"
+                                    FontSize="10"
+                                    AutomationId="BackgroundColorGreen"
+                                    Clicked="BackgroundColorButton_Clicked"
+                                    Padding="4"/>
+                     </HorizontalStackLayout>
               </VerticalStackLayout>
 
-              <!-- Padding -->
-              <Label Grid.Row="13"
-                     Grid.Column="0"
-                     Text="Padding:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="13"
-                     Grid.Column="1"
-                     AutomationId="PaddingEntry"
-                     Text="{Binding Padding}"
-                     VerticalOptions="Center"/>
+              <!-- Right Column -->
+              <VerticalStackLayout Grid.Column="1"
+                                   Grid.Row="1"
+                                   Spacing="2">
+                     <!-- Text Color -->
+                     <Label Text="TextColor:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="TextColor"
+                                         AutomationId="TextColorDefaultButton"
+                                         Content="Default"
+                                         FontSize="10"
+                                         CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="TextColor"
+                                         AutomationId="TextColorRedButton"
+                                         Content="Red"
+                                         FontSize="10"
+                                         CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="TextColor"
+                                         AutomationId="TextColorGreenButton"
+                                         Content="Green"
+                                         FontSize="10"
+                                         CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+                     </HorizontalStackLayout>
 
-              <!-- Shadow -->
-              <Label Grid.Row="14"
-                     Grid.Column="0"
-                     Text="Shadow:"/>
-              <HorizontalStackLayout Grid.Row="14"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="Shadow"
-                                  AutomationId="ShadowTrueButton"
-                                  Content="True"
-                                  CheckedChanged="OnShadowRadioButtonCheckedChanged"
-                                  Value="1"/>
-                     <RadioButton GroupName="Shadow"
-                                  AutomationId="ShadowFalseButton"
-                                  Content="False"
-                                  CheckedChanged="OnShadowRadioButtonCheckedChanged"
-                                  Value="0"/>
-              </HorizontalStackLayout>
+                     <!-- BorderWidth -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="BorderWidth:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="BorderWidthEntry"
+                                   Text="{Binding BorderWidth}"/>
+                     </HorizontalStackLayout>
 
-              <!-- Text Transform -->
-              <Label Grid.Row="15"
-                     Grid.Column="0"
-                     Text="TextTransform:"
-                     VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="15"
-                                     Grid.Column="1"
-                                     VerticalOptions="Center">
-                     <RadioButton GroupName="TextTransform"
-                                  AutomationId="TextTransformLowercaseButton"
-                                  Content="Lowercase"
-                                  CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
+                     <!-- CornerRadius -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="CornerRadius:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="CornerRadiusEntry"
+                                   Text="{Binding CornerRadius}"/>
+                     </HorizontalStackLayout>
 
-                     <RadioButton GroupName="TextTransform"
-                                  AutomationId="TextTransformUppercaseButton"
-                                  Content="Uppercase"
-                                  CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
-              </HorizontalStackLayout>
+                     <!-- Flow Direction -->
+                     <Label Text="Flow Direction:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton AutomationId="FlowDirectionLeftToRightButton"
+                                         GroupName="FlowDirection"
+                                         Content="Left to Right"
+                                         FontSize="10"
+                                         CheckedChanged="OnFlowDirectionChanged"/>
+                            <RadioButton AutomationId="FlowDirectionRightToLeftButton"
+                                         GroupName="FlowDirection"
+                                         Content="Right to Left"
+                                         FontSize="10"
+                                         CheckedChanged="OnFlowDirectionChanged"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Font Family -->
+                     <Label Text="FontFamily:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="FontFamily"
+                                         FontSize="10"
+                                         AutomationId="FontFamilyDokdoButton"
+                                         CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
+                                         Content="Dokdo"/>
+                            <RadioButton GroupName="FontFamily"
+                                         FontSize="10"
+                                         AutomationId="FontFamilyMontserratBoldButton"
+                                         CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
+                                         Content="MontserratBold"/>
+                     </HorizontalStackLayout>
+
+                     <!-- IsEnabled -->
+                     <Label Text="IsEnabled:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="IsEnabled"
+                                         FontSize="10"
+                                         AutomationId="IsEnabledTrueButton"
+                                         Content="True"
+                                         CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="IsEnabled"
+                                         FontSize="10"
+                                         AutomationId="IsEnabledFalseButton"
+                                         Content="False"
+                                         CheckedChanged="OnIsEnabledRadioButtonCheckedChanged"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Padding -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="Padding:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="PaddingEntry"
+                                   Text="{Binding Padding}"/>
+                     </HorizontalStackLayout>
+
+                     <!-- Text Transform -->
+                     <Label Text="TextTransform:"
+                            FontSize="10"/>
+                     <HorizontalStackLayout Spacing="2">
+                            <RadioButton GroupName="TextTransform"
+                                         AutomationId="TextTransformLowercaseButton"
+                                         Content="Lowercase"
+                                         FontSize="10"
+                                         CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
+                            <RadioButton GroupName="TextTransform"
+                                         AutomationId="TextTransformUppercaseButton"
+                                         Content="Uppercase"
+                                         FontSize="10"
+                                         CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
+                     </HorizontalStackLayout>
+
+                     <!-- HeightRequest -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="HeightRequest:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="HeightRequestEntry"
+                                   Text="{Binding HeightRequest}"/>
+                     </HorizontalStackLayout>
+
+                     <!-- WidthRequest -->
+                     <HorizontalStackLayout Spacing="2">
+                            <Label Text="WidthRequest:"
+                                   FontSize="10"/>
+                            <Entry FontSize="10"
+                                   AutomationId="WidthRequestEntry"
+                                   Text="{Binding WidthRequest}"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
        </Grid>
 </ContentPage>

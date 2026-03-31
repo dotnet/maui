@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.ButtonControlMainPage"
-             x:DataType="local:ButtonViewModal"
+             x:DataType="local:ButtonViewModel"
              Title="ButtonControlPage">
        <ContentPage.ToolbarItems>
               <ToolbarItem Text="Options"
@@ -19,12 +19,13 @@
              ColumnSpacing="10">
               <Button Grid.Row="0"
                       Grid.ColumnSpan="2"
-                      BackgroundColor="SkyBlue"
-                      HeightRequest="100"
+                      Background="{Binding Background}"
+                      HeightRequest="{Binding HeightRequest}"
                       Margin="0,50,0,0"
-                      WidthRequest="200"
+                      WidthRequest="{Binding WidthRequest}"
                       VerticalOptions="Center"
                       AutomationId="ButtonControl"
+                      ImageSource="{Binding ImageSource}"
                       BorderColor="{Binding BorderColor}"
                       BorderWidth="{Binding BorderWidth}"
                       CharacterSpacing="{Binding CharacterSpacing}"
@@ -59,6 +60,7 @@
               <Label Grid.Row="1"
                      Grid.Column="1"
                      x:Name="ClickedEventLabel"
+                     Text="{Binding ClickedEventLabelText}"
                      AutomationId="ClickedEventLabel"/>
 
               <Label Grid.Row="2"
@@ -66,6 +68,7 @@
               <Label Grid.Row="2"
                      Grid.Column="1"
                      x:Name="PressedEventLabel"
+                     Text="{Binding PressedEventLabelText}"
                      AutomationId="PressedEventLabel"/>
 
               <Label Grid.Row="3"
@@ -73,6 +76,7 @@
               <Label Grid.Row="3"
                      Grid.Column="1"
                      x:Name="ReleasedEventLabel"
+                     Text="{Binding ReleasedEventLabelText}"
                      AutomationId="ReleasedEventLabel"/>
        </Grid>
 </ContentPage>

@@ -5,9 +5,9 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 
-public class ButtonViewModal : INotifyPropertyChanged
+public class ButtonViewModel : INotifyPropertyChanged
 {
-	private Color _borderColor = Colors.White;
+	private Color _borderColor = null;
 	private double _borderWidth = 0d;
 	private double _characterSpacing = 0.0d;
 	private ICommand _command = null;
@@ -20,10 +20,17 @@ public class ButtonViewModal : INotifyPropertyChanged
 	private bool _isVisible = true;
 	private LineBreakMode _lineBreakMode = LineBreakMode.NoWrap;
 	private double _padding = 0d;
-	private string _text = null;
-	private Color _textColor = Colors.Black;
+	private string _text = "Button";
+	private Color _textColor = null;
 	private float _shadowOpacity = 0f;
 	private TextTransform _textTransform = TextTransform.Default;
+	private Brush _background = null;
+	private double _heightRequest = -1d;
+	private double _widthRequest = -1d;
+	private string _pressedEventLabelText = string.Empty;
+	private string _releasedEventLabelText = string.Empty;
+	private string _clickedEventLabelText = string.Empty;
+	private ImageSource _imageSource = null;
 
 	public Color BorderColor
 	{
@@ -246,7 +253,98 @@ public class ButtonViewModal : INotifyPropertyChanged
 		}
 	}
 
-	public ButtonViewModal()
+	public Brush Background
+	{
+		get => _background;
+		set
+		{
+			if (_background != value)
+			{
+				_background = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public double HeightRequest
+	{
+		get => _heightRequest;
+		set
+		{
+			if (_heightRequest != value)
+			{
+				_heightRequest = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public double WidthRequest
+	{
+		get => _widthRequest;
+		set
+		{
+			if (_widthRequest != value)
+			{
+				_widthRequest = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string PressedEventLabelText
+	{
+		get => _pressedEventLabelText;
+		set
+		{
+			if (_pressedEventLabelText != value)
+			{
+				_pressedEventLabelText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string ReleasedEventLabelText
+	{
+		get => _releasedEventLabelText;
+		set
+		{
+			if (_releasedEventLabelText != value)
+			{
+				_releasedEventLabelText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string ClickedEventLabelText
+	{
+		get => _clickedEventLabelText;
+		set
+		{
+			if (_clickedEventLabelText != value)
+			{
+				_clickedEventLabelText = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public ImageSource ImageSource
+	{
+		get => _imageSource;
+		set
+		{
+			if (_imageSource != value)
+			{
+				_imageSource = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public ButtonViewModel()
 	{
 		Command = new Command<string>(
 			execute: (buttonText) =>
@@ -261,6 +359,33 @@ public class ButtonViewModal : INotifyPropertyChanged
 				}
 			}
 		);
+	}
+
+	public void Reset()
+	{
+		BorderColor = Colors.White;
+		BorderWidth = 0d;
+		CharacterSpacing = 0.0d;
+		Command = null;
+		CornerRadius = 0;
+		FlowDirection = FlowDirection.MatchParent;
+		FontAttributes = FontAttributes.None;
+		FontFamily = null;
+		FontSize = 0d;
+		IsEnabled = true;
+		IsVisible = true;
+		LineBreakMode = LineBreakMode.NoWrap;
+		Padding = 0d;
+		Text = "Button";
+		TextColor = null;
+		TextTransform = TextTransform.Default;
+		Background = null;
+		HeightRequest = -1d;
+		WidthRequest = -1d;
+		PressedEventLabelText = string.Empty;
+		ReleasedEventLabelText = string.Empty;
+		ClickedEventLabelText = string.Empty;
+		ImageSource = null;
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;

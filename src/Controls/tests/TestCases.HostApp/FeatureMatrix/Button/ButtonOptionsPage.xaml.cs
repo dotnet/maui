@@ -2,8 +2,8 @@ namespace Maui.Controls.Sample;
 
 public partial class ButtonOptionsPage : ContentPage
 {
-	private ButtonViewModal _viewModel;
-	public ButtonOptionsPage(ButtonViewModal viewModel)
+	private ButtonViewModel _viewModel;
+	public ButtonOptionsPage(ButtonViewModel viewModel)
 	{
 		InitializeComponent();
 		BindingContext = viewModel;
@@ -25,7 +25,12 @@ public partial class ButtonOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.BorderColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
+			_viewModel.BorderColor = radioButton.Content.ToString() switch
+			{
+				"Red" => Colors.Red,
+				"Green" => Colors.Green,
+				_ => Colors.White,
+			};
 		}
 	}
 
@@ -117,7 +122,12 @@ public partial class ButtonOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.TextColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
+			_viewModel.TextColor = radioButton.Content.ToString() switch
+			{
+				"Red" => Colors.Red,
+				"Green" => Colors.Green,
+				_ => null,
+			};
 		}
 	}
 
@@ -129,6 +139,19 @@ public partial class ButtonOptionsPage : ContentPage
 			_viewModel.TextTransform = radioButton.Content.ToString() == "Lowercase"
 				? TextTransform.Lowercase
 				: TextTransform.Uppercase;
+		}
+	}
+
+	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is Button button)
+		{
+			_viewModel.Background = button.AutomationId switch
+			{
+				"BackgroundColorRed" => new SolidColorBrush(Colors.Red),
+				"BackgroundColorGreen" => new SolidColorBrush(Colors.Green),
+				_ => null,
+			};
 		}
 	}
 }
