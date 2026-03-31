@@ -81,19 +81,11 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static float NormalizeRate(float rate)
-		{
-			float iosMin = AVSpeechUtterance.MinimumSpeechRate;
-			float iosMax = AVSpeechUtterance.MaximumSpeechRate;
-			float iosNormal = AVSpeechUtterance.DefaultSpeechRate;
-
-			const float min = 0.1f, normal = 1f, max = 2f;
-
-			return rate <= min ? iosMin :
-				   rate == normal ? iosNormal :
-				   rate >= max ? iosMax :
-				   iosMin + ((rate - min) / (max - min)) * (iosMax - iosMin); // Linear interpolation (lerp) from MAUI range [0.1, 2.0] to iOS range [iosMin, iosMax]
-		}
+		static float NormalizeRate(float rate) =>
+			NormalizeRate(rate,
+				AVSpeechUtterance.MinimumSpeechRate,
+				AVSpeechUtterance.MaximumSpeechRate,
+				AVSpeechUtterance.DefaultSpeechRate);
 #pragma warning restore CA1416
 	}
 }
