@@ -12,28 +12,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var size = base.ArrangeOverride(bounds);
 
-			// On iOS 26+ with NavigationPage, the UILabel's native Bounds may not be
-			// finalized during MAUI's ArrangeOverride due to the WrapperView layout
-			// timing. Detect this by checking if the UILabel Bounds are unset despite
-			// a valid MAUI-computed size, and defer span recalculation to the next main
-			// run loop iteration when iOS has propagated the frame correctly.
-			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)) && HasFormattedTextSpans && Handler is LabelHandler labelHandler &&
-				labelHandler.PlatformView is UILabel platformLabel &&
-				platformLabel.Bounds.Width == 0 && size.Width > 0)
-			{
-				platformLabel.BeginInvokeOnMainThread(() =>
-				{
-					var bounds = platformLabel.Bounds;
-					if (bounds.Width > 0 && bounds.Height > 0)
-					{
-						RecalculateSpanPositions(new Size(bounds.Width, bounds.Height));
-					}
-				});
-			}
-			else
-			{
-				RecalculateSpanPositions(size);
-			}
+			RecalculateSpanPositions(size);
 
 			return size;
 		}

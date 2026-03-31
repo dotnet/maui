@@ -29,6 +29,6 @@ public class Issue34504 : _IssuesUITest
 		// Tap near the bottom of the label to hit the second wrapped line of a span.
 		App.TapCoordinates(labelRect.X + labelRect.Width / 2, labelRect.Y + labelRect.Height * 0.75f);
 
-		App.WaitForElement("Success");
+		Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Success"));
 	}
 }
