@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Gms.Common.Apis;
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		MapCallbackHandler? _mapReady;
 		MapSpan? _lastMoveToRegion;
+		List<Marker>? _markers;
 		IList? _pins;
 		IList? _elements;
 		List<APolyline>? _polylines;
@@ -261,6 +263,18 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
+				mapHandler.DisconnectPins();
+
+				if (mapHandler._markers != null)
+				{
+					for (int i = 0; i < mapHandler._markers.Count; i++)
+					{
+						mapHandler._markers[i].Remove();
+					}
+
+					mapHandler._markers = null;
+				}
+
 				mapHandler.AddPins((IList)map.Pins);
 			}
 		}
@@ -412,12 +426,71 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (Map == null || MauiContext == null)
 				return;
 
+			_markers ??= new List<Marker>();
+
 			foreach (var p in pins)
 			{
 				IMapPin pin = (IMapPin)p;
-				pin.ToHandler(MauiContext);
+				Marker? marker;
+
+				var pinHandler = pin.ToHandler(MauiContext);
+				if (pinHandler is IMapPinHandler iMapPinHandler)
+				{
+					marker = Map.AddMarker(iMapPinHandler.PlatformView) ?? throw new System.Exception("Map.AddMarker returned null");
+					// associate pin with marker for later lookup in event handlers
+					pin.MarkerId = marker.Id;
+					_markers.Add(marker!);
+				}
+
+				if (pin is INotifyPropertyChanged observable)
+				{
+					observable.PropertyChanged += PinOnPropertyChanged;
+				}
 			}
 			_pins = null;
+		}
+
+		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (sender is not IMapPin pin || _markers == null)
+			{
+				return;
+			}
+
+			Marker? marker = null;
+			if (pin.MarkerId is string markerId)
+			{
+				for (int i = 0; i < _markers.Count; i++)
+				{
+					if (_markers[i].Id == markerId)
+					{
+						marker = _markers[i];
+						break;
+					}
+				}
+			}
+
+			if (marker is null)
+			{
+				return;
+			}
+
+			switch (e.PropertyName)
+			{
+				case nameof(IMapPin.Location):
+					if (pin.Location != null)
+					{
+						marker.Position = new LatLng(pin.Location.Latitude, pin.Location.Longitude);
+					}
+
+					break;
+				case nameof(IMapPin.Label):
+					marker.Title = pin.Label;
+					break;
+				case nameof(IMapPin.Address):
+					marker.Snippet = pin.Address;
+					break;
+			}
 		}
 
 		void DisconnectPins()
@@ -427,7 +500,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			for (int i = 0; i < VirtualView.Pins.Count; i++)
 			{
-				VirtualView.Pins[i]?.Handler?.DisconnectHandler();
+				var pin = VirtualView.Pins[i];
+				if (pin is INotifyPropertyChanged observable)
+				{
+					observable.PropertyChanged -= PinOnPropertyChanged;
+				}
+				pin?.Handler?.DisconnectHandler();
 			}
 		}
 
