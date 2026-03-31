@@ -36,9 +36,8 @@ public class TaggingService(IChatClient chatClient)
 
 		return responseText
 			.Split([',', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-			.SelectMany(tag => tag.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-			.Select(tag => tag.TrimStart('#', '-', '•').Trim())
-			.Where(tag => tag.Length > 1 && !tag.Contains(' ', StringComparison.Ordinal))
+			.Select(tag => tag.TrimStart('#', '-', '•', '*').Trim())
+			.Where(tag => tag.Length > 1 && !tag.Any(char.IsWhiteSpace))
 			.Distinct()
 			.Take(5)
 			.ToList();

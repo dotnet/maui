@@ -40,6 +40,13 @@ public partial class LandmarksViewModel(
 	/// <summary>All continent groups (unfiltered).</summary>
 	List<ContinentGroup> _allGroups = [];
 
+	public void CancelPendingSearch()
+	{
+		_debounceTimer?.Dispose();
+		_debounceTimer = null;
+		_searchCts?.Cancel();
+	}
+
 	public ObservableCollection<ContinentGroup> ContinentGroups => field ??= [];
 
 	partial void OnSearchQueryChanged(string? value)
