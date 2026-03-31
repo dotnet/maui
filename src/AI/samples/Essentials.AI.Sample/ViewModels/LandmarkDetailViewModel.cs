@@ -127,13 +127,9 @@ public partial class LandmarkDetailViewModel(
 				? $"The traveler recently searched for: {string.Join(", ", RecentSearches)}. "
 				: "";
 
-			var languageInstruction = SelectedLanguage.Equals("English", StringComparison.OrdinalIgnoreCase)
-				? ""
-				: $" Write your response in {SelectedLanguage}.";
-
 			var prompt = $"""
 				{searchContext}Write a brief, engaging 2-3 sentence travel tip for someone visiting {Landmark.Name} ({Landmark.Continent}).
-				Mention the best time to visit and one must-do activity. Be warm and inviting.{languageInstruction}
+				Mention the best time to visit and one must-do activity. Be warm and inviting.
 				""";
 
 			var messages = new List<ChatMessage>
