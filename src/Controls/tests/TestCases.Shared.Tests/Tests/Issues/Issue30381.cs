@@ -18,23 +18,22 @@ public class Issue30381 : _IssuesUITest
     public void WebViewCanGoForwardShouldHaveValueAfterNavigation()
     {
         App.WaitForElement("ClickLinkButton");
-        Thread.Sleep(2000);
+        // Wait for the WebView to load the initial content before clicking the link
+        Thread.Sleep(1000);
 
         // Click the link via JavaScript to navigate to external URL
         App.Tap("ClickLinkButton");
-
-        // Wait for navigation to complete
-        // Add a delay to allow navigation to process
-        Thread.Sleep(2000);
+        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True");
+        
         App.Tap("UpdateStatusButton");
-        Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: True"));
-        Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: False"));
+        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: True");
+        App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: False");
 
         App.Tap("GoBackButton");
 
         App.Tap("UpdateStatusButton");
-        Assert.That(App.FindElement("CanGoBackLabel").GetText(), Is.EqualTo("CanGoBack: False"));
-        Assert.That(App.FindElement("CanGoForwardLabel").GetText(), Is.EqualTo("CanGoForward: True"));
+        App.WaitForTextToBePresentInElement("CanGoBackLabel", "CanGoBack: False");
+        App.WaitForTextToBePresentInElement("CanGoForwardLabel", "CanGoForward: True");
 
         App.Tap("GoForwardButton");
 
