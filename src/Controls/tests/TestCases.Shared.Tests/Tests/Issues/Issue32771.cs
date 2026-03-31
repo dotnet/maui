@@ -13,7 +13,7 @@ public class Issue32771 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    public void ShellTitleShouldNotDisappear()
+    public void FlowdirectionShouldWorkForHeaderFooter()
     {
         App.WaitForElement("ToggleFlowDirectionButton");
         App.Tap("ToggleFlowDirectionButton");

@@ -265,41 +265,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.UpdateFlowDirection();
 
-			UpdateSupplementaryViewsFlowDirection(
-				ItemsView.Header,
-				ItemsView.HeaderTemplate,
-				UICollectionElementKindSectionKey.Header
-			);
-
-			UpdateSupplementaryViewsFlowDirection(
-				ItemsView.Footer,
-				ItemsView.FooterTemplate,
-				UICollectionElementKindSectionKey.Footer
-			);
-		}
-
-		void UpdateSupplementaryViewsFlowDirection(object content, DataTemplate template, NSString elementKind)
-		{
-			if (content is null && template is null)
-				return;
-
-			var visibleViews = CollectionView.GetVisibleSupplementaryViews(elementKind);
-
-			foreach (var view in visibleViews)
+			// Update DefaultCell2 string-based header/footer flow direction via tag lookup
+			if (CollectionView.ViewWithTag(HeaderTag) is DefaultCell2 headerCell)
 			{
-				if (view is DefaultCell2 defaultCell)
-				{
-					// String-based header/footer
-					defaultCell.Label.UpdateFlowDirection(ItemsView);
-				}
-				else if (view is TemplatedCell2 templatedCell &&
-					ItemsView.ItemTemplate is null &&
-					templatedCell.PlatformHandler?.VirtualView is VisualElement ve &&
-					ve.Handler?.PlatformView is UIView uiView)
-				{
-					// View or templated header/footer
-					uiView.UpdateFlowDirection(ve);
-				}
+				headerCell.Label.UpdateFlowDirection(ItemsView);
+			}
+
+			if (CollectionView.ViewWithTag(FooterTag) is DefaultCell2 footerCell)
+			{
+				footerCell.Label.UpdateFlowDirection(ItemsView);
 			}
 		}
 	}
