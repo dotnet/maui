@@ -502,8 +502,21 @@ function Invoke-TestRunWithRetry {
         }
 
         if ($attempt -lt $MaxRetries) {
-            Write-Host "  ⚠️ Environment error (attempt $attempt/$MaxRetries): $($result.Error) — retrying..." -ForegroundColor Yellow
-            Start-Sleep -Seconds 5
+            Write-Host "  ⚠️ Environment error (attempt $attempt/$MaxRetries): $($result.Error) — retrying in 30s..." -ForegroundColor Yellow
+
+            # On app launch failures, reboot the simulator/emulator to recover
+            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
+                Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from app launch failure..." -ForegroundColor Yellow
+                if ($Platform -in @("ios", "catalyst", "maccatalyst")) {
+                    xcrun simctl shutdown $script:BootedDeviceUdid 2>$null
+                    Start-Sleep -Seconds 5
+                    xcrun simctl boot $script:BootedDeviceUdid 2>$null
+                } elseif ($Platform -eq "android") {
+                    adb -s $script:BootedDeviceUdid reboot 2>$null
+                }
+            }
+
+            Start-Sleep -Seconds 30
         } else {
             Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
             return $result
