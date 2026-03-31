@@ -8,7 +8,14 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+using AViewGroup = Android.Views.ViewGroup;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using APaint = Android.Graphics.Paint;
+using ACanvas = Android.Graphics.Canvas;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using AFormat = Android.Graphics.Format;
+using AColorFilter = Android.Graphics.ColorFilter;
+using GPaint = Microsoft.Maui.Graphics.Paint;
 using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -42,6 +49,11 @@ namespace Microsoft.Maui.Controls.Handlers
         // Track the current scrim brush from appearance observer (matches old ShellFlyoutRenderer pattern).
         // Initialized to Brush.Transparent because the appearance observer fires with null first.
         Brush _scrimBrush = Brush.Transparent;
+
+        // Gradient scrim drawable — replaces the built-in scrim when a non-solid brush is used.
+        // Set as Foreground on _navigationRoot so it draws on top of ALL children (including AppBarLayout).
+        // Matches ShellFlyoutRenderer's DrawChild + Paint approach using Paint with gradient shader.
+        ScrimBrushDrawable _scrimDrawable;
 
         // Pending fragment transaction (from RunOrWaitForResume, same as FlyoutViewHandler)
         IDisposable _pendingFragment;
@@ -92,6 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Subscribe to drawer state changes
             platformView.OnPresentedChanged += OnFlyoutPresentedChanged;
+            platformView.DrawerSlide += OnDrawerSlide;
 
             // Handle initial item switch when view is attached to the window.
             // MapCurrentItem fires during SetVirtualView before the view is in the
@@ -114,6 +127,9 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             platformView.OnPresentedChanged -= OnFlyoutPresentedChanged;
+            platformView.DrawerSlide -= OnDrawerSlide;
+
+            RemoveScrimDrawable();
 
             _currentShellItemRenderer?.Dispose();
             _currentShellItemRenderer = null;
@@ -419,11 +435,14 @@ namespace Microsoft.Maui.Controls.Handlers
             if (_currentBehavior == FlyoutBehavior.Locked)
             {
                 MauiDrawerLayout.SetScrimColor(Colors.Transparent.ToPlatform());
+                RemoveScrimDrawable();
                 return;
             }
 
             if (backdrop is SolidColorBrush solidColor)
             {
+                RemoveScrimDrawable();
+
                 var backdropColor = solidColor.Color;
                 if (backdropColor is null)
                 {
@@ -437,14 +456,58 @@ namespace Microsoft.Maui.Controls.Handlers
                     MauiDrawerLayout.SetScrimColor(backdropColor.ToPlatform());
                 }
             }
+            else if (backdrop is not null && backdrop != Brush.Default && backdrop != Brush.Transparent)
+            {
+                // Gradient or other non-solid brush: disable built-in scrim and use Foreground drawable.
+                // The Foreground draws on top of ALL children (including AppBarLayout/Toolbar),
+                // matching ShellFlyoutRenderer's DrawChild + Paint approach.
+                MauiDrawerLayout.SetScrimColor(Colors.Transparent.ToPlatform());
+                SetScrimDrawable(backdrop);
+            }
             else
             {
-                // Default scrim for null/default/gradient brushes
+                // Default scrim for null/default brushes
+                RemoveScrimDrawable();
                 unchecked
                 {
                     MauiDrawerLayout.SetScrimColor((int)DefaultScrimColor);
                 }
             }
+        }
+
+        void OnDrawerSlide(object sender, DrawerLayout.DrawerSlideEventArgs e)
+        {
+            if (_scrimDrawable is not null)
+            {
+                _scrimDrawable.Alpha = (int)(e.SlideOffset * 255);
+            }
+        }
+
+        void SetScrimDrawable(Brush brush)
+        {
+            var drawable = new ScrimBrushDrawable(brush);
+
+            // Dispose old drawable if replacing
+            if (_scrimDrawable is not null)
+            {
+                _navigationRoot.Foreground = null;
+                _scrimDrawable.Dispose();
+            }
+
+            _scrimDrawable = drawable;
+            _navigationRoot.Foreground = _scrimDrawable;
+        }
+
+        void RemoveScrimDrawable()
+        {
+            if (_scrimDrawable is null)
+            {
+                return;
+            }
+
+            _navigationRoot.Foreground = null;
+            _scrimDrawable.Dispose();
+            _scrimDrawable = null;
         }
 
         public static void MapFlyoutBackground(ShellHandler handler, Shell shell)
@@ -600,6 +663,69 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         #endregion
+
+        /// <summary>
+        /// Lightweight drawable that renders a Brush as a gradient scrim via Paint + shader.
+        /// Matches ShellFlyoutRenderer's DrawChild + Paint approach: the shader is created
+        /// from the Brush and rendered directly with canvas.DrawRect, supporting alpha control
+        /// via DrawerSlide for the fade-in/out effect.
+        /// </summary>
+        sealed class ScrimBrushDrawable : ADrawable
+        {
+            readonly APaint _paint = new APaint();
+            readonly Brush _brush;
+            int _alpha;
+            int _cachedWidth;
+            int _cachedHeight;
+
+            public ScrimBrushDrawable(Brush brush)
+            {
+                _brush = brush;
+            }
+
+            public override void Draw(ACanvas canvas)
+            {
+                var bounds = Bounds;
+                var width = bounds.Width();
+                var height = bounds.Height();
+
+                if (width <= 0 || height <= 0 || _brush is null)
+                    return;
+
+                // Recreate shader when bounds change (same as ShellFlyoutRenderer's DrawChild)
+                if (width != _cachedWidth || height != _cachedHeight)
+                {
+                    ((GPaint)_brush).ApplyTo(_paint, height, width);
+                    _cachedWidth = width;
+                    _cachedHeight = height;
+                }
+
+                _paint.Alpha = _alpha;
+                canvas.DrawRect(0, 0, width, height, _paint);
+            }
+
+            public override void SetAlpha(int alpha)
+            {
+                _alpha = alpha;
+                InvalidateSelf();
+            }
+
+            public override int Opacity => (int)AFormat.Translucent;
+
+            public override void SetColorFilter(AColorFilter colorFilter)
+            {
+                _paint.SetColorFilter(colorFilter);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    _paint.Dispose();
+                }
+                base.Dispose(disposing);
+            }
+        }
     }
 }
 #endif

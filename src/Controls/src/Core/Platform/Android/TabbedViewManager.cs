@@ -724,7 +724,7 @@ internal class TabbedViewManager
 
         _bottomNavigationView.Visibility = ViewStates.Visible;
 
-        int maxItems = _bottomNavigationView.MaxItemCount;
+        int maxItems = Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
         bool showMore = tabs.Count > maxItems;
         int end = showMore ? maxItems - 1 : tabs.Count;
 
@@ -1348,7 +1348,7 @@ internal class TabbedViewManager
                     _manager.OnMoreItemSelectedInternal,
                     _manager._context,
                     items,
-                    _manager._bottomNavigationView.MaxItemCount);
+                    Math.Min(_manager._bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems));
                 bottomSheetDialog.DismissEvent += (s, e) => _manager.OnMoreSheetDismissedInternal(bottomSheetDialog);
                 bottomSheetDialog.Show();
             }
