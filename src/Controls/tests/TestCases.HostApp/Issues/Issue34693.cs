@@ -5,10 +5,6 @@ public class Issue34693 : Shell
 {
     public Issue34693()
     {
-        this.FlyoutBehavior = FlyoutBehavior.Flyout;
-        this.FlyoutBackgroundImageAspect = Aspect.AspectFill;
-        this.FlyoutHeaderBehavior = FlyoutHeaderBehavior.CollapseOnScroll;
-
         var flyoutItem = new FlyoutItem
         {
             Route = "animals",
@@ -56,9 +52,9 @@ public class Issue34693 : Shell
                 ItemTemplate = new DataTemplate(() =>
                 {
                     var grid = new Grid
-					{
-						Padding = 10
-					};
+                    {
+                        Padding = 10
+                    };
 
                     var nameLabel = new Label
                     {
@@ -66,9 +62,9 @@ public class Issue34693 : Shell
                         VerticalOptions = LayoutOptions.Center
                     };
                     nameLabel.SetBinding(Label.TextProperty, ".");
-					grid.Children.Add(nameLabel);
+                    grid.Children.Add(nameLabel);
 
-					return grid;
+                    return grid;
                 })
             };
 
