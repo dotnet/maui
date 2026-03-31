@@ -21,7 +21,7 @@ public class Issue32476 : Shell
 		button.Clicked += (s, e) =>
 		{
 			buttonTapLabel.Text = "Toggling FlowDirection...";
-			FlowDirection = FlowDirection = FlowDirection.RightToLeft;
+			FlowDirection = FlowDirection.RightToLeft;
 			buttonTapLabel.Text = "FlowDirection is now RTL";
 		};
 
