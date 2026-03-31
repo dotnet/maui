@@ -589,7 +589,7 @@ function New-GitHubIssue([hashtable]$Report, [bool]$WasApplied) {
     $tempFile = [System.IO.Path]::GetTempFileName()
     try {
         $body | Set-Content -Path $tempFile -Encoding utf8 -NoNewline
-        $result = gh issue create --repo dotnet/maui --title $title --body-file $tempFile --label "Area: Infrastructure" 2>&1
+        $result = gh issue create --repo dotnet/maui --title $title --body-file $tempFile --label "area/infrastructure 🏗️" 2>&1
         if ($LASTEXITCODE -ne 0) { throw "Failed to create issue: $result" }
         Write-Host "  📋 Issue created: $result"
     } finally {
