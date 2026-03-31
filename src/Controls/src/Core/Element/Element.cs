@@ -1044,7 +1044,7 @@ namespace Microsoft.Maui.Controls
 			OnDescendantAddedCore(child, null);
 		}
 
-		void OnDescendantAddedCore(Element child, ElementEventArgs? args)
+		void OnDescendantAddedCore(Element child, ElementEventArgs args)
 		{
 			if (DescendantAdded is not null)
 			{
@@ -1059,7 +1059,7 @@ namespace Microsoft.Maui.Controls
 			OnDescendantRemovedCore(child, null);
 		}
 
-		void OnDescendantRemovedCore(Element child, ElementEventArgs? args)
+		void OnDescendantRemovedCore(Element child, ElementEventArgs args)
 		{
 			if (DescendantRemoved is not null)
 			{
