@@ -127,7 +127,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
 		{
-			if (VirtualView is null)
+			// Use the nullable IViewHandler.VirtualView (not the typed property) for the null
+			// check. The typed VirtualView throws InvalidOperationException if base.VirtualView
+			// is null, which can happen if the handler was disconnected before this event fires.
+			if (((IViewHandler)this).VirtualView is null)
 				return;
 
 			if (sender is not ItemCollection items)
@@ -135,7 +138,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ListViewBase.DispatcherQueue.TryEnqueue(() =>
 			{
-				if (VirtualView is null || ListViewBase is null)
+				// The lambda is dispatched asynchronously. By the time it runs, the handler may
+				// have been disconnected (e.g. by element.DisconnectHandlers() in
+				// CleanUpCollectionViewSource), setting base.VirtualView to null. The typed
+				// VirtualView property throws in that case, so use the nullable interface accessor
+				// here to safely bail out instead of crashing (issue #9075).
+				if (((IViewHandler)this).VirtualView is null || ListViewBase is null)
 				{
 					return;
 				}
