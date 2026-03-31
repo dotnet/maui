@@ -1,3 +1,5 @@
+// On Windows, AutomationId for Layout elements is not working (https://github.com/dotnet/maui/issues/4715)
+#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -71,3 +73,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

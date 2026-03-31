@@ -1,3 +1,6 @@
+// On Windows, the default FlyoutLayoutBehavior is Split mode, so the flyout is always visible and IsGestureEnabled has no effect.
+// Reference: https://learn.microsoft.com/en-us/dotnet/maui/user-interface/pages/flyoutpage?view=net-maui-10.0#layout-behavior
+#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,3 +30,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
