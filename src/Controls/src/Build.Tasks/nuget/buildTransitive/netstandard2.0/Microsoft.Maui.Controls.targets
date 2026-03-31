@@ -380,6 +380,10 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.UseAndroidShellHandlers"
+                                      Condition="'$(UseAndroidShellHandlers)' != ''"
+                                      Value="$(UseAndroidShellHandlers)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 
