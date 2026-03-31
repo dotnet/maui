@@ -175,28 +175,12 @@ namespace Microsoft.Maui.Platform
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
 		{
-			if (entry.IsReadOnly)
+			if (!entry.IsReadOnly)
 			{
-				return;
-			}
+				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
+				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
 
-			void UpdateSelection()
-			{
-				if (textField is not null && textField.Handle != IntPtr.Zero)
-				{
-					UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
-					UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
-					textField.SelectedTextRange = textField.GetTextRange(start, end);
-				}
-			}
-
-			if (entry.IsFocused)
-			{
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(UpdateSelection);
-			}
-			else
-			{
-				UpdateSelection();
+				textField.SelectedTextRange = textField.GetTextRange(start, end);
 			}
 		}
 
