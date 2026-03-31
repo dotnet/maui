@@ -6,12 +6,13 @@ namespace Maui.Controls.Sample.Issues;
 	PlatformAffected.Android)]
 public class Issue20062 : TestContentPage
 {
-	CollectionView collection;
-	Issue20062ViewModel viewModel;
+	CollectionView _collectionView;
+	List<string> list = new List<string>();
+
 	protected override void Init()
 	{
 
-		collection = new CollectionView
+		_collectionView = new CollectionView
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical)
@@ -34,14 +35,12 @@ public class Issue20062 : TestContentPage
 				{
 					FontFamily = "SemiBold",
 					TextColor = Colors.Black,
+					Text = "a",
 					FontSize = 14,
 					HorizontalOptions = LayoutOptions.Center,
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalOptions = LayoutOptions.Center
 				};
-				label.SetBinding(Label.TextProperty, "Name");
-				label.SetBinding(Label.AutomationIdProperty, "Id");
-
 				var grid = new Grid
 				{
 					RowDefinitions =
@@ -78,44 +77,25 @@ public class Issue20062 : TestContentPage
 				return border;
 			})
 		};
-		collection.AutomationId = "CollectionView";
+		_collectionView.AutomationId = "CollectionView";
 
 		var layout = new VerticalStackLayout
 		{
 			Padding = new Thickness(30, 0),
 			Spacing = 25,
-			Children = { collection }
+			Children = { _collectionView }
 		};
-		BindingContext = viewModel = new Issue20062ViewModel();
-		collection.ItemsSource = viewModel.Items;
+		list.Add("a");
+		list.Add("a");
+		list.Add("a");
+		list.Add("a");
+		_collectionView.ItemsSource = list;
 
 		Content = new ScrollView
 		{
 			Content = layout
 		};
 
-	}
-}
-
-public class Issue20062_Item
-{
-	public string Name { get; set; }
-	public string Id { get; set; }
-}
-
-public class Issue20062ViewModel
-{
-	public List<Issue20062_Item> Items { get; set; }
-
-	public Issue20062ViewModel()
-	{
-		Items = new List<Issue20062_Item>
-		{
-			new Issue20062_Item { Name = "a", Id = "FirstItem" },
-			new Issue20062_Item { Name = "a", Id = "SecondItem" },
-			new Issue20062_Item { Name = "a", Id = "ThirdItem" },
-			new Issue20062_Item { Name = "a", Id = "FourthItem" }
-		};
 	}
 }
 
