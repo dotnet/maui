@@ -212,9 +212,16 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 #elif ANDROID
-		handlersCollection.AddHandler<Shell, ShellHandler>();
-		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
-		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
+		if (RuntimeFeature.UseAndroidShellHandlers)
+		{
+			handlersCollection.AddHandler<Shell, ShellHandler>();
+			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Shell, ShellRenderer>();
+		}
 #elif TIZEN
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
