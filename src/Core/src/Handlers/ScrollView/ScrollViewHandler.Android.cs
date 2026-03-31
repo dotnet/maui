@@ -64,11 +64,19 @@ namespace Microsoft.Maui.Handlers
 
 				var orientation = virtualView.Orientation;
 
-				if (!double.IsInfinity(widthConstraint))
-					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
+				// Only adjust the spec for the scroll direction(s); leave the cross-axis as-is
+				// so that the content's alignment (e.g. HorizontalOptions="Center") is preserved.
+				if (orientation is ScrollOrientation.Both or ScrollOrientation.Vertical)
+				{
+					if (!double.IsInfinity(heightConstraint))
+						heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
+				}
 
-				if (!double.IsInfinity(heightConstraint))
-					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
+				if (orientation is ScrollOrientation.Both or ScrollOrientation.Horizontal)
+				{
+					if (!double.IsInfinity(widthConstraint))
+						widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
+				}
 			}
 
 			platformView.Measure(widthSpec, heightSpec);
