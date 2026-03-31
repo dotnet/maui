@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 32404, "[Android, iOS, MacOS] FlowDirection not working on EmptyView in CollectionView", PlatformAffected.iOS | PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 32404, "[Android, iOS, MacOS] FlowDirection not working on EmptyView in CollectionView", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue32404 : ContentPage
 {
     Label flowDirectionLabel;
