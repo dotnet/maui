@@ -71,7 +71,7 @@ public class Issue19690 : ContentPage
 			customState.Setters.Add(new Setter
 			{
 				Property = TextColorProperty,
-				Value = Colors.Yellow
+				Value = Colors.Blue
 			});
 			customState.Setters.Add(new Setter
 			{
