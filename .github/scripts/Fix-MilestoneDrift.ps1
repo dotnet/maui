@@ -56,8 +56,12 @@ param(
 # Safety: never process PRs merged before 2026
 $script:MergedAfterCutoff = [datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
+# Only enable StrictMode during normal execution — not when dot-sourced for testing,
+# since StrictMode leaks into the caller scope and can break Pester or other scripts.
+if ($MyInvocation.InvocationName -ne '.') {
+    Set-StrictMode -Version Latest
+    $ErrorActionPreference = "Stop"
+}
 
 #region ── Milestone mapping helpers ──────────────────────────────────────
 
@@ -147,20 +151,40 @@ function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Rep
     return ($prs | Sort-Object)
 }
 
+function Get-PrNumbersReachableFromTag([string]$TagName, [string]$Repo) {
+    <# Returns PR numbers reachable from a tag (all commits up to and including the tag). #>
+    $output = git -C $Repo --no-pager log --oneline $TagName 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
+    $prs = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($line in ($output -split "`n")) {
+        foreach ($m in [regex]::Matches($line, '\(#(\d+)\)')) {
+            [void]$prs.Add([int]$m.Groups[1].Value)
+        }
+    }
+    return ($prs | Sort-Object)
+}
+
 function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
-    <# Searches tag ranges to find which release contains this PR #>
+    <# Searches tag ranges to find which release contains this PR.
+       Handles GA (first tag) by searching all reachable commits. #>
     $allTags = Get-AllTags $Repo
     $srTags = $allTags | Where-Object { Test-IsSrTag $_ $Major } |
               Sort-Object { Get-PatchVersion $_ }
 
     for ($i = 0; $i -lt $srTags.Count; $i++) {
-        $prev = if ($i -eq 0) { $null } else { $srTags[$i - 1] }
         $current = $srTags[$i]
-        if (-not $prev) { continue }
 
-        $prsInRange = Get-PrNumbersBetweenTags $prev $current $Repo
+        if ($i -eq 0) {
+            # First tag (e.g. GA) — search all commits reachable from it
+            $prsInRange = Get-PrNumbersReachableFromTag $current $Repo
+        } else {
+            $prev = $srTags[$i - 1]
+            $prsInRange = Get-PrNumbersBetweenTags $prev $current $Repo
+        }
+
         if ($PrNum -in $prsInRange) {
-            return @{ Tag = $current; PreviousTag = $prev }
+            $previousTag = if ($i -gt 0) { $srTags[$i - 1] } else { $null }
+            return @{ Tag = $current; PreviousTag = $previousTag }
         }
     }
     return $null
@@ -300,7 +324,24 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
         $found = Find-TagContainingPr $PrNum $Repo $Major
         if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $Major" }
         $ReleaseTag = $found.Tag
-        Write-Host "  Found in: $($found.PreviousTag)..$ReleaseTag`n"
+        $prevDisplay = if ($found.PreviousTag) { $found.PreviousTag } else { "(root)" }
+        Write-Host "  Found in: $prevDisplay..$ReleaseTag`n"
+    } else {
+        # Validate provided tag exists in the repo
+        $allTags = Get-AllTags $Repo
+        if ($ReleaseTag -notin $allTags) {
+            throw "Tag '$ReleaseTag' not found in repo. Available SR tags: $(($allTags | Where-Object { $_ -match '^\d+\.0\.\d+$' }) -join ', ')"
+        }
+        # Confirm the PR is actually in this tag's range
+        $prev = Find-PreviousTag $ReleaseTag $allTags
+        if ($prev) {
+            $prsInRange = Get-PrNumbersBetweenTags $prev $ReleaseTag $Repo
+        } else {
+            $prsInRange = Get-PrNumbersReachableFromTag $ReleaseTag $Repo
+        }
+        if ($PrNum -notin $prsInRange) {
+            Write-Warning "PR #$PrNum is not in the commit range for tag $ReleaseTag. The milestone may be set incorrectly."
+        }
     }
 
     $expectedMs = ConvertTo-Milestone $ReleaseTag

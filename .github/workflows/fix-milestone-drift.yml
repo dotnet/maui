@@ -35,21 +35,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ARGS=""
+          ARGS=()
 
           if [ -n "${{ inputs.pr_number }}" ]; then
-            ARGS="-PrNumber ${{ inputs.pr_number }}"
+            ARGS+=('-PrNumber' '${{ inputs.pr_number }}')
           fi
 
           if [ -n "${{ inputs.tag }}" ]; then
-            ARGS="$ARGS -Tag ${{ inputs.tag }}"
+            ARGS+=('-Tag' '${{ inputs.tag }}')
           fi
 
           if [ "${{ inputs.apply }}" = "true" ]; then
-            ARGS="$ARGS -Apply"
+            ARGS+=('-Apply')
           fi
 
-          ARGS="$ARGS -RepoPath . -Verbose"
+          ARGS+=('-RepoPath' '.' '-Verbose')
 
-          echo "Running: pwsh .github/scripts/Fix-MilestoneDrift.ps1 $ARGS"
-          pwsh -Command ".github/scripts/Fix-MilestoneDrift.ps1 $ARGS"
+          printf 'Running: pwsh -File .github/scripts/Fix-MilestoneDrift.ps1'
+          printf ' %q' "${ARGS[@]}"
+          echo
+          pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 "${ARGS[@]}"
