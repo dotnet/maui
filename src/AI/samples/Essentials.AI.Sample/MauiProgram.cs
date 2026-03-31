@@ -63,6 +63,10 @@ public static class MauiProgram
 		builder.Services.AddHttpClient<WeatherService>();
 		builder.Services.AddSingleton<ChatService>();
 
+		// Semantic search — uses whatever IEmbeddingGenerator is registered (Apple NL or OpenAI)
+		builder.Services.AddSingleton<ISemanticSearchService>(sp =>
+			new EmbeddingSearchService(sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()));
+
 		// Configure Logging
 		builder.Services.AddLogging();
 		builder.Logging.AddDebug();
@@ -142,9 +146,8 @@ public static class MauiProgram
 				.Build();
 		});
 
-		// Semantic search backed by NL embeddings
-		builder.Services.AddSingleton<ISemanticSearchService>(sp =>
-			new EmbeddingSearchService(sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()));
+		// Semantic search backed by NL embeddings (also registered in common services above,
+		// but this line is kept in case the common registration is removed in the future)
 
 		return builder;
 	}
