@@ -19,15 +19,16 @@ public class Issue22507 : _IssuesUITest
         // Wait for the test page to load
         App.WaitForElement("Issue22507Label");
 
-        App.ScrollDown("Issue22507CollectionView");
+        // Scroll down in Page 1's CollectionView
+        for (int i = 0; i < 5; i++)
+        {
+            App.ScrollDown("Issue22507CV_Page1", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
+        }
+        App.WaitForElement("Item T");
+
         // Swipe horizontally to navigate to the next CarouselView item (Page 2)
         App.SwipeRightToLeft();
         App.WaitForElement("Item 1");
-        for (int i = 0; i < 2; i++)
-        {
-            App.ScrollDown("Issue22507CollectionView", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
-        }
-        App.WaitForElement("Item 20");
     }
 
     [Test]
@@ -40,9 +41,11 @@ public class Issue22507 : _IssuesUITest
         // Swipe horizontally to navigate to the next CarouselView item (Page 2)
         App.SwipeRightToLeft();
         App.WaitForElement("Item 1");
-        for (int i = 0; i < 2; i++)
+
+        // Scroll down in Page 2's CollectionView
+        for (int i = 0; i < 5; i++)
         {
-            App.ScrollDown("Issue22507CollectionView", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
+            App.ScrollDown("Issue22507CV_Page2", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
         }
         App.WaitForElement("Item 20");
     }

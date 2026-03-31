@@ -13,12 +13,14 @@ public class Issue22507 : ContentPage
         {
             new Issue22507Model(
             "Page 1",
+            "Issue22507CV_Page1",
              Enumerable.Range('A', 20)
              .Select(c => $"Item {(char)c}")
              .ToArray()),
 
             new Issue22507Model(
             "Page 2",
+            "Issue22507CV_Page2",
             Enumerable.Range(1, 20)
             .Select(i => $"Item {i}")
             .ToArray())
@@ -67,7 +69,6 @@ public class Issue22507 : ContentPage
                 var collectionView = new CollectionView
                 {
                     BackgroundColor = Colors.LightBlue,
-                    AutomationId = "Issue22507CollectionView",
                     ItemTemplate = new DataTemplate(() =>
                     {
                         var itemLabel = new Label
@@ -80,6 +81,7 @@ public class Issue22507 : ContentPage
                     })
                 };
                 collectionView.SetBinding(CollectionView.ItemsSourceProperty, "Items");
+                collectionView.SetBinding(VisualElement.AutomationIdProperty, "CollectionAutomationId");
 
                 grid.Add(titleLabel);
                 grid.Add(collectionView, 0, 1);
@@ -104,11 +106,13 @@ public class Issue22507 : ContentPage
 public class Issue22507Model
 {
     public string Title { get; set; }
+    public string CollectionAutomationId { get; set; }
     public ObservableCollection<string> Items { get; set; }
 
-    public Issue22507Model(string title, string[] items)
+    public Issue22507Model(string title, string collectionAutomationId, string[] items)
     {
         Title = title;
+        CollectionAutomationId = collectionAutomationId;
         Items = new ObservableCollection<string>(items);
     }
 }
