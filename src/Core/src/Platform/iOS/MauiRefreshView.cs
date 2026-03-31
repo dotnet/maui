@@ -138,6 +138,9 @@ namespace Microsoft.Maui.Platform
  
 			if (view is UIScrollView scrollView)
 			{
+				// Always use InsertSubview instead of the RefreshControl property.
+				// The RefreshControl property causes graphical glitches when
+				// NavigationBar.PrefersLargeTitles is enabled (see #33169).
 				scrollView.InsertSubview(_refreshControl, index);
 
 				//Setting the bounds so that the refresh control renders above the potential header
