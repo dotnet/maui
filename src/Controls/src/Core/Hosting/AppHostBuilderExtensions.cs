@@ -254,12 +254,19 @@ public static partial class AppHostBuilderExtensions
 
 		builder.ConfigureImageSourceHandlers();
 
-		builder.ConfigureMauiHandlers(handlers =>
-		{
-			handlers.AddControlsHandlers();
-		});
+		// Ensure the handlers factory is registered even though we have no handlers to add via DI.
+		// All built-in handlers are resolved via [ElementHandler] attributes on the view types.
+		builder.ConfigureMauiHandlers(configureDelegate: null);
 
-		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
+		// HybridWebViewHandler uses dynamic System.Text.Json features and cannot be referenced
+		// via [ElementHandler] attribute because that would create a hard type reference that
+		// ILC cannot eliminate based on the feature switch.
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<HybridWebView, HybridWebViewHandler>());
+			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		}
 
 		builder.ConfigureMauiControlsDiagnostics();
 
