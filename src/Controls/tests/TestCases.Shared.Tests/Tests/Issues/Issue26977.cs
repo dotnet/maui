@@ -11,7 +11,7 @@ public class Issue26977 : _IssuesUITest
 	public override string Issue => "Setter.TargetName + ControlTemplate crash";
 
 	[Test]
-	[Category(UITestCategories.Page)]
+	[Category(UITestCategories.VisualStateManager)]
 	public void SetterTargetNameWithControlTemplateShouldNotCrash()
 	{
 		App.WaitForElement("StateSwitch");
