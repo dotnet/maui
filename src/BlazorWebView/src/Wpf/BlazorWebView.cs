@@ -16,7 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
+using IWebView2 = Microsoft.Web.WebView2.Wpf.IWebView2;
+using WebView2CompositionControl = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
@@ -85,10 +87,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(EventHandler<BlazorWebViewInitializedEventArgs>),
 			ownerType: typeof(BlazorWebView));
 
+		/// <summary>
+		/// The backing store for the <see cref="UseCompositionControl"/> property.
+		/// </summary>
+		public static readonly DependencyProperty UseCompositionControlProperty = DependencyProperty.Register(
+			name: nameof(UseCompositionControl),
+			propertyType: typeof(bool),
+			ownerType: typeof(BlazorWebView),
+			typeMetadata: new PropertyMetadata(true, OnUseCompositionControlPropertyChanged));
+
 		#endregion
 
 		private const string WebViewTemplateChildName = "WebView";
-		private WebView2Control? _webview;
+		private IWebView2? _webview;
 		private WebView2WebViewManager? _webviewManager;
 		private bool _isDisposed;
 
@@ -113,23 +124,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			SetValue(RootComponentsProperty, new RootComponentsCollection());
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
-			Template = new ControlTemplate
-			{
-				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
-			};
+			// Default to the composition control; OnUseCompositionControlPropertyChanged will
+			// update this if UseCompositionControl is set to false before the control is initialized.
+			Template = CreateWebViewTemplate(useComposition: true);
 
 			ApplyTabNavigation(IsTabStop);
 		}
 
 		/// <summary>
-		/// Returns the inner <see cref="WebView2Control"/> used by this control.
+		/// Returns the inner <see cref="IWebView2"/> used by this control.
+		/// When <see cref="UseCompositionControl"/> is <see langword="true"/> (the default), this is a
+		/// <see cref="WebView2CompositionControl"/>; otherwise it is a <see cref="WebView2Control"/>.
 		/// </summary>
 		/// <remarks>
 		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
 		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
 		/// </remarks>
 		[Browsable(false)]
-		public WebView2Control WebView => _webview!;
+		public IWebView2 WebView => _webview!;
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
@@ -195,6 +207,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			set => SetValue(ServicesProperty, value);
 		}
 
+		/// <summary>
+		/// Gets or sets a value indicating whether to use the composition-based <see cref="WebView2CompositionControl"/>,
+		/// which resolves WPF airspace issues at the cost of additional rendering overhead, or the standard
+		/// <see cref="WebView2Control"/> for better performance in scenarios where airspace layering is not required.
+		/// Defaults to <see langword="true"/>.
+		/// </summary>
+		/// <remarks>
+		/// This property must be set before the control is initialized (e.g., in XAML or before adding the control to
+		/// the visual tree). Changing it after the underlying WebView2 has been created will throw an
+		/// <see cref="InvalidOperationException"/>.
+		/// </remarks>
+		public bool UseCompositionControl
+		{
+			get => (bool)GetValue(UseCompositionControlProperty);
+			set => SetValue(UseCompositionControlProperty, value);
+		}
+
 		private static void OnServicesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnServicesPropertyChanged(e);
 
 		private void OnServicesPropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
@@ -202,6 +231,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		private static void OnHostPagePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnHostPagePropertyChanged(e);
 
 		private void OnHostPagePropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
+
+		private static void OnUseCompositionControlPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnUseCompositionControlPropertyChanged(e);
+
+		private void OnUseCompositionControlPropertyChanged(DependencyPropertyChangedEventArgs e)
+		{
+			if (_webview != null)
+			{
+				throw new InvalidOperationException(
+					$"The {nameof(UseCompositionControl)} property cannot be changed after the {nameof(BlazorWebView)} has been initialized.");
+			}
+
+			Template = CreateWebViewTemplate(useComposition: (bool)e.NewValue);
+		}
+
+		private static ControlTemplate CreateWebViewTemplate(bool useComposition)
+		{
+			var controlType = useComposition ? typeof(WebView2CompositionControl) : typeof(WebView2Control);
+			return new ControlTemplate
+			{
+				VisualTree = new FrameworkElementFactory(controlType, WebViewTemplateChildName)
+			};
+		}
 
 		private static void OnIsTabStopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnIsTabStopPropertyChanged(e);
 
@@ -228,7 +279,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
+				_webview = (IWebView2)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
@@ -392,7 +443,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				_webviewManager = null;
 			}
 
-			_webview?.Dispose();
+			(_webview as IDisposable)?.Dispose();
 			_webview = null;
 		}
 
