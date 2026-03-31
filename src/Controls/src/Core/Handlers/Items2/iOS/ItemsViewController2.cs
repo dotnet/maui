@@ -67,6 +67,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ScrollDirection = compositionalLayout.Configuration.ScrollDirection;
 			}
 
+			// Preserve the content offset before updating the layout.
+			// SetCollectionViewLayout with animated:false can unexpectedly shift the content offset
+			// on UICollectionViewCompositionalLayout with estimated item sizes.
+			var savedOffset = CollectionView.ContentOffset;
+
 			ItemsViewLayout = newLayout;
 			_initialized = false;
 
@@ -74,6 +79,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_initialized)
 			{
+				// Restore the content offset that may have been changed by SetCollectionViewLayout
+				CollectionView.ContentOffset = savedOffset;
 				// Reload the data so the currently visible cells get laid out according to the new layout
 				ReloadData();
 			}
