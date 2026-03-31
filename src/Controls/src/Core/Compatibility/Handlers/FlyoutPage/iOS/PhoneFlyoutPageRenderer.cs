@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateFlyoutPageContainers();
 
 			UpdateBackground();
-
+			UpdateFlowDirection();
 			UpdatePanGesture();
 			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 			UpdatePageSpecifics();
@@ -360,6 +360,54 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
 					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdatePageSpecifics();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+				UpdateFlowDirection();
+				UpdateLeftBarButton();
+			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			if (Element is null)
+				return;
+
+			// Determine the semantic content attribute from the MAUI model so this works
+			// correctly both during initial setup (when the parent UIView's attribute may not
+			// yet be set) and for runtime FlowDirection changes.
+			var semanticAttr = IsRTL
+				? UISemanticContentAttribute.ForceRightToLeft
+				: UISemanticContentAttribute.ForceLeftToRight;
+
+			// Set SemanticContentAttribute on the root view and both child-controller container
+			// views so that any MAUI child handlers that resolve FlowDirection.MatchParent by
+			// looking at their parent's platform view find the correct direction.
+			View.SemanticContentAttribute = semanticAttr;
+			_flyoutController.View.SemanticContentAttribute = semanticAttr;
+			_detailController.View.SemanticContentAttribute = semanticAttr;
+
+			// UINavigationBar is a UIKit-only view outside the MAUI hierarchy and does *not*
+			// inherit SemanticContentAttribute from its parent. Set it explicitly so that bar
+			// button items (the flyout hamburger icon) are mirrored to the correct side for RTL.
+			if (FlyoutPage.Detail.Handler is IPlatformViewHandler detailPlatformHandler &&
+				detailPlatformHandler.ViewController is UINavigationController navController)
+			{
+				navController.View.SemanticContentAttribute = semanticAttr;
+				navController.NavigationBar.SemanticContentAttribute = semanticAttr;
+			}
+
+			// NavigationPage is neither IContainer nor IContentView in the Core layer, so
+			// PropagateFlowDirection in ViewExtensions does not recurse into its pages.
+			// Manually re-trigger FlowDirection on each page in the navigation stack so their
+			// platform views (and descendants) pick up the correct direction on initial load.
+			if (FlyoutPage.Detail is NavigationPage detailNavPage)
+			{
+				foreach (var page in detailNavPage.Navigation.NavigationStack)
+				{
+					if (page?.Handler is IElementHandler pageHandler)
+						pageHandler.UpdateValue(nameof(IView.FlowDirection));
+				}
+			}
 		}
 
 		void LayoutChildren(bool animated)
