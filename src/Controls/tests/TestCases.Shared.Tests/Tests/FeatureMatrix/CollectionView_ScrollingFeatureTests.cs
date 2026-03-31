@@ -1297,6 +1297,9 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("CollectionViewControl");
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+#if MACCATALYST
+		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+#endif
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForNoElement("WaterMelon");
