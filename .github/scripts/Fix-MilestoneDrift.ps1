@@ -215,7 +215,13 @@ function Get-PrInfo([int]$PrNum) {
         $pr = Invoke-GhApi "repos/dotnet/maui/pulls/$PrNum"
         # Safety: skip PRs merged before cutoff date
         if ($pr.merged_at) {
-            $mergedAt = [datetime]::Parse($pr.merged_at).ToUniversalTime()
+            # ConvertFrom-Json may return a DateTime or a string depending on PS version
+            $mergedAt = if ($pr.merged_at -is [datetime]) {
+                $pr.merged_at.ToUniversalTime()
+            } else {
+                [datetime]::Parse($pr.merged_at, [System.Globalization.CultureInfo]::InvariantCulture,
+                    [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+            }
             if ($mergedAt -lt $script:MergedAfterCutoff) {
                 Write-Warning "PR #$PrNum merged $($pr.merged_at) — before cutoff ($($script:MergedAfterCutoff.ToString('yyyy-MM-dd'))). Skipping."
                 return $null
