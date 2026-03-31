@@ -43,6 +43,31 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		ModuleDefinition Module { get; } = context.Body.Method.Module;
 
+		// Track properties that have been set to detect duplicates
+		readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+		void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+		{
+			if (!setProperties.TryGetValue(parentNode, out var props))
+			{
+				props = new HashSet<XmlName>();
+				setProperties[parentNode] = props;
+			}
+
+			if (!props.Add(propertyName))
+			{
+				// Property is being set multiple times
+				Context.LoggingHelper.LogWarningOrError(
+					DuplicatePropertyAssignment,
+					Context.XamlFilePath,
+					lineInfo.LineNumber,
+					lineInfo.LinePosition,
+					0,
+					0,
+					$"{parentNode.XmlType.Name}.{propertyName.LocalName}");
+			}
+		}
+
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			//TODO support Label text as element
@@ -69,6 +94,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			if (propertyName.Equals(XmlName.mcIgnorable))
 				return;
+
+			// TODO: Add duplicate implicit content property checking here to match SourceGen behavior
+			// (SourceGen Visit(ValueNode) emits MAUIX2015 when a ValueNode assigns the same implicit
+			// content property that was already assigned by an ElementNode or another ValueNode).
+			// Without this check, <Border>text<Label/></Border> produces MAUIX2015 under SourceGen
+			// but no warning under XamlC.
 			Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], propertyName, node, Context, node));
 		}
 
@@ -140,8 +171,32 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var name = new XmlName(node.NamespaceURI, contentProperty);
 					if (skips.Contains(name))
 						return;
-					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(propertyName))
+					if (parentNode is ElementNode node2 && node2.SkipProperties.Contains(name))
 						return;
+
+					// Resolve the content property type to determine if it is a collection.
+					// Use CanGet (CLR property resolution) rather than GetBindablePropertyReference+GetValue/Get
+					// to avoid side effects: GetBindablePropertyReference can emit ObsoleteProperty diagnostics
+					// and GetValue/Get generate IL instructions; both would be duplicated by SetPropertyValue.
+					// CanGet covers all content properties because every BP-backed property has a CLR wrapper.
+					var propLocalName = name.LocalName;
+					bool canResolveProperty = CanGet(parentVar, propLocalName, Context, out TypeReference contentPropType);
+
+					// Skip duplicate check when the property cannot be resolved, is System.Object (unresolved
+					// generics would produce false positives), or is a collection type. Matches SourceGen behavior.
+					if (canResolveProperty && contentPropType != null)
+					{
+						bool isObject = contentPropType.FullName == "System.Object";
+						bool isCollection = !isObject
+							&& contentPropType.ImplementsInterface(Context.Cache, Module.ImportReference(Context.Cache, ("mscorlib", "System.Collections", "IEnumerable")))
+							&& contentPropType.GetMethods(Context.Cache, md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any();
+
+						// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
+						var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+						if (!isCollection && !isObject)
+							CheckForDuplicateProperty((ElementNode)parentNode, contentPropertyName, node);
+					}
+
 					Context.IL.Append(SetPropertyValue(Context.Variables[(ElementNode)parentNode], name, node, Context, node));
 				}
 				// Collection element, implicit content, or implicit collection element.
@@ -539,7 +594,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// continue compilation
 			}
 
-			if (   dataTypeNode is ElementNode enode
+			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{
