@@ -555,6 +555,8 @@ function Get-TestResultFromOutput {
     $envErrorPatterns = @(
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
         @{ Pattern = "APP_LAUNCH_FAILURE|exit code:?\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "Application test run crashed"; Message = "App crashed during test run" }
         @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
         @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start" }
         @{ Pattern = "no such element.*could not be located"; Message = "Test element not found (app may not have loaded)" }
@@ -678,6 +680,11 @@ function Get-TestResultFromOutput {
         if ($passCount -gt 0) {
             return @{ Passed = $true; PassCount = $passCount; Failed = 0; Total = $passCount; Skipped = 0 }
         }
+    }
+
+    # Zero tests ran (Passed: 0, Failed: 0) — treat as env error, not success
+    if ($content -match "Passed:\s*0" -and $content -match "Failed:\s*0") {
+        return @{ Passed = $false; EnvError = $true; Error = "Zero tests ran (Passed: 0, Failed: 0)"; Total = 0; Failed = 0; Skipped = 0 }
     }
 
     return @{ Passed = $false; Error = "Could not parse test results"; Total = 0; Failed = 0; Skipped = 0 }
