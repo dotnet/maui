@@ -36,6 +36,9 @@
 .PARAMETER Apply
     Actually apply milestone fixes. Without this flag, only a dry-run report is produced.
 
+.PARAMETER CreateIssue
+    Create a GitHub issue in dotnet/maui with the milestone drift report.
+
 .EXAMPLE
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -RepoPath ~/Projects/maui -Verbose
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -Apply
@@ -50,7 +53,8 @@ param(
     [int]$MajorVersion = 10,
     [string]$RepoPath = ".",
     [string]$Output,
-    [switch]$Apply
+    [switch]$Apply,
+    [switch]$CreateIssue
 )
 
 # Safety: never process PRs merged before 2026
@@ -532,6 +536,67 @@ function Invoke-ApplyCorrections([hashtable]$Report, [bool]$DoApply) {
     }
 }
 
+function New-GitHubIssue([hashtable]$Report, [bool]$WasApplied) {
+    $tag = $Report.Tag
+    $status = if ($WasApplied) { "Applied" } else { "Dry-Run" }
+    $title = "Milestone drift report: $tag ($status)"
+
+    $sb = [System.Text.StringBuilder]::new()
+    [void]$sb.AppendLine("## Milestone Drift Report: ``$tag``")
+    [void]$sb.AppendLine()
+    if ($Report.ContainsKey('PreviousTag') -and $Report.PreviousTag) {
+        [void]$sb.AppendLine("**Range:** ``$($Report.PreviousTag)..$tag``")
+    }
+    [void]$sb.AppendLine("**Expected milestone:** $($Report.ExpectedMilestone)")
+    [void]$sb.AppendLine("**Resolved milestone:** $($Report.ResolvedMilestone)")
+    [void]$sb.AppendLine("**Status:** $status")
+    [void]$sb.AppendLine()
+
+    # Summary table
+    [void]$sb.AppendLine("### Summary")
+    [void]$sb.AppendLine()
+    [void]$sb.AppendLine("| Metric | Count |")
+    [void]$sb.AppendLine("|--------|-------|")
+    [void]$sb.AppendLine("| PRs in range | $($Report.TotalPrs) |")
+    [void]$sb.AppendLine("| PRs checked | $($Report.PrsChecked) |")
+    [void]$sb.AppendLine("| Issues checked | $($Report.IssuesChecked) |")
+    [void]$sb.AppendLine("| Already correct | $($Report.AlreadyCorrect) |")
+    [void]$sb.AppendLine("| Corrections needed | $($Report.Corrections.Count) |")
+    if ($Report.Errors.Count -gt 0) {
+        [void]$sb.AppendLine("| Errors | $($Report.Errors.Count) |")
+    }
+    [void]$sb.AppendLine()
+
+    if ($Report.Corrections.Count -eq 0) {
+        [void]$sb.AppendLine("✅ All milestones are correct!")
+    } else {
+        # Corrections table
+        [void]$sb.AppendLine("### Corrections")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("| Action | Type | Item | Via PR | Current | Expected |")
+        [void]$sb.AppendLine("|--------|------|------|--------|---------|----------|")
+        foreach ($c in $Report.Corrections) {
+            $current = if ($c.Current) { $c.Current } else { "_(none)_" }
+            $action = if ($c.Current) { "CHANGE" } else { "SET" }
+            $via = if ($c.ContainsKey('RelatedPr') -and $c.RelatedPr) { "#$($c.RelatedPr)" } else { "—" }
+            [void]$sb.AppendLine("| $action | $($c.ItemType) | #$($c.Number) | $via | $current | $($c.Resolved) |")
+        }
+    }
+
+    $body = $sb.ToString()
+
+    # Write body to a temp file to avoid shell quoting issues
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    try {
+        $body | Set-Content -Path $tempFile -Encoding utf8 -NoNewline
+        $result = gh issue create --repo dotnet/maui --title $title --body-file $tempFile --label "Area: Infrastructure" 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create issue: $result" }
+        Write-Host "  📋 Issue created: $result"
+    } finally {
+        Remove-Item $tempFile -ErrorAction SilentlyContinue
+    }
+}
+
 #endregion
 
 #region ── Main ───────────────────────────────────────────────────────────
@@ -548,6 +613,7 @@ if ($PrNumber -gt 0) {
     Write-Report $report
     if ($Output) { Save-ReportJson $report $Output }
     Invoke-ApplyCorrections $report $Apply.IsPresent
+    if ($CreateIssue -and $report.Corrections.Count -gt 0) { New-GitHubIssue $report $Apply.IsPresent }
 }
 elseif ($Tag) {
     $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath
@@ -555,6 +621,7 @@ elseif ($Tag) {
     $outPath = if ($Output) { $Output } else { "milestone-drift-$($Tag -replace '\.','_').json" }
     Save-ReportJson $report $outPath
     Invoke-ApplyCorrections $report $Apply.IsPresent
+    if ($CreateIssue -and $report.Corrections.Count -gt 0) { New-GitHubIssue $report $Apply.IsPresent }
 }
 else {
     Write-Host "Error: -PrNumber or -Tag is required." -ForegroundColor Red

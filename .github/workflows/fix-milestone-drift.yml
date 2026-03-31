@@ -16,6 +16,11 @@ on:
         required: false
         type: boolean
         default: false
+      create_issue:
+        description: 'Create a GitHub issue with the drift report'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   issues: write
@@ -47,6 +52,10 @@ jobs:
 
           if [ "${{ inputs.apply }}" = "true" ]; then
             ARGS+=('-Apply')
+          fi
+
+          if [ "${{ inputs.create_issue }}" = "true" ]; then
+            ARGS+=('-CreateIssue')
           fi
 
           ARGS+=('-RepoPath' '.' '-Verbose')
