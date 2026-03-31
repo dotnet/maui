@@ -59,16 +59,20 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
    git log --oneline -10 -- <changed-file>
    ```
 
-### Step 2: Form Independent Assessment
+### Step 2: Load Review Rules
+
+Read `references/review-rules.md` from this skill's directory. These rules are distilled from real code reviews by senior MAUI maintainers across 142 high-discussion PRs.
+
+### Step 3: Form Independent Assessment
 
 Based ONLY on the code (no PR description), answer:
 
 1. **What does this change do?** Describe the behavioral change in your own words
 2. **Why might it be needed?** Infer motivation from the code
 3. **Is the approach sound?** Would a simpler alternative work?
-4. **What problems do you see?** Run through the MAUI-Specific Review Checklist below
+4. **What problems do you see?** Run through the review rules AND the MAUI-Specific Review Checklist below
 
-### Step 3: Read PR Narrative and Reconcile
+### Step 4: Read PR Narrative and Reconcile
 
 Now read the PR description, linked issue, and comments. Treat these as **claims to verify**, not facts.
 
@@ -76,7 +80,18 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 2. If the PR claims a bug fix, verify the root cause analysis matches the code
 3. Check existing review comments to avoid duplicating feedback
 
-### Step 4: Devil's Advocate and Verdict
+### Step 5: Check CI Status
+
+```bash
+gh pr checks <PR_NUMBER>
+```
+
+Review CI results. **Never post ✅ LGTM if any required CI check is failing.** If CI is failing:
+- If caused by the PR's code changes, flag as ❌ error
+- If a known infrastructure issue or pre-existing flake, note it but still use ⚠️
+- If the PR description acknowledges the failure, note it in the summary
+
+### Step 6: Devil's Advocate and Verdict
 
 Before finalizing your verdict:
 
@@ -203,6 +218,13 @@ When the environment supports multiple models, run the review in parallel for di
 ---
 
 ## Review Output Format
+
+**Constraints (from Android team's approach):**
+- Only comment on added/modified lines — don't flag pre-existing code
+- One issue per comment. If the same issue appears many times, flag once with a note listing all affected files
+- **Don't pile on.** 3 important comments > 15 nitpicks
+- **Don't flag what CI catches.** Skip compiler errors, formatting the linter will catch, etc.
+- **Avoid false positives.** Verify the concern actually applies given full context. If unsure, phrase as a question.
 
 ```markdown
 ## Code Review — PR #XXXXX
