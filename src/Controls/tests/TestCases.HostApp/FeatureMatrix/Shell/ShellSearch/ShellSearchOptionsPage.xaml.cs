@@ -12,51 +12,76 @@ public partial class ShellSearchOptionsPage : ContentPage
 	}
 
 	private void ApplyButton_Clicked(object sender, EventArgs e)
-		=> Navigation.PopAsync();
+	=> Navigation.PopAsync();
+
+	// FontFamily
+	private void OnFontFamilyCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && e.Value)
+		{
+			_viewModel.FontFamily = rb.Content?.ToString() switch
+			{
+				"Dokdo" => "Dokdo",
+				"Mont" => "Montserrat",
+				_ => null
+			};
+		}
+	}
 
 	// TextColor
-	private void OnTextColorClicked(object sender, EventArgs e)
+	private void OnTextColorChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.TextColor = ((Button)sender).Text switch
+		if (sender is RadioButton rb && e.Value)
 		{
-			"Red" => Colors.Red,
-			"Green" => Colors.Green,
-			"Blue" => Colors.Blue,
-			_ => null
-		};
+			_viewModel.TextColor = rb.Content?.ToString() switch
+			{
+				"Red" => Colors.Red,
+				"Green" => Colors.Green,
+				_ => null
+			};
+		}
 	}
 
 	// BackgroundColor
-	private void OnBackgroundColorClicked(object sender, EventArgs e)
+	private void OnBackgroundColorChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.BackgroundColor = ((Button)sender).Text switch
+		if (sender is RadioButton rb && e.Value)
 		{
-			"Yellow" => Colors.Yellow,
-			"Cyan" => Colors.Cyan,
-			_ => null
-		};
+			_viewModel.BackgroundColor = rb.Content?.ToString() switch
+			{
+				"Yellow" => Colors.Yellow,
+				"Cyan" => Colors.Cyan,
+				_ => null
+			};
+		}
 	}
 
 	// PlaceholderColor
-	private void OnPlaceholderColorClicked(object sender, EventArgs e)
+	private void OnPlaceholderColorChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.PlaceholderColor = ((Button)sender).Text switch
+		if (sender is RadioButton rb && e.Value)
 		{
-			"Pink" => Colors.HotPink,
-			"Gray" => Colors.Gray,
-			_ => null
-		};
+			_viewModel.PlaceholderColor = rb.Content?.ToString() switch
+			{
+				"Pink" => Colors.HotPink,
+				"Gray" => Colors.Gray,
+				_ => null
+			};
+		}
 	}
 
 	// CancelButtonColor
-	private void OnCancelButtonColorClicked(object sender, EventArgs e)
+	private void OnCancelButtonColorChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.CancelButtonColor = ((Button)sender).Text switch
+		if (sender is RadioButton rb && e.Value)
 		{
-			"Red" => Colors.Red,
-			"Orange" => Colors.Orange,
-			_ => null
-		};
+			_viewModel.CancelButtonColor = rb.Content?.ToString() switch
+			{
+				"Red" => Colors.Red,
+				"Orange" => Colors.Orange,
+				_ => null
+			};
+		}
 	}
 
 	// FontAttributes
@@ -69,30 +94,6 @@ public partial class ShellSearchOptionsPage : ContentPage
 			"Bold" => FontAttributes.Bold,
 			"Italic" => FontAttributes.Italic,
 			_ => FontAttributes.None
-		};
-	}
-
-	// Keyboard
-	private void OnKeyboardButtonClicked(object sender, EventArgs e)
-	{
-		_viewModel.Keyboard = ((Button)sender).Text switch
-		{
-			"Chat" => Keyboard.Chat,
-			"Email" => Keyboard.Email,
-			"Numeric" => Keyboard.Numeric,
-			"Plain" => Keyboard.Plain,
-			"Tel" => Keyboard.Telephone,
-			"Text" => Keyboard.Text,
-			"Url" => Keyboard.Url,
-			"None" => Keyboard.Create(KeyboardFlags.None),
-			"CapSnt" => Keyboard.Create(KeyboardFlags.CapitalizeSentence),
-			"Spell" => Keyboard.Create(KeyboardFlags.Spellcheck),
-			"Sugg" => Keyboard.Create(KeyboardFlags.Suggestions),
-			"CapWd" => Keyboard.Create(KeyboardFlags.CapitalizeWord),
-			"CapChr" => Keyboard.Create(KeyboardFlags.CapitalizeCharacter),
-			"CapNo" => Keyboard.Create(KeyboardFlags.CapitalizeNone),
-			"All" => Keyboard.Create(KeyboardFlags.All),
-			_ => Keyboard.Default
 		};
 	}
 
@@ -181,49 +182,109 @@ public partial class ShellSearchOptionsPage : ContentPage
 	}
 
 	// ItemTemplate
-	private void OnItemTemplateClicked(object sender, EventArgs e)
+	private void OnItemTemplateChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.ItemTemplate = ((Button)sender).Text switch
+		if (sender is RadioButton rb && e.Value)
 		{
-			"Custom" => ShellViewModel.BuildCustomTemplate(),
-			"Null" => null,
-			_ => ShellViewModel.BuildSimpleTemplate()
-		};
+			_viewModel.SearchItemTemplate = rb.Content?.ToString() switch
+			{
+				"Custom" => ShellViewModel.BuildCustomTemplate(),
+				"Null" => null,
+				_ => ShellViewModel.BuildSimpleTemplate()
+			};
+		}
 	}
 
 	// ItemsSource mode
-	private void OnItemsSourceModeClicked(object sender, EventArgs e)
+	private void OnItemsSourceModeChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.ItemsSourceMode = ((Button)sender).Text switch
+		if (sender is RadioButton rb && e.Value)
 		{
-			"Fruits" => "Fruits",
-			"Birds" => "Birds",
-			"Null" => "Null",
-			_ => "Query"
-		};
+			_viewModel.ItemsSourceMode = rb.Content?.ToString() switch
+			{
+				"Frt" => "Fruits",
+				"Brd" => "Birds",
+				"Nul" => "Null",
+				_ => "Query"
+			};
+		}
 	}
 
 	// QueryIcon
-	private void OnQueryIconClicked(object sender, EventArgs e)
+	private void OnQueryIconChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.QueryIcon = ((Button)sender).Text == "Custom"
-			? ImageSource.FromFile("coffee.png")
-			: null;
+		if (sender is RadioButton rb && e.Value)
+		{
+			_viewModel.QueryIcon = rb.Content?.ToString() switch
+			{
+				"Custom" => ImageSource.FromFile("coffee.png"),
+				_ => null
+			};
+		}
 	}
 
 	// ClearIcon
-	private void OnClearIconClicked(object sender, EventArgs e)
+	private void OnClearIconChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.ClearIcon = ((Button)sender).Text == "Custom"
-			? ImageSource.FromFile("bank.png")
-			: null;
+		if (sender is RadioButton rb && e.Value)
+		{
+			_viewModel.ClearIcon = rb.Content?.ToString() switch
+			{
+				"Custom" => ImageSource.FromFile("bank.png"),
+				_ => null
+			};
+		}
 	}
 
 	// ClearPlaceholderIcon
-	private void OnClearPlaceholderIconClicked(object sender, EventArgs e)
+	private void OnClearPlaceholderIconChanged(object sender, CheckedChangedEventArgs e)
 	{
-		_viewModel.ClearPlaceholderIcon = ((Button)sender).Text == "Custom"
-			? ImageSource.FromFile("menu_icon.png")
-			: null;
+		if (sender is RadioButton rb && e.Value)
+		{
+			_viewModel.ClearPlaceholderIcon = rb.Content?.ToString() switch
+			{
+				"Custom" => ImageSource.FromFile("avatar.png"),
+				_ => null
+			};
+		}
+	}
+
+	// Keyboard Type
+	private void OnKeyboardTypeChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && e.Value)
+		{
+			_viewModel.Keyboard = rb.Content?.ToString() switch
+			{
+				"Chat" => Keyboard.Chat,
+				"Email" => Keyboard.Email,
+				"Numeric" => Keyboard.Numeric,
+				"Plain" => Keyboard.Plain,
+				"Tel" => Keyboard.Telephone,
+				"Text" => Keyboard.Text,
+				"Url" => Keyboard.Url,
+				_ => Keyboard.Default
+			};
+		}
+	}
+
+	// Keyboard Flags
+	private void OnKeyboardFlagsChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && e.Value)
+		{
+			_viewModel.Keyboard = rb.Content?.ToString() switch
+			{
+				"None" => Keyboard.Create(KeyboardFlags.None),
+				"CapSnt" => Keyboard.Create(KeyboardFlags.CapitalizeSentence),
+				"Spell" => Keyboard.Create(KeyboardFlags.Spellcheck),
+				"Sugg" => Keyboard.Create(KeyboardFlags.Suggestions),
+				"CapWd" => Keyboard.Create(KeyboardFlags.CapitalizeWord),
+				"CapChr" => Keyboard.Create(KeyboardFlags.CapitalizeCharacter),
+				"CapNo" => Keyboard.Create(KeyboardFlags.CapitalizeNone),
+				"All" => Keyboard.Create(KeyboardFlags.All),
+				_ => Keyboard.Default
+			};
+		}
 	}
 }

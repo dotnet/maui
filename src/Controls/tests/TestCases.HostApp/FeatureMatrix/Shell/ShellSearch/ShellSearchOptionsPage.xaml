@@ -5,651 +5,650 @@
              x:Class="Maui.Controls.Sample.ShellSearchOptionsPage"
              x:DataType="local:ShellViewModel"
              Title="SearchHandler Options">
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Apply"
-                     Clicked="ApplyButton_Clicked"
-                     AutomationId="Apply"/>
-    </ContentPage.ToolbarItems>
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           Clicked="ApplyButton_Clicked"
+                           AutomationId="Apply"/>
+       </ContentPage.ToolbarItems>
 
-    <Grid ColumnDefinitions="*,*"
-          ColumnSpacing="6"
-          RowSpacing="-1"
-          Padding="4,2"
-          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+       <ScrollView>
+       <Grid ColumnDefinitions="*,*"
+             ColumnSpacing="4"
+             RowSpacing="-2"
+             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 
-        <!-- Row 0: Placeholder | TextColor -->
-        <VerticalStackLayout Grid.Row="0"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="Placeholder:"
-                   FontSize="10"/>
-            <Entry AutomationId="PlaceholderEntry"
-                   Text="{Binding Placeholder}"
-                   Placeholder="Search..."
-                   FontSize="10"
-                   HeightRequest="26"/>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="0"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="TextColor:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="TextColorRedButton"
-                        Text="Red"
-                        BackgroundColor="Red"
-                        TextColor="White"
-                        Clicked="OnTextColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="TextColorGreenButton"
-                        Text="Green"
-                        BackgroundColor="Green"
-                        TextColor="White"
-                        Clicked="OnTextColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="TextColorBlueButton"
-                        Text="Blue"
-                        BackgroundColor="Blue"
-                        TextColor="White"
-                        Clicked="OnTextColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="TextColorDefaultButton"
-                        Text="Def"
-                        Clicked="OnTextColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- ═══ ENTRIES FIRST (Rows 0-2) ═══ -->
 
-        <!-- Row 1: BackgroundColor | PlaceholderColor -->
-        <VerticalStackLayout Grid.Row="1"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="BackgroundColor:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="BackgroundColorYellowButton"
-                        Text="Yellow"
-                        BackgroundColor="Yellow"
-                        Clicked="OnBackgroundColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="BackgroundColorCyanButton"
-                        Text="Cyan"
-                        BackgroundColor="Cyan"
-                        Clicked="OnBackgroundColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="BackgroundColorDefaultButton"
-                        Text="Def"
-                        Clicked="OnBackgroundColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="1"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="PlaceholderColor:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="PlaceholderColorPinkButton"
-                        Text="Pink"
-                        BackgroundColor="HotPink"
-                        TextColor="White"
-                        Clicked="OnPlaceholderColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="PlaceholderColorGrayButton"
-                        Text="Gray"
-                        BackgroundColor="Gray"
-                        TextColor="White"
-                        Clicked="OnPlaceholderColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="PlaceholderColorDefaultButton"
-                        Text="Def"
-                        Clicked="OnPlaceholderColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 0: Placeholder | FontSize -->
+              <VerticalStackLayout Grid.Row="0"
+                                   Grid.Column="0">
+                     <Label Text="Placeholder:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <Entry AutomationId="PlaceholderEntry"
+                            Text="{Binding Placeholder}"
+                            Placeholder="Search..."
+                            FontSize="7"
+                            HeightRequest="30"/>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="0"
+                                   Grid.Column="1">
+                     <Label Text="FontSize:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <Entry AutomationId="FontSizeEntry"
+                            Text="{Binding FontSize}"
+                            FontSize="7"
+                            HeightRequest="30"/>
+              </VerticalStackLayout>
 
-        <!-- Row 2: CancelButtonColor | CharacterSpacing -->
-        <VerticalStackLayout Grid.Row="2"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="CancelButtonColor:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="CancelButtonColorRedButton"
-                        Text="Red"
-                        BackgroundColor="Red"
-                        TextColor="White"
-                        Clicked="OnCancelButtonColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="CancelButtonColorOrangeButton"
-                        Text="Orange"
-                        BackgroundColor="Orange"
-                        Clicked="OnCancelButtonColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="CancelButtonColorDefaultButton"
-                        Text="Def"
-                        Clicked="OnCancelButtonColorClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="2"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="CharacterSpacing:"
-                   FontSize="10"/>
-            <Entry AutomationId="CharacterSpacingEntry"
-                   Keyboard="Numeric"
-                   Text="{Binding CharacterSpacing}"
-                   FontSize="10"
-                   HeightRequest="26"/>
-        </VerticalStackLayout>
+              <!-- Row 1: CharacterSpacing | CommandParameter -->
+              <VerticalStackLayout Grid.Row="1"
+                                   Grid.Column="0">
+                     <Label Text="CharacterSpacing:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <Entry AutomationId="CharacterSpacingEntry"
+                            Text="{Binding CharacterSpacing}"
+                            FontSize="7"
+                            HeightRequest="30"/>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="1"
+                                   Grid.Column="1">
+                     <Label Text="CommandParameter:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <Entry AutomationId="CommandParameterEntry"
+                            Text="{Binding CommandParameter}"
+                            Placeholder="value"
+                            FontSize="7"
+                            HeightRequest="30"/>
+              </VerticalStackLayout>
 
-        <!-- Row 3: FontSize | FontFamily -->
-        <VerticalStackLayout Grid.Row="3"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="FontSize:"
-                   FontSize="10"/>
-            <Entry AutomationId="FontSizeEntry"
-                   Keyboard="Numeric"
-                   Text="{Binding FontSize}"
-                   FontSize="10"
-                   HeightRequest="26"/>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="3"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="FontFamily:"
-                   FontSize="10"/>
-            <Entry AutomationId="FontFamilyEntry"
-                   Text="{Binding FontFamily}"
-                   Placeholder="e.g. Courier New"
-                   FontSize="10"
-                   HeightRequest="26"/>
-        </VerticalStackLayout>
+              <!-- Row 2: ClearPH CmdParam | TextColor -->
+              <VerticalStackLayout Grid.Row="2"
+                                   Grid.Column="0">
+                     <Label Text="ClearPH CmdParam:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <Entry AutomationId="ClearPlaceholderCommandParameterEntry"
+                            Text="{Binding ClearPlaceholderCommandParameter}"
+                            Placeholder="value"
+                            FontSize="7"
+                            HeightRequest="30"/>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="2"
+                                   Grid.Column="1">
+                     <Label Text="TextColor:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="TextColorDefaultRadio"
+                                         GroupName="TextColor"
+                                         Content="Def"
+                                         FontSize="7"
+                                         IsChecked="True"
+                                         CheckedChanged="OnTextColorChanged"/>
+                            <RadioButton AutomationId="TextColorRedRadio"
+                                         GroupName="TextColor"
+                                         Content="Red"
+                                         FontSize="7"
+                                         CheckedChanged="OnTextColorChanged"/>
+                            <RadioButton AutomationId="TextColorGreenRadio"
+                                         GroupName="TextColor"
+                                         Content="Green"
+                                         FontSize="7"
+                                         CheckedChanged="OnTextColorChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 4: FontAttributes | HTextAlignment -->
-        <VerticalStackLayout Grid.Row="4"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="FontAttributes:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="FontAttributesNone"
-                             GroupName="FontAttr"
-                             Content="None"
-                             IsChecked="True"
-                             CheckedChanged="OnFontAttributesChanged"/>
-                <RadioButton AutomationId="FontAttributesBold"
-                             GroupName="FontAttr"
-                             Content="Bold"
-                             CheckedChanged="OnFontAttributesChanged"/>
-                <RadioButton AutomationId="FontAttributesItalic"
-                             GroupName="FontAttr"
-                             Content="Italic"
-                             CheckedChanged="OnFontAttributesChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="4"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="HTextAlignment:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="HTextAlignmentStart"
-                             GroupName="HAlign"
-                             Content="Start"
-                             IsChecked="True"
-                             CheckedChanged="OnHorizontalTextAlignmentChanged"/>
-                <RadioButton AutomationId="HTextAlignmentCenter"
-                             GroupName="HAlign"
-                             Content="Center"
-                             CheckedChanged="OnHorizontalTextAlignmentChanged"/>
-                <RadioButton AutomationId="HTextAlignmentEnd"
-                             GroupName="HAlign"
-                             Content="End"
-                             CheckedChanged="OnHorizontalTextAlignmentChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- ═══ RADIO BUTTONS (Rows 3-12) ═══ -->
 
-        <!-- Row 5: VTextAlignment | TextTransform -->
-        <VerticalStackLayout Grid.Row="5"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="VTextAlignment:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="VTextAlignmentStart"
-                             GroupName="VAlign"
-                             Content="Start"
-                             CheckedChanged="OnVerticalTextAlignmentChanged"/>
-                <RadioButton AutomationId="VTextAlignmentCenter"
-                             GroupName="VAlign"
-                             Content="Center"
-                             IsChecked="True"
-                             CheckedChanged="OnVerticalTextAlignmentChanged"/>
-                <RadioButton AutomationId="VTextAlignmentEnd"
-                             GroupName="VAlign"
-                             Content="End"
-                             CheckedChanged="OnVerticalTextAlignmentChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="5"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="TextTransform:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="TextTransformDefault"
-                             GroupName="TextTransform"
-                             Content="Def"
-                             IsChecked="True"
-                             CheckedChanged="OnTextTransformChanged"/>
-                <RadioButton AutomationId="TextTransformUppercase"
-                             GroupName="TextTransform"
-                             Content="Upper"
-                             CheckedChanged="OnTextTransformChanged"/>
-                <RadioButton AutomationId="TextTransformLowercase"
-                             GroupName="TextTransform"
-                             Content="Lower"
-                             CheckedChanged="OnTextTransformChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 3: BackgroundColor | PlaceholderColor -->
+              <VerticalStackLayout Grid.Row="3"
+                                   Grid.Column="0">
+                     <Label Text="BackgroundColor:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="BackgroundColorDefaultRadio"
+                                         GroupName="BackgroundColor"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnBackgroundColorChanged"/>
+                            <RadioButton AutomationId="BackgroundColorYellowRadio"
+                                         GroupName="BackgroundColor"
+                                         Content="Yellow"
+                                         FontSize="7"
+                                         CheckedChanged="OnBackgroundColorChanged"/>
+                            <RadioButton AutomationId="BackgroundColorCyanRadio"
+                                         GroupName="BackgroundColor"
+                                         Content="Cyan"
+                                         FontSize="7"
+                                         CheckedChanged="OnBackgroundColorChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="3"
+                                   Grid.Column="1">
+                     <Label Text="PlaceholderColor:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="PlaceholderColorDefaultRadio"
+                                         GroupName="PlaceholderColor"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnPlaceholderColorChanged"/>
+                            <RadioButton AutomationId="PlaceholderColorPinkRadio"
+                                         GroupName="PlaceholderColor"
+                                         Content="Pink"
+                                         FontSize="7"
+                                         CheckedChanged="OnPlaceholderColorChanged"/>
+                            <RadioButton AutomationId="PlaceholderColorGrayRadio"
+                                         GroupName="PlaceholderColor"
+                                         Content="Gray"
+                                         FontSize="7"
+                                         CheckedChanged="OnPlaceholderColorChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 6: IsSearchEnabled | FontAutoScalingEnabled -->
-        <VerticalStackLayout Grid.Row="6"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="IsSearchEnabled:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="IsSearchEnabledTrue"
-                             GroupName="IsSearchEnabled"
-                             Content="True"
-                             IsChecked="True"
-                             CheckedChanged="OnIsSearchEnabledChanged"/>
-                <RadioButton AutomationId="IsSearchEnabledFalse"
-                             GroupName="IsSearchEnabled"
-                             Content="False"
-                             CheckedChanged="OnIsSearchEnabledChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="6"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="FontAutoScaling:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="FontAutoScalingEnabledTrue"
-                             GroupName="FontAutoScalingEnabled"
-                             Content="True"
-                             IsChecked="True"
-                             CheckedChanged="OnFontAutoScalingEnabledChanged"/>
-                <RadioButton AutomationId="FontAutoScalingEnabledFalse"
-                             GroupName="FontAutoScalingEnabled"
-                             Content="False"
-                             CheckedChanged="OnFontAutoScalingEnabledChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 4: CancelButtonColor | FontFamily -->
+              <VerticalStackLayout Grid.Row="4"
+                                   Grid.Column="0">
+                     <Label Text="CancelButtonColor:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="CancelButtonColorDefaultRadio"
+                                         GroupName="CancelButtonColor"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnCancelButtonColorChanged"/>
+                            <RadioButton AutomationId="CancelButtonColorRedRadio"
+                                         GroupName="CancelButtonColor"
+                                         Content="Red"
+                                         FontSize="7"
+                                         CheckedChanged="OnCancelButtonColorChanged"/>
+                            <RadioButton AutomationId="CancelButtonColorOrangeRadio"
+                                         GroupName="CancelButtonColor"
+                                         Content="Orange"
+                                         FontSize="7"
+                                         CheckedChanged="OnCancelButtonColorChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="4"
+                                   Grid.Column="1"
+                                   Spacing="1">
+                     <Label Text="FontFamily:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="1" HeightRequest="30">
+                            <RadioButton AutomationId="FontFamilyDefaultRadio"
+                                         GroupName="FontFamily"
+                                         Content="Def"
+                                         FontSize="7"
+                                         IsChecked="True"
+                                         CheckedChanged="OnFontFamilyCheckedChanged"/>
+                            <RadioButton AutomationId="FontFamilyDokdoRadio"
+                                         GroupName="FontFamily"
+                                         Content="Dokdo"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontFamilyCheckedChanged"/>
+                            <RadioButton AutomationId="FontFamilyMontRadio"
+                                         GroupName="FontFamily"
+                                         Content="Mont"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontFamilyCheckedChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 7: ShowsResults | SearchBoxVisibility -->
-        <VerticalStackLayout Grid.Row="7"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="ShowsResults:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="ShowsResultsTrue"
-                             GroupName="ShowsResults"
-                             Content="True"
-                             IsChecked="True"
-                             CheckedChanged="OnShowsResultsChanged"/>
-                <RadioButton AutomationId="ShowsResultsFalse"
-                             GroupName="ShowsResults"
-                             Content="False"
-                             CheckedChanged="OnShowsResultsChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="7"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="SearchBoxVisibility:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="VisibilityExpanded"
-                             GroupName="SearchBoxVisibility"
-                             Content="Exp"
-                             IsChecked="True"
-                             CheckedChanged="OnSearchBoxVisibilityChanged"/>
-                <RadioButton AutomationId="VisibilityCollapsible"
-                             GroupName="SearchBoxVisibility"
-                             Content="Col"
-                             CheckedChanged="OnSearchBoxVisibilityChanged"/>
-                <RadioButton AutomationId="VisibilityHidden"
-                             GroupName="SearchBoxVisibility"
-                             Content="Hid"
-                             CheckedChanged="OnSearchBoxVisibilityChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 5: FontAttributes | HTextAlignment -->
+              <VerticalStackLayout Grid.Row="5"
+                                   Grid.Column="0">
+                     <Label Text="FontAttributes:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="FontAttributesNone"
+                                         GroupName="FontAttr"
+                                         Content="None"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontAttributesChanged"/>
+                            <RadioButton AutomationId="FontAttributesBold"
+                                         GroupName="FontAttr"
+                                         Content="Bold"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontAttributesChanged"/>
+                            <RadioButton AutomationId="FontAttributesItalic"
+                                         GroupName="FontAttr"
+                                         Content="Italic"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontAttributesChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="5"
+                                   Grid.Column="1">
+                     <Label Text="HTextAlignment:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="HTextAlignmentStart"
+                                         GroupName="HAlign"
+                                         Content="Start"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnHorizontalTextAlignmentChanged"/>
+                            <RadioButton AutomationId="HTextAlignmentCenter"
+                                         GroupName="HAlign"
+                                         Content="Center"
+                                         FontSize="7"
+                                         CheckedChanged="OnHorizontalTextAlignmentChanged"/>
+                            <RadioButton AutomationId="HTextAlignmentEnd"
+                                         GroupName="HAlign"
+                                         Content="End"
+                                         FontSize="7"
+                                         CheckedChanged="OnHorizontalTextAlignmentChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 8: ClearPH Enabled | ItemsSource -->
-        <VerticalStackLayout Grid.Row="8"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="ClearPH Enabled:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="0"
-                                   HeightRequest="30"
-                                   VerticalOptions="Center">
-                <RadioButton AutomationId="ClearPlaceholderEnabledFalse"
-                             GroupName="ClearPlaceholderEnabled"
-                             Content="False"
-                             IsChecked="True"
-                             CheckedChanged="OnClearPlaceholderEnabledChanged"/>
-                <RadioButton AutomationId="ClearPlaceholderEnabledTrue"
-                             GroupName="ClearPlaceholderEnabled"
-                             Content="True"
-                             CheckedChanged="OnClearPlaceholderEnabledChanged"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="8"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="ItemsSource:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="ItemsSourceQueryButton"
-                        Text="Query"
-                        Clicked="OnItemsSourceModeClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ItemsSourceFruitsButton"
-                        Text="Fruits"
-                        Clicked="OnItemsSourceModeClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ItemsSourceBirdsButton"
-                        Text="Birds"
-                        Clicked="OnItemsSourceModeClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ItemsSourceNullButton"
-                        Text="Null"
-                        Clicked="OnItemsSourceModeClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 6: VTextAlignment | TextTransform -->
+              <VerticalStackLayout Grid.Row="6"
+                                   Grid.Column="0">
+                     <Label Text="VTextAlignment:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="VTextAlignmentStart"
+                                         GroupName="VAlign"
+                                         Content="Start"
+                                         FontSize="7"
+                                         CheckedChanged="OnVerticalTextAlignmentChanged"/>
+                            <RadioButton AutomationId="VTextAlignmentCenter"
+                                         GroupName="VAlign"
+                                         Content="Center"
+                                         FontSize="7"
+                                         IsChecked="True"
+                                         CheckedChanged="OnVerticalTextAlignmentChanged"/>
+                            <RadioButton AutomationId="VTextAlignmentEnd"
+                                         GroupName="VAlign"
+                                         Content="End"
+                                         FontSize="7"
+                                         CheckedChanged="OnVerticalTextAlignmentChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="6"
+                                   Grid.Column="1">
+                     <Label Text="TextTransform:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="TextTransformDefault"
+                                         GroupName="TextTransform"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnTextTransformChanged"/>
+                            <RadioButton AutomationId="TextTransformUppercase"
+                                         GroupName="TextTransform"
+                                         Content="Upper"
+                                         FontSize="7"
+                                         CheckedChanged="OnTextTransformChanged"/>
+                            <RadioButton AutomationId="TextTransformLowercase"
+                                         GroupName="TextTransform"
+                                         Content="Lower"
+                                         FontSize="7"
+                                         CheckedChanged="OnTextTransformChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 9: ItemTemplate | CommandParameter -->
-        <VerticalStackLayout Grid.Row="9"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="ItemTemplate:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="ItemTemplateSimpleButton"
-                        Text="Simple"
-                        Clicked="OnItemTemplateClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ItemTemplateCustomButton"
-                        Text="Custom"
-                        Clicked="OnItemTemplateClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ItemTemplateNullButton"
-                        Text="Null"
-                        Clicked="OnItemTemplateClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="9"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="CommandParameter:"
-                   FontSize="10"/>
-            <Entry AutomationId="CommandParameterEntry"
-                   Text="{Binding CommandParameter}"
-                   Placeholder="value"
-                   FontSize="10"
-                   HeightRequest="26"/>
-        </VerticalStackLayout>
+              <!-- Row 7: IsSearchEnabled | FontAutoScalingEnabled -->
+              <VerticalStackLayout Grid.Row="7"
+                                   Grid.Column="0">
+                     <Label Text="IsSearchEnabled:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="IsSearchEnabledTrue"
+                                         GroupName="IsSearchEnabled"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnIsSearchEnabledChanged"/>
+                            <RadioButton AutomationId="IsSearchEnabledFalse"
+                                         GroupName="IsSearchEnabled"
+                                         Content="False"
+                                         FontSize="7"
+                                         CheckedChanged="OnIsSearchEnabledChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="7"
+                                   Grid.Column="1">
+                     <Label Text="FontAutoScaling:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="FontAutoScalingEnabledTrue"
+                                         GroupName="FontAutoScalingEnabled"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontAutoScalingEnabledChanged"/>
+                            <RadioButton AutomationId="FontAutoScalingEnabledFalse"
+                                         GroupName="FontAutoScalingEnabled"
+                                         Content="False"
+                                         FontSize="7"
+                                         CheckedChanged="OnFontAutoScalingEnabledChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 10: ClearPH CmdParam | QueryIcon -->
-        <VerticalStackLayout Grid.Row="10"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="ClearPH CmdParam:"
-                   FontSize="10"/>
-            <Entry AutomationId="ClearPlaceholderCommandParameterEntry"
-                   Text="{Binding ClearPlaceholderCommandParameter}"
-                   Placeholder="value"
-                   FontSize="10"
-                   HeightRequest="26"/>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="10"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="QueryIcon:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="QueryIconCustom"
-                        Text="Custom"
-                        Clicked="OnQueryIconClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="QueryIconDefault"
-                        Text="Def"
-                        Clicked="OnQueryIconClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 8: ShowsResults | SearchBoxVisibility -->
+              <VerticalStackLayout Grid.Row="8"
+                                   Grid.Column="0">
+                     <Label Text="ShowsResults:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="ShowsResultsTrue"
+                                         GroupName="ShowsResults"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnShowsResultsChanged"/>
+                            <RadioButton AutomationId="ShowsResultsFalse"
+                                         GroupName="ShowsResults"
+                                         Content="False"
+                                         FontSize="7"
+                                         CheckedChanged="OnShowsResultsChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="8"
+                                   Grid.Column="1">
+                     <Label Text="SearchBoxVisibility:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="SearchBoxVisibilityExpanded"
+                                         GroupName="SearchBoxVisibility"
+                                         Content="Exp"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnSearchBoxVisibilityChanged"/>
+                            <RadioButton AutomationId="SearchBoxVisibilityCollapsible"
+                                         GroupName="SearchBoxVisibility"
+                                         Content="Col"
+                                         FontSize="7"
+                                         CheckedChanged="OnSearchBoxVisibilityChanged"/>
+                            <RadioButton AutomationId="SearchBoxVisibilityHidden"
+                                         GroupName="SearchBoxVisibility"
+                                         Content="Hid"
+                                         FontSize="7"
+                                         CheckedChanged="OnSearchBoxVisibilityChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 11: ClearIcon | ClearPlaceholderIcon -->
-        <VerticalStackLayout Grid.Row="11"
-                             Grid.Column="0"
-                             Spacing="1">
-            <Label Text="ClearIcon:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="ClearIconCustom"
-                        Text="Custom"
-                        Clicked="OnClearIconClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ClearIconDefault"
-                        Text="Def"
-                        Clicked="OnClearIconClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-        <VerticalStackLayout Grid.Row="11"
-                             Grid.Column="1"
-                             Spacing="1">
-            <Label Text="ClearPlaceholderIcon:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="ClearPlaceholderIconCustom"
-                        Text="Custom"
-                        Clicked="OnClearPlaceholderIconClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="ClearPlaceholderIconDefault"
-                        Text="Def"
-                        Clicked="OnClearPlaceholderIconClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 9: ClearPH Enabled | ItemsSource -->
+              <VerticalStackLayout Grid.Row="9"
+                                   Grid.Column="1">
+                     <Label Text="ClearPH Enabled:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="ClearPlaceholderEnabledFalse"
+                                         GroupName="ClearPlaceholderEnabled"
+                                         Content="False"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnClearPlaceholderEnabledChanged"/>
+                            <RadioButton AutomationId="ClearPlaceholderEnabledTrue"
+                                         GroupName="ClearPlaceholderEnabled"
+                                         Content="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnClearPlaceholderEnabledChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="9"
+                                   Grid.Column="0">
+                     <Label Text="ItemsSource:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="ItemsSourceQueryRadio"
+                                         GroupName="ItemsSource"
+                                         Content="Qry"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemsSourceModeChanged"/>
+                            <RadioButton AutomationId="ItemsSourceFruitsRadio"
+                                         GroupName="ItemsSource"
+                                         Content="Frt"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemsSourceModeChanged"/>
+                            <RadioButton AutomationId="ItemsSourceBirdsRadio"
+                                         GroupName="ItemsSource"
+                                         Content="Brd"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemsSourceModeChanged"/>
+                            <RadioButton AutomationId="ItemsSourceNullRadio"
+                                         GroupName="ItemsSource"
+                                         Content="Nul"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemsSourceModeChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-        <!-- Row 12: KB Type + KB Flags — full width -->
-        <VerticalStackLayout Grid.Row="12"
-                             Grid.ColumnSpan="2"
-                             Spacing="1">
-            <Label Text="KB Type:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="KeyboardDefault"
-                        Text="Def"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardChat"
-                        Text="Chat"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardEmail"
-                        Text="Email"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardNumeric"
-                        Text="Numeric"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardPlain"
-                        Text="Plain"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardTelephone"
-                        Text="Tel"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardText"
-                        Text="Text"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardUrl"
-                        Text="Url"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-            <Label Text="KB Flags:"
-                   FontSize="10"/>
-            <HorizontalStackLayout Spacing="1">
-                <Button AutomationId="KeyboardFlagsNone"
-                        Text="None"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsCapSentence"
-                        Text="CapSnt"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsSpellcheck"
-                        Text="Spell"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsSuggestions"
-                        Text="Sugg"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsCapWord"
-                        Text="CapWd"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsCapCharacter"
-                        Text="CapChr"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsCapNone"
-                        Text="CapNo"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-                <Button AutomationId="KeyboardFlagsAll"
-                        Text="All"
-                        Clicked="OnKeyboardButtonClicked"
-                        HeightRequest="26"
-                        FontSize="10"
-                        Padding="2,0"/>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+              <!-- Row 10: ItemTemplate | QueryIcon -->
+              <VerticalStackLayout Grid.Row="10"
+                                   Grid.Column="0">
+                     <Label Text="ItemTemplate:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="ItemTemplateSimpleRadio"
+                                         GroupName="ItemTemplate"
+                                         Content="Simple"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemTemplateChanged"/>
+                            <RadioButton AutomationId="ItemTemplateCustomRadio"
+                                         GroupName="ItemTemplate"
+                                         Content="Custom"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemTemplateChanged"/>
+                            <RadioButton AutomationId="ItemTemplateNullRadio"
+                                         GroupName="ItemTemplate"
+                                         Content="Null"
+                                         FontSize="7"
+                                         CheckedChanged="OnItemTemplateChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="10"
+                                   Grid.Column="1">
+                     <Label Text="QueryIcon:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="QueryIconDefaultRadio"
+                                         GroupName="QueryIcon"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnQueryIconChanged"/>
+                            <RadioButton AutomationId="QueryIconCustomRadio"
+                                         GroupName="QueryIcon"
+                                         Content="Custom"
+                                         FontSize="7"
+                                         CheckedChanged="OnQueryIconChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
 
-    </Grid>
+              <!-- Row 11: ClearIcon | ClearPlaceholderIcon -->
+              <VerticalStackLayout Grid.Row="11"
+                                   Grid.Column="0">
+                     <Label Text="ClearIcon:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="ClearIconDefaultRadio"
+                                         GroupName="ClearIcon"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnClearIconChanged"/>
+                            <RadioButton AutomationId="ClearIconCustomRadio"
+                                         GroupName="ClearIcon"
+                                         Content="Custom"
+                                         FontSize="7"
+                                         CheckedChanged="OnClearIconChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+              <VerticalStackLayout Grid.Row="11"
+                                   Grid.Column="1">
+                     <Label Text="ClearPlaceholderIcon:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
+                                            VerticalOptions="Center">
+                            <RadioButton AutomationId="ClearPlaceholderIconDefaultRadio"
+                                         GroupName="ClearPlaceholderIcon"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnClearPlaceholderIconChanged"/>
+                            <RadioButton AutomationId="ClearPlaceholderIconCustomRadio"
+                                         GroupName="ClearPlaceholderIcon"
+                                         Content="Custom"
+                                         FontSize="7"
+                                         CheckedChanged="OnClearPlaceholderIconChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+              <!-- Row 12: KB Type + KB Flags — full width -->
+              <VerticalStackLayout Grid.Row="12"
+                                   Grid.ColumnSpan="2">
+                     <Label Text="KB Type:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30">
+                            <RadioButton AutomationId="KeyboardDefault"
+                                         GroupName="KBType"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                            <RadioButton AutomationId="KeyboardChat"
+                                         GroupName="KBType"
+                                         Content="Chat"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                            <RadioButton AutomationId="KeyboardEmail"
+                                         GroupName="KBType"
+                                         Content="Email"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                            <RadioButton AutomationId="KeyboardNumeric"
+                                         GroupName="KBType"
+                                         Content="Numeric"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                            <RadioButton AutomationId="KeyboardPlain"
+                                         GroupName="KBType"
+                                         Content="Plain"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30">
+                            <RadioButton AutomationId="KeyboardTelephone"
+                                         GroupName="KBType"
+                                         Content="Tel"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                            <RadioButton AutomationId="KeyboardText"
+                                         GroupName="KBType"
+                                         Content="Text"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                            <RadioButton AutomationId="KeyboardUrl"
+                                         GroupName="KBType"
+                                         Content="Url"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardTypeChanged"/>
+                     </HorizontalStackLayout>
+                     <Label Text="KB Flags:"
+                            FontSize="7"
+                            FontAttributes="Bold"/>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30">
+                            <RadioButton AutomationId="KeyboardFlagsDefault"
+                                         GroupName="KBFlags"
+                                         Content="Def"
+                                         IsChecked="True"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsNone"
+                                         GroupName="KBFlags"
+                                         Content="None"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsCapSentence"
+                                         GroupName="KBFlags"
+                                         Content="CapSnt"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsSpellcheck"
+                                         GroupName="KBFlags"
+                                         Content="Spell"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsSuggestions"
+                                         GroupName="KBFlags"
+                                         Content="Sugg"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                     </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="0" HeightRequest="30">
+                            <RadioButton AutomationId="KeyboardFlagsCapWord"
+                                         GroupName="KBFlags"
+                                         Content="CapWd"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsCapCharacter"
+                                         GroupName="KBFlags"
+                                         Content="CapChr"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsCapNone"
+                                         GroupName="KBFlags"
+                                         Content="CapNo"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                            <RadioButton AutomationId="KeyboardFlagsAll"
+                                         GroupName="KBFlags"
+                                         Content="All"
+                                         FontSize="7"
+                                         CheckedChanged="OnKeyboardFlagsChanged"/>
+                     </HorizontalStackLayout>
+              </VerticalStackLayout>
+
+       </Grid>
+       </ScrollView>
 </ContentPage>

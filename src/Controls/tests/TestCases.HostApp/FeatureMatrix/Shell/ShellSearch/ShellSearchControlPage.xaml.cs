@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample;
 
 public class SampleSearchHandler : SearchHandler
 {
-	static readonly string[] Fruits =
+	internal static readonly string[] Fruits =
 	[
 		"Apple", "Apricot", "Avocado", "Banana", "Blackberry",
 		"Blueberry", "Cherry", "Coconut", "Cranberry", "Date",
@@ -12,7 +12,7 @@ public class SampleSearchHandler : SearchHandler
 		"Plum", "Pomegranate", "Raspberry", "Strawberry", "Watermelon"
 	];
 
-	static readonly string[] Birds =
+	internal static readonly string[] Birds =
 	[
 		"Blue Jay", "Cardinal", "Crow", "Eagle", "Falcon",
 		"Finch", "Flamingo", "Hawk", "Heron", "Hummingbird",
@@ -22,14 +22,19 @@ public class SampleSearchHandler : SearchHandler
 		"Toucan", "Turkey", "Vulture", "Woodpecker", "Wren"
 	];
 
-#pragma warning disable CS0649 // Field is assigned in SetViewModel
-	ShellViewModel _viewModel;
-#pragma warning restore CS0649
+	ShellViewModel _viewModel = null!;
 
 	public void SetViewModel(ShellViewModel vm)
 	{
+		_viewModel?.PropertyChanged -= OnViewModelPropertyChanged;
+
 		_viewModel = vm;
 		vm.PropertyChanged += OnViewModelPropertyChanged;
+	}
+
+	internal void Cleanup()
+	{
+		_viewModel?.PropertyChanged -= OnViewModelPropertyChanged;
 	}
 
 	void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -50,7 +55,7 @@ public class SampleSearchHandler : SearchHandler
 			return;
 		}
 
-		_viewModel.QueryChangedLog = $"{oldValue}→{newValue}";
+		_viewModel.QueryChangedLog = $"{oldValue}\u2192{newValue}";
 
 		if (string.IsNullOrEmpty(newValue))
 		{
@@ -72,7 +77,7 @@ public class SampleSearchHandler : SearchHandler
 			.ToList();
 	}
 
-	protected override void OnItemSelected(object item)
+	protected override async void OnItemSelected(object item)
 	{
 		base.OnItemSelected(item);
 		if (_viewModel is null)
@@ -80,12 +85,31 @@ public class SampleSearchHandler : SearchHandler
 			return;
 		}
 
-		_viewModel.SelectedItem = item?.ToString();
+		var itemName = item?.ToString();
+		_viewModel.SelectedItem = itemName;
+
+		if (!string.IsNullOrEmpty(itemName))
+		{
+			try
+			{
+				await Shell.Current.GoToAsync(
+					ShellSearchControlPage.DetailRoute,
+					new Dictionary<string, object>
+					{
+						[nameof(ShellSearchControlPage.SearchDetailPage.ItemName)] = itemName
+					});
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Navigation failed: {ex.Message}");
+			}
+		}
 	}
 }
 
 public partial class ShellSearchControlPage : Shell
 {
+	internal const string DetailRoute = "searchdetail";
 	private readonly ShellViewModel _viewModel;
 
 	public ShellSearchControlPage()
@@ -94,13 +118,19 @@ public partial class ShellSearchControlPage : Shell
 		BindingContext = _viewModel;
 		InitializeComponent();
 
+		Routing.RegisterRoute(DetailRoute, typeof(SearchDetailPage));
+
 		SearchHandlerInstance.SetViewModel(_viewModel);
 		SearchHandlerInstance.Focused += OnSearchHandlerFocused;
 		SearchHandlerInstance.Unfocused += OnSearchHandlerUnfocused;
+	}
 
-		// ItemTemplate is not in XAML — apply from ViewModel and keep in sync
-		SearchHandlerInstance.ItemTemplate = _viewModel.ItemTemplate;
-		_viewModel.PropertyChanged += OnViewModelPropertyChanged;
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+		SearchHandlerInstance.Focused -= OnSearchHandlerFocused;
+		SearchHandlerInstance.Unfocused -= OnSearchHandlerUnfocused;
+		SearchHandlerInstance.Cleanup();
 	}
 
 	void OnSearchHandlerFocused(object sender, EventArgs e)
@@ -115,19 +145,12 @@ public partial class ShellSearchControlPage : Shell
 		_viewModel.IsFocused = false;
 	}
 
-	void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-	{
-		// ItemTemplate is not bound in XAML — sync manually
-		if (e.PropertyName == nameof(ShellViewModel.ItemTemplate))
-		{
-			SearchHandlerInstance.ItemTemplate = _viewModel.ItemTemplate;
-		}
-	}
-
 	// ── Toolbar ──────────────────────────────────────────────────────────────────
 
 	async void OnOptionsClicked(object sender, EventArgs e)
 	{
+		SearchHandlerInstance.Unfocus();
+		SearchHandlerInstance.HideSoftInputAsync();
 		_viewModel.Reset();
 		await Navigation.PushAsync(new ShellSearchOptionsPage(_viewModel));
 	}
@@ -135,7 +158,14 @@ public partial class ShellSearchControlPage : Shell
 	// ── Action buttons ────────────────────────────────────────────────────────────
 
 	void OnFocusClicked(object sender, EventArgs e)
-		=> SearchHandlerInstance.Focus();
+	{
+		// SearchHandler.Focus() is broken on Android (FocusChangeRequested not wired).
+		// Use ShowSoftInputAsync() as a cross-platform workaround.
+		if (!SearchHandlerInstance.Focus())
+		{
+			SearchHandlerInstance.ShowSoftInputAsync();
+		}
+	}
 
 	void OnUnfocusClicked(object sender, EventArgs e)
 		=> SearchHandlerInstance.Unfocus();
@@ -151,4 +181,71 @@ public partial class ShellSearchControlPage : Shell
 
 	void OnTriggerClearPlaceholderClicked(object sender, EventArgs e)
 		=> ((ISearchHandlerController)SearchHandlerInstance).ClearPlaceholderClicked();
+
+	// ── Search Detail Page (navigated to when a search result is tapped) ─────────
+
+	[QueryProperty(nameof(ItemName), nameof(ItemName))]
+	internal sealed class SearchDetailPage : ContentPage
+	{
+		readonly Label _nameLabel;
+		readonly Label _categoryLabel;
+
+		string _itemName;
+		public string ItemName
+		{
+			get => _itemName;
+			set
+			{
+				_itemName = value;
+				UpdateContent();
+			}
+		}
+
+		public SearchDetailPage()
+		{
+			AutomationId = "SearchDetailPage";
+
+			_nameLabel = new Label
+			{
+				FontSize = 24,
+				FontAttributes = FontAttributes.Bold,
+				HorizontalTextAlignment = TextAlignment.Center,
+				AutomationId = "DetailName"
+			};
+
+			_categoryLabel = new Label
+			{
+				FontSize = 16,
+				HorizontalTextAlignment = TextAlignment.Center,
+				AutomationId = "DetailCategory"
+			};
+
+			var backButton = new Button
+			{
+				Text = "Back to Search",
+				AutomationId = "BackToSearchButton",
+			};
+			backButton.Clicked += async (_, _) => await Shell.Current.GoToAsync("..");
+
+			Content = new VerticalStackLayout
+			{
+				Padding = new Thickness(20),
+				Spacing = 16,
+				Children = { _nameLabel, _categoryLabel, backButton }
+			};
+		}
+
+		void UpdateContent()
+		{
+			if (string.IsNullOrEmpty(_itemName))
+			{
+				return;
+			}
+
+			bool isFruit = SampleSearchHandler.Fruits.Contains(_itemName, StringComparer.OrdinalIgnoreCase);
+			Title = _itemName;
+			_nameLabel.Text = _itemName;
+			_categoryLabel.Text = isFruit ? "Fruit" : "Bird";
+		}
+	}
 }

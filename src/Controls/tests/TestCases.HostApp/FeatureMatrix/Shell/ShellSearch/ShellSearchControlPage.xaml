@@ -31,6 +31,7 @@
                                                        FontFamily="{Binding FontFamily}"
                                                        FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
                                                        HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+                                                       ItemTemplate="{Binding SearchItemTemplate}"
                                                        IsSearchEnabled="{Binding IsSearchEnabled}"
                                                        Keyboard="{Binding Keyboard}"
                                                        Placeholder="{Binding Placeholder}"
@@ -39,51 +40,49 @@
                                                        Query="{Binding Query}"
                                                        ShowsResults="{Binding ShowsResults}"
                                                        SearchBoxVisibility="{Binding SearchBoxVisibility}"
-                                                       SelectedItem="{Binding SelectedItem}"
                                                        TextColor="{Binding TextColor}"
                                                        TextTransform="{Binding TextTransform}"
                                                        VerticalTextAlignment="{Binding VerticalTextAlignment}"/>
                      </Shell.SearchHandler>
-                     <ContentPage.ToolbarItems>
-                            <ToolbarItem Text="Options"
-                                         Clicked="OnOptionsClicked"
-                                         AutomationId="Options"/>
-                     </ContentPage.ToolbarItems>
                      <ScrollView>
-                            <VerticalStackLayout Padding="10,8"
-                                                 Spacing="6">
+                            <VerticalStackLayout Padding="10,8">
 
                                    <!-- Action buttons -->
-                                   <Grid RowSpacing="6"
+                                   <Grid RowSpacing="2"
                                          ColumnSpacing="8"
-                                         RowDefinitions="Auto,Auto,Auto,Auto"
+                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                                          ColumnDefinitions="*,*">
                                           <Button Grid.Row="0"
+                                                  Grid.ColumnSpan="2"
+                                                  Text="Options"
+                                                  Clicked="OnOptionsClicked"
+                                                  AutomationId="Options"/>
+                                          <Button Grid.Row="1"
                                                   Grid.Column="0"
                                                   Text="Focus"
                                                   Clicked="OnFocusClicked"
                                                   AutomationId="FocusButton"/>
-                                          <Button Grid.Row="0"
+                                          <Button Grid.Row="1"
                                                   Grid.Column="1"
                                                   Text="Unfocus"
                                                   Clicked="OnUnfocusClicked"
                                                   AutomationId="UnfocusButton"/>
-                                          <Button Grid.Row="1"
+                                          <Button Grid.Row="2"
                                                   Grid.Column="0"
                                                   Text="ShowSoftInput"
                                                   Clicked="OnShowSoftInputClicked"
                                                   AutomationId="ShowSoftInputButton"/>
-                                          <Button Grid.Row="1"
+                                          <Button Grid.Row="2"
                                                   Grid.Column="1"
                                                   Text="HideSoftInput"
                                                   Clicked="OnHideSoftInputClicked"
                                                   AutomationId="HideSoftInputButton"/>
-                                          <Button Grid.Row="2"
+                                          <Button Grid.Row="3"
                                                   Grid.ColumnSpan="2"
                                                   Text="SetQuery:Robin"
                                                   Clicked="OnSetQueryClicked"
                                                   AutomationId="SetQueryButton"/>
-                                          <Button Grid.Row="3"
+                                          <Button Grid.Row="4"
                                                   Grid.ColumnSpan="2"
                                                   Text="TriggerClearPlaceholder"
                                                   Clicked="OnTriggerClearPlaceholderClicked"
@@ -94,7 +93,7 @@
                                    <Grid ColumnDefinitions="Auto,*"
                                          RowSpacing="4"
                                          ColumnSpacing="8"
-                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
                                           <!-- QueryChanged event log -->
                                           <Label Grid.Row="0"
@@ -126,49 +125,27 @@
                                                  AutomationId="CommandFired"
                                                  Text="{Binding CommandFired}"/>
 
-                                          <!-- CommandParameter value -->
-                                          <Label Grid.Row="3"
-                                                        Grid.Column="0"
-                                                        Text="CommandParameter:"/>
-                                          <Label Grid.Row="3"
-                                                        Grid.Column="1"
-                                                 x:Name="CommandParameter"
-                                                 AutomationId="CommandParameter"
-                                                 Text="{Binding CommandParameter}"/>
-
-
                                           <!-- OnClearPlaceholderClicked override fired -->
-                                          <Label Grid.Row="4"
+                                          <Label Grid.Row="3"
                                                         Grid.Column="0"
-                                                        Text="ClearPlaceholderCommandFired:"/>
-                                          <Label Grid.Row="4"
+                                                        Text="ClearPHCommandFired:"/>
+                                          <Label Grid.Row="3"
                                                         Grid.Column="1"
                                                  x:Name="ClearPlaceholderCommandFired"
                                                  AutomationId="ClearPlaceholderCommandFired"
                                                  Text="{Binding ClearPlaceholderCommandFired}"/>
 
-                                          <!-- ClearPlaceholderCommandParameter value -->
-                                          <Label Grid.Row="5"
-                                                        Grid.Column="0"
-                                                        Text="ClearPlaceholderCommandParameter:"/>
-                                          <Label Grid.Row="5"
-                                                        Grid.Column="1"
-                                                 x:Name="ClearPlaceholderCommandParameter"
-                                                 AutomationId="ClearPlaceholderCommandParameter"
-                                                 Text="{Binding ClearPlaceholderCommandParameter}"/>
-
                                           <!-- SelectedItem — last item tapped in suggestions dropdown -->
-                                          <Label Grid.Row="6"
+                                          <Label Grid.Row="4"
                                                         Grid.Column="0"
                                                         Text="SelectedItem:"/>
-                                          <Label Grid.Row="6"
+                                          <Label Grid.Row="4"
                                                         Grid.Column="1"
                                                  x:Name="SelectedItem"
                                                  AutomationId="SelectedItem"
                                                  Text="{Binding SelectedItem}"/>
 
                                    </Grid>
-
                             </VerticalStackLayout>
                      </ScrollView>
               </ContentPage>
