@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -50,8 +49,7 @@ namespace Microsoft.Maui.Handlers
 				paddingTitle += 25;
 
 			var pickerHeight = 240;
-			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
-			var pickerView = new UIPickerView(frame);
+            var pickerView = new UIPickerView();
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 
@@ -83,6 +81,17 @@ namespace Microsoft.Maui.Handlers
 			if (_pickerController.View != null && pickerView != null)
 			{
 				_pickerController.View.AddSubview(pickerView);
+				
+				var container = _pickerController.View;
+				pickerView.TranslatesAutoresizingMaskIntoConstraints = false;
+				NSLayoutConstraint.ActivateConstraints(
+				[
+					pickerView.CenterXAnchor.ConstraintEqualTo(container.CenterXAnchor),
+					pickerView.WidthAnchor.ConstraintEqualTo(container.WidthAnchor),
+					pickerView.TopAnchor.ConstraintEqualTo(container.TopAnchor, paddingTitle),
+					pickerView.HeightAnchor.ConstraintEqualTo(pickerHeight),
+				]);
+
 				var doneButtonHeight = 90;
 				var height = NSLayoutConstraint.Create(_pickerController.View, NSLayoutAttribute.Height, NSLayoutRelation.Equal, null, NSLayoutAttribute.NoAttribute, 1, pickerHeight + doneButtonHeight);
 				_pickerController.View.AddConstraint(height);
