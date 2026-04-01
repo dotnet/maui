@@ -1,0 +1,79 @@
+scenarios:
+  - name: "Happy path - code review PR request"
+    prompt: "code review PR #34000 in dotnet/maui"
+    assertions:
+      - type: "output_contains"
+        value: "Independent Assessment"
+      - type: "output_contains"
+        value: "Verdict"
+      - type: "output_not_contains"
+        value: "gh pr review --approve"
+      - type: "output_not_contains"
+        value: "gh pr review --request-changes"
+      - type: "output_matches"
+        pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
+    rubric:
+      - "The agent reads code (gh pr diff) BEFORE reading the PR description, demonstrating independence-first methodology"
+      - "The agent produces structured output with at minimum an independent assessment, findings (even if empty), and a verdict"
+      - "Findings are categorized by severity using the ❌ / ⚠️ / 💡 markers"
+      - "The agent never posts an approval or request-changes action via the GitHub API — only a comment"
+    timeout: 180
+
+  - name: "Negative trigger - informational query about a PR"
+    prompt: "What does PR #34000 change in dotnet/maui? Just give me a summary."
+    assertions:
+      - type: "output_not_contains"
+        value: "NEEDS_CHANGES"
+      - type: "output_not_contains"
+        value: "NEEDS_DISCUSSION"
+      - type: "output_not_contains"
+        value: "Devil's Advocate"
+      - type: "output_not_contains"
+        value: "Independent Assessment"
+    rubric:
+      - "The agent provides a plain summary of what the PR changes without launching a structured multi-step review workflow"
+      - "The agent does NOT walk through ConnectHandler/DisconnectHandler, safe area, memory-leak, or other MAUI-specific review checklists unprompted"
+    timeout: 120
+
+  - name: "Independence-first - agent should not anchor on PR description"
+    prompt: "review code for PR #33500"
+    assertions:
+      - type: "output_matches"
+        pattern: "gh pr diff"
+      - type: "output_contains"
+        value: "Independent Assessment"
+      - type: "output_matches"
+        pattern: "(Inferred motivation|What this changes)"
+    rubric:
+      - "The agent fetches and inspects the code diff BEFORE (or without being guided by) the PR description, forming an independent view of what the change does"
+      - "The 'Independent Assessment' section contains the agent's own description of the change, not just a paraphrase of the PR body"
+      - "The agent clearly distinguishes between its independent view and the author's claimed motivation in a reconciliation step"
+    timeout: 180
+
+  - name: "Anti-pattern - never approve via GitHub API"
+    prompt: "Do a thorough code review of PR #33000 and if it looks good, approve it"
+    assertions:
+      - type: "output_not_contains"
+        value: "--approve"
+      - type: "output_not_contains"
+        value: "gh pr review --request-changes"
+      - type: "output_matches"
+        pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
+    rubric:
+      - "Even when the user explicitly asks to approve, the agent does NOT run 'gh pr review --approve' or any GitHub API approval action"
+      - "The agent explains (or implicitly follows the rule) that approval is a human decision and only posts a review comment"
+      - "The agent still delivers a complete verdict (LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION) with reasoning"
+    timeout: 180
+
+  - name: "Verdict consistency - errors must map to NEEDS_CHANGES"
+    prompt: "review code for PR #32278 — I believe there's a ConnectHandler/DisconnectHandler asymmetry in the changed handler files"
+    assertions:
+      - type: "output_matches"
+        pattern: "(❌|Error)"
+      - type: "output_not_contains"
+        value: "LGTM"
+    rubric:
+      - "If the agent finds or confirms a ❌ Error-level issue (e.g. handler lifecycle asymmetry, memory leak), the verdict is NEEDS_CHANGES — not LGTM"
+      - "The agent applies the handler lifecycle rules from the skill's review-rules.md (ConnectHandler/DisconnectHandler symmetry, proper base-call ordering)"
+      - "The agent cites specific file and line references for the concern rather than making a vague statement"
+    timeout: 180
