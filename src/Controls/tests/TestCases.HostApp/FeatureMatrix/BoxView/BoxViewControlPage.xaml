@@ -14,6 +14,7 @@
 
                 <!-- BoxView at top center -->
                 <BoxView Grid.Row="0"
+                         AutomationId="BoxViewControl"
                          Color="{Binding Color}"
                          WidthRequest="{Binding Width}"
                          Opacity="{Binding Opacity}"
@@ -46,7 +47,7 @@
                                        Text="Corner Radius"/>
                                 <local:UITestEntry x:Name="CornerRadiusEntry"
                                                    AutomationId="CornerRadiusEntry"
-                                                   Placeholder="e.g. 10,20,30,40"
+                                                   Placeholder="e.g. 20 or 10,20,30,40"
                                                    IsCursorVisible="False"
                                                    Text="{Binding CornerRadiusEntryText, Mode=TwoWay}"
                                                    TextChanged="OnCornerRadiusEntryChanged"/>
@@ -59,6 +60,24 @@
                                                    IsCursorVisible="False"
                                                    Text="{Binding OpacityEntryText, Mode=TwoWay}"
                                                    TextChanged="OnOpacityChanged"/>
+                                <Label FontAttributes="Bold"
+                                       AutomationId="WidthLabel"
+                                       Text="Width"/>
+                                <local:UITestEntry x:Name="WidthEntry"
+                                                   Placeholder="Enter width"
+                                                   AutomationId="WidthEntry"
+                                                   IsCursorVisible="False"
+                                                   Text="{Binding WidthEntryText, Mode=TwoWay}"
+                                                   TextChanged="OnWidthChanged"/>
+                                <Label FontAttributes="Bold"
+                                       AutomationId="HeightLabel"
+                                       Text="Height"/>
+                                <local:UITestEntry x:Name="HeightEntry"
+                                                   Placeholder="Enter height"
+                                                   AutomationId="HeightEntry"
+                                                   IsCursorVisible="False"
+                                                   Text="{Binding HeightEntryText, Mode=TwoWay}"
+                                                   TextChanged="OnHeightChanged"/>
 
                                 <Button Text="Reset Changes"
                                         WidthRequest="150"
@@ -85,6 +104,12 @@
                                                      GroupName="Colors"
                                                      AutomationId="BlueRadioButton"
                                                      IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
+
+                                        <RadioButton Content="Green"
+                                                     Value="Green"
+                                                     GroupName="Colors"
+                                                     AutomationId="GreenRadioButton"
+                                                     IsChecked="{Binding IsGreenChecked, Mode=TwoWay}"/>
                                 </VerticalStackLayout>
 
                                 <VerticalStackLayout Spacing="5">
@@ -111,10 +136,9 @@
 
                                                 <CheckBox x:Name="FlowDirectionRTLCheckBox"
                                                           AutomationId="FlowDirectionRTLCheckBox"
-                                                          IsChecked="False"
-                                                          CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
+                                                          IsChecked="{Binding IsRTL, Mode=TwoWay}"/>
                                                 <Label Text="RTL"
-                                                                VerticalOptions="Center"/>
+                                                       VerticalOptions="Center"/>
                                         </StackLayout>
 
                                 </VerticalStackLayout>
