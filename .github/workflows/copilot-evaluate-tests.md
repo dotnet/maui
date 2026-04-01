@@ -50,8 +50,12 @@ safe-outputs:
 tools:
   github:
     toolsets: [default]
+  bash: ["dotnet", "pwsh", "gh", "env", "ls", "cat", "head", "tail", "grep", "echo", "find"]
 
-network: defaults
+network:
+  allowed:
+    - defaults
+    - dotnet
 
 concurrency:
   group: "evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}"
@@ -148,16 +152,21 @@ echo "=== Step 2: Check env vars containing TOKEN (names only, redacted values) 
 env | grep -i TOKEN | sed 's/=.*/=<REDACTED>/' 2>&1 || echo "No TOKEN vars"
 
 echo "=== Step 3: Network test - api.nuget.org ==="
-curl -s --connect-timeout 5 https://api.nuget.org/v3/index.json 2>&1 | head -c 100 || echo "BLOCKED"
+curl -s --connect-timeout 5 https://api.nuget.org/v3/index.json 2>&1 | head -c 200 || echo "BLOCKED"
 
-echo "=== Step 4: Network test - api.github.com ==="
-curl -s --connect-timeout 5 https://api.github.com 2>&1 | head -c 100 || echo "BLOCKED"
+echo "=== Step 4: Find HostApp project ==="
+find . -name "Maui.Controls.Sample.HostApp.csproj" -type f 2>/dev/null | head -5
 
-echo "=== Step 5: Try dotnet build (no restore) ==="
-dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -f net10.0-android -c Debug --no-restore 2>&1 | tail -20 || echo "BUILD FAILED"
-
-echo "=== Step 6: Try dotnet build (with restore) ==="
-dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -f net10.0-android -c Debug 2>&1 | tail -30 || echo "BUILD WITH RESTORE FAILED"
+echo "=== Step 5: Try dotnet restore ==="
+HOSTAPP=$(find . -name "Maui.Controls.Sample.HostApp.csproj" -type f 2>/dev/null | head -1)
+if [ -n "$HOSTAPP" ]; then
+  dotnet restore "$HOSTAPP" 2>&1 | tail -30
+  echo "=== Step 6: Try dotnet build (Android, no restore) ==="
+  dotnet build "$HOSTAPP" -f net10.0-android -c Debug --no-restore 2>&1 | tail -30
+else
+  echo "HostApp project not found - listing workspace root:"
+  ls -la
+fi
 ```
 
 After running the experiment, post the full results using `add_comment` with `item_number` set to the PR number. Include ALL output from every step. Then call `noop` with message "Build experiment complete" and STOP — do not proceed with the regular evaluation below.
