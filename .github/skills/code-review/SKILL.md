@@ -1,13 +1,18 @@
 ---
 name: code-review
-description: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Uses independence-first assessment (code before narrative) and optional multi-model review. Invoke with "review code for PR #XXXXX" or "code review PR #XXXXX".
+description: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Uses independence-first assessment (code before narrative) and optional multi-model review. Invoke with "review code for PR #XXXXX", "code review PR #XXXXX", "analyze code changes in PR", "check PR code quality", or "look at what changed in PR #XXXXX".
 ---
 
 # Code Review Skill
 
 Standalone skill that evaluates PR code changes for correctness, safety, performance, and consistency with .NET MAUI conventions. Can be invoked directly by users or by other agents/skills.
 
-**Trigger phrases:** "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code"
+**Trigger phrases:** "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code", "analyze code changes in PR", "check PR code quality", "look at what changed in PR #XXXXX"
+
+> **How this differs from other skills:**
+> - **`pr-review`** — End-to-end PR workflow (4 phases: pre-flight, gate, try-fix, report). Use when you want the full pipeline including test verification and fix attempts.
+> - **`pr-finalize`** — Verifies PR title/description match implementation + light code review. Use before merging.
+> - **`code-review`** (this skill) — Deep code-only review with MAUI domain rules. Use when you want a thorough code analysis without running tests or modifying the PR.
 
 ## Core Principles
 
@@ -61,7 +66,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 
 ### Step 2: Load Review Rules
 
-Read `references/review-rules.md` from this skill's directory. These rules are distilled from real code reviews by senior MAUI maintainers across 142 high-discussion PRs.
+Read `.github/skills/code-review/references/review-rules.md`. These rules are distilled from real code reviews by senior MAUI maintainers across 142 high-discussion PRs.
 
 ### Step 3: Form Independent Assessment
 
@@ -182,6 +187,7 @@ When the environment supports multiple models, run the review in parallel for di
 3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
 5. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
+6. **Output to terminal only by default.** Do not post review comments to GitHub (`gh pr review --comment`) unless explicitly asked by the user or orchestrated by another agent. This matches `pr-finalize` policy.
 
 ---
 
