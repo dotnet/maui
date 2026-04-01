@@ -24,6 +24,18 @@ public class Issue13323 : ContentPage
 			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
+				var label = new Label
+				{
+					AutomationId = "SwipeArea",
+					HeightRequest = 100,
+					HorizontalOptions = LayoutOptions.Fill,
+					VerticalOptions = LayoutOptions.Start,
+					BackgroundColor = Colors.LightGray,
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center,
+				};
+				label.SetBinding(Label.TextProperty, ".");
+
 				var entry = new Entry
 				{
 					AutomationId = "CenterEntry",
@@ -32,14 +44,9 @@ public class Issue13323 : ContentPage
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 				};
 
-				return new Border
+				return new VerticalStackLayout
 				{
-					HeightRequest = 200,
-					Content = new VerticalStackLayout
-					{
-						VerticalOptions = LayoutOptions.Center,
-						Children = { entry }
-					}
+					Children = { label, entry }
 				};
 			})
 		};
@@ -64,6 +71,18 @@ public class Issue13323 : ContentPage
 			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
+				var label = new Label
+				{
+					AutomationId = "LoopSwipeArea",
+					HeightRequest = 100,
+					HorizontalOptions = LayoutOptions.Fill,
+					VerticalOptions = LayoutOptions.Start,
+					BackgroundColor = Colors.LightGray,
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center,
+				};
+				label.SetBinding(Label.TextProperty, ".");
+
 				var entry = new Entry
 				{
 					AutomationId = "LoopCenterEntry",
@@ -72,14 +91,9 @@ public class Issue13323 : ContentPage
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 				};
 
-				return new Border
+				return new VerticalStackLayout
 				{
-					HeightRequest = 200,
-					Content = new VerticalStackLayout
-					{
-						VerticalOptions = LayoutOptions.Center,
-						Children = { entry }
-					}
+					Children = { label, entry }
 				};
 			})
 		};

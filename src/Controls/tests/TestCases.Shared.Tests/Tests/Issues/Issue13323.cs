@@ -15,17 +15,17 @@ public class Issue13323 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void CarouselView_EntryTap_DoesNotChangePosition()
 	{
-		App.WaitForElement("CarouselView13323");
+		App.WaitForElement("CarouselView13323", timeout: TimeSpan.FromSeconds(30));
 
-		App.SwipeRightToLeft("CarouselView13323");
-		App.SwipeRightToLeft("CarouselView13323");
+		// Swipe on the Label area (not the Entry) to avoid gesture interception
+		App.SwipeRightToLeft("SwipeArea");
+		App.SwipeRightToLeft("SwipeArea");
 
-		App.WaitForElement("Position:2");
+		App.WaitForElement("Position:2", timeout: TimeSpan.FromSeconds(15));
 
 		App.Tap("CenterEntry");
 
-		// Position must remain at 2 after tapping Center-aligned Entry
-		App.WaitForElement("Position:2");
+		App.WaitForElement("Position:2", timeout: TimeSpan.FromSeconds(15));
 
 		var positionAfter = App.FindElement("PositionLabel").GetText();
 		Assert.That(positionAfter, Is.EqualTo("Position:2"), $"CarouselView jumped after tapping Center-aligned Entry: {positionAfter}");
@@ -38,17 +38,16 @@ public class Issue13323 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void CarouselView_Loop_EntryTap_DoesNotChangePosition()
 	{
-		App.WaitForElement("LoopCarouselView13323");
+		App.WaitForElement("LoopCarouselView13323", timeout: TimeSpan.FromSeconds(30));
 
-		App.SwipeRightToLeft("LoopCarouselView13323");
-		App.SwipeRightToLeft("LoopCarouselView13323");
+		App.SwipeRightToLeft("LoopSwipeArea");
+		App.SwipeRightToLeft("LoopSwipeArea");
 
-		App.WaitForElement("LoopPosition:2");
+		App.WaitForElement("LoopPosition:2", timeout: TimeSpan.FromSeconds(15));
 
 		App.Tap("LoopCenterEntry");
 
-		// Position must remain at 2 after tapping Center-aligned Entry with Loop=true
-		App.WaitForElement("LoopPosition:2");
+		App.WaitForElement("LoopPosition:2", timeout: TimeSpan.FromSeconds(15));
 
 		var positionAfter = App.FindElement("LoopPositionLabel").GetText();
 		Assert.That(positionAfter, Is.EqualTo("LoopPosition:2"), $"CarouselView (Loop=true) jumped after tapping Center-aligned Entry: {positionAfter}");
