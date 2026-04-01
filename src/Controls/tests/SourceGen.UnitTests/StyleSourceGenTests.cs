@@ -184,8 +184,6 @@ public partial class TestPage
 			this.InitializeComponentRuntime();
 			return;
 		}
-		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
@@ -194,6 +192,8 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
+		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		__root.Resources["EmptyStyle"] = style;
 	}
 }
@@ -316,8 +316,6 @@ public partial class TestPage
 			this.InitializeComponentRuntime();
 			return;
 		}
-		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
@@ -326,6 +324,8 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
+		var style = new global::Microsoft.Maui.Controls.Style("Microsoft.Maui.Controls.Label, Microsoft.Maui.Controls");
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 4);
 		style.LazyInitialization = (__style, __target) =>
 		{
 			if (__target is not global::Microsoft.Maui.Controls.Label) return;
