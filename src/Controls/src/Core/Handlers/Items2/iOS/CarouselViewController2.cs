@@ -561,9 +561,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 			{
-				// Cancel any pending position update to prevent race conditions
-				_scrollDebounce?.Cancel();
+				var old = _scrollDebounce;
 				_scrollDebounce = new CancellationTokenSource();
+				// Cancel any pending position update to prevent race conditions
+				old?.Cancel();
+				old?.Dispose();
 				var token = _scrollDebounce.Token;
 
 				try
@@ -598,10 +600,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						});
 					}, token);
 				}
-				catch (Exception)
+				catch (OperationCanceledException)
 				{
-					// Silently handle exceptions to prevent app crashes in async void context
-					// If the delay or scroll operation fails, the carousel will remain in its current state
+					// Expected when a newer UpdateFromPosition call cancels this one
 				}
 			}
 			else
