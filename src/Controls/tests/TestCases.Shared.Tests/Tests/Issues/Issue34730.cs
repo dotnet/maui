@@ -15,35 +15,23 @@ public class Issue34730 : _IssuesUITest
 	[Category(UITestCategories.SoftInput)]
 	public void HideSoftInputOnTappedWorksOnModalPage()
 	{
-		try
-		{
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-
-			App.WaitForElement("OpenModalButton");
-			App.Tap("OpenModalButton");
-
-			App.WaitForElement("ModalEntry");
-			App.Tap("ModalEntry");
-
-			Assert.That(App.IsKeyboardShown(), Is.True);
-
-			App.WaitForElement("ModalEmptySpace");
-			App.Tap("ModalEmptySpace");
-
-			Assert.That(App.IsKeyboardShown(), Is.False);
-		}
-		finally
+		if (App.IsKeyboardShown())
 		{
 			App.DismissKeyboard();
-
-			if (App.FindElements("CloseModalButton").Count > 0)
-			{
-				App.Tap("CloseModalButton");
-			}
 		}
+
+		App.WaitForElement("OpenModalButton");
+		App.Tap("OpenModalButton");
+
+		App.WaitForElement("ModalEntry");
+		App.Tap("ModalEntry");
+
+		Assert.That(App.IsKeyboardShown(), Is.True);
+
+		App.WaitForElement("ModalEmptySpace");
+		App.Tap("ModalEmptySpace");
+
+		Assert.That(App.IsKeyboardShown(), Is.False);
 	}
 }
 #endif

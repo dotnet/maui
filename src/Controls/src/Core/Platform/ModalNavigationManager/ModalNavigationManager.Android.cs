@@ -499,12 +499,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public override bool DispatchTouchEvent(MotionEvent? e)
 				{
+					if (e is null)
+					{
+						return base.DispatchTouchEvent(e!);
+					}
+
+					bool handled = base.DispatchTouchEvent(e);
+
 					// Modal dialogs have their own Android Window, so touch events don't
 					// reach the Activity's DispatchTouchEvent. Forward them to the MAUI
 					// Window so that HideSoftInputOnTappedChangedManager can detect taps
 					// and dismiss the keyboard when HideSoftInputOnTapped is enabled.
-					bool handled = e is not null && base.DispatchTouchEvent(e);
-
 					bool implHandled =
 						(Context.GetWindow() as IPlatformEventsListener)?.DispatchTouchEvent(e) == true;
 
