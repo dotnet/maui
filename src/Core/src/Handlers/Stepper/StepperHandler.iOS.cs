@@ -204,6 +204,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView is IStepper virtualView && sender is UIStepper platformView)
 				{
+					var oldValue = virtualView.Value;
+					var newValue = platformView.Value;
+
 					// iOS 26+ fix: Adjust stepValue for boundary handling
 					if (OperatingSystem.IsIOSVersionAtLeast(26)
 						&& NeedsStepValueAdjustment(virtualView, platformView))
@@ -211,7 +214,30 @@ namespace Microsoft.Maui.Handlers
 						AdjustStepValueForBoundaries(virtualView, platformView);
 					}
 
-					virtualView.Value = platformView.Value;
+					// iOS 26+ fix: Correct partial steps caused by boundary adjustment.
+					// If the step was partial (stepValue was reduced for a boundary) but the
+					// full step still fits within [min, max], it was NOT an intentional
+					// boundary reach — correct to the full increment.
+					if (OperatingSystem.IsIOSVersionAtLeast(26))
+					{
+						const double epsilon = 1e-10;
+						var actualStep = newValue - oldValue;
+						var interval = virtualView.Interval;
+
+						if (Math.Abs(actualStep) > epsilon
+							&& Math.Abs(Math.Abs(actualStep) - interval) > epsilon)
+						{
+							var fullStep = oldValue + (actualStep > 0 ? interval : -interval);
+							if (fullStep >= virtualView.Minimum && fullStep <= virtualView.Maximum)
+							{
+								platformView.Value = fullStep;
+								platformView.StepValue = interval;
+								newValue = fullStep;
+							}
+						}
+					}
+
+					virtualView.Value = newValue;
 				}
 			}
 		}
