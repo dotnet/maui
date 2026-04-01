@@ -175,7 +175,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var vsgSpecificity = vsgSpecificityValue.Key;
-			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+			// Build a VSM setter specificity that preserves the style origin so setters
+			// are unapplied/reapplied at the correct priority level.
+			var specificity = vsgSpecificity.CopyStyle(extras: 1, manual: 0, isDynamicResource: 0, isBinding: 0);
 
 			foreach (VisualStateGroup group in groups)
 			{
