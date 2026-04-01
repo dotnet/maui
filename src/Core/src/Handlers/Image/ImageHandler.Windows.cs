@@ -188,8 +188,13 @@ namespace Microsoft.Maui.Handlers
 			// handler hasn't been disconnected
 			if (this.IsConnected())
 			{
-				// Cache size when image loads for consistent layout
-				_cachedImageSize = GetImageSize();
+				// Only cache when decode produced positive dimensions.
+				// A blank BitmapImage (e.g. during source transitions) fires ImageOpened
+				// with PixelWidth=0; ignoring it preserves the last-known-good size.
+				var sz = GetImageSize();
+				if (sz.Width > 0 && sz.Height > 0)
+					_cachedImageSize = sz;
+
 				UpdateValue(nameof(IImage.IsAnimationPlaying));
 				// Apply platform constraints when the decoded size is available
 				UpdatePlatformMaxConstraints();
