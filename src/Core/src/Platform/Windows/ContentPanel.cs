@@ -76,24 +76,24 @@ namespace Microsoft.Maui.Platform
 			SizeChanged += ContentPanelSizeChanged;
 		}
 
-	// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
-	protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
+		// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
+		protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
 
-	partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
-	{
-		internal ContentPanelAutomationPeer(ContentPanel owner) : base(owner) { }
+		partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
+		{
+			internal ContentPanelAutomationPeer(ContentPanel owner) : base(owner) { }
 
-		bool HasDescription => !string.IsNullOrWhiteSpace(AutomationProperties.GetName(Owner));
+			bool HasDescription => !string.IsNullOrWhiteSpace(AutomationProperties.GetName(Owner));
 
-		protected override AutomationControlType GetAutomationControlTypeCore() =>
-			HasDescription ? AutomationControlType.Text : AutomationControlType.Custom;
+			protected override AutomationControlType GetAutomationControlTypeCore() =>
+				HasDescription ? AutomationControlType.Text : AutomationControlType.Custom;
 
-		protected override string GetLocalizedControlTypeCore() =>
-			HasDescription ? string.Empty : base.GetLocalizedControlTypeCore() ?? string.Empty;
+			protected override string GetLocalizedControlTypeCore() =>
+				HasDescription ? string.Empty : base.GetLocalizedControlTypeCore() ?? string.Empty;
 
-		protected override IList<AutomationPeer>? GetChildrenCore() =>
-			HasDescription ? null : base.GetChildrenCore();
-	}
+			protected override IList<AutomationPeer>? GetChildrenCore() =>
+				HasDescription ? null : base.GetChildrenCore();
+		}
 
 		void ContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
 		{

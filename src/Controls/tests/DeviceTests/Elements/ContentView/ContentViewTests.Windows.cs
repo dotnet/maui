@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -23,16 +24,19 @@ namespace Microsoft.Maui.DeviceTests
 				return 0;
 		}
 
-		static FrameworkElementAutomationPeer GetOrCreateAutomationPeer(ContentPanel contentPanel)
+		static AutomationPeer GetOrCreateAutomationPeer(ContentPanel contentPanel)
 		{
-			var peer = FrameworkElementAutomationPeer.FromElement(contentPanel);
-			
-			if (peer == null)
-			{
-				peer = FrameworkElementAutomationPeer.CreatePeerForElement(contentPanel);
-			}
+			// WinUI 3's CreatePeerForElement() does NOT call OnCreateAutomationPeer() — it creates
+			// a plain FrameworkElementAutomationPeer directly, bypassing the custom peer override.
+			// Use reflection to invoke OnCreateAutomationPeer() and get the actual ContentPanelAutomationPeer.
+			var method = contentPanel.GetType().GetMethod(
+				"OnCreateAutomationPeer",
+				BindingFlags.NonPublic | BindingFlags.Instance);
 
-			return (FrameworkElementAutomationPeer)peer;
+			if (method?.Invoke(contentPanel, null) is AutomationPeer peer)
+				return peer;
+
+			return FrameworkElementAutomationPeer.CreatePeerForElement(contentPanel);
 		}
 
 		[Fact(DisplayName = "ContentView With Description Prevents Duplicate Narrator Announcements")]
