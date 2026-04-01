@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Handlers
 
 			ShowPickerDialog(VirtualView.Time);
 		}
-	
+
 		// This overload is here so we can pass in the current values from the dialog 
 		// on an orientation change (so that orientation changes don't cause the user's date selection progress
 		// to be lost). Not useful until we have orientation changed events.
