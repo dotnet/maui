@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			// Default to the composition control; OnUseCompositionControlPropertyChanged will
 			// update this if UseCompositionControl is set to false before the control is initialized.
-			Template = CreateWebViewTemplate(useComposition: true);
+			Template = CreateWebViewTemplate(useComposition: UseCompositionControl);
 
 			ApplyTabNavigation(IsTabStop);
 		}
