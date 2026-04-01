@@ -262,41 +262,48 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Scripts**: `query-reviewable-prs.ps1`
    - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
 
-5. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
+5. **backlog-groom** (`.github/skills/backlog-groom/SKILL.md`)
+   - **Purpose**: Evaluates and grooms the open issue backlog — stale issues, missing repros, possibly-fixed issues, label gaps
+   - **Trigger phrases**: "groom the backlog", "find stale issues", "which issues might be fixed?", "generate backlog report", "find issues missing repro"
+   - **Scripts**: `query-backlog.ps1`, `assess-issue.ps1`, `generate-report.ps1`
+   - **Modes**: Interactive (one-at-a-time), batch report, single issue assessment
+   - **GitHub Action**: `backlog-groom.yml` — weekly scheduled + manual dispatch
+
+6. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
    - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
    - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
    - **Used by**: Before merging any PR, when description may be stale
    - **Note**: Does NOT require agent involvement or session markdown - works on any PR
    - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
 
-6. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
+7. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
    - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
    - **Trigger phrases**: "what can we learn from PR #XXXXX?", "how can we improve agents based on PR #XXXXX?"
    - **Used by**: After complex PRs, when agent struggled to find solution
    - **Output**: Prioritized recommendations for instruction files, skills, code comments
    - **Note**: For applying changes automatically, use the learn-from-pr agent instead
 
-7. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
+8. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
    - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
    - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
    - **Output**: Test files that fail without fix, pass with fix
 
-8. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+9. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
    - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
    - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
    - **Output**: Test files for Controls.Xaml.UnitTests
 
-9. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+10. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
    - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-10. **azdo-build-investigator** (`.github/skills/azdo-build-investigator/SKILL.md`)
+11. **azdo-build-investigator** (`.github/skills/azdo-build-investigator/SKILL.md`)
    - **Purpose**: Investigates CI failures for PRs — build errors, Helix test logs, and binlog analysis. Delegates to the `ci-analysis` skill from the dotnet/arcade-skills plugin.
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status", "what's failing on PR", "Helix failures"
    - **Used by**: When investigating CI failures
 
-11. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+12. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
    - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
@@ -310,7 +317,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 
 #### Internal Skills (Used by Skills/Agents)
 
-12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+13. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: `pr-review` skill Phase 3 (Try-Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
@@ -325,6 +332,8 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" → Immediately invoke **pr-review** skill
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
+- User: "Groom the backlog" → Immediately invoke **backlog-groom** skill
+- User: "Find stale issues" → Immediately invoke **backlog-groom** skill
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
