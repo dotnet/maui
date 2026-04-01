@@ -928,8 +928,10 @@
         <RemoveDir Directories="$(_ResizetizerIntermediateOutputRoot)" Condition="Exists ('$(_ResizetizerIntermediateOutputRoot)' )" />
     </Target>
 
-    <!-- Aggregate target to ensure all resource processing has completed. -->
+    <!-- Aggregate target to ensure all resource processing has completed.
+         Wired into the build graph via AfterTargets so the after-all hook actually fires. -->
     <Target Name="_ResizetizerAllResourceProcessing"
+            AfterTargets="ProcessMauiAssets"
             DependsOnTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets" />
 
     <!-- Extensibility target: runs after all resource processing is complete.
