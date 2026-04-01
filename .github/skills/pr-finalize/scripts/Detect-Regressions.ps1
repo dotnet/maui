@@ -258,17 +258,48 @@ foreach ($file in $FileDeletes.Keys) {
                 if (-not $commitMsg) { continue }
 
                 # Check if commit references an issue
-                $issueRefs = Get-IssueReferences $commitMsg
+                $issueRefs = @(Get-IssueReferences $commitMsg)
+                $prRefs = @([regex]::Matches($commitMsg, '\(#(\d+)\)') | ForEach-Object { $_.Groups[1].Value })
+
+                # If the commit message itself has no issue refs but references a PR number,
+                # check the PR body on GitHub — many PRs put "Fixes #XXXX" only in the
+                # PR description, not in the commit message body.
+                if ($issueRefs.Count -eq 0 -and $prRefs.Count -gt 0) {
+                    foreach ($prNum in $prRefs) {
+                        try {
+                            $prBody = gh pr view $prNum --repo $env:GITHUB_REPOSITORY --json body --jq '.body' 2>&1
+                            if ($LASTEXITCODE -eq 0 -and $prBody) {
+                                $prIssueRefs = @(Get-IssueReferences ($prBody | Out-String))
+                                if ($prIssueRefs.Count -gt 0) {
+                                    $issueRefs = $prIssueRefs
+                                    break
+                                }
+                                # Also check for standalone "- #XXXX" or "* #XXXX" under a Fixes/Issues section
+                                $sectionRefs = @([regex]::Matches(($prBody | Out-String),
+                                    '(?:^|\n)\s*[-*]\s*#(\d+)', [System.Text.RegularExpressions.RegexOptions]::Multiline) |
+                                    ForEach-Object { $_.Groups[1].Value })
+                                if ($sectionRefs.Count -gt 0) {
+                                    $issueRefs = $sectionRefs
+                                    break
+                                }
+                            }
+                        }
+                        catch {
+                            # gh CLI may not be available (e.g. inside agent sandbox)
+                            # Fall through — the agent prompt can do this check via MCP tools
+                        }
+                    }
+                }
+
                 if ($issueRefs.Count -gt 0) {
                     $commitSubject = (git log --format="%s" -1 $commitHash 2>&1) -join ""
-                    $prRefs = [regex]::Matches($commitMsg, '\(#(\d+)\)') | ForEach-Object { $_.Groups[1].Value }
 
                     $Regressions += [PSCustomObject]@{
                         File           = $file
                         DeletedLine    = $deleteInfo.LineContent
                         CommitHash     = $commitHash.Substring(0, 7)
                         CommitSubject  = $commitSubject
-                        IssueRefs      = $issueRefs -join ', '
+                        IssueRefs      = ($issueRefs | ForEach-Object { "#$_" }) -join ', '
                         PRRefs         = $prRefs -join ', '
                     }
                     break  # One match per deleted line is enough
@@ -307,11 +338,11 @@ else {
 
 **Origin:** Added in commit ``$($reg.CommitHash)``$prInfo — _"$($reg.CommitSubject)"_
 
-**References issue(s):** #$($reg.IssueRefs)
+**References issue(s):** $($reg.IssueRefs)
 
-**⚠️ Risk:** This line was deliberately added to fix issue(s) #$($reg.IssueRefs). Removing it may reintroduce that bug.
+**⚠️ Risk:** This line was deliberately added to fix issue(s) $($reg.IssueRefs). Removing it may reintroduce that bug.
 
-**Required action:** The PR author must confirm this removal is intentional AND explain how issue #$($reg.IssueRefs) is still prevented by other means.
+**Required action:** The PR author must confirm this removal is intentional AND explain how issue $($reg.IssueRefs) is still prevented by other means.
 
 "@
     }
