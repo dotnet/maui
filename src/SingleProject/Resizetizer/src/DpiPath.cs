@@ -312,6 +312,34 @@ namespace Microsoft.Maui.Resizetizer
 
 		}
 
+		/// <summary>
+		/// Generic fallback definitions for unknown/custom platform backends.
+		/// </summary>
+		public static class Generic
+		{
+			public static DpiPath Original =>
+				new DpiPath("", 1.0m);
+
+			public static DpiPath[] Image =>
+				new[]
+				{
+					new DpiPath("", 1.0m),
+					new DpiPath("", 2.0m, null, "@2x"),
+				};
+
+			public static DpiPath[] AppIcon =>
+				new[]
+				{
+					new DpiPath("", 1.0m, null, null, new SKSize(16, 16)),
+					new DpiPath("", 1.0m, null, null, new SKSize(32, 32)),
+					new DpiPath("", 1.0m, null, null, new SKSize(48, 48)),
+					new DpiPath("", 1.0m, null, null, new SKSize(128, 128)),
+					new DpiPath("", 1.0m, null, null, new SKSize(256, 256)),
+					new DpiPath("", 1.0m, null, null, new SKSize(512, 512)),
+					new DpiPath("", 1.0m, null, null, new SKSize(1024, 1024)),
+				};
+		}
+
 		public static DpiPath GetOriginal(string platform)
 		{
 			switch (platform.ToLowerInvariant())
@@ -327,7 +355,7 @@ namespace Microsoft.Maui.Resizetizer
 				case "tizen":
 					return DpiPath.Tizen.Original;
 				default:
-					return new DpiPath("", 1.0m);
+					return DpiPath.Generic.Original;
 			}
 		}
 
@@ -346,11 +374,7 @@ namespace Microsoft.Maui.Resizetizer
 				case "tizen":
 					return DpiPath.Tizen.Image;
 				default:
-					return new[]
-					{
-						new DpiPath("", 1.0m),
-						new DpiPath("", 2.0m, null, "@2x"),
-					};
+					return DpiPath.Generic.Image;
 			}
 		}
 
@@ -376,16 +400,7 @@ namespace Microsoft.Maui.Resizetizer
 					result = DpiPath.Tizen.AppIcon;
 					break;
 				default:
-					result = new[]
-					{
-						new DpiPath("", 1.0m, null, null, new SKSize(16, 16)),
-						new DpiPath("", 1.0m, null, null, new SKSize(32, 32)),
-						new DpiPath("", 1.0m, null, null, new SKSize(48, 48)),
-						new DpiPath("", 1.0m, null, null, new SKSize(128, 128)),
-						new DpiPath("", 1.0m, null, null, new SKSize(256, 256)),
-						new DpiPath("", 1.0m, null, null, new SKSize(512, 512)),
-						new DpiPath("", 1.0m, null, null, new SKSize(1024, 1024)),
-					};
+					result = DpiPath.Generic.AppIcon;
 					break;
 			}
 

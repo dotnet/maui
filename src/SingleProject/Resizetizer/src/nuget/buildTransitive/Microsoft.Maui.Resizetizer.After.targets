@@ -111,25 +111,7 @@
         <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True'">
-        <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
-
-        <ResizetizeDependsOnTargets>
-            $(ResizetizeDependsOnTargets);
-            ResizetizeCollectItems;
-            ProcessMauiSplashScreens;
-            _ReadResizetizeImagesOutputs;
-        </ResizetizeDependsOnTargets>
-        <ProcessMauiFontsDependsOnTargets>
-            $(ProcessMauiFontsDependsOnTargets);
-            ResizetizeCollectItems;
-            ProcessMauiAssets;
-            ProcessMauiSplashScreens;
-        </ProcessMauiFontsDependsOnTargets>
-    </PropertyGroup>
-
-    <!-- Allow external backends to opt in by setting ResizetizerPlatformType -->
-    <PropertyGroup Condition="'$(_ResizetizerIsCompatibleApp)' != 'True' And '$(ResizetizerPlatformType)' != ''">
+    <PropertyGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' Or '$(_ResizetizerIsiOSApp)' == 'True' Or '$(_ResizetizerIsWPFApp)' == 'True' Or '$(_ResizetizerIsWindowsAppSdk)' == 'True' Or '$(_ResizetizerIsTizenApp)' == 'True' Or '$(ResizetizerPlatformType)' != ''">
         <_ResizetizerIsCompatibleApp>True</_ResizetizerIsCompatibleApp>
 
         <ResizetizeDependsOnTargets>
