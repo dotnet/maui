@@ -209,5 +209,20 @@ namespace Microsoft.Maui.Handlers
 				return IsCustom24HourFormat(VirtualView.Format);
 			}
 		}
+
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			// Only handle orientation changes when dialog is actually showing
+			if (_dialog is not null && _dialog.IsShowing)
+			{
+				// Unsubscribe first to prevent the DismissEvent from hiding the new dialog
+				_dialog.DismissEvent -= OnDialogDismiss;
+				_dialog.Dismiss();
+				_dialog = null;
+
+				// Recreate dialog with current values to handle orientation change
+				ShowPickerDialog(new TimeSpan(_currentHour, _currentMinute, 0));
+			}
+		}
 	}
 }
