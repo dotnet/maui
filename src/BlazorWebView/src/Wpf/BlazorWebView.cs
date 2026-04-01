@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			if (_webview != null)
 			{
 				throw new InvalidOperationException(
-					$"The {nameof(UseCompositionControl)} property cannot be changed after the {nameof(BlazorWebView)} has been initialized.");
+					$"The {nameof(UseCompositionControl)} property cannot be changed after the underlying WebView has been created.");
 			}
 
 			Template = CreateWebViewTemplate(useComposition: (bool)e.NewValue);
