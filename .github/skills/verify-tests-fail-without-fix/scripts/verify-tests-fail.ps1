@@ -560,18 +560,18 @@ function Get-TestResultFromOutput {
     # Format: "  Passed: 57\n  Failed: 0"
     # Run-DeviceTests.ps1 may retry internally, producing multiple Passed:/Failed: blocks.
     # Use the MAXIMUM Passed count (the successful run), not the last one (which may be a crash with 0/0).
-    $hasDeviceResults = $false
-    if ($content -match "Passed:\s*(\d+)" -and $content -match "Failed:\s*(\d+)") {
-        $allPassMatches = [regex]::Matches($content, "Passed:\s*(\d+)")
-        $allFailMatches = [regex]::Matches($content, "Failed:\s*(\d+)")
-        $devicePassCount = ($allPassMatches | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum
-        $deviceFailCount = ($allFailMatches | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum
+    $allPassMatches = [regex]::Matches($content, "(?m)^\s*Passed:\s*(\d+)")
+    $allFailMatches = [regex]::Matches($content, "(?m)^\s*Failed:\s*(\d+)")
 
+    if ($allPassMatches.Count -gt 0) {
+        $devicePassCount = ($allPassMatches | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum
+        $deviceFailCount = if ($allFailMatches.Count -gt 0) { ($allFailMatches | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum } else { 0 }
         $deviceTotal = $devicePassCount + $deviceFailCount
 
-        # If tests actually ran (total > 0), trust the results over exit codes
-        if ($deviceTotal -gt 0) {
-            $hasDeviceResults = $true
+        Write-Host "  📊 Parsed test results: Passed=$devicePassCount Failed=$deviceFailCount Total=$deviceTotal (from $($allPassMatches.Count) result blocks)" -ForegroundColor Gray
+
+        # If tests actually ran (passed > 0), trust the results over exit codes
+        if ($devicePassCount -gt 0) {
             if ($deviceFailCount -gt 0) {
                 return @{
                     Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
