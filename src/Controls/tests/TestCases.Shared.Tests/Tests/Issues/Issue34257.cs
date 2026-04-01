@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //In windows, related issue: https://github.com/dotnet/maui/issues/4715
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
