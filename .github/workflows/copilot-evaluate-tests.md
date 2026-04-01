@@ -136,7 +136,33 @@ If there is nothing to evaluate (PR has no test files, PR is a docs-only change,
 
 Do not post a comment and do not silently exit — always use `noop` so the workflow run shows a clear reason.
 
-## Running the skill
+## EXPERIMENT: Build Environment Test (run this FIRST)
+
+Before doing anything else, run these commands and report what you find:
+
+```bash
+echo "=== Step 1: Check .NET SDK ==="
+dotnet --version 2>&1 || echo "dotnet CLI not found"
+
+echo "=== Step 2: Check env vars containing TOKEN (names only, redacted values) ==="
+env | grep -i TOKEN | sed 's/=.*/=<REDACTED>/' 2>&1 || echo "No TOKEN vars"
+
+echo "=== Step 3: Network test - api.nuget.org ==="
+curl -s --connect-timeout 5 https://api.nuget.org/v3/index.json 2>&1 | head -c 100 || echo "BLOCKED"
+
+echo "=== Step 4: Network test - api.github.com ==="
+curl -s --connect-timeout 5 https://api.github.com 2>&1 | head -c 100 || echo "BLOCKED"
+
+echo "=== Step 5: Try dotnet build (no restore) ==="
+dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -f net10.0-android -c Debug --no-restore 2>&1 | tail -20 || echo "BUILD FAILED"
+
+echo "=== Step 6: Try dotnet build (with restore) ==="
+dotnet build src/Controls/tests/TestCases.HostApp/Maui.Controls.Sample.HostApp.csproj -f net10.0-android -c Debug 2>&1 | tail -30 || echo "BUILD WITH RESTORE FAILED"
+```
+
+After running the experiment, post the full results using `add_comment` with `item_number` set to the PR number. Include ALL output from every step. Then call `noop` with message "Build experiment complete" and STOP — do not proceed with the regular evaluation below.
+
+## Running the skill (SKIP FOR THIS EXPERIMENT)
 
 1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). If `gh` CLI is unavailable, use the GitHub MCP tools instead.
 2. Run `pwsh .github/skills/evaluate-pr-tests/scripts/Gather-TestContext.ps1` to gather automated context
