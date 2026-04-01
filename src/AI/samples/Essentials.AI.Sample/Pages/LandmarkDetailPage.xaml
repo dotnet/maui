@@ -5,6 +5,7 @@
     xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Pages.LandmarkDetailPage"
     x:DataType="viewModels:LandmarkDetailViewModel"
     SafeAreaEdges="None"
@@ -59,10 +60,19 @@
                         TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
 
                     <!-- Current Weather -->
-                    <Label
-                        Text="{Binding CurrentWeather}"
-                        FontSize="16"
-                        IsVisible="{Binding CurrentWeather, Converter={StaticResource IsNotNullConverter}}" />
+                    <HorizontalStackLayout
+                        Spacing="4"
+                        IsVisible="{Binding CurrentWeather, Converter={StaticResource IsNotNullConverter}}">
+                        <Label
+                            Text="{Binding WeatherIcon}"
+                            FontFamily="FluentUI"
+                            FontSize="16"
+                            VerticalOptions="Center" />
+                        <Label
+                            Text="{Binding CurrentWeather}"
+                            FontSize="16"
+                            VerticalOptions="Center" />
+                    </HorizontalStackLayout>
 
                     <!-- Tags -->
                     <FlexLayout
@@ -124,10 +134,16 @@
                                 IsVisible="{Binding IsLoadingTip, Converter={StaticResource InvertedBoolConverter}}"
                                 Spacing="8">
                                 <Label
-                                    Text="✨ AI Travel Tip"
                                     FontSize="14"
                                     FontAttributes="Bold"
-                                    TextColor="{StaticResource Primary}" />
+                                    TextColor="{StaticResource Primary}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{x:Static f:FluentUI.sparkle_24_regular}" FontFamily="FluentUI" />
+                                            <Span Text=" AI Travel Tip" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
                                 <Label
                                     Text="{Binding AiTravelTip}"
                                     FontSize="14"
@@ -163,7 +179,8 @@
         <!-- Floating Back Button -->
         <Grid SafeAreaEdges="Container" VerticalOptions="Start" HorizontalOptions="Start">
             <Button
-                Text="←" Clicked="OnBackClicked"
+                Text="{x:Static f:FluentUI.arrow_left_24_regular}" FontFamily="FluentUI"
+                Clicked="OnBackClicked"
                 VerticalOptions="Start" HorizontalOptions="Start" Margin="20,8,0,0"
                 HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
                 FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
@@ -179,7 +196,7 @@
             Background="{AppThemeBinding Light=#F0FFFFFF, Dark=#F01C1C1E}">
 
             <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                <Label Text="🌐" FontSize="18" VerticalOptions="Center" />
+                <Label Text="{x:Static f:FluentUI.globe_20_regular}" FontFamily="FluentUI" FontSize="18" VerticalOptions="Center" />
                 <Picker
                     Title="Language"
                     ItemsSource="{Binding AvailableLanguages}"
@@ -190,13 +207,17 @@
 
             <Button
                 Grid.Column="1"
-                Text="🗺️ Plan a Trip"
                 FontSize="16"
                 Padding="16,12"
                 CornerRadius="12"
                 Background="{StaticResource Primary}"
                 TextColor="White"
-                Clicked="OnPlanTripClicked" />
+                Clicked="OnPlanTripClicked">
+                <Button.ImageSource>
+                    <FontImageSource Glyph="{x:Static f:FluentUI.map_20_regular}" FontFamily="FluentUI" Color="White" Size="20" />
+                </Button.ImageSource>
+                <Button.Text>Plan a Trip</Button.Text>
+            </Button>
         </Grid>
     </Grid>
 

@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Services;
 
 public class WeatherService(HttpClient httpClient)
 {
-	public async Task<string> GetWeatherForecastAsync(double latitude, double longitude, DateOnly date)
+	public async Task<(string Icon, string Text)> GetWeatherForecastAsync(double latitude, double longitude, DateOnly date)
 	{
 		try
 		{
@@ -16,7 +16,7 @@ public class WeatherService(HttpClient httpClient)
 
 			if (forecast?.Daily == null || forecast.Daily.Time.Count == 0)
 			{
-				return "☁️ Weather unavailable";
+				return (FluentUI.weather_cloudy_24_regular, "Weather unavailable");
 			}
 
 			// Find the index for the requested date
@@ -25,18 +25,18 @@ public class WeatherService(HttpClient httpClient)
 
 			if (index < 0 || index >= forecast.Daily.TemperatureMean.Count)
 			{
-				return "☁️ Weather unavailable";
+				return (FluentUI.weather_cloudy_24_regular, "Weather unavailable");
 			}
 
 			var temp = forecast.Daily.TemperatureMean[index];
 			var weatherCode = forecast.Daily.WeatherCode[index];
-			var emoji = WeatherCodeExtensions.GetWeatherEmoji(weatherCode);
+			var icon = WeatherCodeExtensions.GetWeatherIcon(weatherCode);
 
-			return $"{emoji} {temp:F0}°C";
+			return (icon, $"{temp:F0}°C");
 		}
 		catch
 		{
-			return "☁️ Weather unavailable";
+			return (FluentUI.weather_cloudy_24_regular, "Weather unavailable");
 		}
 	}
 }

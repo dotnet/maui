@@ -34,6 +34,9 @@ public partial class LandmarkDetailViewModel(
 	public partial string? CurrentWeather { get; set; }
 
 	[ObservableProperty]
+	public partial string? WeatherIcon { get; set; }
+
+	[ObservableProperty]
 	public partial string SelectedLanguage { get; set; } = "English";
 
 	public string[] AvailableLanguages => [
@@ -68,12 +71,15 @@ public partial class LandmarkDetailViewModel(
 	{
 		try
 		{
-			CurrentWeather = await weatherService.GetWeatherForecastAsync(
+			var (icon, text) = await weatherService.GetWeatherForecastAsync(
 				Landmark.Latitude, Landmark.Longitude, DateOnly.FromDateTime(DateTime.Now));
+			WeatherIcon = icon;
+			CurrentWeather = text;
 		}
 		catch
 		{
-			CurrentWeather = "☁️ Weather unavailable";
+			WeatherIcon = FluentUI.weather_cloudy_24_regular;
+			CurrentWeather = "Weather unavailable";
 		}
 	}
 

@@ -5,6 +5,7 @@
     xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Pages.LandmarksPage"
     x:DataType="viewModels:LandmarksViewModel"
     SafeAreaEdges="None"
@@ -85,7 +86,8 @@
         <Button
             x:Name="ChatFab"
             AutomationId="ChatFab"
-            Text="💬"
+            Text="{x:Static f:FluentUI.chat_24_regular}"
+            FontFamily="FluentUI"
             Clicked="OnChatButtonClicked"
             VerticalOptions="End"
             HorizontalOptions="End"

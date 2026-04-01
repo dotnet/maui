@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views"
     xmlns:models="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Views.ChatOverlayView">
 
     <ContentView.Resources>
@@ -182,15 +183,22 @@
                     Padding="16,12">
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
                         <Label
-                            Text="💬 Chat"
                             FontSize="18"
                             FontAttributes="Bold"
                             VerticalOptions="Center"
-                            TextColor="{AppThemeBinding Light=#1F1F1F, Dark=#E1E1E1}" />
+                            TextColor="{AppThemeBinding Light=#1F1F1F, Dark=#E1E1E1}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{x:Static f:FluentUI.chat_24_regular}" FontFamily="FluentUI" />
+                                    <Span Text=" Chat" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                         <Button
                             Grid.Column="1"
                             AutomationId="ChatNewButton"
-                            Text="🗑"
+                            Text="{x:Static f:FluentUI.delete_24_regular}"
+                            FontFamily="FluentUI"
                             FontSize="16"
                             BackgroundColor="Transparent"
                             TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
@@ -200,7 +208,8 @@
                         <Button
                             Grid.Column="2"
                             AutomationId="ChatCloseButton"
-                            Text="✕"
+                            Text="{x:Static f:FluentUI.dismiss_24_regular}"
+                            FontFamily="FluentUI"
                             FontSize="18"
                             BackgroundColor="Transparent"
                             TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
@@ -241,7 +250,8 @@
                         <Button
                             Grid.Column="1"
                             AutomationId="ChatSendButton"
-                            Text="▶"
+                            Text="{x:Static f:FluentUI.send_24_regular}"
+                            FontFamily="FluentUI"
                             Command="{Binding SendMessageCommand}"
                             FontSize="16"
                             Background="{StaticResource Primary}"
