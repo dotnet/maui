@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -88,7 +87,6 @@ namespace Microsoft.Maui.Platform
 			if (IsNavigating && OnResumeRequestedArgs is null)
 			{
 				// Queue the navigation request to be processed after the current one completes
-				System.Diagnostics.Debug.WriteLine($"[StackNavigationManager] Navigation in progress, queueing request. Queue size: {_navigationQueue.Count}");
 				_navigationQueue.Enqueue(args);
 				return;
 			}
@@ -329,6 +327,8 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			_navigationQueue.Clear();
+
 			if (IsNavigating)
 				NavigationFinished(NavigationView);
 
