@@ -20,31 +20,15 @@ public class Issue23902 : _IssuesUITest
 		App.WaitForElement("Go to Third Page");
 		App.Tap("ThirdPageButton");
 		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 1 times"));
-	}
-
-	[Test]
-	[Category(UITestCategories.Navigation)]
-	public async Task Issue23902NavigationTest2()
-	{
-		App.WaitForElement("Go to Third Page");
-		App.Tap("ThirdPageButton");
 		App.WaitForElement("SecondPageButton");
 		App.Tap("SecondPageButton");
 		App.WaitForElement("Go to Third Page");
 		App.Tap("ThirdPageButton");
 		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 2 times"));
-	}
-
-	[Test]
-	[Category(UITestCategories.Navigation)]
-	public async Task Issue23902NavigationTest3()
-	{
-		App.WaitForElement("Go to Third Page");
-		App.Tap("ThirdPageButton");
 		App.WaitForElement("Go to 4th Page");
 		App.Tap("FourthPageButton");
 		App.WaitForElement("Go Back to 3rd Page");
 		App.Tap("ThirdPageButton");
-		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 2 times"));
+		Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("NavigatedTo called 3 times"));
 	}
 }
