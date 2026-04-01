@@ -191,6 +191,22 @@ When the environment supports multiple models, run the review in parallel for di
 
 ---
 
+## Posting the Review
+
+After completing your review, suggest using the `Post-CodeReview.ps1` script to format and post the comment. **Do NOT post automatically** - always let the user decide when to post.
+
+```bash
+# Save your review to a file, then suggest:
+pwsh .github/scripts/Post-CodeReview.ps1 -PRNumber <PR_NUMBER> -ReviewFile /tmp/review.md -DryRun
+
+# User can then post when ready:
+pwsh .github/scripts/Post-CodeReview.ps1 -PRNumber <PR_NUMBER> -ReviewFile /tmp/review.md
+```
+
+The script wraps the review in a collapsible `<details>` section, adds PR metadata (commit SHA, title), and auto-detects the verdict for a colored status dot (🟢 Approved, 🟡 Changes Suggested, 🟠 Discussion Needed).
+
+---
+
 ## Completion Criteria
 
 - [ ] Full source files read (not just diffs)
