@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			this IMauiBlazorWebViewBuilder builder)
 			where THandler : IViewHandler, new()
 		{
+			ArgumentNullException.ThrowIfNull(builder);
 			builder.Services.ConfigureMauiHandlers(handlers =>
 				handlers.AddHandler<IBlazorWebView, THandler>());
 			return builder;
@@ -42,8 +43,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <returns>The <see cref="IMauiBlazorWebViewBuilder"/> for chaining.</returns>
 		public static IMauiBlazorWebViewBuilder UsePlatformHandler(
 			this IMauiBlazorWebViewBuilder builder,
-			Func<IServiceProvider, IElementHandler> factory)
+			Func<IServiceProvider, IViewHandler> factory)
 		{
+			ArgumentNullException.ThrowIfNull(builder);
 			ArgumentNullException.ThrowIfNull(factory);
 			builder.Services.ConfigureMauiHandlers(handlers =>
 				handlers.AddHandler<IBlazorWebView>(factory));
