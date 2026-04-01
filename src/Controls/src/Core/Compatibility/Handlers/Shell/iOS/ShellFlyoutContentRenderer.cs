@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_tableViewController.View.UpdateFlowDirection(_shellContext.Shell);
 			_headerView?.UpdateFlowDirection(_shellContext.Shell);
+			_footerView?.UpdateFlowDirection(_shellContext.Shell);
 		}
 
 		void UpdateFlyoutHeader()
@@ -157,12 +158,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_footerView.ClipsToBounds = true;
 				_footer.MeasureInvalidated += OnFooterMeasureInvalidated;
 
-				// Same MatchParent resolution as header — see UpdateFlyoutHeader for explanation.
-				if (_footer.FlowDirection == FlowDirection.MatchParent)
-				{
-					_footer.FlowDirection = _shellContext.Shell.FlowDirection;
-				}
-
+				// Same approach as header — use Shell as context without mutating _footer.FlowDirection,
+				// so runtime Shell.FlowDirection changes continue to resolve correctly.
 				_footerView.UpdateFlowDirection(_shellContext.Shell);
 			}
 

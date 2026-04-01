@@ -38,6 +38,7 @@ public class Issue32419 : TestShell
 		var menuItem1 = new MenuItem
 		{
 			Text = "MenuItem 1",
+			AutomationId = "MenuItem1",
 		};
 
 		var menuItem2 = new MenuItem
