@@ -85,11 +85,7 @@ namespace Microsoft.Maui.Controls
 				// layout is attached to a Page), fall back to the controller's layout element.
 				// This ensures RadioButtons inside ContentView ControlTemplates are correctly found
 				// and unchecked even before the visual tree has a Page root (fixes issue #34759).
-				if (root == null)
-				{
-					root = RadioButtonGroupController.GetGroupController(radioButton)?.Layout;
-				}
-
+				root ??= RadioButtonGroupController.GetGroupController(radioButton)?.Layout;
 				root ??= (Element)radioButton.Parent;
 
 				if (root is not IElementController rootController)
