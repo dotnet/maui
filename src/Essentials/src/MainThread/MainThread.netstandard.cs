@@ -6,9 +6,10 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		static void PlatformBeginInvokeOnMainThread(Action action)
 		{
-			if (customBeginInvokeOnMainThreadImplementation is not null)
+			var impl = customImplementation;
+			if (impl is not null)
 			{
-				customBeginInvokeOnMainThreadImplementation(action);
+				impl.BeginInvokeOnMainThread(action);
 				return;
 			}
 
@@ -16,6 +17,6 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		static bool PlatformIsMainThread =>
-			customIsMainThreadImplementation?.Invoke() ?? throw ExceptionUtils.NotSupportedOrImplementedException;
+			customImplementation?.IsMainThread() ?? throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
