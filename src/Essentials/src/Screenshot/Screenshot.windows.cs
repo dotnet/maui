@@ -58,10 +58,9 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-
-#nullable enable
+#nullable enable annotations
 		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
-			platformView is UIElement element ? CaptureAsync(element) : Task.FromResult<IScreenshotResult?>(null);
+			platformView is UIElement element ? CaptureAsync(element)! : Task.FromResult<IScreenshotResult?>(null);
 #nullable restore
 	}
 
