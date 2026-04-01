@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls
 		string _groupName;
 		private object _selectedValue;
 
+		internal Element Layout => _layout;
+
 		public string GroupName { get => _groupName; set => SetGroupName(value); }
 		public object SelectedValue { get => _selectedValue; set => SetSelectedValue(value); }
 

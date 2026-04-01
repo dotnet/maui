@@ -409,5 +409,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(radioButton2.IsChecked);
 			Assert.True(radioButton3.IsChecked);
 		}
+
+		[Fact]
+		public void RadioButtonGroupWorksWithContentViewControlTemplate_Issue34759()
+		{
+			// Simulates issue #34759: ContentView with ControlTemplate containing RadioButton
+			// The ControlTemplate is applied inline (before ContentView is added to parent layout)
+			var groupName = "Test1";
+			var layout = new VerticalStackLayout();
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
+
+			// Create ContentView with inline ControlTemplate (RadioButton inside Border)
+			// This mimics how XAML inline ControlTemplate works - template is applied
+			// before ContentView is added to the parent layout
+			var radioButton1 = new RadioButton { Content = "1", GroupName = groupName };
+			var radioButton2 = new RadioButton { Content = "2", GroupName = groupName };
+
+			var border1 = new Border { Content = radioButton1 };
+			var border2 = new Border { Content = radioButton2 };
+
+			var contentView1 = new ContentView();
+			var contentView2 = new ContentView();
+
+			// Apply ControlTemplate by simulating: template root added as logical child BEFORE parent is set
+			((IControlTemplated)contentView1).AddLogicalChild(border1);
+			((IControlTemplated)contentView2).AddLogicalChild(border2);
+
+			// Now add ContentViews to layout (parent set AFTER template already applied)
+			layout.Add(contentView1);
+			layout.Add(contentView2);
+
+			// Check radio button 1
+			radioButton1.IsChecked = true;
+			// Radio button 2 should NOT also be checked
+			Assert.True(radioButton1.IsChecked);
+			Assert.False(radioButton2.IsChecked);
+
+			// Check radio button 2 - radio button 1 should be unchecked
+			radioButton2.IsChecked = true;
+			Assert.False(radioButton1.IsChecked);
+			Assert.True(radioButton2.IsChecked);
+		}
 	}
 }
