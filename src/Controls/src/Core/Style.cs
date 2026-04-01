@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		/// This property is intended for source generator use only.
 		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Action<Style, BindableObject> LazyInitialization { private get; set; }
+		public Action<Style, BindableObject> LazyInitialization { internal get; set; }
 
 		/// <summary>
 		/// Gets or sets whether the style can be applied to types derived from <see cref="TargetType"/>.
