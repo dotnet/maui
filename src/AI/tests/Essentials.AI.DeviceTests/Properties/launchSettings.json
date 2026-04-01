@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Windows Machine": {
+      "commandName": "MsixPackage"
+    }
+  }
+}
