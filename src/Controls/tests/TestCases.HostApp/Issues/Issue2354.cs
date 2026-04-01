@@ -8,16 +8,16 @@
 		{
 			var presidents = new List<President>();
 
-			presidents.Add(new President($"Presidente 44", 1, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png?raw=true"));
-			presidents.Add(new President($"Presidente 43", 2, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 42", 3, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/photo21314.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 41", 4, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/groceries.png?raw=true"));
-			presidents.Add(new President($"Presidente 40", 5, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png?raw=true"));
-			presidents.Add(new President($"Presidente 39", 6, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 38", 7, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/photo21314.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 37", 8, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/groceries.png?raw=true"));
-			presidents.Add(new President($"Presidente 36", 9, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png?raw=true"));
-			presidents.Add(new President($"Presidente 35", 10, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 44", 1, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png"));
+			presidents.Add(new President($"Presidente 43", 2, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg"));
+			presidents.Add(new President($"Presidente 42", 3, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/photo21314.jpg"));
+			presidents.Add(new President($"Presidente 41", 4, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/groceries.png"));
+			presidents.Add(new President($"Presidente 40", 5, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png"));
+			presidents.Add(new President($"Presidente 39", 6, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg"));
+			presidents.Add(new President($"Presidente 38", 7, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/photo21314.jpg"));
+			presidents.Add(new President($"Presidente 37", 8, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/groceries.png"));
+			presidents.Add(new President($"Presidente 36", 9, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png"));
+			presidents.Add(new President($"Presidente 35", 10, $"https://raw.githubusercontent.com/dotnet/maui/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg"));
 
 			var header = new Label
 			{

@@ -15,7 +15,7 @@ namespace VisualTestUtils.MagickNet
         /// </summary>
         /// <param name="errorMetric">Error metric.</param>
         /// <param name="differenceThreshold">The maximum percent difference that is allowed between the baseline and actual snapshot images. Default value is .005, meaning the images must be at least 99.5% the same.).</param>
-        public MagickNetVisualComparer(ErrorMetric errorMetric = ErrorMetric.Fuzz, double differenceThreshold = 0.005)
+        public MagickNetVisualComparer(ErrorMetric errorMetric = ErrorMetric.RootMeanSquared, double differenceThreshold = 0.005)
         {
             _errorMetric = errorMetric;
             _differenceThreshold = differenceThreshold;
@@ -24,10 +24,10 @@ namespace VisualTestUtils.MagickNet
         /// <inheritdoc/>
         public ImageDifference Compare(ImageSnapshot baselineImage, ImageSnapshot actualImage)
         {
-            var magickBaselineImage = new MagickImage(baselineImage.Data);
-            var magickActualImage = new MagickImage(actualImage.Data);
+            using var magickBaselineImage = new MagickImage(baselineImage.Data);
+            using var magickActualImage = new MagickImage(actualImage.Data);
 
-            ImageSizeDifference imageSizeDifference = ImageSizeDifference.Compare(magickBaselineImage.Width, magickBaselineImage.Height, magickActualImage.Width, magickActualImage.Height);
+            ImageSizeDifference imageSizeDifference = ImageSizeDifference.Compare((int)magickBaselineImage.Width, (int)magickBaselineImage.Height, (int)magickActualImage.Width, (int)magickActualImage.Height);
             if (imageSizeDifference != null)
                 return imageSizeDifference;
 
