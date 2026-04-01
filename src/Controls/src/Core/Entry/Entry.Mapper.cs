@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls
 
 #if IOS || ANDROID
 			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
 #endif
 
 #if ANDROID
