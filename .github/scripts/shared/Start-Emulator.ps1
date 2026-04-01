@@ -32,7 +32,10 @@ param(
     [string]$Platform,
     
     [Parameter(Mandatory=$false)]
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Headless
 )
 
 # Import shared utilities
@@ -65,7 +68,8 @@ if ($Platform -eq "android") {
     # Check if DeviceUdid is an AVD name (not an emulator-XXXX format)
     if ($DeviceUdid -and $DeviceUdid -notmatch "^emulator-\d+$") {
         # DeviceUdid is likely an AVD name - check if it's in the AVD list
-        $avdList = emulator -list-avds 2>$null
+        # Force array output - single AVD returns a string which breaks -contains
+        [string[]]$avdList = @(emulator -list-avds 2>$null)
         if ($avdList -contains $DeviceUdid) {
             Write-Info "DeviceUdid '$DeviceUdid' is an AVD name. Will boot this emulator..."
             $selectedAvd = $DeviceUdid
@@ -103,7 +107,8 @@ if ($Platform -eq "android") {
             
             # Get list of available AVDs (if not already set from parameter)
             if (-not $selectedAvd) {
-                $avdList = emulator -list-avds 2>$null
+                # Force array output - single AVD returns a string which breaks indexing
+                [string[]]$avdList = @(emulator -list-avds 2>$null)
                 
                 if (-not $avdList -or $avdList.Count -eq 0) {
                     Write-Error "No Android emulators found. Please create an Android Virtual Device (AVD) using Android Studio."
@@ -119,7 +124,7 @@ if ($Platform -eq "android") {
                 # Selection priority:
                 # 1. API 34 device (matches CI provisioning)
                 # 2. API 30 Nexus device
-                # 3. Any API 30 device
+                # 3. Any API 30 device (matches names like "Emulator_30", "API_30_xxx", etc.)
                 # 4. Any Nexus device
                 # 5. First available device
                 
@@ -132,16 +137,16 @@ if ($Platform -eq "android") {
                 
                 # Try to find API 30 Nexus device
                 if (-not $selectedAvd) {
-                    $api30Nexus = $avdList | Where-Object { $_ -match "API.*30" -and $_ -match "Nexus" } | Select-Object -First 1
+                    $api30Nexus = $avdList | Where-Object { $_ -match "30" -and $_ -match "Nexus" } | Select-Object -First 1
                     if ($api30Nexus) {
                         $selectedAvd = $api30Nexus
                         Write-Info "Selected API 30 Nexus device: $selectedAvd"
                     }
                 }
                 
-                # Try to find any API 30 device
+                # Try to find any API 30 device (match "30" anywhere in name)
                 if (-not $selectedAvd) {
-                    $api30Device = $avdList | Where-Object { $_ -match "API.*30" } | Select-Object -First 1
+                    $api30Device = $avdList | Where-Object { $_ -match "30" } | Select-Object -First 1
                     if ($api30Device) {
                         $selectedAvd = $api30Device
                         Write-Info "Selected API 30 device: $selectedAvd"
@@ -192,17 +197,26 @@ if ($Platform -eq "android") {
             # Redirect output to a log file for debugging
             $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
             
+            # Use -no-window only when explicitly headless or running in CI
+            $useHeadless = $Headless -or $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS
+            
             if ($IsWindows) {
-                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle Hidden
+                $windowStyle = if ($useHeadless) { "Hidden" } else { "Normal" }
+                Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot-load", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle $windowStyle
             }
             else {
                 # macOS/Linux: Use nohup to detach from terminal
                 # Use -no-snapshot (not -no-snapshot-load) to ensure clean emulator state for CI/testing.
                 # This disables both snapshot load and save, so each boot is a cold boot.
                 # Trade-off: slower boots, but guarantees no stale state between test runs.
-                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' -no-window -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+                $windowFlag = if ($useHeadless) { "-no-window" } else { "" }
+                $startScript = "nohup '$emulatorBin' -avd '$selectedAvd' $windowFlag -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
                 bash -c $startScript
-                Write-Info "Emulator started in background. Log file: $emulatorLog"
+                if ($useHeadless) {
+                    Write-Info "Emulator started headless (no window). Log file: $emulatorLog"
+                } else {
+                    Write-Info "Emulator started with window. Log file: $emulatorLog"
+                }
             }
             
             # Give the emulator process time to start

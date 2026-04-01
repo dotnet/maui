@@ -186,22 +186,21 @@ The skill is complete when:
 
 ### Step 2: Establish Baseline (MANDATORY)
 
-🚨 **ALWAYS use EstablishBrokenBaseline.ps1 - NEVER manually revert files.**
+🚨 **ONLY use EstablishBrokenBaseline.ps1 — NEVER use `git checkout`, `git restore`, or `git reset` to revert fix files.**
+
+The script auto-restores any previous baseline, tracks state, and prevents loops.
+Manual git commands bypass all of this and WILL cause infinite loops in CI.
 
 ```powershell
-# Capture baseline output as proof it was run
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
-The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - the PR's changes must be present in the current branch (the `Review-PR.ps1` script handles this by merging the PR before the agent runs). Optional flags: `-BaseBranch main`, `-DryRun`.
-
 **Verify baseline was established:**
 ```powershell
-# baseline.log should contain "Baseline established" and list of reverted files
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
 
-**If the script fails with "No fix files detected":** The PR changes are not present on the current branch. Report this as `Blocked` — do NOT switch branches.
+**If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 
 **If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 
@@ -316,8 +315,9 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-git checkout HEAD -- .
 ```
+
+🚨 Do NOT use `git checkout HEAD -- .` or `git clean` to restore — use the script.
 
 ### Step 9: Report Results
 
