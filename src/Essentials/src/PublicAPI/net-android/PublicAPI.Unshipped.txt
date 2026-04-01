@@ -1,2 +1,6 @@
 #nullable enable
+*REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+*REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
+static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
 ~static Microsoft.Maui.ApplicationModel.MainThread.SetCustomImplementation(System.Func<bool> isMainThread, System.Action<System.Action> beginInvokeOnMainThread) -> void
