@@ -232,6 +232,24 @@
         </ProcessMauiFontsAfterTargets>
     </PropertyGroup>
 
+    <!-- Custom/unknown platform backends: hook asset and font processing into the build graph -->
+    <PropertyGroup Condition="'$(ResizetizerPlatformType)' != '' And '$(_ResizetizerIsAndroidApp)' != 'True' And '$(_ResizetizerIsiOSApp)' != 'True' And '$(_ResizetizerIsWPFApp)' != 'True' And '$(_ResizetizerIsWindowsAppSdk)' != 'True' And '$(_ResizetizerIsTizenApp)' != 'True'">
+        <ResizetizeBeforeTargets>
+            $(ResizetizeBeforeTargets);
+            PrepareResources;
+        </ResizetizeBeforeTargets>
+
+        <ResizetizeAfterTargets>
+            $(ResizetizeAfterTargets);
+            ResizetizeCollectItems;
+        </ResizetizeAfterTargets>
+
+        <ProcessMauiFontsBeforeTargets>
+            $(ProcessMauiFontsBeforeTargets);
+            PrepareResources;
+        </ProcessMauiFontsBeforeTargets>
+    </PropertyGroup>
+
     <!-- Finds absolute paths to any MauiImage in this project -->
     <!-- App head projects will invoke this target on their project references to collect images -->
     <Target Name="GetMauiItems" Outputs="@(ExportedMauiItem)">
@@ -536,8 +554,11 @@
             DestinationFolder="$(_MauiIntermediateFonts)"
             SkipUnchangedFiles="true" />
 
+        <!-- Build a deterministic list of copied fonts from the original MauiFont items
+             rather than using a wildcard, which can pick up non-font files
+             (e.g. MauiInfo.plist generated on iOS) during incremental builds. -->
         <ItemGroup>
-            <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+            <_MauiFontCopied Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)')" />
         </ItemGroup>
 
         <!-- Expose processed fonts for custom platform backends.
