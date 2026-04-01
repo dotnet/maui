@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(reference.IsAlive, "RadioButton should not be alive");
 
 		}
-		
+
 		[Fact]
 		public void GroupNullSelectionClearsAnySelection()
 		{
@@ -411,7 +411,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void RadioButtonGroupWorksWithContentViewControlTemplate_Issue34759()
+		public void RadioButtonGroupWorksWithContentViewControlTemplate()
 		{
 			// Simulates issue #34759: ContentView with ControlTemplate containing RadioButton
 			// The ControlTemplate is applied inline (before ContentView is added to parent layout)
@@ -438,6 +438,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Now add ContentViews to layout (parent set AFTER template already applied)
 			layout.Add(contentView1);
 			layout.Add(contentView2);
+
+			// Initially, neither button should be checked (no IsChecked="True" was set)
+			Assert.False(radioButton1.IsChecked);
+			Assert.False(radioButton2.IsChecked);
 
 			// Check radio button 1
 			radioButton1.IsChecked = true;
