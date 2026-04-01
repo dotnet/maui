@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 		// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
 		protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
 
-		partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
+		internal partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
 		{
 			internal ContentPanelAutomationPeer(ContentPanel owner) : base(owner) { }
 
