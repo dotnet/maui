@@ -15,28 +15,30 @@ public class Issue33287 : _IssuesUITest
 	public void DisplayAlertAsyncShouldNotCrashWhenPageUnloaded()
 	{
 		App.WaitForElement("NavigateButton");
-		
+
 		// Navigate to second page
 		App.Tap("NavigateButton");
-		
+
 		// Wait for second page to appear
 		App.WaitForElement("GoBackButton");
-		
-		// Immediately go back before the 5 second delay completes
+
+		// Go back before the 5-second delay completes
 		App.Tap("GoBackButton");
-		
-		// Wait for navigation to complete
+
+		// Wait for the main page and the delayed DisplayAlertAsync to resolve (~5s + buffer)
 		App.WaitForElement("StatusLabel");
-		
-		// Wait for the delayed DisplayAlertAsync to be triggered (5 seconds + buffer)
-		System.Threading.Thread.Sleep(6000);
-		
-		// Get the status - should not show NullReferenceException
-		var status = App.FindElement("StatusLabel").GetText();
-		Console.WriteLine($"[TEST] Final status: {status}");
-		
-		// Assert that no NullReferenceException occurred
-		Assert.That(status, Does.Not.Contain("NullReferenceException"), 
-			"DisplayAlertAsync should not throw NullReferenceException when page is unloaded");
+
+		// Assert positive success: the status must contain the success marker.
+		// Without the fix the app crashes (NRE), so StatusLabel is never updated.
+		var status = App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(10)).GetText();
+		int retries = 12;
+		while (retries-- > 0 && (status is null || !status.Contains("✅")))
+		{
+			System.Threading.Thread.Sleep(1000);
+			status = App.FindElement("StatusLabel").GetText();
+		}
+
+		Assert.That(status, Does.Contain("✅"),
+			"App should show success status after DisplayAlertAsync completes on an unloaded page");
 	}
 }
