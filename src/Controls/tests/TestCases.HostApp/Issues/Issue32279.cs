@@ -12,7 +12,7 @@ public class Issue32279 : TestContentPage
 	{
 		var layout = new StackLayout { Spacing = 20, Padding = new Thickness(20) };
 
-		// Grid with NO background
+		// ContentView with NO background
 		var resultLabelNoBackground = new Label
 		{
 			AutomationId = ResultLabelNoBackground,
@@ -20,30 +20,27 @@ public class Issue32279 : TestContentPage
 			FontSize = 18,
 		};
 
-		var gridNoBackground = new Grid
+		var contentViewNoBackground = new ContentView
 		{
 			HeightRequest = 100,
 			WidthRequest = 300,
+			Content = new Label
+			{
+				Text = "Tap me (no background)",
+				AutomationId = TapTargetNoBackground,
+				VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
+			}
 		};
 
-		var tapLabelNoBackground = new Label
-		{
-			Text = "Tap me (no background)",
-			AutomationId = TapTargetNoBackground,
-			VerticalOptions = LayoutOptions.Fill,
-			HorizontalOptions = LayoutOptions.Fill,
-			HorizontalTextAlignment = TextAlignment.Center,
-			VerticalTextAlignment = TextAlignment.Center,
-		};
-
-		gridNoBackground.Children.Add(tapLabelNoBackground);
-
-		gridNoBackground.GestureRecognizers.Add(new TapGestureRecognizer
+		contentViewNoBackground.GestureRecognizers.Add(new TapGestureRecognizer
 		{
 			Command = new Command(() => resultLabelNoBackground.Text = "Tapped"),
 		});
 
-		// Grid WITH explicit background
+		// ContentView WITH explicit background
 		var resultLabelWithBackground = new Label
 		{
 			AutomationId = ResultLabelWithBackground,
@@ -51,33 +48,30 @@ public class Issue32279 : TestContentPage
 			FontSize = 18,
 		};
 
-		var gridWithBackground = new Grid
+		var contentViewWithBackground = new ContentView
 		{
 			HeightRequest = 100,
 			WidthRequest = 300,
 			BackgroundColor = Colors.LightGray,
+			Content = new Label
+			{
+				Text = "Tap me (with background)",
+				AutomationId = TapTargetWithBackground,
+				VerticalOptions = LayoutOptions.Fill,
+				HorizontalOptions = LayoutOptions.Fill,
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
+			}
 		};
 
-		var tapLabelWithBackground = new Label
-		{
-			Text = "Tap me (with background)",
-			AutomationId = TapTargetWithBackground,
-			VerticalOptions = LayoutOptions.Fill,
-			HorizontalOptions = LayoutOptions.Fill,
-			HorizontalTextAlignment = TextAlignment.Center,
-			VerticalTextAlignment = TextAlignment.Center,
-		};
-
-		gridWithBackground.Children.Add(tapLabelWithBackground);
-
-		gridWithBackground.GestureRecognizers.Add(new TapGestureRecognizer
+		contentViewWithBackground.GestureRecognizers.Add(new TapGestureRecognizer
 		{
 			Command = new Command(() => resultLabelWithBackground.Text = "Tapped"),
 		});
 
-		layout.Children.Add(gridNoBackground);
+		layout.Children.Add(contentViewNoBackground);
 		layout.Children.Add(resultLabelNoBackground);
-		layout.Children.Add(gridWithBackground);
+		layout.Children.Add(contentViewWithBackground);
 		layout.Children.Add(resultLabelWithBackground);
 
 		Content = layout;

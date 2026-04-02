@@ -255,15 +255,18 @@ namespace Microsoft.Maui.Platform
 				control.UpdateBackground(view.Background);
 			else if (platformView is Border border)
 				border.UpdateBackground(view.Background);
+			else if (platformView is ContentPanel contentPanel)
+			{
+				contentPanel.UpdateBackground(view.Background);
+
+				if (view.Background == null && contentPanel.Background == null)
+				{
+					contentPanel.Background = new SolidColorBrush(UI.Colors.Transparent);
+				}
+			}
 			else if (platformView is Panel panel)
 			{
 				panel.UpdateBackground(view.Background);
-
-				// Fix: ensure hit testing works when background is null
-				if (view.Background == null)
-				{
-					panel.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
-				}
 			}
 		}
 
