@@ -14,22 +14,15 @@ public class Issue23038 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void GroupHeaderShouldStretchToFullWidth()
 	{
-		App.WaitForElement("GroupedCollectionView");
-
-		// Get the CollectionView bounds
 		var collectionViewRect = App.WaitForElement("GroupedCollectionView").GetRect();
+		var headerRect = App.WaitForElement("HeaderTeamA").GetRect();
+		var footerRect = App.WaitForElement("FooterTeamA").GetRect();
 
-		// Get the group header bounds
-		var headerRect = App.WaitForElement("Header_Team A").GetRect();
-
-		// Get the group footer bounds (footers are regular list items, they already stretch)
-		var footerRect = App.WaitForElement("Footer_Team A").GetRect();
-
-		// Verify the footer stretches to CollectionView width (validates our baseline)
+		// Footer (regular list item) should stretch to CollectionView width; tolerance accounts for possible scrollbar
 		Assert.That(footerRect.Width, Is.EqualTo(collectionViewRect.Width).Within(20),
 			"Group footer should stretch to full CollectionView width");
 
-		// The header width should match the footer width (both should stretch to full width)
+		// Header must match footer width — both should stretch to full width
 		Assert.That(headerRect.Width, Is.EqualTo(footerRect.Width).Within(2),
 			"Group header width should match group footer width");
 	}
