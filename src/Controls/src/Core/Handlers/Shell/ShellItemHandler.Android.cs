@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,27 +24,27 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     public partial class ShellItemHandler : ElementHandler<ShellItem, ViewPager2>, IAppearanceObserver
     {
-        internal ViewPager2 _viewPager;
-        internal BottomNavigationView _bottomNavigationView;
-        internal TabbedViewManager _tabbedViewManager;
-        ShellItemTabbedViewAdapter _shellItemAdapter;
-        ShellSectionFragmentAdapter _adapter;
-        ShellItemPageChangeCallback _pageChangeCallback;
-        IShellContext _shellContext;
-        Fragment _parentFragment; // The wrapper fragment that hosts this handler
-        IShellBottomNavViewAppearanceTracker _appearanceTracker;
-        ShellSection _shellSection;
-        Page _displayedPage;
+        internal ViewPager2? _viewPager;
+        internal BottomNavigationView? _bottomNavigationView;
+        internal TabbedViewManager? _tabbedViewManager;
+        ShellItemTabbedViewAdapter? _shellItemAdapter;
+        ShellSectionFragmentAdapter? _adapter;
+        ShellItemPageChangeCallback? _pageChangeCallback;
+        IShellContext? _shellContext;
+        Fragment? _parentFragment; // The wrapper fragment that hosts this handler
+        IShellBottomNavViewAppearanceTracker? _appearanceTracker;
+        ShellSection? _shellSection;
+        Page? _displayedPage;
         bool _isNavigating; // Prevent recursive navigation
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
 
         // Shared toolbar components (moved from ShellSectionHandler)
-        internal Toolbar _shellToolbar; // Virtual Toolbar view
-        internal AToolbar _toolbar; // Native platform toolbar
-        internal IShellToolbarTracker _toolbarTracker;
-        IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
-        internal AppBarLayout _appBarLayout;
+        internal Toolbar? _shellToolbar; // Virtual Toolbar view
+        internal AToolbar? _toolbar; // Native platform toolbar
+        internal IShellToolbarTracker? _toolbarTracker;
+        IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
+        internal AppBarLayout? _appBarLayout;
 
         /// <summary>
         /// Property mapper for ShellItem properties.
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// Gets the BottomNavigationView for external layout management.
         /// The parent (ShellHandler or wrapper) should add this to the layout.
         /// </summary>
-        public BottomNavigationView BottomNavigationView => _bottomNavigationView;
+        public BottomNavigationView? BottomNavigationView => _bottomNavigationView;
 
         /// <summary>
         /// Gets the IShellContext from the ShellHandler.
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             // Update ViewPager2 position
-            if (_viewPager?.CurrentItem != index)
+            if (_viewPager is not null && _viewPager.CurrentItem != index)
             {
                 _isNavigating = true;
                 _viewPager.SetCurrentItem(index, true);
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Updates a specific bottom tab's title in-place. Called from ShellSectionHandler mapper.
         /// </summary>
-        internal void UpdateBottomTabTitle(ShellSection section)
+        internal void UpdateBottomTabTitle(ShellSection? section)
         {
             if (_tabbedViewManager is null || section is null)
             {
@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Updates a specific bottom tab's icon in-place. Called from ShellSectionHandler mapper.
         /// </summary>
-        internal void UpdateBottomTabIcon(ShellSection section)
+        internal void UpdateBottomTabIcon(ShellSection? section)
         {
             if (_tabbedViewManager is null || section is null)
             {
@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Updates a specific bottom tab's enabled state in-place. Called from ShellSectionHandler mapper.
         /// </summary>
-        internal void UpdateBottomTabEnabled(ShellSection section)
+        internal void UpdateBottomTabEnabled(ShellSection? section)
         {
             if (_tabbedViewManager is null || section is null)
             {
@@ -507,14 +507,14 @@ namespace Microsoft.Maui.Controls.Handlers
         /// Helper method to count non-null pages and get the top page from a stack.
         /// Returns (topPage, canNavigateBack).
         /// </summary>
-        static (Page topPage, bool canNavigateBack) GetStackInfo(IReadOnlyList<Page> stack)
+        static (Page? topPage, bool canNavigateBack) GetStackInfo(IReadOnlyList<Page> stack)
         {
             if (stack is null || stack.Count == 0)
             {
                 return (null, false);
             }
 
-            Page topPage = null;
+            Page? topPage = null;
             int nonNullCount = 0;
 
             // Single pass: find top page and count non-null pages
@@ -586,7 +586,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// be there at a time. The outgoing section must remove its tabs before the
         /// incoming section can place its own.
         /// </summary>
-        void NotifyTopTabsForSectionSwitch(ShellSection oldSection, ShellSection newSection)
+        void NotifyTopTabsForSectionSwitch(ShellSection? oldSection, ShellSection? newSection)
         {
             // Remove outgoing section's top tabs from the NRM slot
             if (oldSection?.Handler is ShellSectionHandler oldHandler)
@@ -681,7 +681,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // OnCreateView() AFTER creating all views — we match that pattern.
         }
 
-        void OnShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        void OnShellItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
             {
@@ -690,7 +690,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        void OnShellItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        void OnShellItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // The adapter's _sections reference may be a live ReadOnlyCollection,
             // but when items change visibility, positions shift and the position-based
@@ -899,7 +899,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // The toolbar is placed at the NRM level (same as ViewHandler.MapToolbar),
             // making it persistent across ShellItem and ShellSection changes.
             _appBarLayout = FindNavigationLayoutAppBar();
-            if (_appBarLayout is null)
+            var mauiContext = shell.Handler?.MauiContext;
+
+            if (_appBarLayout is null || mauiContext is null)
             {
                 return;
             }
@@ -913,7 +915,7 @@ namespace Microsoft.Maui.Controls.Handlers
             ShellToolbarTracker.ApplyToolbarChanges(shell.Toolbar, _shellToolbar);
 
             // Create the platform toolbar
-            _toolbar = (AToolbar)_shellToolbar.ToPlatform(shell.Handler.MauiContext);
+            _toolbar = (AToolbar)_shellToolbar.ToPlatform(mauiContext);
 
             // Add toolbar to outer AppBarLayout at position 0 (before navigationlayout_toptabs).
             // Same pattern as ViewHandler.MapToolbar: appbarLayout.AddView(nativeToolBar, 0).
@@ -936,7 +938,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// Finds the outer AppBarLayout (navigationlayout_appbar) from navigationlayout.axml.
         /// Navigates from Shell's PlatformView (MauiDrawerLayout) down to the inflated layout.
         /// </summary>
-        AppBarLayout FindNavigationLayoutAppBar()
+        AppBarLayout? FindNavigationLayoutAppBar()
         {
             var shell = VirtualView?.FindParentOfType<Shell>();
             var rootView = shell?.Handler?.PlatformView as AView;
@@ -954,7 +956,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            Page currentPage = null;
+            Page? currentPage = null;
             bool canNavigateBack = false;
 
             // Check if _displayedPage belongs to this section (fast path)
@@ -1075,7 +1077,7 @@ namespace Microsoft.Maui.Controls.Handlers
     internal class ShellItemHandlerAdapter : IShellItemRenderer
     {
         readonly ShellItemHandler _handler;
-        ShellItemWrapperFragment _wrapperFragment;
+        ShellItemWrapperFragment? _wrapperFragment;
 
         public ShellItemHandlerAdapter(ShellItemHandler handler, IMauiContext mauiContext)
         {
@@ -1109,7 +1111,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        public event EventHandler Destroyed;
+        public event EventHandler? Destroyed;
 
         public void Dispose()
         {
@@ -1126,8 +1128,8 @@ namespace Microsoft.Maui.Controls.Handlers
         class ShellItemWrapperFragment : Fragment
         {
             readonly ShellItemHandler _handler;
-            CoordinatorLayout _rootLayout;
-            ShellBackPressedCallback _backPressedCallback;
+            CoordinatorLayout? _rootLayout;
+            ShellBackPressedCallback? _backPressedCallback;
 
             public ShellItemWrapperFragment(ShellItemHandler handler)
             {
@@ -1136,14 +1138,15 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handler.SetParentFragment(this);
             }
 
-            public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+            public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
             {
                 // Inflate from XML layout — consistent with NavigationViewHandler/FlyoutViewHandler pattern
                 var rootView = inflater.Inflate(Resource.Layout.shellitemlayout, container, false)
                     ?? throw new InvalidOperationException("shellitemlayout inflation failed");
 
                 // Get references from inflated layout
-                _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator);
+                _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator)
+                    ?? throw new InvalidOperationException("shellitem_coordinator not found");
                 // NOTE: _appBarLayout is the outer navigationlayout_appbar from
                 // navigationlayout.axml, resolved lazily in SetupToolbar().
 
@@ -1159,7 +1162,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return rootView;
             }
 
-            public override void OnViewCreated(AView view, Bundle savedInstanceState)
+            public override void OnViewCreated(AView view, Bundle? savedInstanceState)
             {
                 base.OnViewCreated(view, savedInstanceState);
 
@@ -1355,7 +1358,7 @@ namespace Microsoft.Maui.Controls.Handlers
             throw new InvalidOperationException($"ShellSectionRenderer for {section.Title} is not an IShellObservableFragment");
         }
 
-        public IShellSectionRenderer GetRenderer(int position)
+        public IShellSectionRenderer? GetRenderer(int position)
         {
             _renderers.TryGetValue(position, out var renderer);
             return renderer;

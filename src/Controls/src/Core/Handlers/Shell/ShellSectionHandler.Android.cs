@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -26,22 +26,22 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     public partial class ShellSectionHandler : ElementHandler<ShellSection, AView>, IAppearanceObserver
     {
-        Fragment _parentFragment; // The wrapper fragment that hosts this handler
-        IShellContext _shellContext;
+        Fragment? _parentFragment; // The wrapper fragment that hosts this handler
+        IShellContext? _shellContext;
         IShellSectionController SectionController => (IShellSectionController)VirtualView;
-        IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
-        LinearLayout _rootLayout;
-        ViewPager2 _viewPager;
-        TabLayout _contentTabLayout;
-        ShellContentFragmentAdapter _adapter;
-        TabbedViewManager _tabbedViewManager;
-        ShellSectionTabbedViewAdapter _shellSectionAdapter;
+        IShellTabLayoutAppearanceTracker? _tabLayoutAppearanceTracker;
+        LinearLayout? _rootLayout;
+        ViewPager2? _viewPager;
+        TabLayout? _contentTabLayout;
+        ShellContentFragmentAdapter? _adapter;
+        TabbedViewManager? _tabbedViewManager;
+        ShellSectionTabbedViewAdapter? _shellSectionAdapter;
 
         /// <summary>
         /// Gets the toolbar tracker from the parent ShellItemHandler.
         /// The toolbar is managed at ShellItem level.
         /// </summary>
-        internal IShellToolbarTracker ToolbarTracker
+        internal IShellToolbarTracker? ToolbarTracker
         {
             get
             {
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Gets the virtual toolbar from the parent ShellItemHandler.
         /// </summary>
-        internal Toolbar ShellToolbar
+        internal Toolbar? ShellToolbar
         {
             get
             {
@@ -167,18 +167,18 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Wait for the view to be attached before setting up the adapter
             // This ensures the parent fragment is set
-            _rootLayout.ViewAttachedToWindow += OnRootLayoutAttachedToWindow;
+            _rootLayout?.ViewAttachedToWindow += OnRootLayoutAttachedToWindow;
 
             // Try to setup immediately if already attached
-            if (_rootLayout.IsAttachedToWindow && _parentFragment is not null)
+            if (_rootLayout is not null && _rootLayout.IsAttachedToWindow && _parentFragment is not null)
             {
                 SetupViewPagerAdapter();
             }
         }
 
-        void OnRootLayoutAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
+        void OnRootLayoutAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
         {
-            _rootLayout.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
+            _rootLayout?.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
             SetupViewPagerAdapter();
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void SetupViewPagerAdapter()
         {
-            if (_adapter is not null || _parentFragment is null || VirtualView is null)
+            if (_adapter is not null || _parentFragment is null || VirtualView is null || _viewPager is null || MauiContext is null || _shellContext is null)
             {
                 return;
             }
@@ -220,8 +220,10 @@ namespace Microsoft.Maui.Controls.Handlers
             // Setup TabbedViewManager for top tab management.
             // Pre-assign Shell's TabLayout (specific sizing) before SetElement.
             _shellSectionAdapter = new ShellSectionTabbedViewAdapter(VirtualView);
-            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager);
-            _tabbedViewManager.TabLayout = _contentTabLayout;
+            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager)
+            {
+                TabLayout = _contentTabLayout
+            };
             _tabbedViewManager.SetElement(_shellSectionAdapter);
 
             // Register page change callback
@@ -268,7 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetInitialPosition()
         {
-            if (VirtualView?.CurrentItem is null)
+            if (VirtualView?.CurrentItem is null || _viewPager is null)
             {
                 return;
             }
@@ -318,9 +320,9 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Exposes the content TabLayout for TabLayoutMediator and appearance updates.
         /// </summary>
-        internal TabLayout ContentTabLayout => _contentTabLayout;
+        internal TabLayout? ContentTabLayout => _contentTabLayout;
 
-        AView FindNavigationLayoutTopTabsContainer()
+        AView? FindNavigationLayoutTopTabsContainer()
         {
             var shell = VirtualView?.FindParentOfType<Shell>();
             var rootView = shell?.Handler?.PlatformView as AView;
@@ -375,7 +377,7 @@ namespace Microsoft.Maui.Controls.Handlers
         protected override void DisconnectHandler(AView platformView)
         {
             // Unsubscribe from events
-            _rootLayout.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
+            _rootLayout?.ViewAttachedToWindow -= OnRootLayoutAttachedToWindow;
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
@@ -389,7 +391,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Cleanup adapter
             _adapter = null;
-            _viewPager.Adapter = null;
+            _viewPager?.Adapter = null;
             _viewPager = null;
 
             // Cleanup TabLayout
@@ -435,7 +437,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (_adapter is null)
             {
@@ -453,14 +455,14 @@ namespace Microsoft.Maui.Controls.Handlers
             if (previousCount == 0 && newCount > 0)
             {
                 // Replace with a fresh adapter to avoid stale state restoration
-                _viewPager.Adapter = null;
+                _viewPager?.Adapter = null;
 
-                _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment, MauiContext.MakeScoped(fragmentManager: _parentFragment.ChildFragmentManager))
+                _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment!, MauiContext!.MakeScoped(fragmentManager: _parentFragment!.ChildFragmentManager))
                 {
                     Handler = this
                 };
-                _viewPager.Adapter = _adapter;
-                ((AView)_viewPager).SaveEnabled = false;
+                _viewPager?.Adapter = _adapter;
+                _viewPager?.SaveEnabled = false;
 
                 // Refresh TabbedViewManager's mediator for the new adapter
                 _tabbedViewManager?.RefreshTabs();
@@ -472,7 +474,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Update OffscreenPageLimit for new visible count
             var visibleCount = SectionController.GetItems().Count;
-            _viewPager.OffscreenPageLimit = Math.Max(visibleCount, 1);
+            _viewPager?.OffscreenPageLimit = Math.Max(visibleCount, 1);
 
             UpdateTabLayoutVisibility();
             UpdateViewPagerUserInput();
@@ -616,7 +618,7 @@ namespace Microsoft.Maui.Controls.Handlers
     {
         readonly ShellSection _shellSection;
         readonly IMauiContext _mauiContext;
-        IList<ShellContent> _visibleItems;
+        IList<ShellContent>? _visibleItems;
         IShellSectionController SectionController => (IShellSectionController)_shellSection;
 
         public ShellContentFragmentAdapter(ShellSection shellSection, Fragment parentFragment, IMauiContext mauiContext)
@@ -629,7 +631,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public override int ItemCount => _visibleItems?.Count ?? 0;
 
-        public ShellSectionHandler Handler { get; set; }
+        public ShellSectionHandler? Handler { get; set; }
 
         /// <summary>
         /// Refreshes the visible items list. Called when items collection changes (add/remove/visibility).
@@ -643,7 +645,7 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             if (_visibleItems is null || position >= _visibleItems.Count)
             {
-                return null;
+                return null!;
             }
 
             var shellContent = _visibleItems[position];
@@ -692,32 +694,46 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.OnPageSelected(position);
 
-            var visibleItems = ((IShellSectionController)_handler.VirtualView).GetItems();
-            if (_handler.VirtualView is null || position >= visibleItems.Count)
+            var virtualView = _handler.VirtualView;
+
+            if (virtualView is null)
+            {
                 return;
+            }
+
+            var visibleItems = ((IShellSectionController)virtualView).GetItems();
+
+            if (position >= visibleItems.Count)
+            {
+                return;
+            }
 
             // Only update toolbar if this section is currently active
             if (!_handler.IsCurrentlyActiveSection())
+            {
                 return;
+            }
 
             var newCurrentItem = visibleItems[position];
             var page = ((IShellContentController)newCurrentItem).GetOrCreateContent();
 
             if (page is null)
+            {
                 return;
+            }
 
             // Update toolbar title
             var toolbarTracker = _handler.ToolbarTracker;
             toolbarTracker?.Page = page;
 
             // Update CurrentItem
-            if (_handler.VirtualView.CurrentItem != newCurrentItem)
+            if (virtualView.CurrentItem != newCurrentItem)
             {
-                _handler.VirtualView.CurrentItem = newCurrentItem;
+                virtualView.CurrentItem = newCurrentItem;
             }
 
             // Trigger appearance update
-            var shell = _handler.VirtualView.FindParentOfType<Shell>();
+            var shell = virtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
                 ((IShellController)shell).AppearanceChanged(page, false);
@@ -731,14 +747,14 @@ namespace Microsoft.Maui.Controls.Handlers
     /// </summary>
     internal class ShellContentNavigationFragment : Fragment, IStackNavigation
     {
-        ShellContent _shellContent;
-        IMauiContext _mauiContext;
-        ShellSectionHandler _handler;
-        StackNavigationManager _stackNavigationManager;
-        FragmentContainerView _navigationContainer;
-        Page _rootPage;
+        ShellContent? _shellContent;
+        IMauiContext? _mauiContext;
+        ShellSectionHandler? _handler;
+        StackNavigationManager? _stackNavigationManager;
+        FragmentContainerView? _navigationContainer;
+        Page? _rootPage;
         int _navigationContainerId;
-        ShellContentStackNavigationView _navigationViewAdapter;
+        ShellContentStackNavigationView? _navigationViewAdapter;
 
         // Default constructor required by Android's FragmentManager for fragment restoration.
         // When FragmentStateAdapter (ViewPager2) saves and restores fragment state during tab switches,
@@ -747,14 +763,14 @@ namespace Microsoft.Maui.Controls.Handlers
         {
         }
 
-        public ShellContentNavigationFragment(ShellContent shellContent, IMauiContext mauiContext, ShellSectionHandler handler)
+        public ShellContentNavigationFragment(ShellContent? shellContent, IMauiContext? mauiContext, ShellSectionHandler? handler)
         {
             _shellContent = shellContent;
             _mauiContext = mauiContext;
             _handler = handler;
         }
 
-        public override void OnCreate(Bundle savedInstanceState)
+        public override void OnCreate(Bundle? savedInstanceState)
         {
             // Always pass null to prevent restoring stale child fragment state.
             // OffscreenPageLimit keeps fragments alive so restoration shouldn't occur,
@@ -762,13 +778,13 @@ namespace Microsoft.Maui.Controls.Handlers
             base.OnCreate(null);
         }
 
-        public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+        public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
         {
             // If this fragment was restored by FragmentManager without proper data,
             // return an empty view. The ViewPager2 adapter will recreate it properly.
             if (_shellContent is null || _mauiContext is null)
             {
-                return new FrameLayout(inflater.Context);
+                return new FrameLayout(inflater.Context!);
             }
 
             if (_navigationContainer is not null)
@@ -794,12 +810,12 @@ namespace Microsoft.Maui.Controls.Handlers
             _rootPage = ((IShellContentController)_shellContent)?.GetOrCreateContent();
             if (_rootPage is null)
             {
-                return null;
+                return null!;
             }
 
             // Subscribe to navigation events EARLY - before anything else
             // This ensures we catch any navigation requests that come before the view is attached
-            var shellSection = _shellContent.Parent as ShellSection;
+            var shellSection = _shellContent?.Parent as ShellSection;
             if (shellSection is not null && !_subscribedToNavigationRequested)
             {
                 ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
@@ -812,7 +828,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _navigationContainerId = AView.GenerateViewId();
             }
 
-            _navigationContainer = new FragmentContainerView(_mauiContext.Context)
+            _navigationContainer = new FragmentContainerView(_mauiContext!.Context!)
             {
                 Id = _navigationContainerId,
                 LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
@@ -845,9 +861,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         bool _subscribedToNavigationRequested;
 
-        void OnNavigationContainerAttached(object sender, AView.ViewAttachedToWindowEventArgs e)
+        void OnNavigationContainerAttached(object? sender, AView.ViewAttachedToWindowEventArgs e)
         {
-            _navigationContainer.ViewAttachedToWindow -= OnNavigationContainerAttached;
+            _navigationContainer?.ViewAttachedToWindow -= OnNavigationContainerAttached;
             ConnectAndInitialize();
         }
 
@@ -866,7 +882,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Subscribe to navigation events if not already subscribed
             // (may have already been done in OnCreateView)
-            var shellSection = _shellContent.Parent as ShellSection;
+            var shellSection = _shellContent?.Parent as ShellSection;
             if (shellSection is not null && !_subscribedToNavigationRequested)
             {
                 ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
@@ -899,7 +915,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _pendingNavigationRequests.Clear();
         }
 
-        void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
+        void OnNavigationRequested(object? sender, NavigationRequestedEventArgs e)
         {
             // Only handle navigation for THIS ShellContent
             // Note: Don't check IsVisible - ViewPager2 may report pages as not visible
@@ -954,7 +970,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        System.Threading.Tasks.TaskCompletionSource<bool> _navigationTaskCompletionSource;
+        System.Threading.Tasks.TaskCompletionSource<bool>? _navigationTaskCompletionSource;
         readonly Queue<NavigationRequestedEventArgs> _pendingNavigationRequests = new Queue<NavigationRequestedEventArgs>();
 
         List<IView> BuildNavigationStack(NavigationRequestedEventArgs e)
@@ -989,13 +1005,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 case NavigationRequestType.Insert:
                 case NavigationRequestType.Remove:
-                    var section = _shellContent.Parent as ShellSection;
+                    var section = _shellContent?.Parent as ShellSection;
                     if (section is not null)
                     {
                         var resultStack = new List<IView>();
                         foreach (var page in section.Stack)
                         {
-                            resultStack.Add(page ?? _rootPage);
+                            resultStack.Add(page ?? _rootPage!);
                         }
                         return resultStack;
                     }
@@ -1065,7 +1081,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
                     shellToolbar.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
 
-                    if (shell?.Toolbar is ShellToolbar st)
+                    if (shell.Toolbar is ShellToolbar st)
                     {
                         st.ApplyChanges();
                     }
@@ -1180,14 +1196,14 @@ namespace Microsoft.Maui.Controls.Handlers
         public FlowDirection FlowDirection => ((IView)_page).FlowDirection;
         public Primitives.LayoutAlignment HorizontalLayoutAlignment => ((IView)_page).HorizontalLayoutAlignment;
         public Primitives.LayoutAlignment VerticalLayoutAlignment => ((IView)_page).VerticalLayoutAlignment;
-        public Semantics Semantics => ((IView)_page).Semantics;
-        public IShape Clip => ((IView)_page).Clip;
-        public IShadow Shadow => ((IView)_page).Shadow;
+        public Semantics? Semantics => ((IView)_page).Semantics;
+        public IShape? Clip => ((IView)_page).Clip;
+        public IShadow? Shadow => ((IView)_page).Shadow;
         public bool IsEnabled => ((IView)_page).IsEnabled;
         public bool IsFocused { get => ((IView)_page).IsFocused; set => ((IView)_page).IsFocused = value; }
         public Visibility Visibility => ((IView)_page).Visibility;
         public double Opacity => ((IView)_page).Opacity;
-        public Paint Background => ((IView)_page).Background;
+        public Paint? Background => ((IView)_page).Background;
         public Rect Frame { get => ((IView)_page).Frame; set => ((IView)_page).Frame = value; }
         public double Width => ((IView)_page).Width;
         public double MinimumWidth => ((IView)_page).MinimumWidth;
@@ -1198,10 +1214,10 @@ namespace Microsoft.Maui.Controls.Handlers
         public Thickness Margin => ((IView)_page).Margin;
         public Size DesiredSize => ((IView)_page).DesiredSize;
         public int ZIndex => ((IView)_page).ZIndex;
-        public IViewHandler Handler { get => _page.Handler; set => _page.Handler = value; }
+        public IViewHandler? Handler { get => _page.Handler; set => _page.Handler = value; }
         public bool InputTransparent => ((IView)_page).InputTransparent;
-        IElementHandler IElement.Handler { get => _page.Handler; set => _page.Handler = (IViewHandler)value; }
-        public IElement Parent => ((IElement)_page).Parent;
+        IElementHandler? IElement.Handler { get => _page.Handler; set => _page.Handler = value as IViewHandler; }
+        public IElement? Parent => ((IElement)_page).Parent;
         public double TranslationX => ((IView)_page).TranslationX;
         public double TranslationY => ((IView)_page).TranslationY;
         public double Scale => ((IView)_page).Scale;
@@ -1246,7 +1262,7 @@ namespace Microsoft.Maui.Controls.Handlers
     internal class ShellSectionHandlerAdapter : IShellSectionRenderer
     {
         readonly ShellSectionHandler _handler;
-        ShellSectionWrapperFragment _wrapperFragment;
+        ShellSectionWrapperFragment? _wrapperFragment;
 
         public ShellSectionHandlerAdapter(ShellSectionHandler handler, IMauiContext mauiContext)
         {
@@ -1281,10 +1297,10 @@ namespace Microsoft.Maui.Controls.Handlers
         // The new handler architecture (ShellItemHandler) does not subscribe to this event;
         // it was only consumed by the old ShellItemRendererBase.HandleFragmentUpdate().
 #pragma warning disable CS0067
-        public event EventHandler AnimationFinished;
+        public event EventHandler? AnimationFinished;
 #pragma warning restore CS0067
 
-        public event EventHandler Destroyed;
+        public event EventHandler? Destroyed;
 
         public void Dispose()
         {
@@ -1298,8 +1314,8 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         class ShellSectionWrapperFragment : Fragment
         {
-            readonly ShellSectionHandler _handler;
-            AView _view;
+            readonly ShellSectionHandler? _handler;
+            AView? _view;
 
             // Default constructor required by Android's FragmentManager for fragment restoration
             public ShellSectionWrapperFragment()
@@ -1313,7 +1329,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handler.SetParentFragment(this);
             }
 
-            public override void OnCreate(Bundle savedInstanceState)
+            public override void OnCreate(Bundle? savedInstanceState)
             {
                 // Always pass null to prevent restoring stale child fragment state.
                 // OffscreenPageLimit keeps fragments alive so restoration shouldn't occur,
@@ -1321,12 +1337,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 base.OnCreate(null);
             }
 
-            public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+            public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
             {
                 // If restored without proper handler reference, return empty view
                 if (_handler is null)
                 {
-                    return new FrameLayout(inflater.Context);
+                    return new FrameLayout(inflater.Context!);
                 }
                 if (_view is null)
                 {
@@ -1342,19 +1358,19 @@ namespace Microsoft.Maui.Controls.Handlers
                 return _view;
             }
 
-            public override void OnViewCreated(AView view, Bundle savedInstanceState)
+            public override void OnViewCreated(AView view, Bundle? savedInstanceState)
             {
                 base.OnViewCreated(view, savedInstanceState);
 
                 // Setup adapter now that fragment is attached
-                _handler.SetupViewPagerAdapter();
+                _handler?.SetupViewPagerAdapter();
             }
 
             public override void OnResume()
             {
                 base.OnResume();
 
-                if (_handler.VirtualView is null)
+                if (_handler is null || _handler.VirtualView is null)
                 {
                     return;
                 }
