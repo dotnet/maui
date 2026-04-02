@@ -20,6 +20,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// so each test starts from a clean state regardless of prior test ordering.
 			App.WaitForElement("CarouselView");
 
+			// Ensure swipe is enabled before attempting to scroll back.
+			// If a prior test failed mid-way, IsSwipeEnabled may still be false.
+			var switchElement = App.FindElement("Switch");
+			var switchValue = switchElement.GetAttribute("value");
+			if (switchValue == "0" || switchValue == "false")
+			{
+				App.Tap("Switch");
+			}
+
 			// Scroll left repeatedly to get back to Item1
 			App.ScrollLeft("CarouselView", swipePercentage: 0.8);
 			App.ScrollLeft("CarouselView", swipePercentage: 0.8);

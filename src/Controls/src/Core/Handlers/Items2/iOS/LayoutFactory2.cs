@@ -289,7 +289,6 @@ internal static class LayoutFactory2
 
 			bool isHorizontal = itemsView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 			var peekAreaInsets = itemsView.PeekAreaInsets;
-			int lastPosition = itemsView.Loop ? itemsView.Position + 1 : itemsView.Position;
 
 			double sectionMargin = 0.0;
 
@@ -393,7 +392,7 @@ internal static class LayoutFactory2
 						//This will move the carousel to fake the loop
 						cv2Controller.CollectionView.ScrollToItem(
 							NSIndexPath.FromItemSection(pageIndex, 0),
-							UICollectionViewScrollPosition.Left,
+							isHorizontal ? UICollectionViewScrollPosition.Left : UICollectionViewScrollPosition.Top,
 							false);
 					}
 				}
@@ -404,7 +403,6 @@ internal static class LayoutFactory2
 				}
 
 				//Update the CarouselView position
-				lastPosition = pageIndex;
 				cv2Controller?.SetPosition(carouselPosition);
 			};
 
