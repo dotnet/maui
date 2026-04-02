@@ -67,7 +67,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 
 		// verify header and footer react to size changes
 		// On Windows, the stack layout's AutomationId isn't behaving as expected, so the Y position of the first flyout item is used to verify header and footer sizes.
-#if ANDROID || IOS
+#if ANDROID || IOS || MACCATALYST
 
 		App.Tap(ResizeHeaderFooter);
 		var headerSizeSmall = App.WaitForElement("HeaderView").GetRect();

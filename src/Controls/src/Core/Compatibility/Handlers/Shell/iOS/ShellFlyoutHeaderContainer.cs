@@ -39,7 +39,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
-			var size = SizeThatFits(new CGSize(Superview.Frame.Width, double.PositiveInfinity));
+			var width = Superview?.Frame.Width ?? Frame.Width;
+			var size = SizeThatFits(new CGSize(width, double.PositiveInfinity));
 			Frame = new CGRect(Frame.X, Frame.Y, size.Width, size.Height);
 			return false;
 		}
