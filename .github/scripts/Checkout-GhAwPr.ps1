@@ -50,6 +50,11 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+if (-not $PrInfo -or -not $PrInfo.author) {
+    Write-Host "❌ PR #$PrNumber returned empty or malformed metadata"
+    exit 1
+}
+
 if ($PrInfo.isFork) {
     Write-Host "⏭️ PR #$PrNumber is from a fork. workflow_dispatch does not check out fork PRs."
     Write-Host "   Fork PRs are evaluated automatically via pull_request_target."
