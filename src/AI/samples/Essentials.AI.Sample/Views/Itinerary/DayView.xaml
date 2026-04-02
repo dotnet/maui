@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Views.Itinerary.DayView"
     x:Name="DayViewControl"
     x:DataType="viewModels:DayPlanViewModel">
@@ -42,8 +43,14 @@
                             </LinearGradientBrush>
                         </VerticalStackLayout.Background>
 
-                        <Label Text="{Binding WeatherForecast}" FontSize="14" 
-                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="{Binding WeatherIcon}" FontFamily="FluentUI" FontSize="14"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding WeatherForecast}" FontSize="14" 
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
                         <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" 
                                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         <Label Text="{Binding Subtitle}" FontSize="14" 

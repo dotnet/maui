@@ -96,10 +96,12 @@ public partial class TripPlanningViewModel(
 					if (cancellationToken.IsCancellationRequested)
 						break;
 
-					dayVm.WeatherForecast = await weatherService.GetWeatherForecastAsync(
+					var (icon, text) = await weatherService.GetWeatherForecastAsync(
 						Landmark.Latitude,
 						Landmark.Longitude,
 						dayVm.Date);
+					dayVm.WeatherIcon = icon;
+					dayVm.WeatherForecast = text;
 				}
 			}
 

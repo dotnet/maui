@@ -219,7 +219,7 @@ public sealed class PhiSilicaChatClient : IChatClient
 			languageModelOptions.TopK = (uint)topK;
 
 		if (options.TopP is { } topP)
-			languageModelOptions.TopP = (uint)topP;
+			languageModelOptions.TopP = topP;
 
 		return languageModelOptions;
 	}

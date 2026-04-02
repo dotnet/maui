@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.AI;
 
 /// <summary>
 /// Result from the Travel Planner Agent - raw extraction of user intent.
-/// Short JSON names (dest/days/lang) prevent misspelling by small language models.
+/// Short JSON names (place/days/language) reduce misspelling by small language models.
 /// </summary>
 public record TravelPlanResult(
 	[property: JsonPropertyName("place")]

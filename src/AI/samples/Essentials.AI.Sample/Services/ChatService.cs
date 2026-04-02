@@ -167,10 +167,10 @@ public class ChatService
 		if (dateOnly > today.AddDays(7))
 			return $"Cannot get weather for {dateOnly:yyyy-MM-dd} — too far ahead. The forecast supports today ({today:yyyy-MM-dd}) through {today.AddDays(7):yyyy-MM-dd}.";
 
-		var weather = await _weatherService.GetWeatherForecastAsync(
+		var (_, weatherText) = await _weatherService.GetWeatherForecastAsync(
 			landmark.Latitude, landmark.Longitude, dateOnly);
 
-		return $"Weather at {landmark.Name} on {dateOnly:yyyy-MM-dd} ({dateOnly:dddd}): {weather}";
+		return $"Weather at {landmark.Name} on {dateOnly:yyyy-MM-dd} ({dateOnly:dddd}): {weatherText}";
 	}
 
 	[Description("Generate social media hashtags for a trip description or destination.")]

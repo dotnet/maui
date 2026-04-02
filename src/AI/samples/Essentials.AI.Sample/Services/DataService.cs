@@ -14,7 +14,7 @@ public partial class DataService
 		Converters = { new JsonStringEnumConverter() },
 	};
 
-	private readonly ISemanticSearchService? _searchService;
+	private readonly ISemanticSearchService _searchService;
 	private readonly ILogger<DataService> _logger;
 	private readonly Task _readyTask;
 	private readonly TaskCompletionSource _dataLoaded = new();
@@ -32,7 +32,7 @@ public partial class DataService
 	/// </summary>
 	public event Action<int, int>? EmbeddingProgressChanged;
 
-	public DataService(ILogger<DataService> logger, ISemanticSearchService? searchService = null)
+	public DataService(ILogger<DataService> logger, ISemanticSearchService searchService)
 	{
 		_searchService = searchService;
 		_logger = logger;
@@ -87,7 +87,7 @@ public partial class DataService
 	{
 		await _readyTask;
 
-		var results = await _searchService!.SearchAsync("landmarks", query, maxResults);
+		var results = await _searchService.SearchAsync("landmarks", query, maxResults);
 
 		return results
 			.Select(r => int.TryParse(r.Id, out var id) ? _landmarksById?.GetValueOrDefault(id) : null)
@@ -101,7 +101,7 @@ public partial class DataService
 		await _readyTask;
 
 		var searchQuery = category == PointOfInterestCategory.None ? query : $"{category}: {query}";
-		var results = await _searchService!.SearchAsync("pois", searchQuery, maxResults * 2);
+		var results = await _searchService.SearchAsync("pois", searchQuery, maxResults * 2);
 
 		return results
 			.Select(r => _poisByName?.GetValueOrDefault(r.Id))
@@ -145,7 +145,7 @@ public partial class DataService
 	{
 		try
 		{
-			if (_searchService is null || _landmarks is not { } landmarks || _pointsOfInterest is not { } pois)
+			if (_landmarks is not { } landmarks || _pointsOfInterest is not { } pois)
 				return;
 
 			var totalItems = landmarks.Count + pois.Count;

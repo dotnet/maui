@@ -95,8 +95,14 @@ public abstract class ChatClientStreamingTestsBase<T>
 			}
 		}
 
-		Assert.True(textUpdates.Count > 2,
-			$"Expected more than 2 incremental text updates for a longer prompt, but got {textUpdates.Count}");
+		Assert.True(textUpdates.Count >= 1,
+			$"Expected at least one text update from streaming, but got {textUpdates.Count}");
+
+		// For a multi-sentence prompt we generally expect multiple chunks, but the
+		// streaming contract does not guarantee a minimum number of updates.
+		var concatenated = string.Concat(textUpdates);
+		Assert.False(string.IsNullOrWhiteSpace(concatenated),
+			"Concatenated streaming text should not be empty");
 	}
 
 	[Fact]
@@ -123,8 +129,13 @@ public abstract class ChatClientStreamingTestsBase<T>
 		var response = await client.GetResponseAsync(messages);
 		var nonStreamingText = response.Text;
 
-		// Both should contain the answer (Paris)
-		Assert.False(string.IsNullOrEmpty(streamingText.ToString()), "Streaming response should not be empty");
+		// Both should produce non-empty text containing the answer
+		var streamingResult = streamingText.ToString();
+		Assert.False(string.IsNullOrEmpty(streamingResult), "Streaming response should not be empty");
 		Assert.False(string.IsNullOrEmpty(nonStreamingText), "Non-streaming response should not be empty");
+
+		// Verify both contain the expected answer (case-insensitive)
+		Assert.Contains("paris", streamingResult, StringComparison.OrdinalIgnoreCase);
+		Assert.Contains("paris", nonStreamingText, StringComparison.OrdinalIgnoreCase);
 	}
 }

@@ -53,6 +53,7 @@ public partial class LandmarksPage : ContentPage
 
 	protected override void OnDisappearing()
 	{
+		_viewModel.CancelPendingSearch();
 		_chatViewModel.ChatService.NavigateToTripRequested -= OnNavigateToTrip;
 		base.OnDisappearing();
 	}
