@@ -1,13 +1,20 @@
 ---
 name: code-review
-description: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Uses independence-first assessment (code before narrative) and optional multi-model review. Invoke with "review code for PR #XXXXX", "code review PR #XXXXX", "analyze code changes in PR", "check PR code quality", or "look at what changed in PR #XXXXX".
+description: >-
+  Deep code review of PR changes for correctness, safety, and MAUI conventions.
+  Uses independence-first assessment (code before narrative) with 345 lines of
+  maintainer-sourced review rules. Triggers on: "review code for PR", "code review PR",
+  "analyze code changes", "check PR code quality". Do NOT use for: summarizing PRs,
+  describing what changed, general PR questions, running tests, or fixing code.
 ---
 
 # Code Review Skill
 
 Standalone skill that evaluates PR code changes for correctness, safety, performance, and consistency with .NET MAUI conventions. Can be invoked directly by users or by other agents/skills.
 
-**Trigger phrases:** "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code", "analyze code changes in PR", "check PR code quality", "look at what changed in PR #XXXXX"
+**Trigger phrases:** "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code", "analyze code changes in PR", "check PR code quality"
+
+**Do NOT use for:** "what does PR #XXXXX do?", "summarize PR", "describe the changes", or any informational query — just answer those directly without invoking this skill.
 
 > **How this differs from other skills:**
 > - **`pr-review`** — End-to-end PR workflow (4 phases: pre-flight, gate, try-fix, report). Use when you want the full pipeline including test verification and fix attempts.
