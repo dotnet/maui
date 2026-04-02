@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
@@ -238,6 +239,8 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		if (PlatformView is null || ItemsView is null)
 			return;
 
+		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
+
 		foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())
 		{
 			if (itemcontainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
@@ -245,6 +248,22 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 				var actualItem = visualElement.BindingContext;
 				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
+
+				// When the item template defines a "Selected" visual state, MAUI
+				// handles the selection appearance. Suppress the native WinUI
+				// selection border (PART_SelectionVisual) on that container so
+				// the two don't overlap. Items without a Selected visual state
+				// keep the default WinUI selection border.
+				if (visualElement.HasVisualState(VisualStateManager.CommonStates.Selected))
+				{
+					itemcontainer.Resources["ItemContainerSelectedBorderBrush"] = transparent;
+					itemcontainer.Resources["ItemContainerSelectedPointerOverBorderBrush"] = transparent;
+					itemcontainer.Resources["ItemContainerSelectedPressedBorderBrush"] = transparent;
+					itemcontainer.Resources["ItemContainerSelectionVisualBackground"] = transparent;
+					itemcontainer.Resources["ItemContainerSelectionVisualPointerOverBackground"] = transparent;
+					itemcontainer.Resources["ItemContainerSelectionVisualPressedBackground"] = transparent;
+					itemcontainer.Resources["ItemContainerSelectedInnerBorderBrush"] = transparent;
+				}
 			}
 		}
 	}
