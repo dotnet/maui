@@ -29,6 +29,8 @@ agent job:
 | Platform steps | ✅ Yes | ✅ Yes | ✅ Yes | Platform-controlled |
 | Agent container | ❌ Scrubbed | ❌ Scrubbed | ❌ Scrubbed | ✅ But sandboxed |
 
+**⚠️ Agent container credential nuance:** `GITHUB_TOKEN` and `gh` CLI credentials are scrubbed inside the agent container. However, `COPILOT_TOKEN` (used for LLM inference) is present in the environment via `--env-all`. Any subprocess (e.g., `dotnet build`, `npm install`) inherits this variable. The AWF network firewall, `redact_secrets.cjs` (post-agent log scrubbing), and the threat detection agent limit the blast radius. See [Security Boundaries](#security-boundaries) below.
+
 ### Step Ordering (Critical)
 
 User `steps:` **always run before** platform-generated steps. You cannot insert user steps after platform steps.
@@ -47,6 +49,41 @@ The prompt is built in the **activation job** via `{{#runtime-import .github/wor
 By default, `gh aw compile` automatically injects a fork guard into the activation job's `if:` condition: `head.repo.id == repository_id`. This blocks fork PRs on `pull_request` events.
 
 To **allow fork PRs**, add `forks: ["*"]` to the `pull_request` trigger in the `.md` frontmatter. The compiler removes the auto-injected guard from the compiled `if:` conditions. This is safe when the workflow uses the `Checkout-GhAwPr.ps1` pattern (checkout + trusted-infra restore) and the agent is sandboxed.
+
+## Security Boundaries
+
+### Key Principles (from [GitHub Security Lab](https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/))
+
+1. **Never execute untrusted PR code with elevated credentials.** The classic "pwn-request" attack is `pull_request_target` + checkout PR + run build scripts with `GITHUB_TOKEN`. The attack surface includes build scripts (`make`, `build.ps1`), package manager hooks (`npm postinstall`, MSBuild targets), and test runners.
+
+2. **Treating PR contents as passive data is safe.** Reading, analyzing, or diffing PR code is fine — the danger is *executing* it. Our gh-aw workflows read code for evaluation; they never build or run it.
+
+3. **`pull_request_target` grants write permissions and secrets access.** This is by design — the workflow YAML comes from the base branch (trusted). But any step that checks out and runs fork code in this context creates a vulnerability.
+
+4. **`pull_request` from forks has no secrets access.** GitHub withholds secrets because the workflow YAML comes from the fork (untrusted). This is the safe default for CI builds on fork PRs.
+
+5. **The `workflow_run` pattern separates privilege from code execution.** Build in an unprivileged `pull_request` job → pass artifacts → process in a privileged `workflow_run` job. This is architecturally what gh-aw does: agent runs read-only, `safe_outputs` job has write permissions.
+
+### gh-aw Defense Layers
+
+| Layer | What it does | What it doesn't do |
+|-------|-------------|-------------------|
+| **AWF network firewall** | Restricts outbound to allowlisted domains | Doesn't prevent reading env vars inside the container |
+| **`redact_secrets.cjs`** | Scrubs known secret values from logs/artifacts post-agent | Doesn't catch encoded/obfuscated values |
+| **Threat detection agent** | Reviews agent outputs before safe-outputs publishes them | Can miss novel exfiltration techniques |
+| **Safe-outputs permission separation** | Write operations happen in separate job, not the agent | Agent can still request writes via safe-output tools |
+| **`max: 1` on `add-comment`** | Limits agent to one comment | That one comment could contain sensitive data (mitigated by redaction) |
+| **XPIA prompt** | Instructs LLM to resist prompt injection from untrusted content | LLM compliance is probabilistic, not guaranteed |
+| **`pre_activation` role check** | Gates on write-access collaborators | Does not apply if `roles: all` is set |
+
+### Rules for gh-aw Workflow Authors
+
+- ✅ **DO** treat PR contents as passive data (read, analyze, diff)
+- ✅ **DO** run data-gathering scripts in `steps:` (pre-agent, trusted context) not inside the agent
+- ✅ **DO** use `Checkout-GhAwPr.ps1` for `workflow_dispatch` to restore trusted `.github/` from base
+- ❌ **DO NOT** run `dotnet build`, `npm install`, or any build command on untrusted PR code inside the agent — build tool hooks (MSBuild targets, postinstall scripts) can read `COPILOT_TOKEN` from the environment
+- ❌ **DO NOT** execute workspace scripts (`.ps1`, `.sh`, `.py`) after checking out a fork PR in `steps:` — those run with `GITHUB_TOKEN`
+- ❌ **DO NOT** set `roles: all` on workflows that process PR content — this allows any user to trigger the workflow
 
 ## Fork PR Handling
 
@@ -70,7 +107,7 @@ Reference: https://securitylab.github.com/resources/github-actions-preventing-pw
 
 For `/slash-command` triggers on fork PRs, `checkout_pr_branch.cjs` runs AFTER all user steps and re-checks out the fork branch. This overwrites any files restored by user steps (e.g., `.github/skills/`). A fork could include a crafted `SKILL.md` that alters the agent's evaluation behavior.
 
-**Accepted residual risk:** The agent runs in a sandboxed container with all credentials scrubbed. The worst outcome is a manipulated evaluation comment (`safe-outputs: add-comment: max: 1`). The agent has no ability to push code, access secrets, or exfiltrate data. The pre-flight check in the agent prompt catches the case where `SKILL.md` is missing entirely (fork not rebased on `main`).
+**Accepted residual risk:** The agent runs in a sandboxed container with `GITHUB_TOKEN` and `gh` CLI credentials scrubbed. `COPILOT_TOKEN` (for LLM inference) remains in the environment but the AWF network firewall restricts outbound connections to an allowlist of domains, `redact_secrets.cjs` scrubs known secret values from logs/outputs post-agent, and the threat detection agent reviews outputs before they are published. The worst practical outcome is a manipulated evaluation comment (`safe-outputs: add-comment: max: 1`). The pre-flight check in the agent prompt catches the case where `SKILL.md` is missing entirely (fork not rebased on `main`).
 
 **Upstream issue:** [github/gh-aw#18481](https://github.com/github/gh-aw/issues/18481) — "Using gh-aw in forks of repositories"
 
