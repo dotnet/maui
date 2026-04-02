@@ -215,7 +215,7 @@ static class SetPropertyHelpers
 		}
 		else
 		{
-			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory(\"{key}\", () =>");
+			writer.WriteLine($"{parentVar.ValueAccessor}.AddFactory(\"{CSharpExpressionHelpers.EscapeForString(key!)}\", () =>");
 		}
 		
 		using (PrePost.NewBlock(writer, begin: "{", end: $"}}, shared: {shared.ToString().ToLowerInvariant()});"))
