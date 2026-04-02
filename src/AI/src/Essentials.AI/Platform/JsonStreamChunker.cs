@@ -638,7 +638,7 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
 					current.Clear();
 				}
 				// Find matching ]
-				int end = path.IndexOf(']', i);
+				int end = path.IndexOf("]", i, StringComparison.Ordinal);
 				if (end > i)
 				{
 					segments.Add(path.Substring(i, end - i + 1));
@@ -1329,8 +1329,8 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
 	/// </summary>
 	private static string GetParentPath(string path)
 	{
-		var lastDot = path.LastIndexOf('.');
-		var lastBracket = path.LastIndexOf('[');
+		var lastDot = path.LastIndexOf(".", StringComparison.Ordinal);
+		var lastBracket = path.LastIndexOf("[", StringComparison.Ordinal);
 
 		if (lastDot > lastBracket && lastDot >= 0)
 			return path.Substring(0, lastDot);
@@ -1346,8 +1346,8 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
 	/// </summary>
 	private static (string Parent, string Name) SplitPath(string path)
 	{
-		var lastDot = path.LastIndexOf('.');
-		var lastBracket = path.LastIndexOf('[');
+		var lastDot = path.LastIndexOf(".", StringComparison.Ordinal);
+		var lastBracket = path.LastIndexOf("[", StringComparison.Ordinal);
 
 		if (lastDot > lastBracket && lastDot >= 0)
 			return (path.Substring(0, lastDot), path.Substring(lastDot + 1));
@@ -1414,7 +1414,7 @@ internal sealed class JsonStreamChunker : StreamChunkerBase
 		{
 			if (key.StartsWith(prefix))
 			{
-				var bracketEnd = key.IndexOf(']', prefix.Length);
+				var bracketEnd = key.IndexOf("]", prefix.Length, StringComparison.Ordinal);
 				if (bracketEnd > prefix.Length)
 				{
 					var idxStr = key.Substring(prefix.Length, bracketEnd - prefix.Length);

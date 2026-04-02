@@ -1,7 +1,8 @@
 <Project>
 
   <PropertyGroup>
-    <MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</MtouchLink>
+    <MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true' and '$(UseMonoRuntime)' == 'true'">None</MtouchLink>
+    <MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseMonoRuntime)' != 'true'">SdkOnly</MtouchLink>
   </PropertyGroup>
 
 </Project>

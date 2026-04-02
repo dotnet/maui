@@ -125,6 +125,3 @@ extends:
         - Pack
         publishDependsOn:
         - Validate
-        # This is to enable SDL runs part of Post-Build Validation Stage
-        SDLValidationParameters:
-          enable: false
