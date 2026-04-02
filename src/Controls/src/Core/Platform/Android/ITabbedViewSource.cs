@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
@@ -17,13 +17,13 @@ namespace Microsoft.Maui.Controls.Handlers;
 internal interface ITabbedViewSource
 {
     IReadOnlyList<ITab> Tabs { get; }
-    ITab CurrentTab { get; set; }
+    ITab? CurrentTab { get; set; }
     int CurrentTabIndex { get; }
-    Color BarBackgroundColor { get; }
-    object BarBackground { get; }
-    Color BarTextColor { get; }
-    Color UnselectedTabColor { get; }
-    Color SelectedTabColor { get; }
+    Color? BarBackgroundColor { get; }
+    object? BarBackground { get; }
+    Color? BarTextColor { get; }
+    Color? UnselectedTabColor { get; }
+    Color? SelectedTabColor { get; }
     TabBarPlacement TabBarPlacement { get; }
     int OffscreenPageLimit { get; }
     bool IsSwipePagingEnabled { get; }

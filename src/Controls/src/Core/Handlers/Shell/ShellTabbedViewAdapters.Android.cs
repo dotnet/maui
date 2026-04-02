@@ -1,5 +1,4 @@
-#nullable disable
-#if ANDROID
+#nullable enable
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers
             ((IShellItemController)_shellItem).GetItems()
                 .Select(s => (ITab)new ShellSectionTab(s)).ToList();
 
-        public ITab CurrentTab
+        public ITab? CurrentTab
         {
             get => _shellItem.CurrentItem is not null ? new ShellSectionTab(_shellItem.CurrentItem) : null;
             set
@@ -44,11 +43,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 : -1;
 
         // Bar colors are null — Shell applies appearance via IShellBottomNavViewAppearanceTracker
-        public Color BarBackgroundColor => null;
-        public object BarBackground => null;
-        public Color BarTextColor => null;
-        public Color UnselectedTabColor => null;
-        public Color SelectedTabColor => null;
+        public Color? BarBackgroundColor => null;
+        public object? BarBackground => null;
+        public Color? BarTextColor => null;
+        public Color? UnselectedTabColor => null;
+        public Color? SelectedTabColor => null;
 
         public TabBarPlacement TabBarPlacement => TabBarPlacement.Bottom;
         public int OffscreenPageLimit => 0; // Not used — Shell manages VP2 directly
@@ -80,7 +79,7 @@ namespace Microsoft.Maui.Controls.Handlers
             SectionController.GetItems()
                 .Select(c => (ITab)new ShellContentTab(c)).ToList();
 
-        public ITab CurrentTab
+        public ITab? CurrentTab
         {
             get => _shellSection.CurrentItem is not null ? new ShellContentTab(_shellSection.CurrentItem) : null;
             set
@@ -98,11 +97,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 : -1;
 
         // Bar colors are null — Shell applies appearance via IShellTabLayoutAppearanceTracker
-        public Color BarBackgroundColor => null;
-        public object BarBackground => null;
-        public Color BarTextColor => null;
-        public Color UnselectedTabColor => null;
-        public Color SelectedTabColor => null;
+        public Color? BarBackgroundColor => null;
+        public object? BarBackground => null;
+        public Color? BarTextColor => null;
+        public Color? UnselectedTabColor => null;
+        public Color? SelectedTabColor => null;
 
         public TabBarPlacement TabBarPlacement => TabBarPlacement.Top;
         public int OffscreenPageLimit => 0; // Not used — Shell manages VP2 directly
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         // Shell top tabs are text-only — icons were never shown in the old ShellSectionRenderer.
         // Return null to preserve this behavior (TabbedViewManager calls UpdateTabIcons for all tabs).
-        public IImageSource Icon => null;
+        public IImageSource? Icon => null;
         public bool IsEnabled => _content.IsEnabled;
 
         /// <summary>
@@ -165,4 +164,3 @@ namespace Microsoft.Maui.Controls.Handlers
         internal ShellContent Content => _content;
     }
 }
-#endif
