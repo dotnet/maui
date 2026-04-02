@@ -14,19 +14,21 @@ public class Issue33783 : _IssuesUITest
 
 	[Test, Order(0)]
 	[Category(UITestCategories.Switch)]
-	public void VerifySwitchThumbColorOnDarkThemeChange()
+	public async Task VerifySwitchThumbColorOnDarkThemeChange()
 	{
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
+		await Task.Delay(500);
 		VerifyScreenshot("Issue33783_SwitchThumbColor_DarkTheme");
 	}
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Switch)]
-	public void VerifySwitchThumbColorOnLightThemeChange()
+	public async Task VerifySwitchThumbColorOnLightThemeChange()
 	{
 		App.WaitForElement("LightThemeButton");
 		App.Tap("LightThemeButton");
+		await Task.Delay(500);
 		VerifyScreenshot("Issue33783_SwitchThumbColor_LightTheme");
 	}
 }
