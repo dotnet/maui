@@ -7,11 +7,11 @@ public class Issue23038 : ContentPage
 	{
 		var teams = new List<Issue23038Team>
 		{
-			new("Team A", new List<Issue23038Member>
+			new("TeamA", "Team A", new List<Issue23038Member>
 			{
 				new("Member 1"), new("Member 2"), new("Member 3"),
 			}),
-			new("Team B", new List<Issue23038Member>
+			new("TeamB", "Team B", new List<Issue23038Member>
 			{
 				new("Member 4"), new("Member 5"),
 			}),
@@ -31,7 +31,7 @@ public class Issue23038 : ContentPage
 					Padding = new Thickness(5),
 				};
 				label.SetBinding(Label.TextProperty, "Name");
-				label.SetBinding(Label.AutomationIdProperty, "Name", stringFormat: "Header_{0}");
+				label.SetBinding(Label.AutomationIdProperty, "Key", stringFormat: "Header{0}");
 				return label;
 			}),
 			GroupFooterTemplate = new DataTemplate(() =>
@@ -42,7 +42,7 @@ public class Issue23038 : ContentPage
 					Padding = new Thickness(5),
 				};
 				label.SetBinding(Label.TextProperty, "Count", stringFormat: "Total: {0}");
-				label.SetBinding(Label.AutomationIdProperty, "Name", stringFormat: "Footer_{0}");
+				label.SetBinding(Label.AutomationIdProperty, "Key", stringFormat: "Footer{0}");
 				return label;
 			}),
 			ItemTemplate = new DataTemplate(() =>
@@ -62,11 +62,13 @@ public class Issue23038 : ContentPage
 
 public class Issue23038Team : List<Issue23038Member>
 {
-	public Issue23038Team(string name, List<Issue23038Member> members) : base(members)
+	public Issue23038Team(string key, string name, List<Issue23038Member> members) : base(members)
 	{
+		Key = key;
 		Name = name;
 	}
 
+	public string Key { get; set; }
 	public string Name { get; set; }
 }
 
