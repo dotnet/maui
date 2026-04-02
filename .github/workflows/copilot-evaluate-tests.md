@@ -19,6 +19,8 @@ on:
         required: false
         type: boolean
         default: false
+  bots:
+    - "copilot[bot]"
 
 if: >-
   (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||

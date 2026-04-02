@@ -22,10 +22,12 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"10204a6c8e2082405538d6953d80a166a21e0415f9de81d79562e5447d5c9cdd","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1cead4a91eff14e2881035fceb96c10526d1265400b4b5d59c73951f208f9aa1","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - copilot[bot] # Bots processed as bot check in pre-activation job
   issue_comment:
     types:
     - created
@@ -134,6 +136,8 @@ jobs:
       - name: Compute current body text
         id: sanitized
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_ALLOWED_BOTS: copilot[bot]
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -1012,6 +1016,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: copilot[bot]
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
