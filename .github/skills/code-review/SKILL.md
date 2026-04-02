@@ -138,7 +138,7 @@ When the environment supports multiple models, run the review in parallel for di
 
 **How:**
 1. Select 2-3 models from different families (e.g., Claude + GPT + Gemini)
-2. Launch sub-agents in parallel, each running the full 4-step workflow above
+2. Launch sub-agents in parallel, each running the full 6-step workflow above
 3. Synthesize: deduplicate findings, elevate issues flagged by multiple models
 4. Present unified review noting which findings had multi-model agreement
 

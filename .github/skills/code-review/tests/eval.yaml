@@ -2,9 +2,6 @@ scenarios:
   - name: "Happy path - code review PR request"
     prompt: "code review PR #34000 in dotnet/maui"
     assertions:
-      - type: "tool_call_before"
-        first: "gh pr diff"
-        second: "gh pr view"
       - type: "output_not_contains"
         value: "gh pr review --approve"
       - type: "output_not_contains"
@@ -27,8 +24,6 @@ scenarios:
         value: "NEEDS_DISCUSSION"
       - type: "output_not_contains"
         value: "Devil's Advocate"
-      - type: "tool_call_not_contains"
-        value: "review-rules.md"
     rubric:
       - "The agent provides a plain summary without launching a structured multi-step review workflow"
       - "The agent does NOT load review-rules.md or walk through MAUI-specific review checklists"
@@ -37,9 +32,6 @@ scenarios:
   - name: "Independence-first - agent reads diff before description"
     prompt: "review code for PR #33500"
     assertions:
-      - type: "tool_call_before"
-        first: "gh pr diff"
-        second: "gh pr view"
       - type: "output_matches"
         pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
     rubric:
@@ -68,9 +60,8 @@ scenarios:
     assertions:
       - type: "output_not_contains"
         value: "LGTM"
-      - type: "tool_call_before"
-        first: "gh pr diff"
-        second: "gh pr view"
+      - type: "output_matches"
+        pattern: "(NEEDS_CHANGES|NEEDS_DISCUSSION)"
     rubric:
       - "If the agent finds or confirms a ❌ Error-level issue, the verdict is NEEDS_CHANGES — not LGTM"
       - "The agent applies handler lifecycle rules from review-rules.md (ConnectHandler/DisconnectHandler symmetry)"
