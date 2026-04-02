@@ -12,15 +12,14 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-
 #endif
 
 #if IOS || MACCATALYST
@@ -1158,7 +1157,7 @@ namespace Microsoft.Maui.DeviceTests
 				measureInvalidatedCount++;
 			};
 
-			shell.Frame = new Rect(0, 0, 100, 100);
+			shell.Frame = new Microsoft.Maui.Graphics.Rect(0, 0, 100, 100);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
 			{

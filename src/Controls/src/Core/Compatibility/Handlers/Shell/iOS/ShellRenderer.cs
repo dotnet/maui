@@ -142,7 +142,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_currentShellItemRenderer != null)
 				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
 
-			Shell.Frame = View.Bounds.ToRectangle();
+			var destination = View.Bounds.ToRectangle();
+			if (Shell.Frame != destination)
+				Shell.Frame = destination;
 		}
 
 		public override void ViewDidLoad()
