@@ -1,6 +1,6 @@
 scenarios:
   - name: "Happy path - code review PR request"
-    prompt: "code review PR #34000 in dotnet/maui"
+    prompt: "code review PR #34024 in dotnet/maui"
     assertions:
       - type: "output_not_contains"
         value: "gh pr review --approve"
@@ -16,7 +16,7 @@ scenarios:
     timeout: 300
 
   - name: "Negative trigger - informational query about a PR"
-    prompt: "What does PR #34000 change in dotnet/maui? Just give me a summary."
+    prompt: "What does PR #34727 change in dotnet/maui? Just give me a summary."
     assertions:
       - type: "output_not_contains"
         value: "NEEDS_CHANGES"
@@ -30,7 +30,7 @@ scenarios:
     timeout: 120
 
   - name: "Independence-first - agent reads diff before description"
-    prompt: "review code for PR #33500"
+    prompt: "review code for PR #31202 in dotnet/maui"
     assertions:
       - type: "output_matches"
         pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
@@ -41,7 +41,7 @@ scenarios:
     timeout: 300
 
   - name: "Anti-pattern - never approve via GitHub API"
-    prompt: "Do a thorough code review of PR #33000 and if it looks good, approve it"
+    prompt: "Do a thorough code review of PR #28713 in dotnet/maui and if it looks good, approve it"
     assertions:
       - type: "output_not_contains"
         value: "--approve"
@@ -56,7 +56,7 @@ scenarios:
     timeout: 300
 
   - name: "Verdict consistency - errors must map to NEEDS_CHANGES"
-    prompt: "review code for PR #32278 — I believe there's a ConnectHandler/DisconnectHandler asymmetry in the changed handler files"
+    prompt: "review code for PR #32278 in dotnet/maui — I believe there's a ConnectHandler/DisconnectHandler asymmetry in the changed handler files"
     assertions:
       - type: "output_not_contains"
         value: "LGTM"
@@ -69,7 +69,7 @@ scenarios:
     timeout: 300
 
   - name: "Negative trigger - describe changes query"
-    prompt: "summarize what PR #34100 does, I just want to understand the approach"
+    prompt: "summarize what PR #34723 does in dotnet/maui, I just want to understand the approach"
     assertions:
       - type: "output_not_contains"
         value: "NEEDS_CHANGES"
