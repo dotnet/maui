@@ -45,6 +45,11 @@ class RDSourceConverter : ISGTypeConverter
 		if (value.Contains(";assembly="))
 		{
 			var parts = value.Split([";assembly="], StringSplitOptions.RemoveEmptyEntries);
+			if (parts.Length < 2)
+			{
+				// Invalid format: missing assembly name after ;assembly=
+				return "default";
+			}
 			value = parts[0];
 			var asmName = parts[1];
 			asm = context.Compilation.GetAssembly(asmName)!;
@@ -56,7 +61,7 @@ class RDSourceConverter : ISGTypeConverter
 
 		var uriType = context.Compilation.GetTypeByMetadataName("System.Uri")!;
 		var uriKindType = context.Compilation.GetTypeByMetadataName("System.UriKind")!;
-		writer.WriteLine($"var {uriVar} = new {uriType.ToFQDisplayString()}(\"{value};assembly={asm.Name}\", {uriKindType.ToFQDisplayString()}.RelativeOrAbsolute);");
+		writer.WriteLine($"var {uriVar} = new {uriType.ToFQDisplayString()}(@\"{value};assembly={asm.Name}\", {uriKindType.ToFQDisplayString()}.RelativeOrAbsolute);");
 
 		var rootTargetPath = context.ProjectItem.RelativePath!.Replace('\\', '/');
 
@@ -71,7 +76,7 @@ class RDSourceConverter : ISGTypeConverter
 		else
 		{
 			var resourceDictionaryHelpersType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers")!;
-			writer.WriteLine($"{resourceDictionaryHelpersType.ToFQDisplayString()}.LoadFromSource({parentVar.ValueAccessor}, {uriVar}, \"{GetResourcePath(value, rootTargetPath)}\", typeof({context.RootType.ToFQDisplayString()}).Assembly, null);");
+			writer.WriteLine($"{resourceDictionaryHelpersType.ToFQDisplayString()}.LoadFromSource({parentVar.ValueAccessor}, {uriVar}, @\"{GetResourcePath(value, rootTargetPath)}\", typeof({context.RootType.ToFQDisplayString()}).Assembly, null);");
 		}
 
 		return uriVar;

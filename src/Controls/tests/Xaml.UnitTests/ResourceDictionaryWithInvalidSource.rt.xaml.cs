@@ -1,22 +1,24 @@
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[Collection("Xaml Inflation feature")]
 public partial class ResourceDictionaryWithInvalidSource : ContentPage
 {
 	public ResourceDictionaryWithInvalidSource() => InitializeComponent();
 
-	class Tests
+	public class Tests : BaseTestFixture
 	{
-		[Test]
-		public void InvalidSourceThrows([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void InvalidSourceThrows(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws(new BuildExceptionConstraint(8, 33), () => MockCompiler.Compile(typeof(ResourceDictionaryWithInvalidSource)));
+				XamlExceptionAssert.ThrowsBuildException(8, 33, () => MockCompiler.Compile(typeof(ResourceDictionaryWithInvalidSource)));
 			else if (inflator == XamlInflator.Runtime)
-				Assert.Throws(new XamlParseExceptionConstraint(8, 33), () => new ResourceDictionaryWithInvalidSource(inflator));
+				XamlExceptionAssert.ThrowsXamlParseException(8, 33, () => new ResourceDictionaryWithInvalidSource(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{
 				var result = CreateMauiCompilation()
@@ -31,12 +33,9 @@ public partial class ResourceDictionaryWithInvalidSource : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(ResourceDictionaryWithInvalidSource));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
-			else
-			{
-				Assert.Ignore("Nothing to test here");
-			}
+			// else - nothing to test for other inflators
 		}
 	}
 }

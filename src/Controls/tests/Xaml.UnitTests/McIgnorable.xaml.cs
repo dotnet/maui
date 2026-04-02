@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,11 +6,12 @@ public partial class McIgnorable : ContentPage
 {
 	public McIgnorable() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		[Test]
-		public void DoesNotThrow([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DoesNotThrow(XamlInflator inflator)
 		{
 			var layout = new McIgnorable(inflator);
 		}

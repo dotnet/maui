@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -7,24 +8,25 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		public static string Run(string tool, string args, out int exitCode,
 			string workingDirectory = "",
-			int timeoutInSeconds = 600)
+			int timeoutInSeconds = 600,
+			ITestOutputHelper? output = null)
 		{
 			var info = new ProcessStartInfo(tool, args);
 
 			if (Directory.Exists(workingDirectory))
 				info.WorkingDirectory = workingDirectory;
 
-			return Run(info, out exitCode, timeoutInSeconds);
+			return Run(info, out exitCode, timeoutInSeconds, output: output);
 		}
 
 		public static string Run(ProcessStartInfo info, out int exitCode,
-			int timeoutInSeconds = 600, Action<Process>? inputAction = null)
+			int timeoutInSeconds = 600, Action<Process>? inputAction = null, ITestOutputHelper? output = null)
 		{
 			var procOutput = new StringBuilder();
 			using (var p = new Process())
 			{
 				p.StartInfo = info;
-				TestContext.WriteLine($"[ToolRunner] Running: {p.StartInfo.FileName} {p.StartInfo.Arguments}");
+				output?.WriteLine($"[ToolRunner] Running: {p.StartInfo.FileName} {p.StartInfo.Arguments}");
 				p.StartInfo.CreateNoWindow = true;
 				p.StartInfo.UseShellExecute = false;
 				p.StartInfo.RedirectStandardOutput = true;
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.IntegrationTests
 				if (p.WaitForExit(timeoutInSeconds * 1000))
 				{
 					exitCode = p.ExitCode;
-					TestContext.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' exited with code: {exitCode}");
+					output?.WriteLine($"[ToolRunner] Process '{Path.GetFileName(p.StartInfo.FileName)}' exited with code: {exitCode}");
 				}
 				else
 				{

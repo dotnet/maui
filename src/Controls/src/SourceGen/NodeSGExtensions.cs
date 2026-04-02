@@ -8,8 +8,8 @@ using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.SourceGen.TypeConverters;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -24,7 +24,7 @@ static class NodeSGExtensions
 
 	// Lazy converter factory function
 	static ConverterDelegate CreateLazyConverter<T>() where T : ISGTypeConverter, new() =>
-		(value, node, toType, writer, context, parentVar) => 
+		(value, node, toType, writer, context, parentVar) =>
 			lazyConverters.GetOrAdd(typeof(T), _ => new T()).Convert(value, node, toType, writer, context, parentVar);
 
 	static readonly ConcurrentDictionary<Type, ISGTypeConverter> lazyConverters = new();
@@ -32,7 +32,7 @@ static class NodeSGExtensions
 
 	// Lazy registry-based converter function (for non-source-gen converters)
 	static ConverterDelegate CreateLazyRegistryConverter(string typeName) =>
-		(value, node, toType, writer, context, parentVar) => 
+		(value, node, toType, writer, context, parentVar) =>
 		{
 			var converter = lazyRegistryConverters.GetOrAdd(typeName, name => TypeConverterRegistry.GetConverter(name)!);
 			return converter?.Convert(value, node, toType, writer, context, parentVar) ?? "default";
@@ -80,10 +80,10 @@ static class NodeSGExtensions
 			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Shape"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 		};
 
-	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
+	public static Dictionary<ITypeSymbol, IKnownMarkupValueProvider> GetKnownValueProviders(SourceGenContext context)
 		=> context.knownSGValueProviders ??= new(SymbolEqualityComparer.Default)
 	{
-		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, new SetterValueProvider()},
 	};
 
 
@@ -92,10 +92,13 @@ static class NodeSGExtensions
 	public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
 		=> context.knownSGEarlyMarkupExtensions ??= new(SymbolEqualityComparer.Default)
 	{
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.NullExtension")!, KnownMarkups.ProvideValueForNullExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DataTemplateExtension")!, KnownMarkups.ProvideValueForDataTemplateExtension},
+		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RelativeSourceExtension")!, KnownMarkups.ProvideValueForRelativeSourceExtension},
 	};
 
 	// These markup extensions can only provide values late once the properties have their final values
@@ -106,7 +109,9 @@ static class NodeSGExtensions
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")!, KnownMarkups.ProvideValueForTemplateBindingExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension")!, KnownMarkups.ProvideValueForReferenceExtension},
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")!, KnownMarkups.ProvideValueForStaticResourceExtension},
+#if NET11_0_OR_GREATER
 		{context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension")!, KnownMarkups.ProvideValueForAppThemeBindingExtension},
+#endif
 	};
 
 	public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -161,6 +166,10 @@ static class NodeSGExtensions
 
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
+		// C# expressions can be assigned to any type - trust the user's code
+		if (valueNode.Value is Expression)
+			return true;
+
 		var stringValue = (string)valueNode.Value;
 
 		//if there's a typeconverter, assume we can convert
@@ -168,7 +177,8 @@ static class NodeSGExtensions
 			return true;
 
 		if (toType.NullableAnnotation == NullableAnnotation.Annotated
-			&& toType.SpecialType == SpecialType.None)
+			&& toType.SpecialType == SpecialType.None
+			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
 		{
 			toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		}
@@ -246,6 +256,14 @@ static class NodeSGExtensions
 
 	public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IndentedTextWriter writer, SourceGenContext context, ILocalValue? parentVar = null)
 	{
+		// C# expressions are emitted directly without conversion, but need quote transformation
+		if (valueNode.Value is Expression expression)
+		{
+			// Transform quotes with semantic context - char literals stay as char only if target expects char
+			return CSharpExpressionHelpers.TransformQuotesWithSemantics(
+				expression.Code, context.Compilation, context.RootType);
+		}
+
 		var valueString = valueNode.Value as string ?? string.Empty;
 
 		if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converterAndReturnType))
@@ -272,7 +290,8 @@ static class NodeSGExtensions
 #pragma warning restore RS0030 // Do not use banned APIs
 
 		if (toType.NullableAnnotation == NullableAnnotation.Annotated
-			&& toType.SpecialType == SpecialType.None)
+			&& toType.SpecialType == SpecialType.None
+			&& ((INamedTypeSymbol)toType).TypeArguments.Length == 1)
 		{
 			toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		}
@@ -354,7 +373,17 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
+			{
+				// Handle special values that don't need a suffix
+				if (float.IsNaN(floatValue))
+					return "float.NaN";
+				if (float.IsPositiveInfinity(floatValue))
+					return "float.PositiveInfinity";
+				if (float.IsNegativeInfinity(floatValue))
+					return "float.NegativeInfinity";
+				// Regular values need the F suffix
 				return $"{SymbolDisplay.FormatPrimitive(floatValue, true, false)}F";
+			}
 			else
 				reportDiagnostic();
 		}
@@ -363,7 +392,17 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
+			{
+				// Handle special values that don't need a suffix
+				if (double.IsNaN(doubleValue))
+					return "double.NaN";
+				if (double.IsPositiveInfinity(doubleValue))
+					return "double.PositiveInfinity";
+				if (double.IsNegativeInfinity(doubleValue))
+					return "double.NegativeInfinity";
+				// Regular values need the D suffix
 				return $"{SymbolDisplay.FormatPrimitive(doubleValue, true, false)}D";
+			}
 			else
 				reportDiagnostic();
 		}
@@ -424,7 +463,7 @@ static class NodeSGExtensions
 				reportDiagnostic();
 		}
 		if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
-			return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
+			return $"new global::System.Uri(@\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
 
 		//default
 		return SymbolDisplay.FormatLiteral(valueString, true);
@@ -444,7 +483,7 @@ static class NodeSGExtensions
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})!";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
 				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";
@@ -471,7 +510,7 @@ static class NodeSGExtensions
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
 
-		return variable.Type.IsValueProvider( context, out returnType, out iface, out acceptEmptyServiceProvider, out requiredServices);
+		return variable.Type.IsValueProvider(context, out returnType, out iface, out acceptEmptyServiceProvider, out requiredServices);
 	}
 
 
@@ -497,6 +536,9 @@ static class NodeSGExtensions
 	}
 
 	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context)
+		=> TryProvideValue(node, writer, context, null);
+
+	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue)
 	{
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
@@ -505,7 +547,7 @@ static class NodeSGExtensions
 			return false;
 
 		if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue)
-			&& provideValue.Invoke(node, writer, context, null, out var returnType0, out var value))
+			&& provideValue.Invoke(node, writer, context, getNodeValue, out var returnType0, out var value))
 		{
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
@@ -515,9 +557,18 @@ static class NodeSGExtensions
 			return true;
 		}
 
-		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue)
-			&& provideValue.Invoke(node, writer, context, null, out returnType0, out value))
+		if (GetKnownValueProviders(context).TryGetValue(variable.Type, out var valueProvider)
+			&& valueProvider.TryProvideValue(node, writer, context, getNodeValue, out returnType0, out value))
 		{
+			// Check for "skip this node" sentinel: returnType is null and value is empty
+			// This happens when a Setter has no value (e.g., OnPlatform with no matching platform)
+			if (returnType0 is null && string.IsNullOrEmpty(value))
+			{
+				// Remove from Variables so it won't be added to any collection
+				context.Variables.Remove(node);
+				return true;
+			}
+
 			var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
 			context.Writer.WriteLine($"var {variableName} = {value};");
 			context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
@@ -568,22 +619,26 @@ static class NodeSGExtensions
 			property = null;
 		return (bpFieldSymbol, property);
 	}
-	
-	public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
-	{
-		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
-		{
-			var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
-			//it's either a value
-			if (ttnode is ValueNode { Value: string tt })
-				return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
-			//or a x:Type that we parsed earlier
-			if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
-				return typeSymbol;
-			//FIXME: report diagnostic on missing TargetType
-			return null;
-		}
 
+	/// <summary>
+	/// Gets the TargetType symbol from a parent node (Style, Trigger, DataTrigger, MultiTrigger).
+	/// Used to resolve bindable properties when only the property name is specified.
+	/// </summary>
+	public static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
+	{
+		var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+		//it's either a value
+		if (ttnode is ValueNode { Value: string tt })
+			return XmlTypeExtensions.GetTypeSymbol(tt, context, node);
+		//or a x:Type that we parsed earlier
+		if (ttnode != null && context.Types.TryGetValue(ttnode, out var typeSymbol))
+			return typeSymbol;
+		//FIXME: report diagnostic on missing TargetType
+		return null;
+	}
+
+	public static IFieldSymbol? GetBindableProperty(this ValueNode node, SourceGenContext context)
+	{
 		var parts = ((string)node.Value).Split('.');
 		if (parts.Length == 1)
 		{
@@ -600,18 +655,17 @@ static class NodeSGExtensions
 				typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
 
 			var propertyName = parts[0];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else if (parts.Length == 2)
 		{
 			var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context, node);
 			string propertyName = parts[1];
-			return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+			return typeSymbol?.GetBindableProperty("", ref propertyName, out _, context, node);
 		}
 		else
 		{
-			throw new Exception();
-			// FIXME context.ReportDiagnostic
+			return null;
 		}
 	}
 
@@ -624,8 +678,8 @@ static class NodeSGExtensions
 			throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
 
 		//3. if the VSG is in a VSGL, skip that as it could be implicit
-		if (   target.Parent is ListNode
-			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType( "VisualStateGroupList"))
+		if (target.Parent is ListNode
+			|| (target.Parent as ElementNode)!.XmlType!.IsOfAnyType("VisualStateGroupList"))
 			target = (ElementNode)target.Parent.Parent;
 		else
 			target = (ElementNode)target.Parent;

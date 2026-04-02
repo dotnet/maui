@@ -2304,6 +2304,57 @@ public class IntegrationTests
 			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-14-11.g.cs"]);
 	}
 
+	[Theory]
+	[InlineData("private", true)]
+	[InlineData("protected", true)]
+	[InlineData("internal", false)]
+	[InlineData("private protected", true)]
+	[InlineData("protected internal", false)]
+	public void GenerateBindingWithPublicPropertyAndNonPublicSetter(string setterVisibility, bool shouldUseUnsafeAccessor)
+	{
+		var source = $$"""
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    public string Text { get; {{setterVisibility}} set; } = "Hello";
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                    }
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		AssertExtensions.AssertNoDiagnostics(result);
+		
+		// Find the interceptor file (not the common helper file)
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
+		
+		if (shouldUseUnsafeAccessor)
+		{
+			// Verify that UnsafeAccessor is generated for the setter and is called correctly
+			Assert.Contains("SetUnsafeProperty_Text(source, value);", generatedCode, StringComparison.Ordinal);
+			Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"set_Text\")]", generatedCode, StringComparison.Ordinal);
+		}
+		else
+		{
+			// Setter should be accessible, so should NOT use UnsafeAccessor
+			Assert.DoesNotContain("SetUnsafeProperty_Text", generatedCode, StringComparison.Ordinal);
+			Assert.Contains("source.Text = value;", generatedCode, StringComparison.Ordinal);
+		}
+	}
+
 	[Fact]
 	public void GenerateBindingWithNullableObjectAndNullableReferenceTypeProperty_SetBinding()
 	{

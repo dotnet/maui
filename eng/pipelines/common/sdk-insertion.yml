@@ -73,7 +73,7 @@ jobs:
       inlineScript: >-
         dotnet build $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
         -t:PushManifestToBuildAssetRegistry
-        -p:OfficialBuildId=$(_BuildOfficalId)
+        -p:OfficialBuildId=$(_BuildOfficialId)
         -p:OutputPath=${{ parameters.nugetArtifactPath }}
         -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))

@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,51 +8,56 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 	{
 		public SafeAreaEdgesTests() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+		[Collection("Xaml Inflation")]
+		public class Tests
 		{
-			[Test]
-			public void SingleValueConversions([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void SingleValueConversions(XamlInflator inflator)
 			{
 				var layout = new SafeAreaEdgesTests(inflator);
 
-				Assert.AreEqual(SafeAreaEdges.None, layout.singleValueNone.SafeAreaEdges);
-				Assert.AreEqual(SafeAreaEdges.All, layout.singleValueAll.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.singleValueSoftInput.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Container), layout.singleValueContainer.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Default), layout.singleValueDefault.SafeAreaEdges);
+				Assert.Equal(SafeAreaEdges.None, layout.singleValueNone.SafeAreaEdges);
+				Assert.Equal(SafeAreaEdges.All, layout.singleValueAll.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.singleValueSoftInput.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Container), layout.singleValueContainer.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Default), layout.singleValueDefault.SafeAreaEdges);
 			}
 
-			[Test]
-			public void TwoValueConversions([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void TwoValueConversions(XamlInflator inflator)
 			{
 				var layout = new SafeAreaEdgesTests(inflator);
 
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container), layout.twoValueHorVert.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All), layout.twoValueMixed.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.SoftInput, SafeAreaRegions.Container), layout.twoValueHorVert.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.All), layout.twoValueMixed.SafeAreaEdges);
 			}
 
-			[Test]
-			public void FourValueConversions([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void FourValueConversions(XamlInflator inflator)
 			{
 				var layout = new SafeAreaEdgesTests(inflator);
 
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All), layout.fourValueMixed.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Default, SafeAreaRegions.None, SafeAreaRegions.Default, SafeAreaRegions.All), layout.fourValueDefault.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.None, SafeAreaRegions.SoftInput, SafeAreaRegions.Container, SafeAreaRegions.All), layout.fourValueMixed.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Default, SafeAreaRegions.None, SafeAreaRegions.Default, SafeAreaRegions.All), layout.fourValueDefault.SafeAreaEdges);
 			}
 
-			[Test]
-			public void ControlSpecificProperties([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void ControlSpecificProperties(XamlInflator inflator)
 			{
 				var layout = new SafeAreaEdgesTests(inflator);
 
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.SoftInput), layout.contentViewTest.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.borderTest.SafeAreaEdges);
-				Assert.AreEqual(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.Default, SafeAreaRegions.All, SafeAreaRegions.None), layout.scrollViewTest.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.SoftInput), layout.contentViewTest.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.SoftInput), layout.borderTest.SafeAreaEdges);
+				Assert.Equal(new SafeAreaEdges(SafeAreaRegions.Container, SafeAreaRegions.Default, SafeAreaRegions.All, SafeAreaRegions.None), layout.scrollViewTest.SafeAreaEdges);
 			}
 
-			[Test]
-			public void PropertyInflation_WorksWithAllEnumValues([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void PropertyInflation_WorksWithAllEnumValues(XamlInflator inflator)
 			{
 				var layout = new SafeAreaEdgesTests(inflator);
 
@@ -63,11 +68,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 				var containerGrid = layout.singleValueContainer;
 				var defaultGrid = layout.singleValueDefault;
 
-				Assert.AreEqual(SafeAreaRegions.None, noneGrid.SafeAreaEdges.Left);
-				Assert.AreEqual(SafeAreaRegions.All, allGrid.SafeAreaEdges.Left);
-				Assert.AreEqual(SafeAreaRegions.SoftInput, softInputGrid.SafeAreaEdges.Left);
-				Assert.AreEqual(SafeAreaRegions.Container, containerGrid.SafeAreaEdges.Left);
-				Assert.AreEqual(SafeAreaRegions.Default, defaultGrid.SafeAreaEdges.Left);
+				Assert.Equal(SafeAreaRegions.None, noneGrid.SafeAreaEdges.Left);
+				Assert.Equal(SafeAreaRegions.All, allGrid.SafeAreaEdges.Left);
+				Assert.Equal(SafeAreaRegions.SoftInput, softInputGrid.SafeAreaEdges.Left);
+				Assert.Equal(SafeAreaRegions.Container, containerGrid.SafeAreaEdges.Left);
+				Assert.Equal(SafeAreaRegions.Default, defaultGrid.SafeAreaEdges.Left);
 			}
 		}
 	}

@@ -28,10 +28,10 @@ public class XamlGenerator : IIncrementalGenerator
 		// 	System.Diagnostics.Debugger.Launch();
 		// }
 #endif
-		// Only provide a new Compilation when the references change
+		// Only provide a new Compilation when the references or syntax trees change
 		var referenceCompilationProvider = initContext.CompilationProvider
-			.WithComparer(new CompilationReferencesComparer())
-			.WithTrackingName(TrackingNames.ReferenceCompilationProvider);
+			.WithComparer(new CompilationSignaturesComparer())
+			.WithTrackingName(TrackingNames.CompilationProvider);
 
 		var referenceTypeCacheProvider = referenceCompilationProvider
 			.Select(GetTypeCache)
@@ -63,13 +63,13 @@ public class XamlGenerator : IIncrementalGenerator
 			.WithTrackingName(TrackingNames.CssProjectItemProvider);
 
 		var xamlSourceProviderForCB = xamlProjectItemProviderForCB
-			.Combine(xmlnsDefinitionsProvider, referenceTypeCacheProvider, referenceCompilationProvider)
+			.Combine(xmlnsDefinitionsProvider, referenceTypeCacheProvider, initContext.CompilationProvider)
 			.Select(GetSource)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForCB);
 
 		var compilationWithCodeBehindProvider = xamlSourceProviderForCB
 			.Collect()
-			.Combine(referenceCompilationProvider)
+			.Combine(initContext.CompilationProvider)
 			.Select(static (t, ct) =>
 			{
 				var compilation = t.Right;
@@ -112,8 +112,27 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
-				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+				IXmlLineInfo lineInfo;
+				string errorMessage;
+
+				if (e is XamlParseException xpe)
+				{
+					lineInfo = xpe.XmlInfo;
+					errorMessage = xpe.UnformattedMessage;
+				}
+				else if (e is XmlException xmlEx)
+				{
+					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
+				}
+				else
+				{
+					lineInfo = new XmlLineInfo();
+					errorMessage = e.Message;
+				}
+
+				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
+				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 			}
 		});
 
@@ -134,9 +153,33 @@ public class XamlGenerator : IIncrementalGenerator
 			{
 				if (xamlItem != null && xamlItem.Exception != null)
 				{
-					var lineInfo = xamlItem.Exception is XamlParseException xpe ? xpe.XmlInfo : new XmlLineInfo();
+					IXmlLineInfo lineInfo;
+					string errorMessage;
+
+					if (xamlItem.Exception is XamlParseException xpe)
+					{
+						lineInfo = xpe.XmlInfo;
+						errorMessage = xpe.UnformattedMessage;
+					}
+					else if (xamlItem.Exception is XmlException xmlEx)
+					{
+						lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
+						errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
+					}
+					else if (xamlItem.Exception.InnerException is XmlException innerXmlEx)
+					{
+						lineInfo = new XmlLineInfo(innerXmlEx.LineNumber, innerXmlEx.LinePosition);
+						errorMessage = StripLineInfoFromXmlExceptionMessage(innerXmlEx.Message);
+					}
+					else
+					{
+						// Try to extract line info from message if present
+						lineInfo = ExtractLineInfoFromMessage(xamlItem.Exception.Message);
+						errorMessage = StripLineInfoFromXmlExceptionMessage(xamlItem.Exception.Message);
+					}
+
 					var location = LocationCreate(relativePath, lineInfo, string.Empty);
-					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
+					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 				}
 				return;
 			}
@@ -151,8 +194,27 @@ public class XamlGenerator : IIncrementalGenerator
 			}
 			catch (Exception e)
 			{
-				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+				IXmlLineInfo lineInfo;
+				string errorMessage;
+
+				if (e is XamlParseException xpe)
+				{
+					lineInfo = xpe.XmlInfo;
+					errorMessage = xpe.UnformattedMessage;
+				}
+				else if (e is XmlException xmlEx)
+				{
+					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
+				}
+				else
+				{
+					lineInfo = new XmlLineInfo();
+					errorMessage = e.Message;
+				}
+
+				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
+				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 			}
 		});
 
@@ -283,7 +345,7 @@ $"""
 		var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
 		if (itemName == null)
 			return false;
-		if (xamlItem.Root == null)
+		if (xamlItem.Xaml == null)
 			return false;
 		return true;
 	}
@@ -371,5 +433,46 @@ $"""
 				}
 			}
 		}
+	}
+
+	static string StripLineInfoFromXmlExceptionMessage(string message)
+	{
+		// XmlException messages typically end with " Line X, position Y."
+		// We want to strip that since we're reporting location separately
+		var lineIndex = message.LastIndexOf(" Line ");
+		if (lineIndex > 0)
+		{
+			// Strip both the trailing period after the line info and any double periods
+			return message.Substring(0, lineIndex).TrimEnd('.', ' ');
+		}
+		return message;
+	}
+
+	static IXmlLineInfo ExtractLineInfoFromMessage(string message)
+	{
+		// Try to extract "Line X, position Y" from the message
+		var lineIndex = message.LastIndexOf(" Line ");
+		if (lineIndex > 0)
+		{
+			try
+			{
+				var lineInfoPart = message.Substring(lineIndex + 6); // Skip " Line "
+				var parts = lineInfoPart.Split(new[] { ", position " }, StringSplitOptions.None);
+				if (parts.Length == 2)
+				{
+					var lineStr = parts[0].Trim();
+					var posStr = parts[1].TrimEnd('.', ' ');
+					if (int.TryParse(lineStr, out int lineNumber) && int.TryParse(posStr, out int linePosition))
+					{
+						return new XmlLineInfo(lineNumber, linePosition);
+					}
+				}
+			}
+			catch
+			{
+				// Ignore parsing errors
+			}
+		}
+		return new XmlLineInfo();
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
@@ -5,7 +6,8 @@ using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,12 +15,12 @@ public partial class Maui19388 : ContentPage
 {
 	public Maui19388() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -26,24 +28,24 @@ public partial class Maui19388 : ContentPage
 		}
 
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void OnPlatformAppThemeBindingRelease([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void OnPlatformAppThemeBindingRelease(XamlInflator inflator)
 		{
 			Application.Current.UserAppTheme = AppTheme.Light;
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 			var page = new Maui19388(inflator);
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.Equal(Colors.Green, page.label0.BackgroundColor);
 
 			mockDeviceInfo.Platform = DevicePlatform.Android;
 			page = new Maui19388(inflator);
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, page.label0.BackgroundColor);
 		}
 	}
 }

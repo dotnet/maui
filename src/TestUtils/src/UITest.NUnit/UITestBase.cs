@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using UITest.Core;
@@ -9,6 +10,12 @@ namespace UITest.Appium.NUnit
 	public abstract class UITestBase : UITestContextBase
 	{
 		protected virtual bool ResetAfterEachTest => false;
+
+		// Store paths of diagnostic files captured during OneTimeSetUp failure
+		// so they can be re-attached to individual test results in TearDown
+		// (NUnit doesn't attach files from OneTimeSetUp to individual test results in Azure DevOps)
+		private readonly List<string> _fixtureSetupDiagnosticFiles = new();
+		private bool _fixtureSetupFailed = false;
 
 		public UITestBase(TestDevice testDevice)
 			: base(testDevice)
@@ -36,6 +43,21 @@ namespace UITest.Appium.NUnit
 		{
 			RecordTestTeardown();
 			UITestBaseTearDown();
+
+			// If the fixture setup failed, re-attach diagnostic files to each individual test
+			// so they appear in Azure DevOps test results (NUnit doesn't do this automatically
+			// for files attached during OneTimeSetUp)
+			if (_fixtureSetupFailed)
+			{
+				foreach (var filePath in _fixtureSetupDiagnosticFiles)
+				{
+					if (File.Exists(filePath))
+					{
+						AddTestAttachment(filePath, $"[FixtureSetup] {Path.GetFileName(filePath)}");
+					}
+				}
+			}
+
 			if (ResetAfterEachTest)
 			{
 				Reset();
@@ -58,8 +80,17 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (!ResetAfterEachTest)
+				
+				if (Device is TestDevice.Mac)
+				{
+					// For Mac, here needed to close the app itself, re-open happens on InitialSetup
+					Close();
+				}
+				else if (!ResetAfterEachTest)
+				{
 					Reset();
+				}
+					 
 			}
 			catch (Exception e)
 			{
@@ -72,7 +103,48 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (App.AppState != ApplicationState.Running)
+				ApplicationState appState;
+				try
+				{
+					// App.AppState queries via WDA which blocks if the app's main thread is stuck
+					// (e.g., infinite layout loop). Use a timeout to detect this.
+					// Retry once after a short delay — some tests leave the app briefly busy
+					// (e.g., RefreshView animations settling) but not truly frozen.
+					var appStateTask = Task.Run(() => App.AppState);
+					if (!appStateTask.Wait(TimeSpan.FromSeconds(15)))
+					{
+						// First attempt timed out — wait briefly and retry once before declaring frozen
+						Task.Delay(5000).Wait();
+						var retryTask = Task.Run(() => App.AppState);
+						if (!retryTask.Wait(TimeSpan.FromSeconds(15)))
+						{
+							throw new TimeoutException("App.AppState query did not complete — app is likely unresponsive");
+						}
+						appState = retryTask.GetAwaiter().GetResult();
+					}
+					else
+					{
+						appState = appStateTask.GetAwaiter().GetResult();
+					}
+				}
+				catch (TimeoutException)
+				{
+					// App is unresponsive - let the outer TimeoutException handler deal with it
+					throw;
+				}
+				catch (Exception)
+				{
+					// AppState query failed for some other reason (not a timeout/freeze).
+					// Force-close the app and treat it as not running.
+					try
+					{
+						App.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+					}
+					catch { /* best effort */ }
+					appState = ApplicationState.NotRunning;
+				}
+
+				if (appState != ApplicationState.Running)
 				{
 					SaveDeviceDiagnosticInfo();
 
@@ -87,6 +159,31 @@ namespace UITest.Appium.NUnit
 					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
+			catch (TimeoutException ex)
+			{
+				// App is stuck in an infinite loop (e.g., layout cycle). Force-terminate and reset.
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} App became unresponsive, force-closing: {ex.Message}");
+				try
+				{
+					App.CommandExecutor.Execute("forceCloseApp", new Dictionary<string, object>());
+				}
+				catch { /* best effort */ }
+
+				if (!ResetAfterEachTest)
+				{
+					try
+					{
+						Reset();
+						FixtureSetup();
+					}
+					catch (Exception resetEx)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Reset after force-close failed: {resetEx.Message}");
+					}
+				}
+
+				Assert.Fail($"The app became unresponsive and was force-terminated: {ex.Message}");
+			}
 			finally
 			{
 				var testOutcome = TestContext.CurrentContext.Result.Outcome;
@@ -94,7 +191,20 @@ namespace UITest.Appium.NUnit
 					testOutcome == ResultState.Failure)
 				{
 					SaveDeviceDiagnosticInfo();
-					SaveUIDiagnosticInfo();
+					// SaveUIDiagnosticInfo makes Appium calls that hang if app is frozen.
+					// Wrap in a timeout so we don't block the entire test run.
+					try
+					{
+						var diagTask = Task.Run(() => SaveUIDiagnosticInfo());
+						if (!diagTask.Wait(TimeSpan.FromSeconds(15)))
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} SaveUIDiagnosticInfo timed out — app may be unresponsive, skipping UI diagnostics");
+						}
+					}
+					catch (Exception ex)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} SaveUIDiagnosticInfo failed: {ex.Message}");
+					}
 				}
 			}
 		}
@@ -113,8 +223,9 @@ namespace UITest.Appium.NUnit
 			}
 			catch
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+				_fixtureSetupFailed = true;
+				SaveDeviceDiagnosticInfo(storeForReattachment: true);
+				SaveUIDiagnosticInfo(storeForReattachment: true);
 				throw;
 			}
 		}
@@ -137,7 +248,7 @@ namespace UITest.Appium.NUnit
 			FixtureOneTimeTearDown();
 		}
 
-		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
+		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null, bool storeForReattachment = false)
 		{
 			try
 			{
@@ -156,6 +267,12 @@ namespace UITest.Appium.NUnit
 						File.WriteAllLines(logsPath, entries);
 
 						AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+
+						// Store path for re-attachment to individual tests if this is from fixture setup
+						if (storeForReattachment)
+						{
+							_fixtureSetupDiagnosticFiles.Add(logsPath);
+						}
 					}
 				}
 			}
@@ -166,7 +283,7 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
-		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null, bool storeForReattachment = false)
 		{
 			if (App.AppState != ApplicationState.Running)
 				return false;
@@ -177,6 +294,12 @@ namespace UITest.Appium.NUnit
 				_ = App.Screenshot(screenshotPath);
 
 				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+
+				// Store path for re-attachment to individual tests if this is from fixture setup
+				if (storeForReattachment)
+				{
+					_fixtureSetupDiagnosticFiles.Add(screenshotPath);
+				}
 			}
 
 			var pageSourcePath = GetGeneratedFilePath("PageSource.txt", note);
@@ -185,6 +308,12 @@ namespace UITest.Appium.NUnit
 				File.WriteAllText(pageSourcePath, App.ElementTree);
 
 				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+
+				// Store path for re-attachment to individual tests if this is from fixture setup
+				if (storeForReattachment)
+				{
+					_fixtureSetupDiagnosticFiles.Add(pageSourcePath);
+				}
 			}
 
 			return true;

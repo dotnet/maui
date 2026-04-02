@@ -1,10 +1,11 @@
+using System;
 using System.IO;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,23 +14,23 @@ public partial class RefToXamlControl : ContentPage
 	public RefToXamlControl() => InitializeComponent();
 
 
-	[TestFixture]
-	class Test
+	[Collection("Xaml Inflation")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void CanRefToXamlControlsWithoutBaseClass([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CanRefToXamlControlsWithoutBaseClass(XamlInflator inflator)
 		{
 			var page = new RefToXamlControl(inflator);
-			Assert.That(page.Content, Is.TypeOf<CustomButtonNoBaseClass>());
+			Assert.IsType<CustomButtonNoBaseClass>(page.Content);
 
 		}
 		static string GetThisFilePath([System.Runtime.CompilerServices.CallerFilePath] string path = null) => path ?? string.Empty;

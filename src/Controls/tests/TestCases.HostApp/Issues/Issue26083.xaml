@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue26083"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+  <ContentPage.BindingContext>
+    <local:_26083MainViewModel/>
+  </ContentPage.BindingContext>
+  <VerticalStackLayout>
+    <Grid x:Name="customGrid">
+      <CollectionView ItemsSource="{Binding Items, Mode=OneWay}" BackgroundColor="Green" SizeChanged="CollectionView_SizeChanged">
+        <CollectionView.ItemTemplate>
+          <DataTemplate x:DataType="x:String">
+            <Border StrokeThickness="2">
+              <VerticalStackLayout>
+                <Image HeightRequest="200" Source="dotnet_bot.png" HorizontalOptions="Center" />
+                <Label Text="{Binding}"/>
+              </VerticalStackLayout>
+            </Border>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+        <CollectionView.ItemsLayout>
+          <GridItemsLayout Span="2" Orientation="Vertical" />
+        </CollectionView.ItemsLayout>
+      </CollectionView>
+    </Grid>
+    <Button WidthRequest="400" AutomationId="Button" HeightRequest="50" Text="Update CollectionView Width" Clicked="Button_Clicked"/>
+  </VerticalStackLayout>
+</ContentPage>

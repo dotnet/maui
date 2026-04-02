@@ -1,16 +1,23 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PolyBezierSegment']/Docs/*" />
+	/// <summary>
+	/// A path segment that draws one or more connected cubic Bezier curves.
+	/// </summary>
 	public sealed class PolyBezierSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PolyBezierSegment"/> class with an empty point collection.
+		/// </summary>
 		public PolyBezierSegment()
 		{
 			Points = new PointCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PolyBezierSegment"/> class with the specified points.
+		/// </summary>
+		/// <param name="points">The collection of control and end points for the Bezier curves.</param>
 		public PolyBezierSegment(PointCollection points)
 		{
 			Points = points;
@@ -20,7 +27,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(PolyBezierSegment), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="//Member[@MemberName='Points']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of control and end points for the Bezier curves. This is a bindable property.
+		/// </summary>
 		public PointCollection Points
 		{
 			set { SetValue(PointsProperty, value); }

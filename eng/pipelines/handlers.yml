@@ -3,8 +3,7 @@ trigger:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   tags:
     include:
     - '*'
@@ -12,7 +11,7 @@ trigger:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -26,13 +25,12 @@ pr:
     include:
     - main
     - release/*
-    - net9.0
-    - net10.0
+    - net*.0
   paths:
     include:
     - '*'
     exclude:
-    - .github/*
+    - .github/**
     - docs/*
     - CODE-OF-CONDUCT.md
     - CONTRIBUTING.md
@@ -131,14 +129,6 @@ parameters:
     demands:
     - macOS.Name -equals Sequoia
 
-resources:
-  repositories:
-  - repository: yaml-templates
-    type: github
-    name: xamarin/yaml-templates
-    endpoint: xamarin
-    ref: refs/heads/main
-
 stages:
 
 - stage: build_net
@@ -214,7 +204,7 @@ stages:
         value: $(Build.SourcesDirectory)/build.cmd -ci
       - name: _BuildConfig
         value: Release
-      - name: _BuildOfficalId
+      - name: _BuildOfficialId
         value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
 
       steps:
@@ -231,7 +221,7 @@ stages:
           repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
           repoLogPath: $(Build.Arcade.LogsPath)
           repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-          officialBuildId: $(_BuildOfficalId)
+          officialBuildId: $(_BuildOfficialId)
           prepareSteps:
           - template: common/provision.yml
             parameters:

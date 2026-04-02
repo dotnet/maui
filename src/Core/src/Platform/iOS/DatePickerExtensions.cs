@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Foundation;
 using UIKit;
 
@@ -79,23 +80,27 @@ public static class DatePickerExtensions
 		{
 			platformDatePicker.Text = string.Empty;
 		}
-		else if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
+		else if (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase))
 		{
 			NSDateFormatter dateFormatter = new NSDateFormatter
 			{
 				TimeZone = NSTimeZone.FromGMT(0)
 			};
 
+			// Use datePicker.Date (the source date) for formatting
+			// This ensures consistent formatting whether picker is initialized or not
+			var nsDate = datePicker.Date.Value.ToNSDate();
+
 			if (format.Equals("D", StringComparison.Ordinal) == true)
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Long;
-				var strDate = dateFormatter.StringFor(picker.Date);
+				dateFormatter.DateStyle = NSDateFormatterStyle.Full;
+				var strDate = dateFormatter.StringFor(nsDate);
 				platformDatePicker.Text = strDate;
 			}
 			else
 			{
-				dateFormatter.DateStyle = NSDateFormatterStyle.Short;
-				var strDate = dateFormatter.StringFor(picker.Date);
+				dateFormatter.SetLocalizedDateFormatFromTemplate("yMd"); // Forces 4-digit year
+				var strDate = dateFormatter.StringFor(nsDate);
 				platformDatePicker.Text = strDate;
 			}
 		}

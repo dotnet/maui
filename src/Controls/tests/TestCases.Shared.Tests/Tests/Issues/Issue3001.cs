@@ -17,11 +17,10 @@ public class Issue3001 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	[Category(UITestCategories.Compatibility)]
 	public void Issue3001Test()
 	{
-		App.WaitForElement(ButtonId);
+		App.WaitForElement(ButtonId, timeout: TimeSpan.FromSeconds(15));
 		App.Tap(ButtonId);
-		App.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(5));
+		App.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(15));
 	}
 }

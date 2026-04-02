@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(IsNavigationBarTranslucentProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetIsNavigationBarTranslucent'][1]/Docs/*" />
+		/// <summary>Sets whether the navigation bar is translucent on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> for translucent; otherwise, <see langword="false"/>.</param>
 		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static void SetIsNavigationBarTranslucent(BindableObject element, bool value)
 		{
@@ -41,7 +43,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetIsNavigationBarTranslucent(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetIsNavigationBarTranslucent'][2]/Docs/*" />
+		/// <summary>Sets whether the navigation bar is translucent on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> for translucent; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetIsNavigationBarTranslucent(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
@@ -77,25 +82,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create("StatusBarColorTextMode", typeof(StatusBarTextColorMode),
 			typeof(NavigationPage), StatusBarTextColorMode.MatchNavigationBarTextLuminosity);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetStatusBarTextColorMode'][1]/Docs/*" />
+		/// <summary>Gets the status bar text color mode on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The status bar text color mode.</returns>
 		public static StatusBarTextColorMode GetStatusBarTextColorMode(BindableObject element)
 		{
 			return (StatusBarTextColorMode)element.GetValue(StatusBarTextColorModeProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetStatusBarTextColorMode'][1]/Docs/*" />
+		/// <summary>Sets the status bar text color mode on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The status bar text color mode to apply.</param>
 		public static void SetStatusBarTextColorMode(BindableObject element, StatusBarTextColorMode value)
 		{
 			element.SetValue(StatusBarTextColorModeProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetStatusBarTextColorMode'][2]/Docs/*" />
+		/// <summary>Gets the status bar text color mode on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The status bar text color mode.</returns>
 		public static StatusBarTextColorMode GetStatusBarTextColorMode(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetStatusBarTextColorMode(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetStatusBarTextColorMode'][2]/Docs/*" />
+		/// <summary>Sets the status bar text color mode on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The status bar text color mode to apply.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetStatusBarTextColorMode(this IPlatformElementConfiguration<iOS, FormsElement> config, StatusBarTextColorMode value)
 		{
 			SetStatusBarTextColorMode(config.Element, value);
@@ -115,13 +129,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(PrefersLargeTitlesProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetPrefersLargeTitles'][1]/Docs/*" />
+		/// <summary>Sets whether iOS 11+ large titles are displayed in the navigation bar.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> to prefer large titles; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersLargeTitles(BindableObject element, bool value)
 		{
 			element.SetValue(PrefersLargeTitlesProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetPrefersLargeTitles'][2]/Docs/*" />
+		/// <summary>Sets whether iOS 11+ large titles are displayed in the navigation bar.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to prefer large titles; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersLargeTitles(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetPrefersLargeTitles(config.Element, value);
@@ -149,13 +168,18 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(HideNavigationBarSeparatorProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHideNavigationBarSeparator'][1]/Docs/*" />
+		/// <summary>Sets whether to hide the navigation bar separator line on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> to hide the separator; otherwise, <see langword="false"/>.</param>
 		public static void SetHideNavigationBarSeparator(BindableObject element, bool value)
 		{
 			element.SetValue(HideNavigationBarSeparatorProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='SetHideNavigationBarSeparator'][2]/Docs/*" />
+		/// <summary>Sets whether to hide the navigation bar separator line on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to hide the separator; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetHideNavigationBarSeparator(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetHideNavigationBarSeparator(config.Element, value);

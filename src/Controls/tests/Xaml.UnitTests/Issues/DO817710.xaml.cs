@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -6,13 +6,15 @@ public partial class DO817710 : ContentPage
 {
 	public DO817710() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void EmptyResourcesElement([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void EmptyResourcesElement(XamlInflator inflator)
 		{
-			Assert.DoesNotThrow(() => new DO817710(inflator));
+			var ex = Record.Exception(() => new DO817710(inflator));
+			Assert.Null(ex);
 		}
 	}
 }

@@ -36,6 +36,9 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+
+		<!-- Use XAML Source Generator for better performance and debugging -->
+		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 	</PropertyGroup>
   
   <PropertyGroup>
@@ -69,6 +72,7 @@
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
   </ItemGroup>
@@ -84,7 +88,12 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
-  
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+  <ItemGroup>
+    <!-- Suppress CS0612 (obsolete) for XAML files using deprecated NamedSize FontSize values -->
+    <MauiXaml Update="Views\HeadersAndFooters\HeaderFooterAddClearPage.xaml" NoWarn="0612" />
+  </ItemGroup>
   
 </Project>

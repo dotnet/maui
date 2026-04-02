@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
-		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void Issue12484ControlTemplateRendererTest()
 		{

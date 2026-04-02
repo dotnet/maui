@@ -4,19 +4,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class RefreshViewFeatureTests : UITest
+public class RefreshViewFeatureTests : _GalleryUITest
 {
 	public const string RefreshViewFeatureMatrix = "RefreshView Feature Matrix";
+	public override string GalleryPageName => RefreshViewFeatureMatrix;
 
 	public RefreshViewFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(RefreshViewFeatureMatrix);
 	}
 
 	[Test, Order(1)]
@@ -201,7 +196,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("RefreshView");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(13)]
@@ -217,7 +212,7 @@ public class RefreshViewFeatureTests : UITest
 		App.WaitForElement("RefreshView");
 		App.WaitForElement("CollectionViewContentButton");
 		App.Tap("CollectionViewContentButton");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

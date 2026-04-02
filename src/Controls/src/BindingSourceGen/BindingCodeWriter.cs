@@ -414,38 +414,45 @@ public static class BindingCodeWriter
 
 		private void AppendUnsafeAccessors(BindingInvocationDescription binding)
 		{
-			// Append unsafe accessors as local methods
-			var unsafeAccessors = binding.Path.OfType<InaccessibleMemberAccess>();
+			// Append unsafe accessors as local methods for members with inaccessible accessors
+			var membersWithInaccessibleAccessors = binding.Path.OfType<MemberAccess>().Where(m => m.HasInaccessibleAccessor);
 
-			foreach (var unsafeAccessor in unsafeAccessors)
+			foreach (var member in membersWithInaccessibleAccessors)
 			{
 				AppendBlankLine();
 
-				if (unsafeAccessor.Kind == AccessorKind.Field)
+				// Members with inaccessible accessors must have MemberType and ContainingType populated
+				// by PathParser during source analysis
+				if (member.MemberType == null || member.ContainingType == null)
 				{
-					AppendUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+					throw new InvalidOperationException($"Member '{member.MemberName}' with inaccessible accessor must have MemberType and ContainingType populated.");
 				}
-				else if (unsafeAccessor.Kind == AccessorKind.Property)
+
+				if (member.Kind == AccessorKind.Field)
 				{
-					bool isLastPart = unsafeAccessor.Equals(binding.Path.Last());
+					AppendUnsafeFieldAccessor(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
+				}
+				else if (member.Kind == AccessorKind.Property)
+				{
+					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
 
-					if (!isLastPart || needsGetterForLastPart)
+					if (member.IsGetterInaccessible && (!isLastPart || needsGetterForLastPart))
 					{
 						// we don't need the unsafe getter if the item is the very last part of the path
 						// because we don't need to access its value while constructing the handlers array
-						AppendUnsafePropertyGetAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 
-					if (isLastPart && binding.SetterOptions.IsWritable)
+					if (member.IsSetterInaccessible && isLastPart && binding.SetterOptions.IsWritable)
 					{
 						// We only need the unsafe setter if the item is the very last part of the path
-						AppendUnsafePropertySetAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName);
+						AppendUnsafePropertySetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 				}
 				else
 				{
-					throw new ArgumentException(nameof(unsafeAccessor.Kind));
+					throw new ArgumentException(nameof(member.Kind));
 				}
 			}
 

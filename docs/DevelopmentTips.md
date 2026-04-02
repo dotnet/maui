@@ -21,6 +21,8 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 The below parameters can be used with the `dotnet cake` command in the root of your locally cloned .NET MAUI repository folder.
 
+> **Note:** For provisioning .NET SDK and workloads, prefer using `./build.sh -restore` (or `./build.cmd -restore` on Windows) instead of Cake. The Cake targets below are utility commands.
+
 #### PublicAPI Management
 `--target=publicapi`
 - Clears and regenerates PublicAPI.Unshipped.txt files across all MAUI projects (Core, Controls, Essentials, Graphics)
@@ -55,15 +57,38 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Compile using a local `.dotnet\dotnet` via `build.*` scripts on the root folder 
 
-This method uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
+This is the **recommended** method for provisioning the .NET SDK and workloads. It uses the Arcade build infrastructure. For more information, you can look [here](https://github.com/dotnet/arcade/blob/main/Documentation/ArcadeSdk.md#build-scripts-and-extensibility-points)
 
+```bash
+# Restore .NET SDK and workloads to .dotnet folder
+./build.sh -restore
+``` 
+or on Windows:
+
+```cmd
+.\build.cmd -restore
 ```
+
+To also build the solution:
+
+```bash
+./build.sh -restore -build
+``` 
+or 
+
+```cmd
+.\build.cmd -restore -build
+```
+
+To pack:
+
+```bash
 ./build.sh -restore -pack
 ``` 
 or 
 
-```
-./build.cmd -restore -pack
+```cmd
+.\build.cmd -restore -pack
 ```
 
 
@@ -89,7 +114,7 @@ dotnet cake --target=VSCode
 
 ```dotnetcli
 dotnet tool restore
-dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.slnx" --target=VS
+dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.sln" --target=VS
 ```
 
 #### Pack
@@ -98,7 +123,7 @@ dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.slnx" --target=VS
 
 ```dotnetcli
 dotnet tool restore
-dotnet cake --target=VS --pack --sln="<download_directory>\MauiApp2\MauiApp2.slnx"
+dotnet cake --target=VS --pack --sln="<download_directory>\MauiApp2\MauiApp2.sln"
 ```
 
 Create a new .NET MAUI app using your new packs
@@ -120,7 +145,7 @@ dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
 .\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks.slnf
 # Builds the rest of Maui
-.\bin\dotnet\dotnet build Microsoft.Maui.slnx
+.\bin\dotnet\dotnet build Microsoft.Maui.sln
 # Launch Visual Studio
 dotnet cake --target=VS
 ```
@@ -170,7 +195,7 @@ Once MSBuild starts, it will print the following
 Waiting for debugger to attach (dotnet PID xxxx).  Press enter to continue...
 ```
 
-You need to copy the PID value so we can use this in the IDE. For Visual Studio, you can use the `Attach to Process` menu option while you have the Microsoft.Maui.slnx solution open. For VSCode, open the workspace, then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
+You need to copy the PID value so we can use this in the IDE. For Visual Studio, you can use the `Attach to Process` menu option while you have the Microsoft.Maui.sln solution open. For VSCode, open the workspace, then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
 
 Once connected, go back to your command prompt and press ENTER so that the MSBuild process can continue.
 

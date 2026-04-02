@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Maui.Controls
 {
 	// TODO: CACHING https://github.com/dotnet/runtime/issues/52332
-	/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.UriImageSource']/Docs/*" />
+	/// <summary>An <see cref="ImageSource"/> that loads an image from a URI, with caching support.</summary>
 	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
 		/// <summary>Bindable property for <see cref="Uri"/>.</summary>
@@ -26,24 +26,24 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(
 			nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
+		/// <summary>Gets a value indicating whether this image source is empty.</summary>
 		public override bool IsEmpty => Uri == null;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CacheValidity']/Docs/*" />
+		/// <summary>Gets or sets how long the cached image remains valid. This is a bindable property.</summary>
 		public TimeSpan CacheValidity
 		{
 			get => (TimeSpan)GetValue(CacheValidityProperty);
 			set => SetValue(CacheValidityProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='CachingEnabled']/Docs/*" />
+		/// <summary>Gets or sets whether caching is enabled. This is a bindable property.</summary>
 		public bool CachingEnabled
 		{
 			get => (bool)GetValue(CachingEnabledProperty);
 			set => SetValue(CachingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='Uri']/Docs/*" />
+		/// <summary>Gets or sets the URI of the image to load. This is a bindable property.</summary>
 		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Uri
 		{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 			return stream;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UriImageSource.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>Returns a string representation of this <see cref="UriImageSource"/>.</summary>
 		public override string ToString()
 		{
 			return $"Uri: {Uri}";
