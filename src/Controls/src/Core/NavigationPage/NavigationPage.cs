@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls
 					}
 
 					var flyoutPage = _toolbar.FindParentOfType<FlyoutPage>();
-					if (flyoutPage != null && flyoutPage.Parent is IWindow && flyoutPage.Toolbar == _toolbar)
+					if (flyoutPage != null && flyoutPage.Toolbar == _toolbar)
 					{
 						flyoutPage.Toolbar = null;
 					}
