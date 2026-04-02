@@ -14,7 +14,7 @@ public class Issue31182 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsViewShouldDrawAtFullSize()
 	{
-		App.WaitForElement("label");
-		VerifyScreenshot();
+		App.WaitForElement("StatusLabel31182");
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

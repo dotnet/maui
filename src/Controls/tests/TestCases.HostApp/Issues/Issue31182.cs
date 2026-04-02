@@ -8,14 +8,15 @@ public class Issue31182 : TestContentPage
 		var someView = new SomeView
 		{
 			WidthRequest = 200,
-			HeightRequest = 200
+			HeightRequest = 200,
+			AutomationId = "GraphicsView31182"
 		};
 
 		var label = new Label
 		{
 			Text = "Invalidated",
-			AutomationId = "label",
-			IsVisible = true
+			AutomationId = "StatusLabel31182",
+			IsVisible = false
 		};
 
 		someView.Loaded += (s, e) =>
@@ -33,7 +34,6 @@ public class Issue31182 : TestContentPage
 		Content = new VerticalStackLayout
 		{
 			WidthRequest = 200,
-			HeightRequest = 200,
 			Background = Colors.Red,
 			Children =
 			{
