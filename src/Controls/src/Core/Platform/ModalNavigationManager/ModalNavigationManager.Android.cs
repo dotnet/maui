@@ -119,7 +119,17 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				dialogFragment.Dismiss();
+				// When batch-dismissing modals (e.g., PopToRoot), use DismissNow() to
+				// remove the fragment synchronously. This prevents intermediate modals
+				// from briefly flashing on screen between sequential pops.
+				bool isBatchPopping = _window.Page is Shell shell
+					&& shell.CurrentItem?.CurrentItem?.IsPoppingModalStack == true;
+
+				if (isBatchPopping)
+					dialogFragment.DismissNow();
+				else
+					dialogFragment.Dismiss();
+
 				source.TrySetResult(modal);
 			}
 
