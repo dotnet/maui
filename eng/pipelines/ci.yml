@@ -59,8 +59,8 @@ parameters:
     os: Windows
     buildScript: $(_buildScript)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
-  - name: Azure Pipelines
-    vmImage: $(HostedMacImage)
+  - name: MAUI
+    vmImage: MAUI
     os: macOS
     buildScript: $(_buildScriptMacOS)
     sln: '$(Build.SourcesDirectory)/Microsoft.Maui-mac.slnf'
@@ -95,6 +95,7 @@ parameters:
         - ImageOverride -equals 1es-windows-2022-open
       os: windows
 
+# Typically X64 pools but XCode 26.2 isn't available yet for the Azure Pipelines X64 Pools
 - name: MacOSPool
   type: object
   default:
@@ -107,6 +108,11 @@ parameters:
       demands:
         - ImageOverride -equals ACES_VM_SharedPool_Tahoe
       label: macOS
+# Switch back to this once XCode 26.2 is available on Azure Pipelines
+#     name: Azure Pipelines
+#     vmImage: $(HostedMacImage)
+#     os: macOS
+#     label: macOS
 
 - name: AndroidPoolLinux
   type: object
@@ -117,10 +123,12 @@ parameters:
 
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
-# Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+# Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
+# Re-enable once Azure Pipelines has Xcode 26.2 on x64 pools.
+# Original condition: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
 - name: macOSPoolLaneCondition
   type: string
-  default: or(and(ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/net'), endsWith(variables['Build.SourceBranch'], '.0')), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/inflight/'))), and(eq(variables['Build.Reason'], 'PullRequest'), or(and(startsWith(variables['System.PullRequest.TargetBranch'], 'net'), endsWith(variables['System.PullRequest.TargetBranch'], '.0')), startsWith(variables['System.PullRequest.TargetBranch'], 'release/'), startsWith(variables['System.PullRequest.TargetBranch'], 'inflight/'))))
+  default: false
 
 stages:
 
@@ -192,6 +200,7 @@ stages:
         skipAndroidCreateAvds: true
         skipProvisioning: true
         skipXcode: false
+
 
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
   parameters:
@@ -372,6 +381,52 @@ stages:
       testName: RunOniOS_MauiNativeAOT
       arch: ARM64
 
+    # CoreCLR test variants - ARM64 (Apple Silicon) lanes
+    - name: mac_runios_maui_debug_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_maui_release_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_maui_trim_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_blazor_debug_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug_CoreCLR
+      arch: ARM64
+
+    - name: mac_runios_blazor_release_coreclr_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease_CoreCLR
+      arch: ARM64
+
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
     - name: mac_runios_maui_debug
@@ -431,5 +486,56 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 45
       testName: RunOniOS_MauiNativeAOT
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    # CoreCLR test variants - MacOSPool lanes
+    - name: mac_runios_maui_debug_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiDebug_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_release_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiRelease_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_maui_trim_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_MauiReleaseTrimFull_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_debug_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorDebug_CoreCLR
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_blazor_release_coreclr
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:  
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_BlazorRelease_CoreCLR
       arch: x64
       condition: ${{ parameters.macOSPoolLaneCondition }}
