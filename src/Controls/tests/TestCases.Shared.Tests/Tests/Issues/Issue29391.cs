@@ -13,6 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] IsSwipeEnabled Not Working on CarouselView (CV2)";
 
+		protected override bool ResetAfterEachTest => true;
+
 		[SetUp]
 		public void SetUp()
 		{
@@ -23,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Ensure swipe is enabled before attempting to scroll back.
 			// If a prior test failed mid-way, IsSwipeEnabled may still be false.
 			var switchElement = App.FindElement("Switch");
-			var switchValue = switchElement.GetAttribute("value");
+			var switchValue = switchElement.GetAttribute<string>("value");
 			if (switchValue == "0" || switchValue == "false")
 			{
 				App.Tap("Switch");
