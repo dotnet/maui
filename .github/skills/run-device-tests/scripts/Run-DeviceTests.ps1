@@ -178,7 +178,7 @@ $PlatformConfigs = @{
     }
     "windows" = @{
         Tfm = "net10.0-windows10.0.19041.0"
-        RuntimeIdentifier = "win-x64"
+        RuntimeIdentifier = $null  # Let MSBuild choose — Windows device tests use CoreCLR, not Mono
         AppExtension = ".exe"
         XHarnessTarget = $null
         UsesXHarness = $false
@@ -350,7 +350,14 @@ try {
             }
         }
         "windows" {
-            $appPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder/$appName.exe"
+            # Without explicit RID, exe is directly in the TFM folder
+            $exeSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
+            $exeFile = Get-ChildItem -Path $exeSearchPath -Filter "$appName.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exeFile) {
+                $appPath = $exeFile.FullName
+            } else {
+                $appPath = "$exeSearchPath/$appName.exe"
+            }
         }
     }
     
