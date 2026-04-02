@@ -1,5 +1,4 @@
-#nullable disable
-#if ANDROID
+#nullable enable
 using System;
 using Android.Content;
 using AndroidX.CoordinatorLayout.Widget;
@@ -8,7 +7,6 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-using AViewGroup = Android.Views.ViewGroup;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using APaint = Android.Graphics.Paint;
 using ACanvas = Android.Graphics.Canvas;
@@ -30,18 +28,18 @@ namespace Microsoft.Maui.Controls.Handlers
 
         // Navigation root (inflated navigationlayout.axml) — provides named slots
         // for content, toolbar, bottom tabs, and top tabs (same as FlyoutViewHandler).
-        AView _navigationRoot;
+        AView? _navigationRoot;
 
         // Flyout content view (Shell's flyout menu)
-        AView _flyoutContentView;
-        IShellFlyoutContentRenderer _flyoutContentRenderer;
+        AView? _flyoutContentView;
+        IShellFlyoutContentRenderer? _flyoutContentRenderer;
 
         // Current shell item renderer
-        IShellItemRenderer _currentShellItemRenderer;
+        IShellItemRenderer? _currentShellItemRenderer;
 
         // ShellItem handler — placed once in navigationlayout_content, reused
         // across ShellItem switches via SwitchToShellItem() (no fragment replacement).
-        ShellItemHandler _shellItemHandler;
+        ShellItemHandler? _shellItemHandler;
 
         // Track flyout behavior for IShellContext
         FlyoutBehavior _currentBehavior = FlyoutBehavior.Flyout;
@@ -53,10 +51,10 @@ namespace Microsoft.Maui.Controls.Handlers
         // Gradient scrim drawable — replaces the built-in scrim when a non-solid brush is used.
         // Set as Foreground on _navigationRoot so it draws on top of ALL children (including AppBarLayout).
         // Matches ShellFlyoutRenderer's DrawChild + Paint approach using Paint with gradient shader.
-        ScrimBrushDrawable _scrimDrawable;
+        ScrimBrushDrawable? _scrimDrawable;
 
         // Pending fragment transaction (from RunOrWaitForResume, same as FlyoutViewHandler)
-        IDisposable _pendingFragment;
+        IDisposable? _pendingFragment;
 
         protected override MauiDrawerLayout CreatePlatformView()
         {
@@ -97,8 +95,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 MauiWindowInsetListener.SetupViewWithLocalListener(cl);
             }
 
-            VirtualView.PropertyChanged += OnShellPropertyChanged;
-
             // Add appearance observer similar to ShellRenderer
             ((IShellController)VirtualView).AddAppearanceObserver(this, VirtualView);
 
@@ -122,7 +118,6 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             if (VirtualView is not null)
             {
-                VirtualView.PropertyChanged -= OnShellPropertyChanged;
                 ((IShellController)VirtualView).RemoveAppearanceObserver(this);
             }
 
@@ -171,11 +166,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        void OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            // Property changes are handled via PropertyMapper
-        }
-
         void SwitchToItem(ShellItem newItem, bool animate)
         {
             if (newItem is null)
@@ -202,7 +192,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            var fragmentManager = MauiContext.GetFragmentManager();
+            var fragmentManager = MauiContext!.GetFragmentManager();
 
             _currentShellItemRenderer = CreateShellItemRenderer(newItem);
             _currentShellItemRenderer.ShellItem = newItem;
@@ -238,7 +228,7 @@ namespace Microsoft.Maui.Controls.Handlers
             });
         }
 
-        void OnPlatformViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)
+        void OnPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
         {
             PlatformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
@@ -475,11 +465,11 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        void OnDrawerSlide(object sender, DrawerLayout.DrawerSlideEventArgs e)
+        void OnDrawerSlide(object? sender, DrawerLayout.DrawerSlideEventArgs e)
         {
-            if (_scrimDrawable is not null)
+            if (_scrimDrawable is ScrimBrushDrawable scrim)
             {
-                _scrimDrawable.Alpha = (int)(e.SlideOffset * 255);
+                scrim.Alpha = (int)(e.SlideOffset * 255);
             }
         }
 
@@ -490,12 +480,12 @@ namespace Microsoft.Maui.Controls.Handlers
             // Dispose old drawable if replacing
             if (_scrimDrawable is not null)
             {
-                _navigationRoot.Foreground = null;
+                _navigationRoot?.Foreground = null;
                 _scrimDrawable.Dispose();
             }
 
             _scrimDrawable = drawable;
-            _navigationRoot.Foreground = _scrimDrawable;
+            _navigationRoot?.Foreground = _scrimDrawable;
         }
 
         void RemoveScrimDrawable()
@@ -505,7 +495,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            _navigationRoot.Foreground = null;
+            _navigationRoot?.Foreground = null;
             _scrimDrawable.Dispose();
             _scrimDrawable = null;
         }
@@ -577,11 +567,11 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             // Use the new handler-based architecture
             var handler = new ShellItemHandler();
-            handler.SetMauiContext(MauiContext);
+            handler.SetMauiContext(MauiContext!);
             handler.SetVirtualView(shellItem);
 
             // Wrap it in an adapter to make it compatible with IShellItemRenderer
-            return new ShellItemHandlerAdapter(handler, MauiContext);
+            return new ShellItemHandlerAdapter(handler, MauiContext!);
         }
 
         protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer()
@@ -616,10 +606,10 @@ namespace Microsoft.Maui.Controls.Handlers
         IShellSectionRenderer IShellContext.CreateShellSectionRenderer(ShellSection shellSection)
         {
             var handler = new ShellSectionHandler();
-            handler.SetMauiContext(MauiContext);
+            handler.SetMauiContext(MauiContext!);
             handler.SetVirtualView(shellSection);
 
-            return new ShellSectionHandlerAdapter(handler, MauiContext);
+            return new ShellSectionHandlerAdapter(handler, MauiContext!);
         }
 
         IShellToolbarTracker IShellContext.CreateTrackerForToolbar(AToolbar toolbar)
@@ -712,7 +702,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             public override int Opacity => (int)AFormat.Translucent;
 
-            public override void SetColorFilter(AColorFilter colorFilter)
+            public override void SetColorFilter(AColorFilter? colorFilter)
             {
                 _paint.SetColorFilter(colorFilter);
             }
@@ -728,4 +718,3 @@ namespace Microsoft.Maui.Controls.Handlers
         }
     }
 }
-#endif
