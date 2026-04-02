@@ -65,5 +65,10 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) { }
+
+		[MissingMapper]
+		internal static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton)
+		{
+		}
 	}
 }
