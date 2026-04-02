@@ -70,8 +70,11 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
-				pvh.DisconnectHandler();
+			if (_detailViewFragment?.DetailView is IView previousDetail &&
+				previousDetail != VirtualView.Detail)
+			{
+				previousDetail.Handler?.DisconnectHandler();
+			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
