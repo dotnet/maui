@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue link: https://github.com/dotnet/maui/issues/34785
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,3 +21,4 @@ public class Issue23377 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
