@@ -55,12 +55,6 @@ if (-not $PrInfo -or -not $PrInfo.author) {
     exit 1
 }
 
-if ($PrInfo.isFork) {
-    Write-Host "⏭️ PR #$PrNumber is from a fork. workflow_dispatch does not check out fork PRs."
-    Write-Host "   Fork PRs are evaluated automatically via pull_request_target."
-    exit 1
-}
-
 $Permission = gh api "repos/$($env:GITHUB_REPOSITORY)/collaborators/$($PrInfo.author)/permission" --jq '.permission'
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to check permissions for '$($PrInfo.author)'"
@@ -70,9 +64,11 @@ if ($LASTEXITCODE -ne 0) {
 $AllowedRoles = @('admin', 'write', 'maintain')
 if ($Permission -notin $AllowedRoles) {
     Write-Host "⏭️ PR author '$($PrInfo.author)' has '$Permission' access. workflow_dispatch only processes PRs from authors with write access."
-    exit 1
+    exit 0
 }
-Write-Host "✅ PR #$PrNumber by '$($PrInfo.author)' ($Permission access, same-repo)"
+
+$IsFork = if ($PrInfo.isFork) { "fork" } else { "same-repo" }
+Write-Host "✅ PR #$PrNumber by '$($PrInfo.author)' ($Permission access, $IsFork)"
 
 # ── Save base branch SHA ─────────────────────────────────────────────────────
 
