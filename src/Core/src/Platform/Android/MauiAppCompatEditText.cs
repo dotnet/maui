@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 
 			this.HideSoftInput();
 			ClearFocus();
-			return true;
+			return base.OnKeyPreIme(keyCode, e);
 		}
 	}
 }
