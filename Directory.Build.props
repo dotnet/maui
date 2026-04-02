@@ -14,6 +14,9 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- WindowsAppSDK 2.0.0-preview2 depends on Microsoft.WindowsAppSDK.AI 2.0.24-preview which may
+         resolve to a different version on some feeds. Suppress NU1603 until stable release. -->
+    <NoWarn>$(NoWarn);NU1603</NoWarn>
     <!-- Detailed trimmer warnings, if present -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <DebugType>portable</DebugType>
