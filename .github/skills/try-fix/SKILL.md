@@ -8,6 +8,16 @@ compatibility: Requires PowerShell, git, .NET MAUI build environment, Android/iO
 
 Attempts ONE fix for a given problem. Receives all context upfront, tries a single approach, tests it, and reports what happened.
 
+## Activation Guard
+
+🚨 **This skill is ONLY for proposing and testing code fixes.** Do NOT activate for:
+- Code review requests ("review this PR", "check code quality")
+- PR summaries or descriptions ("what does this PR do?")
+- Test-only requests ("run tests", "check CI status")
+- General questions about code or architecture
+
+If the prompt does not include a **problem to fix** and a **test command to verify**, this skill should not run.
+
 ## Core Principles
 
 1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
@@ -357,7 +367,7 @@ Provide structured output to the invoker:
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `git checkout HEAD -- .` and `git clean -fd` if needed |
+| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/8) |
 
 ---
 
