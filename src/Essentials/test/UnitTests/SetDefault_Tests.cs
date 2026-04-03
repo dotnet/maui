@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Storage;
@@ -9,6 +8,12 @@ using Xunit;
 
 namespace Tests
 {
+	[CollectionDefinition("SetDefault", DisableParallelization = true)]
+	public class SetDefaultCollection
+	{
+	}
+
+	[Collection("SetDefault")]
 	public class SetDefault_Tests
 	{
 		// --- Geocoding SetDefault tests ---
@@ -145,8 +150,8 @@ namespace Tests
 			public Task<FileResult?> PickAsync(PickOptions? options = null)
 				=> Task.FromResult<FileResult?>(null);
 
-			public Task<IEnumerable<FileResult?>> PickMultipleAsync(PickOptions? options = null)
-				=> Task.FromResult<IEnumerable<FileResult?>>(Array.Empty<FileResult>());
+			public Task<IEnumerable<FileResult>?> PickMultipleAsync(PickOptions? options = null)
+				=> Task.FromResult<IEnumerable<FileResult>?>(Array.Empty<FileResult>());
 		}
 	}
 }
