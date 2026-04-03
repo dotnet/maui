@@ -628,10 +628,8 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(new ContentPage() { Content = new Label() { Text = "Test Page" } });
 			});
 
-			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
 			{
-				await OpenFlyout(handler);
-
 				var flyoutContent = handler.ViewController
 					.ChildViewControllers
 					.OfType<ShellFlyoutContentRenderer>()
@@ -644,6 +642,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(tableViewController);
 				Assert.False(tableViewController.TableView.ScrollsToTop,
 					"Shell flyout's table view should have ScrollsToTop disabled to avoid conflicting with content scroll views");
+
+				return Task.CompletedTask;
 			});
 		}
 
