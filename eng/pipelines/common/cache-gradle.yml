@@ -1,0 +1,29 @@
+# Shared Gradle dependency cache template
+# Caches ~/.gradle/caches between pipeline runs to avoid transient network
+# failures when resolving Maven dependencies during Android binding builds.
+#
+# Adapted from dotnet/android: https://github.com/dotnet/android/commit/0a681023
+# See: https://learn.microsoft.com/azure/devops/pipelines/release/caching
+
+parameters:
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+
+steps:
+- script: |
+    echo "##vso[task.setvariable variable=GRADLE_CACHE_DIR]$HOME/.gradle/caches"
+  displayName: prepare Gradle cache variables
+  condition: ne(variables['Agent.OS'], 'Windows_NT')
+
+- pwsh: |
+    $gradleCacheDir = Join-Path $env:USERPROFILE ".gradle\caches"
+    Write-Host "##vso[task.setvariable variable=GRADLE_CACHE_DIR]$gradleCacheDir"
+  displayName: prepare Gradle cache variables
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+- task: Cache@2
+  displayName: cache Gradle downloads
+  inputs:
+    key: '"gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/**/build.gradle'
+    restoreKeys: |
+      "gradle" | "v1" | "$(Agent.OS)"
+    path: $(GRADLE_CACHE_DIR)
