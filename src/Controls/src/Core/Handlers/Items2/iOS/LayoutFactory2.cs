@@ -411,7 +411,7 @@ internal static class LayoutFactory2
 						//This will move the carousel to fake the loop
 						cv2Controller.CollectionView.ScrollToItem(
 							NSIndexPath.FromItemSection(pageIndex, 0),
-							UICollectionViewScrollPosition.Left,
+							isHorizontal ? UICollectionViewScrollPosition.Left : UICollectionViewScrollPosition.Top,
 							false);
 					}
 				}
