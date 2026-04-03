@@ -8,14 +8,14 @@ public partial class CollectionViewScrollPage : ContentPage
 	public CollectionViewScrollPage()
 	{
 		InitializeComponent();
-		_viewModel = new CollectionViewViewModel();
+		_viewModel = new CollectionViewViewModel(isScrollingFeatureTest: true);
 		_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
 		BindingContext = _viewModel;
 	}
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new CollectionViewViewModel();
+		BindingContext = _viewModel = new CollectionViewViewModel(isScrollingFeatureTest: true);
 		_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT3;
 		_viewModel.ScrollToPosition = ScrollToPosition.MakeVisible;
 		ResetScrollEventLabels();

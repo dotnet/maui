@@ -16,11 +16,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void IsEnabledShouldWorkInBackButtonBehavior()
 		{
+			NavigateBack();
+			App.WaitForElement("HelloLabel");
+
+			NavigateBack();
+			App.WaitForElement("HelloLabel");
+		}
+
+		// On Windows, BackButtonBehavior.TextOverride is not supported (https://github.com/dotnet/maui/issues/1625),
+		// so the "Click" element does not exist. Use TapBackArrow to navigate back instead.
+		void NavigateBack()
+		{
+#if WINDOWS
+			App.TapBackArrow();
+#elif ANDROID
+			App.TapBackArrow("Click");
+#else
 			App.WaitForElement("Click");
 			App.Click("Click");
-			App.WaitForElement("HelloLabel");
-			App.Click("Click");
-			App.WaitForElement("HelloLabel");
+#endif
 		}
 	}
 }
