@@ -331,3 +331,8 @@ steps:
     condition: succeeded()
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
+
+# Cache Gradle downloads to avoid transient network failures during Android binding builds
+- template: /eng/pipelines/common/cache-gradle.yml@self
+  parameters:
+    checkoutDirectory: ${{ parameters.checkoutDirectory }}
