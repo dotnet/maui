@@ -107,6 +107,8 @@ namespace Microsoft.Maui.Graphics
 			var strokeMiterLimit = ShapeView.StrokeMiterLimit;
 			canvas.MiterLimit = strokeMiterLimit;
 
+			// Use SetFillPaint to configure gradient state (shader/CGGradient)
+			// which PlatformDrawPath will apply to the stroke rendering.
 			canvas.SetFillPaint(stroke, dirtyRect);
 			canvas.DrawPath(path);
 
