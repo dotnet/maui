@@ -1,0 +1,142 @@
+scenarios:
+  - name: "Happy path: propose alternative fix with different approach"
+    prompt: |
+      Use the try-fix skill to attempt a fix for the following problem:
+
+      Problem: CollectionView throws ObjectDisposedException when navigating back from a page on Android.
+
+      The existing PR fix already adds a null check on the adapter in OnMeasure(). We need a DIFFERENT approach.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
+
+      Target files:
+        - src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+
+      Platform: android
+
+      Hints: Focus on lifecycle/disposal timing rather than null checks.
+    assertions:
+      - type: output_contains
+        value: "Approach"
+      - type: output_contains
+        value: "Different from existing fix"
+      - type: output_not_contains
+        value: "null check on the adapter"
+      - type: output_contains
+        value: "result.txt"
+      - type: output_contains
+        value: "analysis"
+    rubric:
+      - "The agent proposes a fix approach that is clearly distinct from the null-check-on-adapter approach described as the existing fix"
+      - "The agent creates an approach.md document explaining the difference from the existing fix"
+      - "The agent saves artifacts (result.txt, fix.diff, analysis.md) to an output directory"
+      - "The agent reverts changes after testing using EstablishBrokenBaseline.ps1 rather than manual git commands"
+    timeout: 120
+
+  - name: "Negative trigger: code review request should not invoke try-fix workflow"
+    prompt: |
+      Please review the code changes in PR #34567 and tell me if the fix looks correct.
+      The PR modifies SafeAreaExtensions.cs to add padding adjustments.
+    assertions:
+      - type: output_not_contains
+        value: "EstablishBrokenBaseline"
+      - type: output_not_contains
+        value: "attempt-"
+      - type: output_not_contains
+        value: "OUTPUT_DIR"
+      - type: output_not_contains
+        value: "result.txt"
+    rubric:
+      - "The agent provides a code review rather than attempting to run a fix workflow"
+      - "The agent does not create output directories or artifact files associated with try-fix execution"
+    timeout: 60
+
+  - name: "Regression: agent must not claim Pass without running test command"
+    prompt: |
+      Use the try-fix skill for this problem:
+
+      Problem: Button tap does not fire Clicked event on iOS when inside a ScrollView.
+
+      Existing fix: Adds a gesture recognizer passthrough in ScrollViewHandler.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
+
+      Target files:
+        - src/Controls/src/Core/Handlers/Compatibility/ScrollViewRenderer.iOS.cs
+
+      Platform: ios
+
+      Note: No iOS simulator is currently available.
+    assertions:
+      - type: output_not_contains
+        value: "Pass"
+      - type: output_contains
+        value: "Blocked"
+      - type: output_not_contains
+        value: "code compiles successfully"
+      - type: output_not_contains
+        value: "logic looks correct"
+    rubric:
+      - "The agent reports 'Blocked' (not 'Pass') when no device/simulator is available to run the test command"
+      - "The agent does not claim success based on code review or compilation alone"
+      - "The agent explains why the result is Blocked rather than Pass or Fail"
+    timeout: 120
+
+  - name: "Edge case: second attempt reads and avoids prior failed approach"
+    prompt: |
+      Use the try-fix skill to attempt a fix. This is attempt #2 — attempt #1 already failed.
+
+      Problem: Shell navigation causes a NullReferenceException in ShellItemHandler on Android when popping to root.
+
+      Prior attempt (FAILED): Modified OnPageSelected to reset cached state after navigation.
+      Failure reason: OnPageSelected fires after layout measurement, so cached value was already consumed.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
+
+      Target files:
+        - src/Controls/src/Core/Handlers/Shell/ShellItemHandler.Android.cs
+
+      Platform: android
+
+      Hints: Try intercepting at a different lifecycle point, before measurement occurs.
+    assertions:
+      - type: output_not_contains
+        value: "OnPageSelected"
+      - type: output_contains
+        value: "Different from existing fix"
+      - type: output_contains
+        value: "approach"
+    rubric:
+      - "The agent acknowledges the prior failed attempt and explicitly avoids repeating the OnPageSelected approach"
+      - "The agent proposes a lifecycle-based alternative that fires before layout measurement"
+      - "The approach.md clearly explains how this attempt differs from the prior failed attempt"
+    timeout: 120
+
+  - name: "Regression: agent must use EstablishBrokenBaseline script, not manual git commands"
+    prompt: |
+      Use the try-fix skill for this problem:
+
+      Problem: Entry text is not preserved on orientation change on Android.
+
+      Existing fix: Saves/restores text in OnSaveInstanceState override.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
+
+      Target files:
+        - src/Core/src/Platform/Android/EntryHandler.Android.cs
+
+      Platform: android
+    assertions:
+      - type: output_contains
+        value: "EstablishBrokenBaseline"
+      - type: output_not_contains
+        value: "git checkout HEAD"
+      - type: output_not_contains
+        value: "git restore"
+      - type: output_not_contains
+        value: "git reset"
+    rubric:
+      - "The agent uses EstablishBrokenBaseline.ps1 to establish the baseline and restore working directory, not raw git commands"
+      - "The agent does not use 'git checkout HEAD', 'git restore', or 'git reset' to revert fix files"
+      - "The restore step is explicitly called after testing (whether pass or fail)"
+    timeout: 120

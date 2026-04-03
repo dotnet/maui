@@ -14,7 +14,7 @@ Attempts ONE fix for a given problem. Receives all context upfront, tries a sing
 2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
-5. **Context-driven** - All information provided upfront; don't search for additional context
+5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
 **Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
@@ -23,7 +23,7 @@ Attempts ONE fix for a given problem. Receives all context upfront, tries a sing
 🚨 **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
 
 **Why:** Each try-fix run:
-- Modifies the same source files (SafeAreaExtensions.cs, etc.)
+- Modifies the same target source files
 - Uses the same device/emulator for testing
 - Runs EstablishBrokenBaseline.ps1 which reverts files to a known state
 
@@ -147,6 +147,8 @@ The skill is complete when:
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
 
+> **Session limits:** Each try-fix *invocation* allows up to 3 compile/test iterations. The *calling orchestrator* controls how many invocations (attempts) to run per session (typically 4-5 as part of pr-review Phase 3).
+
 ---
 
 ## Workflow
@@ -182,7 +184,7 @@ The skill is complete when:
 - What files should be investigated?
 - Are there hints about what to try or avoid?
 
-**Do NOT search for additional context.** Work with what's provided.
+**Do NOT search for external context.** Work with what's provided and the git history.
 
 ### Step 2: Establish Baseline (MANDATORY)
 
@@ -317,7 +319,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
-🚨 Do NOT use `git checkout HEAD -- .` or `git clean` to restore — use the script.
+🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 
 ### Step 9: Report Results
 
