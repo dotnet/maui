@@ -240,6 +240,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (oldPage is not null)
 			{
+				// The _tracker.Page assignment now occurs before the navigation animation,
+				// so oldPage.Disappearing is unsubscribed below before it fires — leaving
+				// _isVisiblePage stuck as true. Calling SetDisappeared() here resets it so
+				// SetAppeared() runs its full body for the incoming page. Skipped during
+				// Dispose (newPage is null) since _context is already cleared and cleanup
+				// is handled there. No-op in normal flows.
+				if (newPage is not null)
+					SetDisappeared();
+
 				oldPage.Appearing -= PageAppearing;
 				oldPage.Disappearing -= PageDisappearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
