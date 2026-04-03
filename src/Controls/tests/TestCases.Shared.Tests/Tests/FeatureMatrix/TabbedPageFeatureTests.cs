@@ -319,6 +319,8 @@ public class TabbedPageFeatureTests : _GalleryUITest
 		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_2");
 	}
 #endif
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link : https://github.com/dotnet/maui/issues/14572
 	[Test, Order(21)]
 	public void TabbedPage_AddTab_Verify()
 	{
@@ -344,6 +346,7 @@ public class TabbedPageFeatureTests : _GalleryUITest
 		App.Tap("TAB 7");
 		App.WaitForElement("Tab7Label");
 	}
+#endif
 #endif
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14572

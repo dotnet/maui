@@ -38,7 +38,7 @@ public class Issue33604Page : ContentPage
 		var topView = new ContentView { BackgroundColor = Colors.Plum, Content = topLabel };
 		topView.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 
-		var collectionView = new CollectionView
+		var collectionView = new CollectionView2
 		{
 			AutomationId = "TestCollectionView",
 			BackgroundColor = Colors.Red,

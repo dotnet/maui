@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue22060 : _IssuesUITest
 {
 	public override string Issue => "Flyout icon and content page title disappeared after focusing on the search handler";
-
+	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
 	public Issue22060(TestDevice device) : base(device)
 	{
 	}
@@ -18,7 +18,14 @@ public class Issue22060 : _IssuesUITest
 	{
 		App.EnterTextInShellSearchHandler("Hello");
 #if IOS // When the search handler is focused, the Cancel button is displayed on the right side of the search bar only on the iOS platform.
-		App.Tap("Cancel");
+		if(iOS26OrHigher)
+		{
+			App.Tap("Close");
+		}
+		else
+		{
+			App.Tap("Cancel");	
+		}
 #endif
 		VerifyScreenshot();
 	}
