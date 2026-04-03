@@ -271,7 +271,7 @@ internal class KnownMarkups
 
 		if (key is null)
 			throw new Exception();
-		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{key}\")";
+		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{CSharpExpressionHelpers.EscapeForString(key)}\")";
 		return true;
 	}
 
