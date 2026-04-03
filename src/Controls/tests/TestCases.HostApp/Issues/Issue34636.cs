@@ -27,13 +27,13 @@ public class Issue34636 : ContentPage
 
     readonly ObservableCollection<MonkeyItem> _items = new(MonkeyData);
     readonly LinearItemsLayout _itemsLayout = new(ItemsLayoutOrientation.Vertical) { ItemSpacing = 0 };
-    CollectionView _collectionView;
+    CollectionView2 _collectionView;
 
     public Issue34636()
     {
         Title = "CollectionView ItemSpacing regression";
 
-        _collectionView = new CollectionView
+        _collectionView = new CollectionView2
         {
             AutomationId = "MonkeyCollectionView",
             ItemsSource = _items,
