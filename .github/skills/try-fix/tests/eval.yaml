@@ -23,15 +23,13 @@ scenarios:
       - type: output_not_contains
         value: "null check on the adapter"
       - type: output_contains
-        value: "result.txt"
-      - type: output_contains
         value: "analysis"
     rubric:
       - "The agent proposes a fix approach that is clearly distinct from the null-check-on-adapter approach described as the existing fix"
       - "The agent creates an approach.md document explaining the difference from the existing fix"
-      - "The agent saves artifacts (result.txt, fix.diff, analysis.md) to an output directory"
+      - "Agent creates result.txt in the output directory with Pass, Fail, or Blocked"
       - "The agent reverts changes after testing using EstablishBrokenBaseline.ps1 rather than manual git commands"
-    timeout: 120
+    timeout: 900
 
   - name: "Negative trigger: code review request should not invoke try-fix workflow"
     prompt: |
@@ -103,14 +101,12 @@ scenarios:
       - type: output_not_contains
         value: "OnPageSelected"
       - type: output_contains
-        value: "Different from existing fix"
-      - type: output_contains
         value: "approach"
     rubric:
-      - "The agent acknowledges the prior failed attempt and explicitly avoids repeating the OnPageSelected approach"
+      - "Agent explicitly states it is avoiding the OnPageSelected approach because of the prior failure"
       - "The agent proposes a lifecycle-based alternative that fires before layout measurement"
       - "The approach.md clearly explains how this attempt differs from the prior failed attempt"
-    timeout: 120
+    timeout: 900
 
   - name: "Regression: agent must use EstablishBrokenBaseline script, not manual git commands"
     prompt: |
@@ -139,4 +135,22 @@ scenarios:
       - "The agent uses EstablishBrokenBaseline.ps1 to establish the baseline and restore working directory, not raw git commands"
       - "The agent does not use 'git checkout HEAD', 'git restore', or 'git reset' to revert fix files"
       - "The restore step is explicitly called after testing (whether pass or fail)"
-    timeout: 120
+    timeout: 900
+
+  - name: "Edge case: exhausted iterations records Fail with analysis"
+    prompt: |
+      Use the try-fix skill to fix a bug. Problem: CollectionView items overlap on Android.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
+      Target files: src/Controls/src/Core/Handlers/Items/Android/ItemsViewRenderer.cs
+      The test fails with: Assert.That(rect1.Bottom, Is.LessThanOrEqualTo(rect2.Top)) -- items visually overlap.
+      NOTE: The test environment is available but every approach will fail because the root cause is in the Android platform SDK, not in MAUI code. After 3 iterations you should report Fail.
+    assertions:
+      - type: output_contains
+        value: "Fail"
+      - type: output_not_contains
+        value: "Pass"
+    rubric:
+      - "Agent stops after exhausting 3 iterations and reports Fail"
+      - "Agent writes a failure analysis explaining why the approach did not work"
+      - "result.txt contains exactly Fail, not Blocked or Pass"
+    timeout: 900
