@@ -1,3 +1,4 @@
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
@@ -100,6 +101,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(7, dpis.Length);
 				Assert.Equal(16, dpis[0].Size.Value.Width);
 				Assert.Equal(1024, dpis[6].Size.Value.Width);
+			}
+
+			[Theory]
+			[InlineData("macos-appkit")]
+			[InlineData("gtk")]
+			[InlineData("custom-platform")]
+			public void FallbackIconsProduceUniqueFilenames(string platform)
+			{
+				var dpis = DpiPath.GetAppIconDpis(platform, "appicon");
+
+				var fileSuffixes = dpis.Select(d => d.FileSuffix).ToArray();
+				Assert.Equal(fileSuffixes.Distinct().Count(), fileSuffixes.Length);
 			}
 		}
 	}

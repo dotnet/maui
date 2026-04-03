@@ -330,13 +330,13 @@ namespace Microsoft.Maui.Resizetizer
 			public static DpiPath[] AppIcon =>
 				new[]
 				{
-					new DpiPath("", 1.0m, null, null, new SKSize(16, 16)),
-					new DpiPath("", 1.0m, null, null, new SKSize(32, 32)),
-					new DpiPath("", 1.0m, null, null, new SKSize(48, 48)),
-					new DpiPath("", 1.0m, null, null, new SKSize(128, 128)),
-					new DpiPath("", 1.0m, null, null, new SKSize(256, 256)),
-					new DpiPath("", 1.0m, null, null, new SKSize(512, 512)),
-					new DpiPath("", 1.0m, null, null, new SKSize(1024, 1024)),
+					new DpiPath("", 1.0m, null, "-16x16", new SKSize(16, 16)),
+					new DpiPath("", 1.0m, null, "-32x32", new SKSize(32, 32)),
+					new DpiPath("", 1.0m, null, "-48x48", new SKSize(48, 48)),
+					new DpiPath("", 1.0m, null, "-128x128", new SKSize(128, 128)),
+					new DpiPath("", 1.0m, null, "-256x256", new SKSize(256, 256)),
+					new DpiPath("", 1.0m, null, "-512x512", new SKSize(512, 512)),
+					new DpiPath("", 1.0m, null, "-1024x1024", new SKSize(1024, 1024)),
 				};
 		}
 
