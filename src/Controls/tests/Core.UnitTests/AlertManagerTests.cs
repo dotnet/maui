@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
@@ -10,13 +11,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class AlertManagerTests : BaseTestFixture
 	{
-		private static (Window, AlertManager.IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
+		private static (Window, IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
 		{
-			var stub = Substitute.For<AlertManager.IAlertManagerSubscription>();
+			var stub = Substitute.For<IAlertManagerSubscription>();
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription))).Returns(stub);
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription))).Returns(stub);
 				builder?.Invoke(services);
 			});
 
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(window);
 			Assert.NotNull(window.AlertManager);
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -60,8 +61,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Page = new ContentPage();
 
-			Assert.Null(window.AlertManager.Subscription);
-			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
+			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription)));
 		}
 
 		[Fact]
@@ -71,9 +72,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
-			Assert.NotNull(window.AlertManager.Subscription);
-			Assert.Equal(sub, window.AlertManager.Subscription);
-			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+			Assert.Equal(sub, ((AlertManager)window.AlertManager).Subscription);
+			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription)));
 		}
 
 		[Fact]
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { IsBusy = true };
 			window.Page = page;
 
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -203,6 +204,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			continueTask.Wait();
 			sub.Received().OnActionSheetRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
+		}
+
+		[Fact]
+		public void CustomIAlertManagerResolvedFromDI()
+		{
+			var customAlertManager = Substitute.For<IAlertManager>();
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+			});
+
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.Same(customAlertManager, window.AlertManager);
+			customAlertManager.Received().Subscribe();
+		}
+
+		[Fact]
+		public void DefaultAlertManagerUsedWhenNoDIRegistration()
+		{
+			var window = CreateWindow();
+
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.IsType<AlertManager>(window.AlertManager);
+		}
+
+		[Fact]
+		public void ReplacingPageWithHandledPageCallsUnsubscribeBeforeSubscribe()
+		{
+			// Arrange: custom IAlertManager so we can track call order
+			var callOrder = new List<string>();
+			var customAlertManager = Substitute.For<IAlertManager>();
+			customAlertManager.When(x => x.Unsubscribe()).Do(_ => callOrder.Add("Unsubscribe"));
+			customAlertManager.When(x => x.Subscribe()).Do(_ => callOrder.Add("Subscribe"));
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+			});
+
+			// First page with handler to establish subscription
+			var firstPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = firstPage;
+			callOrder.Clear(); // reset after initial subscribe
+
+			// Replace with a second page that already has a handler attached
+			var secondPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = secondPage;
+
+			// Unsubscribe must come before Subscribe
+			Assert.Equal(2, callOrder.Count);
+			Assert.Equal("Unsubscribe", callOrder[0]);
+			Assert.Equal("Subscribe", callOrder[1]);
 		}
 	}
 }
