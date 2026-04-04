@@ -727,8 +727,8 @@ namespace Microsoft.Maui.Controls
 			{
 				AlertManager.Unsubscribe(); // defensive: no-op if not yet subscribed
 				AlertManager = customManager;
-				_alertManagerResolved = true;
 			}
+			_alertManagerResolved = true;
 		}
 
 		void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
