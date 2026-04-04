@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
-			else if (platformView is LayoutViewGroup)
+			else if (platformView is LayoutViewGroup or ContentViewGroup)
 			{
 				platformView.Background = null;
 			}
@@ -353,7 +353,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
 
-		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
+		internal static void UpdateOpacity(this AView platformView, double opacity)
+		{
+			platformView.Alpha = (float)opacity;
+
+			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null && wrapperView.IsLoaded())
+			{
+				// Post invalidation to ensure shadow redraws correctly after opacity changes.
+				wrapperView.ScheduleInvalidate();
+			}
+		}
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{

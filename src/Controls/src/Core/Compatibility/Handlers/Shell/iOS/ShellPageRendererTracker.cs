@@ -79,6 +79,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		SearchHandlerAppearanceTracker? _searchHandlerAppearanceTracker;
 		IFontManager _fontManager;
 		bool _isVisiblePage;
+		NSObject? _keyboardWillHideObserver;
+		bool _pendingKeyboardNavigation;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -93,6 +95,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 
 			_fontManager = context.Shell.RequireFontManager();
+
+			_keyboardWillHideObserver = UIKeyboard.Notifications.ObserveWillHide(OnKeyboardWillHide);
 		}
 
 		public void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -236,6 +240,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (oldPage is not null)
 			{
+				// The _tracker.Page assignment now occurs before the navigation animation,
+				// so oldPage.Disappearing is unsubscribed below before it fires — leaving
+				// _isVisiblePage stuck as true. Calling SetDisappeared() here resets it so
+				// SetAppeared() runs its full body for the incoming page. Skipped during
+				// Dispose (newPage is null) since _context is already cleared and cleanup
+				// is handled there. No-op in normal flows.
+				if (newPage is not null)
+					SetDisappeared();
+
 				oldPage.Appearing -= PageAppearing;
 				oldPage.Disappearing -= PageDisappearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
@@ -280,7 +293,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
-		
+
 		internal void UpdateTitleViewInternal()
 		{
 			UpdateTitleView();
@@ -566,7 +579,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						}
 					}
 				}
-				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
+				// Show hamburger icon if it's the root page, or if the back button is not visible.
+				else if (String.IsNullOrWhiteSpace(text) && (IsRootPage || !backButtonVisible) && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
 					icon = DrawHamburger();
 				}
@@ -574,7 +588,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (icon != null)
 				{
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, (IsRootPage || !backButtonVisible))) { Enabled = enabled };
 						
 					// For iOS 26+, explicitly set the tint color on the bar button item
 					// because the navigation bar's tint color is not automatically inherited
@@ -596,7 +610,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
-						if (IsRootPage)
+						if (IsRootPage || !backButtonVisible)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
 							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
@@ -1151,6 +1165,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			// Set flag when page is loaded during navigation - this is when the keyboard issue can occur
+			_pendingKeyboardNavigation = true;
+
 			UpdateToolbarItemsInternal();
 
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
@@ -1207,6 +1224,51 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 		}
 
+		void OnKeyboardWillHide(object? sender, UIKeyboardEventArgs e)
+		{
+			// Keyboard dismissal during page load can cause iOS to misposition the view behind the navigation bar.
+			// Detect and correct this by repositioning the view below the navigation bar when needed.
+
+			if (_disposed || ViewController?.View is null || ViewController.NavigationController is null)
+				return;
+
+			// Only apply fix during the problematic timing window (page load with navigation)
+			if (!_pendingKeyboardNavigation)
+				return;
+
+			var navController = ViewController.NavigationController;
+			var navBar = navController.NavigationBar;
+
+			if (navBar.Hidden || navBar.Frame.Height <= 0)
+				return;
+
+			// Don't interfere with SearchHandler's keyboard management when it's active
+			if (_searchController?.Active == true)
+				return;
+
+			var currentFrame = ViewController.View.Frame;
+			var navBarBottom = navBar.Frame.Bottom;
+
+			if (currentFrame.Y == 0 && navBarBottom > 0 &&
+				navController.ViewControllers?.Length > 1 &&
+				ViewController == navController.TopViewController)
+			{
+				// Adjust height to fit available space after Y position change
+				var yOffset = navBarBottom - currentFrame.Y;
+				var correctFrame = new CGRect(
+					currentFrame.X,
+					navBarBottom,
+					currentFrame.Width,
+					currentFrame.Height - yOffset
+				);
+
+				ViewController.View.Frame = correctFrame;
+			}
+
+			// Clear flag after handling keyboard dismissal once
+			_pendingKeyboardNavigation = false;
+		}
+
 		#endregion SearchHandler
 
 		#region IDisposable Support
@@ -1253,6 +1315,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
 					tvc.Disconnect();
+
+				_keyboardWillHideObserver?.Dispose();
+				_keyboardWillHideObserver = null;
 			}
 
 			_context = null;

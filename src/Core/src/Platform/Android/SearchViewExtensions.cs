@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -7,6 +7,7 @@ using Android.Text;
 using Android.Util;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Google.Android.Material.TextField;
 using static Android.Content.Res.Resources;
 using AAttribute = Android.Resource.Attribute;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -15,6 +16,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SearchViewExtensions
 	{
+		static readonly int[] s_DisabledState = [-AAttribute.StateEnabled];
+		static readonly int[] s_EnabledState = [AAttribute.StateEnabled];
 		public static void UpdateText(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.SetQuery(searchBar.Text, false);
@@ -119,20 +122,35 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
+		internal static void UpdateCancelButtonState(this SearchView searchView, ISearchBar searchBar)
+		{
+			var cancelButton = searchView.GetCancelButton();
+			if (cancelButton is not null)
+			{
+				cancelButton.Enabled = !searchBar.IsReadOnly;
+			}
+		}
+
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
-			if (searchView.Resources == null)
-				return;
-
-			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
-
-			if (searchCloseButtonIdentifier > 0)
+			var cancelButton = searchView.GetCancelButton();
+			if (cancelButton?.Drawable is not null)
 			{
-				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
-				if (searchBar.CancelButtonColor is not null)
-					SafeSetTint(image, searchBar.CancelButtonColor.ToPlatform());
-				else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
-					SafeSetTint(image, color);
+				if (cancelButton.Enabled)
+				{
+					if (searchBar.CancelButtonColor is not null)
+					{
+						SafeSetTint(cancelButton, searchBar.CancelButtonColor.ToPlatform());
+					}
+					else if (TryGetDefaultStateColor(searchView, AAttribute.TextColorPrimary, out var color))
+					{
+						SafeSetTint(cancelButton, color);
+					}
+				}
+				else
+				{
+					cancelButton.Drawable.ClearColorFilter();
+				}
 			}
 		}
 
@@ -159,6 +177,22 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 			}
+		}
+
+		static ImageView? GetCancelButton(this SearchView searchView)
+		{
+			if (searchView.Resources is null)
+			{
+				return null;
+			}
+
+			var closeButtonId = Resource.Id.search_close_btn;
+			if (closeButtonId <= 0)
+			{
+				return null;
+			}
+
+			return searchView.FindViewById<ImageView>(closeButtonId);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
@@ -228,15 +262,12 @@ namespace Microsoft.Maui.Platform
 			if (searchView.Context?.Theme is not Theme theme)
 				return false;
 
-			int[] s_disabledState = [-AAttribute.StateEnabled];
-			int[] s_enabledState = [AAttribute.StateEnabled];
-
 			using var ta = theme.ObtainStyledAttributes([attribute]);
 			var cs = ta.GetColorStateList(0);
 			if (cs is null)
 				return false;
 
-			var state = searchView.Enabled ? s_enabledState : s_disabledState;
+			var state = searchView.Enabled ? s_EnabledState : s_DisabledState;
 			color = new Color(cs.GetColorForState(state, Color.Black));
 			return true;
 		}
@@ -258,6 +289,116 @@ namespace Microsoft.Maui.Platform
 			var safe = drawable.Mutate();
 			safe.SetTint(color);
 			imageView?.SetImageDrawable(safe);
+		}
+
+		// material3 searchbar extension methods
+		// TODO: material3 - make it public in .net 11
+		internal static void UpdateText(this EditText editText, ISearchBar searchBar)
+		{
+			// Check if text is already the same to prevent unnecessary updates and TextWatcher loops
+			var currentText = editText.Text ?? string.Empty;
+			var newText = searchBar.Text ?? string.Empty;
+
+			if (currentText == newText)
+			{
+				return;
+			}
+
+			editText.Text = newText;
+		}
+
+		internal static void UpdateBackground(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		{
+			var background = searchBar.Background;
+
+			if (background is Microsoft.Maui.Graphics.SolidPaint solidPaint)
+			{
+				// For Material 3 filled TextInputLayout, use ColorStateList to maintain
+				// the same background color across all states (enabled, disabled, focused)
+				// This prevents Material Design from applying its default disabled state styling
+				var platformColor = solidPaint.Color.ToPlatform();
+				var colorInt = (int)platformColor;
+
+				// Use the same color for both enabled and disabled states
+				var colorStateList = ColorStateListExtensions.CreateEditText(colorInt, colorInt);
+
+				textInputLayout.SetBoxBackgroundColorStateList(colorStateList);
+			}
+			else if (background is null)
+			{
+				// Clear the custom background and restore Material 3 default
+				if (TryGetDefaultStateColor(textInputLayout, AAttribute.ColorBackground, out var defaultColor))
+				{
+					var colorInt = (int)defaultColor;
+					var colorStateList = ColorStateListExtensions.CreateEditText(colorInt, colorInt);
+					textInputLayout.SetBoxBackgroundColorStateList(colorStateList);
+				}
+			}
+		}
+
+		internal static void UpdateSearchIconColor(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		{
+			// For TextInputLayout, the search icon is the start icon
+			if (searchBar.SearchIconColor is not null)
+			{
+				var color = searchBar.SearchIconColor.ToPlatform();
+				textInputLayout.SetStartIconTintList(ColorStateList.ValueOf(color));
+			}
+			else if (TryGetDefaultStateColor(textInputLayout, AAttribute.TextColorPrimary, out var defaultColor))
+			{
+				// Restore default theme color
+				textInputLayout.SetStartIconTintList(ColorStateList.ValueOf(defaultColor));
+			}
+		}
+
+		internal static void UpdateCancelButtonColor(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		{
+			// For TextInputLayout, the cancel/clear button is the end icon
+			if (searchBar.CancelButtonColor is not null)
+			{
+				var color = searchBar.CancelButtonColor.ToPlatform();
+				textInputLayout.SetEndIconTintList(ColorStateList.ValueOf(color));
+			}
+			else if (TryGetDefaultStateColor(textInputLayout, AAttribute.TextColorPrimary, out var defaultColor))
+			{
+				// Restore default theme color
+				textInputLayout.SetEndIconTintList(ColorStateList.ValueOf(defaultColor));
+			}
+		}
+
+		static bool TryGetDefaultStateColor(TextInputLayout textInputLayout, int attribute, out Color color)
+		{
+			color = default;
+
+			if (!OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				return false;
+			}
+
+			if (textInputLayout.Context?.Theme is not Theme theme)
+			{
+				return false;
+			}
+
+			using var ta = theme.ObtainStyledAttributes([attribute]);
+			var cs = ta.GetColorStateList(0);
+			if (cs is null)
+			{
+				return false;
+			}
+
+			var state = textInputLayout.Enabled ? s_EnabledState : s_DisabledState;
+			color = new Color(cs.GetColorForState(state, Color.Black));
+			return true;
+		}
+
+		internal static void UpdateReturnType(this EditText editText, ISearchBar searchBar)
+		{
+			editText.ImeOptions = searchBar.ReturnType.ToPlatform();
+
+			// Restart the input on the current focused EditText
+			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
+			imm?.RestartInput(editText);
 		}
 	}
 }

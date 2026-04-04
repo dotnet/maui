@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private readonly PlatformCanvas _canvas;
 		private readonly ScalingCanvas _scalingCanvas;
 		private IDrawable _drawable;
-		private readonly float _scale = 1;
+		private float _scale;
 		private Color _backgroundColor;
 
 		public PlatformGraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null) : base(context, attrs)
@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_scalingCanvas = new ScalingCanvas(_canvas);
 			Drawable = drawable;
 		}
+
+		// Overridden by friend assemblies to supply the density source used for draw scaling.
+		internal virtual float GetDisplayDensity() => Resources.DisplayMetrics.Density;
 
 		public Color BackgroundColor
 		{
@@ -58,6 +61,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var dirtyRect = new RectF(0, 0, _width, _height);
 
+			// Save the canvas state and clip to view bounds to prevent drawing outside
+			androidCanvas.Save();
+			androidCanvas.ClipRect(0, 0, _width, _height);
+
 			_canvas.Canvas = androidCanvas;
 			if (_backgroundColor != null)
 			{
@@ -72,12 +79,15 @@ namespace Microsoft.Maui.Graphics.Platform
 			dirtyRect.Height /= _scale;
 			dirtyRect.Width /= _scale;
 			_drawable.Draw(_scalingCanvas, dirtyRect);
+
+			androidCanvas.Restore();
 			_canvas.Canvas = null;
 		}
 
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
 		{
 			base.OnSizeChanged(width, height, oldWidth, oldHeight);
+			_scale = GetDisplayDensity();
 			_width = width;
 			_height = height;
 		}

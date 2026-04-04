@@ -265,7 +265,10 @@ namespace Microsoft.Maui.Controls.Platform
 					var view = eventTracker?._handler.VirtualView as View;
 
 					if (swipeGestureRecognizer != null && view != null)
-						swipeGestureRecognizer.SendSwiped(view, direction);
+					{
+						var transformedDirection = SwipeGestureExtensions.TransformSwipeDirectionForRotation(direction, view.Rotation);
+						swipeGestureRecognizer.SendSwiped(view, transformedDirection);
+					}
 				});
 				var uiRecognizer = CreateSwipeRecognizer(swipeRecognizer.Direction, returnAction, 1);
 				return new List<UIGestureRecognizer?> { uiRecognizer };
@@ -403,7 +406,15 @@ namespace Microsoft.Maui.Controls.Platform
 			var result = new UISwipeGestureRecognizer();
 			result.NumberOfTouchesRequired = (uint)numFingers;
 			result.Direction = (UISwipeGestureRecognizerDirection)direction;
-			result.ShouldRecognizeSimultaneously = (g, o) => true;
+			result.ShouldRecognizeSimultaneously = (g, o) => 
+			{
+				if (o.View is UIScrollView)
+				{
+					return false;
+				}
+				
+				return true;
+			};
 			result.AddTarget(() => action(direction));
 			return result;
 		}

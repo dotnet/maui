@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(Shell.FlowDirection)] = MapFlowDirection,
 					[nameof(Shell.FlyoutBackgroundImage)] = MapFlyoutBackgroundImage,
 					[nameof(Shell.FlyoutBackgroundImageAspect)] = MapFlyoutBackgroundImage,
+					[nameof(Shell.FlyoutVerticalScrollMode)] = MapFlyoutVerticalScrollMode,
 #endif
 				};
 
