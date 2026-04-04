@@ -18,5 +18,8 @@ public partial class DayPlanViewModel(DayPlan dayPlan, Landmark landmark, DateOn
 	public DateOnly Date { get; } = date;
 
 	[ObservableProperty]
-	public partial string WeatherForecast { get; set; } = "☁️ Weather unavailable";
+	public partial string WeatherForecast { get; set; } = "Weather unavailable";
+
+	[ObservableProperty]
+	public partial string WeatherIcon { get; set; } = FluentUI.weather_cloudy_24_regular;
 }

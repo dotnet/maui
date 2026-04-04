@@ -26,12 +26,12 @@ Additive — **multiple** can coexist on a single PR.
 
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
-| `s/agent-gate-passed` | 🟢 `#4CAF50` | AI verified tests catch the bug (fail without fix, pass with fix) | Gate phase passes |
-| `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Gate phase fails |
+| `s/agent-gate-passed` | 🟢 `#4CAF50` | AI verified tests catch the bug (fail without fix, pass with fix) | Validate phase passes |
+| `s/agent-gate-failed` | 🟠 `#FF9800` | AI could not verify tests catch the bug | Validate phase fails |
 | `s/agent-fix-win` | 🟢 `#66BB6A` | AI found a better alternative fix than the PR | Fix phase: alternative selected over PR's fix |
 | `s/agent-fix-pr-picked` | 🟠 `#FF7043` | AI could not beat the PR fix — PR is the best among all candidates | Fix phase: PR selected as best after comparison |
 
-Gate labels (`gate-passed`/`gate-failed`) are mutually exclusive with each other. Fix labels (`fix-win`/`fix-lose`) are mutually exclusive with each other.
+Validate labels (`gate-passed`/`gate-failed`) are mutually exclusive with each other. Fix labels (`fix-win`/`fix-lose`) are mutually exclusive with each other.
 
 ### Tracking Label
 
@@ -57,9 +57,9 @@ Applied by MAUI maintainers, not by automation.
 
 ```
 Review-PR.ps1
-├── Phase 1: PR Agent Review (Copilot CLI)
+├── Phase 1: Agent Review (Copilot CLI)
 │   ├── Pre-Flight → writes content.md
-│   ├── Gate       → writes content.md
+│   ├── Validate   → writes content.md
 │   ├── Fix        → writes content.md
 │   └── Report     → writes content.md
 ├── Phase 2: PR Finalize (optional)
@@ -125,7 +125,7 @@ is:pr label:s/agent-reviewed
 |--------|-------|
 | Total agent reviews | `is:pr label:s/agent-reviewed` |
 | Approval rate | Compare `label:s/agent-approved` vs `label:s/agent-changes-requested` counts |
-| Gate pass rate | Compare `label:s/agent-gate-passed` vs `label:s/agent-gate-failed` counts |
+| Validate pass rate | Compare `label:s/agent-gate-passed` vs `label:s/agent-gate-failed` counts |
 | Fix win rate | Compare `label:s/agent-fix-win` vs `label:s/agent-fix-pr-picked` counts |
 | Agent adoption rate | `label:s/agent-fix-implemented` / `label:s/agent-changes-requested` |
 | Incomplete review rate | `label:s/agent-review-incomplete` / `label:s/agent-reviewed` |
@@ -140,7 +140,7 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/agents/pr/SHARED-RULES.md` | Documents label system for the PR agent |
+| `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions
 
@@ -149,7 +149,7 @@ is:pr label:s/agent-reviewed
 | `Apply-AgentLabels` | Main entry point — parses phases and applies all labels |
 | `Parse-PhaseOutcomes` | Reads `content.md` files, returns outcome/gate/fix results |
 | `Update-AgentOutcomeLabel` | Applies one outcome label, removes conflicting ones |
-| `Update-AgentSignalLabels` | Adds/removes gate and fix signal labels |
+| `Update-AgentSignalLabels` | Adds/removes validate and fix signal labels |
 | `Update-AgentReviewedLabel` | Ensures tracking label is present |
 | `Ensure-LabelExists` | Creates or updates a label in the repository |
 

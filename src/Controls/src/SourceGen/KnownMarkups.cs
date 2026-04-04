@@ -271,7 +271,7 @@ internal class KnownMarkups
 
 		if (key is null)
 			throw new Exception();
-		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{key}\")";
+		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{CSharpExpressionHelpers.EscapeForString(key)}\")";
 		return true;
 	}
 
@@ -341,23 +341,25 @@ internal class KnownMarkups
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
 		
-		// Check if the binding has a Source property with a RelativeSource.
-		// In this case, we should NOT compile the binding using x:DataType because
-		// the source type will be determined at runtime by the RelativeSource, not x:DataType.
-		bool hasRelativeSource = HasRelativeSourceBinding(markupNode);
+		// When Source is explicitly set (RelativeSource or x:Reference), x:DataType does not describe
+		// the actual source — skip compilation and fall back to runtime binding.
+		bool hasExplicitSource = HasExplicitBindingSource(markupNode);
 		
 		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
 		
-		if (   !hasRelativeSource
-			&& extVariable is not null
-			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
-			&& dataTypeSymbol is not null)
+		if (   !hasExplicitSource
+			&& extVariable is not null)
 		{
-			var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
-			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+			TryGetXDataType(markupNode, context, out dataTypeSymbol);
+
+			if (dataTypeSymbol is not null)
 			{
-				value = newBindingExpression;
-				return true;
+				var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
+				if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+				{
+					value = newBindingExpression;
+					return true;
+				}
 			}
 		}
 
@@ -628,10 +630,10 @@ internal class KnownMarkups
 				&& propertyName.LocalName == "BindingContext";
 		}
 
-		// Checks if the binding has a Source property that is a RelativeSource extension.
-		// When a binding uses RelativeSource, the source type is determined at runtime,
+		// Checks if the binding has a Source property set to RelativeSource or x:Reference.
+		// When Source is explicitly set, x:DataType does not describe the actual binding source,
 		// so we should NOT compile the binding using x:DataType.
-		static bool HasRelativeSourceBinding(ElementNode bindingNode)
+		static bool HasExplicitBindingSource(ElementNode bindingNode)
 		{
 			// Check if Source property exists
 			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
@@ -640,12 +642,13 @@ internal class KnownMarkups
 				return false;
 			}
 
-			// Check if the Source is a RelativeSourceExtension
+			// Check if the Source is a RelativeSourceExtension or ReferenceExtension
 			if (sourceNode is ElementNode sourceElementNode)
 			{
-				// Check if the element is a RelativeSourceExtension
-				return sourceElementNode.XmlType.Name == "RelativeSourceExtension"
-					|| sourceElementNode.XmlType.Name == "RelativeSource";
+				return sourceElementNode.XmlType.Name is "RelativeSourceExtension"
+					or "RelativeSource"
+					or "ReferenceExtension"
+					or "Reference";
 			}
 
 			return false;
