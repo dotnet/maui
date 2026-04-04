@@ -7,11 +7,11 @@ namespace Tests
 	public class MainThread_Tests
 	{
 		[Fact]
-		public void IsMainThread_On_NetStandard_Without_Custom_Implementation() =>
+		public void IsMainThread_On_NonPlatform_Without_Custom_Implementation() =>
 			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => MainThread.IsMainThread);
 
 		[Fact]
-		public void BeginInvokeOnMainThread_On_NetStandard_Without_Custom_Implementation() =>
+		public void BeginInvokeOnMainThread_On_NonPlatform_Without_Custom_Implementation() =>
 			Assert.Throws<NotImplementedInReferenceAssemblyException>(() => MainThread.BeginInvokeOnMainThread(() => { }));
 
 		[Fact]

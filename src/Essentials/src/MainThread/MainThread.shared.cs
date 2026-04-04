@@ -29,9 +29,9 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		/// <remarks>
 		/// On standard platform TFMs (Android, iOS, MacCatalyst, Windows, Tizen), the built-in platform-specific
-		/// implementations are always used and this method has no effect. This method only changes behavior on the
-		/// <c>netstandard</c> and bare <c>net</c> TFMs, where the default implementation throws
-		/// <see cref="NotImplementedInReferenceAssemblyException"/>.
+		/// implementations are always used and this method throws <see cref="PlatformNotSupportedException"/>.
+		/// This method only changes behavior on non-platform TFMs (for example, <c>netstandard</c> or bare <c>net</c>),
+		/// where the default implementation throws <see cref="NotImplementedInReferenceAssemblyException"/>.
 		/// </remarks>
 		/// <param name="isMainThread">A function that returns <see langword="true"/> if the current thread is the main/UI thread.</param>
 		/// <param name="beginInvokeOnMainThread">An action that dispatches the given <see cref="Action"/> to the main/UI thread.</param>
@@ -44,7 +44,11 @@ namespace Microsoft.Maui.ApplicationModel
 			if (beginInvokeOnMainThread is null)
 				throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
 
+#if ANDROID || IOS || MACCATALYST || TVOS || WATCHOS || WINDOWS || TIZEN
+			throw new PlatformNotSupportedException("SetCustomImplementation is only supported on non-platform TFMs.");
+#else
 			customImplementation = new CustomMainThreadCallbacks(isMainThread, beginInvokeOnMainThread);
+#endif
 		}
 
 		internal static void ResetCustomImplementation()
