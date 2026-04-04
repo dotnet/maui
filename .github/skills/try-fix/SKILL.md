@@ -8,22 +8,32 @@ compatibility: Requires PowerShell, git, .NET MAUI build environment, Android/iO
 
 Attempts ONE fix for a given problem. Receives all context upfront, tries a single approach, tests it, and reports what happened.
 
+## Activation Guard
+
+≡ƒÜ¿ **This skill is ONLY for proposing and testing code fixes.** Do NOT activate for:
+- Code review requests ("review this PR", "check code quality")
+- PR summaries or descriptions ("what does this PR do?")
+- Test-only requests ("run tests", "check CI status")
+- General questions about code or architecture
+
+If the prompt does not include a **problem to fix** and a **test command to verify**, this skill should not run.
+
 ## Core Principles
 
 1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
 2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
-5. **Context-driven** - All information provided upfront; don't search for additional context
+5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
-**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
+**Every invocation:** Review existing fixes ΓåÆ Think of DIFFERENT approach ΓåÆ Implement and test ΓåÆ Report results
 
-## ⚠️ CRITICAL: Sequential Execution Only
+## ΓÜá∩╕Å CRITICAL: Sequential Execution Only
 
-🚨 **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
+≡ƒÜ¿ **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
 
 **Why:** Each try-fix run:
-- Modifies the same source files (SafeAreaExtensions.cs, etc.)
+- Modifies the same target source files
 - Uses the same device/emulator for testing
 - Runs EstablishBrokenBaseline.ps1 which reverts files to a known state
 
@@ -114,27 +124,27 @@ The skill is complete when:
 - [ ] Problem understood from provided context
 - [ ] ONE fix approach designed and implemented
 - [ ] Fix tested with provided test command (iterated up to 3 times if errors/failures)
-- [ ] Either: Tests PASS ✅, or exhausted attempts and documented why approach won't work ❌
+- [ ] Either: Tests PASS Γ£à, or exhausted attempts and documented why approach won't work Γ¥î
 - [ ] Analysis provided (success explanation or failure reasoning with evidence)
 - [ ] Artifacts saved to output directory
 - [ ] Baseline restored (working directory clean)
 - [ ] Results reported to invoker
 
-🚨 **CRITICAL: What counts as "Pass" vs "Fail"**
+≡ƒÜ¿ **CRITICAL: What counts as "Pass" vs "Fail"**
 
 | Scenario | Result | Explanation |
 |----------|--------|-------------|
-| Test command runs, tests pass | ✅ **Pass** | Actual validation |
-| Test command runs, tests fail | ❌ **Fail** | Fix didn't work |
-| Code compiles but no device available | ⚠️ **Blocked** | Device/emulator unavailable - report with explanation |
-| Code compiles but test command errors | ❌ **Fail** | Infrastructure issue is still a failure |
-| Code doesn't compile | ❌ **Fail** | Fix is broken |
+| Test command runs, tests pass | Γ£à **Pass** | Actual validation |
+| Test command runs, tests fail | Γ¥î **Fail** | Fix didn't work |
+| Code compiles but no device available | ΓÜá∩╕Å **Blocked** | Device/emulator unavailable - report with explanation |
+| Code compiles but test command errors | Γ¥î **Fail** | Infrastructure issue is still a failure |
+| Code doesn't compile | Γ¥î **Fail** | Fix is broken |
 
 **NEVER claim "Pass" based on:**
-- ❌ "Code compiles successfully" alone
-- ❌ "Code review validates the logic"
-- ❌ "The approach is sound"
-- ❌ "Device was unavailable but fix looks correct"
+- Γ¥î "Code compiles successfully" alone
+- Γ¥î "Code review validates the logic"
+- Γ¥î "The approach is sound"
+- Γ¥î "Device was unavailable but fix looks correct"
 
 **Pass REQUIRES:** The test command executed AND reported test success.
 
@@ -146,6 +156,8 @@ The skill is complete when:
 3. Alternative fixes would require completely different strategy
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
+
+> **Session limits:** Each try-fix *invocation* allows up to 3 compile/test iterations. The *calling orchestrator* controls how many invocations (attempts) to run per session (typically 4-5 as part of pr-review Phase 3).
 
 ---
 
@@ -173,8 +185,8 @@ The skill is complete when:
    - If existing fix adds logic, consider removing/simplifying instead
 
 **Examples of alternatives:**
-- Existing fix: Add caching → Alternative: Change when updates happen
-- Existing fix: Fix in handler → Alternative: Fix in platform layer
+- Existing fix: Add caching ΓåÆ Alternative: Change when updates happen
+- Existing fix: Fix in handler ΓåÆ Alternative: Fix in platform layer
 
 **Review the provided context:**
 - What is the bug/issue?
@@ -182,11 +194,11 @@ The skill is complete when:
 - What files should be investigated?
 - Are there hints about what to try or avoid?
 
-**Do NOT search for additional context.** Work with what's provided.
+**Do NOT search for external context.** Work with what's provided and the git history.
 
 ### Step 2: Establish Baseline (MANDATORY)
 
-🚨 **ONLY use EstablishBrokenBaseline.ps1 — NEVER use `git checkout`, `git restore`, or `git reset` to revert fix files.**
+≡ƒÜ¿ **ONLY use EstablishBrokenBaseline.ps1 ΓÇö NEVER use `git checkout`, `git restore`, or `git reset` to revert fix files.**
 
 The script auto-restores any previous baseline, tracks state, and prevents loops.
 Manual git commands bypass all of this and WILL cause infinite loops in CI.
@@ -200,7 +212,7 @@ pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$O
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
 
-**If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
+**If the script fails with "No fix files detected":** Report as `Blocked` ΓÇö do NOT switch branches.
 
 **If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 
@@ -241,7 +253,7 @@ Implement your fix. Use `git status --short` and `git diff` to track changes.
 
 ### Step 6: Test and Iterate (MANDATORY)
 
-🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
+≡ƒÜ¿ **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
 
 **For .NET MAUI repository:** Use `BuildAndRunHostApp.ps1` which handles:
 - Building the project
@@ -258,14 +270,14 @@ pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<f
 
 1. **Run the test command** - It will build, deploy, and test automatically
 2. **Check the result:**
-   - ✅ **Tests PASS** → Move to Step 7 (Capture Artifacts)
-   - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
-   - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
+   - Γ£à **Tests PASS** ΓåÆ Move to Step 7 (Capture Artifacts)
+   - Γ¥î **Compile errors** ΓåÆ Fix compilation issues (see below), go to step 1
+   - Γ¥î **Tests FAIL (runtime)** ΓåÆ Analyze failure, fix code, go to step 1
 3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
 4. **Document why** - If exhausted, explain what you learned and why the approach won't work
 
 **Behavioral constraints:**
-- ⚠️ **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
+- ΓÜá∩╕Å **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
 - Compile errors mean "work harder" - not "give up"
 - DO NOT manually build - always rerun the test command script
 
@@ -302,8 +314,8 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 **Verify all required files exist:**
 ```powershell
 @("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log") | ForEach-Object {
-    if (Test-Path "$OUTPUT_DIR/$_") { Write-Host "✅ $_" } 
-    else { Write-Host "❌ MISSING: $_" }
+    if (Test-Path "$OUTPUT_DIR/$_") { Write-Host "Γ£à $_" } 
+    else { Write-Host "Γ¥î MISSING: $_" }
 }
 ```
 
@@ -317,7 +329,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
-🚨 Do NOT use `git checkout HEAD -- .` or `git clean` to restore — use the script.
+≡ƒÜ¿ Use `EstablishBrokenBaseline.ps1 -Restore` ΓÇö not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 
 ### Step 9: Report Results
 
@@ -331,7 +343,7 @@ Provide structured output to the invoker:
 **Files Changed:**
 - `path/to/file.cs` (+X/-Y lines)
 
-**Result:** ✅ PASS / ❌ FAIL
+**Result:** Γ£à PASS / Γ¥î FAIL
 
 **Analysis:**
 [Why it worked, or why it failed and what was learned]
@@ -355,7 +367,7 @@ Provide structured output to the invoker:
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `git checkout HEAD -- .` and `git clean -fd` if needed |
+| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/8) |
 
 ---
 
@@ -363,15 +375,15 @@ Provide structured output to the invoker:
 
 ### Good Fix Approaches
 
-✅ **Null/state checks** - Guard against unexpected null or state
-✅ **Lifecycle timing** - Move code to correct lifecycle event
-✅ **Cache invalidation** - Reset stale cached values
+Γ£à **Null/state checks** - Guard against unexpected null or state
+Γ£à **Lifecycle timing** - Move code to correct lifecycle event
+Γ£à **Cache invalidation** - Reset stale cached values
 
 ### Approaches to Avoid
 
-❌ **Massive refactors** - Keep changes minimal
-❌ **Suppressing symptoms** - Fix root cause, not symptoms
-❌ **Multiple unrelated changes** - ONE focused fix per invocation
+Γ¥î **Massive refactors** - Keep changes minimal
+Γ¥î **Suppressing symptoms** - Fix root cause, not symptoms
+Γ¥î **Multiple unrelated changes** - ONE focused fix per invocation
 
 ---
 
