@@ -140,3 +140,49 @@ scenarios:
       - "Agent does not continue proposing fixes indefinitely — stops at the iteration limit"
     timeout: 900
 
+  - name: "Regression: agent must not repeat the same root cause disguised as different approach"
+    prompt: |
+      This is attempt #3 at fixing a bug. The pr-review agent needs another alternative.
+
+      Prior attempts and their failures:
+      - Attempt 1 (FAIL): Returned 0 from GetHeight() when infinity detected, hoping parent fallback handles it. Failed because parent.MeasuredHeight returns 0 during initial layout.
+      - Attempt 2 (FAIL): Skipped setting RecyclerViewHeight when measurement was infinite, hoping parent fallback handles it. Failed for the same reason -- parent.MeasuredHeight returns 0 during initial layout.
+
+      Both attempts failed because they relied on PARENT MEASUREMENT FALLBACK which doesn't work during initial layout. Your approach must NOT depend on parent dimensions as a fallback.
+
+      Problem: Android RecyclerView inside ScrollView reports infinite height, causing items to overlap.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
+      Target files: src/Controls/src/Core/Handlers/Items/Android/RecyclerViewAdapter.cs
+      Platform: Android
+    assertions:
+      - type: output_not_contains
+        value: "parent.MeasuredHeight"
+      - type: output_not_contains
+        value: "parent measurement"
+      - type: output_not_contains
+        value: "fallback to parent"
+    rubric:
+      - "Agent identifies that parent measurement fallback is the common root cause of both prior failures, not just a surface-level detail"
+      - "Agent's proposed approach does NOT rely on parent dimensions or parent measurement as a fallback mechanism"
+      - "Agent explains WHY the new approach avoids the root cause, not just that it's different code"
+    timeout: 900
+
+  - name: "Regression: agent must verify correct platform-specific code path before implementing"
+    prompt: |
+      The pr-review agent needs an alternative fix attempt for a NavigationPage handler disconnection bug on iOS.
+
+      Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
+      Target files: src/Controls/src/Core/Handlers/NavigationPage/
+      Platform: iOS
+
+      IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+    assertions:
+      - type: output_not_contains
+        value: "MauiNavigationImpl"
+    rubric:
+      - "Agent verifies or acknowledges which code path iOS actually uses before proposing a fix"
+      - "Agent targets the Legacy navigation implementation (NavigationPage.Legacy.cs or NavigationRenderer), not MauiNavigationImpl"
+      - "Agent's fix addresses the disconnection-during-animation scenario specifically"
+    timeout: 900
+
