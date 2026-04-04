@@ -220,6 +220,12 @@ Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 
 Read the target files to understand the code.
 
+**Verify the platform code path before implementing.** Check which platform-specific file actually executes for the target scenario:
+- Files named `.iOS.cs` compile for both iOS AND MacCatalyst
+- Files named `.Android.cs` only compile for Android
+- Some platforms use Legacy implementations (e.g., iOS NavigationPage uses `NavigationPage.Legacy.cs`, not `MauiNavigationImpl`)
+If unsure which code path runs, check `AppHostBuilderExtensions` or handler registration to confirm.
+
 **Key questions:**
 - What is the root cause of this bug?
 - Where should the fix go?
@@ -232,6 +238,10 @@ Based on your analysis and any provided hints, design a single fix approach:
 - Which file(s) to change
 - What the change is
 - Why you think this will work
+
+**"Different" means different ROOT CAUSE hypothesis, not just different code location.**
+- ❌ Bad: PR checks `adapter == null` in OnMeasure; you check `adapter == null` in OnLayout (same root cause assumption — just a different call site)
+- ✅ Good: PR checks `adapter == null`; you prevent disposal from happening during measure (different root cause hypothesis)
 
 **If hints suggest specific approaches**, prioritize those.
 
