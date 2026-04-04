@@ -15,7 +15,9 @@ scenarios:
       - type: output_not_contains
         value: "null check on the adapter"
       - type: output_not_contains
-        value: "OnMeasure"
+        value: "I will modify the OnMeasure"
+      - type: output_contains
+        value: "approach"
     rubric:
       - "The agent proposes a fix approach that is clearly distinct from the null-check-on-adapter approach in OnMeasure"
       - "The agent documents why the chosen approach differs from the existing fix"
@@ -65,6 +67,8 @@ scenarios:
         value: "logic looks correct"
       - type: output_not_contains
         value: "the fix should work"
+      - type: output_contains
+        value: "Blocked"
     rubric:
       - "The agent does NOT report the fix as passing when no device is available to run the test"
       - "The agent explains that the result is blocked/unverified because no simulator is available"
@@ -87,7 +91,7 @@ scenarios:
       Hint: The fix needs to happen before layout measurement, not after navigation completes.
     assertions:
       - type: output_not_contains
-        value: "OnPageSelected"
+        value: "I will use OnPageSelected"
     rubric:
       - "Agent explicitly states it is avoiding the OnPageSelected approach because of the documented prior failure"
       - "The agent proposes a fix that intercepts at an earlier lifecycle point, before layout measurement"
@@ -135,6 +139,8 @@ scenarios:
         value: "✅ PASS"
       - type: output_not_contains
         value: "Result: Pass"
+      - type: output_contains
+        value: "Fail"
     rubric:
       - "Agent stops after exhausting attempts and reports Fail rather than claiming success or going silent"
       - "Agent produces a written analysis explaining why the attempted approaches did not resolve the issue"
@@ -157,10 +163,6 @@ scenarios:
       Platform: Android
     assertions:
       - type: output_not_contains
-        value: "parent.MeasuredHeight"
-      - type: output_not_contains
-        value: "parent measurement"
-      - type: output_not_contains
         value: "fallback to parent"
     rubric:
       - "Agent identifies that parent measurement fallback is the common root cause of both prior failures, not just a surface-level detail"
@@ -180,7 +182,7 @@ scenarios:
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
     assertions:
       - type: output_not_contains
-        value: "MauiNavigationImpl"
+        value: "I will modify MauiNavigationImpl"
     rubric:
       - "Agent verifies or acknowledges which code path iOS actually uses before proposing a fix"
       - "Agent targets the Legacy navigation implementation (NavigationPage.Legacy.cs or NavigationRenderer), not MauiNavigationImpl"

@@ -20,7 +20,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 
 ## Core Principles
 
-1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
+1. **Always run once activated** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
 2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
