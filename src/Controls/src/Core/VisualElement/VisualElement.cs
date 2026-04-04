@@ -2418,8 +2418,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
-			// This VE gets connected to the xplat Window before wiring up any events
-			if (!_watchingPlatformLoaded && newWindow is null)
+			// This VE gets connected to the xplat Window before wiring up any events.
+			// Exception: if a handler with a MauiContext is present (e.g., added to a native view via
+			// ToPlatform), we still wire up so the Loaded/Unloaded events can fire correctly.
+			if (!_watchingPlatformLoaded && newWindow is null && Handler?.MauiContext is null)
 				return;
 
 			if (_unloaded is null && _loaded is null)
