@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="datePicker">The associated <see cref="IDatePicker"/> instance.</param>
-		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker);
+		public static partial void MapFlowDirection(IDatePickerHandler handler, IDatePicker datePicker);
 #endif
 
 		/// <summary>
