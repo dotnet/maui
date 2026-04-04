@@ -14,7 +14,9 @@ public class Issue31182 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void GraphicsViewShouldDrawAtFullSize()
 	{
-		App.WaitForElement("StatusLabel31182");
+		App.WaitForElement("StatusLabel31182", timeout: TimeSpan.FromSeconds(5));
+		// Wait for the label text to change after GraphicsView invalidation
+		App.WaitForTextToBePresentInElement("StatusLabel31182", "Invalidated");
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

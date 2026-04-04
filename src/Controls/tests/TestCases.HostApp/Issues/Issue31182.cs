@@ -14,9 +14,8 @@ public class Issue31182 : TestContentPage
 
 		var label = new Label
 		{
-			Text = "Invalidated",
-			AutomationId = "StatusLabel31182",
-			IsVisible = false
+			Text = "Waiting",
+			AutomationId = "StatusLabel31182"
 		};
 
 		someView.Loaded += (s, e) =>
@@ -26,7 +25,7 @@ public class Issue31182 : TestContentPage
 				MainThread.BeginInvokeOnMainThread(() =>
 				{
 					someView.Invalidate();
-					label.IsVisible = true;
+					label.Text = "Invalidated";
 				});
 			});
 		};
