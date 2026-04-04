@@ -100,6 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateSelectedTabColors();
 			UpdateBarTranslucent();
 			UpdatePageSpecifics();
+			UpdateFlowDirection();
 		}
 
 		public UIViewController ViewController
@@ -190,7 +191,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateTabBarItem(page);
 			}
 		}
-		
+
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
@@ -245,6 +246,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				SetNeedsStatusBarAppearanceUpdate();
 				SelectedViewController = controller;
 			}
+			else if (e.PropertyName == nameof(TabbedPage.FlowDirection))
+				UpdateFlowDirection();
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == TabbedPage.BarBackgroundProperty.PropertyName)
@@ -503,6 +506,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateTabBarItem((Page)page);
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			if (Tabbed is null)
+				return;
+
+			View.UpdateFlowDirection(Tabbed);
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)

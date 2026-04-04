@@ -349,7 +349,8 @@ Write-Step "Collecting test artifacts (screenshots, page source)..."
 $testAssemblyDirs = @(
     (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net10.0"),
     (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net10.0")
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net10.0"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net10.0-windows10.0.19041.0")
 )
 
 $copiedCount = 0
@@ -441,6 +442,8 @@ if (Test-Path $deviceLogFile) {
         Write-Host "  iOS Simulator Logs (Last 100 lines)" -ForegroundColor Cyan
     } elseif ($Platform -eq "catalyst") {
         Write-Host "  MacCatalyst App Logs (Last 100 lines)" -ForegroundColor Cyan
+    } elseif ($Platform -eq "windows") {
+        Write-Host "  Windows App Logs (Last 100 lines)" -ForegroundColor Cyan
     }
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     

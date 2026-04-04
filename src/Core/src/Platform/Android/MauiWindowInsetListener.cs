@@ -101,8 +101,10 @@ namespace Microsoft.Maui.Platform
 				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
 				// We want the layout listener logic to get applied to the MaterialToolbar itself
 				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
+				// CollectionView/CarouselView items are not excluded to enable per-item SafeAreaEdges control.
+				// Performance overhead is negligible due to early pass-through for items without insets.
 				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout || parent is MauiScrollView || parent is IMauiRecyclerView))
+					(parent is AppBarLayout || parent is MauiScrollView))
 				{
 					return null;
 				}
@@ -264,32 +266,41 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Handle bottom navigation
-			var hasBottomNav = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
+			var bottomTabContainer = v.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
+			var hasBottomNav = bottomTabContainer?.MeasuredHeight > 0;
+			var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
+
 			if (hasBottomNav)
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-				v.SetPadding(0, 0, 0, bottomInset);
+
+				// Only pad the bottom of contentView to prevent content from sliding under the
+				// BottomNavigationView + system navigation bar. Left/right are intentionally
+				// excluded: landscape cutout padding on the content area is handled by
+				// SafeAreaExtensions which applies per-view overlap logic.
+				contentView?.SetPadding(0, 0, 0, bottomInset);
 			}
 			else
 			{
-				v.SetPadding(0, 0, 0, 0);
+				// Reset contentView padding when bottom navigation is removed dynamically
+				contentView?.SetPadding(0, 0, 0, 0);
 			}
 
-			// Create new insets with consumed values
+			// Consume top inset when AppBar is visible — it already pads itself, so downstream
+			// views must not receive a top inset or SafeAreaExtensions will double-apply it.
+			// Bottom inset is passed through unconsumed so BottomNavigationView can extend its
+			// background into the system navigation bar area (issue #33344).
 			var newSystemBars = Insets.Of(
 				systemBars?.Left ?? 0,
 				appBarHasContent ? 0 : systemBars?.Top ?? 0,
 				systemBars?.Right ?? 0,
-				hasBottomNav ? 0 : systemBars?.Bottom ?? 0
-			) ?? Insets.None;
+				systemBars?.Bottom ?? 0) ?? Insets.None;
 
 			var newDisplayCutout = Insets.Of(
 				displayCutout?.Left ?? 0,
 				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
 				displayCutout?.Right ?? 0,
-				hasBottomNav ? 0 : displayCutout?.Bottom ?? 0
-			) ?? Insets.None;
+				displayCutout?.Bottom ?? 0) ?? Insets.None;
 
 			return new WindowInsetsCompat.Builder(insets)
 				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
