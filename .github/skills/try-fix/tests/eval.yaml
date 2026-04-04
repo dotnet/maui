@@ -93,7 +93,7 @@ scenarios:
       - type: output_not_contains
         value: "I will use OnPageSelected"
     rubric:
-      - "Agent explicitly states it is avoiding the OnPageSelected approach because of the documented prior failure"
+      - "Agent explicitly states it is avoiding the prior failed approach (page selection callback modification) and explains why"
       - "The agent proposes a fix that intercepts at an earlier lifecycle point, before layout measurement"
       - "The agent's approach documentation explains why this attempt is different from attempt #1"
     timeout: 900
@@ -165,7 +165,7 @@ scenarios:
       - type: output_not_contains
         value: "fallback to parent"
     rubric:
-      - "Agent identifies that parent measurement fallback is the common root cause of both prior failures, not just a surface-level detail"
+      - "Agent identifies that relying on parent dimensions as a fallback was the shared flaw in both prior attempts"
       - "Agent's proposed approach does NOT rely on parent dimensions or parent measurement as a fallback mechanism"
       - "Agent explains WHY the new approach avoids the root cause, not just that it's different code"
     timeout: 900
