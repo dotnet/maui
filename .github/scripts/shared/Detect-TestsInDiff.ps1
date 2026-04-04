@@ -133,8 +133,12 @@ $UnitTestProjectPaths = @{
 if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
     if ($PRNumber) {
         # Fetch from GitHub
-        $prFiles = gh pr view $PRNumber --json files --jq '.files[].path' 2>$null
-        if ($LASTEXITCODE -ne 0) {
+        # Use paginated API to handle PRs with >30 changed files
+        $prFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --jq '.[].filename' 2>$null
+        if ($LASTEXITCODE -ne 0 -or -not $prFiles) {
+            $prFiles = gh pr view $PRNumber --json files --jq '.files[].path' 2>$null
+        }
+        if ($LASTEXITCODE -ne 0 -or -not $prFiles) {
             $prFiles = gh pr diff $PRNumber --name-only 2>$null
         }
         $ChangedFiles = $prFiles -split "`n" | Where-Object { $_ }
@@ -144,7 +148,7 @@ if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
         if ($BaseBranch) {
             $mergeBase = git merge-base HEAD "origin/$BaseBranch" 2>$null
             if (-not $mergeBase) {
-                $mergeBase = git merge-base HEAD $BaseBranch 2>$null
+                $mergeBase = git merge-base HEAD -- "$BaseBranch" 2>$null
             }
         }
         if (-not $mergeBase) {
@@ -362,7 +366,11 @@ foreach ($key in @($testGroups.Keys)) {
                 $mainFile = if ($repoRoot) { Join-Path $repoRoot "$testDir/$baseClassName.cs" } else { $null }
                 if ($mainFile -and (Test-Path $mainFile)) {
                     $content = Get-Content $mainFile -Raw -ErrorAction SilentlyContinue
+                    # Match [Category(TestCategory.X)] or [Category("X")]
                     if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
+                        $categoryFilter = "Category=$($matches[1])"
+                        break
+                    } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
                         $categoryFilter = "Category=$($matches[1])"
                         break
                     }
@@ -372,6 +380,9 @@ foreach ($key in @($testGroups.Keys)) {
                 if (Test-Path $fullPath) {
                     $content = Get-Content $fullPath -Raw -ErrorAction SilentlyContinue
                     if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
+                        $categoryFilter = "Category=$($matches[1])"
+                        break
+                    } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
                         $categoryFilter = "Category=$($matches[1])"
                         break
                     }

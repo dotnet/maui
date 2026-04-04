@@ -452,14 +452,14 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 # Detect tests in PR
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
 $detectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
-& pwsh -NoProfile -Command "& '$detectScript' -PRNumber $PRNumber | Out-Null" 2>&1 | ForEach-Object { Write-Host "    $_" }
+& pwsh -NoProfile -Command "& '$detectScript' -PRNumber $PRNumber" 2>&1 | ForEach-Object { Write-Host "    $_" }
 
 # Determine platform for gate
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
 $verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
-& pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+& pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1 | ForEach-Object { Write-Host "    $_" }
 $gateExitCode = $LASTEXITCODE
 
 # Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected

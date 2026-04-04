@@ -72,7 +72,7 @@
 #>
 
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
@@ -102,6 +102,12 @@ $RepoRoot = git rev-parse --show-toplevel
 # Normalize platform name (accept both "catalyst" and "maccatalyst")
 if ($Platform -eq "maccatalyst") {
     $Platform = "catalyst"
+}
+
+# Platform is required for UI and device tests, optional for unit/XAML tests
+if ($TestType -in @("UITest", "DeviceTest") -and -not $Platform) {
+    Write-Error "$TestType requires -Platform parameter (android, ios, catalyst, windows)."
+    exit 1
 }
 
 # ============================================================
@@ -1116,28 +1122,37 @@ function Write-MarkdownReport {
         [bool]$FailedWithoutFix,
         [bool]$PassedWithFix,
         [hashtable]$WithoutFixResult,
-        [hashtable]$WithFixResult
+        [hashtable]$WithFixResult,
+        [array]$WithoutFixResultsList,
+        [array]$WithFixResultsList,
+        [array]$Tests,
+        [string]$ReportMergeBase,
+        [string]$ReportPlatform,
+        [string]$ReportBaseBranch,
+        [array]$ReportRevertableFiles,
+        [array]$ReportNewFiles
     )
     
     # Check for environment errors in results
-    $hasEnvError = ($withoutFixResults | Where-Object { $_.EnvError }) -or ($withFixResults | Where-Object { $_.EnvError })
+    $hasEnvError = ($WithoutFixResultsList | Where-Object { $_.EnvError }) -or ($WithFixResultsList | Where-Object { $_.EnvError })
     
     $status = if ($hasEnvError) { "⚠️ ENV ERROR" } elseif ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
-    $mergeBaseShort = if ($MergeBase -and $MergeBase.Length -ge 8) { $MergeBase.Substring(0, 8) } else { "$MergeBase" }
+    $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     $lines = @()
     $lines += "### Gate Result: $status"
     $lines += ""
-    $lines += "**Platform:** $($Platform.ToUpper()) · **Base:** $BaseBranchName · **Merge base:** ``$mergeBaseShort``"
+    $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
+    $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
     $lines += ""
 
     # ── Side-by-side per-test comparison table ──
     $lines += "| Test | Without Fix (expect FAIL) | With Fix (expect PASS) |"
     $lines += "|------|--------------------------|------------------------|"
 
-    foreach ($t in $AllDetectedTests) {
-        $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
-        $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
+    foreach ($t in $Tests) {
+        $woResult = $WithoutFixResultsList | Where-Object { $_.TestName -eq $t.TestName }
+        $wResult = $WithFixResultsList | Where-Object { $_.TestName -eq $t.TestName }
 
         # Without fix cell
         $woDur = if ($woResult.Duration) { "$([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
@@ -1164,12 +1179,12 @@ function Write-MarkdownReport {
     }
 
     # ── Per-test logs (collapsible) ──
-    foreach ($t in $AllDetectedTests) {
+    foreach ($t in $Tests) {
         $sanitizedName = ($t.TestName -replace '[^a-zA-Z0-9_\-\.]', '_')
         if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
 
-        $woResult = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName }
-        $wResult = $withFixResults | Where-Object { $_.TestName -eq $t.TestName }
+        $woResult = $WithoutFixResultsList | Where-Object { $_.TestName -eq $t.TestName }
+        $wResult = $WithFixResultsList | Where-Object { $_.TestName -eq $t.TestName }
         $icon = switch ($t.Type) { "UITest" { "🖥️" } "DeviceTest" { "📱" } "UnitTest" { "🧪" } "XamlUnitTest" { "📄" } default { "" } }
 
         # Without fix log
@@ -1263,15 +1278,15 @@ function Write-MarkdownReport {
     # ── Fix files (collapsible) ──
     $lines += ""
     $lines += "<details>"
-    $lines += "<summary>📁 Fix files reverted ($($RevertableFiles.Count) files)</summary>"
+    $lines += "<summary>📁 Fix files reverted ($($ReportRevertableFiles.Count) files)</summary>"
     $lines += ""
-    foreach ($f in $RevertableFiles) {
+    foreach ($f in $ReportRevertableFiles) {
         $lines += "- ``$f``"
     }
-    if ($NewFiles.Count -gt 0) {
+    if ($ReportNewFiles.Count -gt 0) {
         $lines += ""
         $lines += "**New files (not reverted):**"
-        foreach ($f in $NewFiles) {
+        foreach ($f in $ReportNewFiles) {
             $lines += "- ``$f``"
         }
     }
@@ -1408,7 +1423,12 @@ foreach ($testEntry in $AllDetectedTests) {
     Write-Host "##[group]🔴 WITHOUT FIX $testIndex/$($AllDetectedTests.Count): $icon $($testEntry.TestName) (filter: $($testEntry.Filter))"
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+    try {
+        $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+    } catch {
+        $result = @{ Passed = $false; Failed = 0; Total = 0; PassCount = 0; FailCount = 0; Skipped = 0; EnvError = $true; Error = $_.Exception.Message }
+        Write-Host "  ⚠️ Test invocation threw: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
     $sw.Stop()
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
@@ -1491,7 +1511,12 @@ foreach ($testEntry in $AllDetectedTests) {
     Write-Host "##[group]🟢 WITH FIX $testIndex/$($AllDetectedTests.Count): $icon $($testEntry.TestName) (filter: $($testEntry.Filter))"
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+    try {
+        $result = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $testLogFile
+    } catch {
+        $result = @{ Passed = $false; Failed = 0; Total = 0; PassCount = 0; FailCount = 0; Skipped = 0; EnvError = $true; Error = $_.Exception.Message }
+        Write-Host "  ⚠️ Test invocation threw: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
     $sw.Stop()
     $result.TestName = $testEntry.TestName
     $result.TestType = $testEntry.Type
@@ -1589,7 +1614,15 @@ Write-MarkdownReport `
     -FailedWithoutFix $failedWithoutFix `
     -PassedWithFix $passedWithFix `
     -WithoutFixResult $withoutFixResult `
-    -WithFixResult $withFixResult
+    -WithFixResult $withFixResult `
+    -WithoutFixResultsList $withoutFixResults `
+    -WithFixResultsList $withFixResults `
+    -Tests $AllDetectedTests `
+    -ReportMergeBase $MergeBase `
+    -ReportPlatform $Platform `
+    -ReportBaseBranch $BaseBranchName `
+    -ReportRevertableFiles $RevertableFiles `
+    -ReportNewFiles $NewFiles
 
 if ($verificationPassed) {
     Write-Host ""
