@@ -1,5 +1,6 @@
-# eval.yaml v1 — verify-tests-fail-without-fix skill
+# eval.yaml v2 — verify-tests-fail-without-fix skill
 # v1: Initial 6 scenarios from skill analysis + try-fix eval lessons learned
+# v2: Added positive assertions, narrowed git bans, added RequireFullVerification + inverted semantics scenarios
 scenarios:
   - name: "Happy path: full verification mode with fix files present"
     prompt: |
@@ -16,6 +17,8 @@ scenarios:
         value: "skip verification"
       - type: output_not_contains
         value: "tests are fine as-is"
+      - type: output_contains
+        value: "verify"
     rubric:
       - "Agent runs tests WITHOUT the fix first and checks that they FAIL (proving they catch the bug)"
       - "Agent then restores the fix and runs tests again, checking that they PASS"
@@ -31,14 +34,13 @@ scenarios:
 
       Platform: android
     assertions:
-      - type: output_not_contains
-        value: "RequireFullVerification"
-      - type: output_not_contains
-        value: "no fix files"
+      - type: output_contains
+        value: "fail"
     rubric:
       - "Agent runs the test in verify-failure-only mode since no fix exists yet"
       - "Agent correctly interprets test failure as SUCCESS (test catches the bug)"
       - "Agent does not require fix files to be present for this mode"
+      - "Agent does not use -RequireFullVerification flag since no fix files exist"
     timeout: 900
 
   - name: "Negative trigger: general test question should not invoke verification"
@@ -87,6 +89,8 @@ scenarios:
     assertions:
       - type: output_not_contains
         value: "VERIFICATION PASSED"
+      - type: output_contains
+        value: "test"
     rubric:
       - "Agent recognizes that without test files, verification cannot proceed"
       - "Agent suggests that tests need to be written before verification can be run"
@@ -104,11 +108,44 @@ scenarios:
       - type: output_not_contains
         value: "git checkout HEAD"
       - type: output_not_contains
-        value: "git restore"
+        value: "I will run git restore"
       - type: output_not_contains
-        value: "git stash"
+        value: "I will use git stash"
     rubric:
       - "Agent uses the verify-tests-fail.ps1 script which handles file revert/restore automatically"
       - "Agent does not manually use git checkout, git restore, or git stash to revert fix files"
       - "Agent interprets the script output correctly to determine if verification passed or failed"
     timeout: 900
+
+  - name: "Edge case: agent uses RequireFullVerification when fix files exist"
+    prompt: |
+      This PR has both UI tests and a code fix for Issue #55555 on Android.
+      The fix modifies src/Controls/src/Core/Handlers/ScrollView/ScrollViewHandler.Android.cs.
+      Please verify the tests catch the bug using full verification since we have fix files.
+      Platform: android
+      TestFilter: "FullyQualifiedName~Issue55555"
+    assertions:
+      - type: output_contains
+        value: "RequireFullVerification"
+    rubric:
+      - "Agent uses -RequireFullVerification to ensure full two-phase verification"
+      - "Agent runs the complete workflow: fail without fix, then pass with fix"
+    timeout: 900
+
+  - name: "Regression: agent correctly reports test failure as verification success"
+    prompt: |
+      I just ran verify-tests-fail-without-fix on PR #44444. The test FAILED with
+      TimeoutException - element not found after 30 seconds. This is failure-only
+      verification (no fix files). What should I report?
+      Platform: android
+    assertions:
+      - type: output_not_contains
+        value: "verification failed"
+      - type: output_not_contains
+        value: "test needs to be fixed"
+      - type: output_not_contains
+        value: "test is broken"
+    rubric:
+      - "Agent correctly interprets test FAILURE as verification SUCCESS -- the test catches the bug"
+      - "Agent does not recommend fixing the test when the failure is expected"
+    timeout: 120

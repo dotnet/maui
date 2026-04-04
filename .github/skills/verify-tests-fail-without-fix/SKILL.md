@@ -11,6 +11,27 @@ compatibility: Requires git, PowerShell, and .NET SDK for building and running t
 
 Verifies UI tests actually catch the issue. Supports two workflow modes:
 
+## Activation Guard
+
+🛑 **This skill ONLY verifies that existing tests reproduce a bug.** Do NOT activate for:
+- Writing new tests → use write-tests-agent
+- Running tests without verification context → use run-device-tests
+- Code review → use code-review skill
+- General test advice
+
+Requires: a **platform** and either **test files in the PR** or an explicit **TestFilter**.
+
+## ⚠️ CRITICAL: Inverted Pass/Fail Semantics
+
+In this skill, test outcomes mean the OPPOSITE of normal:
+
+| Test Result (without fix) | Verification Result | Why |
+|--------------------------|--------------------|----|
+| Tests FAIL | ✅ GOOD | Tests detect the bug |
+| Tests PASS | ❌ BAD | Tests miss the bug |
+
+NEVER say "verification passed" when tests PASS without the fix.
+
 ## Mode 1: Verify Failure Only (Test Creation)
 
 Use when **creating tests before writing a fix**:
