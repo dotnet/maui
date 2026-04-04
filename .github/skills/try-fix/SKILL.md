@@ -359,9 +359,7 @@ Provide structured output to the invoker:
 [Why it worked, or why it failed and what was learned]
 
 **Diff:**
-```diff
-[The actual changes made]
-```
+(paste `git diff` output here)
 
 **This Attempt's Status:** Done/NeedsRetry
 **Reasoning:** [Why this specific approach succeeded or failed]

@@ -28,6 +28,7 @@ scenarios:
       Can you explain how handler architecture works in .NET MAUI? Specifically, what is the
       difference between ConnectHandler and DisconnectHandler, and when should each be used?
       I'm trying to understand the lifecycle so I can write my own custom handler.
+    expect_activation: false
     assertions:
       - type: output_not_contains
         value: "attempt-"
