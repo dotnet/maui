@@ -70,8 +70,11 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
-				pvh.DisconnectHandler();
+			if (_detailViewFragment?.DetailView is IView previousDetail &&
+				previousDetail != VirtualView.Detail)
+			{
+				previousDetail.Handler?.DisconnectHandler();
+			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
@@ -248,6 +251,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
+
+			// Apply drawer lock mode during layout so IsGestureEnabled is respected
+			// even before the detail platform view is ready
+			DrawerLayout.SetDrawerLockMode(
+				VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && VirtualView.IsGestureEnabled
+					? DrawerLayout.LockModeUnlocked
+					: DrawerLayout.LockModeLockedClosed);
 		}
 
 		void UpdateIsPresented()

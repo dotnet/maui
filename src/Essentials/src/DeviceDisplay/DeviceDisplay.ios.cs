@@ -8,10 +8,45 @@ namespace Microsoft.Maui.Devices
 	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
+#if MACCATALYST
+		readonly object locker = new object();
+		NSObject? keepScreenOnActivity;
 
+		protected override bool GetKeepScreenOn()
+		{
+			lock (locker)
+			{
+				return keepScreenOnActivity is not null;
+			}
+		}
+
+		protected override void SetKeepScreenOn(bool keepScreenOn)
+		{
+			lock (locker)
+			{
+				if ((keepScreenOnActivity is not null) == keepScreenOn)
+				{
+					return;
+				}
+
+				if (keepScreenOn)
+				{
+					keepScreenOnActivity = NSProcessInfo.ProcessInfo.BeginActivity(
+						NSActivityOptions.IdleDisplaySleepDisabled | NSActivityOptions.UserInitiated,
+						"KeepScreenOn");
+				}
+				else
+				{
+					NSProcessInfo.ProcessInfo.EndActivity(keepScreenOnActivity!);
+					keepScreenOnActivity = null;
+				}
+			}
+		}
+#else
 		protected override bool GetKeepScreenOn() => UIApplication.SharedApplication.IdleTimerDisabled;
 
 		protected override void SetKeepScreenOn(bool keepScreenOn) => UIApplication.SharedApplication.IdleTimerDisabled = keepScreenOn;
+#endif
 
 		protected override DisplayInfo GetMainDisplayInfo()
 		{
