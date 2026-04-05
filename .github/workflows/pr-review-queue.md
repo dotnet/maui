@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "0 8 * * 1-5"  # Weekdays at 8:00 UTC
   workflow_dispatch:
+  pull_request:
+    types:
+      - opened
   stop-after: +6mo
 
 permissions:

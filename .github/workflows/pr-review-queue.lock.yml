@@ -22,12 +22,15 @@
 #
 # Daily report of PRs that need review, prioritized by urgency (P/0, approved-not-merged, milestoned, partner, community)
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c71ba442a24e9a88d09b725f9fb4b929d50bc66d4f3293a41ef12107f1da051a","stop_time":"2026-10-04 21:27:00","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"gpt-5.1-codex-mini"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f085af05393772b43ea2264fa3a2df67aea29b9dd8b8ed5ae82fc0fef49f12ce","stop_time":"2026-10-04 21:27:00","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"gpt-5.1-codex-mini"}
 #
 # Effective stop-time: 2026-10-04 21:27:00
 
 name: "PR Review Queue Reporter"
 "on":
+  pull_request:
+    types:
+    - opened
   schedule:
   - cron: "0 8 * * 1-5"
   workflow_dispatch: null
@@ -43,16 +46,20 @@ run-name: "PR Review Queue Reporter"
 jobs:
   activation:
     needs: pre_activation
-    if: needs.pre_activation.outputs.activated == 'true'
+    if: >
+      needs.pre_activation.outputs.activated == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository_id)
     runs-on: ubuntu-slim
     permissions:
       contents: read
     outputs:
+      body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
       lockdown_check_failed: ${{ steps.generate_aw_info.outputs.lockdown_check_failed == 'true' }}
       model: ${{ steps.generate_aw_info.outputs.model }}
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
+      text: ${{ steps.sanitized.outputs.text }}
+      title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw-actions/setup@dc50be57c94373431b49d3d0927f318ac2bb5c4c # v0.62.5
@@ -107,6 +114,15 @@ jobs:
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/check_workflow_timestamp_api.cjs');
+            await main();
+      - name: Compute current body text
+        id: sanitized
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/compute_text.cjs');
             await main();
       - name: Create prompt with built-in context
         env:
@@ -242,8 +258,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -955,15 +969,28 @@ jobs:
             await main();
 
   pre_activation:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.id == github.repository_id
     runs-on: ubuntu-slim
     outputs:
-      activated: ${{ steps.check_stop_time.outputs.stop_time_ok == 'true' }}
+      activated: ${{ steps.check_membership.outputs.is_team_member == 'true' && steps.check_stop_time.outputs.stop_time_ok == 'true' }}
       matched_command: ''
     steps:
       - name: Setup Scripts
         uses: github/gh-aw-actions/setup@dc50be57c94373431b49d3d0927f318ac2bb5c4c # v0.62.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
+      - name: Check team membership for workflow
+        id: check_membership
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_REQUIRED_ROLES: admin,maintainer,write
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/check_membership.cjs');
+            await main();
       - name: Check stop-time limit
         id: check_stop_time
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
