@@ -7,6 +7,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
   stop-after: +6mo
 
 permissions:

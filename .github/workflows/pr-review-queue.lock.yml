@@ -22,7 +22,7 @@
 #
 # Daily report of PRs that need review, prioritized by urgency (P/0, approved-not-merged, milestoned, partner, community)
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f085af05393772b43ea2264fa3a2df67aea29b9dd8b8ed5ae82fc0fef49f12ce","stop_time":"2026-10-04 21:27:00","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"gpt-5.1-codex-mini"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"771b6e79e4db8a82a81f500e752eee210870fe3126f0d9331499b1788d8cc7eb","stop_time":"2026-10-04 21:27:00","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"gpt-5.1-codex-mini"}
 #
 # Effective stop-time: 2026-10-04 21:27:00
 
@@ -31,6 +31,7 @@ name: "PR Review Queue Reporter"
   pull_request:
     types:
     - opened
+    - synchronize
   schedule:
   - cron: "0 8 * * 1-5"
   workflow_dispatch: null
