@@ -1,6 +1,7 @@
-# eval.yaml v2 — verify-tests-fail-without-fix skill
+# eval.yaml v3 — verify-tests-fail-without-fix skill
 # v1: Initial 6 scenarios from skill analysis + try-fix eval lessons learned
 # v2: Added positive assertions, narrowed git bans, added RequireFullVerification + inverted semantics scenarios
+# v3: Added PR label automation + script auto-detection scenarios (10 total)
 scenarios:
   - name: "Happy path: full verification mode with fix files present"
     prompt: |
@@ -148,4 +149,33 @@ scenarios:
     rubric:
       - "Agent correctly interprets test FAILURE as verification SUCCESS -- the test catches the bug"
       - "Agent does not recommend fixing the test when the failure is expected"
+    timeout: 120
+
+  - name: "Feature: agent mentions PR label automation"
+    prompt: |
+      I need to verify that the UI tests for Issue #66666 catch the bug on iOS.
+      The PR has both test files and a fix. After verification, what labels get applied?
+      Platform: ios
+      TestFilter: "FullyQualifiedName~Issue66666"
+    assertions:
+      - type: output_contains
+        value: "label"
+    rubric:
+      - "Agent mentions the automatic PR label management (s/ai-reproduction-confirmed or s/ai-reproduction-failed)"
+      - "Agent explains that labels are applied automatically by the script based on verification result"
+    timeout: 120
+
+  - name: "Feature: agent trusts script auto-detection of test files from git diff"
+    prompt: |
+      Verify tests for PR #77777 on Android. I'm not sure exactly which test files
+      were added -- the PR has several changed files. Can the verification script
+      figure out which tests to run on its own?
+      Platform: android
+    assertions:
+      - type: output_not_contains
+        value: "I need you to specify"
+    rubric:
+      - "Agent explains that the script can auto-detect test files from the PR diff"
+      - "Agent does not require the user to manually specify every test file path"
+      - "Agent trusts the script's git diff analysis rather than manually searching for test files"
     timeout: 120
