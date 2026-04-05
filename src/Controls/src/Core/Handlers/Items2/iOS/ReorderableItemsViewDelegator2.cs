@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
 
@@ -17,26 +18,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override NSIndexPath GetTargetIndexPathForMove(UICollectionView collectionView, NSIndexPath originalIndexPath, NSIndexPath proposedIndexPath)
 		{
-			NSIndexPath targetIndexPath;
-
 			var itemsView = ViewController?.ItemsView;
-			if (itemsView?.IsGrouped == true)
+
+			if (itemsView?.IsGrouped != true)
 			{
-				if (originalIndexPath.Section == proposedIndexPath.Section || itemsView.CanMixGroups)
-				{
-					targetIndexPath = proposedIndexPath;
-				}
-				else
-				{
-					targetIndexPath = originalIndexPath;
-				}
-			}
-			else
-			{
-				targetIndexPath = proposedIndexPath;
+				return proposedIndexPath;
 			}
 
-			return targetIndexPath;
+			var itemsSource = ViewController?.ItemsSource;
+			if (itemsSource == null)
+			{
+				return proposedIndexPath;
+			}
+
+			return ReorderableItemsViewExtensions.GetTargetIndexPathForGroupedMove(
+				originalIndexPath,
+				proposedIndexPath,
+				itemsView,
+				itemsSource,
+				ViewController.HasInteractivelyMoved);
 		}
 	}
 }
