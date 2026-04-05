@@ -1,13 +1,16 @@
 ---
 description: Daily report of PRs that need review, prioritized by urgency (P/0, approved-not-merged, milestoned, partner, community)
 on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without creating an issue'
+        required: false
+        type: boolean
   schedule:
     - cron: "0 8 * * 1-5"  # Weekdays at 8:00 UTC
-  workflow_dispatch:
-  pull_request:
-    types:
-      - opened
-      - synchronize
   stop-after: +6mo
 
 permissions:
