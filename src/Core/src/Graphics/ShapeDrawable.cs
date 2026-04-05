@@ -109,7 +109,10 @@ namespace Microsoft.Maui.Graphics
 
 			// Use SetFillPaint to configure gradient state (shader/CGGradient)
 			// which PlatformDrawPath will apply to the stroke rendering.
-			canvas.SetFillPaint(stroke, dirtyRect);
+			// Use path.Bounds so the gradient maps to the shape geometry,
+			// not the full dirty rect (which would misalign gradients on
+			// shapes that don't fill the entire view).
+			canvas.SetFillPaint(stroke, path.Bounds);
 			canvas.DrawPath(path);
 
 			canvas.RestoreState();
