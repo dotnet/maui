@@ -41,10 +41,13 @@ static class MibcProfileGenerator
 		if (args.Length < 2)
 		{
 			Console.Error.WriteLine("Usage: MibcProfileGenerator <output.mibc> <input.dll> [<input2.dll> ...]");
+			Console.Error.WriteLine("       MibcProfileGenerator <output.mibc> @<responsefile>");
 			Console.Error.WriteLine();
 			Console.Error.WriteLine("Scans input assemblies for InitializeComponent* methods and produces");
 			Console.Error.WriteLine("a MIBC profile file that can be consumed by crossgen2 (--mibc) or");
 			Console.Error.WriteLine("validated with 'dotnet pgo dump <output.mibc>'.");
+			Console.Error.WriteLine();
+			Console.Error.WriteLine("A response file (@file) should contain one assembly path per line.");
 			Console.Error.WriteLine();
 			Console.Error.WriteLine("Matched method names:");
 			foreach (var name in InitializeComponentMethodNames)
@@ -53,8 +56,14 @@ static class MibcProfileGenerator
 		}
 
 		string outputPath = args[0];
-		string[] inputPaths = args.Skip(1).ToArray();
+		var inputPaths = ExpandResponseFiles(args.Skip(1));
 		bool uncompressed = string.Equals(Path.GetExtension(outputPath), ".dll", StringComparison.OrdinalIgnoreCase);
+
+		if (inputPaths.Count == 0)
+		{
+			Console.Error.WriteLine("Error: No input assemblies specified.");
+			return 1;
+		}
 
 		var methods = new List<DiscoveredMethod>();
 
@@ -98,6 +107,39 @@ static class MibcProfileGenerator
 		}
 
 		return 0;
+	}
+
+	/// <summary>
+	/// Expands arguments, treating any argument starting with '@' as a response file
+	/// containing one assembly path per line. Non-response-file arguments are passed through.
+	/// </summary>
+	static List<string> ExpandResponseFiles(IEnumerable<string> args)
+	{
+		var result = new List<string>();
+		foreach (var arg in args)
+		{
+			if (arg.StartsWith('@'))
+			{
+				string responseFile = arg.Substring(1);
+				if (!File.Exists(responseFile))
+				{
+					Console.Error.WriteLine($"Error: Response file not found: {responseFile}");
+					continue;
+				}
+
+				foreach (var line in File.ReadAllLines(responseFile))
+				{
+					var trimmed = line.Trim();
+					if (trimmed.Length > 0 && !trimmed.StartsWith('#'))
+						result.Add(trimmed);
+				}
+			}
+			else
+			{
+				result.Add(arg);
+			}
+		}
+		return result;
 	}
 
 	/// <summary>
