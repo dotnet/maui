@@ -17,28 +17,41 @@ public class Issue34584 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ContentShouldNotRenderUnderStatusBarAfterNavigatingWithKeyboardOpen()
 	{
-		// Wait for the main page to load
+		// Wait for the main page
 		App.WaitForElement("Entry");
 
-		// Focus Entry and open keyboard
+		// Open keyboard
 		App.Tap("Entry");
-
-		// Enter text to ensure IME is active
 		App.EnterText("Entry", "test");
 
-		//  Trigger navigation while IME is still open
+		// Navigate while keyboard is open
 		App.PressEnter();
 
 		// Wait for destination page
 		App.WaitForElement("TargetLabel");
 
-		var label = App.FindElement("TargetLabel");
-		Assert.That(label, Is.Not.Null);
+		// Poll for a short period to detect transient layout issues during navigation
+		bool foundInvalidPosition = false;
 
-		var labelRect = label.GetRect();
+		var start = DateTime.UtcNow;
+		var timeout = TimeSpan.FromSeconds(1);
 
-		Assert.That(labelRect.Y, Is.GreaterThan(0),
-			"TargetLabel should not be at Y=0 (would be under the status bar)");
+		while (DateTime.UtcNow - start < timeout)
+		{
+			var rect = App.FindElement("TargetLabel").GetRect();
+
+			// Small threshold to account for device differences
+			if (rect.Y < 5)
+			{
+				foundInvalidPosition = true;
+				break;
+			}
+
+			System.Threading.Thread.Sleep(50);
+		}
+
+		Assert.That(foundInvalidPosition, Is.False,
+			"TargetLabel was temporarily rendered under the status bar");
 	}
 }
 #endif
