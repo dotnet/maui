@@ -23,15 +23,24 @@ public class Issue34730 : _IssuesUITest
 		App.WaitForElement("OpenModalButton");
 		App.Tap("OpenModalButton");
 
-		App.WaitForElement("ModalEntry");
-		App.Tap("ModalEntry");
+		try
+		{
+			App.WaitForElement("ModalEntry");
+			App.Tap("ModalEntry");
 
-		Assert.That(App.IsKeyboardShown(), Is.True);
+			Assert.That(App.IsKeyboardShown(), Is.True);
 
-		App.WaitForElement("ModalEmptySpace");
-		App.Tap("ModalEmptySpace");
+			App.WaitForElement("ModalEmptySpace");
+			App.Tap("ModalEmptySpace");
 
-		Assert.That(App.IsKeyboardShown(), Is.False);
+			Assert.That(App.IsKeyboardShown(), Is.False);
+		}
+		finally
+		{
+			App.DismissKeyboard();
+			App.WaitForElement("CloseModalButton");
+			App.Tap("CloseModalButton");
+		}
 	}
 }
 #endif

@@ -501,7 +501,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (e is null)
 					{
-						return base.DispatchTouchEvent(e!);
+						return false;
 					}
 
 					bool handled = base.DispatchTouchEvent(e);
