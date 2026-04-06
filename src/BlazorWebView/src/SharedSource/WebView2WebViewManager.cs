@@ -204,15 +204,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				return;
 			}
 
-			// Store a local reference to prevent race condition where _webview could be set to null
-			// in DisposeAsyncCore after the disposal check but before accessing CoreWebView2
-			var webview = _webview;
-			if (webview is null)
-			{
-				return;
-			}
-
-			var coreWebView = webview.CoreWebView2;
+			// CoreWebView2 is null until WebView2 initialization completes
+			var coreWebView = _webview.CoreWebView2;
 			if (coreWebView is null)
 			{
 				return;
