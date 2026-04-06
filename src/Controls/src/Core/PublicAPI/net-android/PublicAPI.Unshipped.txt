@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
@@ -80,7 +80,6 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
 ~virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.HookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.UnhookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateVerticalScrollMode() -> void
 Microsoft.Maui.Controls.Handlers.ShellHandler
 Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
 Microsoft.Maui.Controls.Handlers.ShellItemHandler

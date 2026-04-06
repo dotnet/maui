@@ -9,7 +9,6 @@ override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Platform.MauiDrawerLayout.Dispose(bool disposing) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 Microsoft.Maui.Handlers.PickerHandler._dialog -> AndroidX.AppCompat.App.AlertDialog?
 Microsoft.Maui.ITab
