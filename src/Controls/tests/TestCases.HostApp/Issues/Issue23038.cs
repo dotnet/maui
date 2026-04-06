@@ -30,8 +30,8 @@ public class Issue23038 : ContentPage
 					FontAttributes = FontAttributes.Bold,
 					Padding = new Thickness(5),
 				};
-				label.SetBinding(Label.TextProperty, "Name");
-				label.SetBinding(Label.AutomationIdProperty, "Key", stringFormat: "Header{0}");
+				label.SetBinding(Label.TextProperty, nameof(Issue23038Team.Name));
+				label.SetBinding(Label.AutomationIdProperty, nameof(Issue23038Team.Key), stringFormat: "Header{0}");
 				return label;
 			}),
 			GroupFooterTemplate = new DataTemplate(() =>
@@ -42,7 +42,7 @@ public class Issue23038 : ContentPage
 					Padding = new Thickness(5),
 				};
 				label.SetBinding(Label.TextProperty, "Count", stringFormat: "Total: {0}");
-				label.SetBinding(Label.AutomationIdProperty, "Key", stringFormat: "Footer{0}");
+				label.SetBinding(Label.AutomationIdProperty, nameof(Issue23038Team.Key), stringFormat: "Footer{0}");
 				return label;
 			}),
 			ItemTemplate = new DataTemplate(() =>
@@ -51,7 +51,7 @@ public class Issue23038 : ContentPage
 				{
 					Padding = new Thickness(5, 2),
 				};
-				label.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, nameof(Issue23038Member.Name));
 				return label;
 			}),
 		};
