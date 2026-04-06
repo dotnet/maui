@@ -259,11 +259,11 @@
 	</PropertyGroup>
 
 	<!-- Generate MIBC profile listing all InitializeComponent* methods for PGO.
-	     Enabled by setting PublishReadyToRunXamlOnly=true in the project file.
+	     Enabled when FilterReadyToRunAssemblies=true (set by the .NET for iOS SDK).
 	     Runs after all XAML inflators. -->
 	<Target Name="_MauiGenerateMibcProfile"
 		AfterTargets="XamlC;CoreCompile;_SelectR2RAssemblies"
-		Condition=" '$(FilterReadyToRunAssemblies)' == 'true' AND '$(DesignTimeBuild)' != 'True' "
+		Condition=" '$(FilterReadyToRunAssemblies)' == 'true' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(_MauiMibcProfilePath)">
 		<PropertyGroup>
@@ -275,9 +275,9 @@
 		<ItemGroup>
 			<PublishReadyToRunPgoFiles Include="$(_MauiMibcProfilePath)" />
 			<FileWrites Include="$(_MauiMibcProfilePath)" />
-      <PublishReadyToRunPartialAssemblies Include="$(IntermediateOutputPath)$(TargetFileName)" />
-      <PublishReadyToRunExclude Remove="$(IntermediateOutputPath)$(TargetFileName)" />
-      <PublishReadyToRunCompositeExclusions Include="$(IntermediateOutputPath)$(TargetFileName)" />
+			<PublishReadyToRunPartialAssemblies Include="$(IntermediateOutputPath)$(TargetFileName)" />
+			<PublishReadyToRunExclude Remove="$(IntermediateOutputPath)$(TargetFileName)" />
+			<PublishReadyToRunCompositeExclusions Include="$(IntermediateOutputPath)$(TargetFileName)" />
 		</ItemGroup>
 	</Target>
 
