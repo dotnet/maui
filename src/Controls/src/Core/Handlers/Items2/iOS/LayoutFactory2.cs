@@ -448,7 +448,7 @@ internal static class LayoutFactory2
 				null,
 				sectionProvider,
 				layoutConfiguration,
-				linearItemsLayout.ItemsUpdatingScrollMode)
+				linearItemsLayout)
 			: new UICollectionViewCompositionalLayout(sectionProvider, layoutConfiguration);
 
 		return layout;
