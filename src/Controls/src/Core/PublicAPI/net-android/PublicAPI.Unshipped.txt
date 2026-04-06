@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
@@ -97,7 +97,6 @@ static Microsoft.Maui.Controls.Toolbar.MapBackButtonAccessibilityLabel(Microsoft
 ~virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
 ~virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.HookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.UnhookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
-virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateVerticalScrollMode() -> void
 Microsoft.Maui.Controls.Handlers.ShellHandler
 Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
 Microsoft.Maui.Controls.Handlers.ShellItemHandler
