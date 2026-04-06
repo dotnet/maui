@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateCancelButton(searchBar);
 			if (handler is SearchBarHandler searchBarHandler)
-				handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(searchBar.Text), searchBarHandler._clearButton);
+				handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(searchBar.Text));
 
 		}
 
