@@ -225,6 +225,40 @@ namespace Microsoft.Maui.Platform
 				return WindowInsetsCompat.Consumed;
 			}
 
+			var appBarHasContent = ApplyAppbarInsets(v, systemBars, displayCutout);
+
+			var bottomTabContainer = v.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
+			var hasBottomNav = bottomTabContainer?.MeasuredHeight > 0;
+			var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
+
+			ApplyKeyboardInsets(v, insets, bottomTabContainer, contentView, hasBottomNav, systemBars);
+
+			ApplyBottomNavViewInsets(systemBars, displayCutout, hasBottomNav, contentView);
+
+			// Consume top inset when AppBar is visible — it already pads itself, so downstream
+			// views must not receive a top inset or SafeAreaExtensions will double-apply it.
+			// Bottom inset is passed through unconsumed so BottomNavigationView can extend its
+			// background into the system navigation bar area (issue #33344).
+			var newSystemBars = Insets.Of(
+				systemBars?.Left ?? 0,
+				appBarHasContent ? 0 : systemBars?.Top ?? 0,
+				systemBars?.Right ?? 0,
+				systemBars?.Bottom ?? 0) ?? Insets.None;
+
+			var newDisplayCutout = Insets.Of(
+				displayCutout?.Left ?? 0,
+				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
+				displayCutout?.Right ?? 0,
+				displayCutout?.Bottom ?? 0) ?? Insets.None;
+
+			return new WindowInsetsCompat.Builder(insets)
+				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
+				?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
+				?.Build() ?? insets;
+		}
+
+		static bool ApplyAppbarInsets(AView v, Insets? systemBars, Insets? displayCutout)
+		{
 			// Find AppBarLayout - check direct child first, then first two children
 			var appBarLayout = v.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
 			if (appBarLayout is null && v is ViewGroup group)
@@ -268,10 +302,11 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			var bottomTabContainer = v.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
-			var hasBottomNav = bottomTabContainer?.MeasuredHeight > 0;
-			var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
+			return appBarHasContent;
+		}
 
+		static void ApplyBottomNavViewInsets(Insets? systemBars, Insets? displayCutout, bool hasBottomNav, AView? contentView)
+		{
 			if (hasBottomNav)
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
@@ -287,27 +322,104 @@ namespace Microsoft.Maui.Platform
 				// Reset contentView padding when bottom navigation is removed dynamically
 				contentView?.SetPadding(0, 0, 0, 0);
 			}
+		}
 
-			// Consume top inset when AppBar is visible — it already pads itself, so downstream
-			// views must not receive a top inset or SafeAreaExtensions will double-apply it.
-			// Bottom inset is passed through unconsumed so BottomNavigationView can extend its
-			// background into the system navigation bar area (issue #33344).
-			var newSystemBars = Insets.Of(
-				systemBars?.Left ?? 0,
-				appBarHasContent ? 0 : systemBars?.Top ?? 0,
-				systemBars?.Right ?? 0,
-				systemBars?.Bottom ?? 0) ?? Insets.None;
+		WindowInsetsCompat? ApplyKeyboardInsets(AView v, WindowInsetsCompat insets, ViewGroup? bottomTabContainer, AView? contentView, bool hasBottomNav, Insets? systemBars)
+		{
+			// Keyboard Handling & Bottom Navigation Handling - only applies to CoordinatorLayout
+			if (v is not CoordinatorLayout coordinatorLayout)
+			{
+				return insets;
+			}
+			var window = coordinatorLayout.Context?.GetActivity()?.Window;
 
-			var newDisplayCutout = Insets.Of(
-				displayCutout?.Left ?? 0,
-				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
-				displayCutout?.Right ?? 0,
-				displayCutout?.Bottom ?? 0) ?? Insets.None;
+			// Handle keyboard insets based on SoftInputMode (AdjustResize/AdjustPan/AdjustNothing)
+			var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+			var isKeyboardShowing = insets.IsVisible(WindowInsetsCompat.Type.Ime());
 
-			return new WindowInsetsCompat.Builder(insets)
-				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
-				?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
-				?.Build() ?? insets;
+			if (contentView is null || window is null)
+			{
+				return insets;
+			}
+
+			var windowAttributes = window.Attributes;
+
+			if (windowAttributes is null)
+			{
+				return insets;
+			}
+
+			// Mask to extract only the adjustment mode bits
+			const SoftInput adjustMask = SoftInput.MaskAdjust;
+			var adjustMode = windowAttributes.SoftInputMode & adjustMask;
+
+			if (adjustMode == SoftInput.AdjustResize)
+			{
+				if (isKeyboardShowing && !IsImeAnimating && !_wasKeyboardShowing)
+				{
+					var bottomInset = Math.Max(systemBars?.Bottom ?? 0, imeInsets?.Bottom ?? 0);
+
+					if (hasBottomNav)
+					{
+						// Set contentView padding to push content above keyboard
+						contentView?.SetPadding(
+						 contentView?.PaddingLeft ?? 0,
+						 contentView?.PaddingTop ?? 0,
+						 contentView?.PaddingRight ?? 0,
+						 bottomInset);
+					}
+					else
+					{
+						// No bottom tabs - apply keyboard padding to CoordinatorLayout
+						coordinatorLayout.SetPadding(0, 0, 0, bottomInset);
+					}
+
+					// Reset bottom padding of all tracked child views since the keyboard
+					// now covers the navigation bar area. Without this, child views would
+					// retain their stale bottom safe area padding, causing double padding.
+					if (hasBottomNav)
+					{
+						bottomTabContainer?.SetPadding(bottomTabContainer?.PaddingLeft ?? 0, bottomTabContainer?.PaddingTop ?? 0, bottomTabContainer?.PaddingRight ?? 0, 0);
+					}
+					else
+					{
+						ResetBottomPaddingForDescendants(coordinatorLayout);
+					}
+
+					_wasKeyboardShowing = true;
+					return WindowInsetsCompat.Consumed;
+				}
+				else if (!isKeyboardShowing && _wasKeyboardShowing && !IsImeAnimating)
+				{
+					// Keyboard dismissed - reset padding
+					_wasKeyboardShowing = false;
+					if (hasBottomNav)
+					{
+						//RequestInsetsForDescendants(contentView);
+					}
+					else
+					{
+						coordinatorLayout.SetPadding(0, 0, 0, 0);
+						coordinatorLayout.Post(() =>
+						{
+							RequestInsetsForDescendants(coordinatorLayout);
+						});
+					}
+				}
+			}
+			else if (adjustMode == SoftInput.AdjustPan)
+			{
+				if (isKeyboardShowing && !IsImeAnimating)
+				{
+					return WindowInsetsCompat.Consumed;
+				}
+			}
+			else if (adjustMode == SoftInput.AdjustNothing)
+			{
+				return insets;
+			}
+
+			return insets;
 		}
 
 		public void TrackView(AView view)
