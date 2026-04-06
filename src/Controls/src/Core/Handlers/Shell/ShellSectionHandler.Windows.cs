@@ -103,9 +103,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		// Called when ShellSection.DisplayedPage changes — covers both content changes and
 		// navigation pushes. We only act on content changes (stack depth == 1, no pending nav).
-		void OnDisplayedPageChanged(Page? page)
+		void OnDisplayedPageChanged(Page page)
 		{
-			if (page is null || VirtualView is null)
+			if (VirtualView is null)
 				return;
 
 			// Push/pop navigation is handled by OnNavigationRequested; skip those cases.
