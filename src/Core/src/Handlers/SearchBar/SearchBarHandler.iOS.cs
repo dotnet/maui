@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Handlers
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UITextField? _editor;
-		UIButton? _clearButton;
 		readonly MauiSearchBarProxy _proxy = new();
 
 		public UITextField? QueryEditor => _editor;
@@ -18,7 +17,6 @@ namespace Microsoft.Maui.Handlers
 			var searchBar = new MauiSearchBar() { BarStyle = UIBarStyle.Default };
 
 			_editor = searchBar.GetSearchTextField();
-			_clearButton = searchBar.GetClearButton();
 
 			return searchBar;
 		}
@@ -267,7 +265,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
-					handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text), handler._clearButton);
+					handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text));
 				}
 			}
 
