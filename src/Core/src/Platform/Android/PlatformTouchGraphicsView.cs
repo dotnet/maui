@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!_dragStarted)
 			{
-				if (points.Length == 1)
+				if (points.Length == 1 && _lastMovedViewPoints.Length > 0)
 				{
 					float deltaX = _lastMovedViewPoints[0].X - points[0].X;
 					float deltaY = _lastMovedViewPoints[0].Y - points[0].Y;

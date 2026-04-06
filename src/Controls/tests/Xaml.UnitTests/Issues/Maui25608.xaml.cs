@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -15,20 +15,18 @@ public partial class Maui25608
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			if (_bindingFailureHandler is not null)
 			{
@@ -38,8 +36,9 @@ public partial class Maui25608
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void TestValidBindingWithRelativeSource([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TestValidBindingWithRelativeSource(XamlInflator inflator)
 		{
 			bool bindingFailureReported = false;
 			_bindingFailureHandler = (sender, args) => bindingFailureReported = true;
@@ -47,8 +46,8 @@ public partial class Maui25608
 
 			var page = new Maui25608(inflator);
 
-			Assert.AreEqual(25, page.Image.HeightRequest);
-			Assert.IsFalse(bindingFailureReported);
+			Assert.Equal(25, page.Image.HeightRequest);
+			Assert.False(bindingFailureReported);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System.Collections.Generic;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -14,15 +14,16 @@ public partial class Gh8221 : ContentPage
 {
 	public Gh8221() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BindingWithMultipleIndexers([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingWithMultipleIndexers(XamlInflator inflator)
 		{
 			var layout = new Gh8221(inflator) { BindingContext = new Gh8221VM() };
-			Assert.That(layout.entryone.Text, Is.EqualTo("One"));
-			Assert.That(layout.entrytwo.Text, Is.EqualTo("Two"));
+			Assert.Equal("One", layout.entryone.Text);
+			Assert.Equal("Two", layout.entrytwo.Text);
 		}
 	}
 }

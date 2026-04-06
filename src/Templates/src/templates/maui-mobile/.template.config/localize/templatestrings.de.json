@@ -2,7 +2,7 @@
   "author": "Microsoft",
   "name": ".NET MAUI-App",
   "description": "Ein Projekt zum Erstellen einer .NET MAUI-Anwendung für iOS, Android, Mac Und WinUI",
-  "postActions/openInEditor/description": "Öffnet MainPage.xaml im Editor.",
+  "postActions/openInEditor/description": "Öffnet \"MainPage.xaml\" im Editor.",
   "postActions/restore/description": "Stellt die NuGet-Pakete wieder her, die für dieses Projekt erforderlich sind.",
   "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen",
   "symbols/applicationId/description": "Überschreibt $(ApplicationId) im Projekt",

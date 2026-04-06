@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -15,14 +15,15 @@ public partial class AB946693 : ContentPage
 {
 	public AB946693() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void KeylessResourceThrowsMeaningfulException([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void KeylessResourceThrowsMeaningfulException(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -37,8 +38,17 @@ public partial class AB946693 : ContentPage
 	public AB946693() => InitializeComponent();
 }
 """)
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh6192Template : ContentView
+{
+	public Gh6192Template() { }
+}
+""", "Gh6192Template.cs")
 					.RunMauiSourceGenerator(typeof(AB946693));
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new AB946693(XamlInflator.Runtime));

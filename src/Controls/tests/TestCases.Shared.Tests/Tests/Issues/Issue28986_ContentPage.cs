@@ -98,7 +98,6 @@ public class Issue28986_ContentPage : _IssuesUITest
 	}
 
 
-	#if TEST_FAILS_ON_ANDROID
 	[Test]
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaPerEdgeValidation()
@@ -114,10 +113,12 @@ public class Issue28986_ContentPage : _IssuesUITest
 		// Open Soft Input test entry
 		App.Tap("SoftInputTestEntry");
 
+		// With AdjustNothing mode, the window doesn't resize or pan
+		// The MainGrid gets bottom padding from SoftInput, so ContentGrid should shrink
 		App.RetryAssert(() =>
 		{
 			var containerPositionWithSoftInput = App.WaitForElement("ContentGrid").GetRect();
-			Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when Soft Input is shown with Container edges");
+			Assert.That(containerPositionWithSoftInput.Height, Is.LessThan(containerPosition.Height), "ContentGrid height should be less when keyboard shows - MainGrid gets bottom padding from SoftInput");
 		});
 
 		App.DismissKeyboard();
@@ -129,6 +130,5 @@ public class Issue28986_ContentPage : _IssuesUITest
 			Assert.That(containerPositionWithoutSoftInput.Height, Is.EqualTo(containerPosition.Height), "ContentGrid height should return to original when Soft Input is dismissed with Container edges");
 		});
 	}
-	#endif
 }
 #endif

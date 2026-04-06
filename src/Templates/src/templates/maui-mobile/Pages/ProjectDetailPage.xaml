@@ -36,15 +36,13 @@
                         Text="{Binding Description}" SemanticProperties.Description="Description" />
                 </sf:SfTextInputLayout>
 
-               <sf:SfTextInputLayout
+              <sf:SfTextInputLayout
                     Hint="Category"
-                    SemanticProperties.Description="ComboBox to Select Category"
-                    SemanticProperties.Hint="State Collapsed">
-                    <Picker SemanticProperties.Hint="Select the category for the project"
-                            ItemsSource="{Binding Categories}"
+                    SemanticProperties.Description="ComboBox to select a category. Activate to browse and select a category">
+                    <Picker ItemsSource="{Binding Categories}"
                             SelectedItem="{Binding Category}"
                             SelectedIndex="{Binding CategoryIndex}"
-                            SemanticProperties.Description="Category State Expanded"/>
+                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"/>
                 </sf:SfTextInputLayout>
 
                 <Label 
@@ -108,8 +106,7 @@
                     Margin="0,0,0,15"
                     SelectedItems="{Binding SelectedTags, Mode=TwoWay}"
                     SelectionChangedCommand="{Binding SelectionChangedCommand}"
-                    SelectionChangedCommandParameter="{Binding SelectedTags}"
-                    SemanticProperties.Description="Tags Collection">
+                    SelectionChangedCommandParameter="{Binding SelectedTags}">
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="{StaticResource LayoutSpacing}" />
                     </CollectionView.ItemsLayout>
@@ -118,20 +115,19 @@
                             <Border StrokeShape="RoundRectangle 22" 
                                 HeightRequest="44" 
                                 VerticalOptions="Center"
-                                BackgroundColor="Transparent"
                                 Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
                                 SemanticProperties.Description="{Binding Title}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">
                                             <VisualState.Setters>
-                                                <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"/>
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"/>
                                                 <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
-                                                <Setter Property="Background" Value="{Binding DisplayColor}"/>
+                                                <Setter Property="BackgroundColor" Value="{Binding DisplayColor}"/>
                                                 <Setter TargetName="TagLabel" Property="Label.TextColor" Value="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}"/>
                                             </VisualState.Setters>
                                         </VisualState>
@@ -171,20 +167,28 @@
                         SemanticProperties.Description="Clean up"
                         />
                 </Grid>
-                <VerticalStackLayout 
-                    Spacing="{StaticResource LayoutSpacing}"
-                    BindableLayout.ItemsSource="{Binding Tasks}">
-                    <BindableLayout.ItemTemplate>
+                <CollectionView ItemsSource="{Binding Tasks}"
+                                x:Name="ProjectTasksCollectionView"
+                                SelectionMode="Single"
+                                SelectedItem="{Binding SelectedTask}"
+                                SelectionChangedCommand="{Binding NavigateToTaskCommand}"
+                                SelectionChangedCommandParameter="{Binding SelectedTask}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical"
+                                           ItemSpacing="{StaticResource LayoutSpacing}"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" />
+                            <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}"/>
                         </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </VerticalStackLayout>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
 
         <controls:AddButton Command="{Binding AddTaskCommand}" 
-                            SemanticProperties.Description="Add task" />
+                            SemanticProperties.Description="Add task" 
+                            ToolTipProperties.Text="Add task" />
     </Grid>
     
 </ContentPage>

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Handlers.Items;
 using UIKit;
 
@@ -91,7 +93,7 @@ internal static class LayoutFactory2
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -149,7 +151,7 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -382,12 +384,22 @@ internal static class LayoutFactory2
 
 						var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
 
+						if (!IsIndexPathValid(goToIndexPath, cv2Controller.CollectionView))
+						{
+							return;
+						}
+
 						//This will move the carousel to fake the loop
 						cv2Controller.CollectionView.ScrollToItem(
 							NSIndexPath.FromItemSection(pageIndex, 0),
 							UICollectionViewScrollPosition.Left,
 							false);
 					}
+				}
+
+				if (cv2Controller.IsRotating())
+				{
+					return;
 				}
 
 				//Update the CarouselView position
@@ -400,15 +412,53 @@ internal static class LayoutFactory2
 		return layout;
 	}
 #nullable enable
+
+	public static bool IsIndexPathValid(NSIndexPath indexPath, UICollectionView collectionView)
+	{
+		try
+		{
+			if (indexPath is null || collectionView is null || collectionView.Handle == IntPtr.Zero || collectionView.Superview is null)
+			{
+				return false;
+			}
+
+			if (indexPath.Item < 0 || indexPath.Section < 0)
+			{
+				return false;
+			}
+
+			if (indexPath.Section >= collectionView.NumberOfSections())
+			{
+				return false;
+			}
+
+			if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
+			{
+				return false;
+			}
+
+			return true;
+		}
+		catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+		{
+			var logger = Application.Current?.FindMauiContext()?.Services?.GetService<ILoggerFactory>()?.CreateLogger("Microsoft.Maui.Controls.Handlers.Items2.LayoutFactory2");
+			logger?.LogWarning($"IsIndexPathValid caught exception: {ex.GetType().Name} - {ex.Message}");
+			return false;
+		}
+	}
 	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+		LayoutGroupingInfo? _groupingInfo;
+		LayoutHeaderFooterInfo? _headerFooterInfo;
 
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsUpdatingScrollMode itemsUpdatingScrollMode) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsUpdatingScrollMode = itemsUpdatingScrollMode;
+			_groupingInfo = groupingInfo;
+			_headerFooterInfo = headerFooterInfo;
 		}
 
 		public override void FinalizeCollectionViewUpdates()
@@ -510,6 +560,33 @@ internal static class LayoutFactory2
 			// none of them fit at least half in the viewport. So just fall back to the first item
 			return Items.SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport, alignment,
 					Configuration.ScrollDirection);
+		}
+
+		public override CGSize CollectionViewContentSize
+		{
+			get
+			{
+				if (CollectionView != null)
+				{
+					bool hasGlobalHeaders = _headerFooterInfo?.HasHeader == true || _headerFooterInfo?.HasFooter == true;
+					bool hasGroupHeaders = _groupingInfo?.HasHeader == true || _groupingInfo?.HasFooter == true;
+
+					if (hasGlobalHeaders || hasGroupHeaders)
+					{
+						return base.CollectionViewContentSize;
+					}
+
+					if (CollectionView.NumberOfSections() > 0 &&
+				CollectionView.NumberOfItemsInSection(0) > 0)
+					{
+						return base.CollectionViewContentSize;
+					}
+
+					return CGSize.Empty;
+				}
+
+				return base.CollectionViewContentSize;
+			}
 		}
 
 		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)

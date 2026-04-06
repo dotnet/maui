@@ -3,25 +3,14 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
 
-public class LayoutControlPage : NavigationPage
+public partial class LayoutControlPage : ContentPage
 {
 	private LayoutViewModel _viewModel;
+
 	public LayoutControlPage()
 	{
-		_viewModel = new LayoutViewModel();
-
-		PushAsync(new LayoutMainPage(_viewModel));
-	}
-}
-
-public partial class LayoutMainPage : ContentPage
-{
-	private LayoutViewModel _viewModel;
-
-	public LayoutMainPage(LayoutViewModel viewModel)
-	{
 		InitializeComponent();
-		_viewModel = viewModel;
+		_viewModel = new LayoutViewModel();
 		BindingContext = _viewModel;
 		InitializeContent();
 	}

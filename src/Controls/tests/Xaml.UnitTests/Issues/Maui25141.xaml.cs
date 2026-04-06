@@ -1,10 +1,11 @@
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,25 +21,23 @@ public partial class Maui25141 : ContentPage
 		};
 	}
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void BindingsInDataTriggerAndMultiBindingAreCompiledCorrectly()
+		[Fact]
+		internal void BindingsInDataTriggerAndMultiBindingAreCompiledCorrectly()
 		{
 			MockCompiler.Compile(typeof(Maui25141), treatWarningsAsErrors: true);
 		}

@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,23 +11,23 @@ public partial class Maui22105
 {
 	public Maui22105() => InitializeComponent();
 
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void DefaultValueShouldBeApplied([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DefaultValueShouldBeApplied(XamlInflator inflator)
 		{
 			var page = new Maui22105(inflator);
-			Assert.That(page.label.FontSize, Is.EqualTo(100));
+			Assert.Equal(100, page.label.FontSize);
 		}
 	}
 }

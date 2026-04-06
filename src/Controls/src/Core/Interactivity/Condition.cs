@@ -3,7 +3,9 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Condition.xml" path="Type[@FullName='Microsoft.Maui.Controls.Condition']/Docs/*" />
+	/// <summary>
+	/// Base class for trigger conditions that determine when a trigger should activate.
+	/// </summary>
 	public abstract class Condition
 	{
 		Action<BindableObject, bool, bool> _conditionChanged;

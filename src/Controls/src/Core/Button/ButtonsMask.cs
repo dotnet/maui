@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Controls
 	[Flags]
 	public enum ButtonsMask
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ButtonsMask.xml" path="//Member[@MemberName='Primary']/Docs" />
+		/// <summary>The primary (left) mouse button.</summary>
 		Primary = 1 << 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ButtonsMask.xml" path="//Member[@MemberName='Secondary']/Docs" />
+		/// <summary>The secondary (right) mouse button.</summary>
 		Secondary = 1 << 1
 	}
 }

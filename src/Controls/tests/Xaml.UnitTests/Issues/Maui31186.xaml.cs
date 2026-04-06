@@ -1,6 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -29,11 +29,12 @@ public partial class Maui31186 : ContentPage
 			CounterBtn.Text = $"Clicked {count} times";
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void XmlnsResolutionForVisualState([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XmlnsResolutionForVisualState(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -42,7 +43,7 @@ public partial class Maui31186 : ContentPage
 	"""
 using System;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -74,12 +75,12 @@ public partial class Maui31186 : ContentPage
 }
 """)
 						.RunMauiSourceGenerator(typeof(Maui31186));
-				Assert.That(result.Diagnostics, Is.Empty);
+				Assert.Empty(result.Diagnostics);
 			}
 			var page = new Maui31186(inflator);
-			Assert.That(page, Is.Not.Null);
+			Assert.NotNull(page);
 			VisualStateManager.GoToState(page.CounterBtn, "Disabled");
-			Assert.That(page.CounterBtn.BackgroundColor, Is.EqualTo(Colors.LightBlue));
+			Assert.Equal(Colors.LightBlue, page.CounterBtn.BackgroundColor);
 		}
 	}
 }

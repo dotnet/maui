@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,14 +17,15 @@ public partial class Gh9212 : ContentPage
 {
 	public Gh9212() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void SingleQuoteAndTrailingSpaceInMarkupValue([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void SingleQuoteAndTrailingSpaceInMarkupValue(XamlInflator inflator)
 		{
 			var layout = new Gh9212(inflator);
-			Assert.That(layout.label.Text, Is.EqualTo("Foo, Bar"));
+			Assert.Equal("Foo, Bar", layout.label.Text);
 		}
 	}
 }

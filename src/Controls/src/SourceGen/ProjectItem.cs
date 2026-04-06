@@ -19,7 +19,12 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsDisabled("build_metadata.additionalfiles.LineInfo"))
 				return false;
-			return !Options.IsDisabled("build_property.MauiXamlLineInfo");
+			if (Options.IsEnabled("build_property.MauiXamlLineInfo"))
+				return true;
+			if (Options.IsDisabled("build_property.MauiXamlLineInfo"))
+				return false;
+			//return Configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase);
+			return false; //default to False due to roslyn issues with large pdbs https://github.com/dotnet/roslyn/issues/80952
 		}
 	}
 
@@ -72,4 +77,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 
 	public string? TargetPath
 		=> Options.GetValueOrDefault("build_metadata.additionalfiles.TargetPath", AdditionalText.Path);
+
+	public bool EnablePreviewFeatures
+		=> Options.IsTrue("build_property.EnablePreviewFeatures");
 }

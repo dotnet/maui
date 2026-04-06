@@ -33,7 +33,7 @@ public class Issue7144 : ContentPage
 			return image;
 		});
 
-		CarouselView carouselView = new CarouselView
+		CarouselView2 carouselView = new CarouselView2
 		{
 			ItemsSource = Items,
 			Loop = false,

@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue5376Test()
 		{
 			App.WaitForElement("Success");

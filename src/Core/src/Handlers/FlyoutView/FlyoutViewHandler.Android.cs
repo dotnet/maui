@@ -4,6 +4,7 @@ using Android.App.Roles;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
@@ -31,8 +32,6 @@ namespace Microsoft.Maui.Handlers
 
 			_navigationRoot = li.Inflate(Resource.Layout.navigationlayout, null)
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
-
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_navigationRoot, this.Context);
 
 			_navigationRoot.Id = View.GenerateViewId();
 			return dl;
@@ -71,8 +70,11 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			if (VirtualView.Detail?.Handler is IPlatformViewHandler pvh)
-				pvh.DisconnectHandler();
+			if (_detailViewFragment?.DetailView is IView previousDetail &&
+				previousDetail != VirtualView.Detail)
+			{
+				previousDetail.Handler?.DisconnectHandler();
+			}
 
 			var fragmentManager = MauiContext.GetFragmentManager();
 
@@ -286,6 +288,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(View platformView)
 		{
+			MauiWindowInsetListener.RegisterParentForChildViews(platformView);
+
+			if (_navigationRoot is CoordinatorLayout cl)
+			{
+				MauiWindowInsetListener.SetupViewWithLocalListener(cl);
+			}
+
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged += OnDrawerStateChanged;
@@ -295,6 +304,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			MauiWindowInsetListener.UnregisterView(platformView);
+			if (_navigationRoot is CoordinatorLayout cl)
+			{
+				MauiWindowInsetListener.UnregisterView(cl);
+				_navigationRoot = null;
+			}
+
 			if (platformView is DrawerLayout dl)
 			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;

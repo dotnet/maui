@@ -7,7 +7,7 @@ public class TrackingNames
 {
 	public const string CssProjectItemProvider = nameof(CssProjectItemProvider);
 	public const string ProjectItemProvider = nameof(ProjectItemProvider);
-	public const string ReferenceCompilationProvider = nameof(ReferenceCompilationProvider);
+	public const string CompilationProvider = nameof(CompilationProvider);
 	public const string ReferenceTypeCacheProvider = nameof(ReferenceTypeCacheProvider);
 	public const string XmlnsDefinitionsProvider = nameof(XmlnsDefinitionsProvider);
 	public const string XamlProjectItemProviderForCB = nameof(XamlProjectItemProviderForCB);

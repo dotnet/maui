@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return (bool)element.GetValue(IsJavaScriptAlertEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="//Member[@MemberName='SetIsJavaScriptAlertEnabled'][1]/Docs/*" />
+		/// <summary>Sets whether JavaScript alerts are enabled for the web view on Windows.</summary>
+		/// <param name="element">The element to configure.</param>
+		/// <param name="value"><see langword="true"/> to enable JavaScript alerts.</param>
 		public static void SetIsJavaScriptAlertEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(IsJavaScriptAlertEnabledProperty, value);
@@ -32,7 +34,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return GetIsJavaScriptAlertEnabled(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="//Member[@MemberName='SetIsJavaScriptAlertEnabled'][2]/Docs/*" />
+		/// <summary>Sets whether JavaScript alerts are enabled for the web view on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to enable JavaScript alerts.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetIsJavaScriptAlertEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
 			SetIsJavaScriptAlertEnabled(config.Element, value);

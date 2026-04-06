@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,20 +11,21 @@ public partial class Gh7494 : ContentPage
 {
 	public Gh7494() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void TemplateBindingInSpans([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void TemplateBindingInSpans(XamlInflator inflator)
 		{
 			var layout = new Gh7494(inflator);
 			var view = layout.Content as Gh7494Content;
 			var templatedLabel = ((StackLayout)(view as IVisualTreeElement).GetVisualChildren()[0]).Children[0] as Label;
 
-			Assert.That(templatedLabel.FormattedText.Spans[0].Text, Is.EqualTo(view.Title));
+			Assert.Equal(view.Title, templatedLabel.FormattedText.Spans[0].Text);
 		}
 	}
 }

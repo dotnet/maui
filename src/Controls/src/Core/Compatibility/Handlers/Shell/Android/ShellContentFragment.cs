@@ -9,6 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarAppearanceTracker _appearanceTracker;
 		Page _page;
 		IPlatformViewHandler _viewhandler;
-		AView _root;
+		CoordinatorLayout _root;
 		ShellPageContainer _shellPageContainer;
 		ShellContent _shellContent;
 		AToolbar _toolbar;
@@ -135,6 +136,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
+			MauiWindowInsetListener.SetupViewWithLocalListener(_root);
+
 			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
 			Maui.IElement parentElement = (_shellContent as Maui.IElement) ?? _page;
@@ -143,9 +146,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
-
-			GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(_root, this.Context);
-
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
@@ -183,6 +183,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// to avoid the navigation `TaskCompletionSource` to be stuck forever.
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
 
+			// Clean up the coordinator layout and local listener first
+			if (_root is not null)
+			{
+				MauiWindowInsetListener.RemoveViewWithLocalListener(_root);
+			}
+
 			(_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
 
 			if (_shellContent != null)
@@ -214,6 +220,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_viewhandler = null;
 			_shellContent = null;
 			_shellPageContainer = null;
+		}
+
+		internal void DisposePage()
+		{
+			if (_destroyed)
+			{
+				return;
+			}
+			Destroy();
+
+			if (_page is not null)
+			{
+				_page.DisconnectHandlers();
+				_page = null;
+			}
 		}
 
 		protected override void Dispose(bool disposing)

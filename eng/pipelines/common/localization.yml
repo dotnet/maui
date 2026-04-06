@@ -11,7 +11,7 @@ stages:
     jobs:
       - job : generate_lci
         displayName: 'Process outgoing strings'
-        pool:  $(HostedWinVS2019)
+        pool:  $(1ESPTPool)
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat

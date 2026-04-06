@@ -83,7 +83,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[專案的目標架構。]]></Val>
+            <Val><![CDATA[專案的目標 Framework。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

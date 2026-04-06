@@ -24,11 +24,11 @@ class TypeTypeConverter : ISGTypeConverter
 			xmlType = new XmlType(node.NamespaceResolver.LookupNamespace(split[0]), split[1], null);
 		else
 			xmlType = new XmlType(node.NamespaceResolver.LookupNamespace(""), split[0], null);
-		var typeRef = xmlType.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache);
+		var typeRef = xmlType.GetTypeSymbol(context);
 		if (typeRef != null)
 			return $"typeof({typeRef.ToFQDisplayString()})";
 		error:
-			context.ReportConversionFailed((IXmlLineInfo)node, value, Descriptors.TypeResolution);
-			return "default";
+		context.ReportConversionFailed((IXmlLineInfo)node, value, Descriptors.TypeResolution);
+		return "default";
 	}
 }

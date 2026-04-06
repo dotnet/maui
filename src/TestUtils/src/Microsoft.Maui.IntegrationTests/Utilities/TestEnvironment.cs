@@ -12,6 +12,40 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static bool IsRunningOnCI => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_NAME"));
 
+		public static bool IsArm64 => RuntimeInformation.OSArchitecture == Architecture.Arm64;
+
+		#region Local Development Overrides
+		// ┌──────────────────────────────────────────────────────────────────────────────┐
+		// │ Toggle these values for local development. Environment variables take        │
+		// │ precedence over these values when set.                                       │
+		// └──────────────────────────────────────────────────────────────────────────────┘
+
+		/// <summary>
+		/// When true, skips Xcode version validation during iOS/macOS builds.
+		/// Useful when your Xcode version doesn't exactly match what the SDK expects.
+		/// Can also be set via SKIP_XCODE_VERSION_CHECK environment variable.
+		/// </summary>
+		public static bool SkipXcodeVersionCheck =>
+			Environment.GetEnvironmentVariable("SKIP_XCODE_VERSION_CHECK")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true
+			|| false; // ← Toggle to true if needed locally
+
+		/// <summary>
+		/// Specifies the iOS test device target for XHarness (e.g., "ios-simulator-64_18.5").
+		/// Can also be set via IOS_TEST_DEVICE environment variable.
+		/// </summary>
+		public static string? IosTestDevice =>
+			Environment.GetEnvironmentVariable("IOS_TEST_DEVICE")
+			?? null; // ← Set to a specific device string if needed locally (e.g., "ios-simulator-64_18.5")
+
+		#endregion
+
+		/// <summary>
+		/// Gets the appropriate iOS simulator runtime identifier based on the host architecture.
+		/// Returns "iossimulator-arm64" on ARM64 Macs and "iossimulator-x64" on Intel Macs.
+		/// </summary>
+		public static string IOSSimulatorRuntimeIdentifier =>
+			IsArm64 ? "iossimulator-arm64" : "iossimulator-x64";
+
 
 		static string _mauiDir = "";
 		public static string GetMauiDirectory()
@@ -38,25 +72,28 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			if (_logDirectory == null)
 			{
-				var artifactsStaging = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
-				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory");
-				if (envLogDirectory != null)
+				// Check for LogDirectory env var (Azure DevOps may uppercase it on macOS/Linux)
+				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory")
+					?? Environment.GetEnvironmentVariable("LOGDIRECTORY");
+				if (!string.IsNullOrEmpty(envLogDirectory))
 				{
+					// LogDirectory env var is already a complete log directory path, use it directly
 					_logDirectory = envLogDirectory;
 				}
 				else
 				{
+					var artifactsStaging = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 					if (artifactsStaging != null)
 					{
-						_logDirectory = artifactsStaging;
+						_logDirectory = $"{artifactsStaging}/logs";
 					}
 					else
 					{
-						_logDirectory = GetTestDirectoryRoot();
+						_logDirectory = $"{GetTestDirectoryRoot()}/logs";
 					}
 				}
 			}
-			return $"{_logDirectory}/logs";
+			return _logDirectory;
 		}
 
 		static string _testOutputDirectory = "";

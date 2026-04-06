@@ -49,6 +49,7 @@ public partial class TestPage : ContentPage
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 
@@ -57,6 +58,31 @@ public partial class TestPage
 {
 	private partial void InitializeComponent()
 	{
+		// Fallback to Runtime inflation if the page was updated by HotReload
+		static string? getPathForType(global::System.Type type)
+		{
+			var assembly = type.Assembly;
+			foreach (var xria in global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute>(assembly))
+			{
+				if (xria.Type == type)
+					return xria.Path;
+			}
+			return null;
+		}
+
+		var rlr = global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new global::Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
+		{
+			AssemblyName = typeof(global::Test.TestPage).Assembly.GetName(),
+			ResourcePath = getPathForType(typeof(global::Test.TestPage)),
+			Instance = this,
+		});
+
+		if (rlr?.ResourceContent != null)
+		{
+			this.InitializeComponentRuntime();
+			return;
+		}
+
 		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 5);
 		var __root = this;
@@ -81,6 +107,6 @@ public partial class TestPage
 
 		var (result, generated) = RunGenerator(xaml, code);
 		Assert.False(result.Diagnostics.Any());
-		Assert.Equal(expected, generated);
+		Assert.Equal(expected, generated, ignoreLineEndingDifferences: true);
 	}
 }

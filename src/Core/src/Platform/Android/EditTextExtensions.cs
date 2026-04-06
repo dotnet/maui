@@ -231,7 +231,23 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				clearButtonDrawable?.ClearColorFilter();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
+				{
+					using var ta = theme.ObtainStyledAttributes([global::Android.Resource.Attribute.TextColorPrimary]);
+					var cs = ta.GetColorStateList(0);
+
+					if (cs is not null)
+					{
+						// Clear button is only visible when enabled, so just use the enabled state
+						int[] enabledState = [global::Android.Resource.Attribute.StateEnabled];
+						var color = new global::Android.Graphics.Color(cs.GetColorForState(enabledState, Colors.Black.ToPlatform()));
+						clearButtonDrawable?.SetColorFilter(color, FilterMode.SrcIn);
+					}
+				}
+				else
+				{
+					clearButtonDrawable?.ClearColorFilter();
+				}
 			}
 		}
 
@@ -414,7 +430,7 @@ namespace Microsoft.Maui.Platform
 		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
 		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
 		// bounds of the EditText.
-		static bool RectContainsMotionEvent(global::Android.Graphics.Rect  rect, MotionEvent motionEvent)
+		static bool RectContainsMotionEvent(global::Android.Graphics.Rect rect, MotionEvent motionEvent)
 		{
 			var x = motionEvent.GetX();
 

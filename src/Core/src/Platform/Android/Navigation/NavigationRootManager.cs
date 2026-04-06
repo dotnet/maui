@@ -1,12 +1,15 @@
 ﻿using System;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.Logging;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
@@ -17,6 +20,7 @@ namespace Microsoft.Maui.Platform
 		AView? _rootView;
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
+		CoordinatorLayout? _managedCoordinatorLayout;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -68,19 +72,39 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				navigationLayout ??=
+				navigationLayout =
 				   LayoutInflater
 					   .Inflate(Resource.Layout.navigationlayout, null)
 					   .JavaCast<CoordinatorLayout>();
 
+				// Set up the CoordinatorLayout with a local inset listener
+				if (navigationLayout is not null)
+				{
+					_managedCoordinatorLayout = navigationLayout;
+					MauiWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
+				}
+
 				_rootView = navigationLayout;
 			}
 
-			if (navigationLayout is CoordinatorLayout && mauiContext.Context is not null)
-            {
-                GlobalWindowInsetListenerExtensions.TrySetGlobalWindowInsetListener(navigationLayout, mauiContext.Context);
-            }
-
+			if(!OperatingSystem.IsAndroidVersionAtLeast(30))
+			{
+				// Dispatches insets to all children recursively (for API < 30)
+				// This implements Google's workaround for the API 28-29 bug where
+				// one child consuming insets blocks all siblings from receiving them.
+				// Based on: https://android-review.googlesource.com/c/platform/frameworks/support/+/3310617
+				if (_rootView is null)
+				{
+					_mauiContext?.CreateLogger<NavigationRootManager>()?.LogWarning(
+						"NavigationRootManager: _rootView is null when attempting to install compat insets dispatch. " +
+						"This may cause incorrect window insets behavior on API < 30.");
+				}
+				else
+				{
+					ViewGroupCompat.InstallCompatInsetsDispatch(_rootView);
+				}
+			}
+			
 			// if the incoming view is a Drawer Layout then the Drawer Layout
 			// will be the root view and internally handle all if its view management
 			// this is mainly used for FlyoutView
@@ -114,6 +138,12 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			// Clean up the coordinator layout and local listener first
+			if (_managedCoordinatorLayout is not null)
+			{
+				MauiWindowInsetListener.RemoveViewWithLocalListener(_managedCoordinatorLayout);
+			}
+
 			ClearPlatformParts();
 			SetContentView(null);
 		}
@@ -125,6 +155,7 @@ namespace Microsoft.Maui.Platform
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;
+			_managedCoordinatorLayout = null;
 		}
 
 		IDisposable? _pendingFragment;

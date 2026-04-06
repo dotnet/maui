@@ -21,7 +21,7 @@ namespace UITest.Analyzers.NUnit
 		const string AddCategoryAttributeToClassCodeFixTitle = "Add [Category] attribute to class";
 
 		public sealed override ImmutableArray<string> FixableDiagnosticIds
-			=> ImmutableArray.Create(NUnitTestMissingCategoryAnalyzer.DiagnosticId);
+			=> ImmutableArray.Create(NUnitTestMissingCategoryAnalyzer.MissingCategoryDiagnosticId);
 
 		// See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
 		public sealed override FixAllProvider GetFixAllProvider()

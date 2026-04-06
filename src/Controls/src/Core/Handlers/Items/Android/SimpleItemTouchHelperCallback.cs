@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemViewType = viewHolder.ItemViewType;
 			if (itemViewType == ItemViewType.Header || itemViewType == ItemViewType.Footer
 				|| itemViewType == ItemViewType.GroupHeader || itemViewType == ItemViewType.GroupFooter)
-			{
+ 			{ 
 				return MakeMovementFlags(0, 0);
 			}
 

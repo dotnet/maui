@@ -1,11 +1,13 @@
 using System;
+using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
 public enum NavigationOperation
 {
 	Forward,
@@ -30,13 +32,14 @@ public partial class TypeExtension : ContentPage
 {
 	public TypeExtension() => InitializeComponent();
 
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IClassFixture<DispatcherProviderFixture>
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests(DispatcherProviderFixture fixture) { }
 
-		[Test]
-		public void NestedMarkupExtensionInsideDataTemplate([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void NestedMarkupExtensionInsideDataTemplate(XamlInflator inflator)
 		{
 			var page = new TypeExtension(inflator);
 			var listView = page.listview;
@@ -44,20 +47,66 @@ public partial class TypeExtension : ContentPage
 
 			var cell = (ViewCell)listView.TemplatedItems[0];
 			var button = (Button)cell.View;
-			Assert.IsNotNull(button.Command);
+			Assert.NotNull(button.Command);
 
 			cell = (ViewCell)listView.TemplatedItems[1];
 			button = (Button)cell.View;
-			Assert.IsNotNull(button.Command);
+			Assert.NotNull(button.Command);
 		}
 
-		[Test]
+		[Theory]
+		[XamlInflatorData]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
-		public void TypeExtensionSupportsNamespace([Values] XamlInflator inflator)
+		internal void TypeExtensionSupportsNamespace(XamlInflator inflator)
 		{
 			var page = new TypeExtension(inflator);
 			var button = page.button0;
-			Assert.That(button.CommandParameter, Is.EqualTo(typeof(TypeExtension)));
+			Assert.Equal(typeof(TypeExtension), button.CommandParameter);
+		}
+
+		[Fact]
+		internal void ExtensionsAreReplaced()
+		{
+			var result = CreateMauiCompilation()
+				.WithAdditionalSource(
+"""
+using System;
+using System.Windows.Input;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.UnitTests;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+public enum NavigationOperation
+{
+	Forward,
+	Back,
+	Replace,
+}
+
+[ContentProperty(nameof(Operation))]
+[AcceptEmptyServiceProvider]
+public class NavigateExtension : IMarkupExtension<ICommand>
+{
+	public NavigationOperation Operation { get; set; }
+
+	public Type Type { get; set; }
+
+	public ICommand ProvideValue(IServiceProvider serviceProvider) => new Command(() => { });
+
+	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
+}
+
+public partial class TypeExtension : ContentPage
+{
+	public TypeExtension() => InitializeComponent();
+}
+""")
+				.RunMauiSourceGenerator(typeof(TypeExtension));
+			Assert.False(result.Diagnostics.Any());
+			var initComp = result.GeneratedInitializeComponent();
+			Assert.Contains("typeof(global::Microsoft.Maui.Controls.Xaml.UnitTests.TypeExtension)", initComp, StringComparison.InvariantCulture);
 		}
 	}
 }

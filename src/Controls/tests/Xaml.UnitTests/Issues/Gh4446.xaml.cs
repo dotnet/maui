@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,13 +13,15 @@ public partial class Gh4446 : ContentPage
 {
 	public Gh4446() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BindingThrowsOnWrongConverterParameter([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BindingThrowsOnWrongConverterParameter(XamlInflator inflator)
 		{
-			Assert.DoesNotThrow(() => new Gh4446(inflator) { BindingContext = new Gh4446Item { Text = null } });
+			var ex = Record.Exception(() => new Gh4446(inflator) { BindingContext = new Gh4446Item { Text = null } });
+			Assert.Null(ex);
 		}
 	}
 }

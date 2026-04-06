@@ -210,7 +210,12 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					ResetSwipe(e);
-					PropagateParentTouch();
+
+					// Prevent parent touch propagation during swipe gestures to avoid interference with swipe functionality.
+					if (!_isSwiping)
+					{
+						PropagateParentTouch();
+					}
 				}
 			}
 
@@ -1320,8 +1325,7 @@ namespace Microsoft.Maui.Platform
 
 		void EnableParentGesture(bool isGestureEnabled)
 		{
-			if (_viewPagerParent != null)
-				_viewPagerParent.EnableGesture = isGestureEnabled;
+			_viewPagerParent?.EnableGesture = isGestureEnabled;
 		}
 
 		internal void OnOpenRequested(SwipeViewOpenRequest e)

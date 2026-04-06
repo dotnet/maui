@@ -45,7 +45,7 @@ static class GeneratorHelpers
 		return projectItem.Kind == "None" ? null : projectItem;
 	}
 
-    public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC((ProjectItem?, AssemblyAttributes) itemAndCaches, CancellationToken cancellationToken)
 	{
 		var (projectItem, assemblyCaches) = itemAndCaches;
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
@@ -55,7 +55,7 @@ static class GeneratorHelpers
 		}
 		try
 		{
-			return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString(), assemblyCaches));
+			return new XamlProjectItemForIC(projectItem!, text.ToString());
 		}
 		catch (Exception e)
 		{
@@ -63,7 +63,7 @@ static class GeneratorHelpers
 		}
 	}
 
-	static SGRootNode? ParseXaml(string xaml, AssemblyCaches assemblyCaches)
+	public static SGRootNode? ParseXaml(string xaml, AssemblyAttributes assemblyCaches)
 	{
 		List<string> warningDisableList = [];
 		var nsmgr = new XmlNamespaceManager(new NameTable());
@@ -112,9 +112,9 @@ static class GeneratorHelpers
 		return null;
 	}
 
-	public static XamlProjectItemForCB? ComputeXamlProjectItemForCB((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
+	public static XamlProjectItemForCB? ComputeXamlProjectItemForCB((ProjectItem?, AssemblyAttributes) itemAndCaches, CancellationToken cancellationToken)
 	{
-		(ProjectItem? projectItem, AssemblyCaches xmlnsCache) = itemAndCaches;
+		(ProjectItem? projectItem, AssemblyAttributes xmlnsCache) = itemAndCaches;
 
 		if (projectItem == null)
 			return null;
@@ -156,7 +156,7 @@ static class GeneratorHelpers
 		return new XamlProjectItemForCB(projectItem, root, nsmgr);
 	}
 
-	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyCaches assemblyCaches, CancellationToken cancellationToken)
+	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyAttributes assemblyCaches, CancellationToken cancellationToken)
 	{
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
@@ -187,27 +187,26 @@ static class GeneratorHelpers
 		return (root, nsmgr);
 	}
 
-	public static AssemblyCaches GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
+	public static AssemblyAttributes GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
 	{
 		// [assembly: XmlnsDefinition]
 		INamedTypeSymbol? xmlnsDefinitonAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsDefinitionAttribute).FullName)
-			.SingleOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
+			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
 		// [assembly: InternalsVisibleTo]
 		INamedTypeSymbol? internalsVisibleToAttribute = compilation.GetTypeByMetadataName(typeof(InternalsVisibleToAttribute).FullName);
 
 		// [assembly: XmlnsPrefix]
 		INamedTypeSymbol? xmlnsPrefixAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsPrefixAttribute).FullName)
-			.SingleOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
+			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
 		// [assembly: AllowImplicitXmlnsDeclaration]
 		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
-			.SingleOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
+			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
 		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
-		{
-			return AssemblyCaches.Empty;
-		}
+			return AssemblyAttributes.Empty;
+
 
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
@@ -242,20 +241,15 @@ static class GeneratorHelpers
 					// [assembly: XmlnsDefinition]
 					var xmlnsDef = new XmlnsDefinitionAttribute(attr.ConstructorArguments[0].Value as string, attr.ConstructorArguments[1].Value as string);
 					if (attr.NamedArguments.Length == 1 && attr.NamedArguments[0].Key == nameof(XmlnsDefinitionAttribute.AssemblyName))
-					{
+
 						xmlnsDef.AssemblyName = attr.NamedArguments[0].Value.Value as string;
-					}
 					else
-					{
 						xmlnsDef.AssemblyName = assembly.Name;
-					}
 
 					//only add globalxmlns definition from the current assembly
 					if (xmlnsDef.XmlNamespace == XamlParser.MauiGlobalUri
 						&& !SymbolEqualityComparer.Default.Equals(assembly, compilation.Assembly))
-					{
 						continue;
-					}
 
 					xmlnsDefinitions.Add(xmlnsDef);
 				}
@@ -263,9 +257,7 @@ static class GeneratorHelpers
 				{
 					// [assembly: InternalsVisibleTo]
 					if (attr.ConstructorArguments[0].Value is string assemblyName && new AssemblyName(assemblyName).Name == compilation.Assembly.Identity.Name)
-					{
 						internalsVisible.Add(assembly);
-					}
 				}
 				else if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, xmlnsPrefixAttribute))
 				{
@@ -287,8 +279,22 @@ static class GeneratorHelpers
 				globalGeneratedXmlnsDefinitions.Add(new XmlnsDefinitionAttribute(global.XmlNamespace, pointed.Target) { AssemblyName = pointed.AssemblyName });
 			}
 		}
+		IReadOnlyList<XmlnsDefinitionAttribute> xmlnsDefinitionsList = [.. xmlnsDefinitions.Distinct()];
+		Dictionary<string, List<string>> clrNamespacesForXmlns = [];
+		foreach (var xmlnsDef in xmlnsDefinitionsList)
+		{
+			if (!clrNamespacesForXmlns.TryGetValue(xmlnsDef.XmlNamespace, out var list))
+			{
+				list = new List<string>();
+				clrNamespacesForXmlns[xmlnsDef.XmlNamespace] = list;
+			}
+			if (!xmlnsDef.Target.StartsWith("http://") && !list.Contains(xmlnsDef.Target))
+			{
+				list.Add(xmlnsDef.Target);
+			}
+		}
 
-		return new AssemblyCaches([.. xmlnsDefinitions.Distinct()], xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, allowImplicitXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, allowImplicitXmlns);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
@@ -363,34 +369,87 @@ static class GeneratorHelpers
 		}
 	}
 
-	public static IDictionary<XmlType, ITypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken) => new Dictionary<XmlType, ITypeSymbol>();
+	public static IDictionary<XmlType, INamedTypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken) => new Dictionary<XmlType, INamedTypeSymbol>();
 
-	public static SyntaxTree? GetSyntaxTree((XamlProjectItemForCB? xamlItem, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
+	public static (string? source, XamlProjectItemForCB? xamlItem, IList<Diagnostic>? diagnostics) GetSource((XamlProjectItemForCB? xamlItem, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
 	{
-		var options = tuple.compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+		cancellationToken.ThrowIfCancellationRequested();
+		var (xamlItem, xmlnsCache, typeCache, compilation) = tuple;
+
+		string? code = null;
+		List<Diagnostic>? diagnostics = null;
+		void reportDiagnostic(Diagnostic diagnostic) => (diagnostics ??= new List<Diagnostic>()).Add(diagnostic);
 		try
 		{
-			var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(tuple.xamlItem, tuple.compilation, null, cancellationToken, tuple.xmlnsCache, tuple.typeCache);
-			return CSharpSyntaxTree.ParseText(code, options: options, cancellationToken: cancellationToken);
+			code = CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, reportDiagnostic, cancellationToken, xmlnsCache, typeCache);
 		}
-		catch (Exception)
+		catch (Exception e)
 		{
+			var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+			reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
 		}
-		return null;
+		return (code, xamlItem, diagnostics);
 	}
 
 	/// <summary>
 	/// Formats a value as a culture-independent C# literal for source generation.
-	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity
-	/// but also numeric types and makes sure they are formatted correctly.
+	/// Handles special floating-point values (NaN, Infinity) and uses SymbolDisplay.FormatPrimitive
+	/// for regular numeric types to ensure they are formatted correctly.
 	/// </summary>
 	/// <param name="value">The value to format</param>
 	/// <param name="quoted">Whether to include quotes around the formatted value</param>
 	/// <returns>A culture-independent string representation suitable for source generation</returns>
 	public static string FormatInvariant(object value, bool quoted = false)
 	{
+		// Handle special floating-point values that SymbolDisplay.FormatPrimitive doesn't prefix correctly
+		if (value is double d)
+		{
+			if (double.IsNaN(d))
+				return "double.NaN";
+			if (double.IsPositiveInfinity(d))
+				return "double.PositiveInfinity";
+			if (double.IsNegativeInfinity(d))
+				return "double.NegativeInfinity";
+		}
+		else if (value is float f)
+		{
+			if (float.IsNaN(f))
+				return "float.NaN";
+			if (float.IsPositiveInfinity(f))
+				return "float.PositiveInfinity";
+			if (float.IsNegativeInfinity(f))
+				return "float.NegativeInfinity";
+		}
+
 		return SymbolDisplay.FormatPrimitive(value, quoteStrings: quoted, useHexadecimalNumbers: false);
 	}
 
+	/// <summary>
+	/// Tries to parse a double value, including special values like NaN, Infinity, -Infinity.
+	/// </summary>
+	public static bool TryParseDouble(string value, out double result)
+	{
+		value = value.Trim();
+
+		// Handle special values that NumberStyles.Number doesn't parse
+		if (value.Equals("NaN", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NaN;
+			return true;
+		}
+		if (value.Equals("Infinity", StringComparison.OrdinalIgnoreCase) ||
+			value.Equals("+Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.PositiveInfinity;
+			return true;
+		}
+		if (value.Equals("-Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NegativeInfinity;
+			return true;
+		}
+
+		return double.TryParse(value, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out result);
+	}
 
 }
