@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "0 8 * * 1-5"  # Weekdays at 8:00 UTC
   workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
 
 permissions:
   contents: read
@@ -17,6 +19,8 @@ concurrency:
 jobs:
   generate-report:
     runs-on: ubuntu-latest
+    # On pull_request, only validate the script runs — don't create issues
+    if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
 
@@ -67,3 +71,34 @@ jobs:
             --body-file pr-review-queue-body.md \
             --label "report" \
             --label "s/triaged"
+
+  # Dry-run on PRs: validate the script works without creating issues
+  validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PR review queue script
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 \
+            -Category all \
+            -OutputFormat markdown \
+            > pr-review-queue-body.md 2>pr-query-errors.txt
+
+          if [ $? -ne 0 ]; then
+            echo "::error::Query script failed"
+            cat pr-query-errors.txt
+            exit 1
+          fi
+
+          if [ ! -s pr-review-queue-body.md ]; then
+            echo "::error::Query produced empty output"
+            cat pr-query-errors.txt
+            exit 1
+          fi
+
+          echo "✅ Validation passed — report preview:"
+          cat pr-review-queue-body.md
