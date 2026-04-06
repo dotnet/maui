@@ -154,7 +154,7 @@ configuration:
       actions:
       - addReply:
           reply: >-
-            Hi @${issueAuthor}.
+            Hi ${issueAuthor}.
 
             It seems you haven't touched this PR for the last two weeks. To avoid accumulating old PRs, we're marking it as `stale`.  As a result, it will be closed if no further activity occurs **within 4 days of this comment**. You can learn more about our Issue Management Policies [here](https://github.com/dotnet/maui/blob/main/docs/IssueManagementPolicies.md).
       - addLabel:
@@ -272,7 +272,7 @@ configuration:
           label: s/needs-info
       then:
       - addReply:
-          reply: Hi @${issueAuthor}. We have added the "s/needs-info" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.
+          reply: Hi ${issueAuthor}. We have added the "s/needs-info" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.
       description: Add comment when 's/needs-info' is applied to issue
     - if:
       - payloadType: Issues
@@ -281,7 +281,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Hi @${issueAuthor}. We have added the "s/needs-repro" label to this issue, which indicates that we require steps and sample code to reproduce the issue before we can take further action. Please try to create a minimal sample project/solution or code samples which reproduce the issue, ideally as a GitHub repo that we can clone. See more details about creating repros here: https://github.com/dotnet/maui/blob/main/.github/repro.md
+            Hi ${issueAuthor}. We have added the "s/needs-repro" label to this issue, which indicates that we require steps and sample code to reproduce the issue before we can take further action. Please try to create a minimal sample project/solution or code samples which reproduce the issue, ideally as a GitHub repo that we can clone. See more details about creating repros here: https://github.com/dotnet/maui/blob/main/.github/repro.md
 
 
             This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.
@@ -357,7 +357,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio (Code), so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS (Code).
+            Thanks for the issue report ${issueAuthor}! This issue appears to be a problem with Visual Studio (Code), so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS (Code).
 
 
             If you encounter a problem with Visual Studio or the .NET MAUI VS Code Extension, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.
@@ -386,7 +386,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Hi @${issueAuthor}. We have added the "s/try-latest-version" label to this issue, which indicates that we'd like you to try and reproduce this issue on the latest available public version. This can happen because we think that this issue was fixed in a version that has just been released, or the information provided by you indicates that you might be working with an older version.
+            Hi ${issueAuthor}. We have added the "s/try-latest-version" label to this issue, which indicates that we'd like you to try and reproduce this issue on the latest available public version. This can happen because we think that this issue was fixed in a version that has just been released, or the information provided by you indicates that you might be working with an older version.
 
 
             You can install the latest version by installing the latest Visual Studio (Preview) with the .NET MAUI workload installed. If the issue still persists, please let us know with any additional details and ideally a [reproduction project](https://github.com/dotnet/maui/blob/main/.github/repro.md) provided through a GitHub repository.
@@ -520,7 +520,7 @@ configuration:
       - addLabel:
           label: community ✨
       - addReply:
-          reply: Hey there @${issueAuthor}! Thank you so much for your PR! Someone from the team will get assigned to your PR shortly and we'll get it reviewed.
+          reply: Hey there ${issueAuthor}! Thank you so much for your PR! Someone from the team will get assigned to your PR shortly and we'll get it reviewed.
       description: Add 'community ✨' label to community contributions
     - if:
       - payloadType: Pull_Request
@@ -546,7 +546,7 @@ configuration:
           label: s/pr-needs-author-input
       then:
       - addReply:
-          reply: Hi @${issueAuthor}. We have added the "s/pr-needs-author-input" label to this issue, which indicates that we have an open question/action for you before we can take further action. This PRwill be closed automatically in 14 days if we do not hear back from you by then - please feel free to re-open it if you come back to this PR after that time.
+          reply: Hi ${issueAuthor}. We have added the "s/pr-needs-author-input" label to this issue, which indicates that we have an open question/action for you before we can take further action. This PRwill be closed automatically in 14 days if we do not hear back from you by then - please feel free to re-open it if you come back to this PR after that time.
       description: Add comment when 's/pr-needs-author-input' is applied to PR
     - if:
       - payloadType: Issues
