@@ -14,8 +14,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiTimePicker? _timePicker;
 		TimePickerDialog? _dialog;
-		int _currentHour;
-		int _currentMinute;
 
 		protected override MauiTimePicker CreatePlatformView()
 		{
@@ -71,18 +69,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
 		{
-			// Store the current values for orientation change handling
-			_currentHour = hour;
-			_currentMinute = minute;
-
 			void onTimeSetCallback(object? obj, TimePickerDialog.TimeSetEventArgs args)
 			{
 				if (VirtualView == null || PlatformView == null)
 					return;
-
-				// Update stored values when user selects time
-				_currentHour = args.HourOfDay;
-				_currentMinute = args.Minute;
 
 				VirtualView.Time = new TimeSpan(args.HourOfDay, args.Minute, 0);
 				VirtualView.IsFocused = false;
@@ -222,7 +212,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 
 				// Recreate dialog with current values to handle orientation change
-				ShowPickerDialog(new TimeSpan(_currentHour, _currentMinute, 0));
+				ShowPickerDialog(VirtualView?.Time);
 			}
 		}
 	}
