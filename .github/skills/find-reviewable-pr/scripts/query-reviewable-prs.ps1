@@ -69,7 +69,7 @@ param(
     [int]$DocsLimit = 5,
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("table", "json", "review")]
+    [ValidateSet("table", "json", "review", "markdown")]
     [string]$OutputFormat = "review",
 
     [Parameter(Mandatory = $false)]
@@ -1024,14 +1024,156 @@ function Format-Table-Output {
     ) -AutoSize
 }
 
+function Format-Markdown-Output {
+    $date = (Get-Date).ToString("yyyy-MM-dd")
+    $md = [System.Text.StringBuilder]::new()
+
+    [void]$md.AppendLine("# 📋 PR Review Queue — $date")
+    [void]$md.AppendLine("")
+
+    # Helper to render a PR table
+    $renderTable = {
+        param([array]$prs, [bool]$showMilestone = $false)
+        if ($showMilestone) {
+            [void]$md.AppendLine("| PR | Title | Author | Milestone | Platform | Age | Updated |")
+            [void]$md.AppendLine("|----|-------|--------|-----------|----------|-----|---------|")
+        } else {
+            [void]$md.AppendLine("| PR | Title | Author | Platform | Age | Updated |")
+            [void]$md.AppendLine("|----|-------|--------|----------|-----|---------|")
+        }
+        foreach ($pr in $prs) {
+            $title = if ($pr.Title.Length -gt 60) { $pr.Title.Substring(0, 57) + "..." } else { $pr.Title }
+            $link = "[#$($pr.Number)]($($pr.URL))"
+            if ($showMilestone) {
+                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Milestone) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
+            } else {
+                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
+            }
+        }
+        [void]$md.AppendLine("")
+    }
+
+    # Helper: filter for display (same logic as Format-Review-Output)
+    $showCategory = {
+        param([string]$cat)
+        if ($Category -eq $cat) { return $true }
+        if ($Category -eq "all") { return $true }
+        if ($Category -eq "default" -and ($cat -eq "priority" -or $cat -eq "milestoned")) { return $true }
+        return $false
+    }
+    $defaultFilter = {
+        param($prList)
+        if ($Category -eq "default") {
+            $prList | Where-Object { $_.ReviewDecision -ne "CHANGES_REQUESTED" }
+        } else {
+            $prList
+        }
+    }
+
+    # Filter out stale and do-not-merge PRs
+    $excludeStale = {
+        param($prList)
+        $prList | Where-Object {
+            $labels = $_.Labels -split ', '
+            -not ($labels -contains 'stale' -or $labels -contains 'do-not-merge')
+        }
+    }
+
+    # 1. Priority (P/0)
+    if ($priorityPRs.Count -gt 0 -and (& $showCategory "priority")) {
+        $list = @(& $excludeStale (& $defaultFilter $priorityPRs))
+        if ($list.Count -gt 0) {
+            [void]$md.AppendLine("## 🔴 Immediate Action Required")
+            [void]$md.AppendLine("")
+            [void]$md.AppendLine("### P/0 Priority")
+            & $renderTable ($list | Select-Object -First $Limit)
+        }
+    }
+
+    # 2. Approved (not merged)
+    if ($approvedPRs.Count -gt 0 -and (& $showCategory "approved")) {
+        $list = if ($Category -eq "approved") { $approvedPRs } else { @($approvedPRs | Where-Object { -not $_.IsPriority }) }
+        $list = @(& $excludeStale $list)
+        if ($list.Count -gt 0) {
+            [void]$md.AppendLine("### ✅ Approved — Ready to Merge")
+            & $renderTable ($list | Select-Object -First $Limit)
+        }
+    }
+
+    # 3. Milestoned
+    if ($milestonedPRs.Count -gt 0 -and (& $showCategory "milestoned")) {
+        $list = if ($Category -eq "milestoned") { $milestonedPRs } else { @($milestonedPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }) }
+        $list = @(& $excludeStale (& $defaultFilter $list))
+        if ($list.Count -gt 0) {
+            [void]$md.AppendLine("## 📅 Milestoned — Deadline-Driven")
+            & $renderTable ($list | Select-Object -First $Limit) $true
+        }
+    }
+
+    # 4. Partner PRs
+    if ($partnerPRs.Count -gt 0 -and (& $showCategory "partner")) {
+        $list = if ($Category -eq "partner") { $partnerPRs } else { @($partnerPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
+        $list = @(& $excludeStale $list)
+        if ($list.Count -gt 0) {
+            [void]$md.AppendLine("## 🤝 Partner PRs")
+            & $renderTable ($list | Select-Object -First 10)
+        }
+    }
+
+    # 5. Community PRs
+    if ($communityPRs.Count -gt 0 -and (& $showCategory "community")) {
+        $list = if ($Category -eq "community") { $communityPRs } else { @($communityPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
+        $list = @(& $excludeStale $list)
+        if ($list.Count -gt 0) {
+            [void]$md.AppendLine("## ✨ Community PRs")
+            & $renderTable ($list | Select-Object -First 10)
+        }
+    }
+
+    # 6. docs-maui PRs
+    if ((& $showCategory "docs-maui")) {
+        $hasDocs = $false
+        if ($docsMauiPriorityPRs.Count -gt 0) { $hasDocs = $true }
+        if ($docsMauiRecentPRs.Count -gt 0) { $hasDocs = $true }
+        if ($hasDocs) {
+            [void]$md.AppendLine("## 📖 docs-maui PRs")
+            if ($docsMauiPriorityPRs.Count -gt 0) {
+                & $renderTable ($docsMauiPriorityPRs | Select-Object -First $DocsLimit)
+            }
+            if ($docsMauiRecentPRs.Count -gt 0) {
+                & $renderTable ($docsMauiRecentPRs | Select-Object -First $DocsLimit)
+            }
+        }
+    }
+
+    # Queue Health
+    $totalP0 = @(& $excludeStale (& $defaultFilter $priorityPRs)).Count
+    $totalApproved = @(& $excludeStale $approvedPRs).Count
+    $oldest = $processedPRs | Sort-Object Age -Descending | Select-Object -First 1
+    $over30 = @($processedPRs | Where-Object { $_.Age -gt 30 }).Count
+
+    [void]$md.AppendLine("## 📊 Queue Health")
+    [void]$md.AppendLine("- **Total PRs needing review**: $($processedPRs.Count)")
+    [void]$md.AppendLine("- **P/0 PRs**: $totalP0 (target: 0)")
+    [void]$md.AppendLine("- **Approved but not merged**: $totalApproved")
+    if ($oldest) {
+        [void]$md.AppendLine("- **Oldest unreviewed PR**: [#$($oldest.Number)]($($oldest.URL)) ($($oldest.Age) days)")
+    }
+    [void]$md.AppendLine("- **PRs > 30 days old**: $over30")
+
+    # Output to stdout (not Write-Host) so it can be redirected to a file
+    $md.ToString()
+}
+
 # Generate output
 switch ($OutputFormat) {
     "review" { Format-Review-Output }
     "json" { Format-Json-Output }
     "table" { Format-Table-Output }
+    "markdown" { Format-Markdown-Output }
 }
 
 # Return processed PRs for pipeline usage (only when not in review mode)
-if ($OutputFormat -ne "review") {
+if ($OutputFormat -ne "review" -and $OutputFormat -ne "markdown") {
     return $processedPRs
 }
