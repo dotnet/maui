@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var template = _template.SelectDataTemplate(itemBindingContext, itemsView);
 
 			var templateChanging = template != _selectedTemplate;
-			var needsRealization = !templateChanging && View?.Handler is null;
 
 			if (templateChanging)
 			{
@@ -83,21 +82,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				_selectedTemplate = template;
 			}
-			else if (needsRealization)
-			{
-				// Same template, but the handler was disconnected during recycle. Reuse the
-				// existing templated view instance and re-realize its platform content.
-				View.BindingContext = itemBindingContext;
-				PropertyPropagationExtensions.PropagatePropertyChanged(null, View, itemsView);
-				_itemContentView.RealizeContent(View, itemsView);
-			}
 
 			_itemContentView.HandleItemSizingStrategy(reportMeasure, size);
 
-			if (!templateChanging && !needsRealization)
+			if (!templateChanging)
 			{
-				// Same template, new data
+				// Same template — update binding context. If the handler was disconnected
+				// during recycle, re-realize the existing view to reconnect platform content
+				// without losing any runtime property changes (e.g. dynamic HeightRequest).
 				View.BindingContext = itemBindingContext;
+
+				if (View?.Handler is null)
+				{
+					PropertyPropagationExtensions.PropagatePropertyChanged(null, View, itemsView);
+					_itemContentView.RealizeContent(View, itemsView);
+				}
 			}
 
 			itemsView.AddLogicalChild(View);
