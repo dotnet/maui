@@ -27,13 +27,21 @@ public partial class SafeAreaOptionsPage : ContentPage
 		SafeAreaRegions region = SafeAreaRegions.None;
 
 		if (UniformAll.IsChecked)
+		{
 			region = SafeAreaRegions.All;
+		}
 		else if (UniformContainer.IsChecked)
+		{
 			region = SafeAreaRegions.Container;
+		}
 		else if (UniformSoftInput.IsChecked)
+		{
 			region = SafeAreaRegions.SoftInput;
+		}
 		else if (UniformDefault.IsChecked)
+		{
 			region = SafeAreaRegions.Default;
+		}
 
 		// Set all four edges to the same value
 		_viewModel.LeftEdge = region;
@@ -76,11 +84,26 @@ public partial class SafeAreaOptionsPage : ContentPage
 
 	private SafeAreaRegions GetSelectedRegion(RadioButton none, RadioButton container, RadioButton softInput, RadioButton all, RadioButton defaultBtn)
 	{
-		if (none.IsChecked) return SafeAreaRegions.None;
-		if (container.IsChecked) return SafeAreaRegions.Container;
-		if (softInput.IsChecked) return SafeAreaRegions.SoftInput;
-		if (all.IsChecked) return SafeAreaRegions.All;
-		if (defaultBtn.IsChecked) return SafeAreaRegions.Default;
+		if (none.IsChecked)
+		{
+			return SafeAreaRegions.None;
+		}
+		if (container.IsChecked)
+		{
+			return SafeAreaRegions.Container;
+		}
+		if (softInput.IsChecked)
+		{
+			return SafeAreaRegions.SoftInput;
+		}
+		if (all.IsChecked)
+		{
+			return SafeAreaRegions.All;
+		}
+		if (defaultBtn.IsChecked)
+		{
+			return SafeAreaRegions.Default;
+		}
 
 		return SafeAreaRegions.None;
 	}
