@@ -12,9 +12,9 @@ public class Issue23293 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void GroupedCollectionViewWithoutDataTemplate()
+	public void GroupedCollectionViewWithoutItemTemplateRendersCorrectly()
 	{
-		App.WaitForElement("CollectionViewWithoutDataTemplate");
+		App.WaitForElement("GroupFooterLabel");
 		VerifyScreenshot();
 	}
 }

@@ -1,8 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
@@ -24,9 +21,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var itemTemplate = Element.ItemTemplate;
 				var itemsSource = Element.ItemsSource;
 
-				return (itemTemplate is not null && itemsSource is not null)
-					? CreateGroupedCollectionViewSource(itemsSource, itemTemplate)
-					: CreateDefaultGroupedCollectionViewSource(itemsSource);
+				return new CollectionViewSource
+				{
+					Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
+					ItemsView.GroupHeaderTemplate, ItemsView.GroupFooterTemplate, Element, mauiContext: MauiContext),
+					IsSourceGrouped = true,
+					ItemsPath = new Microsoft.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
+				};
 			}
 			else
 			{
@@ -34,30 +35,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		CollectionViewSource CreateGroupedCollectionViewSource(IEnumerable itemsSource, DataTemplate itemTemplate)
-		{
-			return new CollectionViewSource
-			{
-				Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
-				ItemsView.GroupHeaderTemplate, ItemsView.GroupFooterTemplate, Element, mauiContext: MauiContext),
-				IsSourceGrouped = true,
-				ItemsPath = new Microsoft.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
-			};
-		}
-
-		// Creates and returns a grouped CollectionViewSource using itemsSource as the data source when an itemTemplate is not defined.
-		CollectionViewSource CreateDefaultGroupedCollectionViewSource(IEnumerable itemsSource)
-		{
-			return new CollectionViewSource
-			{
-				Source = itemsSource,
-				IsSourceGrouped = true,
-			};
-		}
-
 		protected override void UpdateItemTemplate()
 		{
 			base.UpdateItemTemplate();
+
+			// When a GroupFooterTemplate is set but no ItemTemplate, the fake footer item
+			// (GroupFooterItemTemplateContext) appended to each group's Items list needs a
+			// template to render correctly.  Without a selector WinUI calls ToString() on it,
+			// displaying the class name instead of the bound footer content.
+			if (Element.ItemTemplate is null && ItemsView.IsGrouped && ItemsView.GroupFooterTemplate is not null)
+			{
+				ListViewBase.ItemTemplateSelector = new GroupFooterDataTemplateSelector();
+			}
+			else
+			{
+				ListViewBase.ItemTemplateSelector = null;
+			}
 
 			ListViewBase.GroupStyleSelector = new GroupHeaderStyleSelector();
 		}
