@@ -269,10 +269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
-				if (ItemsView.PeekAreaInsets.Left > 0 || ItemsView.PeekAreaInsets.Right > 0)
-				{
-					itemWidth = ListViewBase.ActualWidth - ItemsView.PeekAreaInsets.Left - ItemsView.PeekAreaInsets.Right - ItemsView.ItemsLayout.ItemSpacing;
-				}
+				itemWidth = ListViewBase.ActualWidth - ItemsView.PeekAreaInsets.Left - ItemsView.PeekAreaInsets.Right - ItemsView.ItemsLayout.ItemSpacing;
 			}
 
 			return Math.Max(itemWidth, 0);
@@ -284,10 +281,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
-				if (ItemsView.PeekAreaInsets.Top > 0 || ItemsView.PeekAreaInsets.Bottom > 0)
-				{
-					itemHeight = ListViewBase.ActualHeight - ItemsView.PeekAreaInsets.Top - ItemsView.PeekAreaInsets.Bottom - ItemsView.ItemsLayout.ItemSpacing;
-				}
+				itemHeight = ListViewBase.ActualHeight - ItemsView.PeekAreaInsets.Top - ItemsView.PeekAreaInsets.Bottom - ItemsView.ItemsLayout.ItemSpacing;
 			}
 
 			return Math.Max(itemHeight, 0);
