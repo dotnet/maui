@@ -69,6 +69,11 @@ parameters:
     type: string
     default: ''
 
+  - name: prNumber
+    displayName: 'PR number to test (checks out the PR branch). Leave empty for current branch.'
+    type: string
+    default: ''
+
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -160,6 +165,8 @@ stages:
       ${{ if ne(parameters.uiTestCategories, '') }}:
         categoryGroupsToTest:
           - '${{ parameters.uiTestCategories }}'
+      # When prNumber is specified, checkout that PR branch before building.
+      prNumber: ${{ parameters.prNumber }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         androidPool: ${{ parameters.androidPoolInternal }}

@@ -60,6 +60,11 @@ parameters:
   type: string
   default: ''
 
+- name: prNumber
+  displayName: 'PR number to test (checks out the PR branch). Leave empty for current branch.'
+  type: string
+  default: ''
+
 # Internal pools (dnceng)
 - name: windowsPoolInternal
   type: object
@@ -139,6 +144,14 @@ stages:
       ${{ if ne(parameters.deviceTestCategories, '') }}:
         extraHelixArguments: '/p:DeviceTestCategoryFilter=${{ parameters.deviceTestCategories }}'
       prepareSteps:
+      - ${{ if ne(parameters.prNumber, '') }}:
+        - script: |
+            echo "Checking out PR #${{ parameters.prNumber }}..."
+            git fetch origin pull/${{ parameters.prNumber }}/head:pr-${{ parameters.prNumber }}
+            git checkout pr-${{ parameters.prNumber }}
+            echo "Checked out PR #${{ parameters.prNumber }}"
+            git log --oneline -1
+          displayName: 'Checkout PR #${{ parameters.prNumber }}'
       - template: /eng/pipelines/common/provision.yml@self
         parameters:
           checkoutDirectory: '$(System.DefaultWorkingDirectory)'
