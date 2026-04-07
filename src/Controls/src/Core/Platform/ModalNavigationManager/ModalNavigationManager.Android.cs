@@ -507,6 +507,25 @@ namespace Microsoft.Maui.Controls.Platform
 					return handled || base.OnKeyUp(keyCode, e);
 				}
 
+				public override bool DispatchTouchEvent(MotionEvent? e)
+				{
+					if (e is null)
+					{
+						return false;
+					}
+
+					bool handled = base.DispatchTouchEvent(e);
+
+					// Modal dialogs have their own Android Window, so touch events don't
+					// reach the Activity's DispatchTouchEvent. Forward them to the MAUI
+					// Window so that HideSoftInputOnTappedChangedManager can detect taps
+					// and dismiss the keyboard when HideSoftInputOnTapped is enabled.
+					bool implHandled =
+						(Context.GetWindow() as IPlatformEventsListener)?.DispatchTouchEvent(e) == true;
+
+					return handled || implHandled;
+				}
+
 				sealed class CallBack : OnBackPressedCallback
 				{
 					WeakReference<CustomComponentDialog> _customComponentDialog;
