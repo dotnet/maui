@@ -279,7 +279,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (IWebView2)GetTemplateChild(WebViewTemplateChildName);
+				if (GetTemplateChild(WebViewTemplateChildName) is not IWebView2 webView)
+				{
+					throw new InvalidOperationException($"Template child '{WebViewTemplateChildName}' was not found or does not implement {nameof(IWebView2)}. Ensure the control template contains a WebView2 or WebView2CompositionControl element named '{WebViewTemplateChildName}'.");
+				}
+				_webview = webView;
 				StartWebViewCoreIfPossible();
 			}
 		}
