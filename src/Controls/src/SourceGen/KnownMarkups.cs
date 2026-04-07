@@ -271,7 +271,7 @@ internal class KnownMarkups
 
 		if (key is null)
 			throw new Exception();
-		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{key}\")";
+		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{CSharpExpressionHelpers.EscapeForString(key)}\")";
 		return true;
 	}
 
@@ -548,10 +548,9 @@ internal class KnownMarkups
 				return false;
 			}
 
-			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) && symbol is not null)
+			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) || symbol is null)
 			{
-				// TODO report the right diagnostic
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot resolve x:DataType type"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, location, dataTypeName));
 				return false;
 			}
 

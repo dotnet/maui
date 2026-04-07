@@ -108,6 +108,9 @@ namespace Microsoft.Maui.Platform
 			var diffX = interceptPoint.X - _initialPoint.X;
 			var diffY = interceptPoint.Y - _initialPoint.Y;
 
+			if (diffX == 0 && diffY == 0)
+				return _isOpen;
+
 			SwipeDirection swipeDirection;
 
 			if (Math.Abs(diffX) > Math.Abs(diffY))
@@ -561,6 +564,12 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				AView? swipeItem = item?.ToPlatform(MauiContext);
+				// Disconnect a shared SwipeItem's handler when its Android view is already parented, so ToPlatform() creates a fresh view for the new one.
+				if (swipeItem?.Parent != null && item is IElement element)
+				{
+					element.Handler?.DisconnectHandler();
+					swipeItem = item?.ToPlatform(MauiContext);
+				}
 
 				if (swipeItem is not null)
 				{
@@ -648,10 +657,12 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
+					// AtMost lets custom SwipeItemView content size itself; Exactly forces precise dimensions for default SwipeItems.
+					var measureMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
+
 					child.Measure(
-						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
-					);
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, measureMode),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, measureMode));
 
 					child.Layout(l, t, r, b);
 
@@ -722,7 +733,10 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in _swipeItems.Keys)
 			{
-				item.Handler?.DisconnectHandler();
+				if (item.Handler is not null && ReferenceEquals(item.Handler.PlatformView, _swipeItems[item]))
+				{
+					item.Handler.DisconnectHandler();
+				}
 			}
 
 			_swipeItems.Clear();

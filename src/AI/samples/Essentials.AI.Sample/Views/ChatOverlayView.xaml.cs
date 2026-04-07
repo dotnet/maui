@@ -34,9 +34,11 @@ public partial class ChatOverlayView : ContentView
 	{
 		if (e.Action == NotifyCollectionChangedAction.Add && _viewModel is not null && _viewModel.Messages.Count > 0)
 		{
-			Dispatcher.Dispatch(() =>
+			// Small delay to let CollectionView lay out the new item before scrolling
+			Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(50), () =>
 			{
-				MessagesView.ScrollTo(_viewModel.Messages.Count - 1, position: ScrollToPosition.End, animate: true);
+				if (_viewModel?.Messages.Count > 0)
+					MessagesView.ScrollTo(_viewModel.Messages.Count - 1, position: ScrollToPosition.MakeVisible, animate: false);
 			});
 		}
 	}
