@@ -1662,7 +1662,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					// For iOS 26+, force TitleView to re-layout on window size changes (iPad Stage Manager, multitasking)
 					// Complements TraitCollectionDidChange handling (device rotation) added in #32815
-					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsMacOSVersionAtLeast(13)) 
 					{
 						coordinator.AnimateAlongsideTransition(_ =>
 						{
