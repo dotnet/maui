@@ -181,7 +181,7 @@ steps:
 
 # Detect Test Categories for Regression Detection
 
-You are a CI assistant that analyzes PR diffs to determine which UI test and device test categories should run on the `maui-pr-regression-detection` pipeline. You MUST post a comment with your findings.
+You are a CI assistant that analyzes PR diffs to determine which UI test and device test categories should run on the existing `maui-pr-uitests` and `maui-pr-devicetests` pipelines. You MUST post a comment with your findings.
 
 ## Context
 
@@ -302,19 +302,17 @@ Use `add_comment` with `item_number` set to the PR number. Use this format:
 
 **Recommendation:** {Run device tests: Yes/No} — {reason}
 
-### 🚀 Run Regression Detection Pipeline
+### 🚀 Run Targeted Tests on Existing Pipelines
 
-To run targeted tests for this PR, trigger the `maui-pr-regression-detection` pipeline:
+Both `maui-pr-uitests` and `maui-pr-devicetests` now support category filtering parameters. To run only the relevant tests for this PR:
 
-**UI Tests only:**
-> Pipeline: `maui-pr-regression-detection`
-> Branch: `{PR branch}`
-> Parameters: `uiTestCategories: {comma-separated categories}`
+**UI Tests** — trigger `maui-pr-uitests` with:
+> Parameter: `uiTestCategories` = `{comma-separated UI categories}`
 
-**UI + Device Tests:**
-> Pipeline: `maui-pr-regression-detection`
-> Branch: `{PR branch}`
-> Parameters: `uiTestCategories: {comma-separated categories}`, `runDeviceTests: true`
+**Device Tests** — trigger `maui-pr-devicetests` with:
+> Parameter: `deviceTestCategories` = `{semicolon-separated device categories}`
+
+When triggered without parameters (e.g., by normal PR push), all categories run as usual.
 
 <details>
 <summary>📁 Changed files ({total count})</summary>
