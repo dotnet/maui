@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 14181, "[iOS] RadioButton BackgroundColor bleeds outside CornerRadius rounded corners", PlatformAffected.iOS)]
-public class Issue14181 : ContentPage
+[Issue(IssueTracker.Github, 34842, "[iOS] RadioButton BackgroundColor bleeds outside CornerRadius rounded corners", PlatformAffected.iOS)]
+public class Issue34842 : ContentPage
 {
-    public Issue14181()
+    public Issue34842()
     {
         RadioButton radioButton = new RadioButton
         {
