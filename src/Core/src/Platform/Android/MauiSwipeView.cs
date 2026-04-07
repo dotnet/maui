@@ -876,7 +876,7 @@ namespace Microsoft.Maui.Platform
 		void SwipeToThreshold(bool animated = true)
 		{
 			var completeAnimationDuration = animated ? SwipeAnimationDuration : 0;
-			_swipeOffset = GetSwipeThreshold();
+			_swipeOffset = GetSwipeOpenDistance();
 			float swipeThreshold = _context.ToPixels(_swipeOffset);
 
 			if (_swipeTransitionMode == SwipeTransitionMode.Reveal && _contentView != null)
@@ -929,7 +929,7 @@ namespace Microsoft.Maui.Platform
 
 		float ValidateSwipeOffset(float offset)
 		{
-			var swipeThreshold = GetSwipeThreshold();
+			var swipeThreshold = GetSwipeOpenDistance();
 
 			switch (_swipeDirection)
 			{
@@ -986,9 +986,9 @@ namespace Microsoft.Maui.Platform
 			float triggerThreshold;
 
 			if (Element != null && Element.Threshold > 0)
-				triggerThreshold = Math.Min((float)Element.Threshold, GetSwipeThreshold());
+				triggerThreshold = Math.Min((float)Element.Threshold, GetSwipeOpenDistance());
 			else
-				triggerThreshold = OpenSwipeThresholdPercentage * GetSwipeThreshold();
+				triggerThreshold = OpenSwipeThresholdPercentage * GetSwipeOpenDistance();
 
 			if (Math.Abs(_swipeOffset) >= triggerThreshold)
 			{
@@ -1015,7 +1015,7 @@ namespace Microsoft.Maui.Platform
 				ResetSwipe();
 		}
 
-		float GetSwipeThreshold()
+		float GetSwipeOpenDistance()
 		{
 			if (Math.Abs(_swipeThreshold) > double.Epsilon)
 				return _swipeThreshold;
@@ -1025,12 +1025,12 @@ namespace Microsoft.Maui.Platform
 			if (swipeItems == null)
 				return 0;
 
-			_swipeThreshold = GetSwipeThreshold(swipeItems);
+			_swipeThreshold = GetSwipeOpenDistance(swipeItems);
 
 			return _swipeThreshold;
 		}
 
-		float GetSwipeThreshold(ISwipeItems swipeItems)
+		float GetSwipeOpenDistance(ISwipeItems swipeItems)
 		{
 			if (Element == null)
 				return 0f;
@@ -1216,9 +1216,7 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItem is ISwipeItem)
 				{
-					return new Size(items.Mode == SwipeMode.Execute
-						? contentWidth / items.Count
-						: SwipeViewExtensions.SwipeItemWidth, contentHeight);
+					return new Size(SwipeViewExtensions.SwipeItemWidth, contentHeight);
 				}
 			}
 			else
@@ -1379,7 +1377,7 @@ namespace Microsoft.Maui.Platform
 
 			UpdateSwipeItems();
 
-			var swipeThreshold = GetSwipeThreshold();
+			var swipeThreshold = GetSwipeOpenDistance();
 			UpdateOffset(swipeThreshold);
 
 			Swipe(animated);
@@ -1442,8 +1440,8 @@ namespace Microsoft.Maui.Platform
 			bool isOpen = false;
 
 			float triggerThreshold = (Element != null && Element.Threshold > 0)
-				? Math.Min((float)Element.Threshold, GetSwipeThreshold())
-				: OpenSwipeThresholdPercentage * GetSwipeThreshold();
+				? Math.Min((float)Element.Threshold, GetSwipeOpenDistance())
+				: OpenSwipeThresholdPercentage * GetSwipeOpenDistance();
 
 			if (Math.Abs(_swipeOffset) >= triggerThreshold)
 				isOpen = true;
