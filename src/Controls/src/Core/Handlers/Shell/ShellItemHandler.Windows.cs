@@ -107,7 +107,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
 			if (_currentSearchHandler != null)
+			{
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+				_currentSearchHandler.FocusChangeRequested -= OnSearchHandlerFocusChangeRequested;
+			}
 
 			if (_shellItem?.Parent is IShellController controller)
 			{
@@ -303,6 +306,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (_currentSearchHandler is not null)
 				{
 					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+					_currentSearchHandler.FocusChangeRequested -= OnSearchHandlerFocusChangeRequested;
 				}
 
 				_currentSearchHandler = newSearchHandler;
@@ -320,6 +324,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.LostFocus += OnSearchBoxLostFocus;
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
+
+					_currentSearchHandler.FocusChangeRequested += OnSearchHandlerFocusChangeRequested;
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
@@ -361,6 +367,34 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnSearchBoxLostFocus(object sender, RoutedEventArgs e)
 		{
 			_currentSearchHandler?.SetIsFocused(false);
+		}
+
+		void OnSearchHandlerFocusChangeRequested(object? sender, VisualElement.FocusRequestArgs e)
+		{
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
+				return;
+
+			if (e.Focus)
+			{
+				e.Result = autoSuggestBox.Focus(FocusState.Programmatic);
+			}
+			else
+			{
+				// Guard matches ViewExtensions.UnfocusControl: skip the toggle if already disabled
+				// to avoid incorrectly re-enabling a disabled control.
+				if (!autoSuggestBox.IsEnabled)
+				{
+					e.Result = true;
+					return;
+				}
+
+				var isTabStop = autoSuggestBox.IsTabStop;
+				autoSuggestBox.IsTabStop = false;
+				autoSuggestBox.IsEnabled = false;
+				autoSuggestBox.IsEnabled = true;
+				autoSuggestBox.IsTabStop = isTabStop;
+				e.Result = true;
+			}
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
