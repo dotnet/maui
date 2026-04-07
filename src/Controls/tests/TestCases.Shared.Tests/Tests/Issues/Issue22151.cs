@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue22151 : _IssuesUITest
 	{
-		public override string Issue => "Keyboard does not showing up on SearchHandler.Focus()";
+		public override string Issue => "SearchHandler keyboard does not show on programmatic focus";
 
 		public Issue22151(TestDevice testDevice) : base(testDevice)
 		{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
-		public void SearchHandlerShowSoftInputShouldWork()
+		public void SearchHandlerShowSoftInputShouldFocusAndFireEvent()
 		{
 			App.WaitForElement("ShowKeyboardButton");
 			App.Tap("ShowKeyboardButton");

@@ -1,61 +1,91 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 22151, "Keyboard does not showing up on SearchHandler.Focus()", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 22151, "SearchHandler keyboard does not show on programmatic focus", PlatformAffected.All)]
 public class Issue22151 : Shell
 {
 	public Issue22151()
 	{
-		var isFocusedLabel = new Label
+		var flyoutItem = new FlyoutItem
 		{
-			Text = "IsFocused: False",
-			AutomationId = "isFocusedLabel"
+			Route = "home",
+			FlyoutDisplayOptions = FlyoutDisplayOptions.AsSingleItem
 		};
 
-		var focusedEventLabel = new Label
+		flyoutItem.Items.Add(new Tab
 		{
-			Text = "FocusedEvent: False",
-			AutomationId = "focusedEventLabel"
-		};
+			Title = "Home",
+			Route = "hometab",
+			Items =
+			{
+				new ShellContent
+				{
+					Title = "Home",
+					Route = "homepage",
+					ContentTemplate = new DataTemplate(typeof(_22151TestPage))
+				}
+			}
+		});
 
-		var searchHandler = new SearchHandler
-		{
-			AutomationId = "searchHandler",
-			Placeholder = "Search...",
-			SearchBoxVisibility = SearchBoxVisibility.Expanded,
-			ShowsResults = false
-		};
+		Items.Add(flyoutItem);
+	}
 
-		searchHandler.Focused += (s, e) =>
+	public class _22151TestPage : ContentPage
+	{
+		public _22151TestPage()
 		{
-			focusedEventLabel.Text = "FocusedEvent: True";
-		};
+			Title = "Home";
 
-		var showKeyboardButton = new Button
-		{
-			Text = "Show Keyboard",
-			AutomationId = "ShowKeyboardButton"
-		};
+			var isFocusedLabel = new Label
+			{
+				Text = "IsFocused: False",
+				AutomationId = "isFocusedLabel"
+			};
 
-		showKeyboardButton.Clicked += async (s, e) =>
-		{
-			searchHandler.ShowSoftInputAsync();
-			await Task.Delay(200);
-			isFocusedLabel.Text = $"IsFocused: {searchHandler.IsFocused}";
-		};
+			var focusedEventLabel = new Label
+			{
+				Text = "FocusedEvent: False",
+				AutomationId = "focusedEventLabel"
+			};
 
-		var hideKeyboardButton = new Button
-		{
-			Text = "Hide Keyboard",
-			AutomationId = "HideKeyboardButton"
-		};
+			var searchHandler = new SearchHandler
+			{
+				AutomationId = "searchHandler",
+				Placeholder = "Search...",
+				SearchBoxVisibility = SearchBoxVisibility.Expanded,
+				ShowsResults = false
+			};
 
-		hideKeyboardButton.Clicked += (s, e) =>
-		{
-			searchHandler.HideSoftInputAsync();
-		};
+			searchHandler.Focused += (s, e) =>
+			{
+				focusedEventLabel.Text = "FocusedEvent: True";
+			};
 
-		var contentPage = new ContentPage
-		{
+			var showKeyboardButton = new Button
+			{
+				Text = "Show Keyboard",
+				AutomationId = "ShowKeyboardButton"
+			};
+
+			showKeyboardButton.Clicked += async (s, e) =>
+			{
+				searchHandler.ShowSoftInputAsync();
+				await Task.Delay(200);
+				isFocusedLabel.Text = $"IsFocused: {searchHandler.IsFocused}";
+			};
+
+			var hideKeyboardButton = new Button
+			{
+				Text = "Hide Keyboard",
+				AutomationId = "HideKeyboardButton"
+			};
+
+			hideKeyboardButton.Clicked += (s, e) =>
+			{
+				searchHandler.HideSoftInputAsync();
+			};
+
+			Shell.SetSearchHandler(this, searchHandler);
+
 			Content = new VerticalStackLayout
 			{
 				Spacing = 15,
@@ -67,16 +97,7 @@ public class Issue22151 : Shell
 					isFocusedLabel,
 					focusedEventLabel
 				}
-			}
-		};
-
-		Shell.SetSearchHandler(contentPage, searchHandler);
-
-		Items.Add(new ShellContent
-		{
-			Title = "Home",
-			Route = "MainPage",
-			Content = contentPage
-		});
+			};
+		}
 	}
 }
