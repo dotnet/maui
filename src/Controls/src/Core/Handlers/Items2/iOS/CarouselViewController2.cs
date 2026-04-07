@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
+		CancellationTokenSource _scrollDebounce;
 
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
@@ -547,7 +549,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateVisualStates();
 		}
 
-		internal void UpdateFromPosition()
+		internal async void UpdateFromPosition()
 		{
 			if (!InitialPositionSet)
 			{
@@ -568,7 +570,56 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
 
-			ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				var old = _scrollDebounce;
+				_scrollDebounce = new CancellationTokenSource();
+				// Cancel any pending position update to prevent race conditions
+				old?.Cancel();
+				old?.Dispose();
+				var token = _scrollDebounce.Token;
+
+				try
+				{
+					// On iOS 26, UICollectionView can emit intermediate scroll callbacks before settling.
+					// A slightly longer delay than UpdateInitialPosition's 100ms was empirically chosen
+					// to ensure the scroll operation runs after those intermediate callbacks complete.
+					await Task.Delay(100, token).ContinueWith(_ =>
+					{
+						MainThread.BeginInvokeOnMainThread(() =>
+						{
+							// Re-validate state after the delay to avoid operating on stale or disposed views
+							if (!InitialPositionSet)
+							{
+								return;
+							}
+
+							if (ItemsView is not CarouselView currentCarousel)
+							{
+								return;
+							}
+
+							if (ItemsSource is null || ItemsSource.ItemCount == 0)
+							{
+								return;
+							}
+
+							var updatedCurrentItemPosition = GetIndexForItem(currentCarousel.CurrentItem).Row;
+							var updatedCarouselPosition = currentCarousel.Position;
+
+							ScrollToPosition(updatedCarouselPosition, updatedCurrentItemPosition, currentCarousel.AnimatePositionChanges);
+						});
+					}, token);
+				}
+				catch (OperationCanceledException)
+				{
+					// Expected when a newer UpdateFromPosition call cancels this one
+				}
+			}
+			else
+			{
+				ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+			}
 
 			// SetCurrentItem(carouselPosition);
 		}
@@ -728,6 +779,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				CollectionView.Hidden = true;
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_scrollDebounce?.Cancel();
+				_scrollDebounce?.Dispose();
+				_scrollDebounce = null;
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 
