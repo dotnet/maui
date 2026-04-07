@@ -44,7 +44,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		var extendedBuildProps = isWindowsFramework
 			? PrepareNativeAotBuildPropsWindows(runtimeIdentifier)
 			: isAndroidPlatform
-				? PrepareNativeAotBuildPropsAndroid()
+				? PrepareNativeAotBuildPropsAndroid(BuildProps)
 				: PrepareNativeAotBuildProps();
 
 		// Disable code signing for Apple platforms (no signing certificate available in CI)
@@ -105,7 +105,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		var extendedBuildProps = isWindowsFramework
 			? PrepareNativeAotBuildPropsWindows(runtimeIdentifier)
 			: isAndroidPlatform
-				? PrepareNativeAotBuildPropsAndroid()
+				? PrepareNativeAotBuildPropsAndroid(BuildProps)
 				: PrepareNativeAotBuildProps();
 
 		// Disable code signing for Apple platforms (no signing certificate available in CI)
@@ -180,9 +180,9 @@ public class AOTTemplateTest : BaseTemplateTests
 		return extendedBuildProps;
 	}
 
-	private List<string> PrepareNativeAotBuildPropsAndroid()
+	internal static List<string> PrepareNativeAotBuildPropsAndroid(List<string> buildProps)
 	{
-		var extendedBuildProps = new List<string>(BuildProps)
+		var extendedBuildProps = new List<string>(buildProps)
 		{
 			"PublishAot=true",
 			"PublishAotUsingRuntimePack=true",

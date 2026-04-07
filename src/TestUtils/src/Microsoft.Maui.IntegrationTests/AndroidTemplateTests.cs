@@ -136,23 +136,11 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
-			var buildProps = BuildProps;
-
-			// NativeAOT build properties
-			buildProps.Add("PublishAot=true");
-			buildProps.Add("IlcTreatWarningsAsErrors=false");
+			var buildProps = AOTTemplateTest.PrepareNativeAotBuildPropsAndroid(BuildProps);
 
 			// Restrict to Android-only to avoid restoring NativeAOT packages for other platforms (e.g., iOS)
 			// which may not be available in the configured NuGet sources
 			buildProps.Add($"TargetFrameworks={framework}-android");
-
-			// Set Android NDK path if available (required for NativeAOT cross-compilation)
-			var ndkRoot = Environment.GetEnvironmentVariable("ANDROID_NDK_ROOT");
-			if (!string.IsNullOrEmpty(ndkRoot))
-			{
-				var ndkRootEscaped = ndkRoot.Replace("\"", "\\\"", StringComparison.Ordinal);
-				buildProps.Add($"AndroidNdkDirectory=\"{ndkRootEscaped}\"");
-			}
 
 			// NativeAOT requires an explicit runtime identifier matching the emulator ABI
 			var runtimeIdentifier = _emulatorFixture.TestAvd.Abi == "arm64-v8a" ? "android-arm64" : "android-x64";
