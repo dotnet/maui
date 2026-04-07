@@ -929,10 +929,10 @@
     </Target>
 
     <!-- Aggregate target to ensure all resource processing has completed.
-         Wired into the build graph via AfterTargets so the after-all hook actually fires. -->
+         Uses AfterTargets to run after all three processing targets without creating
+         circular dependencies (DependsOnTargets would create a cycle). -->
     <Target Name="_ResizetizerAllResourceProcessing"
-            AfterTargets="ProcessMauiAssets"
-            DependsOnTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets" />
+            AfterTargets="ResizetizeImages;ProcessMauiFonts;ProcessMauiAssets" />
 
     <!-- Extensibility target: runs after all resource processing is complete.
          Custom backends can register targets via the ResizetizerAfterAllProcessingTargets property. -->
