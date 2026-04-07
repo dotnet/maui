@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(RefreshContainer nativeView)
 		{
 			nativeView.Loaded += OnLoaded;
-			nativeView.Unloaded += OnUnloaded;
 			nativeView.RefreshRequested += OnRefresh;
 
 			base.ConnectHandler(nativeView);
@@ -36,7 +35,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(RefreshContainer nativeView)
 		{
 			nativeView.Loaded -= OnLoaded;
-			nativeView.Unloaded -= OnUnloaded;
 			nativeView.RefreshRequested -= OnRefresh;
 
 			CompleteRefresh();
@@ -48,11 +46,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			base.DisconnectHandler(nativeView);
-		}
-
-		void OnUnloaded(object sender, RoutedEventArgs e)
-		{
-			CompleteRefresh();
 		}
 
 		public static void MapIsRefreshing(IRefreshViewHandler handler, IRefreshView refreshView)
