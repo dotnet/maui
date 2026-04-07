@@ -15,12 +15,24 @@
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
       {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !EnableSampleContent)",
         "path": "MainPage.xaml.cs"
       },
       {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !EnableSampleContent)",
         "path": "MainPage.xaml"
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && EnableSampleContent)",
+        "path": "Pages/MainPage.xaml.cs"
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && EnableSampleContent)",
+        "path": "Pages/MainPage.xaml"
+      },
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && UseCSharpUI)",
+        "path": "MainPage.cs"
       },
       {
         "path": "MauiApp.1.csproj"
@@ -29,12 +41,34 @@
     "postActions": [
         {
             "id": "openInEditor",
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && !EnableSampleContent)",
             "description": "Opens MainPage.xaml in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
             "args": {
                 "files": "0;1"
+            },
+            "continueOnError": true
+        },
+        {
+            "id": "openInEditorSampleXaml",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && EnableSampleContent)",
+            "description": "Opens Pages/MainPage.xaml in the editor.",
+            "manualInstructions": [],
+            "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+            "args": {
+                "files": "2;3"
+            },
+            "continueOnError": true
+        },
+        {
+            "id": "openInEditorCSharp",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && UseCSharpUI)",
+            "description": "Opens MainPage.cs in the editor.",
+            "manualInstructions": [],
+            "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+            "args": {
+                "files": "4"
             },
             "continueOnError": true
         },
@@ -58,7 +92,7 @@
         "copyOnly": [ "**/*.svg", "**/*.ttf" ],
         "modifiers": [
         {
-          "condition": "(!IncludeSampleContent)",
+          "condition": "(!EnableSampleContent)",
           "exclude": [
             "Converter/**",
             "Data/**",
@@ -73,15 +107,39 @@
             "Resources/Fonts/FluentUI.cs",
             "Services/**",
             "Resources/Styles/AppStyles.xaml",
-            "Utilities/**",
+            "Utilities/**"
           ]
         },
         {
-          "condition": "(IncludeSampleContent)",
+          "condition": "(EnableSampleContent)",
           "exclude": [
             "MainPage.xaml",
             "MainPage.xaml.cs",
             "Resources/Images/dotnet_bot.png"
+          ]
+        },
+        {
+          "condition": "(UseCSharpUI)",
+          "exclude": [
+            "App.xaml",
+            "App.xaml.cs",
+            "AppShell.xaml",
+            "AppShell.xaml.cs",
+            "MainPage.xaml",
+            "MainPage.xaml.cs"
+          ],
+          "rename": {
+            "App-CSharp.cs": "App.cs",
+            "AppShell-CSharp.cs": "AppShell.cs",
+            "MainPage-CSharp.cs": "MainPage.cs"
+          }
+        },
+        {
+          "condition": "(!UseCSharpUI)",
+          "exclude": [
+            "App-CSharp.cs",
+            "AppShell-CSharp.cs",
+            "MainPage-CSharp.cs"
           ]
         }]
       }
@@ -115,9 +173,30 @@
         "replaces": "DOTNET_TFM",
         "defaultValue": "DOTNET_TFM_VALUE"
       },
+      "UI": {
+        "type": "parameter",
+        "datatype": "choice",
+        "displayName": "_UI",
+        "description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code using CommunityToolkit.Maui.Markup.",
+        "choices": [
+          {
+            "choice": "xaml",
+            "description": "Create the app UI with XAML."
+          },
+          {
+            "choice": "csharp",
+            "description": "Create the app UI with fluent C# Markup."
+          }
+        ],
+        "defaultValue": "xaml"
+      },
       "HostIdentifier": {
         "type": "bind",
         "binding": "HostIdentifier"
+      },
+      "UseCSharpUI": {
+        "type": "computed",
+        "value": "(UI == \"csharp\")"
       },
       "PhoneProductId": {
         "type": "generated",
@@ -180,9 +259,14 @@
       "IncludeSampleContent": {
         "type": "parameter",
         "datatype": "bool",
+        "isEnabled": "(UI == \"xaml\")",
         "defaultValue": "false",
         "displayName": "_Include sample content",
-        "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
+        "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
+      },
+      "EnableSampleContent": {
+        "type": "computed",
+        "value": "(IncludeSampleContent && !UseCSharpUI)"
       },
       "skipRestore": {
         "type": "parameter",
