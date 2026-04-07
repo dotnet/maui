@@ -81,7 +81,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
 
 		AssertContains("using CommunityToolkit.Maui.Markup;", mainPageContent);
-		AssertContains(".CenterHorizontal()", mainPageContent);
+		Assert.True(mainPageContent.Contains(".CenterHorizontal()", StringComparison.Ordinal),
+			"Expected generated markup UI to use CommunityToolkit layout extensions.");
+		Assert.True(mainPageContent.Contains(".TextCenter()", StringComparison.Ordinal) || mainPageContent.Contains(".TextCenterHorizontal()", StringComparison.Ordinal),
+			"Expected generated markup UI to use CommunityToolkit text-centering extensions.");
+		Assert.True(mainPageContent.Contains(".Fill()", StringComparison.Ordinal) || mainPageContent.Contains(".FillHorizontal()", StringComparison.Ordinal),
+			"Expected generated markup UI to use CommunityToolkit fill extensions.");
 		AssertContains(".UseMauiCommunityToolkitMarkup()", mauiProgramContent);
 
 		var projectDoc = XDocument.Load(projectFile);
