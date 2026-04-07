@@ -1,169 +1,225 @@
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Shapes;
+using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12008, "CollectionView Drag and Drop Reordering Can't Drop in Empty Group", PlatformAffected.iOS)]
-public class Issue12008 : ContentPage
+[Issue(IssueTracker.Github, 12008, "CollectionView Drag and Drop Reordering Can't Drop in Empty Group", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
+public partial class Issue12008 : ContentPage
 {
-	public ObservableCollection<Issue12008Group> Groups { get; }
-
+	private Label statusLabel;
+	private CollectionView collectionView;
+	private Button btnCreateEmptyGroup;
 	public Issue12008()
 	{
-		Title = "Issue 12008 - Drag into Empty Group";
-
-		// Create grouped data with one empty group
-		Groups = new ObservableCollection<Issue12008Group>
+		this.BindingContext = new Issue12008ViewModel();
+		var grid = new Grid
 		{
-			new Issue12008Group("Group A", new ObservableCollection<Item>
+			RowDefinitions = new RowDefinitionCollection
 			{
-				new Item("Item A1"),
-				new Item("Item A2"),
-				new Item("Item A3")
-			}),
-			new Issue12008Group("Group B", new ObservableCollection<Item>
-			{
-				new Item("Item B1"),
-				new Item("Item B2")
-			}),
-			new Issue12008Group("Empty Group", new ObservableCollection<Item>()), // Empty group
-			new Issue12008Group("Group C", new ObservableCollection<Item>
-			{
-				new Item("Item C1"),
-			})
-		};
-
-		var collectionView = new CollectionView
-		{
-			AutomationId = "ReorderCollectionView",
-			ItemsSource = Groups,
-			IsGrouped = true,
-			CanReorderItems = true,
-			CanMixGroups = true,
-			SelectionMode = SelectionMode.None
-		};
-
-		// Set GroupHeaderTemplate to display group name and item count
-		collectionView.GroupHeaderTemplate = new DataTemplate(() =>
-		{
-			var groupNameLabel = new Label
-			{
-				FontAttributes = FontAttributes.Bold,
-				FontSize = 18,
-				TextColor = Colors.Black
-			};
-			groupNameLabel.SetBinding(Label.TextProperty, new Binding("Name"));
-
-			var countLabel = new Label
-			{
-				FontSize = 16,
-				TextColor = Colors.Gray,
-				HorizontalTextAlignment = TextAlignment.End
-			};
-			countLabel.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "({0} items)"));
-
-			var headerGrid = new Grid
-			{
-				Padding = 12,
-				BackgroundColor = Color.FromArgb("#F0F0F0"),
-				ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } },
-				Children =
-				{
-					groupNameLabel,
-					countLabel
-				}
-			};
-			headerGrid.SetColumn(countLabel, 1);
-
-			// Set AutomationId based on group name
-			headerGrid.SetBinding(AutomationProperties.NameProperty, new Binding("Name"));
-
-			return headerGrid;
-		});
-
-		// Set ItemTemplate
-		collectionView.ItemTemplate = new DataTemplate(() =>
-		{
-			var itemLabel = new Label
-			{
-				FontSize = 16,
-				Padding = 16
-			};
-			itemLabel.SetBinding(Label.TextProperty, "Name");
-
-			var itemContainer = new Border
-			{
-				Padding = 0,
-				Margin = new Thickness(12, 4, 12, 4),
-				Content = itemLabel,
-				BackgroundColor = Colors.White,
-				StrokeShape = new RoundRectangle { CornerRadius = 5 },
-				Shadow = new Shadow { Opacity = 0.3f, Radius = 2 }
-			};
-
-			// Set AutomationId based on item name for testability
-			itemContainer.SetBinding(AutomationProperties.NameProperty, new Binding("Name"));
-
-			return itemContainer;
-		});
-
-		// Add ReorderCompleted event handler to update status
-		collectionView.ReorderCompleted += OnReorderCompleted;
-
-		var statusLabel = new Label
-		{
-			AutomationId = "StatusLabel",
-			Text = "Ready to reorder items",
-			FontSize = 14,
-			Padding = 12,
-			BackgroundColor = Color.FromArgb("#E8F5E9")
-		};
-
-		Content = new VerticalStackLayout
-		{
-			Spacing = 8,
-			Padding = 8,
-			Children =
-			{
-				statusLabel,
-				collectionView
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Star }
 			}
 		};
 
-		BindingContext = this;
+		// Top StackLayout
+		var stackLayout = new StackLayout
+		{
+			Padding = 10
+		};
+
+		var titleLabel = new Label
+		{
+			Text = "Drag and Drop Test - Empty Groups",
+			FontSize = 18,
+			FontAttributes = FontAttributes.Bold,
+			Margin = new Thickness(0, 0, 0, 10)
+		};
+
+		var instructionsLabel = new Label
+		{
+			Text = "Instructions: Try dragging items between groups, including into empty groups.",
+			FontSize = 14,
+			Margin = new Thickness(0, 0, 0, 10)
+		};
+
+		btnCreateEmptyGroup = new Button
+		{
+			Text = "Create Empty Group",
+			AutomationId = "CreateEmptyGroupButton12008"
+		};
+		btnCreateEmptyGroup.Clicked += OnCreateEmptyGroupClicked;
+
+		statusLabel = new Label
+		{
+			Text = "Status: Ready",
+			FontSize = 12,
+			AutomationId = "StatusLabel12008"
+		};
+
+		stackLayout.Children.Add(titleLabel);
+		stackLayout.Children.Add(instructionsLabel);
+		stackLayout.Children.Add(btnCreateEmptyGroup);
+		stackLayout.Children.Add(statusLabel);
+
+		Grid.SetRow(stackLayout, 0);
+		grid.Children.Add(stackLayout);
+
+		// CollectionView
+		collectionView = new CollectionView
+		{
+			IsGrouped = true,
+			CanReorderItems = true,
+			CanMixGroups = true,
+			AutomationId = "CollectionView12008"
+		};
+		collectionView.SetBinding(ItemsView.ItemsSourceProperty, "GroupedItems");
+
+		// Group Header Template
+		collectionView.GroupHeaderTemplate = new DataTemplate(() =>
+		{
+			var headerGrid = new Grid
+			{
+				BackgroundColor = Colors.LightBlue,
+				Padding = 10,
+				ColumnDefinitions = new ColumnDefinitionCollection
+				{
+					new ColumnDefinition { Width = GridLength.Star },
+					new ColumnDefinition { Width = GridLength.Auto }
+				}
+			};
+
+			var headerLabel = new Label
+			{
+				FontAttributes = FontAttributes.Bold,
+				FontSize = 16
+			};
+			headerLabel.SetBinding(Label.TextProperty, "GroupName");
+			headerLabel.SetBinding(AutomationIdProperty, new Binding("GroupName", stringFormat: "GroupHeader12008{0}"));
+
+			var countLabel = new Label
+			{
+				FontSize = 12
+			};
+			countLabel.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "Count: {0}"));
+			countLabel.SetBinding(AutomationIdProperty, new Binding("GroupName", stringFormat: "GroupCount12008{0}"));
+
+			headerGrid.Children.Add(headerLabel);
+			headerGrid.Children.Add(countLabel);
+			Grid.SetColumn(headerLabel, 0);
+			Grid.SetColumn(countLabel, 1);
+			return headerGrid;
+		});
+
+		// Item Template
+		collectionView.ItemTemplate = new DataTemplate(() =>
+		{
+			var itemGrid = new Grid
+			{
+				Padding = 10,
+				BackgroundColor = Colors.LightGray,
+				Margin = new Thickness(2)
+			};
+
+			var itemLabel = new Label
+			{
+				FontSize = 14
+			};
+			itemLabel.SetBinding(Label.TextProperty, "Name");
+			itemLabel.SetBinding(AutomationIdProperty, new Binding("Name", stringFormat: "Item12008{0}"));
+
+			itemGrid.Children.Add(itemLabel);
+			return itemGrid;
+		});
+
+		Grid.SetRow(collectionView, 1);
+		grid.Children.Add(collectionView);
+
+		Content = grid;
 	}
 
-	void OnReorderCompleted(object sender, EventArgs e)
+
+	private void OnCreateEmptyGroupClicked(object sender, EventArgs e)
 	{
-		// Update status label with per-group counts so tests can verify actual data model changes
-		if (Content is VerticalStackLayout layout && layout.Children[0] is Label statusLabel)
+		if (this.BindingContext is Issue12008ViewModel viewModel)
 		{
-			var groupCounts = string.Join(", ", Groups.Select(g => $"{g.Name}:{g.Count}"));
-			statusLabel.Text = $"Reorder completed! {groupCounts}";
-			statusLabel.BackgroundColor = Color.FromArgb("#C8E6C9");
-		}
-	}
-
-	public class Issue12008Group : ObservableCollection<Item>
-	{
-		public string Name { get; set; }
-
-		public Issue12008Group(string name, ObservableCollection<Item> items)
-		{
-			Name = name;
-
-			foreach (var item in items)
-				Add(item);
-		}
-	}
-
-	public class Item
-	{
-		public string Name { get; set; }
-
-		public Item(string name)
-		{
-			Name = name;
+			viewModel.CreateEmptyGroup();
+			statusLabel.Text = "Status: Empty group created";
 		}
 	}
 }
+
+public class Issue12008ViewModel : INotifyPropertyChanged
+{
+	private ObservableCollection<Issue12008Group> _groupedItems;
+
+	public ObservableCollection<Issue12008Group> GroupedItems
+	{
+		get => _groupedItems;
+		set
+		{
+			_groupedItems = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public Issue12008ViewModel()
+	{
+		InitializeData();
+	}
+
+	private void InitializeData()
+	{
+		GroupedItems = new ObservableCollection<Issue12008Group>
+			{
+				new Issue12008Group("GroupA", new List<Issue12008Item>
+				{
+					new Issue12008Item("ItemA1"),
+					new Issue12008Item("ItemA2"),
+					new Issue12008Item("ItemA3")
+				}),
+				new Issue12008Group("GroupB", new List<Issue12008Item>
+				{
+					new Issue12008Item("ItemB1"),
+					new Issue12008Item("ItemB2")
+				}),
+				new Issue12008Group("GroupC", new List<Issue12008Item>
+				{
+					new Issue12008Item("ItemC1")
+				})
+			};
+	}
+
+	public void CreateEmptyGroup()
+	{
+		var emptyGroup = new Issue12008Group("EmptyGroup", new List<Issue12008Item>());
+		GroupedItems.Add(emptyGroup);
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected virtual void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+	}
+}
+
+public class Issue12008Group : ObservableCollection<Issue12008Item>
+{
+	public string GroupName { get; }
+
+	public Issue12008Group(string groupName, IEnumerable<Issue12008Item> items) : base(items)
+	{
+		GroupName = groupName;
+	}
+}
+
+public class Issue12008Item
+{
+	public string Name { get; }
+
+	public Issue12008Item(string name)
+	{
+		Name = name;
+	}
+}
+
