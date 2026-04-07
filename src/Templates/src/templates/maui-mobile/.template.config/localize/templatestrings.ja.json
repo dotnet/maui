@@ -1,8 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI アプリ",
   "description": "iOS、Android、Mac Catalyst、WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
-  "postActions/openInEditor/description": "エディターで MainPage.xaml を開きます。",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行します",
   "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします",

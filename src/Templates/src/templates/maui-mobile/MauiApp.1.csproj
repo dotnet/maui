@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>DOTNET_TFM-android</TargetFrameworks>
@@ -26,7 +26,7 @@
 		       <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
 		       <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 <!--#endif -->
 
@@ -52,24 +52,24 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#17171a" />
 <!--#endif -->
 
 		<!-- Splash Screen -->
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#17171a" BaseSize="128,128" />
 <!--#endif -->
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 		
 <!--#endif -->
@@ -85,7 +85,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
 
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="12.3.0" />

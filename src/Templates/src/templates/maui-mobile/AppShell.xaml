@@ -1,27 +1,27 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="MauiApp._1.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
     xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit"
     xmlns:pages="clr-namespace:MauiApp._1.Pages"
 <!--#endif -->
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
     xmlns:local="clr-namespace:MauiApp._1"
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
     Shell.FlyoutBehavior="Flyout"
 <!--#endif -->
     Title="MauiApp._1">
 
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
     <ShellContent
         Title="Dashboard"
         Icon="{StaticResource IconDashboard}"
