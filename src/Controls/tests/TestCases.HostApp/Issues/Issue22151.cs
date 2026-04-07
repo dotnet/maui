@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 22151, "SearchHandler keyboard does not show on programmatic focus", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 22151, "SearchHandler keyboard does not show on programmatic focus", PlatformAffected.UWP)]
 public class Issue22151 : Shell
 {
 	public Issue22151()
