@@ -19,11 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif MACUITEST
 		[TestFixture(TestDevice.Mac)]
 #elif WINTEST
-		[TestFixture(TestDevice.Windows)]
+	[TestFixture(TestDevice.Windows)]
 #endif
 	public abstract class UITest : UITestBase
 	{
-		string _defaultiOSVersion = "26.0";
+		string _defaultiOSVersion = "18.5";
 
 		protected const int SetupMaxRetries = 1;
 		protected const int InstrumentationCrashMaxRetries = 1;
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
 					break;
 				case TestDevice.iOS:
-					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "923A5CD6-992C-4D03-ABD4-1EEA6F183433";
+					string udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "";
 					if (!string.IsNullOrEmpty(udid))
 					{
 						config.SetProperty("Udid", udid);
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// <param name="cropBottom">Number of pixels to crop from the bottom of the screenshot.</param>
 		/// <param name="tolerance">Tolerance level for image comparison as a percentage from 0 to 100.</param>
 #if MACUITEST || WINTEST
-/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
+		/// <param name="includeTitleBar">Whether to include the title bar in the screenshot comparison.</param>
 #endif
 		/// <remarks>
 		/// This method immediately throws an exception if the screenshot verification fails.
