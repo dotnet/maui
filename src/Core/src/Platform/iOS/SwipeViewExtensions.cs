@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Platform
 		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection)
 		{
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
-			double threshold = swipeView.Threshold;
 			if (items == null)
 				return Size.Zero;
 
@@ -20,19 +19,16 @@ namespace Microsoft.Maui.Platform
 			{
 				if (swipeItem is ISwipeItemMenuItem)
 				{
-					return new Size(items.Mode == SwipeMode.Execute ? (threshold > 0 ? threshold : contentWidth) / items.Count : (threshold < SwipeItemWidth ? SwipeItemWidth : threshold), contentHeight);
+					return new Size(items.Mode == SwipeMode.Execute ? contentWidth / items.Count : SwipeItemWidth, contentHeight);
 				}
 
 				if (swipeItem is ISwipeItemView horizontalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = horizontalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-					double swipeItemWidth;
-
-					if (swipeItemViewSizeRequest.Width > 0)
-						swipeItemWidth = threshold > swipeItemViewSizeRequest.Width ? threshold : swipeItemViewSizeRequest.Width;
-					else
-						swipeItemWidth = threshold > SwipeItemWidth ? threshold : SwipeItemWidth;
+					double swipeItemWidth = swipeItemViewSizeRequest.Width > 0
+						? swipeItemViewSizeRequest.Width
+						: SwipeItemWidth;
 
 					return new Size(swipeItemWidth, contentHeight);
 				}
@@ -42,19 +38,16 @@ namespace Microsoft.Maui.Platform
 				if (swipeItem is ISwipeItemMenuItem)
 				{
 					var swipeItemHeight = GetSwipeItemHeight(swipeView, swipeDirection, contentView);
-					return new Size(contentWidth / items.Count, (threshold > 0 && threshold < swipeItemHeight) ? threshold : swipeItemHeight);
+					return new Size(contentWidth / items.Count, swipeItemHeight);
 				}
 
 				if (swipeItem is ISwipeItemView verticalSwipeItemView)
 				{
 					var swipeItemViewSizeRequest = verticalSwipeItemView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
-					double swipeItemHeight;
-
-					if (swipeItemViewSizeRequest.Width > 0)
-						swipeItemHeight = threshold > swipeItemViewSizeRequest.Height ? threshold : (float)swipeItemViewSizeRequest.Height;
-					else
-						swipeItemHeight = threshold > contentHeight ? threshold : contentHeight;
+					double swipeItemHeight = swipeItemViewSizeRequest.Height > 0
+						? swipeItemViewSizeRequest.Height
+						: contentHeight;
 
 					return new Size(contentWidth / items.Count, swipeItemHeight);
 				}
