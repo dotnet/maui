@@ -280,13 +280,20 @@ internal static class LayoutFactory2
 		WeakReference<CarouselView> weakItemsView,
 		WeakReference<CarouselViewController2> weakController)
 	{
+		// Keep the typed layout around so the final layout selection can opt vertical carousels
+		// into the custom snap-aware compositional layout.
+		var linearItemsLayout = weakItemsView.TryGetTarget(out var carouselView)
+			? carouselView.ItemsLayout as LinearItemsLayout
+			: null;
+
 		NSCollectionLayoutDimension itemWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 		NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 		NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 		NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 		NSCollectionLayoutGroup group = null;
+		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 
-		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
+		var sectionProvider = new UICollectionViewCompositionalLayoutSectionProvider((sectionIndex, environment) =>
 		{
 			if (!weakItemsView.TryGetTarget(out var itemsView))
 			{
@@ -364,7 +371,11 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				double page = (offset.X + sectionMargin) / effectiveItemWidth;
+				var pageOffset = isHorizontal ? offset.X : offset.Y;
+				var pageSize = isHorizontal
+					? env.Container.ContentSize.Width
+					: env.Container.ContentSize.Height;
+				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
@@ -408,6 +419,8 @@ internal static class LayoutFactory2
 							return;
 						}
 
+						// Keep the loop correction aligned with the active axis so vertical carousels
+						// jump back into the real range using Top instead of a horizontal anchor.
 						//This will move the carousel to fake the loop
 						cv2Controller.CollectionView.ScrollToItem(
 							NSIndexPath.FromItemSection(pageIndex, 0),
@@ -427,6 +440,25 @@ internal static class LayoutFactory2
 
 			return section;
 		});
+
+		// Route vertical CarouselView layouts with snap points through the custom compositional
+		// layout so MandatorySingle snapping uses the existing TargetContentOffset pipeline.
+		// Vertical carousels without snap points continue to use the standard layout to avoid
+		// unintended behavior changes.
+		var layout = linearItemsLayout?.Orientation == ItemsLayoutOrientation.Vertical
+				&& linearItemsLayout.SnapPointsType != SnapPointsType.None
+			? new CustomUICollectionViewCompositionalLayout(
+				new LayoutSnapInfo
+				{
+					SnapType = linearItemsLayout.SnapPointsType,
+					SnapAligment = linearItemsLayout.SnapPointsAlignment
+				},
+				null,
+				null,
+				sectionProvider,
+				layoutConfiguration,
+				linearItemsLayout)
+			: new UICollectionViewCompositionalLayout(sectionProvider, layoutConfiguration);
 
 		return layout;
 	}
