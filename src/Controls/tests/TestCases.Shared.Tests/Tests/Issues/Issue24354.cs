@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
   [Test]
   [Category(UITestCategories.Layout)]
-  public void Issue24354Test()
+  public void GridColumnSpacingDoesNotAffectChildScrollViewContentSize()
   {
-   App.WaitForElement("EntryField");
+   App.WaitForElement("ScrollView");
    VerifyScreenshot();
   }
  }
