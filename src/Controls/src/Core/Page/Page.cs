@@ -323,10 +323,32 @@ namespace Microsoft.Maui.Controls
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
 
 			args.FlowDirection = flowDirection;
+
+			var window = Window;
 			if (IsPlatformEnabled)
-				Window.AlertManager.RequestActionSheet(this, args);
+			{
+				if (window is null)
+				{
+					Trace.WriteLine("DisplayActionSheetAsync: Window is null, action sheet will not be shown. This can happen if the page is not attached to a window.");
+					args.SetResult(cancel);
+					return args.Result.Task;
+				}
+				window.AlertManager.RequestActionSheet(this, args);
+			}
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestActionSheet(this, args));
+			{
+				_pendingActions.Add(() =>
+				{
+					var w = Window;
+					if (w is not null)
+						w.AlertManager.RequestActionSheet(this, args);
+					else
+					{
+						Trace.WriteLine("DisplayActionSheetAsync: Window is null, action sheet will not be shown. This can happen if the page is not attached to a window.");
+						args.SetResult(cancel);
+					}
+				});
+			}
 
 			return args.Result.Task;
 		}
@@ -384,10 +406,31 @@ namespace Microsoft.Maui.Controls
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
 
+			var window = Window;
 			if (IsPlatformEnabled)
-				Window.AlertManager.RequestAlert(this, args);
+			{
+				if (window is null)
+				{
+					Trace.WriteLine("DisplayAlertAsync: Window is null, alert will not be shown. This can happen if the page is not attached to a window.");
+					args.SetResult(false);
+					return args.Result.Task;
+				}
+				window.AlertManager.RequestAlert(this, args);
+			}
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestAlert(this, args));
+			{
+				_pendingActions.Add(() =>
+				{
+					var w = Window;
+					if (w is not null)
+						w.AlertManager.RequestAlert(this, args);
+					else
+					{
+						Trace.WriteLine("DisplayAlertAsync: Window is null, alert will not be shown. This can happen if the page is not attached to a window.");
+						args.SetResult(false);
+					}
+				});
+			}
 
 			return args.Result.Task;
 		}
@@ -408,10 +451,31 @@ namespace Microsoft.Maui.Controls
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
+			var window = Window;
 			if (IsPlatformEnabled)
-				Window.AlertManager.RequestPrompt(this, args);
+			{
+				if (window is null)
+				{
+					Trace.WriteLine("DisplayPromptAsync: Window is null, prompt will not be shown. This can happen if the page is not attached to a window.");
+					args.SetResult(null);
+					return args.Result.Task;
+				}
+				window.AlertManager.RequestPrompt(this, args);
+			}
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestPrompt(this, args));
+			{
+				_pendingActions.Add(() =>
+				{
+					var w = Window;
+					if (w is not null)
+						w.AlertManager.RequestPrompt(this, args);
+					else
+					{
+						Trace.WriteLine("DisplayPromptAsync: Window is null, prompt will not be shown. This can happen if the page is not attached to a window.");
+						args.SetResult(null);
+					}
+				});
+			}
 
 			return args.Result.Task;
 		}
