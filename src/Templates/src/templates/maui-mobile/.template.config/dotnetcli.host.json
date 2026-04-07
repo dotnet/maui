@@ -7,6 +7,9 @@
     "Framework": {
       "longName": "framework"
     },
+    "UI": {
+      "longName": "ui"
+    },
     "IncludeSampleContent": {
       "longName": "sample-content",
       "shortName": "sc"
@@ -24,6 +27,7 @@
     }
   },
   "usageExamples": [
-    "--framework DOTNET_TFM_VALUE"
+    "--framework DOTNET_TFM_VALUE",
+    "--framework DOTNET_TFM_VALUE --ui csharp"
   ]
 }
