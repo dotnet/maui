@@ -48,12 +48,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				System.Threading.Thread.Sleep(200);
 			}
 
-			// Record initial X of ThresholdContent, then swipe right (need >200pt drag to exceed Threshold=200)
+			// Record initial X of ThresholdContent, then swipe right.
+			// Use a 350px drag (vs 200px for default) — Android Appium coordinates are in physical pixels,
+			// so on a 2.5x density emulator 100dp ≈ 250px. A 340px drag ≈ 132dp safely exceeds
+			// the min(Threshold=200, menuWidth=100) = 100dp trigger on any standard emulator.
 			var thresholdContentRect = App.WaitForElement("ThresholdContent").GetRect();
 			float initialThresholdX = thresholdContentRect.X;
 			App.DragCoordinates(
 				thresholdContentRect.X + 10, thresholdContentRect.Y + thresholdContentRect.Height / 2,
-				thresholdContentRect.X + 250, thresholdContentRect.Y + thresholdContentRect.Height / 2);
+				thresholdContentRect.X + 350, thresholdContentRect.Y + thresholdContentRect.Height / 2);
 
 			// Poll until snap animation settles
 			float openThresholdX = initialThresholdX;
