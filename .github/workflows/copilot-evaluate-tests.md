@@ -14,8 +14,8 @@ on:
         description: 'PR number to evaluate'
         required: true
         type: number
-      suppress_comment:
-        description: 'Dry-run — evaluate but do not post a comment on the PR'
+      suppress_output:
+        description: 'Dry-run — evaluate but do not post output on the PR'
         required: false
         type: boolean
         default: false
@@ -23,11 +23,14 @@ on:
     - "copilot[bot]"
 
 if: >-
-  (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
-  github.event_name == 'workflow_dispatch' ||
-  (github.event_name == 'issue_comment' &&
-   github.event.issue.pull_request &&
-   startsWith(github.event.comment.body, '/evaluate-tests'))
+  ((!github.event.repository.fork) || github.event_name == 'workflow_dispatch') &&
+  (
+    (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
+    github.event_name == 'workflow_dispatch' ||
+    (github.event_name == 'issue_comment' &&
+     github.event.issue.pull_request &&
+     startsWith(github.event.comment.body, '/evaluate-tests'))
+  )
 
 permissions:
   contents: read
@@ -43,6 +46,7 @@ safe-outputs:
     max: 1
     target: "*"
   noop:
+    report-as-issue: false
   messages:
     footer: "> 🧪 *Test evaluation by [{workflow_name}]({run_url})*"
     run-started: "🔬 Evaluating tests on this PR… [{workflow_name}]({run_url})"
@@ -124,9 +128,9 @@ Then stop — do not proceed with the evaluation.
 
 ## Dry-run mode
 
-When triggered via `workflow_dispatch` with `suppress_comment` = `${{ inputs.suppress_comment }}`:
-- If **true**, perform the full evaluation but **do not** post a comment on the PR. Write the evaluation to the workflow log only. This is useful for testing the skill without spamming the PR.
-- If **false** (default), post the comment as normal.
+When triggered via `workflow_dispatch`, the `suppress_output` input controls behavior.
+- If `${{ inputs.suppress_output }}` == **true**, perform the full evaluation but **do not** post output on the PR. Write the evaluation to the workflow log only. This is useful for testing the skill without spamming the PR.
+- If **false** (default), post the output as normal.
 
 ## When no action is needed
 
@@ -147,7 +151,7 @@ Do not post a comment and do not silently exit — always use `noop` so the work
 
 ## Posting Results
 
-If dry-run mode is active (`suppress_comment` is true), log the evaluation report to stdout and stop — do **not** call `add_comment`.
+If dry-run mode is active (`suppress_output` is true), log the evaluation report to stdout and stop — do **not** call `add_comment`.
 
 Otherwise, call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
 
