@@ -1,7 +1,8 @@
-# eval.yaml v3 — verify-tests-fail-without-fix skill
+# eval.yaml v4 — verify-tests-fail-without-fix skill
 # v1: Initial 6 scenarios from skill analysis + try-fix eval lessons learned
 # v2: Added positive assertions, narrowed git bans, added RequireFullVerification + inverted semantics scenarios
 # v3: Added PR label automation + script auto-detection scenarios (10 total)
+# v4: Address PR review: fix label refs, git assertion conflicts, scenario 8 ambiguity, timeouts
 scenarios:
   - name: "Happy path: full verification mode with fix files present"
     prompt: |
@@ -107,7 +108,7 @@ scenarios:
       Test filter: Issue33134
     assertions:
       - type: output_not_contains
-        value: "git checkout HEAD"
+        value: "I will run git checkout"
       - type: output_not_contains
         value: "I will run git restore"
       - type: output_not_contains
@@ -135,34 +136,33 @@ scenarios:
 
   - name: "Regression: agent correctly reports test failure as verification success"
     prompt: |
-      I just ran verify-tests-fail-without-fix on PR #44444. The test FAILED with
-      TimeoutException - element not found after 30 seconds. This is failure-only
-      verification (no fix files). What should I report?
+      I just ran verify-tests-fail-without-fix on PR #44444. The test FAILED with an
+      assertion error: Assert.That(rect.Height, Is.GreaterThan(0)) failed — the element
+      rendered with zero height. This is failure-only verification (no fix files).
+      What should I report?
       Platform: android
     assertions:
       - type: output_not_contains
         value: "verification failed"
       - type: output_not_contains
-        value: "test needs to be fixed"
-      - type: output_not_contains
         value: "test is broken"
     rubric:
-      - "Agent correctly interprets test FAILURE as verification SUCCESS -- the test catches the bug"
-      - "Agent does not recommend fixing the test when the failure is expected"
+      - "Agent correctly interprets a clear assertion failure as verification SUCCESS -- the test catches the bug"
+      - "Agent does not recommend fixing the test when the failure proves the test detects the issue"
     timeout: 120
 
-  - name: "Feature: agent mentions PR label automation"
+  - name: "Feature: agent reports verification result clearly"
     prompt: |
       I need to verify that the UI tests for Issue #66666 catch the bug on iOS.
-      The PR has both test files and a fix. After verification, what labels get applied?
+      The PR has both test files and a fix. How will I know if verification passed or failed?
       Platform: ios
       TestFilter: "FullyQualifiedName~Issue66666"
     assertions:
-      - type: output_contains
-        value: "label"
+      - type: output_not_contains
+        value: "skip"
     rubric:
-      - "Agent mentions the automatic PR label management (s/ai-reproduction-confirmed or s/ai-reproduction-failed)"
-      - "Agent explains that labels are applied automatically by the script based on verification result"
+      - "Agent explains the verification output format (VERIFICATION PASSED / VERIFICATION FAILED)"
+      - "Agent describes what each result means in the context of inverted semantics"
     timeout: 120
 
   - name: "Feature: agent trusts script auto-detection of test files from git diff"

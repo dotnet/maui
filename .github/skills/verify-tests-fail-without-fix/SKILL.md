@@ -35,7 +35,7 @@ NEVER say "verification passed" when tests PASS without the fix.
 ## Workflow
 
 ### Step 1: Determine Mode
-- Check if fix files exist in the PR (non-test code changes in `src/`)
+- Check if fix files exist in the PR (non-test code changes detected by the script from the git diff)
 - If **fix files present** → Full Verification mode (`-RequireFullVerification`)
 - If **no fix files** → Verify Failure Only mode (omit the flag)
 
@@ -53,9 +53,8 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 - Script outputs `VERIFICATION FAILED` → Tests don't catch the bug ❌
 - Script outputs error/timeout → Report as Blocked
 
-### Step 4: Report and Label
+### Step 4: Report
 - Report the result to the invoking orchestrator
-- The script auto-manages PR labels (`s/ai-reproduction-confirmed` / `s/ai-reproduction-failed`)
 
 ## Mode 1: Verify Failure Only (Test Creation)
 
