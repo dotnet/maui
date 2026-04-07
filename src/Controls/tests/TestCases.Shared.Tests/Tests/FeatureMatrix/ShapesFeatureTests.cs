@@ -129,6 +129,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
 
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "100,20 170,75 100,130 30,75");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -149,6 +154,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -172,6 +182,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("ShadowCheckBox");
 		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -285,6 +300,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.ClearText("StrokeDashOffsetEntry");
 		App.EnterText("StrokeDashOffsetEntry", "5");
 
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -315,6 +335,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.ClearText("StrokeDashOffsetEntry");
 		App.EnterText("StrokeDashOffsetEntry", "5");
 
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "100,20 170,75 100,130 30,75");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -344,6 +369,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.Tap("StrokeDashOffsetEntry");
 		App.ClearText("StrokeDashOffsetEntry");
 		App.EnterText("StrokeDashOffsetEntry", "3");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -630,6 +660,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
 
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "100,20 170,75 100,130 30,75");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -653,6 +688,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
 
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -675,6 +715,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -805,6 +850,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
 
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "100,20 170,75 100,130 30,75");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -833,6 +883,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
 
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -860,6 +915,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.Tap("StrokeThicknessEntry");
 		App.ClearText("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "5");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -1045,6 +1105,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("StrokeLineJoinRoundRadioButton");
 		App.Tap("StrokeLineJoinRoundRadioButton");
 
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -1070,6 +1135,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("StrokeLineJoinBevelRadioButton");
 		App.Tap("StrokeLineJoinBevelRadioButton");
+
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -1331,6 +1401,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("StrokeLineCapRoundRadioButton");
 		App.Tap("StrokeLineCapRoundRadioButton");
 
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -1356,6 +1431,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("StrokeLineCapSquareRadioButton");
 		App.Tap("StrokeLineCapSquareRadioButton");
+
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -1383,6 +1463,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("StrokeLineCapRoundRadioButton");
 		App.Tap("StrokeLineCapRoundRadioButton");
 
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -1408,6 +1493,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("StrokeLineCapSquareRadioButton");
 		App.Tap("StrokeLineCapSquareRadioButton");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -1435,6 +1525,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("StrokeLineJoinRoundRadioButton");
 		App.Tap("StrokeLineJoinRoundRadioButton");
 
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "100,20 170,75 100,130 30,75");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -1450,6 +1545,8 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("PolygonRadioButton");
 		App.Tap("PolygonRadioButton");
 
+
+
 		App.WaitForElement("StrokeColorRedRadioButton");
 		App.Tap("StrokeColorRedRadioButton");
 
@@ -1460,6 +1557,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("StrokeLineJoinBevelRadioButton");
 		App.Tap("StrokeLineJoinBevelRadioButton");
+
+		App.WaitForElement("PolygonPointsEntry");
+		App.Tap("PolygonPointsEntry");
+		App.ClearText("PolygonPointsEntry");
+		App.EnterText("PolygonPointsEntry", "100,20 170,75 100,130 30,75");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -1487,6 +1589,11 @@ public class ShapesFeatureTests : _GalleryUITest
 		App.WaitForElement("StrokeLineJoinRoundRadioButton");
 		App.Tap("StrokeLineJoinRoundRadioButton");
 
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
+
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
@@ -1512,6 +1619,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("StrokeLineJoinBevelRadioButton");
 		App.Tap("StrokeLineJoinBevelRadioButton");
+
+		App.WaitForElement("PathDataEntry");
+		App.Tap("PathDataEntry");
+		App.ClearText("PathDataEntry");
+		App.EnterText("PathDataEntry", "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
@@ -1562,6 +1674,11 @@ public class ShapesFeatureTests : _GalleryUITest
 
 		App.WaitForElement("FillRuleNonzeroRadioButton");
 		App.Tap("FillRuleNonzeroRadioButton");
+
+		App.WaitForElement("PolylinePointsEntry");
+		App.Tap("PolylinePointsEntry");
+		App.ClearText("PolylinePointsEntry");
+		App.EnterText("PolylinePointsEntry", "50,100 100,50 150,100 200,50 250,100");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
