@@ -551,11 +551,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (_shader != null)
 			{
 				// Mirror iOS ReplacePathWithStrokedPath: convert stroke geometry into a fill path
-				var strokedOutline = new Path();
+				using var strokedOutline = new Path();
 				CurrentState.StrokePaintWithAlpha.GetFillPath(platformPath, strokedOutline);
 				// FillPaintWithAlpha already has the gradient shader from SetFillPaint
 				_canvas.DrawPath(strokedOutline, CurrentState.FillPaintWithAlpha);
-				strokedOutline.Dispose();
 			}
 			else
 			{
