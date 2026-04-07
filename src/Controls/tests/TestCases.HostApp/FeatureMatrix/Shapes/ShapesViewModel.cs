@@ -51,9 +51,9 @@ public class ShapesViewModel : INotifyPropertyChanged
 		Y1 = 0;
 		X2 = 280;
 		Y2 = 0;
-		Points = "100,20 170,75 100,130 30,75";
-		PolylinePoints = "50,100 100,50 150,100 200,50 250,100";
-		PathData = "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z";
+		Points = null;
+		PolylinePoints = null;
+		PathData = null;
 	}
 	public bool HasShadow
 	{
