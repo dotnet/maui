@@ -1,4 +1,4 @@
-﻿#if ANDROID //WebCiewClient is only used in Android
+﻿#if ANDROID //WebViewClient is only used in Android
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,9 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void ShouldOverrideUrlLoading_Called()
 		{
-			var statusLabel = App.WaitForElement("StatusLabel");
-			var text = statusLabel.GetText();
-			Assert.That(text, Is.EqualTo("SUCCESS"), $"Expected ShouldOverrideUrlLoading to be called and update the status label text to 'SUCCESS', but got '{text}' instead.");
+			// The label starts as "FAILED" and updates asynchronously after ShouldOverrideUrlLoading fires.
+    // Poll until the text changes to "SUCCESS" instead of reading a stale initial value.
+    var result = App.WaitForTextToBePresentInElement("StatusLabel", "SUCCESS", timeout: TimeSpan.FromSeconds(10));
+    Assert.That(result, Is.True, "Expected ShouldOverrideUrlLoading to be called and update the status label text to 'SUCCESS', but it was not updated within the timeout.");
 		}
 	}
 }
