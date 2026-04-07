@@ -253,9 +253,19 @@ namespace Microsoft.Maui.Controls.Platform
 			foreach (var item in toolbarItems)
 				item.PropertyChanged -= toolbarItemChanged;
 
-			// Clean up all badge drawables when the toolbar is being disposed
-			foreach (var key in _badgeDrawables.Keys.ToArray())
-				CleanupBadgeDrawable(key);
+			// Clean up badge drawables for this toolbar's menu items only
+			if (toolbar?.Menu is { } menu)
+			{
+				for (int i = 0; i < menu.Size(); i++)
+				{
+					var menuItem = menu.GetItem(i);
+					if (menuItem != null)
+					{
+						CleanupBadgeDrawable(menuItem.ItemId);
+						_menuItemToolbarItemMap.TryRemove(menuItem.ItemId, out _);
+					}
+				}
+			}
 		}
 
 		internal static void UpdateToolbarItemBadge(AToolbar toolbar, IMenuItem menuItem, ToolbarItem toolbarItem)
@@ -289,7 +299,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Guard against recycled menu items: verify this menuItemId still
 				// maps to the same ToolbarItem we intended to update
-				if (_menuItemToolbarItemMap.TryGetValue(menuItemId, out var currentToolbarItem) &&
+				if (_menuItemToolbarItemMap.TryGetValue(menuItemId, out var weakRef) &&
+					weakRef.TryGetTarget(out var currentToolbarItem) &&
 					!ReferenceEquals(currentToolbarItem, toolbarItem))
 					return;
 

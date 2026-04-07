@@ -59,22 +59,29 @@ namespace Microsoft.Maui.Controls
 					img.SetBinding(WImage.SourceProperty, "Value");
 					img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
 
-					// Wrap icon in a Grid with InfoBadge overlay for badge support
-					var grid = new WGrid();
-#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
-					grid.Children.Add(img);
-
-					var infoBadge = new InfoBadge
+					if (item.BadgeText is not null)
 					{
-						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-						Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
-					};
-					UpdateInfoBadge(infoBadge, item);
-					grid.Children.Add(infoBadge);
+						// Wrap icon in a Grid with InfoBadge overlay for badge support
+						var grid = new WGrid();
+#pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
+						grid.Children.Add(img);
+
+						var infoBadge = new InfoBadge
+						{
+							HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
+							VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
+							Margin = new Microsoft.UI.Xaml.Thickness(0, -4, -4, 0),
+						};
+						UpdateInfoBadge(infoBadge, item);
+						grid.Children.Add(infoBadge);
 #pragma warning restore RS0030
 
-					button.Content = grid;
+						button.Content = grid;
+					}
+					else
+					{
+						button.Content = img;
+					}
 				}
 
 				// For text-only toolbar items (no icon), wrap the label in a Grid
@@ -159,11 +166,23 @@ namespace Microsoft.Maui.Controls
 							}
 							else if (toolbarItem.BadgeText is not null)
 							{
-								// Text-only item that didn't have a badge before - wrap content
-								var textBlock = new Microsoft.UI.Xaml.Controls.TextBlock { Text = toolbarItem.Text ?? string.Empty };
+								// Item didn't have a badge before - wrap content in Grid with InfoBadge
+								var existingContent = button.Content as Microsoft.UI.Xaml.UIElement;
+								if (existingContent == null && !toolbarItem.IconImageSource.IsNullOrEmpty())
+								{
+									var img = new WImage();
+									img.SetBinding(WImage.SourceProperty, "Value");
+									img.SetBinding(WImage.DataContextProperty, "IconImageSource", _imageConverter);
+									existingContent = img;
+								}
+								else if (existingContent == null)
+								{
+									existingContent = new Microsoft.UI.Xaml.Controls.TextBlock { Text = toolbarItem.Text ?? string.Empty };
+								}
+
 								var newGrid = new WGrid();
 #pragma warning disable RS0030 // Standalone WinUI Grid, not a MauiPanel
-								newGrid.Children.Add(textBlock);
+								newGrid.Children.Add(existingContent);
 
 								var newBadge = new InfoBadge
 								{
