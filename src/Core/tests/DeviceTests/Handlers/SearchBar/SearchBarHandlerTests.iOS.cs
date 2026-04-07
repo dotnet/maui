@@ -7,11 +7,141 @@ using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		// Regression tests for https://github.com/dotnet/maui/issues/30779
+		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
+
+		[Fact(DisplayName = "CursorPosition Updates When SearchBar Gains Focus (Issue 30779)")]
+		public async Task CursorPositionUpdatesWhenSearchBarGainsFocus()
+		{
+			// The actual issue #30779 scenario: user taps SearchBar to focus it,
+			// which causes UIKit to position cursor at end of existing text.
+			// DidChangeSelection fires → CursorPosition should update to text.Length.
+			// Before the fix (no DidChangeSelection handler), CursorPosition stayed at 0.
+			var searchBar = new SearchBarStub { Text = "Hello" };
+
+			await AttachAndRun(searchBar, async (handler) =>
+			{
+				// Simulate user tapping the SearchBar to focus it
+				handler.QueryEditor.BecomeFirstResponder();
+
+				// UIKit fires DidChangeSelection after focus; OnSelectionChanged should update CursorPosition.
+				await AssertEventually(() => searchBar.CursorPosition == 5);
+			});
+
+			// Cursor should be at position 5 (end of "Hello") after focus
+			Assert.Equal(5, searchBar.CursorPosition);
+		}
+
+		[Fact(DisplayName = "CursorPosition Does Not Change When Text Set Programmatically Without Focus (Issue 30779)")]
+		public async Task CursorPositionDoesNotChangeWhenTextSetProgrammaticallyWithoutFocus()
+		{
+			// Verifies the CORRECT behavior: programmatic UISearchBar.Text change on an
+			// unfocused SearchBar must NOT update CursorPosition. The user may have
+			// intentionally positioned the cursor somewhere; a background data-binding
+			// update should not silently reset it.
+			var searchBar = new SearchBarStub();
+			// CursorPosition default is 0; it must remain 0 after programmatic text set
+
+			await AttachAndRun(searchBar, (handler) =>
+			{
+				// Set text programmatically — SearchBar is NOT focused (not first responder)
+				GetNativeSearchBar(handler).Text = "Hello";
+
+				// Cursor position must stay at 0; it should NOT jump to 5
+				Assert.Equal(0, searchBar.CursorPosition);
+			});
+
+			Assert.Equal(0, searchBar.CursorPosition);
+		}
+
+		[Fact(DisplayName = "SelectionLength Updates When Text Is Selected Natively (Issue 30779)")]
+		public async Task SelectionLengthUpdatesWhenTextIsSelectedNatively()
+		{
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+			int virtualSelectionLength = -1;
+			int virtualCursorPosition = -1;
+
+			await AttachAndRun(searchBar, (handler) =>
+			{
+				var control = handler.QueryEditor;
+				// Must be focused: OnSelectionChanged only updates cursor/selection when IsFirstResponder.
+				control.BecomeFirstResponder();
+
+				// Select the word "Hello" (chars 0–5)
+				var startPosition = control.GetPosition(control.BeginningOfDocument, 0);
+				var endPosition = control.GetPosition(control.BeginningOfDocument, 5);
+				// SelectedTextRange assignment fires DidChangeSelection synchronously
+				control.SelectedTextRange = control.GetTextRange(startPosition, endPosition);
+
+				virtualSelectionLength = searchBar.SelectionLength;
+				virtualCursorPosition = searchBar.CursorPosition;
+			});
+
+			// Selection of 5 characters starting at position 0 should be reflected in the VirtualView
+			Assert.Equal(0, virtualCursorPosition);
+			Assert.Equal(5, virtualSelectionLength);
+		}
+
+		[Fact(DisplayName = "CursorPosition Updates When Cursor Is Repositioned Without Text Change (Issue 30779)")]
+		public async Task CursorPositionUpdatesWhenRepositionedWithoutTextChange()
+		{
+			// Verifies: manually re-positioning the cursor updates CursorPosition (the gap fixed for iOS)
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+			int cursorAfterReposition = -1;
+
+			await AttachAndRun(searchBar, (handler) =>
+			{
+				var control = handler.QueryEditor;
+				// Must be focused: OnSelectionChanged only updates cursor when IsFirstResponder.
+				control.BecomeFirstResponder();
+
+				// Move cursor to position 5 (between "Hello" and " World"), no text change
+				var pos = control.GetPosition(control.BeginningOfDocument, 5);
+				// SelectedTextRange assignment fires DidChangeSelection synchronously
+				control.SelectedTextRange = control.GetTextRange(pos, pos);
+
+				cursorAfterReposition = searchBar.CursorPosition;
+			});
+
+			// Cursor should be at position 5 (no text was typed, just repositioned)
+			Assert.Equal(5, cursorAfterReposition);
+		}
+
+		[Fact(DisplayName = "SelectionLength And CursorPosition Both Update On Text Selection (Issue 30779)")]
+		public async Task SelectionLengthAndCursorPositionBothUpdateOnSelection()
+		{
+			// Verifies: selection length gets the correct selected value (the gap fixed for iOS)
+			var searchBar = new SearchBarStub { Text = "Hello World" };
+			int cursorAfterSelect = -1;
+			int selectionAfterSelect = -1;
+
+			await AttachAndRun(searchBar, (handler) =>
+			{
+				var control = handler.QueryEditor;
+				// Must be focused: OnSelectionChanged only updates cursor/selection when IsFirstResponder.
+				control.BecomeFirstResponder();
+
+				// Select " World" (6 chars starting at position 5)
+				var start = control.GetPosition(control.BeginningOfDocument, 5);
+				var end = control.GetPosition(control.BeginningOfDocument, 11);
+				// SelectedTextRange assignment fires DidChangeSelection synchronously
+				control.SelectedTextRange = control.GetTextRange(start, end);
+
+				cursorAfterSelect = searchBar.CursorPosition;
+				selectionAfterSelect = searchBar.SelectionLength;
+			});
+
+			Assert.Equal(5, cursorAfterSelect);
+			Assert.Equal(6, selectionAfterSelect);
+		}
+
+
 		[Theory(DisplayName = "Gradient Background Initializes Correctly")]
 		[InlineData(0xFFFF0000, 0xFFFE2500)]
 		[InlineData(0xFF00FF00, 0xFF04F800)]
