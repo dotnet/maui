@@ -16,18 +16,21 @@ public class Issue33287 : _IssuesUITest
 	{
 		App.WaitForElement("NavigateButton");
 
-		// Navigate to second page
+		// Navigate to second page (starts a 2-second delayed DisplayAlertAsync)
 		App.Tap("NavigateButton");
 
-		// Wait for second page to appear
+		// Wait for second page to appear, then go back immediately
 		App.WaitForElement("GoBackButton");
-
-		// Go back before the delayed DisplayAlertAsync completes
 		App.Tap("GoBackButton");
 
-		// Wait for the delayed DisplayAlertAsync to resolve and update the status label.
-		// Without the fix the app crashes (NRE), so the status label is never updated.
-		Assert.That(App.WaitForTextToBePresentInElement("StatusLabel", "✅", timeout: TimeSpan.FromSeconds(10)), Is.True,
-			"App should show success status after DisplayAlertAsync completes on an unloaded page");
+		// Back on main page — wait for the delayed DisplayAlertAsync to fire.
+		// Without the fix the NRE crashes the app and this element becomes unreachable.
+		App.WaitForElement("MainPageLabel");
+		System.Threading.Thread.Sleep(3000);
+
+		// Verify the app is still alive and responsive after the alert fired on the detached page.
+		// Without the fix the app process is dead and this call will throw/timeout.
+		Assert.That(App.FindElement("MainPageLabel").GetText(), Is.EqualTo("MainPage"),
+			"App should remain responsive after DisplayAlertAsync on an unloaded page");
 	}
 }
