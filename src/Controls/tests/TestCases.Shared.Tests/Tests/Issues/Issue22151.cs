@@ -14,13 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
-		public void SearchHandlerProgrammaticFocusShouldWork()
+		public void SearchHandlerShowSoftInputShouldWork()
 		{
-			App.WaitForElement("focusButton");
-			App.Tap("focusButton");
-
-			var focusResult = App.WaitForElement("focusResultLabel").GetText();
-			Assert.That(focusResult, Is.EqualTo("FocusResult: True"));
+			App.WaitForElement("ShowKeyboardButton");
+			App.Tap("ShowKeyboardButton");
 
 			var isFocused = App.WaitForElement("isFocusedLabel").GetText();
 			Assert.That(isFocused, Is.EqualTo("IsFocused: True"));

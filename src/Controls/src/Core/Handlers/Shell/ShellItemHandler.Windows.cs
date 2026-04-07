@@ -109,7 +109,8 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentSearchHandler != null)
 			{
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
-				_currentSearchHandler.FocusChangeRequested -= OnSearchHandlerFocusChangeRequested;
+				_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+				_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 			}
 
 			if (_shellItem?.Parent is IShellController controller)
@@ -306,7 +307,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (_currentSearchHandler is not null)
 				{
 					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
-					_currentSearchHandler.FocusChangeRequested -= OnSearchHandlerFocusChangeRequested;
+					_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+					_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 				}
 
 				_currentSearchHandler = newSearchHandler;
@@ -325,7 +327,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
-					_currentSearchHandler.FocusChangeRequested += OnSearchHandlerFocusChangeRequested;
+					_currentSearchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
+					_currentSearchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
@@ -369,32 +372,27 @@ namespace Microsoft.Maui.Controls.Handlers
 			_currentSearchHandler?.SetIsFocused(false);
 		}
 
-		void OnSearchHandlerFocusChangeRequested(object? sender, VisualElement.FocusRequestArgs e)
+		void OnShowSoftInputRequested(object? sender, EventArgs e)
 		{
 			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
 				return;
 
-			if (e.Focus)
-			{
-				e.Result = autoSuggestBox.Focus(FocusState.Programmatic);
-			}
-			else
-			{
-				// Guard matches ViewExtensions.UnfocusControl: skip the toggle if already disabled
-				// to avoid incorrectly re-enabling a disabled control.
-				if (!autoSuggestBox.IsEnabled)
-				{
-					e.Result = true;
-					return;
-				}
+			autoSuggestBox.Focus(FocusState.Programmatic);
+		}
 
-				var isTabStop = autoSuggestBox.IsTabStop;
-				autoSuggestBox.IsTabStop = false;
-				autoSuggestBox.IsEnabled = false;
-				autoSuggestBox.IsEnabled = true;
-				autoSuggestBox.IsTabStop = isTabStop;
-				e.Result = true;
-			}
+		void OnHideSoftInputRequested(object? sender, EventArgs e)
+		{
+			if (PlatformView is not NavigationView mauiNavView || mauiNavView.AutoSuggestBox is not { } autoSuggestBox)
+				return;
+
+			if (!autoSuggestBox.IsEnabled)
+				return;
+
+			var isTabStop = autoSuggestBox.IsTabStop;
+			autoSuggestBox.IsTabStop = false;
+			autoSuggestBox.IsEnabled = false;
+			autoSuggestBox.IsEnabled = true;
+			autoSuggestBox.IsTabStop = isTabStop;
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)

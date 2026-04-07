@@ -5,12 +5,6 @@ public class Issue22151 : Shell
 {
 	public Issue22151()
 	{
-		var focusResultLabel = new Label
-		{
-			Text = "FocusResult: None",
-			AutomationId = "focusResultLabel"
-		};
-
 		var isFocusedLabel = new Label
 		{
 			Text = "IsFocused: False",
@@ -36,20 +30,28 @@ public class Issue22151 : Shell
 			focusedEventLabel.Text = "FocusedEvent: True";
 		};
 
-		var focusButton = new Button
+		var showKeyboardButton = new Button
 		{
-			Text = "Programmatic Focus",
-			AutomationId = "focusButton"
+			Text = "Show Keyboard",
+			AutomationId = "ShowKeyboardButton"
 		};
 
-		focusButton.Clicked += async (s, e) =>
+		showKeyboardButton.Clicked += async (s, e) =>
 		{
-			bool result = searchHandler.Focus();
-			focusResultLabel.Text = $"FocusResult: {result}";
-
+			searchHandler.ShowSoftInputAsync();
 			await Task.Delay(200);
-
 			isFocusedLabel.Text = $"IsFocused: {searchHandler.IsFocused}";
+		};
+
+		var hideKeyboardButton = new Button
+		{
+			Text = "Hide Keyboard",
+			AutomationId = "HideKeyboardButton"
+		};
+
+		hideKeyboardButton.Clicked += (s, e) =>
+		{
+			searchHandler.HideSoftInputAsync();
 		};
 
 		var contentPage = new ContentPage
@@ -60,15 +62,10 @@ public class Issue22151 : Shell
 				Padding = 20,
 				Children =
 				{
-					focusButton,
-					focusResultLabel,
+					showKeyboardButton,
+					hideKeyboardButton,
 					isFocusedLabel,
-					focusedEventLabel,
-					new Entry
-					{
-						AutomationId = "dummyEntry",
-						Placeholder = "Tap here to unfocus SearchHandler"
-					}
+					focusedEventLabel
 				}
 			}
 		};
