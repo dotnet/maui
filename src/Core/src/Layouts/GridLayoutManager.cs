@@ -453,6 +453,12 @@ namespace Microsoft.Maui.Layouts
 						{
 							height += _rows[n].Size;
 						}
+
+						// Add spacing between spanned rows during measurement
+						if (cell.RowSpan > 1)
+						{
+							height += (cell.RowSpan - 1) * _rowSpacing;
+						}
 					}
 
 					if (double.IsInfinity(cell.MeasureWidth))

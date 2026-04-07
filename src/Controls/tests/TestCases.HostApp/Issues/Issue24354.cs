@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-    [Issue(IssueTracker.Github, 24354, "[Android] Grid ColumnSpacing affects child's scrollview content size")]
+    [Issue(IssueTracker.Github, 24354, "[Android] Grid ColumnSpacing affects child's scrollview content size", PlatformAffected.Android)]
     public class Issue24354 : ContentPage
     {
         public Issue24354()
@@ -31,6 +31,7 @@ namespace Maui.Controls.Sample.Issues
 
             var scrollView = new ScrollView
             {
+                AutomationId = "ScrollView",
                 Background = Colors.Aqua,
                 Content = scrollContent
             };
