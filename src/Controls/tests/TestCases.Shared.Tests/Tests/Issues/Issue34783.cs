@@ -36,6 +36,7 @@ public class Issue34783 : _IssuesUITest
 
 		// Scroll back up to bring Baboon back into view
 		App.ScrollUp("Issue34783CollectionView", ScrollStrategy.Gesture, 0.9);
+		App.ScrollUp("Issue34783CollectionView", ScrollStrategy.Gesture, 0.9);
 
 		// Verify the image is still at the enlarged size and was not reset to the original
 		App.WaitForElement("Baboon");
