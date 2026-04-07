@@ -348,7 +348,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Keyboard Interaction (SoftInput)
 		// ──────────────────────────────────────────────
 
-#if TEST_FAILS_ON_IOS // Setting it to All and opening the keyboard, then changing it to Container while the keyboard is open, and then changing it back to All shows white space at the bottom
+#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34846
 
 		[Test, Order(10)]
 		[Description("None → All → keyboard open → Container → dismiss → All: positions correct at each step")]
@@ -665,7 +665,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Keyboard + Runtime SafeArea Changes
 		// ──────────────────────────────────────────────
 
-#if TEST_FAILS_ON_IOS // When the safe area is set to None, and the keyboard is opened, the safe area changes to All or SoftInput, and the bottom label does not move above the keyboard
+#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34847
 
 		[Test, Order(15)]
 		[Description("Switch None to All while keyboard is open — bottom indicator moves up")]
@@ -953,7 +953,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 		}
 
-#if TEST_FAILS_ON_IOS // When the safe area is set to None, and the keyboard is opened, the safe area changes to All or SoftInput, and the bottom label does not move above the keyboard
+#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34847
 
 		[Test, Order(19)]
 		[Description("Keyboard open: cycle through None → All → Container → SoftInput → Default → None and verify positions")]
