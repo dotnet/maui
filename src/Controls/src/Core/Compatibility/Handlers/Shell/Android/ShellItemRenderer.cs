@@ -422,6 +422,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var shellSection = (ShellSection)sender;
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
 
+				if (index < 0)
+					return;
+
 				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
 				var maxItems = _bottomView.MaxItemCount;
 
