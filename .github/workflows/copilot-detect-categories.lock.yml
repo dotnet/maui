@@ -20,11 +20,11 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Detects UI test categories in PR diffs and posts a comment listing which test categories should run on CI pipelines
+# Detects UI test and device test categories in PR diffs and posts a comment listing which test categories should run on CI pipelines
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"06a70c50bbacd22584b7017e15f26813feed61f63bb751e6a1be776d9efb360a","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"381c5e8c8f0215824fc39005cc9383d9324c20c57766dadeef9eea2bdb5cf72a","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
 
-name: "Detect UI Test Categories"
+name: "Detect Test Categories for Regression Detection"
 "on":
   issue_comment:
     types:
@@ -48,7 +48,7 @@ concurrency:
   cancel-in-progress: true
   group: detect-categories-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
 
-run-name: "Detect UI Test Categories"
+run-name: "Detect Test Categories for Regression Detection"
 
 jobs:
   activation:
@@ -83,7 +83,7 @@ jobs:
           GH_AW_INFO_VERSION: ""
           GH_AW_INFO_AGENT_VERSION: "latest"
           GH_AW_INFO_CLI_VERSION: "v0.62.5"
-          GH_AW_INFO_WORKFLOW_NAME: "Detect UI Test Categories"
+          GH_AW_INFO_WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
           GH_AW_INFO_STAGED: "false"
@@ -317,13 +317,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         if: github.event_name == 'pull_request'
-        name: Gate — skip if no UI test files in diff
-        run: "TEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(TestCases\\.Shared\\.Tests|TestCases\\.HostApp|UITest|Xaml\\.UnitTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No UI test files found in PR diff. Skipping category detection.\"\n  exit 1\nfi\necho \"✅ Found UI test files to analyze:\"\necho \"$TEST_FILES\" | head -20\n"
+        name: Gate — skip if no relevant source files in diff
+        run: "RELEVANT_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(src/Controls/|src/Core/|src/Essentials/|src/Graphics/|src/BlazorWebView/|tests/)' \\\n  || true)\nif [ -z \"$RELEVANT_FILES\" ]; then\n  echo \"⏭️ No relevant source or test files found in PR diff. Skipping category detection.\"\n  exit 1\nfi\necho \"✅ Found relevant files to analyze:\"\necho \"$RELEVANT_FILES\" | head -30\n"
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
-        name: Detect UI test categories from PR diff
-        run: "echo \"Detecting UI test categories for PR #$PR_NUMBER...\"\n\nDIFF=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" 2>/dev/null || true)\nif [ -z \"$DIFF\" ]; then\n  echo \"NO_DIFF=true\" > \"$GITHUB_WORKSPACE/category-results.txt\"\n  echo \"⚠️ Could not fetch PR diff\"\n  exit 0\nfi\n\n# Extract Category attributes from added lines (+ prefix in diff)\nCATEGORIES=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(' \\\n  | grep -oE 'UITestCategories\\.[A-Za-z0-9_]+' \\\n  | sed 's/UITestCategories\\.//' \\\n  | sort -u \\\n  || true)\n\n# Also check for nameof(UITestCategories.X) pattern\nNAMEOF_CATEGORIES=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(' \\\n  | grep -oE 'nameof\\(UITestCategories\\.[A-Za-z0-9_]+\\)' \\\n  | sed 's/nameof(UITestCategories\\.//;s/)//' \\\n  | sort -u \\\n  || true)\n\n# Also check for quoted string categories like [Category(\"Button\")]\nQUOTED_CATEGORIES=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(' \\\n  | grep -oE '\\[Category\\(\"[A-Za-z0-9_]+\"\\)' \\\n  | sed 's/\\[Category(\"//;s/\")//' \\\n  | sort -u \\\n  || true)\n\n# Merge all categories\nALL_CATEGORIES=$(echo -e \"${CATEGORIES}\\n${NAMEOF_CATEGORIES}\\n${QUOTED_CATEGORIES}\" \\\n  | grep -v '^$' \\\n  | sort -u \\\n  || true)\n\n# Get list of changed test files\nCHANGED_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(TestCases\\.Shared\\.Tests|TestCases\\.HostApp|UITest|Xaml\\.UnitTests)' \\\n  || true)\n\n{\n  echo \"PR_NUMBER=$PR_NUMBER\"\n  if [ -z \"$ALL_CATEGORIES\" ]; then\n    echo \"NO_CATEGORIES=true\"\n  else\n    echo \"CATEGORIES=$ALL_CATEGORIES\"\n  fi\n  echo \"---CHANGED_FILES---\"\n  echo \"$CHANGED_FILES\"\n} > \"$GITHUB_WORKSPACE/category-results.txt\"\n\nif [ -n \"$ALL_CATEGORIES\" ]; then\n  echo \"✅ Detected categories:\"\n  echo \"$ALL_CATEGORIES\"\nelse\n  echo \"ℹ️ No new Category attributes detected in diff\"\nfi\n"
+        name: Gather PR diff analysis
+        run: "echo \"Gathering PR analysis for PR #$PR_NUMBER...\"\n\nDIFF=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" 2>/dev/null || true)\nif [ -z \"$DIFF\" ]; then\n  echo \"NO_DIFF=true\" > \"$GITHUB_WORKSPACE/category-results.txt\"\n  echo \"⚠️ Could not fetch PR diff\"\n  exit 0\nfi\n\n# ── UI Test Categories ───────────────────────────────────────────\n# Extract [Category(UITestCategories.X)] from added lines\nUI_CATEGORIES=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(UITestCategories\\.' \\\n  | grep -oE 'UITestCategories\\.[A-Za-z0-9_]+' \\\n  | sed 's/UITestCategories\\.//' \\\n  | sort -u \\\n  || true)\n\nUI_NAMEOF=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(' \\\n  | grep -oE 'nameof\\(UITestCategories\\.[A-Za-z0-9_]+\\)' \\\n  | sed 's/nameof(UITestCategories\\.//;s/)//' \\\n  | sort -u \\\n  || true)\n\nUI_QUOTED=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(\"' \\\n  | grep -oE '\\[Category\\(\"[A-Za-z0-9_]+\"\\)' \\\n  | sed 's/\\[Category(\"//;s/\")//' \\\n  | sort -u \\\n  || true)\n\nALL_UI_CATEGORIES=$(echo -e \"${UI_CATEGORIES}\\n${UI_NAMEOF}\\n${UI_QUOTED}\" \\\n  | grep -v '^$' | sort -u || true)\n\n# ── Device Test Categories ───────────────────────────────────────\n# Extract [Category(TestCategory.X)] from added lines\nDEVICE_CATEGORIES=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(TestCategory\\.' \\\n  | grep -oE 'TestCategory\\.[A-Za-z0-9_]+' \\\n  | sed 's/TestCategory\\.//' \\\n  | sort -u \\\n  || true)\n\nDEVICE_NAMEOF=$(echo \"$DIFF\" \\\n  | grep -E '^\\+.*\\[Category\\(' \\\n  | grep -oE 'nameof\\(TestCategory\\.[A-Za-z0-9_]+\\)' \\\n  | sed 's/nameof(TestCategory\\.//;s/)//' \\\n  | sort -u \\\n  || true)\n\nALL_DEVICE_CATEGORIES=$(echo -e \"${DEVICE_CATEGORIES}\\n${DEVICE_NAMEOF}\" \\\n  | grep -v '^$' | sort -u || true)\n\n# ── Changed file paths ──────────────────────────────────────────\nCHANGED_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null || true)\n\nTEST_FILES=$(echo \"$CHANGED_FILES\" \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  | grep -E '\\.(cs|xaml)$' \\\n  || true)\n\nSOURCE_FILES=$(echo \"$CHANGED_FILES\" \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -v -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\n\n# ── Write results ───────────────────────────────────────────────\n{\n  echo \"PR_NUMBER=$PR_NUMBER\"\n\n  if [ -n \"$ALL_UI_CATEGORIES\" ]; then\n    echo \"UI_CATEGORIES<<EOF\"\n    echo \"$ALL_UI_CATEGORIES\"\n    echo \"EOF\"\n  fi\n\n  if [ -n \"$ALL_DEVICE_CATEGORIES\" ]; then\n    echo \"DEVICE_CATEGORIES<<EOF\"\n    echo \"$ALL_DEVICE_CATEGORIES\"\n    echo \"EOF\"\n  fi\n\n  echo \"---TEST_FILES---\"\n  echo \"$TEST_FILES\"\n  echo \"---SOURCE_FILES---\"\n  echo \"$SOURCE_FILES\"\n  echo \"---ALL_FILES---\"\n  echo \"$CHANGED_FILES\"\n} > \"$GITHUB_WORKSPACE/category-results.txt\"\n\necho \"=== Summary ===\"\n[ -n \"$ALL_UI_CATEGORIES\" ] && echo \"UI categories: $ALL_UI_CATEGORIES\" || echo \"UI categories: (none detected)\"\n[ -n \"$ALL_DEVICE_CATEGORIES\" ] && echo \"Device categories: $ALL_DEVICE_CATEGORIES\" || echo \"Device categories: (none detected)\"\necho \"Test files changed: $(echo \"$TEST_FILES\" | grep -c '.' || echo 0)\"\necho \"Source files changed: $(echo \"$SOURCE_FILES\" | grep -c '.' || echo 0)\"\n"
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -593,7 +593,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
@@ -791,8 +791,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Detect UI Test Categories"
-          WORKFLOW_DESCRIPTION: "Detects UI test categories in PR diffs and posts a comment listing which test categories should run on CI pipelines"
+          WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
+          WORKFLOW_DESCRIPTION: "Detects UI test and device test categories in PR diffs and posts a comment listing which test categories should run on CI pipelines"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -923,7 +923,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Detect UI Test Categories"
+          GH_AW_WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -936,7 +936,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Detect UI Test Categories"
+          GH_AW_WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -950,7 +950,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Detect UI Test Categories"
+          GH_AW_WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "copilot-detect-categories"
@@ -958,10 +958,10 @@ jobs:
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_INFERENCE_ACCESS_ERROR: ${{ needs.agent.outputs.inference_access_error }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🏷️ *Category detection by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔍 Detecting UI test categories… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Category detection complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Category detection failed. [{workflow_name}]({run_url}) {status}\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🏷️ *Category detection by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔍 Detecting test categories… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Category detection complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Category detection failed. [{workflow_name}]({run_url}) {status}\"}"
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
-          GH_AW_TIMEOUT_MINUTES: "10"
+          GH_AW_TIMEOUT_MINUTES: "15"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -974,7 +974,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Detect UI Test Categories"
+          GH_AW_WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1028,9 +1028,9 @@ jobs:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/copilot-detect-categories"
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "claude-sonnet-4.6"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🏷️ *Category detection by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔍 Detecting UI test categories… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Category detection complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Category detection failed. [{workflow_name}]({run_url}) {status}\"}"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🏷️ *Category detection by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔍 Detecting test categories… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Category detection complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Category detection failed. [{workflow_name}]({run_url}) {status}\"}"
       GH_AW_WORKFLOW_ID: "copilot-detect-categories"
-      GH_AW_WORKFLOW_NAME: "Detect UI Test Categories"
+      GH_AW_WORKFLOW_NAME: "Detect Test Categories for Regression Detection"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
