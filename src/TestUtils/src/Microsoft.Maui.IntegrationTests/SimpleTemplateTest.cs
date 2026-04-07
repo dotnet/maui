@@ -56,6 +56,21 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData("maui")]
+	[InlineData("maui-blazor")]
+	[InlineData("mauilib")]
+	public void NewProjectIncludesGitIgnore(string id)
+	{
+		SetTestIdentifier(id);
+		var projectDir = TestDirectory;
+
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		AssertIncludesRootGitIgnore(projectDir);
+	}
+
+	[Theory]
 	[InlineData("maui", DotNetPrevious, "Debug")]
 	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
 	{
