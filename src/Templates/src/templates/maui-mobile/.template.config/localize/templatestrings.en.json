@@ -1,7 +1,8 @@
 ﻿{
   "author": "Microsoft",
   "name": ".NET MAUI App",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
+  "_name.comment": "{Locked='.NET MAUI'}",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI",
   "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
@@ -16,5 +17,5 @@
   "symbols/UI/displayName": "_UI",
   "symbols/UI/description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code.",
   "symbols/UI/choices/xaml/description": "Create the app UI with XAML.",
-  "symbols/UI/choices/csharp/description": "Create the app UI with C# only."
+  "symbols/UI/choices/csharp/description": "Create App, AppShell, and MainPage in C#."
 }

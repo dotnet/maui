@@ -9,5 +9,12 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Incluir conteúdo de amostra",
   "symbols/IncludeSampleContent/description": "Configura se deve adicionar páginas de amostra e funcionalidades para demonstrar padrões básicos de uso.",
-  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto na criação."
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto na criação.",
+  "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
+  "postActions/openInEditorSampleXaml/description": "Opens Pages/MainPage.xaml in the editor.",
+  "postActions/openInEditorCSharp/description": "Opens MainPage.cs in the editor.",
+  "symbols/UI/displayName": "_UI",
+  "symbols/UI/description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code.",
+  "symbols/UI/choices/xaml/description": "Create the app UI with XAML.",
+  "symbols/UI/choices/csharp/description": "Create App, AppShell, and MainPage in C#."
 }

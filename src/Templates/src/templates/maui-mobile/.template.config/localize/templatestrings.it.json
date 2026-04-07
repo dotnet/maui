@@ -9,5 +9,12 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "DOTNET_TFM_VALUE di destinazione",
   "symbols/IncludeSampleContent/displayName": "_Include contenuto di esempio",
   "symbols/IncludeSampleContent/description": "Consente di configurare se aggiungere pagine di esempio e funzionalità per mostrare modelli di utilizzo di base.",
-  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione."
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
+  "postActions/openInEditorSampleXaml/description": "Opens Pages/MainPage.xaml in the editor.",
+  "postActions/openInEditorCSharp/description": "Opens MainPage.cs in the editor.",
+  "symbols/UI/displayName": "_UI",
+  "symbols/UI/description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code.",
+  "symbols/UI/choices/xaml/description": "Create the app UI with XAML.",
+  "symbols/UI/choices/csharp/description": "Create App, AppShell, and MainPage in C#."
 }

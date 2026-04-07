@@ -60,6 +60,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[InlineData(DotNetCurrent, "Release", "TrimMode=partial")]
 	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetBuildParams)
 	{
+		SetTestIdentifier(framework, config, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 

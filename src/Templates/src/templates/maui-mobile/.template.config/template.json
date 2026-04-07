@@ -197,7 +197,7 @@
                 },
                 {
                     "choice": "csharp",
-                    "description": "Create the app UI with C# only."
+                    "description": "Create App, AppShell, and MainPage in C#."
                 }
             ],
             "defaultValue": "xaml"
