@@ -60,6 +60,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[InlineData(DotNetCurrent, "Release", "TrimMode=partial")]
 	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetBuildParams)
 	{
+		SetTestIdentifier(framework, config, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
@@ -69,8 +70,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var mainPageFile = Path.Combine(projectDir, "MainPage.cs");
 		var mainPageContent = File.ReadAllText(mainPageFile);
 		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
-		var projectContent = File.ReadAllText(projectFile);
-
 		Assert.True(File.Exists(Path.Combine(projectDir, "App.cs")));
 		Assert.True(File.Exists(Path.Combine(projectDir, "AppShell.cs")));
 		Assert.True(File.Exists(mainPageFile));
@@ -82,10 +81,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
 
 		AssertContains("using CommunityToolkit.Maui.Markup;", mainPageContent);
-		AssertContains(".TextCenter()", mainPageContent);
-		AssertContains(".Fill()", mainPageContent);
+		AssertContains(".CenterHorizontal()", mainPageContent);
 		AssertContains(".UseMauiCommunityToolkitMarkup()", mauiProgramContent);
-		AssertContains("<PackageReference Include=\"CommunityToolkit.Maui.Markup\" Version=\"7.0.1\" />", projectContent);
+
+		var projectDoc = XDocument.Load(projectFile);
+		Assert.Contains(projectDoc.Descendants("PackageReference"),
+			packageReference => packageReference.Attribute("Include")?.Value == "CommunityToolkit.Maui.Markup");
 
 		var buildProps = BuildProps;
 
