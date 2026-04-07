@@ -22,23 +22,12 @@ public class Issue33287 : _IssuesUITest
 		// Wait for second page to appear
 		App.WaitForElement("GoBackButton");
 
-		// Go back before the 5-second delay completes
+		// Go back before the delayed DisplayAlertAsync completes
 		App.Tap("GoBackButton");
 
-		// Wait for the main page and the delayed DisplayAlertAsync to resolve (~5s + buffer)
-		App.WaitForElement("StatusLabel");
-
-		// Assert positive success: the status must contain the success marker.
-		// Without the fix the app crashes (NRE), so StatusLabel is never updated.
-		var status = App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(10)).GetText();
-		int retries = 12;
-		while (retries-- > 0 && (status is null || !status.Contains("✅")))
-		{
-			System.Threading.Thread.Sleep(1000);
-			status = App.FindElement("StatusLabel").GetText();
-		}
-
-		Assert.That(status, Does.Contain("✅"),
+		// Wait for the delayed DisplayAlertAsync to resolve and update the status label.
+		// Without the fix the app crashes (NRE), so the status label is never updated.
+		Assert.That(App.WaitForTextToBePresentInElement("StatusLabel", "✅", timeout: TimeSpan.FromSeconds(10)), Is.True,
 			"App should show success status after DisplayAlertAsync completes on an unloaded page");
 	}
 }

@@ -92,7 +92,7 @@ public class Issue33287SecondPage : ContentPage
 	{
 		base.OnAppearing();
 
-		await Task.Delay(5000);
+		await Task.Delay(3000);
 
 		try
 		{
