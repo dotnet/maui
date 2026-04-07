@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
 			_searchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
 			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
+			_searchHandler.FocusChangeRequested += OnFocusChangeRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
 			_editText.FocusChange += EditTextFocusChange;
 			UpdateSearchBarColors();
@@ -202,6 +203,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_control?.HideSoftInput();
 		}
 
+		void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		{
+			if (e.Focus)
+			{
+				e.Result = _editText?.RequestFocus() ?? false;
+				if (e.Result)
+				{
+					_control?.ShowSoftInput();
+				}
+			}
+			else
+			{
+				_editText?.ClearFocus();
+			}
+		}
+
 		void UpdateInputType()
 		{
 			var keyboard = _searchHandler.Keyboard;
@@ -252,6 +269,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_editText.FocusChange -= EditTextFocusChange;
 					_searchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 					_searchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
+					_searchHandler.FocusChangeRequested -= OnFocusChangeRequested;
 				}
 				_searchHandler = null;
 				_control = null;
