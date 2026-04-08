@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*Microsoft.Maui.Platform.LayoutPanel.UpdateInputTransparent(bool inputTransparent, Microsoft.UI.Xaml.Media.Brush? background) -> void
+*REMOVED*static Microsoft.Maui.Platform.ViewExtensions.UpdateInputTransparent(this Microsoft.Maui.Platform.LayoutPanel! layoutPanel, Microsoft.Maui.ILayoutHandler! handler, Microsoft.Maui.ILayout! layout) -> void
