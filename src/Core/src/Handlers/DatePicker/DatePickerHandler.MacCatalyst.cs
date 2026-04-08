@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -8,8 +9,8 @@ namespace Microsoft.Maui.Handlers
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 	{
 		readonly UIDatePickerProxy _proxy = new();
-		NSObject? _editingBeganObserver;
 		NSObject? _windowCloseObserver;
+		readonly List<UITextField> _textFields = new();
 		bool _isOpen;
 
 		static readonly NSString NSWindowDidCloseNotification = new("NSWindowDidCloseNotification");
@@ -32,16 +33,13 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// The compact UIDatePicker on MacCatalyst uses internal UITextField subviews
-			// for the date segments. Listen for any UITextField beginning editing — the
-			// IsDescendantOfView check ensures we only respond to our picker's fields.
-			_editingBeganObserver = NSNotificationCenter.DefaultCenter.AddObserver(
-				UITextField.TextDidBeginEditingNotification, OnEditingBegan);
+			// for the date segments. Wire up EditingDidBegin directly on those fields.
+			FindAndWireTextFields(platformView);
 
 			// On MacCatalyst the popover runs in an AppKit NSWindow. Tapping outside
 			// dismisses it at the AppKit level without firing UITextField EditingDidEnd,
 			// so NSWindowDidCloseNotification is needed for close.
-			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(
-				NSWindowDidCloseNotification, OnWindowClosed);
+			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSWindowDidCloseNotification, OnWindowClosed);
 
 			base.ConnectHandler(platformView);
 		}
@@ -50,11 +48,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_proxy.Disconnect(platformView);
 
-			if (_editingBeganObserver is not null)
-			{
-				NSNotificationCenter.DefaultCenter.RemoveObserver(_editingBeganObserver);
-				_editingBeganObserver = null;
-			}
+			UnwireTextFields();
 
 			if (_windowCloseObserver is not null)
 			{
@@ -67,20 +61,42 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		void OnEditingBegan(NSNotification notification)
+		void FindAndWireTextFields(UIView view)
+		{
+			foreach (var subview in view.Subviews)
+			{
+				if (subview is UITextField textField)
+				{
+					textField.EditingDidBegin += OnEditingDidBegin;
+					_textFields.Add(textField);
+				}
+				else
+				{
+					FindAndWireTextFields(subview);
+				}
+			}
+		}
+
+		void UnwireTextFields()
+		{
+			foreach (var textField in _textFields)
+			{
+				textField.EditingDidBegin -= OnEditingDidBegin;
+			}
+			_textFields.Clear();
+		}
+
+		void OnEditingDidBegin(object? sender, EventArgs e)
 		{
 			if (_isOpen)
 			{
 				return;
 			}
 
-			if (notification.Object is UITextField textField && textField.IsDescendantOfView(PlatformView))
+			_isOpen = true;
+			if (VirtualView is IDatePicker virtualView)
 			{
-				_isOpen = true;
-				if (VirtualView is IDatePicker virtualView)
-				{
-					virtualView.IsFocused = virtualView.IsOpen = true;
-				}
+				virtualView.IsFocused = virtualView.IsOpen = true;
 			}
 		}
 
