@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 23038, "[Windows] GroupHeaderTemplate width smaller than ItemTemplate (GridLayout)", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 23038, "[Windows] GroupHeaderTemplate width smaller than ItemTemplate (GridLayout)", PlatformAffected.UWP, issueTestNumber: 1)]
 public class Issue23038_GridLayout : ContentPage
 {
 	public Issue23038_GridLayout()
