@@ -212,7 +212,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
+				// Use live decoded size when available; fall back to cache during source
+				// transitions so MaxWidth/MaxHeight are not reset to ∞ while a new image
+				// is still decoding (blank BitmapImage reports PixelWidth=0).
 				var sz = GetImageSize();
+				if (sz.Width <= 0 || sz.Height <= 0)
+					sz = _cachedImageSize;
 
 				// Width: cap to intrinsic only if horizontal alignment isn't Fill
 				if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill && sz.Width > 0)
