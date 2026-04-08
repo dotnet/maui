@@ -2,3 +2,5 @@
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items.ItemContentView.DispatchTouchEvent(Android.Views.MotionEvent e) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items.ItemContentView.OnInterceptTouchEvent(Android.Views.MotionEvent ev) -> bool
