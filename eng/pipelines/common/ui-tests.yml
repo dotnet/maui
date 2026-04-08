@@ -38,8 +38,8 @@ parameters:
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
-    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'ViewBaseTests,Window'
+    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem,Triggers'
+    - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
 
   projects:

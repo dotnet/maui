@@ -1202,5 +1202,58 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
 
 		}
+
+		[Fact]
+		public void InvalidateStyleReappliesMutatedSetter()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "original" },
+				}
+			};
+
+			var label = new Label { Style = style };
+			Assert.Equal("original", label.Text);
+
+			// Mutate the setter in-place — the label should NOT update yet
+			style.Setters[0].Value = "mutated";
+			Assert.Equal("original", label.Text);
+
+			// After InvalidateStyle, the new value should be applied
+			label.InvalidateStyle();
+			Assert.Equal("mutated", label.Text);
+		}
+
+		[Fact]
+		public void InvalidateStyleReappliesMultipleSetters()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "text" },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Red },
+				}
+			};
+
+			var label = new Label { Style = style };
+			Assert.Equal("text", label.Text);
+			Assert.Equal(Colors.Red, label.BackgroundColor);
+
+			style.Setters[0].Value = "updated";
+			style.Setters[1].Value = Colors.Blue;
+
+			label.InvalidateStyle();
+			Assert.Equal("updated", label.Text);
+			Assert.Equal(Colors.Blue, label.BackgroundColor);
+		}
+
+		[Fact]
+		public void InvalidateStyleWithNoStyleDoesNotThrow()
+		{
+			var label = new Label();
+			var exception = Record.Exception(() => label.InvalidateStyle());
+			Assert.Null(exception);
+		}
 	}
 }
