@@ -8,23 +8,13 @@ compatibility: Requires PowerShell, git, .NET MAUI build environment, Android/iO
 
 Attempts ONE fix for a given problem. Receives all context upfront, tries a single approach, tests it, and reports what happened.
 
-## Activation Guard
-
-🚨 **This skill is ONLY for proposing and testing code fixes.** Do NOT activate for:
-- Code review requests ("review this PR", "check code quality")
-- PR summaries or descriptions ("what does this PR do?")
-- Test-only requests ("run tests", "check CI status")
-- General questions about code or architecture
-
-If the prompt does not include a **problem to fix** and a **test command to verify**, this skill should not run.
-
 ## Core Principles
 
-1. **Always run once activated** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
+1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
 2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
-5. **Context-driven** - Work with what's provided and git history; don't search external sources
+5. **Context-driven** - All information provided upfront; don't search for additional context
 
 **Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
@@ -33,7 +23,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 🚨 **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
 
 **Why:** Each try-fix run:
-- Modifies the same target source files
+- Modifies the same source files (SafeAreaExtensions.cs, etc.)
 - Uses the same device/emulator for testing
 - Runs EstablishBrokenBaseline.ps1 which reverts files to a known state
 
@@ -157,8 +147,6 @@ The skill is complete when:
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
 
-> **Session limits:** Each try-fix *invocation* allows up to 3 compile/test iterations. The *calling orchestrator* controls how many invocations (attempts) to run per session (typically 4-5 as part of pr-review Phase 3).
-
 ---
 
 ## Workflow
@@ -194,7 +182,7 @@ The skill is complete when:
 - What files should be investigated?
 - Are there hints about what to try or avoid?
 
-**Do NOT search for external context.** Work with what's provided and the git history.
+**Do NOT search for additional context.** Work with what's provided.
 
 ### Step 2: Establish Baseline (MANDATORY)
 
@@ -220,12 +208,6 @@ Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 
 Read the target files to understand the code.
 
-**Verify the platform code path before implementing.** Check which platform-specific file actually executes for the target scenario:
-- Files named `.iOS.cs` compile for both iOS AND MacCatalyst
-- Files named `.Android.cs` only compile for Android
-- Some platforms use Legacy implementations (e.g., iOS NavigationPage uses `NavigationPage.Legacy.cs`, not `MauiNavigationImpl`)
-If unsure which code path runs, check `AppHostBuilderExtensions` or handler registration to confirm.
-
 **Key questions:**
 - What is the root cause of this bug?
 - Where should the fix go?
@@ -238,10 +220,6 @@ Based on your analysis and any provided hints, design a single fix approach:
 - Which file(s) to change
 - What the change is
 - Why you think this will work
-
-**"Different" means different ROOT CAUSE hypothesis, not just different code location.**
-- ❌ Bad: PR checks `adapter == null` in OnMeasure; you check `adapter == null` in OnLayout (same root cause assumption — just a different call site)
-- ✅ Good: PR checks `adapter == null`; you prevent disposal from happening during measure (different root cause hypothesis)
 
 **If hints suggest specific approaches**, prioritize those.
 
@@ -339,7 +317,7 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
-🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
+🚨 Do NOT use `git checkout HEAD -- .` or `git clean` to restore — use the script.
 
 ### Step 9: Report Results
 
@@ -359,7 +337,9 @@ Provide structured output to the invoker:
 [Why it worked, or why it failed and what was learned]
 
 **Diff:**
-(paste `git diff` output here)
+```diff
+[The actual changes made]
+```
 
 **This Attempt's Status:** Done/NeedsRetry
 **Reasoning:** [Why this specific approach succeeded or failed]
@@ -375,7 +355,7 @@ Provide structured output to the invoker:
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/8) |
+| Git state unrecoverable | Run `git checkout HEAD -- .` and `git clean -fd` if needed |
 
 ---
 
