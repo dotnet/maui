@@ -20,7 +20,7 @@ on:
         type: boolean
         default: false
   bots:
-    - "copilot[bot]"
+    - "copilot-swe-agent[bot]"
 
 if: >-
   ((!github.event.repository.fork) || github.event_name == 'workflow_dispatch') &&

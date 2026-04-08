@@ -22,12 +22,12 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"217d6a2ef047096333a7d61da2800b9a231fbe32125dede6d1c311c57bba2abf","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a93bfc0e62ee433ef08616d717ab0f5ce66ccf930273a1214b1211d526c0b98e","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
-  # - copilot[bot] # Bots processed as bot check in pre-activation job
+  # - copilot-swe-agent[bot] # Bots processed as bot check in pre-activation job
   issue_comment:
     types:
     - created
@@ -141,7 +141,7 @@ jobs:
         id: sanitized
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_ALLOWED_BOTS: copilot[bot]
+          GH_AW_ALLOWED_BOTS: copilot-swe-agent[bot]
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -1024,7 +1024,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: copilot[bot]
+          GH_AW_ALLOWED_BOTS: copilot-swe-agent[bot]
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
