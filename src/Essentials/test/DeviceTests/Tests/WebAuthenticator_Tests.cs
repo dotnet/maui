@@ -69,23 +69,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public async Task Redirect_WithCancellation(string urlBase, string callbackScheme, string accessToken, string refreshToken, int expires)
 		{
-#pragma warning disable CA1416 // Validate platform compatibility: Not supported on Windows
 			using var cts = new CancellationTokenSource();
 			var authenticationTask = WebAuthenticator.AuthenticateAsync(
 				new Uri($"{urlBase}?access_token={accessToken}&refresh_token={refreshToken}&expires={expires}"),
 				new Uri($"{callbackScheme}://"),
 				cts.Token);
-#pragma warning restore CA1416 // Validate platform compatibility
-
-#if WINDOWS
-			var exception = await Assert.ThrowsAsync<PlatformNotSupportedException>(async () => await authenticationTask);
-#else
 			var r = await authenticationTask;
 			Assert.Equal(accessToken, r?.AccessToken);
 			Assert.Equal(refreshToken, r?.RefreshToken);
 			Assert.NotNull(r?.ExpiresIn);
 			Assert.True(r?.ExpiresIn > DateTime.UtcNow);
-#endif
 		}
 
 		[Theory]
@@ -99,7 +92,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public async Task RedirectWithResponseDecoder_WithCancellation(string urlBase, string callbackScheme, string accessToken, string refreshToken, int expires)
 		{
 			var responseDecoder = new TestResponseDecoder();
-#pragma warning disable CA1416 // Validate platform compatibility: Not supported on Windows
 			using var cts = new CancellationTokenSource();
 			var authenticationTask = WebAuthenticator.AuthenticateAsync(new WebAuthenticatorOptions
 			{
@@ -107,17 +99,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				CallbackUrl = new Uri($"{callbackScheme}://"),
 				ResponseDecoder = responseDecoder
 			}, cts.Token);
-#pragma warning restore CA1416 // Validate platform compatibility
-#if WINDOWS
-			var exception = await Assert.ThrowsAsync<PlatformNotSupportedException>(async () => await authenticationTask);
-#else
 			var r = await authenticationTask;
 			Assert.Equal(accessToken, r?.AccessToken);
 			Assert.Equal(refreshToken, r?.RefreshToken);
 			Assert.NotNull(r?.ExpiresIn);
 			Assert.True(r?.ExpiresIn > DateTime.UtcNow);
 			Assert.Equal(1, responseDecoder.CallCount);
-#endif
 		}
 
 
