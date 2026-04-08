@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 		bool _shouldUpdateRegion;
 		object _lastTouchedView;
 		bool _disposed;
+		List<MapElement> _trackedMapElements;
 
 #if __MOBILE__
 		UITapGestureRecognizer _mapClickedGestureRecognizer;
@@ -528,6 +529,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 				case NotifyCollectionChangedAction.Reset:
 					var mkMapView = (MKMapView)Control;
 
+					// Clear MapElementId from tracked elements (not Element.MapElements,
+					// which is already empty after ObservableCollection.Clear())
+					if (_trackedMapElements != null)
+					{
+						foreach (var mapElement in _trackedMapElements)
+							mapElement.MapElementId = null;
+
+						_trackedMapElements = null;
+					}
+
 					if (mkMapView.Overlays != null)
 					{
 						var overlays = mkMapView.Overlays;
@@ -544,8 +555,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 
 		void AddMapElements(IEnumerable<MapElement> mapElements)
 		{
+			_trackedMapElements ??= new List<MapElement>();
+
 			foreach (var element in mapElements)
 			{
+				_trackedMapElements.Add(element);
 				element.PropertyChanged += MapElementPropertyChanged;
 
 				IMKOverlay overlay = null;

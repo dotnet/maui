@@ -1672,13 +1672,13 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
-			else if (IsPointerOver)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			}
 			else
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				bool isSelected = this.IsElementInSelectedState();
+				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+
+				VisualStateManager.GoToState(this, targetState);
 			}
 
 			if (IsEnabled)
@@ -1861,6 +1861,7 @@ namespace Microsoft.Maui.Controls
 #nullable enable
 		Semantics? _semantics;
 		bool _isLoadedFired;
+		internal bool IsLoadedFired => _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;

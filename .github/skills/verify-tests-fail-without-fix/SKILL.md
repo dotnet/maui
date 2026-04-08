@@ -11,6 +11,51 @@ compatibility: Requires git, PowerShell, and .NET SDK for building and running t
 
 Verifies UI tests actually catch the issue. Supports two workflow modes:
 
+## Activation Guard
+
+🛑 **This skill ONLY verifies that existing tests reproduce a bug.** Do NOT activate for:
+- Writing new tests → use write-tests-agent
+- Running tests without verification context → use run-device-tests
+- Code review → use code-review skill
+- General test advice
+
+Requires: a **platform** and either **test files in the PR** or an explicit **TestFilter**.
+
+## ⚠️ CRITICAL: Inverted Pass/Fail Semantics
+
+In this skill, test outcomes mean the OPPOSITE of normal:
+
+| Test Result (without fix) | Verification Result | Why |
+|--------------------------|--------------------|----|
+| Tests FAIL | ✅ GOOD | Tests detect the bug |
+| Tests PASS | ❌ BAD | Tests miss the bug |
+
+NEVER say "verification passed" when tests PASS without the fix.
+
+## Workflow
+
+### Step 1: Determine Mode
+- Check if fix files exist in the PR (non-test code changes detected by the script from the git diff)
+- If **fix files present** → Full Verification mode (`-RequireFullVerification`)
+- If **no fix files** → Verify Failure Only mode (omit the flag)
+
+### Step 2: Construct Command
+```powershell
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 `
+  -Platform <platform> `
+  -TestFilter "<filter>" `
+  [-RequireFullVerification]  # Only if fix files exist
+```
+
+### Step 3: Interpret Results
+⚠️ Remember: test outcomes are INVERTED from normal!
+- Script outputs `VERIFICATION PASSED` → Tests catch the bug ✅
+- Script outputs `VERIFICATION FAILED` → Tests don't catch the bug ❌
+- Script outputs error/timeout → Report as Blocked
+
+### Step 4: Report
+- Report the result to the invoking orchestrator
+
 ## Mode 1: Verify Failure Only (Test Creation)
 
 Use when **creating tests before writing a fix**:
