@@ -152,14 +152,6 @@ public partial class ShellSearchOptionsPage : ContentPage
 		_viewModel.FontAutoScalingEnabled = ((RadioButton)sender).Content?.ToString() == "True";
 	}
 
-	// ShowsResults
-	private void OnShowsResultsChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (!e.Value)
-			return;
-		_viewModel.ShowsResults = ((RadioButton)sender).Content?.ToString() == "True";
-	}
-
 	// SearchBoxVisibility
 	private void OnSearchBoxVisibilityChanged(object sender, CheckedChangedEventArgs e)
 	{
@@ -206,45 +198,6 @@ public partial class ShellSearchOptionsPage : ContentPage
 				"Brd" => "Birds",
 				"Nul" => "Null",
 				_ => "Query"
-			};
-		}
-	}
-
-	// QueryIcon
-	private void OnQueryIconChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (sender is RadioButton rb && e.Value)
-		{
-			_viewModel.QueryIcon = rb.Content?.ToString() switch
-			{
-				"Custom" => ImageSource.FromFile("coffee.png"),
-				_ => null
-			};
-		}
-	}
-
-	// ClearIcon
-	private void OnClearIconChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (sender is RadioButton rb && e.Value)
-		{
-			_viewModel.ClearIcon = rb.Content?.ToString() switch
-			{
-				"Custom" => ImageSource.FromFile("bank.png"),
-				_ => null
-			};
-		}
-	}
-
-	// ClearPlaceholderIcon
-	private void OnClearPlaceholderIconChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (sender is RadioButton rb && e.Value)
-		{
-			_viewModel.ClearPlaceholderIcon = rb.Content?.ToString() switch
-			{
-				"Custom" => ImageSource.FromFile("avatar.png"),
-				_ => null
 			};
 		}
 	}

@@ -804,6 +804,7 @@ public class ShellViewModel : INotifyPropertyChanged
         _ => ClearPlaceholderEnabled);
     }
 
+
     public event PropertyChangedEventHandler PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

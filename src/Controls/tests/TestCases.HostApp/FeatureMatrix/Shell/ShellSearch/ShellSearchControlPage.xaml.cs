@@ -98,7 +98,7 @@ public class SampleSearchHandler : SearchHandler
 					{
 						[nameof(ShellSearchControlPage.SearchDetailPage.ItemName)] = itemName
 					});
-			}
+			} 
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine($"Navigation failed: {ex.Message}");
@@ -125,14 +125,6 @@ public partial class ShellSearchControlPage : Shell
 		SearchHandlerInstance.Unfocused += OnSearchHandlerUnfocused;
 	}
 
-	protected override void OnDisappearing()
-	{
-		base.OnDisappearing();
-		SearchHandlerInstance.Focused -= OnSearchHandlerFocused;
-		SearchHandlerInstance.Unfocused -= OnSearchHandlerUnfocused;
-		SearchHandlerInstance.Cleanup();
-	}
-
 	void OnSearchHandlerFocused(object sender, EventArgs e)
 	{
 		_viewModel.FocusStatus = "Focused";
@@ -145,8 +137,6 @@ public partial class ShellSearchControlPage : Shell
 		_viewModel.IsFocused = false;
 	}
 
-	// ── Toolbar ──────────────────────────────────────────────────────────────────
-
 	async void OnOptionsClicked(object sender, EventArgs e)
 	{
 		SearchHandlerInstance.Unfocus();
@@ -156,19 +146,6 @@ public partial class ShellSearchControlPage : Shell
 	}
 
 	// ── Action buttons ────────────────────────────────────────────────────────────
-
-	void OnFocusClicked(object sender, EventArgs e)
-	{
-		// SearchHandler.Focus() is broken on Android (FocusChangeRequested not wired).
-		// Use ShowSoftInputAsync() as a cross-platform workaround.
-		if (!SearchHandlerInstance.Focus())
-		{
-			SearchHandlerInstance.ShowSoftInputAsync();
-		}
-	}
-
-	void OnUnfocusClicked(object sender, EventArgs e)
-		=> SearchHandlerInstance.Unfocus();
 
 	void OnShowSoftInputClicked(object sender, EventArgs e)
 		=> SearchHandlerInstance.ShowSoftInputAsync();
@@ -181,6 +158,37 @@ public partial class ShellSearchControlPage : Shell
 
 	void OnTriggerClearPlaceholderClicked(object sender, EventArgs e)
 		=> ((ISearchHandlerController)SearchHandlerInstance).ClearPlaceholderClicked();
+
+	void OnToggleQueryIconClicked(object sender, EventArgs e)
+	{
+		var btn = (Button)sender;
+		bool isCustom = SearchHandlerInstance.QueryIcon != null;
+		SearchHandlerInstance.QueryIcon = isCustom ? null : ImageSource.FromFile("coffee.png");
+		btn.Text = isCustom ? "QueryIcon:Default" : "QueryIcon:Custom";
+	}
+
+	void OnToggleClearIconClicked(object sender, EventArgs e)
+	{
+		var btn = (Button)sender;
+		bool isCustom = SearchHandlerInstance.ClearIcon != null;
+		SearchHandlerInstance.ClearIcon = isCustom ? null : ImageSource.FromFile("bank.png");
+		btn.Text = isCustom ? "ClearIcon:Default" : "ClearIcon:Custom";
+	}
+
+	void OnToggleClearPlaceholderIconClicked(object sender, EventArgs e)
+	{
+		var btn = (Button)sender;
+		bool isCustom = SearchHandlerInstance.ClearPlaceholderIcon != null;
+		SearchHandlerInstance.ClearPlaceholderIcon = isCustom ? null : ImageSource.FromFile("avatar.png");
+		btn.Text = isCustom ? "ClearPHIcon:Default" : "ClearPHIcon:Custom";
+	}
+
+	void OnToggleShowsResultsClicked(object sender, EventArgs e)
+	{
+		var btn = (Button)sender;
+		_viewModel.ShowsResults = !_viewModel.ShowsResults;
+		btn.Text = _viewModel.ShowsResults ? "ShowsResults:False" : "ShowsResults:True";
+	}
 
 	// ── Search Detail Page (navigated to when a search result is tapped) ─────────
 

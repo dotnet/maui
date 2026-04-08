@@ -15,7 +15,7 @@
        <Grid ColumnDefinitions="*,*"
              ColumnSpacing="4"
              RowSpacing="-2"
-             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 
               <!-- ═══ ENTRIES FIRST (Rows 0-2) ═══ -->
 
@@ -355,29 +355,9 @@
                      </HorizontalStackLayout>
               </VerticalStackLayout>
 
-              <!-- Row 8: ShowsResults | SearchBoxVisibility -->
+              <!-- Row 8: SearchBoxVisibility | ClearPH Enabled -->
               <VerticalStackLayout Grid.Row="8"
                                    Grid.Column="0">
-                     <Label Text="ShowsResults:"
-                            FontSize="7"
-                            FontAttributes="Bold"/>
-                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
-                                            VerticalOptions="Center">
-                            <RadioButton AutomationId="ShowsResultsTrue"
-                                         GroupName="ShowsResults"
-                                         Content="True"
-                                         IsChecked="True"
-                                         FontSize="7"
-                                         CheckedChanged="OnShowsResultsChanged"/>
-                            <RadioButton AutomationId="ShowsResultsFalse"
-                                         GroupName="ShowsResults"
-                                         Content="False"
-                                         FontSize="7"
-                                         CheckedChanged="OnShowsResultsChanged"/>
-                     </HorizontalStackLayout>
-              </VerticalStackLayout>
-              <VerticalStackLayout Grid.Row="8"
-                                   Grid.Column="1">
                      <Label Text="SearchBoxVisibility:"
                             FontSize="7"
                             FontAttributes="Bold"/>
@@ -401,9 +381,7 @@
                                          CheckedChanged="OnSearchBoxVisibilityChanged"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
-
-              <!-- Row 9: ClearPH Enabled | ItemsSource -->
-              <VerticalStackLayout Grid.Row="9"
+              <VerticalStackLayout Grid.Row="8"
                                    Grid.Column="1">
                      <Label Text="ClearPH Enabled:"
                             FontSize="7"
@@ -423,6 +401,8 @@
                                          CheckedChanged="OnClearPlaceholderEnabledChanged"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
+
+              <!-- Row 9: ItemsSource | ItemTemplate -->
               <VerticalStackLayout Grid.Row="9"
                                    Grid.Column="0">
                      <Label Text="ItemsSource:"
@@ -453,10 +433,8 @@
                                          CheckedChanged="OnItemsSourceModeChanged"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
-
-              <!-- Row 10: ItemTemplate | QueryIcon -->
-              <VerticalStackLayout Grid.Row="10"
-                                   Grid.Column="0">
+              <VerticalStackLayout Grid.Row="9"
+                                   Grid.Column="1">
                      <Label Text="ItemTemplate:"
                             FontSize="7"
                             FontAttributes="Bold"/>
@@ -480,71 +458,9 @@
                                          CheckedChanged="OnItemTemplateChanged"/>
                      </HorizontalStackLayout>
               </VerticalStackLayout>
+
+              <!-- Row 10: KB Type + KB Flags — full width -->
               <VerticalStackLayout Grid.Row="10"
-                                   Grid.Column="1">
-                     <Label Text="QueryIcon:"
-                            FontSize="7"
-                            FontAttributes="Bold"/>
-                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
-                                            VerticalOptions="Center">
-                            <RadioButton AutomationId="QueryIconDefaultRadio"
-                                         GroupName="QueryIcon"
-                                         Content="Def"
-                                         IsChecked="True"
-                                         FontSize="7"
-                                         CheckedChanged="OnQueryIconChanged"/>
-                            <RadioButton AutomationId="QueryIconCustomRadio"
-                                         GroupName="QueryIcon"
-                                         Content="Custom"
-                                         FontSize="7"
-                                         CheckedChanged="OnQueryIconChanged"/>
-                     </HorizontalStackLayout>
-              </VerticalStackLayout>
-
-              <!-- Row 11: ClearIcon | ClearPlaceholderIcon -->
-              <VerticalStackLayout Grid.Row="11"
-                                   Grid.Column="0">
-                     <Label Text="ClearIcon:"
-                            FontSize="7"
-                            FontAttributes="Bold"/>
-                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
-                                            VerticalOptions="Center">
-                            <RadioButton AutomationId="ClearIconDefaultRadio"
-                                         GroupName="ClearIcon"
-                                         Content="Def"
-                                         IsChecked="True"
-                                         FontSize="7"
-                                         CheckedChanged="OnClearIconChanged"/>
-                            <RadioButton AutomationId="ClearIconCustomRadio"
-                                         GroupName="ClearIcon"
-                                         Content="Custom"
-                                         FontSize="7"
-                                         CheckedChanged="OnClearIconChanged"/>
-                     </HorizontalStackLayout>
-              </VerticalStackLayout>
-              <VerticalStackLayout Grid.Row="11"
-                                   Grid.Column="1">
-                     <Label Text="ClearPlaceholderIcon:"
-                            FontSize="7"
-                            FontAttributes="Bold"/>
-                     <HorizontalStackLayout Spacing="0" HeightRequest="30"
-                                            VerticalOptions="Center">
-                            <RadioButton AutomationId="ClearPlaceholderIconDefaultRadio"
-                                         GroupName="ClearPlaceholderIcon"
-                                         Content="Def"
-                                         IsChecked="True"
-                                         FontSize="7"
-                                         CheckedChanged="OnClearPlaceholderIconChanged"/>
-                            <RadioButton AutomationId="ClearPlaceholderIconCustomRadio"
-                                         GroupName="ClearPlaceholderIcon"
-                                         Content="Custom"
-                                         FontSize="7"
-                                         CheckedChanged="OnClearPlaceholderIconChanged"/>
-                     </HorizontalStackLayout>
-              </VerticalStackLayout>
-
-              <!-- Row 12: KB Type + KB Flags — full width -->
-              <VerticalStackLayout Grid.Row="12"
                                    Grid.ColumnSpan="2">
                      <Label Text="KB Type:"
                             FontSize="7"

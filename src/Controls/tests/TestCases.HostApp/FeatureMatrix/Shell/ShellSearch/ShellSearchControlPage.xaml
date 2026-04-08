@@ -19,26 +19,23 @@
                                                        BackgroundColor="{Binding BackgroundColor}"
                                                        CancelButtonColor="{Binding CancelButtonColor}"
                                                        CharacterSpacing="{Binding CharacterSpacing}"
-                                                       ClearIcon="{Binding ClearIcon}"
                                                        ClearPlaceholderCommandParameter="{Binding ClearPlaceholderCommandParameter}"
                                                        ClearPlaceholderEnabled="{Binding ClearPlaceholderEnabled}"
-                                                       ClearPlaceholderCommand="{Binding ClearPlaceholderCommand}"
-                                                       ClearPlaceholderIcon="{Binding ClearPlaceholderIcon}"
-                                                       Command="{Binding SearchCommand}"
+                                                       ClearPlaceholderCommand="{Binding ClearPlaceholderCommand, Mode=TwoWay}"
+                                                       Command="{Binding SearchCommand, Mode=TwoWay}"
                                                        CommandParameter="{Binding CommandParameter}"
                                                        FontAttributes="{Binding FontAttributes}"
                                                        FontSize="{Binding FontSize}"
                                                        FontFamily="{Binding FontFamily}"
                                                        FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
                                                        HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
-                                                       ItemTemplate="{Binding SearchItemTemplate}"
+                                                       ItemTemplate="{Binding SearchItemTemplate, Mode=TwoWay}"
                                                        IsSearchEnabled="{Binding IsSearchEnabled}"
                                                        Keyboard="{Binding Keyboard}"
                                                        Placeholder="{Binding Placeholder}"
                                                        PlaceholderColor="{Binding PlaceholderColor}"
-                                                       QueryIcon="{Binding QueryIcon}"
                                                        Query="{Binding Query}"
-                                                       ShowsResults="{Binding ShowsResults}"
+                                                       ShowsResults="False"
                                                        SearchBoxVisibility="{Binding SearchBoxVisibility}"
                                                        TextColor="{Binding TextColor}"
                                                        TextTransform="{Binding TextTransform}"
@@ -53,47 +50,57 @@
                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                                          ColumnDefinitions="*,*">
                                           <Button Grid.Row="0"
-                                                  Grid.ColumnSpan="2"
-                                                  Text="Options"
-                                                  Clicked="OnOptionsClicked"
-                                                  AutomationId="Options"/>
-                                          <Button Grid.Row="1"
-                                                  Grid.Column="0"
-                                                  Text="Focus"
-                                                  Clicked="OnFocusClicked"
-                                                  AutomationId="FocusButton"/>
-                                          <Button Grid.Row="1"
-                                                  Grid.Column="1"
-                                                  Text="Unfocus"
-                                                  Clicked="OnUnfocusClicked"
-                                                  AutomationId="UnfocusButton"/>
-                                          <Button Grid.Row="2"
                                                   Grid.Column="0"
                                                   Text="ShowSoftInput"
                                                   Clicked="OnShowSoftInputClicked"
                                                   AutomationId="ShowSoftInputButton"/>
-                                          <Button Grid.Row="2"
+                                          <Button Grid.Row="0"
                                                   Grid.Column="1"
                                                   Text="HideSoftInput"
                                                   Clicked="OnHideSoftInputClicked"
                                                   AutomationId="HideSoftInputButton"/>
-                                          <Button Grid.Row="3"
-                                                  Grid.ColumnSpan="2"
+                                          <Button Grid.Row="1"
+                                                  Grid.Column="0"
                                                   Text="SetQuery:Robin"
                                                   Clicked="OnSetQueryClicked"
                                                   AutomationId="SetQueryButton"/>
-                                          <Button Grid.Row="4"
-                                                  Grid.ColumnSpan="2"
+                                          <Button Grid.Row="1"
+                                                  Grid.Column="1"
                                                   Text="TriggerClearPlaceholder"
                                                   Clicked="OnTriggerClearPlaceholderClicked"
                                                   AutomationId="TriggerClearPlaceholderButton"/>
+                                          <Button Grid.Row="2"
+                                                  Grid.Column="0"
+                                                  Text="QueryIcon:Default"
+                                                  Clicked="OnToggleQueryIconClicked"
+                                                  AutomationId="ToggleQueryIconButton"/>
+                                          <Button Grid.Row="2"
+                                                  Grid.Column="1"
+                                                  Text="ClearIcon:Default"
+                                                  Clicked="OnToggleClearIconClicked"
+                                                  AutomationId="ToggleClearIconButton"/>
+                                          <Button Grid.Row="3"
+                                                  Grid.Column="0"
+                                                  Text="ClearPHIcon:Default"
+                                                  Clicked="OnToggleClearPlaceholderIconClicked"
+                                                  AutomationId="ToggleClearPlaceholderIconButton"/>
+                                          <Button Grid.Row="3"
+                                                  Grid.Column="1"
+                                                  Text="ShowsResults:False"
+                                                  Clicked="OnToggleShowsResultsClicked"
+                                                  AutomationId="ToggleShowsResultsButton"/>
+                                           <Button Grid.Row="4"
+                                                   Grid.ColumnSpan="2"
+                                                   Text="Options"
+                                                   Clicked="OnOptionsClicked"
+                                                   AutomationId="Options"/>
                                    </Grid>
 
                                    <!-- Status Labels (events and command/parameter tracking) -->
                                    <Grid ColumnDefinitions="Auto,*"
                                          RowSpacing="4"
                                          ColumnSpacing="8"
-                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
 
                                           <!-- QueryChanged event log -->
                                           <Label Grid.Row="0"
@@ -144,7 +151,6 @@
                                                  x:Name="SelectedItem"
                                                  AutomationId="SelectedItem"
                                                  Text="{Binding SelectedItem}"/>
-
                                    </Grid>
                             </VerticalStackLayout>
                      </ScrollView>
