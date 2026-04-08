@@ -72,10 +72,18 @@ steps:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
     run: |
-      TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only \
+      # Try gh pr diff first; fall back to REST API for large PRs (300+ files)
+      TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null \
         | grep -E '\.(cs|xaml)$' \
         | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \
         || true)
+      if [ -z "$TEST_FILES" ]; then
+        # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API
+        TEST_FILES=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename' 2>/dev/null \
+          | grep -E '\.(cs|xaml)$' \
+          | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \
+          || true)
+      fi
       if [ -z "$TEST_FILES" ]; then
         echo "⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation."
         exit 1
