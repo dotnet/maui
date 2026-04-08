@@ -133,9 +133,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(passwordTextBox);
 				Assert.True(passwordTextBox.IsPassword);
 
-			// Setting Text on an empty password entry triggers TextChanging event which previously threw ArgumentOutOfRangeException
+				// Setting Text on an empty password entry triggers TextChanging event which previously threw ArgumentOutOfRangeException
 				passwordTextBox.Text = "test";
-				Assert.NotNull(passwordTextBox.Text);
+				Assert.Equal("test", passwordTextBox.Text);
 			});
 		}
 	}
