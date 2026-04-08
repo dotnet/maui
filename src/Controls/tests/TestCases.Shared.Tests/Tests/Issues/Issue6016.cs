@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -10,6 +11,27 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue6016(TestDevice device) : base(device) { }
 
+		/// <summary>
+		/// Waits for the X position of an element to stabilize (stop changing) within a timeout.
+		/// Returns the final stable X value.
+		/// </summary>
+		static float WaitForXToSettle(IApp app, string automationId, Func<float, bool> settledCondition, TimeSpan? timeout = null)
+		{
+			var deadline = Stopwatch.StartNew();
+			var maxWait = timeout ?? TimeSpan.FromSeconds(3);
+			float currentX = app.WaitForElement(automationId).GetRect().X;
+
+			while (deadline.Elapsed < maxWait)
+			{
+				currentX = app.WaitForElement(automationId).GetRect().X;
+				if (settledCondition(currentX))
+					return currentX;
+				Task.Delay(100).Wait();
+			}
+
+			return currentX;
+		}
+
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		public void SwipeViewThresholdShouldNotChangeMenuWidth()
@@ -19,54 +41,37 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Bug: Threshold was used as SwipeItem width, so content with Threshold=200 was displaced 200pts
 			// instead of the default 100pts (SwipeItemWidth).
 
-			// Record initial X of DefaultContent, then swipe right to open (LeftItems)
+			// Record initial X of DefaultContent, then swipe right to open (LeftItems).
+			// Use element-width-relative drag distance (67%) to be density-independent.
 			var defaultContentRect = App.WaitForElement("DefaultContent").GetRect();
 			float initialDefaultX = defaultContentRect.X;
+			float dragDistance = defaultContentRect.Width * 0.67f;
 			App.DragCoordinates(
 				defaultContentRect.X + 10, defaultContentRect.Y + defaultContentRect.Height / 2,
-				defaultContentRect.X + 200, defaultContentRect.Y + defaultContentRect.Height / 2);
+				defaultContentRect.X + dragDistance, defaultContentRect.Y + defaultContentRect.Height / 2);
 
-			// Poll until snap animation settles (content moves right)
-			float openDefaultX = initialDefaultX;
-			for (int i = 0; i < 15; i++)
-			{
-				openDefaultX = App.WaitForElement("DefaultContent").GetRect().X;
-				if (openDefaultX > initialDefaultX + 5)
-					break;
-				System.Threading.Thread.Sleep(200);
-			}
+			// Wait until snap animation settles (content moves right)
+			float openDefaultX = WaitForXToSettle(App, "DefaultContent", x => x > initialDefaultX + 5);
 			float defaultMenuWidth = openDefaultX - initialDefaultX;
 
 			// Close the default SwipeView by tapping inside the opened content
 			App.TapCoordinates(openDefaultX + 50, defaultContentRect.Y + defaultContentRect.Height / 2);
 
 			// Wait for close animation to settle before opening the next SwipeView
-			for (int i = 0; i < 10; i++)
-			{
-				if (App.WaitForElement("DefaultContent").GetRect().X <= initialDefaultX + 5)
-					break;
-				System.Threading.Thread.Sleep(200);
-			}
+			WaitForXToSettle(App, "DefaultContent", x => x <= initialDefaultX + 5);
 
 			// Record initial X of ThresholdContent, then swipe right.
-			// Use a 350px drag (vs 200px for default) — Android Appium coordinates are in physical pixels,
-			// so on a 2.5x density emulator 100dp ≈ 250px. A 340px drag ≈ 132dp safely exceeds
-			// the min(Threshold=200, menuWidth=100) = 100dp trigger on any standard emulator.
+			// Use the same element-width-relative drag (67%) — density-independent and sufficient
+			// to exceed the min(Threshold=200, menuWidth=100) = 100dp open trigger.
 			var thresholdContentRect = App.WaitForElement("ThresholdContent").GetRect();
 			float initialThresholdX = thresholdContentRect.X;
+			float thresholdDragDistance = thresholdContentRect.Width * 0.67f;
 			App.DragCoordinates(
 				thresholdContentRect.X + 10, thresholdContentRect.Y + thresholdContentRect.Height / 2,
-				thresholdContentRect.X + 350, thresholdContentRect.Y + thresholdContentRect.Height / 2);
+				thresholdContentRect.X + thresholdDragDistance, thresholdContentRect.Y + thresholdContentRect.Height / 2);
 
-			// Poll until snap animation settles
-			float openThresholdX = initialThresholdX;
-			for (int i = 0; i < 15; i++)
-			{
-				openThresholdX = App.WaitForElement("ThresholdContent").GetRect().X;
-				if (openThresholdX > initialThresholdX + 5)
-					break;
-				System.Threading.Thread.Sleep(200);
-			}
+			// Wait until snap animation settles
+			float openThresholdX = WaitForXToSettle(App, "ThresholdContent", x => x > initialThresholdX + 5);
 			float thresholdMenuWidth = openThresholdX - initialThresholdX;
 
 			// The menu width (content displacement) must be the same regardless of Threshold
@@ -86,59 +91,96 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Scroll to ensure DefaultRightContent is visible before dragging
 			App.ScrollTo("DefaultRightContent");
 
-			// Record initial X of DefaultRightContent, then swipe left to open (RightItems)
+			// Record initial X of DefaultRightContent, then swipe left to open (RightItems).
+			// Use the SwipeView element rect for drag coordinates (gives full width including padding).
+			var defaultRightSwipeRect = App.WaitForElement("DefaultRightSwipeView").GetRect();
 			var defaultRightContentRect = App.WaitForElement("DefaultRightContent").GetRect();
 			float initialDefaultRightX = defaultRightContentRect.X;
-			App.DragCoordinates(
-				defaultRightContentRect.X + defaultRightContentRect.Width - 10, defaultRightContentRect.Y + defaultRightContentRect.Height / 2,
-				defaultRightContentRect.X + defaultRightContentRect.Width - 200, defaultRightContentRect.Y + defaultRightContentRect.Height / 2);
+			TestContext.WriteLine($"[RightMenu] DefaultRightContent initial rect: X={defaultRightContentRect.X}, Y={defaultRightContentRect.Y}, W={defaultRightContentRect.Width}, H={defaultRightContentRect.Height}");
+			TestContext.WriteLine($"[RightMenu] DefaultRightSwipeView rect: X={defaultRightSwipeRect.X}, Y={defaultRightSwipeRect.Y}, W={defaultRightSwipeRect.Width}, H={defaultRightSwipeRect.Height}");
 
-			// Poll until snap animation settles (content moves left)
-			float openDefaultRightX = initialDefaultRightX;
-			for (int i = 0; i < 15; i++)
-			{
-				openDefaultRightX = App.WaitForElement("DefaultRightContent").GetRect().X;
-				if (openDefaultRightX < initialDefaultRightX - 5)
-					break;
-				System.Threading.Thread.Sleep(200);
-			}
+			// Swipe left using the SwipeView element for density-independent coordinates
+			float swipeStartX = defaultRightSwipeRect.X + defaultRightSwipeRect.Width - 10;
+			float swipeEndX = defaultRightSwipeRect.X + defaultRightSwipeRect.Width * 0.33f;
+			float swipeY = defaultRightSwipeRect.Y + defaultRightSwipeRect.Height / 2;
+			TestContext.WriteLine($"[RightMenu] Default drag: ({swipeStartX}, {swipeY}) -> ({swipeEndX}, {swipeY}), distance={swipeStartX - swipeEndX}");
+			App.DragCoordinates(swipeStartX, swipeY, swipeEndX, swipeY);
+
+			// Wait until snap animation settles (content moves left)
+			float openDefaultRightX = WaitForXToSettle(App, "DefaultRightContent", x => x < initialDefaultRightX - 5);
 			float defaultRightMenuWidth = initialDefaultRightX - openDefaultRightX;
+			TestContext.WriteLine($"[RightMenu] Default: initialX={initialDefaultRightX}, openX={openDefaultRightX}, menuWidth={defaultRightMenuWidth}");
 
 			// Close the default right SwipeView by tapping inside the opened content
 			App.TapCoordinates(openDefaultRightX + 50, defaultRightContentRect.Y + defaultRightContentRect.Height / 2);
 
 			// Wait for close animation to settle before opening the next SwipeView
-			for (int i = 0; i < 10; i++)
-			{
-				if (App.WaitForElement("DefaultRightContent").GetRect().X >= initialDefaultRightX - 5)
-					break;
-				System.Threading.Thread.Sleep(200);
-			}
+			WaitForXToSettle(App, "DefaultRightContent", x => x >= initialDefaultRightX - 5);
 
 			// Scroll to ThresholdRightContent, then swipe left.
-			// Use a 350px drag (vs 200px for default) — same reasoning as left-items test:
-			// exceeds min(Threshold=200, menuWidth=100) = 100dp trigger on any standard emulator.
 			App.ScrollTo("ThresholdRightContent");
+			var thresholdRightSwipeRect = App.WaitForElement("ThresholdRightSwipeView").GetRect();
 			var thresholdRightContentRect = App.WaitForElement("ThresholdRightContent").GetRect();
 			float initialThresholdRightX = thresholdRightContentRect.X;
-			App.DragCoordinates(
-				thresholdRightContentRect.X + thresholdRightContentRect.Width - 10, thresholdRightContentRect.Y + thresholdRightContentRect.Height / 2,
-				thresholdRightContentRect.X + thresholdRightContentRect.Width - 350, thresholdRightContentRect.Y + thresholdRightContentRect.Height / 2);
+			TestContext.WriteLine($"[RightMenu] ThresholdRightContent initial rect: X={thresholdRightContentRect.X}, Y={thresholdRightContentRect.Y}, W={thresholdRightContentRect.Width}, H={thresholdRightContentRect.Height}");
+			TestContext.WriteLine($"[RightMenu] ThresholdRightSwipeView rect: X={thresholdRightSwipeRect.X}, Y={thresholdRightSwipeRect.Y}, W={thresholdRightSwipeRect.Width}, H={thresholdRightSwipeRect.Height}");
 
-			// Poll until snap animation settles
-			float openThresholdRightX = initialThresholdRightX;
-			for (int i = 0; i < 15; i++)
-			{
-				openThresholdRightX = App.WaitForElement("ThresholdRightContent").GetRect().X;
-				if (openThresholdRightX < initialThresholdRightX - 5)
-					break;
-				System.Threading.Thread.Sleep(200);
-			}
+			// Swipe left using the SwipeView element for density-independent coordinates
+			swipeStartX = thresholdRightSwipeRect.X + thresholdRightSwipeRect.Width - 10;
+			swipeEndX = thresholdRightSwipeRect.X + thresholdRightSwipeRect.Width * 0.33f;
+			swipeY = thresholdRightSwipeRect.Y + thresholdRightSwipeRect.Height / 2;
+			TestContext.WriteLine($"[RightMenu] Threshold drag: ({swipeStartX}, {swipeY}) -> ({swipeEndX}, {swipeY}), distance={swipeStartX - swipeEndX}");
+			App.DragCoordinates(swipeStartX, swipeY, swipeEndX, swipeY);
+
+			// Wait until snap animation settles
+			float openThresholdRightX = WaitForXToSettle(App, "ThresholdRightContent", x => x < initialThresholdRightX - 5);
 			float thresholdRightMenuWidth = initialThresholdRightX - openThresholdRightX;
+			TestContext.WriteLine($"[RightMenu] Threshold: initialX={initialThresholdRightX}, openX={openThresholdRightX}, menuWidth={thresholdRightMenuWidth}");
 
 			// The menu width (content displacement) must be the same regardless of Threshold
 			Assert.That(thresholdRightMenuWidth, Is.EqualTo(defaultRightMenuWidth).Within(5),
 				$"SwipeView right menu width should not change with Threshold. Default width: {defaultRightMenuWidth}, Threshold=200 width: {thresholdRightMenuWidth}");
+		}
+
+		[Test]
+		[Category(UITestCategories.SwipeView)]
+		public void SwipeViewExecuteModeTriggers()
+		{
+			// Verify that SwipeMode.Execute triggers the SwipeItem when the swipe exceeds
+			// the open distance (~80% of content width). This guards against regressions where
+			// GetSwipeItemSize returns the wrong size for Execute mode (e.g., 100dp instead of
+			// contentWidth / items.Count), which would cause a visible gap during the swipe.
+
+			App.ScrollTo("ExecuteContent");
+
+			var executeSwipeRect = App.WaitForElement("ExecuteSwipeView").GetRect();
+			var executeContentRect = App.WaitForElement("ExecuteContent").GetRect();
+			TestContext.WriteLine($"[Execute] ExecuteContent rect: X={executeContentRect.X}, Y={executeContentRect.Y}, W={executeContentRect.Width}, H={executeContentRect.Height}");
+			TestContext.WriteLine($"[Execute] ExecuteSwipeView rect: X={executeSwipeRect.X}, Y={executeSwipeRect.Y}, W={executeSwipeRect.Width}, H={executeSwipeRect.Height}");
+
+			// Drag right by 90% of the SwipeView width — exceeds the ~80% Execute trigger threshold.
+			// Using SwipeView element rect for density-independent distance.
+			float dragStartX = executeSwipeRect.X + 10;
+			float dragEndX = executeSwipeRect.X + executeSwipeRect.Width * 0.9f;
+			float dragY = executeSwipeRect.Y + executeSwipeRect.Height / 2;
+			TestContext.WriteLine($"[Execute] Drag: ({dragStartX}, {dragY}) -> ({dragEndX}, {dragY}), distance={dragEndX - dragStartX}");
+			App.DragCoordinates(dragStartX, dragY, dragEndX, dragY);
+
+			// After execution the SwipeView snaps closed; wait for the result label to update
+			App.WaitForElement("ExecuteResultLabel");
+			string labelText = "Not Executed";
+			var deadline = Stopwatch.StartNew();
+			while (deadline.Elapsed < TimeSpan.FromSeconds(5))
+			{
+				labelText = App.WaitForElement("ExecuteResultLabel").GetText() ?? string.Empty;
+				TestContext.WriteLine($"[Execute] Label text at {deadline.ElapsedMilliseconds}ms: '{labelText}'");
+				if (labelText == "Executed")
+					break;
+				Task.Delay(200).Wait();
+			}
+
+			Assert.That(labelText, Is.EqualTo("Executed"),
+				"SwipeItem.Invoked should have fired after swiping past the Execute mode threshold");
 		}
 	}
 }

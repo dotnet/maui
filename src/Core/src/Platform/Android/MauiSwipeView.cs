@@ -1115,54 +1115,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		float GetRevealModeSwipeThreshold()
-		{
-			var swipeItems = GetSwipeItemsByDirection();
-
-			if (swipeItems == null)
-				return SwipeViewExtensions.SwipeThreshold;
-
-			bool isHorizontal = IsHorizontalSwipe();
-
-			float swipeItemsSize = 0;
-			bool hasSwipeItemView = false;
-
-			foreach (var swipeItem in swipeItems)
-			{
-				if (swipeItem is ISwipeItemView)
-					hasSwipeItemView = true;
-
-				if (GetIsVisible(swipeItem))
-				{
-					var swipeItemSize = GetSwipeItemSize(swipeItem);
-
-					if (isHorizontal)
-						swipeItemsSize += (float)swipeItemSize.Width;
-					else
-						swipeItemsSize += (float)swipeItemSize.Height;
-				}
-			}
-
-			if (hasSwipeItemView)
-			{
-				var swipeItemsWidthSwipeThreshold = swipeItemsSize * 0.8f;
-
-				return swipeItemsWidthSwipeThreshold;
-			}
-			else
-			{
-				if (_contentView != null)
-				{
-					var contentSize = isHorizontal ? _contentView.Width : _contentView.Height;
-					var contentSizeSwipeThreshold = contentSize * 0.8f;
-
-					return contentSizeSwipeThreshold;
-				}
-			}
-
-			return SwipeViewExtensions.SwipeThreshold;
-		}
-
 
 		float ValidateSwipeThreshold(float swipeThreshold)
 		{
@@ -1216,7 +1168,11 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItem is ISwipeItem)
 				{
-					return new Size(SwipeViewExtensions.SwipeItemWidth, contentHeight);
+					return new Size(
+						items.Mode == SwipeMode.Execute
+							? contentWidth / items.Count
+							: SwipeViewExtensions.SwipeItemWidth,
+						contentHeight);
 				}
 			}
 			else

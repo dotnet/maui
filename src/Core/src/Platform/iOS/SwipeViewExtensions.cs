@@ -19,7 +19,11 @@ namespace Microsoft.Maui.Platform
 			{
 				if (swipeItem is ISwipeItemMenuItem)
 				{
-					return new Size(SwipeItemWidth, contentHeight);
+					return new Size(
+						items.Mode == SwipeMode.Execute
+							? contentWidth / items.Count
+							: SwipeItemWidth,
+						contentHeight);
 				}
 
 				if (swipeItem is ISwipeItemView horizontalSwipeItemView)
