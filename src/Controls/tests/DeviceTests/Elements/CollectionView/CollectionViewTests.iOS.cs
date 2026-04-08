@@ -313,7 +313,14 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task CollectionViewScrollsToTopIsEnabled()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var collectionView = new CollectionView
 			{
