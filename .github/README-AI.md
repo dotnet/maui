@@ -252,6 +252,15 @@ Reusable skills in `.github/skills/` that agents can invoke:
 - **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
 - **`azdo-build-investigator/`** - Investigates CI failures for PRs (build errors, Helix test logs, binlog analysis) via dotnet/arcade-skills plugin
 
+### Skill Evaluation
+
+Skills are evaluated using a multi-agent protocol with two complementary tools:
+
+1. **Anthropic `skill-creator`** ([`anthropics/skills/skills/skill-creator/`](https://github.com/anthropics/skills/tree/main/skills/skill-creator)) — Trigger/routing evaluation: tests whether skills activate for the right prompts using `run_eval.py`, `improve_description.py`, and `run_loop.py` (with train/test split)
+2. **dotnet/skills `skill-validator`** — Behavioral evaluation: A/B comparison of agent performance with vs. without the skill, using `eval.yaml` scenarios
+
+See [`.github/docs/skill-eval-guide.md`](docs/skill-eval-guide.md) for the full evaluation protocol, tooling checklist, and quality standards.
+
 ### Recent Improvements (January 2026)
 
 **Agent Consolidation:**
