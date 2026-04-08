@@ -25,7 +25,7 @@ public class EntryFeatureTests : _GalleryUITest
 		: base(device)
 	{
 	}
-// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
+	// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
 	[Test, Order(1)]
 	public void VerifyInitialEventStates()
 	{
@@ -429,7 +429,7 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
 		App.ClearText("TestEntry");
 		App.EnterText("TestEntry", "1234567890");
-		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("123456"));		
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("123456"));
 	}
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
@@ -534,39 +534,39 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-		[Test, Order(34)]
-		[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
-		public void VerifyTextWhenIsTextPredictionEnabledTrue()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextPredictionTrue");
-			App.Tap("TextPredictionTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("TestEntry");
-			App.ClearText("TestEntry");
-			App.EnterText("TestEntry", "Testig");
-			App.EnterText("TestEntry", " ");
-			Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
-		}
+	[Test, Order(34)]
+	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyTextWhenIsTextPredictionEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextPredictionTrue");
+		App.Tap("TextPredictionTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
+	}
 
-		[Test, Order(35)]
-		[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
-		public void VerifyTextWhenIsSpellCheckEnabledTrue()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("SpellCheckTrue");
-			App.Tap("SpellCheckTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("TestEntry");
-			App.ClearText("TestEntry");
-			App.EnterText("TestEntry", "Testig");
-			App.EnterText("TestEntry", " ");
-			VerifyScreenshotWithKeyboardHandling();
-		}
+	[Test, Order(35)]
+	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyTextWhenIsSpellCheckEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SpellCheckTrue");
+		App.Tap("SpellCheckTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		VerifyScreenshotWithKeyboardHandling();
+	}
 
 	[Test, Order(36)]
 	public void VerifyTextWhenSelectionLengthSetValue()
@@ -581,6 +581,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
 		App.WaitForElement("SelectionLengthEntry");
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
@@ -602,6 +603,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
 		App.WaitForElement("CursorPositionEntry");
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
@@ -626,6 +628,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
 		App.WaitForElement("CursorPositionEntry");
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
@@ -651,6 +654,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
 		App.WaitForElement("CursorPositionEntry");
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("3"));
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
@@ -1073,8 +1077,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		var width = GetElementWidthInDip("TestEntry");
-		Assert.That(width, Is.EqualTo(150).Within(5));
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(66)]
@@ -1088,8 +1091,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		var height = GetElementHeightInDip("TestEntry");
-		Assert.That(height, Is.EqualTo(80).Within(5));
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(67)]
@@ -1106,10 +1108,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		var height = GetElementHeightInDip("TestEntry");
-		var width = GetElementWidthInDip("TestEntry");
-		Assert.That(height, Is.EqualTo(100).Within(5));
-		Assert.That(width, Is.EqualTo(150).Within(5));
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(68)]
@@ -1157,7 +1156,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.EnterText("OpacityEntry", "0");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForNoElement("TestEntry");
+		App.WaitForElement("Options");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(71)]
@@ -1277,7 +1277,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
-#endif 
+#endif
 
 
 	/// <summary>
@@ -1311,22 +1311,5 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
 
-	}
-
-	private double GetElementHeightInDip(string automationId)
-		=> GetElementSizeInDip(automationId).Height;
-
-	private double GetElementWidthInDip(string automationId)
-		=> GetElementSizeInDip(automationId).Width;
-
-	private (double Width, double Height) GetElementSizeInDip(string automationId)
-	{
-		var rect = App.WaitForElement(automationId).GetRect();
-#if ANDROID || WINDOWS
-		var density = App.GetDisplayDensity();
-		if (density > 0)
-			return (rect.Width / density, rect.Height / density);
-#endif
-		return (rect.Width, rect.Height);
 	}
 }

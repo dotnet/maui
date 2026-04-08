@@ -283,7 +283,7 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		if (double.TryParse(e.NewTextValue, out double widthRequest))
 		{
-			_viewModel.WidthRequest = widthRequest;
+			_viewModel.WidthRequest = widthRequest < 0 ? -1 : widthRequest;
 		}
 	}
 
@@ -300,7 +300,7 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		if (double.TryParse(e.NewTextValue, out double heightRequest))
 		{
-			_viewModel.HeightRequest = heightRequest;
+			_viewModel.HeightRequest = heightRequest < 0 ? -1 : heightRequest;
 		}
 	}
 

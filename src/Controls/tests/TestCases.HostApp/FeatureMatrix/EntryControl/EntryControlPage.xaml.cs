@@ -40,7 +40,7 @@ public partial class EntryControlMainPage : ContentPage
 		await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 	}
 
-	private void CursorPositionButton_Clicked(object sender, EventArgs e)
+	private void CursorPositionEntry_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
 		{
