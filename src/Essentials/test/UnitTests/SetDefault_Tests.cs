@@ -134,6 +134,22 @@ namespace Tests
 			Assert.NotSame(custom, Preferences.Default);
 		}
 
+		[Fact]
+		public void Preferences_SetDefault_CustomImplementation_IsUsed()
+		{
+			var custom = new MockPreferences();
+			try
+			{
+				Preferences.SetDefault(custom);
+				Preferences.Set("key", "value");
+				Assert.True(custom.SetCalled);
+			}
+			finally
+			{
+				Preferences.SetDefault(null);
+			}
+		}
+
 		// --- FilePicker SetDefault tests ---
 
 		[Fact]
@@ -161,6 +177,24 @@ namespace Tests
 			Assert.NotSame(custom, FilePicker.Default);
 		}
 
+		// --- FilePicker SetDefault behavioral test ---
+
+		[Fact]
+		public async Task FilePicker_SetDefault_CustomImplementation_IsUsed()
+		{
+			var custom = new MockFilePicker();
+			try
+			{
+				FilePicker.SetDefault(custom);
+				await FilePicker.PickAsync();
+				Assert.True(custom.PickAsyncCalled);
+			}
+			finally
+			{
+				FilePicker.SetDefault(null);
+			}
+		}
+
 		// --- Clipboard SetDefault tests ---
 
 		[Fact]
@@ -176,6 +210,16 @@ namespace Tests
 			{
 				Clipboard.SetDefault(null);
 			}
+		}
+
+		[Fact]
+		public void Clipboard_SetDefault_Null_ResetsToDefault()
+		{
+			var custom = new MockClipboard();
+			Clipboard.SetDefault(custom);
+			Clipboard.SetDefault(null);
+
+			Assert.NotSame(custom, Clipboard.Default);
 		}
 
 		[Fact]
@@ -227,6 +271,18 @@ namespace Tests
 			}
 		}
 
+		// --- SecureStorage null-reset test ---
+
+		[Fact]
+		public void SecureStorage_SetDefault_Null_ResetsToDefault()
+		{
+			var custom = new MockSecureStorage();
+			SecureStorage.SetDefault(custom);
+			SecureStorage.SetDefault(null);
+
+			Assert.NotSame(custom, SecureStorage.Default);
+		}
+
 		// --- Battery SetDefault tests ---
 
 		[Fact]
@@ -245,6 +301,16 @@ namespace Tests
 		}
 
 		[Fact]
+		public void Battery_SetDefault_Null_ResetsToDefault()
+		{
+			var custom = new MockBattery();
+			Battery.SetDefault(custom);
+			Battery.SetDefault(null);
+
+			Assert.NotSame(custom, Battery.Default);
+		}
+
+		[Fact]
 		public void Battery_SetDefault_CustomImplementation_IsUsed()
 		{
 			var custom = new MockBattery();
@@ -257,6 +323,136 @@ namespace Tests
 			finally
 			{
 				Battery.SetDefault(null);
+			}
+		}
+
+		// --- Share SetDefault tests ---
+
+		[Fact]
+		public void Share_SetDefault_SetsCustomImplementation()
+		{
+			var custom = new MockShare();
+			try
+			{
+				Share.SetDefault(custom);
+				Assert.Same(custom, Share.Default);
+			}
+			finally
+			{
+				Share.SetDefault(null);
+			}
+		}
+
+		[Fact]
+		public void Share_SetDefault_Null_ResetsToDefault()
+		{
+			var custom = new MockShare();
+			Share.SetDefault(custom);
+			Share.SetDefault(null);
+
+			Assert.NotSame(custom, Share.Default);
+		}
+
+		[Fact]
+		public async Task Share_SetDefault_CustomImplementation_IsUsed()
+		{
+			var custom = new MockShare();
+			try
+			{
+				Share.SetDefault(custom);
+				await Share.RequestAsync(new ShareTextRequest("text", "title"));
+				Assert.True(custom.RequestAsyncCalled);
+			}
+			finally
+			{
+				Share.SetDefault(null);
+			}
+		}
+
+		// --- Launcher SetDefault tests ---
+
+		[Fact]
+		public void Launcher_SetDefault_SetsCustomImplementation()
+		{
+			var custom = new MockLauncher();
+			try
+			{
+				Launcher.SetDefault(custom);
+				Assert.Same(custom, Launcher.Default);
+			}
+			finally
+			{
+				Launcher.SetDefault(null);
+			}
+		}
+
+		[Fact]
+		public void Launcher_SetDefault_Null_ResetsToDefault()
+		{
+			var custom = new MockLauncher();
+			Launcher.SetDefault(custom);
+			Launcher.SetDefault(null);
+
+			Assert.NotSame(custom, Launcher.Default);
+		}
+
+		[Fact]
+		public async Task Launcher_SetDefault_CustomImplementation_IsUsed()
+		{
+			var custom = new MockLauncher();
+			try
+			{
+				Launcher.SetDefault(custom);
+				var result = await Launcher.CanOpenAsync(new Uri("https://example.com"));
+				Assert.True(custom.CanOpenAsyncCalled);
+				Assert.True(result);
+			}
+			finally
+			{
+				Launcher.SetDefault(null);
+			}
+		}
+
+		// --- Accelerometer SetDefault tests ---
+
+		[Fact]
+		public void Accelerometer_SetDefault_SetsCustomImplementation()
+		{
+			var custom = new MockAccelerometer();
+			try
+			{
+				Accelerometer.SetDefault(custom);
+				Assert.Same(custom, Accelerometer.Default);
+			}
+			finally
+			{
+				Accelerometer.SetDefault(null);
+			}
+		}
+
+		[Fact]
+		public void Accelerometer_SetDefault_Null_ResetsToDefault()
+		{
+			var custom = new MockAccelerometer();
+			Accelerometer.SetDefault(custom);
+			Accelerometer.SetDefault(null);
+
+			Assert.NotSame(custom, Accelerometer.Default);
+		}
+
+		[Fact]
+		public void Accelerometer_SetDefault_CustomImplementation_IsUsed()
+		{
+			var custom = new MockAccelerometer();
+			try
+			{
+				Accelerometer.SetDefault(custom);
+				Assert.True(Accelerometer.IsSupported);
+				Assert.True(custom.IsSupportedCalled);
+			}
+			finally
+			{
+				Accelerometer.SetDefault(null);
 			}
 		}
 
@@ -299,17 +495,29 @@ namespace Tests
 
 		class MockPreferences : IPreferences
 		{
+			public bool SetCalled { get; private set; }
+
 			public bool ContainsKey(string key, string? sharedName = null) => false;
 			public void Remove(string key, string? sharedName = null) { }
 			public void Clear(string? sharedName = null) { }
-			public void Set<T>(string key, T value, string? sharedName = null) { }
+
+			public void Set<T>(string key, T value, string? sharedName = null)
+			{
+				SetCalled = true;
+			}
+
 			public T Get<T>(string key, T defaultValue, string? sharedName = null) => defaultValue;
 		}
 
 		class MockFilePicker : IFilePicker
 		{
+			public bool PickAsyncCalled { get; private set; }
+
 			public Task<FileResult?> PickAsync(PickOptions? options = null)
-				=> Task.FromResult<FileResult?>(null);
+			{
+				PickAsyncCalled = true;
+				return Task.FromResult<FileResult?>(null);
+			}
 
 			public Task<IEnumerable<FileResult>?> PickMultipleAsync(PickOptions? options = null)
 				=> Task.FromResult<IEnumerable<FileResult>?>(Array.Empty<FileResult>());
@@ -361,6 +569,60 @@ namespace Tests
 
 			internal void OnBatteryInfoChanged() => BatteryInfoChanged?.Invoke(this, new BatteryInfoChangedEventArgs(ChargeLevel, State, PowerSource));
 			internal void OnEnergySaverStatusChanged() => EnergySaverStatusChanged?.Invoke(this, new EnergySaverStatusChangedEventArgs(EnergySaverStatus));
+		}
+
+		class MockShare : IShare
+		{
+			public bool RequestAsyncCalled { get; private set; }
+
+			public Task RequestAsync(ShareTextRequest request)
+			{
+				RequestAsyncCalled = true;
+				return Task.CompletedTask;
+			}
+
+			public Task RequestAsync(ShareFileRequest request) => Task.CompletedTask;
+			public Task RequestAsync(ShareMultipleFilesRequest request) => Task.CompletedTask;
+		}
+
+		class MockLauncher : ILauncher
+		{
+			public bool CanOpenAsyncCalled { get; private set; }
+
+			public Task<bool> CanOpenAsync(Uri uri)
+			{
+				CanOpenAsyncCalled = true;
+				return Task.FromResult(true);
+			}
+
+			public Task<bool> OpenAsync(Uri uri) => Task.FromResult(true);
+			public Task<bool> OpenAsync(OpenFileRequest request) => Task.FromResult(true);
+			public Task<bool> TryOpenAsync(Uri uri) => Task.FromResult(true);
+		}
+
+		class MockAccelerometer : IAccelerometer
+		{
+			public bool IsSupportedCalled { get; private set; }
+
+			public bool IsSupported
+			{
+				get
+				{
+					IsSupportedCalled = true;
+					return true;
+				}
+			}
+
+			public bool IsMonitoring => false;
+
+			public void Start(SensorSpeed sensorSpeed) { }
+			public void Stop() { }
+
+			public event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
+			public event EventHandler? ShakeDetected;
+
+			internal void OnReadingChanged() => ReadingChanged?.Invoke(this, new AccelerometerChangedEventArgs(default));
+			internal void OnShakeDetected() => ShakeDetected?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
