@@ -240,9 +240,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentDialog is not null && currentDialog.IsShowing)
 			{
+				currentDialog.DismissEvent -= OnDialogDismiss;
 				currentDialog.Dismiss();
-
-				ShowPickerDialog(currentDialog.DatePicker.DateTime);
+				PlatformView?.Post(() =>
+				{
+					ShowPickerDialog(currentDialog.DatePicker.DateTime);
+				});
 			}
 		}
 	}
