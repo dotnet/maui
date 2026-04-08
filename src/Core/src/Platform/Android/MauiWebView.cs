@@ -51,9 +51,6 @@ namespace Microsoft.Maui.Platform
 			switch (e.Action)
 			{
 				case MotionEventActions.Down:
-					Parent?.RequestDisallowInterceptTouchEvent(true);
-					break;
-
 				case MotionEventActions.Move:
 					Parent?.RequestDisallowInterceptTouchEvent(true);
 					break;
