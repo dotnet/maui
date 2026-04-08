@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!IsSwipeEnabled)
+			{
 				return false;
+			}
 
 			return base.OnInterceptTouchEvent(ev);
 		}
@@ -186,6 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// And at the same time the user is requesting we go to a particular item
 			if (position == -1)
 			{
+				_gotoPosition = -1;
 				if (Carousel.Loop)
 					_carouselViewLoopManager.AddPendingScrollTo(args);
 
@@ -194,6 +197,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (args.IsAnimated)
 			{
+				if (_gotoPosition == -1)
+					_gotoPosition = args.Index;
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
 			}
 			else
@@ -310,6 +315,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 								}
 
 								UpdateVisualStates();
+
+								ScrollToPosition(carouselPosition);
 							}
 						}
 						finally
@@ -524,8 +531,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_gotoPosition = currentItemPosition;
 				ScrollToItemPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
 			}
-
-			_gotoPosition = -1;
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromPosition()

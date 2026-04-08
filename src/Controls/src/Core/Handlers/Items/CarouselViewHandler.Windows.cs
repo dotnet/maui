@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		Size _currentSize;
 		bool _isCarouselViewReady;
 		bool _isInternalPositionUpdate;
+		int _gotoPosition = -1;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -189,6 +191,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.UpdateCurrentItem();
+		}
+
+		protected override async Task ScrollTo(ScrollToRequestEventArgs args)
+		{
+			if (args.IsAnimated && args.Mode == ScrollToMode.Position)
+			{
+				_gotoPosition = args.Index;
+
+				// Commit position before animation so PreviousPosition/PreviousItem are correct immediately.
+				SetCarouselViewPosition(_gotoPosition);
+			}
+
+			try
+			{
+				await base.ScrollTo(args);
+			}
+			finally
+			{
+				// Conditional reset guards against a concurrent ScrollTo replacing the target.
+				if (_gotoPosition == args.Index)
+					_gotoPosition = -1;
+			}
 		}
 
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
@@ -384,7 +408,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
 			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
+			{
 				return;
+			}
+
+			if (_gotoPosition != -1)
+			{
+				return;
+			}
 
 			// Disable animation during collection changes to prevent cascading scroll events
 			var animate = ItemsView.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
@@ -492,6 +523,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+			// Ignore ViewChanged events fired before the initial position is established.
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+
 			var position = e.CenterItemIndex;
 
 			if (position == -1)
@@ -499,6 +536,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (position == Element.Position)
 				return;
+
+			// Suppress intermediate scroll events during a programmatic animated scroll.
+			if (_gotoPosition != -1)
+			{
+				return;
+			}
 
 			SetCarouselViewPosition(position);
 		}
@@ -611,7 +654,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				item.ItemHeight = itemHeight;
 				item.ItemWidth = itemWidth;
 			}
-			ListViewBase.InvalidateMeasure();
 		}
 	}
 }
