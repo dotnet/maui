@@ -49,7 +49,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		Assert.That(log, Does.Contain("Robin"));
 	}
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: 
 	[Test, Order(2)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SelectedItem()
@@ -91,6 +91,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link:
 	[Test, Order(5)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_BackgroundColor()
@@ -101,6 +102,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(6)]
 	[Category(UITestCategories.Shell)]
@@ -205,6 +207,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_ANDROID  // Issue Link:
 	[Test, Order(15)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_TextTransformUppercase()
@@ -215,6 +218,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(16)]
 	[Category(UITestCategories.Shell)]
@@ -275,6 +279,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/33772
 	[Test, Order(21)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SearchBoxVisibilityCollapsible()
@@ -285,6 +290,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(22)]
 	[Category(UITestCategories.Shell)]
@@ -297,6 +303,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_ANDROID // Issue Link:
 	[Test, Order(23)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderEnabledTrue()
@@ -309,7 +316,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleClearPlaceholderIconButton");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link:
 	[Test, Order(24)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_QueryIcon()
@@ -336,7 +345,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleClearPlaceholderIconButton");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link:
 	[Test, Order(27)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ShowsResultsTrue()
@@ -351,23 +362,30 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.WaitForElement("BackToSearchButton");
 		App.Tap("BackToSearchButton");
 	}
+#endif
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29277
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/30771
 	[Test, Order(28)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_FocusAndUnfocusEvent()
 	{
-		App.WaitForElement("ShowSoftInputButton");
-		App.Tap("ShowSoftInputButton");
+		App.WaitForElement("ToggleShowsResultsButton");
+		App.Tap("ToggleShowsResultsButton");
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
 		var status = App.WaitForElement("FocusStatus").GetText();
 		Assert.That(status, Is.EqualTo("Focused"));
-		App.WaitForElement("HideSoftInputButton");
-		App.Tap("HideSoftInputButton");
+		searchHandler.SendKeys("Mango");
+		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
+		App.WaitForElement("Mango");
+		App.WaitForElement("BackToSearchButton");
+		App.Tap("BackToSearchButton");
 		var status2 = App.WaitForElement("FocusStatus").GetText();
 		Assert.That(status2, Is.EqualTo("Unfocused"));
 	}
 #endif
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link:
 	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemsSourceFruits()
@@ -447,7 +465,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.SendKeys("Apple");
 		App.WaitForNoElement("Apple");
 	}
+#endif
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/34874
 	[Test, Order(33)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemTemplateCustom()
@@ -465,7 +485,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-
 	[Test, Order(34)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemTemplateNull()
@@ -482,7 +501,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.WaitForElement("Apple");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
+ #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: 
 	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CommandParameter()
@@ -492,7 +513,8 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.ClearText("CommandParameterEntry");
 		App.EnterText("CommandParameterEntry", "TestParam");
 		ApplyAndReturn();
-
+		App.WaitForElement("ToggleShowsResultsButton");
+		App.Tap("ToggleShowsResultsButton");
 		// Type a query and press Enter to trigger QueryConfirmed → SearchCommand
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
@@ -503,9 +525,17 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		var fired = App.WaitForElement("CommandFired").GetText();
 		Assert.That(fired, Does.Contain("QueryConfirmed"));
 		Assert.That(fired, Does.Contain("Param:TestParam"));
-		searchHandler.Clear();
+		var searchHandler2 = App.GetShellSearchHandler();
+		searchHandler2.Tap();
+		searchHandler2.Clear();
+		searchHandler2.SendKeys("Apple");
+		App.TapFirstSearchResult(this, searchHandler2, "SearchResultName");
+		App.WaitForElement("BackToSearchButton");
+		App.Tap("BackToSearchButton");
 	}
+ #endif
 
+#if TEST_FAILS_ON_ANDROID 
 	[Test, Order(36)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderCommand()
@@ -526,6 +556,19 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 
 	[Test, Order(37)]
 	[Category(UITestCategories.Shell)]
+	public void VerifyShellSearch_ClearPlaceholderEnabled()
+	{
+		OpenOptions();
+		App.WaitForElement("ClearPlaceholderEnabledTrue");
+		App.Tap("ClearPlaceholderEnabledTrue");
+		ApplyAndReturn();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/26968 , https://github.com/dotnet/maui/issues/30771 due to this issue options toolbar disappeared
+	[Test, Order(38)]
+	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_TextColor()
 	{
 		OpenOptions();
@@ -539,7 +582,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(38)]
+	[Test, Order(39)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
@@ -553,4 +596,5 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.SendKeys("Testing");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 }

@@ -13,14 +13,21 @@
               <ContentPage Title="ShellSearch"
                            x:Name="SearchContentPage"
                            AutomationId="SearchContentPage">
+                     <ContentPage.ToolbarItems>
+                            <ToolbarItem Text="Options"
+                                         Clicked="OnOptionsClicked"
+                                         AutomationId="Options"/>
+                     </ContentPage.ToolbarItems>
                      <Shell.SearchHandler>
                             <local:SampleSearchHandler x:Name="SearchHandlerInstance"
                                                        AutomationId="SearchHandler"
                                                        BackgroundColor="{Binding BackgroundColor}"
                                                        CancelButtonColor="{Binding CancelButtonColor}"
                                                        CharacterSpacing="{Binding CharacterSpacing}"
+                                                       ClearIcon="{Binding ClearIcon}"
                                                        ClearPlaceholderCommandParameter="{Binding ClearPlaceholderCommandParameter}"
                                                        ClearPlaceholderEnabled="{Binding ClearPlaceholderEnabled}"
+                                                       ClearPlaceholderIcon="{Binding ClearPlaceholderIcon}"
                                                        ClearPlaceholderCommand="{Binding ClearPlaceholderCommand, Mode=TwoWay}"
                                                        Command="{Binding SearchCommand, Mode=TwoWay}"
                                                        CommandParameter="{Binding CommandParameter}"
@@ -35,8 +42,9 @@
                                                        Placeholder="{Binding Placeholder}"
                                                        PlaceholderColor="{Binding PlaceholderColor}"
                                                        Query="{Binding Query}"
-                                                       ShowsResults="False"
+                                                       QueryIcon="{Binding QueryIcon}"
                                                        SearchBoxVisibility="{Binding SearchBoxVisibility}"
+                                                       ShowsResults="{Binding ShowsResults}"
                                                        TextColor="{Binding TextColor}"
                                                        TextTransform="{Binding TextTransform}"
                                                        VerticalTextAlignment="{Binding VerticalTextAlignment}"/>
@@ -47,7 +55,7 @@
                                    <!-- Action buttons -->
                                    <Grid RowSpacing="2"
                                          ColumnSpacing="8"
-                                         RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                         RowDefinitions="Auto,Auto,Auto,Auto"
                                          ColumnDefinitions="*,*">
                                           <Button Grid.Row="0"
                                                   Grid.Column="0"
@@ -71,29 +79,28 @@
                                                   AutomationId="TriggerClearPlaceholderButton"/>
                                           <Button Grid.Row="2"
                                                   Grid.Column="0"
+                                                  x:Name="ToggleQueryIconBtn"
                                                   Text="QueryIcon:Default"
                                                   Clicked="OnToggleQueryIconClicked"
                                                   AutomationId="ToggleQueryIconButton"/>
                                           <Button Grid.Row="2"
                                                   Grid.Column="1"
+                                                  x:Name="ToggleClearIconBtn"
                                                   Text="ClearIcon:Default"
                                                   Clicked="OnToggleClearIconClicked"
                                                   AutomationId="ToggleClearIconButton"/>
                                           <Button Grid.Row="3"
                                                   Grid.Column="0"
+                                                  x:Name="ToggleClearPHIconBtn"
                                                   Text="ClearPHIcon:Default"
                                                   Clicked="OnToggleClearPlaceholderIconClicked"
                                                   AutomationId="ToggleClearPlaceholderIconButton"/>
                                           <Button Grid.Row="3"
                                                   Grid.Column="1"
+                                                  x:Name="ToggleShowsResultsBtn"
                                                   Text="ShowsResults:False"
                                                   Clicked="OnToggleShowsResultsClicked"
                                                   AutomationId="ToggleShowsResultsButton"/>
-                                           <Button Grid.Row="4"
-                                                   Grid.ColumnSpan="2"
-                                                   Text="Options"
-                                                   Clicked="OnOptionsClicked"
-                                                   AutomationId="Options"/>
                                    </Grid>
 
                                    <!-- Status Labels (events and command/parameter tracking) -->
@@ -104,50 +111,50 @@
 
                                           <!-- QueryChanged event log -->
                                           <Label Grid.Row="0"
-                                                        Grid.Column="0"
-                                                        Text="QueryChangedLog:"/>
+                                                 Grid.Column="0"
+                                                 Text="QueryChangedLog:"/>
                                           <Label Grid.Row="0"
-                                                        Grid.Column="1"
+                                                 Grid.Column="1"
                                                  x:Name="QueryChangedLog"
                                                  AutomationId="QueryChangedLog"
                                                  Text="{Binding QueryChangedLog}"/>
 
                                           <!-- Focus status (Focused/Unfocused events) -->
                                           <Label Grid.Row="1"
-                                                        Grid.Column="0"
-                                                        Text="FocusStatus:"/>
+                                                 Grid.Column="0"
+                                                 Text="FocusStatus:"/>
                                           <Label Grid.Row="1"
-                                                        Grid.Column="1"
+                                                 Grid.Column="1"
                                                  x:Name="FocusStatus"
                                                  AutomationId="FocusStatus"
                                                  Text="{Binding FocusStatus}"/>
 
                                           <!-- OnQueryConfirmed override fired -->
                                           <Label Grid.Row="2"
-                                                        Grid.Column="0"
-                                                        Text="CommandFired:"/>
+                                                 Grid.Column="0"
+                                                 Text="CommandFired:"/>
                                           <Label Grid.Row="2"
-                                                        Grid.Column="1"
+                                                 Grid.Column="1"
                                                  x:Name="CommandFired"
                                                  AutomationId="CommandFired"
                                                  Text="{Binding CommandFired}"/>
 
                                           <!-- OnClearPlaceholderClicked override fired -->
                                           <Label Grid.Row="3"
-                                                        Grid.Column="0"
-                                                        Text="ClearPHCommandFired:"/>
+                                                 Grid.Column="0"
+                                                 Text="ClearPHCommandFired:"/>
                                           <Label Grid.Row="3"
-                                                        Grid.Column="1"
+                                                 Grid.Column="1"
                                                  x:Name="ClearPlaceholderCommandFired"
                                                  AutomationId="ClearPlaceholderCommandFired"
                                                  Text="{Binding ClearPlaceholderCommandFired}"/>
 
                                           <!-- SelectedItem — last item tapped in suggestions dropdown -->
                                           <Label Grid.Row="4"
-                                                        Grid.Column="0"
-                                                        Text="SelectedItem:"/>
+                                                 Grid.Column="0"
+                                                 Text="SelectedItem:"/>
                                           <Label Grid.Row="4"
-                                                        Grid.Column="1"
+                                                 Grid.Column="1"
                                                  x:Name="SelectedItem"
                                                  AutomationId="SelectedItem"
                                                  Text="{Binding SelectedItem}"/>

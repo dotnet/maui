@@ -25,7 +25,8 @@
                 <Button Text="Shell Page"
                         Clicked="OnShellPageButtonClicked"
                         HorizontalOptions="Center"
-                        AutomationId="ShellPageButton"/> 
+                        AutomationId="ShellPageButton"
+                        WidthRequest="400"/> 
                 <Button Text="Shell Search"
                         Clicked="OnShellSearchButtonClicked"
                         HorizontalOptions="Center"

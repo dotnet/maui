@@ -32,11 +32,6 @@ public class SampleSearchHandler : SearchHandler
 		vm.PropertyChanged += OnViewModelPropertyChanged;
 	}
 
-	internal void Cleanup()
-	{
-		_viewModel?.PropertyChanged -= OnViewModelPropertyChanged;
-	}
-
 	void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == nameof(ShellViewModel.ItemsSourceMode))
@@ -98,7 +93,7 @@ public class SampleSearchHandler : SearchHandler
 					{
 						[nameof(ShellSearchControlPage.SearchDetailPage.ItemName)] = itemName
 					});
-			} 
+			}
 			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine($"Navigation failed: {ex.Message}");
@@ -142,6 +137,13 @@ public partial class ShellSearchControlPage : Shell
 		SearchHandlerInstance.Unfocus();
 		SearchHandlerInstance.HideSoftInputAsync();
 		_viewModel.Reset();
+
+		// Reset toggle button labels to match default state
+		ToggleQueryIconBtn.Text = "QueryIcon:Default";
+		ToggleClearIconBtn.Text = "ClearIcon:Default";
+		ToggleClearPHIconBtn.Text = "ClearPHIcon:Default";
+		ToggleShowsResultsBtn.Text = "ShowsResults:False";
+
 		await Navigation.PushAsync(new ShellSearchOptionsPage(_viewModel));
 	}
 
@@ -162,24 +164,24 @@ public partial class ShellSearchControlPage : Shell
 	void OnToggleQueryIconClicked(object sender, EventArgs e)
 	{
 		var btn = (Button)sender;
-		bool isCustom = SearchHandlerInstance.QueryIcon != null;
-		SearchHandlerInstance.QueryIcon = isCustom ? null : ImageSource.FromFile("coffee.png");
+		bool isCustom = _viewModel.QueryIcon != null;
+		_viewModel.QueryIcon = isCustom ? null : ImageSource.FromFile("coffee.png");
 		btn.Text = isCustom ? "QueryIcon:Default" : "QueryIcon:Custom";
 	}
 
 	void OnToggleClearIconClicked(object sender, EventArgs e)
 	{
 		var btn = (Button)sender;
-		bool isCustom = SearchHandlerInstance.ClearIcon != null;
-		SearchHandlerInstance.ClearIcon = isCustom ? null : ImageSource.FromFile("bank.png");
+		bool isCustom = _viewModel.ClearIcon != null;
+		_viewModel.ClearIcon = isCustom ? null : ImageSource.FromFile("bank.png");
 		btn.Text = isCustom ? "ClearIcon:Default" : "ClearIcon:Custom";
 	}
 
 	void OnToggleClearPlaceholderIconClicked(object sender, EventArgs e)
 	{
 		var btn = (Button)sender;
-		bool isCustom = SearchHandlerInstance.ClearPlaceholderIcon != null;
-		SearchHandlerInstance.ClearPlaceholderIcon = isCustom ? null : ImageSource.FromFile("avatar.png");
+		bool isCustom = _viewModel.ClearPlaceholderIcon != null;
+		_viewModel.ClearPlaceholderIcon = isCustom ? null : ImageSource.FromFile("avatar.png");
 		btn.Text = isCustom ? "ClearPHIcon:Default" : "ClearPHIcon:Custom";
 	}
 
@@ -187,7 +189,7 @@ public partial class ShellSearchControlPage : Shell
 	{
 		var btn = (Button)sender;
 		_viewModel.ShowsResults = !_viewModel.ShowsResults;
-		btn.Text = _viewModel.ShowsResults ? "ShowsResults:False" : "ShowsResults:True";
+		btn.Text = _viewModel.ShowsResults ? "ShowsResults:True" : "ShowsResults:False";
 	}
 
 	// ── Search Detail Page (navigated to when a search result is tapped) ─────────
