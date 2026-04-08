@@ -9,6 +9,7 @@
     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
         <HorizontalStackLayout
             x:Name="LandmarksStack"
+            Padding="20,8"
             BindableLayout.ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type views:LandmarkHorizontalListView}}, Path=Landmarks}"
             Spacing="15">
             <BindableLayout.ItemTemplate>

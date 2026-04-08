@@ -10,12 +10,13 @@
         Padding="0"
         StrokeShape="RoundRectangle 16"
         StrokeThickness="0"
+        Background="Transparent"
         Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.3}">
         <Border.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnFeaturedLandmarkTapped" />
         </Border.GestureRecognizers>
         
-        <Grid HeightRequest="250">
+        <Grid HeightRequest="250" InputTransparent="True">
             <Image
                 Aspect="AspectFill"
                 Source="{Binding Source={x:Reference FeaturedControl}, Path=Landmark.BackgroundImageName, StringFormat='Images/Backgrounds/{0}.jpg'}" />
