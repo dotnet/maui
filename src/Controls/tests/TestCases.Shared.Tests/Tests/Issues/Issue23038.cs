@@ -12,6 +12,9 @@ public class Issue23038 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest("Windows-only test: validates WinUI CollectionView group header styles")]
+	[FailsOnIOSWhenRunningOnXamarinUITest("Windows-only test: validates WinUI CollectionView group header styles")]
+	[FailsOnMacWhenRunningOnXamarinUITest("Windows-only test: validates WinUI CollectionView group header styles")]
 	public void GroupHeaderShouldStretchToFullWidth()
 	{
 		var collectionViewRect = App.WaitForElement("GroupedCollectionView").GetRect();
