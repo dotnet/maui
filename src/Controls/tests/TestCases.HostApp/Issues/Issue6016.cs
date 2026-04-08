@@ -121,6 +121,44 @@ public class Issue6016 : ContentPage
 			}
 		};
 
+		var executeResultLabel = new Label
+		{
+			Text = "Not Executed",
+			AutomationId = "ExecuteResultLabel"
+		};
+
+		var executeSwipeItem = new SwipeItem
+		{
+			Text = "Execute",
+			BackgroundColor = Colors.OrangeRed,
+			AutomationId = "ExecuteSwipeItem"
+		};
+		executeSwipeItem.Invoked += (s, e) => executeResultLabel.Text = "Executed";
+
+		var executeItems = new SwipeItems { Mode = SwipeMode.Execute };
+		executeItems.Add(executeSwipeItem);
+
+		var executeSwipeView = new SwipeView
+		{
+			LeftItems = executeItems,
+			AutomationId = "ExecuteSwipeView",
+			Content = new Grid
+			{
+				HeightRequest = 60,
+				BackgroundColor = Colors.LightYellow,
+				Children =
+				{
+					new Label
+					{
+						Text = "Swipe right to execute",
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+						AutomationId = "ExecuteContent"
+					}
+				}
+			}
+		};
+
 		Content = new ScrollView
 		{
 			Content = new VerticalStackLayout
@@ -135,7 +173,10 @@ public class Issue6016 : ContentPage
 					thresholdSwipeView,
 					new Label { Text = "Right swipe items (swipe left to open):" },
 					defaultRightSwipeView,
-					thresholdRightSwipeView
+					thresholdRightSwipeView,
+					new Label { Text = "Execute mode (swipe right past 80% of width):" },
+					executeSwipeView,
+					executeResultLabel
 				}
 			}
 		};
