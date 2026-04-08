@@ -297,7 +297,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(Shell.FlyoutIconProperty))
+			{
 				UpdateLeftBarButtonItem();
+			}
+			else if (e.Is(Shell.ForegroundColorProperty))
+			{
+				UpdateLeftBarButtonItem();
+			}
 		}
 
 		BackButtonBehavior _backButtonBehavior = null;
@@ -326,6 +332,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
 				UpdateTitleView();
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftBarButtonItem();
+			}
 		}
 
 		void OnBackButtonBehaviorChanged(object sender, PropertyChangedEventArgs e)
@@ -423,7 +433,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			DrawerArrowDrawable icon = null;
 			bool defaultDrawerArrowDrawable = false;
 
-			var tintColor = Colors.White;
+			var tintColor = Shell.GetForegroundColor(page) ?? Shell.GetForegroundColor(_shell);
 			if (TintColor != null)
 				tintColor = TintColor;
 
@@ -471,23 +481,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				icon = _flyoutIconDrawerDrawable;
 			}
 
-			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
+			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || (CanNavigateBack && backButtonVisible)))
 			{
 				_drawerArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
 				icon = _drawerArrowDrawable;
 				defaultDrawerArrowDrawable = true;
 			}
 
-			icon?.Progress = (CanNavigateBack) ? 1 : 0;
+			icon?.Progress = (CanNavigateBack && backButtonVisible) ? 1 : 0;
 
-			if (command != null || CanNavigateBack)
+			if (command != null || (CanNavigateBack && backButtonVisible))
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
 				if (backButtonVisibleFromBehavior && (backButtonVisible || !defaultDrawerArrowDrawable))
 					toolbar.NavigationIcon = icon;
 			}
-			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
+			else if (_flyoutBehavior == FlyoutBehavior.Flyout || (!defaultDrawerArrowDrawable && backButtonVisible))
 			{
 				bool drawerEnabled = isEnabled && icon != null;
 				_drawerToggle.DrawerIndicatorEnabled = drawerEnabled;
@@ -503,6 +513,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
+				toolbar.NavigationIcon = null;
 			}
 
 			_drawerToggle.SyncState();
@@ -557,7 +568,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				if (CanNavigateBack)
+				if (CanNavigateBack && _toolbar?.BackButtonVisible == true)
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 				else
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
@@ -600,13 +611,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (page == null || !_appBar.IsAlive())
 				return;
-
 			if (Shell.GetNavBarHasShadow(page))
 			{
-				if (_appBarElevation <= 0)
-					_appBarElevation = _appBar.Context.ToPixels(4);
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					// AppBar elevation is  set 0f to match Material 3 AppBar behavior.
+					_appBar.SetElevation(0f);
+				}
+				else
+				{
+					if (_appBarElevation <= 0)
+					{
+						_appBarElevation = _appBar.Context.ToPixels(4);
+					}
 
-				_appBar.SetElevation(_appBarElevation);
+					_appBar.SetElevation(_appBarElevation);
+				}
 			}
 			else
 			{
@@ -648,10 +668,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var menu = toolbar.Menu;
 			SearchHandler = Shell.GetSearchHandler(page);
-			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
+			if (SearchHandler is not null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
 				var context = ShellContext.AndroidContext;
-				if (_searchView == null)
+				if (_searchView is null)
 				{
 					_searchView = GetSearchView(context);
 					_searchView.SearchHandler = SearchHandler;
@@ -677,21 +697,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
-					if (_searchView.View.Parent != null)
+					if (_searchView.View.Parent is not null)
+					{
 						_searchView.View.RemoveFromParent();
+					}
 
 					item.SetActionView(_searchView.View);
 					item.Dispose();
 				}
 				else if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Expanded)
 				{
+					// Remove the placeholder menu item, if it exists, added for collapsible mode.
+					if (menu.FindItem(_placeholderMenuItemId) is not null)
+					{
+						menu.RemoveItem(_placeholderMenuItemId);
+					}
+
 					if (_searchView.View.Parent != _platformToolbar)
+					{
 						_platformToolbar.AddView(_searchView.View);
+					}
 				}
 			}
 			else
 			{
-				if (_searchView != null)
+				if (_searchView is not null)
 				{
 					_searchView.View.RemoveFromParent();
 					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
@@ -789,8 +819,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bool pressed = false;
 				if (IconBitmap != null)
 				{
-					ADrawableCompat.SetTint(IconBitmap, TintColor.ToPlatform());
-					ADrawableCompat.SetTintMode(IconBitmap, PorterDuff.Mode.SrcAtop);
+					if (TintColor is not null)
+					{
+						ADrawableCompat.SetTint(IconBitmap, TintColor.ToPlatform());
+						ADrawableCompat.SetTintMode(IconBitmap, PorterDuff.Mode.SrcAtop);
+					}
+					else
+					{
+						ADrawableCompat.SetTintList(IconBitmap, null); // Clear tint to preserve original icon colors
+					}
 
 					IconBitmap.SetBounds(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom);
 					IconBitmap.Draw(canvas);
@@ -800,7 +837,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var paint = new Paint { AntiAlias = true };
 					paint.TextSize = _defaultSize;
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : TintColor.ToPlatform();
+					paint.Color = pressed ? _pressedBackgroundColor.ToPlatform() : (TintColor ?? Colors.White).ToPlatform();
 #pragma warning restore CA1416
 					paint.SetStyle(Paint.Style.Fill);
 					var y = (Bounds.Height() + paint.TextSize) / 2;

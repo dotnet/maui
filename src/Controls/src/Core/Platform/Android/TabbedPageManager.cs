@@ -124,17 +124,21 @@ public class TabbedPageManager
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
+
 			RemoveTabs();
+			
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
 		}
 
 		Element = tabbedPage;
+		
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
 			Element.Disappearing += OnTabbedPageDisappearing;
+
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 			if (IsBottomTabPlacement)
@@ -218,6 +222,13 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
+		// Don't remove tabs during modal navigation — tabs should remain visible so they
+		// restore properly when the modal is dismissed.
+		// For non-modal navigation (e.g. NavigationPage.PushAsync), tabs must be removed so that
+		// the newly pushed page can use the full available height.
+		if (Element?.Navigation?.ModalStack?.Count > 0)
+			return;
+
 		RemoveTabs();
 	}
 
@@ -594,6 +605,14 @@ public class TabbedPageManager
 		{
 			newGradientBrush.Parent = Element;
 			newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			if (_bottomNavigationView is not null && _bottomNavigationView.Elevation > 0)
+			{
+				_bottomNavigationView.Elevation = 0;
+			}
+		}
+		else if (_currentBarBackground is SolidColorBrush && _bottomNavigationView is not null && _bottomNavigationView.Elevation == 0)
+		{
+			_bottomNavigationView.Elevation = _bottomNavigationView.Context.Resources.GetDimension(Resource.Dimension.design_bottom_navigation_elevation);
 		}
 
 		RefreshBarBackground();
