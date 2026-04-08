@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Windows.AppLifecycle;
 
 namespace Microsoft.Maui
 {
@@ -20,9 +21,17 @@ namespace Microsoft.Maui
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
-			// Windows running on a different thread will "launch" the app again
+			LaunchActivatedEventArgs = args;
+
+			var launchActivation = AppInstance.GetCurrent().GetActivatedEventArgs();
+
+			// A running WinUI app can be activated again without rebuilding the MAUI application.
+			// Reuse the existing services and let activation handlers short-circuit the relaunch path.
 			if (_application != null && _services != null)
 			{
+				if (launchActivation is AppActivationArguments activatedEventArgs && OnAppActivation(activatedEventArgs))
+					return;
+
 				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 				return;
@@ -37,6 +46,14 @@ namespace Microsoft.Maui
 
 			_services = applicationContext.Services;
 
+			// Future AppInstance activation callbacks need the app-level services to exist first.
+			RegisterForAppActivation();
+
+			// Run the initial activation after services are available, but before OnLaunching/window creation,
+			// so handlers can redirect or suppress the default startup flow.
+			if (launchActivation is AppActivationArguments initialActivation && OnAppActivation(initialActivation))
+				return;
+
 			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			_application = _services.GetRequiredService<IApplication>();
@@ -48,9 +65,40 @@ namespace Microsoft.Maui
 			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
+		protected virtual bool OnAppActivation(AppActivationArguments args)
+		{
+			var wasHandled = false;
+
+			_services?.InvokeLifecycleEvents<WindowsLifecycle.OnAppActivation>(del =>
+			{
+				// Preserve any earlier "handled" result so multiple listeners can participate safely.
+				wasHandled = del(this, args) || wasHandled;
+			});
+
+			return wasHandled;
+		}
+
+		void RegisterForAppActivation()
+		{
+			if (_isRegisteredForAppActivation)
+				return;
+
+			_isRegisteredForAppActivation = true;
+
+			// After startup, later file/protocol/redirected activations are delivered through AppInstance.
+			AppInstance.GetCurrent().Activated += OnAppInstanceActivated;
+
+			void OnAppInstanceActivated(object? sender, AppActivationArguments args)
+			{
+				OnAppActivation(args);
+			}
+		}
+
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
+
+		bool _isRegisteredForAppActivation;
 
 		IServiceProvider? _services;
 
