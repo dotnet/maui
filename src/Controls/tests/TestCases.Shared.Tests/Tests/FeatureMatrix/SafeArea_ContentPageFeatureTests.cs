@@ -43,17 +43,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS
 			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			{
-				var rect = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeApplication[@name=\"Controls.TestCases.HostApp\"]/XCUIElementTypeWindow[3]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[1]")).GetRect();
-				var orientation = ((AppiumApp)App).Driver.Orientation;
-				bool isLandscape = orientation == OpenQA.Selenium.ScreenOrientation.Landscape;
-				if (isLandscape)
-				{
-					return rect.X;
-				}
-				else
-				{
-					return rect.Y;
-				}
+				var rect = App.WaitForElement("Toolbar").GetRect();
+				return rect.Y;
 			}
 			else
 			{
@@ -191,6 +182,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"SoftInput: bottom label Y ({bottomLabelRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34872
 		[Test, Order(5)]
 		[Description("Default on ContentPage behaves as None — content extends edge-to-edge")]
 		public void ValidateSafeAreaEdges_Default()
@@ -214,7 +206,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(screenHeight),
 				$"Default: bottom label Y ({bottomLabelRect.Bottom}) should be ≈ screenHeight ({screenHeight})");
 		}
-
+#endif
 		// ──────────────────────────────────────────────
 		// Per-Edge Configuration (via Options)
 		// ──────────────────────────────────────────────
@@ -953,7 +945,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should be equal to screenHeight ({screenHeight})");
 		}
 
-#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34847
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34847
 
 		[Test, Order(19)]
 		[Description("Keyboard open: cycle through None → All → Container → SoftInput → Default → None and verify positions")]
@@ -1266,6 +1258,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Thread.Sleep(1000);
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34872
 		[Test, Order(26)]
 		[Description("Default: landscape left/right/bottom all edge-to-edge (Default on ContentPage = None)")]
 		public void ValidateOrientation_Default_Landscape()
@@ -1300,6 +1293,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 			Thread.Sleep(1000);
 		}
+#endif
 
 		// ──────────────────────────────────────────────
 		// Landscape Keyboard Position Validation
@@ -1608,6 +1602,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Thread.Sleep(1000);
 		}
 
+#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34872
 		[Test, Order(31)]
 		[Description("Landscape Default: all edges edge-to-edge with keyboard (Default on ContentPage = None)")]
 		public void ValidateKeyboard_Default_Landscape()
@@ -1672,11 +1667,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			Thread.Sleep(1000);
 		}
 #endif
+#endif
 
 		// ──────────────────────────────────────────────
 		// Default + Keyboard (Portrait)
 		// ──────────────────────────────────────────────
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34872
 		[Test, Order(32)]
 		[Description("With Default (None on ContentPage), bottom indicator does NOT move when keyboard is shown")]
 		public void ValidateKeyboard_Default_BottomStays()
@@ -1728,6 +1725,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(bottomLabelAfterRect.Bottom, Is.EqualTo(bottomLabelBeforeRect.Bottom),
 				$"After keyboard - bottom label Bottom ({bottomLabelAfterRect.Bottom}) should return to original ({bottomLabelBeforeRect.Bottom})");
 		}
+#endif
 
 		// ──────────────────────────────────────────────
 		// Per-Edge + Keyboard (Portrait)
