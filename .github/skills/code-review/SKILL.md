@@ -84,6 +84,8 @@ Based ONLY on the code (no PR description), answer:
 3. **Is the approach sound?** Would a simpler alternative work?
 4. **What problems do you see?** Run through the review rules AND the MAUI-Specific Review Checklist below
 
+**Regression risk check:** If changed files touch components in Section 22's "Most Frequently Regressed Components" table (CollectionView, Image/Graphics, Theme/Style, CarouselView, Gesture/Tap, Button/Entry, Toolbar, Shell/TabBar), apply Section 21 regression prevention rules with extra scrutiny.
+
 ### Step 4: Read PR Narrative and Reconcile
 
 Now read the PR description, linked issue, and comments. Treat these as **claims to verify**, not facts.

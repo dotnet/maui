@@ -1,6 +1,7 @@
 # eval.yaml v2 — code-review skill
 # v1: 6 scenarios covering workflow mechanics, independence-first, negative triggers, anti-patterns
 # v2: Added regression prevention scenarios from real regressed-in-10.0.60 issues
+# v3: Round 2 — added positive assertions, narrowed false-positive guard, regression priority in SKILL.md
 scenarios:
   - name: "Happy path - code review PR request"
     prompt: "code review PR #34024 in dotnet/maui"
@@ -11,6 +12,8 @@ scenarios:
         value: "gh pr review --request-changes"
       - type: "output_matches"
         pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
+      - type: "output_contains"
+        value: "review"
     rubric:
       - "The agent calls 'gh pr diff' BEFORE 'gh pr view', demonstrating independence-first methodology"
       - "The agent produces structured output with an independent assessment, findings, and a verdict"
@@ -105,9 +108,10 @@ scenarios:
     assertions:
       - type: "output_not_contains"
         value: "LGTM"
+      - type: "output_contains"
+        value: "regression"
     rubric:
       - "Agent flags CollectionView as a high-regression-risk component and calls for broader scenario coverage"
-      - "Agent identifies that changing IsEnabled evaluation affects all CollectionView touch interactions, not just the RefreshView case"
       - "Agent recommends testing adjacent scenarios (scroll, tap, swipe, gesture) in addition to the reported fix scenario"
       - "Agent checks whether the new IsExplicitlyEnabled property is used consistently across other touch handlers"
     timeout: 300
@@ -128,6 +132,8 @@ scenarios:
         value: "no concerns"
       - type: "output_not_contains"
         value: "looks safe"
+      - type: "output_contains"
+        value: "side effect"
     rubric:
       - "Agent identifies that modifying a shared invalidation path risks breaking adjacent layout behaviors"
       - "Agent specifically asks whether scroll position, item animations, and header/footer were tested alongside spacing"
@@ -145,9 +151,11 @@ scenarios:
       - type: "output_not_contains"
         value: "regression risk"
       - type: "output_not_contains"
-        value: "adjacent scenario"
+        value: "test adjacent scenario"
       - type: "output_not_contains"
         value: "broad scenario coverage"
+      - type: "output_contains"
+        value: "documentation"
     rubric:
       - "Agent correctly identifies this as a documentation-only change with no regression risk"
       - "Agent does NOT flag regression warnings for a non-functional change"
