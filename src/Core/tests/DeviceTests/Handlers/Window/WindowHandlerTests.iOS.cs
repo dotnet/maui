@@ -20,8 +20,8 @@ namespace Microsoft.Maui.DeviceTests
 				var pvc = Assert.IsType<PageViewController>(pageVc);
 
 				// Without a window attached, StatusBarTheme resolves to Default,
-				// which falls back to base.PreferredStatusBarStyle
-				Assert.Equal(UIStatusBarStyle.Default, pvc.PreferredStatusBarStyle);
+				// which falls back to base.PreferredStatusBarStyle()
+				Assert.Equal(UIStatusBarStyle.Default, pvc.PreferredStatusBarStyle());
 			});
 		}
 #endif
