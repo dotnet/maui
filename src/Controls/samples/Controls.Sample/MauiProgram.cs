@@ -335,9 +335,21 @@ namespace Maui.Controls.Sample
 						}
 
 						if (Application.Current?.Windows.FirstOrDefault() is Window window)
+						{
 							// Redirected activations can arrive off the UI thread, so hop through the
 							// MAUI window dispatcher before re-activating the existing window.
-							window.Dispatcher.Dispatch(() => Application.Current.ActivateWindow(window));
+							window.Dispatcher.Dispatch(() =>
+							{
+								Application.Current.ActivateWindow(window);
+
+								if (window.Page is Page page)
+								{
+									_ = page.DisplayAlertAsync("App Activated",
+										$"This window was brought to the foreground because the app was re-launched. " +
+										$"Activation kind: {args.Kind}", "OK");
+								}
+							});
+						}
 
 						return false;
 					}
