@@ -24,36 +24,39 @@ builder.Services.AddAuthentication(o =>
 		o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 	})
 	.AddCookie()
-	.AddFacebook(fb =>
-	{
-		fb.AppId = builder.Configuration["FacebookAppId"]!;
-		fb.AppSecret = builder.Configuration["FacebookAppSecret"]!;
-		fb.SaveTokens = true;
-	})
-	.AddGoogle(g =>
-	{
-		g.ClientId = builder.Configuration["GoogleClientId"]!;
-		g.ClientSecret = builder.Configuration["GoogleClientSecret"]!;
-		g.SaveTokens = true;
-	})
+	//.AddFacebook(fb =>
+	//{
+	//	fb.AppId = builder.Configuration["FacebookAppId"]!;
+	//	fb.AppSecret = builder.Configuration["FacebookAppSecret"]!;
+	//	fb.SaveTokens = true;
+	//})
+	//.AddGoogle(g =>
+	//{
+	//	g.ClientId = builder.Configuration["GoogleClientId"]!;
+	//	g.ClientSecret = builder.Configuration["GoogleClientSecret"]!;
+	//	g.SaveTokens = true;
+	//})
 	.AddMicrosoftAccount(ms =>
 	{
 		ms.ClientId = builder.Configuration["MicrosoftClientId"]!;
 		ms.ClientSecret = builder.Configuration["MicrosoftClientSecret"]!;
 		ms.SaveTokens = true;
 	})
-	.AddApple(a =>
-	{
-		// For Apple Sign In on Azure App Service, add the Configuration setting:
-		// WEBSITE_LOAD_USER_PROFILE = 1
-		// Without this you will get a File Not Found exception when generating
-		// a certificate from AuthKey_{keyId}.p8.
-		a.ClientId = builder.Configuration["AppleClientId"]!;
-		a.KeyId = builder.Configuration["AppleKeyId"]!;
-		a.TeamId = builder.Configuration["AppleTeamId"]!;
-		a.UsePrivateKey(keyId => builder.Environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
-		a.SaveTokens = true;
-	});
+	//.AddApple(a =>
+	//{
+	//	// For Apple Sign In on Azure App Service, add the Configuration setting:
+	//	// WEBSITE_LOAD_USER_PROFILE = 1
+	//	// Without this you will get a File Not Found exception when generating
+	//	// a certificate from AuthKey_{keyId}.p8.
+	//	a.ClientId = builder.Configuration["AppleClientId"]!;
+	//	a.KeyId = builder.Configuration["AppleKeyId"]!;
+	//	a.TeamId = builder.Configuration["AppleTeamId"]!;
+	//	a.UsePrivateKey(keyId => builder.Environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+	//	a.SaveTokens = true;
+	//})
+	;
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
