@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Platform
 
 				// Ensure the background layer always renders behind subview layers,
 				// even if UIKit reorganizes the sublayer array during layout passes.
+				// Setting ZPosition before insertion is safe — it's a property on the
+				// layer object and only takes effect once added to the sublayer hierarchy.
 				backgroundLayer.ZPosition = -1;
 
 				if (index > -1)
