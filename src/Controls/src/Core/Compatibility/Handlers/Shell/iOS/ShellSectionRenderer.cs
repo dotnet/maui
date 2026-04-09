@@ -175,6 +175,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (!enabled)
 					{
+						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
