@@ -68,5 +68,52 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(activity.Title, ApplicationModel.AppInfo.Current.Name);
 			});
 		}
+
+		[Theory]
+		[InlineData(StatusBarTheme.Light, true)]
+		[InlineData(StatusBarTheme.Dark, false)]
+		public async Task StatusBarThemeSetsAppearanceLightStatusBars(StatusBarTheme theme, bool expectedLightStatusBars)
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = (AppCompatActivity)MauiProgramDefaults.DefaultContext;
+				Assert.True(activity is not null, "Activity is Null");
+
+				var window = activity.Window;
+				Assert.True(window is not null, "Window is Null");
+
+				window.ConfigureTranslucentSystemBars(activity, theme);
+
+				var controller = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
+				Assert.True(controller is not null, "InsetsController is Null");
+
+				Assert.Equal(expectedLightStatusBars, controller.AppearanceLightStatusBars);
+			});
+		}
+
+		[Fact]
+		public async Task StatusBarThemeDefaultFollowsSystemTheme()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = (AppCompatActivity)MauiProgramDefaults.DefaultContext;
+				Assert.True(activity is not null, "Activity is Null");
+
+				var window = activity.Window;
+				Assert.True(window is not null, "Window is Null");
+
+				window.ConfigureTranslucentSystemBars(activity, StatusBarTheme.Default);
+
+				var controller = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
+				Assert.True(controller is not null, "InsetsController is Null");
+
+				// Default should match the system theme
+				var configuration = activity.Resources?.Configuration;
+				var isLightTheme = configuration is null ||
+					(configuration.UiMode & Android.Content.Res.UiMode.NightMask) != Android.Content.Res.UiMode.NightYes;
+
+				Assert.Equal(isLightTheme, controller.AppearanceLightStatusBars);
+			});
+		}
 	}
 }
