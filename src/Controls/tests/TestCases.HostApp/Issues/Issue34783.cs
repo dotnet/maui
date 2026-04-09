@@ -24,8 +24,8 @@ public class Issue34783 : ContentPage
 		{
 			Children =
 			{
-				new Label { Text = "1.Confirm that the CollectionView below is populated with monkeys and can be scrolled." },
-				new Label { Text = "2.The test passes if tapping each image dynamically changes its size." }
+				new Label { Text = "1. Confirm that the CollectionView below is populated with monkeys and can be scrolled." },
+				new Label { Text = "2. Tap an image to dynamically change its size, then scroll it off-screen and back on-screen. The test passes if the resized image stays resized." }
 			}
 		};
 

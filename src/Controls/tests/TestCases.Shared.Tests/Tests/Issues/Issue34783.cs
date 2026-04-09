@@ -25,14 +25,20 @@ public class Issue34783 : _IssuesUITest
 		// hit the Image element (which has a TapGestureRecognizer, not a Button click)
 		App.TapCoordinates(initialRect.X + initialRect.Width / 2, initialRect.Y + initialRect.Height / 2);
 
-		// Confirm the image has grown
-		var enlargedRect = App.WaitForElement("Baboon").GetRect();
-		Assert.That(enlargedRect.Height, Is.GreaterThan(initialRect.Height),
-			"Image should be enlarged after tap");
+		// Confirm the image has grown; layout/measure can complete asynchronously after the tap
+		App.RetryAssert(() =>
+		{
+			var enlargedRect = App.WaitForElement("Baboon").GetRect();
+			Assert.That(enlargedRect.Height, Is.GreaterThan(initialRect.Height),
+				"Image should be enlarged after tap");
+		});
 
 		// Scroll down to push the first item off screen (simulates dragging the scrollbar,
 		// which triggers RecyclerView item recycling on Android)
 		App.ScrollDown("Issue34783CollectionView", ScrollStrategy.Gesture, 0.9);
+
+		// Verify "Baboon" has left the viewport, confirming RecyclerView recycling will occur
+		App.WaitForNoElement("Baboon");
 
 		// Scroll back up to bring Baboon back into view
 		App.ScrollUp("Issue34783CollectionView", ScrollStrategy.Gesture, 0.9);
