@@ -107,15 +107,17 @@ internal class TabbedViewManager
 
     static BottomNavigationView CreateBottomNavigationView(
         Context context,
+        int defStyleAttr = 0,
         ViewGroup.LayoutParams layoutParams = null)
     {
-        var bottomNav = new BottomNavigationView(context, null, Resource.Attribute.bottomNavigationViewStyle)
-        {
-            LayoutParameters = layoutParams ?? new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MatchParent,
-                ViewGroup.LayoutParams.WrapContent),
-            LabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode.LabelVisibilityLabeled
-        };
+        var bottomNav = defStyleAttr != 0
+            ? new BottomNavigationView(context, null, defStyleAttr)
+            : new BottomNavigationView(context);
+
+        bottomNav.LayoutParameters = layoutParams ?? new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MatchParent,
+            ViewGroup.LayoutParams.WrapContent);
+        bottomNav.LabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode.LabelVisibilityLabeled;
 
         return bottomNav;
     }
@@ -239,8 +241,12 @@ internal class TabbedViewManager
 
             if (IsBottomTabPlacement)
             {
+                // Shell (external VP2) uses bottomNavigationViewStyle for M3 active indicator;
+                // TabbedPage (managed VP2) uses the default constructor to match legacy behavior.
+                int styleAttr = _managesViewPager ? 0 : Resource.Attribute.bottomNavigationViewStyle;
                 _bottomNavigationView = CreateBottomNavigationView(
                     _context.Context,
+                    styleAttr,
                     new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
                     {
                         Gravity = (int)GravityFlags.Bottom
@@ -788,6 +794,13 @@ internal class TabbedViewManager
             if (result?.Value is not null && menuItem.IsAlive())
             {
                 menuItem.SetIcon(result.Value);
+
+                // Apply per-item icon tint after loading so that:
+                // 1. FontImageSource with explicit Color shows its own color (tint cleared)
+                // 2. FontImageSource without Color gets SelectedTabColor/UnselectedTabColor tint
+                // Without this, the global ItemIconTintList overrides baked-in colors.
+                var tabIndex = menuItem.ItemId;
+                SetupBottomNavigationViewIconColor(tabIndex, menuItem);
             }
         }
         catch (Exception)
@@ -815,7 +828,11 @@ internal class TabbedViewManager
     internal virtual void SetTabIconImageSource(ITab tabItem, TabLayout.Tab tab, Drawable icon)
     {
         tab.SetIcon(icon);
-        SetIconColorFilter(Element.Tabs.IndexOf(tabItem), tab);
+        // Use tab.Position instead of Element.Tabs.IndexOf(tabItem) because
+        // ITabbedViewSource.Tabs may create new wrapper objects on each access
+        // (e.g., TabbedPage.PageTabAdapter), causing IndexOf to return -1
+        // when the async icon load callback fires with a stale reference.
+        SetIconColorFilter(tab.Position, tab);
     }
 
     void SetTabIconImageSource(ITab tabItem, TabLayout.Tab tab)
@@ -885,7 +902,7 @@ internal class TabbedViewManager
 
         if (_currentBarBackground is GradientBrush newGradientBrush)
         {
-            newGradientBrush.Parent = Element as Element;
+            newGradientBrush.Parent = Element.Owner;
             newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
         }
 
@@ -1123,6 +1140,14 @@ internal class TabbedViewManager
                     var colorStateList = GetColorStateList(unselectedArgb, selectedArgb);
                     _bottomNavigationView.ItemTextColor = colorStateList;
                     _bottomNavigationView.ItemIconTintList = colorStateList;
+                }
+
+                // Apply per-item icon tints so tabs with explicit FontImageSource colors
+                // are not overridden by the global ItemIconTintList set above.
+                for (int i = 0; i < _bottomNavigationView.Menu.Size(); i++)
+                {
+                    var menuItem = _bottomNavigationView.Menu.GetItem(i);
+                    SetupBottomNavigationViewIconColor(i, menuItem);
                 }
             }
         }
