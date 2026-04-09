@@ -47,34 +47,42 @@ namespace Microsoft.Maui.Authentication
 			var url = webAuthenticatorOptions.Url ?? throw new ArgumentNullException(nameof(webAuthenticatorOptions.Url));
 			var callbackUrl = webAuthenticatorOptions.CallbackUrl ?? throw new ArgumentNullException(nameof(webAuthenticatorOptions.CallbackUrl));
 
-			bool isPackaged = AppInfoUtils.IsPackagedApp;
-
-			if (isPackaged)
-			{
-				if (!IsUriProtocolDeclared(callbackUrl.Scheme))
-					throw new InvalidOperationException($"You need to declare the windows.protocol usage of the protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file");
-			}
-			else
-			{
-				if (callbackUrl.Scheme == "http" || callbackUrl.Scheme == "https")
-					throw new InvalidOperationException($"{callbackUrl.Scheme}:// schemes are not allowed for callbackUri. Use a custom scheme like 'myapp' instead.");
-
-				var value = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(callbackUrl.Scheme);
-				if (value is null || value.GetValue("URL Protocol") is null)
-				{
-					throw new InvalidOperationException($"The URI Scheme '{callbackUrl.Scheme}' is not registered. Call ActivationRegistrationManager.RegisterForProtocolActivation to register protocol activation.");
-				}
-			}
-			AuthRequestParams authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest("", callbackUrl);
-
 			var windowId = WindowStateManager.Default.GetActiveAppWindow(false)?.Id;
 			if (!windowId.HasValue)
 				throw new InvalidOperationException("No active window found for authentication.");
 
-			AuthRequestResult authRequestResult = await OAuth2Manager
+			if (AppInfoUtils.IsPackagedApp)
+			{
+				if (!IsUriProtocolDeclared(callbackUrl.Scheme))
+				{
+					throw new InvalidOperationException(
+						$"You need to declare the windows.protocol usage of the " +
+						$"protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file");
+				}
+			}
+			else
+			{
+				if (callbackUrl.Scheme == "http" || callbackUrl.Scheme == "https")
+				{
+					throw new InvalidOperationException(
+						$"{callbackUrl.Scheme}:// schemes are not allowed for callbackUri. " +
+						$"Use a custom scheme like 'myapp' instead.");
+				}
+
+				if (!IsRegistryDeclared(callbackUrl.Scheme))
+				{
+					throw new InvalidOperationException(
+						$"The URI Scheme '{callbackUrl.Scheme}' is not registered. " +
+						$"Call ActivationRegistrationManager.RegisterForProtocolActivation to register protocol activation.");
+				}
+			}
+
+			var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest("", callbackUrl);
+			var authRequestResult = await OAuth2Manager
 				.RequestAuthWithParamsAsync(windowId.Value, url, authRequestParams)
 				.AsTask(cancellationToken)
 				.ConfigureAwait(false);
+
 			if (authRequestResult.Failure is not null)
 			{
 				var message = string.IsNullOrEmpty(authRequestResult.Failure.ErrorDescription)
@@ -82,7 +90,9 @@ namespace Microsoft.Maui.Authentication
 					: $"{authRequestResult.Failure.Error}: {authRequestResult.Failure.ErrorDescription}";
 
 				if (IsUserCancellation(authRequestResult.Failure.Error, authRequestResult.Failure.ErrorDescription))
+				{
 					throw new TaskCanceledException(message);
+				}
 
 				throw new InvalidOperationException(message);
 			}
@@ -108,8 +118,14 @@ namespace Microsoft.Maui.Authentication
 			var root = doc.Root ?? throw new InvalidOperationException("The app manifest could not be loaded.");
 			var decl = root.XPathSelectElements($"//uap:Extension[@Category='windows.protocol']/uap:Protocol[@Name='{scheme}']", namespaceManager);
 
-			return decl != null && decl.Any();
+			return decl?.Any() == true;
 		}
 
+		static bool IsRegistryDeclared(string scheme)
+		{
+			var value = Win32.Registry.ClassesRoot.OpenSubKey(scheme);
+
+			return value?.GetValue("URL Protocol") is not null;
+		}
 	}
 }
