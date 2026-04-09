@@ -215,4 +215,87 @@ public class RefreshViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
+
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // In Appium PullToRefresh is not supported on Catalyst and Windows
+
+	[Test, Order(14)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_RefreshingEvent_DefaultState_NotRaised()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("RefreshView");
+
+		Assert.That(App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Not Raised"));
+	}
+
+	[Test , Order(15)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_RefreshingEvent_IsRaised()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+    	App.WaitForElement("RefreshView");
+
+    	Assert.That(App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Not Raised"));
+
+    	App.ScrollUp("RefreshView");
+
+    	App.WaitForElement("RefreshingEventLabel", timeout: TimeSpan.FromSeconds(5));
+
+    	Assert.That(App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Raised"));
+	}
+
+	[Test , Order(16)]
+	[Category(UITestCategories.RefreshView)]
+
+	public void RefreshView_Disabled_DoesNotRaiseRefreshingEvent()
+	{
+    	App.WaitForElement("Options");
+    	App.Tap("Options");
+
+    	App.WaitForElement("IsEnabledFalseButton");
+    	App.Tap("IsEnabledFalseButton");
+
+		App.WaitForElement("Apply");
+    	App.Tap("Apply");
+
+    	App.WaitForElement("RefreshView");
+
+    	App.ScrollUp("RefreshView");
+
+    	Assert.That(App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Not Raised"));
+	}
+
+	[Test , Order(17)]
+	[Category(UITestCategories.RefreshView)]
+	public void RefreshView_CollectionViewInteraction_ThenPull_RaisesRefreshingEvent()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+    	App.WaitForElement("RefreshView");
+    	App.WaitForElement("CollectionViewContentButton");
+
+    	Assert.That(App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Not Raised"));
+
+    	App.Tap("CollectionViewContentButton");
+
+		Assert.That( App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Not Raised"));
+
+    	App.ScrollUp("RefreshView");
+
+    	App.WaitForElement("RefreshingEventLabel");
+
+    	Assert.That(App.FindElement("RefreshingEventLabel").GetText(), Is.EqualTo("Raised"));
+	}
+
+#endif
+
 }
