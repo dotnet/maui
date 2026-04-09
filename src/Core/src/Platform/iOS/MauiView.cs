@@ -72,9 +72,6 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
-		// Focus tracking - used to avoid clearing IsFocused if a third party already set it
-		bool _isFocusedSetByUs;
-
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -803,13 +800,11 @@ namespace Microsoft.Maui.Platform
 			{
 				if (CrossPlatformLayout is IView view)
 				{
-					_isFocusedSetByUs = true;
 					view.IsFocused = true;
 				}
 			}
-			else if (_isFocusedSetByUs)
+			else if (context.PreviouslyFocusedView == this)
 			{
-				_isFocusedSetByUs = false;
 				if (CrossPlatformLayout is IView view)
 				{
 					view.IsFocused = false;
