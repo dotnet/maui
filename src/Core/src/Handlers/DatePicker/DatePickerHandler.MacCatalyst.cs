@@ -61,6 +61,9 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
+		// Recursively searches the UIDatePicker's view hierarchy for internal
+		// UITextField subviews used by the compact date picker on MacCatalyst
+		// and subscribes to their editing events to track focus state.
 		void FindAndWireTextFields(UIView view)
 		{
 			foreach (var subview in view.Subviews)
@@ -118,6 +121,27 @@ namespace Microsoft.Maui.Handlers
 			{
 				virtualView.IsFocused = virtualView.IsOpen = false;
 			}
+
+			// On MacCatalyst the internal UITextFields stay as first responder
+			// (visually highlighted) even after the popover window closes.
+			// EndEditing(true) on the parent view does not propagate to them,
+			// so we must directly resign each tracked text field on the next
+			// run-loop iteration (the notification fires before UIKit is ready).
+			ResignTextFields();
+		}
+
+		void ResignTextFields()
+		{
+			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+			{
+				foreach (var textField in _textFields)
+				{
+					if (textField.IsFirstResponder)
+					{
+						textField.ResignFirstResponder();
+					}
+				}
+			});
 		}
 
 		public static partial void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
@@ -198,6 +222,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (_handler is not null && _handler.TryGetTarget(out var handler) && handler.UpdateImmediately)
 					handler.SetVirtualViewDate();
+
+				if (VirtualView is IDatePicker virtualView)
+					virtualView.IsFocused = true;
 			}
 		}
 	}
