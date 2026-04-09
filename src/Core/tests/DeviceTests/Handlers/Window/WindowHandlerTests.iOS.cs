@@ -9,6 +9,23 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowHandlerTests : CoreHandlerTestBase
 	{
+#if !MACCATALYST
+		[Fact]
+		public async Task StatusBarThemeDefaultReturnsBaseStyle()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var page = new ContentPage { Content = new Label { Text = "Test" } };
+				var pageVc = page.ToUIViewController(MauiContext);
+				var pvc = Assert.IsType<PageViewController>(pageVc);
+
+				// Without a window attached, StatusBarTheme resolves to Default,
+				// which falls back to base.PreferredStatusBarStyle
+				Assert.Equal(UIStatusBarStyle.Default, pvc.PreferredStatusBarStyle);
+			});
+		}
+#endif
+
 #if MACCATALYST
 
 		[Fact(
