@@ -407,15 +407,24 @@ function Invoke-Overlay {
         # Target path in .dotnet/packs/
         $targetDir = Join-Path $DotnetRoot "packs/$($pack.targetPackName)/$localVersion"
 
-        # Copy the pack
-        if (Test-Path $targetDir) {
-            Write-Warn "  Target already exists, replacing: $($pack.targetPackName)/$localVersion"
-            Remove-Item -Path $targetDir -Recurse -Force
+        try {
+            # Copy the pack
+            if (Test-Path $targetDir) {
+                Write-Warn "  Target already exists, replacing: $($pack.targetPackName)/$localVersion"
+                Remove-Item -Path $targetDir -Recurse -Force
+            }
+
+            New-Item -Path $targetDir -ItemType Directory -Force | Out-Null
+            Copy-Item -Path "$($pack.localVersionDir)/*" -Destination $targetDir -Recurse -Force
+        }
+        catch {
+            # Clean up partial directory immediately — metadata hasn't been updated
+            # for this pack yet, so auto-rollback wouldn't know to remove it.
+            Remove-Item -Path $targetDir -Recurse -Force -ErrorAction SilentlyContinue
+            throw  # re-throw to trigger outer catch for manifest rollback
         }
 
-        New-Item -Path $targetDir -ItemType Directory -Force | Out-Null
-        Copy-Item -Path "$($pack.localVersionDir)/*" -Destination $targetDir -Recurse -Force
-
+        # Only reached on success — track this pack for rollback
         $overlaidPacks += @{
             manifestPackName = $pack.manifestPackName
             targetPackName   = $pack.targetPackName
