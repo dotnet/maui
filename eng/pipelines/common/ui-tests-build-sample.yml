@@ -11,6 +11,7 @@ parameters:
   testFilter: ''
   headless: true
   runtimeVariant: 'Mono' #Mono, CoreCLR, NativeAOT
+  useMaterial3: false # NEW PARAMETER - Enable Material3 build
 
 steps:
 - ${{ if eq(parameters.platform, 'ios')}}:
@@ -52,9 +53,29 @@ steps:
 - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
   displayName: 'Add .NET to PATH'
 
+# Clean artifacts for Material3 build to ensure clean state
+# Reference: Controls.TestCases.HostApp.csproj line 17-19 warning comment
+- pwsh: |
+    if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
+        Write-Host "Cleaning artifacts folder for Material3 clean build"
+        Remove-Item -Path "$(System.DefaultWorkingDirectory)/artifacts" -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "Artifacts folder cleaned successfully"
+    }
+  displayName: 'Clean artifacts for Material3'
+  
 - pwsh: |
     Get-Content $PSCommandPath
-    ./build.ps1 --target=uitests-apphost --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant="${{ parameters.runtimeVariant }}"
+    $buildCommand = "./build.ps1 --target=uitests-apphost --configuration=${{ parameters.configuration }} --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant=${{ parameters.runtimeVariant }}"
+    
+    # Add Material3 build argument if enabled
+    if (("${{ parameters.useMaterial3 }}" -eq "true") -and ("${{ parameters.platform }}" -eq "android")) {
+        $buildCommand += " --usematerial3=true"
+        Write-Host "Building with Material3 enabled"
+    } elseif ("${{ parameters.useMaterial3 }}" -eq "true") {
+        Write-Host "Material3 is only supported for Android platform, ignoring useMaterial3 parameter"
+    }
+    
+    Invoke-Expression $buildCommand
   displayName: 'Build the samples'
 
 - bash: |
@@ -65,7 +86,7 @@ steps:
   continueOnError: true
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), succeeded())
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
   artifact: ui-tests-samples
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
@@ -73,15 +94,24 @@ steps:
   artifact: ui-tests-samples-nativeaot
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), succeeded())
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
   artifact: ui-tests-samples-coreclr
+
+# Material3 artifacts
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), succeeded())
+  artifact: ui-tests-samples-material3
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), succeeded())
+  artifact: ui-tests-samples-material3-coreclr
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), succeeded())
   artifact: ui-tests-samples-windows
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), failed())
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
   artifact: ui-tests-samples_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
@@ -89,8 +119,17 @@ steps:
   artifact: ui-tests-samples-nativeaot_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), failed())
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
   artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
+
+# Material3 failure artifacts
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), failed())
+  artifact: ui-tests-samples-material3_failed_$(System.JobAttempt)
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), failed())
+  artifact: ui-tests-samples-material3-coreclr_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())

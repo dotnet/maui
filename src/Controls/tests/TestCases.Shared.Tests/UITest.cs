@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
+using ImageMagick.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using UITest.Appium;
@@ -102,6 +103,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					}
 					
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
+					break;
+				case TestDevice.Mac:
+					var macAppPath = Environment.GetEnvironmentVariable("MAC_APP_PATH") ?? "";
+					if (!string.IsNullOrEmpty(macAppPath))
+					{
+						config.SetProperty("AppPath", macAppPath);
+					}
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
@@ -339,9 +347,9 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 
 						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
-								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1440x2960", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2960x1440", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 560)))
 						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1440x2960 560dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
@@ -412,7 +420,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
+					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -431,7 +439,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
@@ -661,8 +669,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Take the screenshot
 			var bytes = App.Screenshot();
 
+			if (width <= 0 || height <= 0)
+				return bytes;
+
 			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
 			new Drawables()
 				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
 				.FillColor(MagickColors.Black)

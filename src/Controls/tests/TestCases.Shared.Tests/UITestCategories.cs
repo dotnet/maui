@@ -75,5 +75,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string GraphicsView = "GraphicsView";
 		public const string Fonts = "Fonts";
 		public const string SafeAreaEdges = "SafeAreaEdges";
+		public const string Material3 = "Material3";
+    public const string Triggers = "Triggers";
+		public const string VisualStateManager = "VisualStateManager";
 	}
 }

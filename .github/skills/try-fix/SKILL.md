@@ -8,13 +8,23 @@ compatibility: Requires PowerShell, git, .NET MAUI build environment, Android/iO
 
 Attempts ONE fix for a given problem. Receives all context upfront, tries a single approach, tests it, and reports what happened.
 
+## Activation Guard
+
+🚨 **This skill is ONLY for proposing and testing code fixes.** Do NOT activate for:
+- Code review requests ("review this PR", "check code quality")
+- PR summaries or descriptions ("what does this PR do?")
+- Test-only requests ("run tests", "check CI status")
+- General questions about code or architecture
+
+If the prompt does not include a **problem to fix** and a **test command to verify**, this skill should not run.
+
 ## Core Principles
 
-1. **Always run** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
+1. **Always run once activated** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
 2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
-5. **Context-driven** - All information provided upfront; don't search for additional context
+5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
 **Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
@@ -23,7 +33,7 @@ Attempts ONE fix for a given problem. Receives all context upfront, tries a sing
 🚨 **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
 
 **Why:** Each try-fix run:
-- Modifies the same source files (SafeAreaExtensions.cs, etc.)
+- Modifies the same target source files
 - Uses the same device/emulator for testing
 - Runs EstablishBrokenBaseline.ps1 which reverts files to a known state
 
@@ -47,7 +57,6 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
-| state_file | Optional | Path to PR agent state file (e.g., `CustomAgentLogsTmp/PRState/pr-12345.md`). If provided, try-fix will append its results to the Fix Candidates table. |
 
 ## Outputs
 
@@ -70,7 +79,7 @@ Results reported back to the invoker:
 $IssueNumber = "<ISSUE_OR_PR_NUMBER>"  # Replace with actual number
 
 # Find next attempt number
-$tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/try-fix"
+$tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
 $existingAttempts = (Get-ChildItem "$tryFixDir/attempt-*" -Directory -ErrorAction SilentlyContinue).Count
 $attemptNum = $existingAttempts + 1
 
@@ -148,6 +157,8 @@ The skill is complete when:
 
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
 
+> **Session limits:** Each try-fix *invocation* allows up to 3 compile/test iterations. The *calling orchestrator* controls how many invocations (attempts) to run per session (typically 4-5 as part of pr-review Phase 3).
+
 ---
 
 ## Workflow
@@ -163,9 +174,8 @@ The skill is complete when:
    - Review what files were changed
    - Read the actual code changes to understand the current fix approach
 
-2. **If state_file provided, review prior attempts:**
-   - Read the Fix Candidates table
-   - Note which approaches failed and WHY (the Notes column)
+2. **Review prior attempts if any are known:**
+   - Note which approaches failed and WHY
    - Note which approaches partially succeeded
 
 3. **Identify what makes your approach DIFFERENT:**
@@ -184,32 +194,37 @@ The skill is complete when:
 - What files should be investigated?
 - Are there hints about what to try or avoid?
 
-**Do NOT search for additional context.** Work with what's provided.
+**Do NOT search for external context.** Work with what's provided and the git history.
 
 ### Step 2: Establish Baseline (MANDATORY)
 
-🚨 **ALWAYS use EstablishBrokenBaseline.ps1 - NEVER manually revert files.**
+🚨 **ONLY use EstablishBrokenBaseline.ps1 — NEVER use `git checkout`, `git restore`, or `git reset` to revert fix files.**
+
+The script auto-restores any previous baseline, tracks state, and prevents loops.
+Manual git commands bypass all of this and WILL cause infinite loops in CI.
 
 ```powershell
-# Capture baseline output as proof it was run
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
-The script auto-detects and reverts fix files to merge-base state while preserving test files. **Will fail fast if no fix files detected** - you must be on the actual PR branch. Optional flags: `-BaseBranch main`, `-DryRun`.
-
 **Verify baseline was established:**
 ```powershell
-# baseline.log should contain "Baseline established" and list of reverted files
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
 
-**If the script fails with "No fix files detected":** You're likely on the wrong branch. Checkout the actual PR branch with `gh pr checkout <PR#>` and try again.
+**If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 
 **If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
 
 ### Step 3: Analyze Target Files
 
 Read the target files to understand the code.
+
+**Verify the platform code path before implementing.** Check which platform-specific file actually executes for the target scenario:
+- Files named `.iOS.cs` compile for both iOS AND MacCatalyst
+- Files named `.Android.cs` only compile for Android
+- Some platforms use Legacy implementations (e.g., iOS NavigationPage uses `NavigationPage.Legacy.cs`, not `MauiNavigationImpl`)
+If unsure which code path runs, check `AppHostBuilderExtensions` or handler registration to confirm.
 
 **Key questions:**
 - What is the root cause of this bug?
@@ -223,6 +238,10 @@ Based on your analysis and any provided hints, design a single fix approach:
 - Which file(s) to change
 - What the change is
 - Why you think this will work
+
+**"Different" means different ROOT CAUSE hypothesis, not just different code location.**
+- ❌ Bad: PR checks `adapter == null` in OnMeasure; you check `adapter == null` in OnLayout (same root cause assumption — just a different call site)
+- ✅ Good: PR checks `adapter == null`; you prevent disposal from happening during measure (different root cause hypothesis)
 
 **If hints suggest specific approaches**, prioritize those.
 
@@ -318,8 +337,9 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
-git checkout -- .
 ```
+
+🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 
 ### Step 9: Report Results
 
@@ -339,41 +359,13 @@ Provide structured output to the invoker:
 [Why it worked, or why it failed and what was learned]
 
 **Diff:**
-```diff
-[The actual changes made]
-```
+(paste `git diff` output here)
 
 **This Attempt's Status:** Done/NeedsRetry
 **Reasoning:** [Why this specific approach succeeded or failed]
 ```
 
 **Determining Status:** Set `Done` when you've completed testing this approach (whether it passed or failed). Set `NeedsRetry` only if you hit a transient error (network timeout, flaky test) and want to retry the same approach.
-
-### Step 10: Update State File (if provided)
-
-If `state_file` input was provided and file exists:
-
-1. **Read current Fix Candidates table** from state file
-2. **Determine next attempt number** (count existing try-fix rows + 1)
-3. **Append new row** with this attempt's results:
-
-| # | Source | Approach | Test Result | Files Changed | Notes |
-|---|--------|----------|-------------|---------------|-------|
-| N | try-fix #N | [approach] | ✅ PASS / ❌ FAIL | [files] | [analysis] |
-
-4. **Commit state file:**
-```bash
-git add "$STATE_FILE" && git commit -m "try-fix: attempt #N"
-```
-
-**If no state file provided:** Skip this step (results returned to invoker only).
-
-**⚠️ IMPORTANT: Do NOT set any "Exhausted" field.** Cross-pollination exhaustion is determined by the pr agent after invoking ALL 5 models and confirming none have new ideas. try-fix only reports its own attempt result.
-
-**Ownership rule:** try-fix updates its own row ONLY. Never modify:
-- Phase status fields
-- "Selected Fix" field
-- Other try-fix rows
 
 ## Error Handling
 
@@ -383,7 +375,7 @@ git add "$STATE_FILE" && git commit -m "try-fix: attempt #N"
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `git checkout -- .` and `git clean -fd` if needed |
+| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/8) |
 
 ---
 

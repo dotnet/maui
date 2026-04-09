@@ -21,9 +21,11 @@ public class Issue18896 : _IssuesUITest
 		App.WaitForElement("WaitForStubControl");
 
 		App.ScrollDown(ListView);
-
+#if ANDROID
+		App.ScrollUp(ListView, ScrollStrategy.Gesture, 0.9);
+#else
 		App.ScrollUp(ListView);
-
+#endif
 		// Load images and hide scrollbar.
 		// The test passes if you are able to see the image, name, and location of each monkey.
 		VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));

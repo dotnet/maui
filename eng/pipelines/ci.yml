@@ -108,6 +108,13 @@ parameters:
         - ImageOverride -equals ACES_VM_SharedPool_Tahoe
       label: macOS
 
+- name: AndroidPoolLinux
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+
 
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Runs on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
@@ -145,9 +152,11 @@ stages:
   parameters:
     ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
       pool: ${{ parameters.WindowsPool.public }}
+      macPool: ${{ parameters.MacOSPool.public }}
       runAsPublic: true
     ${{ else }}:
       pool: ${{ parameters.WindowsPool.internal }}
+      macPool: ${{ parameters.MacOSPool.internal }}
       runAsPublic: false
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
@@ -160,7 +169,7 @@ stages:
         skipAndroidEmulatorImages: true
         skipAndroidCreateAvds: true
         skipProvisioning: true
-        skipXcode: true
+        skipXcode: false
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
@@ -183,31 +192,6 @@ stages:
         skipAndroidCreateAvds: true
         skipProvisioning: true
         skipXcode: false
-
-- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
-  parameters:
-    jobMatrix:
-    - name: win_unit_tests
-      displayName: Windows Unit Tests
-      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.WindowsPool.public }}
-        runAsPublic: true
-      ${{ else }}:
-        pool: ${{ parameters.WindowsPool.internal }}
-        runAsPublic: false
-      timeout: 90
-      testOS: Windows
-      buildscript: $(_buildScript)
-    - name: mac_unit_tests
-      displayName: macOS Unit Tests
-      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.MacOSPool.public }}
-      ${{ else }}:
-        pool: ${{ parameters.MacOSPool.internal }}
-      timeout: 90
-      testOS: macOS
-      buildscript: $(_buildScriptMacOS)
-    publishTaskPrefix: ''
 
 - template: /eng/pipelines/arcade/stage-integration-tests.yml@self
   parameters:
@@ -297,12 +281,30 @@ stages:
       timeout: 120
       testCategory: MultiProject
 
-    # TODO: macOSTemplates and AOT template categories
-    - name: mac_runandroid_tests
+    # TODO: macOSTemplates category
+
+    - name: win_aot_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.WindowsPool.public }}
+        runAsPublic: true
+      ${{ else }}:
+        pool: ${{ parameters.WindowsPool.internal }}
+        runAsPublic: false
+      timeout: 120
+      testCategory: AOT
+    - name: mac_aot_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}
-      ${{ else }}:  
+      ${{ else }}:
         pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 240
+      testCategory: AOT
+
+    - name: mac_runandroid_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.AndroidPoolLinux }}
+      ${{ else }}:  
+        pool: ${{ parameters.AndroidPoolLinux }}
       timeout: 240
       testCategory: RunOnAndroid
 
