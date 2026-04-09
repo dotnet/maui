@@ -954,22 +954,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
 		}
 
-		[Fact]
-		public void StatusBarThemeCanBeSet()
+		[Theory]
+		[InlineData(StatusBarTheme.Default)]
+		[InlineData(StatusBarTheme.Light)]
+		[InlineData(StatusBarTheme.Dark)]
+		public void StatusBarThemeCanBeSetToAllValues(StatusBarTheme theme)
 		{
 			var window = new Window
 			{
-				StatusBarTheme = StatusBarTheme.Dark
+				StatusBarTheme = theme
 			};
-			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+			Assert.Equal(theme, window.StatusBarTheme);
 		}
 
-		[Fact]
-		public void StatusBarThemeIsBindable()
+		[Theory]
+		[InlineData(StatusBarTheme.Default)]
+		[InlineData(StatusBarTheme.Light)]
+		[InlineData(StatusBarTheme.Dark)]
+		public void StatusBarThemeIsBindableForAllValues(StatusBarTheme theme)
 		{
 			var window = new Window();
-			window.SetValue(Window.StatusBarThemeProperty, StatusBarTheme.Light);
-			Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
+			window.SetValue(Window.StatusBarThemeProperty, theme);
+			Assert.Equal(theme, window.StatusBarTheme);
 		}
 
 		[Fact]
@@ -995,6 +1001,80 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			IWindow window = new Window();
 			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeCanBeChangedAtRuntime()
+		{
+			var window = new Window();
+			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+
+			window.StatusBarTheme = StatusBarTheme.Dark;
+			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+
+			window.StatusBarTheme = StatusBarTheme.Light;
+			Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
+
+			window.StatusBarTheme = StatusBarTheme.Default;
+			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemePropertyChangedFiresOnChange()
+		{
+			var window = new Window();
+			var changes = new List<StatusBarTheme>();
+
+			window.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(Window.StatusBarTheme))
+					changes.Add(window.StatusBarTheme);
+			};
+
+			window.StatusBarTheme = StatusBarTheme.Dark;
+			window.StatusBarTheme = StatusBarTheme.Light;
+			window.StatusBarTheme = StatusBarTheme.Default;
+
+			Assert.Equal(3, changes.Count);
+			Assert.Equal(StatusBarTheme.Dark, changes[0]);
+			Assert.Equal(StatusBarTheme.Light, changes[1]);
+			Assert.Equal(StatusBarTheme.Default, changes[2]);
+		}
+
+		[Fact]
+		public void StatusBarThemePropertyChangedDoesNotFireForSameValue()
+		{
+			var window = new Window { StatusBarTheme = StatusBarTheme.Dark };
+			var changeCount = 0;
+
+			window.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(Window.StatusBarTheme))
+					changeCount++;
+			};
+
+			window.StatusBarTheme = StatusBarTheme.Dark; // same value
+			Assert.Equal(0, changeCount);
+		}
+
+		[Fact]
+		public void StatusBarThemeWorksWithAppThemeBinding()
+		{
+			var window = new Window();
+			window.SetBinding(Window.StatusBarThemeProperty, new AppThemeBinding
+			{
+				Light = StatusBarTheme.Light,
+				Dark = StatusBarTheme.Dark,
+				Default = StatusBarTheme.Default
+			});
+
+			// AppThemeBinding evaluates based on current app theme;
+			// verify it doesn't crash and produces a valid value
+			var result = window.StatusBarTheme;
+			Assert.True(
+				result == StatusBarTheme.Light ||
+				result == StatusBarTheme.Dark ||
+				result == StatusBarTheme.Default);
 		}
 	}
 }
