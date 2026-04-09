@@ -12,10 +12,8 @@ public enum GridUnitType
 
 	/// <summary>
 	/// Interpret the <see cref="GridLength.Value"/> property value as a proportional weight, to be arranged after rows and columns with <see cref="GridUnitType.Absolute"/> or <see cref="GridUnitType.Auto"/>.
-	/// </summary>
-	/// <remarks>
 	/// After all Absolute and Auto rows/columns are arranged, remaining Star rows/columns receive a fraction of the leftover space determined by dividing each <see cref="GridLength.Value"/> by the sum of all star values.
-	/// </remarks>
+	/// </summary>
 	Star,
 
 	/// <summary>
