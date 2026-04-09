@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.App;
+using Android.Content.Res;
 using AndroidX.AppCompat.App;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Default should match the system theme
 				var configuration = activity.Resources?.Configuration;
 				var isLightTheme = configuration is null ||
-					(configuration.UiMode & Android.Content.Res.UiMode.NightMask) != Android.Content.Res.UiMode.NightYes;
+					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
 				Assert.Equal(isLightTheme, controller.AppearanceLightStatusBars);
 			});
