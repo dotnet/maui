@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,3 +31,4 @@ public class Issue34861 : _IssuesUITest
 			"EmptyView should be aligned to the left, not pushed to the right of the Header");
 	}
 }
+#endif

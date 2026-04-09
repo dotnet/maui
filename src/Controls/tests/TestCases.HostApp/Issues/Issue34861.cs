@@ -28,14 +28,6 @@ public class Issue34861 : ContentPage
 				BackgroundColor = Colors.LightYellow,
 				Padding = new Thickness(10)
 			},
-			ItemTemplate = new DataTemplate(() =>
-			{
-				var label = new Label();
-				label.SetBinding(Label.TextProperty, ".");
-				return label;
-			}),
-			// Empty source to trigger EmptyView
-			ItemsSource = new System.Collections.ObjectModel.ObservableCollection<string>()
 		};
 
 		Content = new VerticalStackLayout
