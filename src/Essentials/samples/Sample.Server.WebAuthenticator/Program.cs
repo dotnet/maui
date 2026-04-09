@@ -30,19 +30,16 @@ builder.Services.AddAuthentication(o =>
 	})
 	.AddApple(a =>
 	{
+		// For Apple Sign In on Azure App Service, add the Configuration setting:
+		// WEBSITE_LOAD_USER_PROFILE = 1
+		// Without this you will get a File Not Found exception when generating a certificate from AuthKey_{keyId}.p8.
+		
 		a.ClientId = builder.Configuration["AppleClientId"]!;
 		a.KeyId = builder.Configuration["AppleKeyId"]!;
 		a.TeamId = builder.Configuration["AppleTeamId"]!;
-		a.UsePrivateKey(keyId
-			=> builder.Environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+		a.UsePrivateKey(keyId => builder.Environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
 		a.SaveTokens = true;
 	});
-
-/*
- * For Apple signin on Azure App Service, add the Configuration setting:
- * WEBSITE_LOAD_USER_PROFILE = 1
- * Without this you will get a File Not Found exception when generating a certificate from AuthKey_{keyId}.p8.
- */
 
 var app = builder.Build();
 

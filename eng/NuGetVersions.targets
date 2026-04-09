@@ -187,6 +187,10 @@
         Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)"
     />
     <PackageReference
+        Update="AspNet.Security.OAuth.Apple"
+        Version="$(AspNetSecurityOAuthApplePackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
     />
