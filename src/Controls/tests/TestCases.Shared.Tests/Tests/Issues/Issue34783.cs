@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST // Issue34783 is flaky on MacCatalyst due to non-deterministic scroll-recycle timing.
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Android-only fix; exclude MacCatalyst (flaky) and Windows (scroll doesn't recycle items)
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
