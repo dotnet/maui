@@ -14,10 +14,14 @@ public class Issue34662 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellCurrentStateLocationCorrectAfterAbsoluteNavigation()
 	{
+		const string expectedCurrentState = "//DashboardPage/Page1/Page2";
+
 		App.WaitForElement("LoginButton");
 		App.Tap("LoginButton");
+		App.WaitForTextToBePresentInElement("OnNavigatedCurrentStateLabel", expectedCurrentState, TimeSpan.FromSeconds(5));
+
 		var currentStateText = App.WaitForElement("OnNavigatedCurrentStateLabel").GetText();
-		Assert.That(currentStateText, Is.EqualTo("//DashboardPage/Page1/Page2"),
+		Assert.That(currentStateText, Is.EqualTo(expectedCurrentState),
 			"Shell.CurrentState.Location inside OnNavigated should be '//DashboardPage/Page1/Page2', not stale '//DashboardPage'");
 	}
 }
