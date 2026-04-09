@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			IsTitleBarAutoPaddingEnabled = false;
 			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+			AlwaysShowHeader = false;
 
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
@@ -69,6 +70,7 @@ namespace Microsoft.Maui.Platform
 		{
 			UpdateToolbarPlacement();
 			UpdatePaneContentGridMargin();
+			UpdateHeaderVisibility();
 		}
 
 
@@ -259,7 +261,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return;
 			}
-			
+
 			if (IsHeaderContentEmpty())
 			{
 				CollapseEmptyHeader();
@@ -270,22 +272,17 @@ namespace Microsoft.Maui.Platform
 				Header = Toolbar;
 			}
 		}
-		
+
 		bool IsHeaderContentEmpty()
 		{
 			return string.IsNullOrEmpty(Toolbar?.Title) &&
-				   Toolbar?.TitleView is null && 
+				   Toolbar?.TitleView is null &&
 				   !HasMenuBarItems() &&
 				   !HasToolbarItems() &&
 				   !HasTitleIcon();
 		}
 
-		bool HasMenuBarItems()
-		{	
-			var menuContent= Toolbar?.FindName("menuContent") as ContentControl;
-			return menuContent?.Visibility== UI.Xaml.Visibility.Visible &&
-				   (menuContent.Content is not null);
-		}
+		bool HasMenuBarItems() => Toolbar?.HasMenuBarContent ?? false;
 
 		bool HasToolbarItems()
 		{
@@ -296,18 +293,13 @@ namespace Microsoft.Maui.Platform
 				   Toolbar?.CommandBar.SecondaryCommands.Count > 0;
 		}
 
-		bool HasTitleIcon()
-		{
-			var titleIcon = Toolbar?.FindName("titleIcon") as Microsoft.UI.Xaml.Controls.Image;
-			return titleIcon?.Visibility == UI.Xaml.Visibility.Visible;
-		}
-	
+		bool HasTitleIcon() => Toolbar?.TitleIconImage?.Visibility == UI.Xaml.Visibility.Visible;
+
 		void CollapseEmptyHeader()
 		{
 			if (Header is not null)
 			{
 				Header = null;
-				InvalidateMeasure();
 			}
 		}
 

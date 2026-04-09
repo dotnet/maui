@@ -16,7 +16,18 @@ public class Issue30254 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShouldHideHeaderWhenTitleEmpty()
 	{
-		App.WaitForElement("MainPageButton");
-		VerifyScreenshot();
+		Exception? exception = null;
+
+		App.WaitForElement("GoToWithTitleButton");
+		VerifyScreenshotOrSetException(ref exception);
+
+		App.Tap("GoToWithTitleButton");
+		App.WaitForElement("WithTitleLabel");
+		VerifyScreenshotOrSetException(ref exception, "ShouldShowHeaderWhenTitleNotEmpty");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }

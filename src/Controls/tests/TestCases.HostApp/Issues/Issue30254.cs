@@ -8,26 +8,59 @@ public class Issue30254 : Shell
 		BackgroundColor = Colors.Blue;
 		FlyoutBehavior = FlyoutBehavior.Flyout;
 
+		var goToWithTitleButton = new Button
+		{
+			AutomationId = "GoToWithTitleButton",
+			Text = "Go to page with title",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center,
+		};
+		goToWithTitleButton.Clicked += (s, e) => GoToAsync("//WithTitleTab");
+
 		var pageWithEmptyTitle = new ContentPage
 		{
 			Title = "",
-			Content = new Button
+			Content = new VerticalStackLayout
 			{
-				AutomationId = "MainPageButton",
-				Text = "This page has an empty title.",
-				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
+				Children =
+				{
+					new Label
+					{
+						AutomationId = "MainPageLabel",
+						Text = "This page has an empty title.",
+						HorizontalOptions = LayoutOptions.Center,
+					},
+					goToWithTitleButton
+				}
 			}
 		};
+
+		var goToEmptyTitleButton = new Button
+		{
+			AutomationId = "GoToEmptyTitleButton",
+			Text = "Go to page with empty title",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center,
+		};
+		goToEmptyTitleButton.Clicked += (s, e) => GoToAsync("//EmptyTitleTab");
 
 		var pageWithTitle = new ContentPage
 		{
 			Title = "Page With Title",
-			Content = new Label
+			Content = new VerticalStackLayout
 			{
-				Text = "This page has a title, so header space is expected.",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
+				VerticalOptions = LayoutOptions.Center,
+				Children =
+				{
+					new Label
+					{
+						AutomationId = "WithTitleLabel",
+						Text = "This page has a title, so header space is expected.",
+						HorizontalOptions = LayoutOptions.Center,
+					},
+					goToEmptyTitleButton
+				}
 			}
 		};
 
@@ -36,8 +69,8 @@ public class Issue30254 : Shell
 			Title = "Header Test",
 			Items =
 			{
-				new ShellContent { Title = "Empty Title", Content = pageWithEmptyTitle },
-				new ShellContent { Title = "With Title", Content = pageWithTitle },
+				new ShellContent { Title = "Empty Title", AutomationId = "EmptyTitleTab", Route = "EmptyTitleTab", Content = pageWithEmptyTitle },
+				new ShellContent { Title = "With Title", AutomationId = "WithTitleTab", Route = "WithTitleTab", Content = pageWithTitle },
 			}
 		});
 	}
