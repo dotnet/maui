@@ -85,6 +85,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateCornerRadius(button);
+			
+			if (button.Shadow is not null)
+			{
+				handler.UpdateValue(nameof(IButton.Shadow));
+			}
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)

@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
 	{
+		const int InvalidPosition = -1;
+
 		protected TAdapter ItemsViewAdapter;
 
 		protected TItemsView ItemsView;
@@ -196,6 +198,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_emptyViewAdapter.EmptyViewTemplate = emptyViewTemplate;
 
 				_emptyCollectionObserver.Start(ItemsViewAdapter);
+
+				// When the EmptyView swaps while _emptyViewAdapter is active, RecyclerView can
+				// reuse a stale item ViewHolder from the shared pool at the empty position.
+				// Clear the pool before refreshing the EmptyView adapter to prevent that reuse.
+				if (GetAdapter() == _emptyViewAdapter)
+				{
+					GetRecycledViewPool().Clear();
+				}
 
 				_emptyViewAdapter.NotifyDataSetChanged();
 			}
@@ -390,6 +400,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var position = DetermineTargetPosition(args);
 
+			if (position < 0)
+			{
+				System.Diagnostics.Debug.WriteLine($"Invalid scroll request: position = {position}");
+				return;
+			}
+
 			if (args.IsAnimated)
 			{
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
@@ -432,6 +448,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
 					item = FindBoundItemInGroup(args, groupItemSource);
+
+					if (item is null)
+					{
+						return InvalidPosition;
+					}
 				}
 			}
 
@@ -440,18 +461,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
 		{
-			if (args.GroupIndex >= 0 &&
-				args.GroupIndex < groupItemSource.Count)
-			{
-				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
+			var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
 
-				if (group is not null)
-				{
-					// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header (UngroupedItemsSource does not do this)
-					return group.GetItem(args.Index + 1);
-				}
-			}
-			return groupItemSource.GetItem(args.Index);
+			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a  header (UngroupedItemsSource does not do this)
+			return group?.GetItem(args.Index + 1);
 		}
 
 		protected virtual void UpdateItemSpacing()
@@ -471,12 +484,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
-				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
-				// Horizontal & vertical spacing should only exist between items. 
-				var horizontalPadding = -spacingDecoration.HorizontalOffset;
-				var verticalPadding = -spacingDecoration.VerticalOffset;
-				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+				// Outer-edge spacing handled by SpacingItemDecoration.GetItemOffsets for all layout types.
+				SetPadding(0, 0, 0, 0);
 			}
 		}
 
@@ -511,6 +520,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
+					UpdateItemSpacing();
 				}
 			}
 			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))

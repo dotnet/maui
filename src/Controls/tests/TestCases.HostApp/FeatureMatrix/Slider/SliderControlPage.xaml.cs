@@ -10,9 +10,6 @@ namespace Maui.Controls.Sample
 		public SliderControlPage()
 		{
 			_viewModel = new SliderViewModel();
-#if ANDROID
-			BarTextColor = Colors.White;
-#endif
 			PushAsync(new SliderControlMainPage(_viewModel));
 		}
 	}
