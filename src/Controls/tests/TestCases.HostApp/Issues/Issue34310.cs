@@ -6,7 +6,7 @@ using AFrameLayout = Android.Widget.FrameLayout;
 using UIKit;
 #elif WINDOWS
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 #endif
 #nullable enable
 using Microsoft.Maui.Handlers;
@@ -217,7 +217,7 @@ public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostV
 	}
 }
 #elif WINDOWS
-public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostView, Grid>
+public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostView, WGrid>
 {
 	UIElement? _nativeChild;
 	View? _previousHostedView;
@@ -230,16 +230,16 @@ public class Issue34310NativeHostViewHandler : ViewHandler<Issue34310NativeHostV
 
 	public Issue34310NativeHostViewHandler() : base(Mapper) { }
 
-	protected override Grid CreatePlatformView()
-		=> new Grid();
+	protected override WGrid CreatePlatformView()
+		=> new WGrid();
 
-	protected override void ConnectHandler(Grid platformView)
+	protected override void ConnectHandler(WGrid platformView)
 	{
 		base.ConnectHandler(platformView);
 		UpdateHostedView();
 	}
 
-	protected override void DisconnectHandler(Grid platformView)
+	protected override void DisconnectHandler(WGrid platformView)
 	{
 		RemoveNativeChild();
 		base.DisconnectHandler(platformView);
