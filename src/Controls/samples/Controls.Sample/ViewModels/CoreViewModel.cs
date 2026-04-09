@@ -72,6 +72,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ToolbarPage), "Toolbar",
 				"Toolbar items are buttons that are typically displayed in the navigation bar."),
 
+			new SectionModel(typeof(ToolbarBadgePage), "Toolbar Badges",
+				"Badge notifications on toolbar items using BadgeText and BadgeColor properties."),
+
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),
 
