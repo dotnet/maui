@@ -30,12 +30,12 @@
 
 .EXAMPLE
     # Restore original packs
-    ./Overlay-LocalAndroidPacks.ps1 -AndroidSrcPath ~/repos/android -Restore
+    ./Overlay-LocalAndroidPacks.ps1 -Restore
 #>
 
 [CmdletBinding(DefaultParameterSetName = 'Overlay')]
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'Overlay')]
     [string]$AndroidSrcPath,
 
     [Parameter(ParameterSetName = 'Overlay')]
@@ -57,7 +57,7 @@ $ErrorActionPreference = 'Stop'
 # Script is at .github/skills/local-android-packs/scripts/ — repo root is 4 levels up
 $RepoRoot = (Resolve-Path "$PSScriptRoot/../../../..").Path
 $DotnetRoot = Join-Path $RepoRoot '.dotnet'
-$BackupDir = Join-Path $RepoRoot '.android-packs-backup'
+$BackupDir = Join-Path $DotnetRoot '.android-packs-backup'
 $BackupMetadataFile = Join-Path $BackupDir 'backup-metadata.json'
 
 # Manifest entry names to skip during overlay
@@ -139,7 +139,7 @@ function Get-LocalPackVersion {
 
     $packDirs = Get-ChildItem -Path $LocalPacksPath -Directory
     foreach ($packDir in $packDirs) {
-        $versionDirs = Get-ChildItem -Path $packDir.FullName -Directory
+        $versionDirs = Get-ChildItem -Path $packDir.FullName -Directory | Sort-Object Name -Descending
         if ($versionDirs.Count -gt 0) {
             return $versionDirs[0].Name
         }
@@ -297,6 +297,12 @@ function Invoke-Overlay {
     $localVersion = Get-LocalPackVersion -LocalPacksPath $localPacksPath
     Write-Info "Local build version: $localVersion"
 
+    if ($localVersion -eq $installedVersion) {
+        throw "Local build version ($localVersion) matches the installed version." + `
+              " Overlay would delete the existing packs and leave the SDK broken on restore." + `
+              " Build dotnet/android at a different version, or modify the version suffix before overlaying."
+    }
+
     $net11Packs = Get-ManifestNet11Packs -Manifest $manifest
     Write-Info "Net11 packs to overlay: $($net11Packs.Count)"
 
@@ -308,28 +314,30 @@ function Invoke-Overlay {
     }
     Copy-Item -Path $manifestPath -Destination (Join-Path $BackupDir 'WorkloadManifest.json') -Force
 
+    # Write backup metadata immediately so auto-rollback works even if overlay fails partway through
+    $metadata = @{
+        originalVersion = $installedVersion
+        localVersion    = $localVersion
+        manifestPath    = $manifestPath
+        timestamp       = (Get-Date -Format 'o')
+        config          = $Config
+        overlaidPacks   = @()
+    }
+    $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
+
     # --- Step 4: Patch manifest ---
     Write-Step "Patching manifest..."
 
-    # Use text replacement to preserve formatting and trailing commas
-    # (ConvertFrom-Json → ConvertTo-Json would strip trailing commas and reformat)
-    $patchedContent = $manifestRaw.Replace("`"$installedVersion`"", "`"$localVersion`"")
-
-    # Restore the net10 pack version — it was incorrectly replaced above since we did
-    # a blanket string replacement. We need to put back the original net10 version.
-    # Read the original net10 version from the manifest object.
-    $net10PackInfo = $manifest.packs.'Microsoft.Android.Sdk.net10'
-    if ($net10PackInfo -and $net10PackInfo.version -ne $installedVersion) {
-        # The net10 version was different, so the blanket replace didn't touch it — good.
-        Write-Info "Net10 SDK version ($($net10PackInfo.version)) preserved (different from installed)."
-    }
-    elseif ($net10PackInfo -and $net10PackInfo.version -eq $installedVersion) {
-        # Edge case: net10 version matches net11 version. We need to restore it.
-        # This is unlikely in practice but handle it for correctness.
-        Write-Warn "Net10 SDK version matches net11 — it will also be updated. This is unusual."
+    # Surgical per-pack JSON patching: only update version fields for packs we will overlay
+    $manifest.version = $localVersion
+    foreach ($packName in $net11Packs) {
+        $packInfo = $manifest.packs.$packName
+        if ($packInfo -and $packInfo.version -eq $installedVersion) {
+            $packInfo.version = $localVersion
+        }
     }
 
-    Set-Content -Path $manifestPath -Value $patchedContent -NoNewline
+    $manifest | ConvertTo-Json -Depth 10 | Set-Content -Path $manifestPath
 
     # --- Step 5: Place packs ---
     Write-Step "Placing packs..."
@@ -369,7 +377,7 @@ function Invoke-Overlay {
         $localPackDir = $localPackLookup[$localDirName]
 
         # Find the version subdirectory in the local pack
-        $versionDirs = Get-ChildItem -Path $localPackDir -Directory
+        $versionDirs = Get-ChildItem -Path $localPackDir -Directory | Sort-Object Name -Descending
         if ($versionDirs.Count -eq 0) {
             $skippedPacks += @{ ManifestName = $manifestPackName; Reason = "No version subdirectory" }
             continue
@@ -397,15 +405,8 @@ function Invoke-Overlay {
         Write-Info "  $targetPackName : $installedVersion → $localVersion"
     }
 
-    # --- Save backup metadata ---
-    $metadata = @{
-        originalVersion = $installedVersion
-        localVersion    = $localVersion
-        manifestPath    = $manifestPath
-        timestamp       = (Get-Date -Format 'o')
-        config          = $Config
-        overlaidPacks   = $overlaidPacks
-    }
+    # --- Update backup metadata with actual overlaid packs ---
+    $metadata.overlaidPacks = $overlaidPacks
     $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
 
     # --- Step 6: Summary ---
@@ -431,7 +432,7 @@ function Invoke-Overlay {
 
     Write-Host ""
     Write-Host "  To restore original packs:" -ForegroundColor Yellow
-    Write-Host "    $($MyInvocation.MyCommand.Name) -AndroidSrcPath '$AndroidSrcPath' -Restore" -ForegroundColor Yellow
+    Write-Host "    $($MyInvocation.MyCommand.Name) -Restore" -ForegroundColor Yellow
     Write-Host ""
 }
 

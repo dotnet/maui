@@ -53,8 +53,7 @@ Override the provisioned Android workload packs in `.dotnet/` with locally built
 ### Restore original packs
 
 ```powershell
-.github/skills/local-android-packs/scripts/Overlay-LocalAndroidPacks.ps1 `
-    -AndroidSrcPath ~/repos/android -Restore
+.github/skills/local-android-packs/scripts/Overlay-LocalAndroidPacks.ps1 -Restore
 ```
 
 ## How It Works
@@ -67,7 +66,6 @@ The script uses a **manifest patching + pack placement** approach:
 4. **Backs up the manifest** and records original version, local version, timestamp, and list of overlaid packs in a metadata file
 5. **Patches `WorkloadManifest.json`** — updates version fields for all net11 packs to the local build version. The net10 SDK entry and Templates pack are left untouched.
 6. **Places packs** — copies local pack directories into `.dotnet/packs/<PackName>/<local-version>/`. The SDK pack is mapped to the platform-specific alias (e.g., `Microsoft.Android.Sdk.Darwin` on macOS).
-7. **Verifies** key files exist in the overlaid packs
 
 Everything is reversible — run with `-Restore` to undo all changes.
 
@@ -77,7 +75,7 @@ Everything is reversible — run with `-Restore` to undo all changes.
 |----------|--------|
 | `.dotnet/sdk-manifests/<band>/microsoft.net.sdk.android/WorkloadManifest.json` | Version fields patched to local build version |
 | `.dotnet/packs/<PackName>/<local-version>/` | Local pack directories placed alongside existing versions |
-| `.android-packs-backup/` (repo root) | Backup of original manifest + metadata (gitignored via `.dotnet/` parent) |
+| `.dotnet/.android-packs-backup/` | Backup of original manifest + metadata (gitignored via `.dotnet/` entry) |
 
 ## Pack Coverage
 
@@ -104,8 +102,7 @@ The following packs are overlaid (all net11 packs from the manifest):
 Run with `-Restore` to revert all changes:
 
 ```powershell
-.github/skills/local-android-packs/scripts/Overlay-LocalAndroidPacks.ps1 `
-    -AndroidSrcPath ~/repos/android -Restore
+.github/skills/local-android-packs/scripts/Overlay-LocalAndroidPacks.ps1 -Restore
 ```
 
 This will:
@@ -145,7 +142,7 @@ If MAUI builds fail after overlaying, the local android version may be incompati
 
 ## Notes
 
-- **Backups are gitignored** — the `.android-packs-backup/` directory lives under the repo root, and `.dotnet/` (where the packs live) is already in `.gitignore`
+- **Backups are gitignored** — the `.android-packs-backup/` directory lives under `.dotnet/`, which is already in `.gitignore`
 - **Templates pack is skipped** — `Microsoft.Android.Templates` is not overlaid since it's only used for `dotnet new` project creation, not builds
 - **net10 SDK is untouched** — `Microsoft.Android.Sdk.net10` has a separate version for backward compatibility and is not modified
 - **Platform-specific SDK alias** — the script automatically detects whether you're on macOS (`Sdk.Darwin`), Linux (`Sdk.Linux`), or Windows (`Sdk.Windows`) and uses the correct pack name
