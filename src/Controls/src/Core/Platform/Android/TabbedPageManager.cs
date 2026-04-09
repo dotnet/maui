@@ -440,6 +440,8 @@ public class TabbedPageManager
 		public bool IsSwipePagingEnabled => _tabbedPage.OnThisPlatform().IsSwipePagingEnabled();
 		public bool IsSmoothScrollEnabled => _tabbedPage.OnThisPlatform().IsSmoothScrollEnabled();
 
+		public Element Owner => _tabbedPage;
+
 		public event NotifyCollectionChangedEventHandler TabsChanged
 		{
 			add => ((IPageController)_tabbedPage).InternalChildren.CollectionChanged += value;
