@@ -45,6 +45,7 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
+    hide-older-comments: true
   noop:
     report-as-issue: false
   messages:
