@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
 
-				if (url is not null && !url.StartsWith('/') && !Uri.TryCreate(url, UriKind.Absolute, out _))
+				if (url is not null && !url.StartsWith("/", StringComparison.InvariantCultureIgnoreCase) && !Uri.TryCreate(url, UriKind.Absolute, out _))
 				{
 					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
 					url = AssetBaseUrl + url;

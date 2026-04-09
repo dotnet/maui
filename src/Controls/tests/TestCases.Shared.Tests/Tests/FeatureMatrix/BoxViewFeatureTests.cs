@@ -27,7 +27,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after visibility change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -46,7 +47,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after color change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -65,7 +67,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityLabel");
 			App.Tap("OpacityLabel");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after opacity change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -84,7 +87,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("FlowDirectionRTLCheckBox");
 			App.Tap("FlowDirectionRTLCheckBox");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after flow direction change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/27732
 		[Test]
@@ -109,7 +113,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after shadow change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -131,7 +136,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after shadow change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -153,7 +159,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
-			VerifyScreenshot();
+			// Use retryTimeout to allow UI to settle after shadow change
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 	}

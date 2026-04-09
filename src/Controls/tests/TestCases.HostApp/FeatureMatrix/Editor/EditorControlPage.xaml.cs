@@ -124,4 +124,9 @@ public partial class EditorControlMainPage : ContentPage
 			vm.UnfocusedText = eventInfo;
 		}
 	}
+
+	private void OnLabelTapped(object sender, EventArgs e)
+	{
+		EditorControl.Unfocus();
+	}
 }

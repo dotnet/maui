@@ -16,12 +16,12 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			BindingContext = _vm;
 		}
 
-		private void ResetClicked(object sender, EventArgs e)
+		private void ResetClicked(object? sender, EventArgs e)
 		{
 			_vm.SelectedItem = _vm.Items![0];
 		}
 
-		private void ClearClicked(object sender, EventArgs e)
+		private void ClearClicked(object? sender, EventArgs e)
 		{
 			_vm.SelectedItem = null;
 		}

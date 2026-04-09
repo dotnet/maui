@@ -125,9 +125,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
 				bool accept = true;
-				var r = RendererForViewController(viewController);
-				if (r is not null)
-					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
+				var renderer = RendererForViewController(viewController);
+				if (renderer is not null)
+				{
+					// On iOS 26+, disabled tabs can still be selected by dragging.
+					// Return false to prevent selecting disabled tabs.
+					if (!renderer.ShellSection.IsEnabled && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+					{
+						return false;
+					}
+
+					accept = ((IShellItemController)ShellItem).ProposeSection(renderer.ShellSection, false);
+				}
 
 				return accept;
 			};
@@ -273,6 +282,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
 				TabBar.Items[index].Enabled = shellSection.IsEnabled;
 			}
+			else if (e.PropertyName == BaseShellItem.BadgeTextProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeColorProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeTextColorProperty.PropertyName)
+			{
+				var shellSection = (ShellSection)sender;
+				var renderer = RendererForShellContent(shellSection);
+				if (renderer is not null)
+				{
+					var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
+					if (index >= 0 && TabBar?.Items is not null && index < TabBar.Items.Length)
+					{
+						UpdateTabBarItemBadge(TabBar.Items[index], shellSection);
+					}
+				}
+			}
 		}
 
 		protected virtual void UpdateShellAppearance(ShellAppearance appearance)
@@ -311,7 +335,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
+					UpdateTabBarItemBadge(TabBar.Items[tabIndex], items[tabIndex]);
 				}
+			}
+		}
+
+		static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
+		{
+			var badgeText = shellSection.BadgeText;
+			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
+
+			var badgeColor = shellSection.BadgeColor;
+			if (badgeColor is not null)
+			{
+				tabBarItem.BadgeColor = badgeColor.ToPlatform();
+			}
+			else
+			{
+				// Reset to system default
+				tabBarItem.BadgeColor = null;
+			}
+
+			var badgeTextColor = shellSection.BadgeTextColor;
+			if (badgeTextColor is not null)
+			{
+				var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+			}
+			else
+			{
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
 			}
 		}
 
@@ -446,11 +499,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
 				return;
 
+			// Shell doesn't have the property PrefersLargeTitles, so we should not update the large titles
+			// if users doen't explicitly set the LargeTitleDisplay property on the Page.
+			// todo net 11: Add PrefersLargeTitles to Shell and use that here.
+			if (!page.IsSet(PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			{
+				return;
+			}
+
 			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
 
 			if (SelectedViewController is UINavigationController navigationController)
 			{
-				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode == LargeTitleDisplayMode.Always;
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
 				var top = navigationController.TopViewController;
 				if (top is not null)
 				{

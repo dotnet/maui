@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Platform
 
 		object? _content;
 		bool _isSelected;
+		bool _isEnabled;
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
 		WBrush? _selectedForeground;
@@ -92,6 +93,9 @@ namespace Microsoft.Maui.Platform
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 		WeakReference<object>? _data;
+		string? _badgeText;
+		WBrush? _badgeBackground;
+		WBrush? _badgeForeground;
 
 		public object? Content
 		{
@@ -232,6 +236,50 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public bool IsEnabled
+		{
+			get => _isEnabled;
+			set
+			{
+				if (_isEnabled != value)
+				{
+					_isEnabled = value;
+					OnPropertyChanged(nameof(IsEnabled));
+				}
+			}
+		}
+
+		public string? BadgeText
+		{
+			get => _badgeText;
+			set
+			{
+				if (this.SetProperty(ref _badgeText, value, OnPropertyChanged))
+				{
+					OnPropertyChanged(nameof(BadgeValue));
+					OnPropertyChanged(nameof(BadgeVisibility));
+				}
+			}
+		}
+
+		public WBrush? BadgeBackground
+		{
+			get => _badgeBackground;
+			set { this.SetProperty(ref _badgeBackground, value, OnPropertyChanged); }
+		}
+
+		public WBrush? BadgeForeground
+		{
+			get => _badgeForeground;
+			set { this.SetProperty(ref _badgeForeground, value, OnPropertyChanged); }
+		}
+
+		public bool HasBadge => _badgeText is not null;
+
+		public int BadgeValue => int.TryParse(_badgeText, out var v) && v >= 0 ? v : -1;
+
+		public Microsoft.UI.Xaml.Visibility BadgeVisibility =>
+			HasBadge ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
 		void OnPropertyChanged(string args) =>
 			OnPropertyChanged(new PropertyChangedEventArgs(args));
 

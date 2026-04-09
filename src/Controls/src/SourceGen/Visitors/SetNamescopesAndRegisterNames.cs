@@ -18,7 +18,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
@@ -46,6 +46,10 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		// Skip lazy resources - they're not in Variables
+		if (node.IsLazyResource(parentNode, Context))
+			return;
+
 		ILocalValue namescope;
 		IDictionary<string, ILocalValue> namesInNamescope;
 		var setNameScope = false;
@@ -60,6 +64,12 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		{
 			namescope = Context.Scopes[parentNode].namescope;
 			namesInNamescope = Context.Scopes[parentNode].namesInScope;
+		}
+
+		if (node.IsOnPlatformDefaultValue)
+		{
+			Context.Scopes[node] = (namescope, namesInNamescope);
+			return;
 		}
 
 		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))

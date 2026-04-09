@@ -24,6 +24,15 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				TestSimulator.Shutdown();
 				TestSimulator.Launch();
+				// Wait for simulator to fully boot to avoid race condition where
+				// simulator reports "booted" but is still in Booting state internally
+				// This prevents "Unable to lookup in current state: Booting" errors
+				if (!TestSimulator.WaitForBootComplete())
+				{
+					throw new InvalidOperationException(
+						$"Simulator failed to fully boot within timeout. " +
+						$"Target: {TestSimulator.XHarnessID}, UDID: {TestSimulator.GetUDID()}");
+				}
 			}
 		}
 
@@ -76,6 +85,22 @@ namespace Microsoft.Maui.IntegrationTests
 		[Fact]
 		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
+		// CoreCLR test variants
+		[Fact]
+		public void RunOniOS_MauiDebug_CoreCLR() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_MauiRelease_CoreCLR() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_MauiReleaseTrimFull_CoreCLR() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, "full");
+
+		[Fact]
+		public void RunOniOS_BlazorDebug_CoreCLR() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_BlazorRelease_CoreCLR() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
 		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
 		// Issue: https://github.com/dotnet/aspnetcore/issues/63951
 		// 
@@ -106,7 +131,11 @@ namespace Microsoft.Maui.IntegrationTests
 			var buildProps = BuildProps;
 			var runtimeIdentifier = "";
 
-			if (runtimeVariant == RuntimeVariant.NativeAOT)
+			if (runtimeVariant == RuntimeVariant.CoreCLR)
+			{
+				buildProps.Add("UseMonoRuntime=false");
+			}
+			else if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060

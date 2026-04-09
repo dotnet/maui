@@ -98,22 +98,42 @@ if (-not $PRNumber) {
         $PRNumber = $matches[1]
         Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
     } else {
-        # Try gh cli
+        $foundPR = $false
+        # Try gh cli - first try 'gh pr view' for current branch
         try {
             $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
-            if ($prInfo.number) {
+            if ($prInfo -and $prInfo.number) {
                 $PRNumber = $prInfo.number
-                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli" -ForegroundColor Green
+                $foundPR = $true
+                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr view)" -ForegroundColor Green
             }
         } catch {
-            Write-Host "⚠️  Could not auto-detect PR number - using 'unknown' folder" -ForegroundColor Yellow
-            $PRNumber = "unknown"
+            # gh pr view failed, will try fallback
+        }
+        
+        # Fallback: search for PRs with this branch as head (works across forks)
+        if (-not $foundPR) {
+            try {
+                $prList = gh pr list --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
+                if ($prList -and $prList.Count -gt 0 -and $prList[0].number) {
+                    $PRNumber = $prList[0].number
+                    $foundPR = $true
+                    Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr list --head)" -ForegroundColor Green
+                }
+            } catch {
+                # gh pr list also failed
+            }
+        }
+        
+        if (-not $foundPR) {
+            Write-Error "Could not auto-detect PR number. Please provide -PRNumber parameter."
+            exit 1
         }
     }
 }
 
 # Set output directory based on PR number
-$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/verify-tests-fail"
+$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail"
 Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 
 # ============================================================
@@ -123,6 +143,7 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 . $BaselineScript
+
 
 # ============================================================
 # Auto-detect test filter from changed files
@@ -488,18 +509,18 @@ function Write-MarkdownReport {
     $statusSymbol = if ($VerificationPassed) { "✅" } else { "❌" }
     
     $markdown = @"
-# Test Verification Report
+### Test Verification Report
 
 **Date:** $reportDate | **Platform:** $($Platform.ToUpper()) | **Status:** $status
 
-## Summary
+#### Summary
 
 | Check | Expected | Actual | Result |
 |-------|----------|--------|--------|
 | Tests WITHOUT fix | FAIL | $(if ($FailedWithoutFix) { "FAIL" } else { "PASS" }) | $(if ($FailedWithoutFix) { "✅" } else { "❌" }) |
 | Tests WITH fix | PASS | $(if ($PassedWithFix) { "PASS" } else { "FAIL" }) | $(if ($PassedWithFix) { "✅" } else { "❌" }) |
 
-## $statusSymbol Final Verdict
+#### $statusSymbol Final Verdict
 
 $(if ($VerificationPassed) {
     @"
@@ -531,7 +552,7 @@ $(if (-not $FailedWithoutFix) {
 
 ---
 
-## Configuration
+#### Configuration
 
 **Platform:** $Platform
 **Test Filter:** $TestFilter
@@ -553,7 +574,7 @@ $(($NewFiles | ForEach-Object { "- ``$_``" }) -join "`n")
 
 ---
 
-## Test Results Details
+#### Test Results Details
 
 ### Test Run 1: WITHOUT Fix
 
@@ -607,7 +628,7 @@ $(Get-Content $WithFixLog -Raw)
 
 ---
 
-## Logs
+#### Logs
 
 - Full verification log: ``$ValidationLog``
 - Test output without fix: ``$WithoutFixLog``
@@ -710,9 +731,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
-    git checkout $MergeBase -- $file 2>&1 | Out-Null
+    $gitOutput = git checkout $MergeBase -- $file 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "  ERROR: Failed to revert $file from $MergeBase"
+        Write-Log "  Git output: $gitOutput"
         exit 1
     }
 }
@@ -739,9 +761,10 @@ Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Restoring: $file"
-    git checkout HEAD -- $file 2>&1 | Out-Null
+    $gitOutput = git checkout HEAD -- $file 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Log "  ERROR: Failed to restore $file from HEAD"
+        Write-Log "  Git output: $gitOutput"
         exit 1
     }
 }
@@ -804,7 +827,6 @@ if ($verificationPassed) {
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Tests correctly detect the issue:                        ║" -ForegroundColor Green
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
-    Write-Host "║  - PASS with fix (as expected)                            ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
 } else {
@@ -825,7 +847,6 @@ if ($verificationPassed) {
     Write-Host "║  1. Wrong fix files specified                             ║" -ForegroundColor Red
     Write-Host "║  2. Tests don't actually test the fixed behavior          ║" -ForegroundColor Red
     Write-Host "║  3. The issue was already fixed in base branch            ║" -ForegroundColor Red
-    Write-Host "║  4. Build caching - try clean rebuild                     ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     exit 1
 }

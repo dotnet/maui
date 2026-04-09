@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.SourceGen;
@@ -52,6 +53,48 @@ public class ViewModel
 		var message = diagnostic.GetMessage();
 		Assert.Contains("NonExistentProperty", message, System.StringComparison.Ordinal);
 		Assert.Contains("ViewModel", message, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void BindingToRelayCommandGeneratedFromOnAsyncMethod_DoesNotReportPropertyNotFound()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<Button Command="{Binding SaveCommand}" />
+</ContentPage>
+""";
+
+		var csharp = @"
+namespace CommunityToolkit.Mvvm.Input
+{
+	[System.AttributeUsage(System.AttributeTargets.Method)]
+	public class RelayCommandAttribute : System.Attribute { }
+}
+
+namespace Test
+{
+	public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+	public class ViewModel
+	{
+		[CommunityToolkit.Mvvm.Input.RelayCommand]
+		private System.Threading.Tasks.Task OnSaveAsync() => System.Threading.Tasks.Task.CompletedTask;
+	}
+}
+";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
 	}
 
 	[Fact]
@@ -206,6 +249,109 @@ public class ViewModel
 		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2024");
 		Assert.NotNull(diagnostic);
 		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+	}
+
+	[Fact]
+	public void BindingWithXReferenceSourceInDataTemplate_DoesNotReportFalsePositive()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:Name="PageRoot"
+	x:DataType="test:ViewModel">
+	<CollectionView ItemsSource="{Binding Items}">
+		<CollectionView.ItemTemplate>
+			<DataTemplate x:DataType="test:ItemModel">
+				<Button Text="{Binding Name}"
+						Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.SelectItemCommand}"
+						CommandParameter="{Binding .}" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel
+{
+	public System.Collections.Generic.List<ItemModel> Items { get; set; }
+	public Microsoft.Maui.Controls.Command SelectItemCommand { get; set; }
+}
+
+public class ItemModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// x:Reference resolves to ContentPage; BindingContext is 'object', so SelectItemCommand
+		// can't be resolved statically. MAUIG2045 is suppressed for x:Reference bindings.
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045" && d.GetMessage().Contains("ItemModel", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public void BindingWithXReferenceToNonRootElement_ResolvesCorrectType()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<StackLayout>
+		<Label x:Name="StatusLabel" Text="Ready" />
+		<CollectionView ItemsSource="{Binding Items}">
+			<CollectionView.ItemTemplate>
+				<DataTemplate x:DataType="test:ItemModel">
+					<Label Text="{Binding Source={x:Reference StatusLabel}, Path=Text}" />
+				</DataTemplate>
+			</CollectionView.ItemTemplate>
+		</CollectionView>
+	</StackLayout>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel
+{
+	public System.Collections.Generic.List<ItemModel> Items { get; set; }
+}
+
+public class ItemModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// Path=Text resolves against Label (the x:Reference target), not ItemModel (x:DataType).
+		// Label.Text exists, so there should be no MAUIG2045 at all.
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
 	}
 
 	[Fact]

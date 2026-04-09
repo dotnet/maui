@@ -59,7 +59,7 @@ public partial class TestPage : ContentPage
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -89,8 +89,6 @@ public partial class TestPage
 			return;
 		}
 
-		var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 10);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
@@ -99,25 +97,33 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #endif
+		__root.Resources.AddFactory("style", () =>
+		{
+			var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 10);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
-		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
-		var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope3 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+			var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
+			if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
+				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
 #line 8 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
+			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
-		var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
+			var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
+			if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
+				global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 #line 9 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
+			((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
 #line default
-		__root.Resources["style"] = style1;
+			return style1;
+		}, shared: true);
 	}
 }
 
@@ -390,5 +396,49 @@ public partial class TestPage : ContentPage
 		// Should generate default(double) for the value since no matching platform
 		// The generated code should include: double double0 = default;
 		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void OnPlatformViewWithMissingTargetPlatformShouldNotEmitNullabilityWarnings()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<OnPlatform x:TypeArguments="View">
+		<On Platform="WinUI">
+			<Label Text="WinUI only" />
+		</On>
+	</OnPlatform>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "CS8600" || d.Id == "CS8602");
+		Assert.Contains("global::Microsoft.Maui.Controls.View", generated, StringComparison.Ordinal);
+		Assert.Contains("default!;", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain(".transientNamescope", generated, StringComparison.Ordinal);
 	}
 }

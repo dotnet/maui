@@ -22,9 +22,12 @@ namespace Microsoft.Maui.Handlers
 
 			// Android TextView reports full available width instead of actual text width when
 			// text wraps to multiple lines, causing incorrect positioning for non-Fill alignments.
+			// We narrow the desired width to the widest rendered line, but only when that narrowing
+			// won't cause re-wrapping that exceeds MaxLines and truncates visible text.
 			if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill &&
 				PlatformView?.Layout is Layout layout &&
-				layout.LineCount > 1)
+				layout.LineCount > 1 &&
+				PlatformView.Ellipsize == null)
 			{
 				float maxLineWidth = 0;
 				for (int i = 0; i < layout.LineCount; i++)
@@ -38,7 +41,33 @@ namespace Microsoft.Maui.Handlers
 				{
 					var actualWidth = Context.FromPixels(maxLineWidth + PlatformView.PaddingLeft + PlatformView.PaddingRight);
 					if (actualWidth < size.Width)
+					{
+						// When MaxLines is constrained, verify that narrowing doesn't cause the text
+						// to re-wrap into more lines than MaxLines allows (which would truncate text).
+						// Re-measure at exactly the pixel width the view will be arranged at.
+						if (PlatformView.MaxLines != int.MaxValue)
+						{
+							var narrowedPx = (int)Context.ToPixels(actualWidth);
+
+							// AtMost mirrors how the layout pass constrains width, ensuring the
+							// re-measurement reflects the same wrapping behaviour the view will
+							// experience when arranged at actualWidth.
+							PlatformView.Measure(
+								MeasureSpecMode.AtMost.MakeMeasureSpec(narrowedPx),
+								MeasureSpecMode.Unspecified.MakeMeasureSpec(0));
+
+							// Fail-safe: if Layout is null after re-measurement we cannot verify
+							// that truncation won't occur, so return the original size.
+							var measuredLayout = PlatformView.Layout;
+
+							if (measuredLayout is null || measuredLayout.LineCount > PlatformView.MaxLines)
+							{
+								return size; // Narrowing causes truncation (or unverifiable); return original size
+							}
+						}
+
 						return new Size(actualWidth, size.Height);
+					}
 				}
 			}
 
@@ -95,6 +124,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapLineHeight(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateLineHeight(label);
+		}
+	}
+
+	// TODO: Material3 - make it public in .net 11
+	internal class LabelHandler2 : LabelHandler
+	{
+		protected override MauiMaterialTextView CreatePlatformView()
+		{
+			return new MauiMaterialTextView(Context);
 		}
 	}
 }
