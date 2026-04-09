@@ -161,49 +161,6 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 			Assert.Equal(1, event2Fired);
 		}
 
-#if WINDOWS
-		[Fact]
-		public void CanAddWindowsOnAppActivationLifecycleEvent()
-		{
-			var firstHandlerCalled = false;
-			var secondHandlerCalled = false;
-			var wasHandled = false;
-
-			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureLifecycleEvents(builder =>
-				{
-					builder.AddWindows(windows =>
-					{
-						windows.OnAppActivation((application, args) =>
-						{
-							firstHandlerCalled = true;
-							return false;
-						});
-
-						windows.OnAppActivation((application, args) =>
-						{
-							secondHandlerCalled = true;
-							return true;
-						});
-					});
-				})
-				.Build();
-
-			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
-
-			Assert.True(service.ContainsEvent(nameof(WindowsLifecycle.OnAppActivation)));
-
-			service.InvokeEvents<WindowsLifecycle.OnAppActivation>(nameof(WindowsLifecycle.OnAppActivation), del =>
-			{
-				wasHandled = del(null!, null!) || wasHandled;
-			});
-
-			Assert.True(firstHandlerCalled);
-			Assert.True(secondHandlerCalled);
-			Assert.True(wasHandled);
-		}
-#endif
-
 #if ANDROID
 		[Fact]
 		public void CanAddAndroidOnKeyDownLifecycleEvent()

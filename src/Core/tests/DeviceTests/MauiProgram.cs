@@ -12,13 +12,13 @@ namespace Microsoft.Maui.DeviceTests
 		public static global::Android.Content.Context DefaultContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
 		public static UI.Xaml.Window DefaultWindow => MauiProgramDefaults.DefaultWindow;
+#endif
 
 		/// <summary>
-		/// Records Windows lifecycle event names in the order they fire during app startup.
+		/// Records platform lifecycle event names in the order they fire during app startup.
 		/// Used by LifecycleEventOrderTests to validate event ordering.
 		/// </summary>
 		public static List<string> LifecycleEventLog { get; } = new();
-#endif
 
 		public static IApplication DefaultTestApp { get; private set; }
 
@@ -38,14 +38,37 @@ namespace Microsoft.Maui.DeviceTests
 			},
 			configureBuilder: builder =>
 			{
-#if WINDOWS
 				builder.ConfigureLifecycleEvents(life =>
 				{
+#if ANDROID
+					life.AddAndroid(android =>
+					{
+						android.OnCreate((a, b) =>
+							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnCreate)));
+						android.OnStart(a =>
+							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnStart)));
+						android.OnResume(a =>
+							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnResume)));
+						android.OnPostResume(a =>
+							LifecycleEventLog.Add(nameof(AndroidLifecycle.OnPostResume)));
+					});
+#elif IOS || MACCATALYST
+					life.AddiOS(ios =>
+					{
+						ios.FinishedLaunching((app, options) =>
+						{
+							LifecycleEventLog.Add(nameof(iOSLifecycle.FinishedLaunching));
+							return true;
+						});
+						ios.OnActivated(app =>
+							LifecycleEventLog.Add(nameof(iOSLifecycle.OnActivated)));
+					});
+#elif WINDOWS
 					life.AddWindows(windows =>
 					{
-						windows.OnAppActivation((app, args) =>
+						windows.OnAppInstanceActivated((app, args) =>
 						{
-							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnAppActivation));
+							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnAppInstanceActivated));
 							return false;
 						});
 						windows.OnLaunching((app, args) =>
@@ -55,8 +78,8 @@ namespace Microsoft.Maui.DeviceTests
 						windows.OnWindowCreated(w =>
 							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnWindowCreated)));
 					});
-				});
 #endif
+				});
 			});
 	}
 }

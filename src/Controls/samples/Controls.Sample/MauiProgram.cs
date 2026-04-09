@@ -289,7 +289,7 @@ namespace Maui.Controls.Sample
 					events.AddWindows(windows => windows
 						// .OnPlatformMessage((a, b) => 
 						//	LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
-						.OnAppActivation((application, args) => HandleWindowsAppActivation(application, args))
+						.OnAppInstanceActivated((application, args) => HandleWindowsAppInstanceActivated(application, args))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -316,9 +316,9 @@ namespace Maui.Controls.Sample
 					}
 
 #if WINDOWS
-					static bool HandleWindowsAppActivation(Microsoft.UI.Xaml.Application application, AppActivationArguments args)
+					static bool HandleWindowsAppInstanceActivated(Microsoft.UI.Xaml.Application application, AppActivationArguments args)
 					{
-						LogEvent(nameof(WindowsLifecycle.OnAppActivation), args.Kind.ToString());
+						LogEvent(nameof(WindowsLifecycle.OnAppInstanceActivated), args.Kind.ToString());
 
 						// This sample opts into single-instancing from the MAUI lifecycle callback
 						// instead of a custom Program.cs entry point.

@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 			// Reuse the existing services and let activation handlers short-circuit the relaunch path.
 			if (_application != null && _services != null)
 			{
-				if (launchActivation is AppActivationArguments activatedEventArgs && OnAppActivation(activatedEventArgs))
+				if (launchActivation is AppActivationArguments activatedEventArgs && OnAppInstanceActivated(activatedEventArgs))
 					return;
 
 				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
@@ -47,11 +47,11 @@ namespace Microsoft.Maui
 			_services = applicationContext.Services;
 
 			// Future AppInstance activation callbacks need the app-level services to exist first.
-			RegisterForAppActivation();
+			RegisterForAppInstanceActivated();
 
 			// Run the initial activation after services are available, but before OnLaunching/window creation,
 			// so handlers can redirect or suppress the default startup flow.
-			if (launchActivation is AppActivationArguments initialActivation && OnAppActivation(initialActivation))
+			if (launchActivation is AppActivationArguments initialActivation && OnAppInstanceActivated(initialActivation))
 				return;
 
 			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
@@ -65,11 +65,11 @@ namespace Microsoft.Maui
 			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
-		protected virtual bool OnAppActivation(AppActivationArguments args)
+		protected virtual bool OnAppInstanceActivated(AppActivationArguments args)
 		{
 			var wasHandled = false;
 
-			_services?.InvokeLifecycleEvents<WindowsLifecycle.OnAppActivation>(del =>
+			_services?.InvokeLifecycleEvents<WindowsLifecycle.OnAppInstanceActivated>(del =>
 			{
 				// Preserve any earlier "handled" result so multiple listeners can participate safely.
 				wasHandled = del(this, args) || wasHandled;
@@ -78,19 +78,19 @@ namespace Microsoft.Maui
 			return wasHandled;
 		}
 
-		void RegisterForAppActivation()
+		void RegisterForAppInstanceActivated()
 		{
-			if (_isRegisteredForAppActivation)
+			if (_isRegisteredForAppInstanceActivated)
 				return;
 
-			_isRegisteredForAppActivation = true;
+			_isRegisteredForAppInstanceActivated = true;
 
 			// After startup, later file/protocol/redirected activations are delivered through AppInstance.
-			AppInstance.GetCurrent().Activated += OnAppInstanceActivated;
+			AppInstance.GetCurrent().Activated += HandleAppInstanceActivated;
 
-			void OnAppInstanceActivated(object? sender, AppActivationArguments args)
+			void HandleAppInstanceActivated(object? sender, AppActivationArguments args)
 			{
-				OnAppActivation(args);
+				OnAppInstanceActivated(args);
 			}
 		}
 
@@ -98,7 +98,7 @@ namespace Microsoft.Maui
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		bool _isRegisteredForAppActivation;
+		bool _isRegisteredForAppInstanceActivated;
 
 		IServiceProvider? _services;
 
