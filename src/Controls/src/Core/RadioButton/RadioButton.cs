@@ -513,6 +513,7 @@ namespace Microsoft.Maui.Controls
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
 			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(Border.BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundProperty, static (RadioButton rb) => rb.Background, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
