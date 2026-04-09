@@ -50,7 +50,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (platformWebView.CoreWebView2 is not null)
 				{
-					platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Auto;
+					platformWebView.CoreWebView2.Profile.PreferredColorScheme = platformWebView.ActualTheme switch
+					{
+						Element.Dark => CoreWebView2PreferredColorScheme.Dark,
+						Element.Light => CoreWebView2PreferredColorScheme.Light,
+						_ => CoreWebView2PreferredColorScheme.Auto
+					};
 				}
 			}
 		}
