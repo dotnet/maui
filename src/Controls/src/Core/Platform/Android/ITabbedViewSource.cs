@@ -28,5 +28,12 @@ internal interface ITabbedViewSource
     int OffscreenPageLimit { get; }
     bool IsSwipePagingEnabled { get; }
     bool IsSmoothScrollEnabled { get; }
+
+    /// <summary>
+    /// The visual Element that owns this tab source — used as a parent for brush
+    /// binding context resolution (e.g., AppThemeBinding on gradient stops).
+    /// </summary>
+    Element? Owner { get; }
+
     event NotifyCollectionChangedEventHandler TabsChanged;
 }

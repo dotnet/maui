@@ -694,6 +694,11 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.OnPageSelected(position);
 
+            // Close any active action modes (e.g., ListView context menus) from the previous page.
+            // OffscreenPageLimit keeps all fragment views attached, so OnDetachedFromWindow never
+            // fires on ListViews. OnPageSelected is the reliable hook for page changes.
+            ShellContentNavigationFragment.CloseActiveActionModes(_handler.PlatformView);
+
             var virtualView = _handler.VirtualView;
 
             if (virtualView is null)
@@ -879,6 +884,21 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Connect using the adapter (which properly implements IStackNavigationView via page delegation)
             _stackNavigationManager.Connect(_navigationViewAdapter, _navigationContainer);
+
+            // Apply dark/light background to the navigation container when the page has no explicit
+            // Background, matching old ShellPageContainer constructor behavior.
+            // We set it on the container (not the page's platform view) because the page's handler
+            // hasn't been created yet at this point — StackNavigationManager creates it asynchronously.
+            // The page view is transparent by default, so the container background shows through.
+            if (_rootPage is IView view && view.Background is null && _navigationContainer is not null)
+            {
+                var context = _mauiContext!.Context!;
+                bool isDark = Controls.Application.Current?.RequestedTheme == ApplicationModel.AppTheme.Dark;
+                int bgColor = isDark
+                    ? AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundDark)
+                    : AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundLight);
+                _navigationContainer.SetBackgroundColor(new global::Android.Graphics.Color(bgColor));
+            }
 
             // Subscribe to navigation events if not already subscribed
             // (may have already been done in OnCreateView)
@@ -1102,6 +1122,33 @@ namespace Microsoft.Maui.Controls.Handlers
             else
             {
                 _handler.RemoveTopTabs();
+            }
+        }
+
+        internal static void CloseActiveActionModes(AView? view)
+        {
+            if (view is global::Android.Widget.ListView listView)
+            {
+                // Unwrap HeaderViewListAdapter — ListViewRenderer adds header/footer views
+                var adapter = listView.Adapter;
+                if (adapter is HeaderViewListAdapter headerAdapter)
+                {
+                    adapter = headerAdapter.WrappedAdapter;
+                }
+
+                if (adapter is Compatibility.CellAdapter cellAdapter)
+                {
+                    cellAdapter.CloseContextActions();
+                }
+                return;
+            }
+
+            if (view is ViewGroup viewGroup)
+            {
+                for (int i = 0; i < viewGroup.ChildCount; i++)
+                {
+                    CloseActiveActionModes(viewGroup.GetChildAt(i));
+                }
             }
         }
 

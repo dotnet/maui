@@ -54,6 +54,8 @@ namespace Microsoft.Maui.Controls.Handlers
         public bool IsSwipePagingEnabled => false; // Bottom tabs don't support swipe
         public bool IsSmoothScrollEnabled => false; // Not used
 
+        public Element? Owner => _shellItem;
+
         public event NotifyCollectionChangedEventHandler TabsChanged
         {
             add => ((IShellItemController)_shellItem).ItemsCollectionChanged += value;
@@ -107,6 +109,8 @@ namespace Microsoft.Maui.Controls.Handlers
         public int OffscreenPageLimit => 0; // Not used — Shell manages VP2 directly
         public bool IsSwipePagingEnabled => false; // Not used
         public bool IsSmoothScrollEnabled => false; // Not used
+
+        public Element? Owner => _shellSection;
 
         public event NotifyCollectionChangedEventHandler TabsChanged
         {
