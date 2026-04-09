@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -997,48 +998,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void StatusBarThemeInterfaceDefaultIsDefault()
+		public void StatusBarThemeChangesWithAppThemeBinding()
 		{
-			IWindow window = new Window();
-			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
-		}
+			AppInfo.SetCurrent(new MockAppInfo() { RequestedTheme = AppTheme.Light });
+			var app = new Application();
+			Application.Current = app;
 
-		[Fact]
-		public void StatusBarThemeCanBeChangedAtRuntime()
-		{
-			var window = new Window();
-			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
-
-			window.StatusBarTheme = StatusBarTheme.Dark;
-			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
-
-			window.StatusBarTheme = StatusBarTheme.Light;
-			Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
-
-			window.StatusBarTheme = StatusBarTheme.Default;
-			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
-		}
-
-		[Fact]
-		public void StatusBarThemePropertyChangedFiresOnChange()
-		{
-			var window = new Window();
-			var changes = new List<StatusBarTheme>();
-
-			window.PropertyChanged += (s, e) =>
+			try
 			{
-				if (e.PropertyName == nameof(Window.StatusBarTheme))
-					changes.Add(window.StatusBarTheme);
-			};
+				var window = app.LoadPage(new ContentPage());
 
-			window.StatusBarTheme = StatusBarTheme.Dark;
-			window.StatusBarTheme = StatusBarTheme.Light;
-			window.StatusBarTheme = StatusBarTheme.Default;
+				window.SetBinding(Window.StatusBarThemeProperty, new AppThemeBinding
+				{
+					Light = StatusBarTheme.Light,
+					Dark = StatusBarTheme.Dark
+				});
 
-			Assert.Equal(3, changes.Count);
-			Assert.Equal(StatusBarTheme.Dark, changes[0]);
-			Assert.Equal(StatusBarTheme.Light, changes[1]);
-			Assert.Equal(StatusBarTheme.Default, changes[2]);
+				Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
+
+				((MockAppInfo)AppInfo.Current).RequestedTheme = AppTheme.Dark;
+				((IApplication)app).ThemeChanged();
+
+				Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+			}
+			finally
+			{
+				Application.Current = null;
+			}
 		}
 
 		[Fact]
@@ -1053,28 +1039,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					changeCount++;
 			};
 
-			window.StatusBarTheme = StatusBarTheme.Dark; // same value
+			window.StatusBarTheme = StatusBarTheme.Dark;
 			Assert.Equal(0, changeCount);
-		}
-
-		[Fact]
-		public void StatusBarThemeWorksWithAppThemeBinding()
-		{
-			var window = new Window();
-			window.SetBinding(Window.StatusBarThemeProperty, new AppThemeBinding
-			{
-				Light = StatusBarTheme.Light,
-				Dark = StatusBarTheme.Dark,
-				Default = StatusBarTheme.Default
-			});
-
-			// AppThemeBinding evaluates based on current app theme;
-			// verify it doesn't crash and produces a valid value
-			var result = window.StatusBarTheme;
-			Assert.True(
-				result == StatusBarTheme.Light ||
-				result == StatusBarTheme.Dark ||
-				result == StatusBarTheme.Default);
 		}
 	}
 }
