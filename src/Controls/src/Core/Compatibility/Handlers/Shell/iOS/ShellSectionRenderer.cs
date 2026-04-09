@@ -192,6 +192,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// Allow the page to intercept back navigation via OnBackButtonPressed
 					if (tracker.Value.Page?.SendBackButtonPressed() == true)
 					{
+						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
