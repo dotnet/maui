@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Authentication
 {
 	partial class WebAuthenticatorImplementation : IWebAuthenticator
 	{
-		internal static bool OnAppActivation(UI.Xaml.Application application, AppActivationArguments args)
+		internal static bool OnAppInstanceActivated(UI.Xaml.Application application, AppActivationArguments args)
 		{
 			if (args is null || args.Kind != ExtendedActivationKind.Protocol)
 				return false;
