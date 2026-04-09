@@ -22,8 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static IApplication DefaultTestApp { get; private set; }
 
-		public static MauiApp CreateMauiApp() =>
-			MauiProgramDefaults.CreateMauiApp((sp) =>
+		public static MauiApp CreateMauiApp()
+		{
+			LifecycleEventLog.Clear();
+
+			return MauiProgramDefaults.CreateMauiApp((sp) =>
 			{
 				var options = new TestOptions
 				{
@@ -81,5 +84,6 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 				});
 			});
+		}
 	}
 }
