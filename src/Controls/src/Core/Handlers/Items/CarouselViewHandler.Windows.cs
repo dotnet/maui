@@ -532,10 +532,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var position = e.CenterItemIndex;
 
 			if (position == -1)
+			{
 				return;
+			}
 
 			if (position == Element.Position)
+			{
 				return;
+			}
 
 			// Suppress intermediate scroll events during a programmatic animated scroll.
 			if (_gotoPosition != -1)

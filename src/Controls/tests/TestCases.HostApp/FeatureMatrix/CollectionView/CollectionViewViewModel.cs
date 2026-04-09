@@ -123,9 +123,9 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
 	public ICommand AddItemCommand { get; }
 
-	public CollectionViewViewModel()
+	public CollectionViewViewModel(bool isScrollingFeatureTest = false)
 	{
-		LoadItems();
+		LoadItems(isScrollingFeatureTest);
 
 		AddItemCommand = new Command(AddItem);
 
@@ -640,7 +640,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		}
 	}
 
-	private void LoadItems()
+	private void LoadItems(bool isScrollingFeatureTest = false)
 	{
 		_observableCollection = new ObservableCollection<CollectionViewTestItem>();
 		AddItems(_observableCollection, 7, "Fruits");
@@ -676,8 +676,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				new Grouping<string, CollectionViewTestItem>("Fruits", new List<CollectionViewTestItem>()),
 				new Grouping<string, CollectionViewTestItem>("Vegetables", new List<CollectionViewTestItem>())
 			};
-		AddItems(_groupedList[0], 20, "Fruits");
-		AddItems(_groupedList[1], 20, "Vegetables");
+		AddItems(_groupedList[0], isScrollingFeatureTest ? 20 : 4, "Fruits");
+		AddItems(_groupedList[1], isScrollingFeatureTest ? 20 : 4, "Vegetables");
 
 		_observableCollection3 = new ObservableCollection<CollectionViewTestItem>();
 		AddItems(_observableCollection3, 15, "Fruits");
@@ -689,8 +689,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 				new Grouping<string, CollectionViewTestItem>("Vegetables", new List<CollectionViewTestItem>())
 
 			};
-		AddItems(_groupedList3[0], 25, "Fruits");
-		AddItems(_groupedList3[1], 25, "Vegetables");
+		AddItems(_groupedList3[0], isScrollingFeatureTest ? 25 : 12, "Fruits");
+		AddItems(_groupedList3[1], isScrollingFeatureTest ? 25 : 12, "Vegetables");
 
 		_groupedList2 = new List<Grouping<string, ItemModel>>
 			{

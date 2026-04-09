@@ -484,9 +484,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_itemDecoration is SpacingItemDecoration spacingDecoration)
 			{
-				var horizontalPadding = ItemsLayout is GridItemsLayout ? 0 : -spacingDecoration.HorizontalOffset;
-				var verticalPadding = ItemsLayout is GridItemsLayout ? 0 : -spacingDecoration.VerticalOffset;
-				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+				// Outer-edge spacing handled by SpacingItemDecoration.GetItemOffsets for all layout types.
+				SetPadding(0, 0, 0, 0);
 			}
 		}
 

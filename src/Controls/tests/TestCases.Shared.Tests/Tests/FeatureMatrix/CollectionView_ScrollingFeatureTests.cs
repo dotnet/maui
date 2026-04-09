@@ -1223,7 +1223,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 #endif
 #endif
 
-#if TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // In windows, related issue: https://github.com/dotnet/maui/issues/34772
 	//[Android] KeepScrollOffset doesn't not works as expected when new items are added in CollectionView Issue Link:  https://github.com/dotnet/maui/issues/29131
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -1297,6 +1297,9 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.WaitForElement("CollectionViewControl");
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+#if MACCATALYST
+		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+#endif
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForNoElement("WaterMelon");
@@ -1574,6 +1577,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 	}
 
 	// ScrollTo By Index Tests
+#if TEST_FAILS_ON_WINDOWS // Related issue: https://github.com/dotnet/maui/issues/34772
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyScrollToByIndexWithMakeVisiblePositionAndVerticalList_Carrot()
@@ -1786,6 +1790,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("ItemLabel").GetText(), Is.EqualTo("Carrot"));
 		VerifyScreenshot();
 	}
+#endif
 
 	// Grouped ScrollTo By Index Tests
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS // Issue - https://github.com/dotnet/maui/issues/17664

@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Issue Link : https://github.com/dotnet/maui/issues/34738
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,3 +23,4 @@ public class Issue32995 : _IssuesUITest
 		VerifyScreenshot("EnabledTabWithNormalColor");
 	}
 }
+#endif

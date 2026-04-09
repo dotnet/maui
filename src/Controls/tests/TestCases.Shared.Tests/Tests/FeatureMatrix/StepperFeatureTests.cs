@@ -368,10 +368,12 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
+		App.WaitForElement("MinimumEntry");
 		App.ClearText("MinimumEntry");
 		App.EnterText("MinimumEntry", "5");
 		App.PressEnter();
 
+		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
 
@@ -385,14 +387,17 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Options");
 		App.Tap("Options");
 
+		App.WaitForElement("MaximumEntry");
 		App.ClearText("MaximumEntry");
 		App.EnterText("MaximumEntry", "10");
 		App.PressEnter();
 
+		App.WaitForElement("ValueEntry");
 		App.ClearText("ValueEntry");
 		App.EnterText("ValueEntry", "50");
 		App.PressEnter();
 
+		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
 
@@ -408,6 +413,7 @@ public class StepperFeatureTests : _GalleryUITest
 		App.Tap("Options");
 		App.WaitForElement("IsEnabledFalseRadio");
 		App.Tap("IsEnabledFalseRadio");
+		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
 		App.WaitForElement("Options");

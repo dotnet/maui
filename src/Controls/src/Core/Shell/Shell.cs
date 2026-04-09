@@ -89,10 +89,49 @@ namespace Microsoft.Maui.Controls
 				// Notify about the property change
 				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 				
-				// Explicitly propagate the property change to all children
-				if (shell is IPropertyPropagationController controller)
+				if (shell == null)
 				{
-					controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+					return;
+				}
+
+				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+
+				if (bindable.IsSet(NavBarIsVisibleProperty))
+				{
+					// Value explicitly set — propagate down so iOS/Mac compatibility renderers
+					// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
+					if (shell is IPropertyPropagationController controller)
+					{
+						controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+					}
+				}
+				else
+				{
+					// Value was cleared — also clear the propagated copies from visual children
+					// so GetEffectiveValue and platform handlers reflect the reverted state.
+					if (bindable is IVisualTreeElement element)
+					{
+						ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
+					}
+				}
+			}
+		}
+
+		static void ClearPropagatedNavBarIsVisible(IVisualTreeElement element, bool propagatedValue)
+		{
+			foreach (var child in element.GetVisualChildren())
+			{
+				if (child is BindableObject bo
+					&& bo.IsSet(NavBarIsVisibleProperty)
+					&& (bool)bo.GetValue(NavBarIsVisibleProperty) == propagatedValue)
+				{
+					// ClearValue fires OnNavBarIsVisibleChanged on the child, which
+					// recursively clears further down the tree automatically.
+					bo.ClearValue(NavBarIsVisibleProperty);
+				}
+				else if (child is IVisualTreeElement childElement)
+				{
+					ClearPropagatedNavBarIsVisible(childElement, propagatedValue);
 				}
 			}
 		}
@@ -1742,8 +1781,10 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// On Windows, the Loaded event has already fired (IsLoaded=true), so SendNavigatedTo runs immediately without altering the flow.
-			if (CurrentPage.IsLoaded)
+			// Check if the Loaded event has actually been fired (not just IsLoaded which checks platform attachment).
+			// On iOS 26.1+, IsLoaded (view attached) can be true before the Loaded event is dispatched.
+			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
+			if (CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
 			}
@@ -1781,7 +1822,7 @@ namespace Microsoft.Maui.Controls
 			}
       
       // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
-			if (CurrentPage != null && !CurrentPage.IsLoaded)
+			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;
 			}

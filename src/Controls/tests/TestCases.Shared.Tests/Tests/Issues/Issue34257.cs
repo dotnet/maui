@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //In windows, related issue: https://github.com/dotnet/maui/issues/4715
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -29,11 +29,11 @@ public class Issue34257 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void UpdatingVerticalSpacingShouldResizeBothRows()
 	{
-		var firstColumnBefore = App.WaitForElement("FirstColumnTopItem").GetRect();
+		var firstColumnBefore = App.WaitForElement("FirstColumnBottomItem").GetRect();
 		App.Tap("ApplyVerticalSpacingButton");
 		App.WaitForElement("StatusLabel", "Spacing=40,0");
-		var firstColumnAfter = App.WaitForElement("FirstColumnTopItem").GetRect();
-		Assert.That(firstColumnBefore.Y, Is.Not.EqualTo(firstColumnAfter.Y), $"Expected the first row to move");
+		var firstColumnAfter = App.WaitForElement("FirstColumnBottomItem").GetRect();
+		Assert.That(firstColumnBefore.Y, Is.Not.EqualTo(firstColumnAfter.Y), $"Expected the second row to move");
 	}
 }
 #endif
