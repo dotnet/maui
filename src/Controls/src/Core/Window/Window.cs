@@ -80,6 +80,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsMaximizableProperty = BindableProperty.Create(nameof(IsMaximizable),
 			typeof(bool), typeof(Window), defaultValue: true);
 
+		/// <summary>Bindable property for <see cref="StatusBarTheme"/>.</summary>
+		public static readonly BindableProperty StatusBarThemeProperty = BindableProperty.Create(
+			nameof(StatusBarTheme), typeof(StatusBarTheme), typeof(Window), StatusBarTheme.Default);
+
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
@@ -190,6 +194,17 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (ITitleBar?)GetValue(TitleBarProperty);
 			set => SetValue(TitleBarProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the theme for the status bar area on mobile platforms.
+		/// Controls whether OS-drawn icons (clock, battery, signal) are light or dark.
+		/// Default automatically follows the current app theme. No-op on desktop platforms.
+		/// </summary>
+		public StatusBarTheme StatusBarTheme
+		{
+			get => (StatusBarTheme)GetValue(StatusBarThemeProperty);
+			set => SetValue(StatusBarThemeProperty, value);
 		}
 
 		double IWindow.X => GetPositionCoordinate(XProperty);

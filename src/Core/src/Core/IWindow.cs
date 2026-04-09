@@ -130,6 +130,13 @@ namespace Microsoft.Maui
 
 		float RequestDisplayDensity();
 
+		/// <summary>
+		/// Gets the preferred theme for the status bar area on mobile platforms.
+		/// Controls whether OS-drawn icons (clock, battery, signal) are light or dark.
+		/// Default follows the current app theme. No-op on desktop platforms.
+		/// </summary>
+		StatusBarTheme StatusBarTheme => StatusBarTheme.Default;
+
 #if WINDOWS || MACCATALYST
 		ITitleBar? TitleBar => null;
 		/// <summary>Gets a value indicating whether the window can be minimized.</summary>

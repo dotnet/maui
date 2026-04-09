@@ -946,5 +946,55 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			public string TestProperty { get; set; } = "test";
 		}
+
+		[Fact]
+		public void StatusBarThemeDefaultValue()
+		{
+			var window = new Window();
+			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeCanBeSet()
+		{
+			var window = new Window
+			{
+				StatusBarTheme = StatusBarTheme.Dark
+			};
+			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeIsBindable()
+		{
+			var window = new Window();
+			window.SetValue(Window.StatusBarThemeProperty, StatusBarTheme.Light);
+			Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeIsStyleable()
+		{
+			var style = new Style(typeof(Window))
+			{
+				Setters =
+				{
+					new Setter { Property = Window.StatusBarThemeProperty, Value = StatusBarTheme.Dark }
+				},
+			};
+
+			var app = new TestApp();
+			app.Resources.Add(style);
+
+			var window = app.CreateWindow();
+			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeInterfaceDefaultIsDefault()
+		{
+			IWindow window = new Window();
+			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+		}
 	}
 }
