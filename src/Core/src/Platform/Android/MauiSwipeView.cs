@@ -985,10 +985,14 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					foreach (var swipeItem in swipeItems)
+					// Snapshot visible items before executing any commands.
+					// Executing a command may change visibility of other SwipeItems
+					// (e.g., toggling IsCompleted), which would cause the foreach
+					// to also execute newly-visible items. See #7580.
+					var visibleItems = swipeItems.Where(GetIsVisible).ToList();
+					foreach (var swipeItem in visibleItems)
 					{
-						if (GetIsVisible(swipeItem))
-							ExecuteSwipeItem(swipeItem);
+						ExecuteSwipeItem(swipeItem);
 					}
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
