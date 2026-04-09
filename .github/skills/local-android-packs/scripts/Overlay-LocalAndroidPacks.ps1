@@ -304,46 +304,11 @@ function Invoke-Overlay {
     }
 
     $net11Packs = Get-ManifestNet11Packs -Manifest $manifest
-    Write-Info "Net11 packs to overlay: $($net11Packs.Count)"
+    Write-Info "Net11 manifest packs found: $($net11Packs.Count)"
 
-    # --- Step 3: Create backup ---
-    Write-Step "Creating backup..."
+    # --- Step 3: Determine which packs are available locally ---
+    Write-Step "Scanning local packs..."
 
-    if (-not (Test-Path $BackupDir)) {
-        New-Item -Path $BackupDir -ItemType Directory -Force | Out-Null
-    }
-    Copy-Item -Path $manifestPath -Destination (Join-Path $BackupDir 'WorkloadManifest.json') -Force
-
-    # Write backup metadata immediately so auto-rollback works even if overlay fails partway through
-    $metadata = @{
-        originalVersion = $installedVersion
-        localVersion    = $localVersion
-        manifestPath    = $manifestPath
-        timestamp       = (Get-Date -Format 'o')
-        config          = $Config
-        overlaidPacks   = @()
-    }
-    $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
-
-    # --- Step 4: Patch manifest ---
-    Write-Step "Patching manifest..."
-
-    # Surgical per-pack JSON patching: only update version fields for packs we will overlay
-    $manifest.version = $localVersion
-    foreach ($packName in $net11Packs) {
-        $packInfo = $manifest.packs.$packName
-        if ($packInfo -and $packInfo.version -eq $installedVersion) {
-            $packInfo.version = $localVersion
-        }
-    }
-
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content -Path $manifestPath
-
-    # --- Step 5: Place packs ---
-    Write-Step "Placing packs..."
-
-    $overlaidPacks = @()
-    $skippedPacks = @()
     $localPackDirs = Get-ChildItem -Path $localPacksPath -Directory
 
     # Build a lookup: local pack dir name → local pack dir path
@@ -352,11 +317,12 @@ function Invoke-Overlay {
         $localPackLookup[$dir.Name] = $dir.FullName
     }
 
+    # Determine which manifest packs can actually be overlaid (exist locally)
+    $overlayablePacks = @()
+    $skippedPacks = @()
+
     foreach ($manifestPackName in $net11Packs) {
         # Determine which local directory corresponds to this manifest entry
-        $localDirName = $null
-        $targetPackName = $null
-
         if ($manifestPackName -eq 'Microsoft.Android.Sdk.net11') {
             # SDK pack uses platform alias both locally and in .dotnet/packs/
             $localDirName = $platformSdkAlias
@@ -376,40 +342,94 @@ function Invoke-Overlay {
 
         $localPackDir = $localPackLookup[$localDirName]
 
-        # Find the version subdirectory in the local pack
+        # Verify the local pack has a version subdirectory
         $versionDirs = Get-ChildItem -Path $localPackDir -Directory | Sort-Object Name -Descending
         if ($versionDirs.Count -eq 0) {
             $skippedPacks += @{ ManifestName = $manifestPackName; Reason = "No version subdirectory" }
             continue
         }
-        $localVersionDir = $versionDirs[0].FullName
 
+        $overlayablePacks += @{
+            manifestPackName = $manifestPackName
+            targetPackName   = $targetPackName
+            localDirName     = $localDirName
+            localVersionDir  = $versionDirs[0].FullName
+        }
+    }
+
+    Write-Info "Packs available to overlay: $($overlayablePacks.Count)"
+    if ($skippedPacks.Count -gt 0) {
+        Write-Info "Packs skipped (not in local build): $($skippedPacks.Count)"
+    }
+
+    if ($overlayablePacks.Count -eq 0) {
+        throw "No local packs match manifest entries. Verify that dotnet/android was built with configuration '$Config'."
+    }
+
+    # --- Step 4: Create backup ---
+    Write-Step "Creating backup..."
+
+    if (-not (Test-Path $BackupDir)) {
+        New-Item -Path $BackupDir -ItemType Directory -Force | Out-Null
+    }
+    Copy-Item -Path $manifestPath -Destination (Join-Path $BackupDir 'WorkloadManifest.json') -Force
+
+    # Write backup metadata immediately so auto-rollback works even if overlay fails partway through
+    $metadata = @{
+        originalVersion = $installedVersion
+        localVersion    = $localVersion
+        manifestPath    = $manifestPath
+        timestamp       = (Get-Date -Format 'o')
+        config          = $Config
+        overlaidPacks   = @()
+    }
+    $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
+
+    # --- Step 5: Patch manifest (only for packs confirmed to exist locally) ---
+    Write-Step "Patching manifest..."
+
+    $manifest.version = $localVersion
+    foreach ($pack in $overlayablePacks) {
+        $packInfo = $manifest.packs.($pack.manifestPackName)
+        if ($packInfo -and $packInfo.version -eq $installedVersion) {
+            $packInfo.version = $localVersion
+        }
+    }
+
+    $manifest | ConvertTo-Json -Depth 10 | Set-Content -Path $manifestPath
+
+    # --- Step 6: Place packs ---
+    Write-Step "Placing packs..."
+
+    $overlaidPacks = @()
+
+    foreach ($pack in $overlayablePacks) {
         # Target path in .dotnet/packs/
-        $targetDir = Join-Path $DotnetRoot "packs/$targetPackName/$localVersion"
+        $targetDir = Join-Path $DotnetRoot "packs/$($pack.targetPackName)/$localVersion"
 
         # Copy the pack
         if (Test-Path $targetDir) {
-            Write-Warn "  Target already exists, replacing: $targetPackName/$localVersion"
+            Write-Warn "  Target already exists, replacing: $($pack.targetPackName)/$localVersion"
             Remove-Item -Path $targetDir -Recurse -Force
         }
 
         New-Item -Path $targetDir -ItemType Directory -Force | Out-Null
-        Copy-Item -Path "$localVersionDir/*" -Destination $targetDir -Recurse -Force
+        Copy-Item -Path "$($pack.localVersionDir)/*" -Destination $targetDir -Recurse -Force
 
         $overlaidPacks += @{
-            manifestPackName = $manifestPackName
-            targetPackName   = $targetPackName
-            localDirName     = $localDirName
+            manifestPackName = $pack.manifestPackName
+            targetPackName   = $pack.targetPackName
+            localDirName     = $pack.localDirName
         }
 
-        Write-Info "  $targetPackName : $installedVersion → $localVersion"
+        # Update metadata incrementally so rollback can clean up partial overlays on failure
+        $metadata.overlaidPacks = $overlaidPacks
+        $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
+
+        Write-Info "  $($pack.targetPackName) : $installedVersion → $localVersion"
     }
 
-    # --- Update backup metadata with actual overlaid packs ---
-    $metadata.overlaidPacks = $overlaidPacks
-    $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
-
-    # --- Step 6: Summary ---
+    # --- Step 7: Summary ---
     Write-Host ""
     Write-Success "=== Overlay Complete ==="
     Write-Host ""
