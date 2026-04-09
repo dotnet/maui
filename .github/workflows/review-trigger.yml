@@ -1,0 +1,173 @@
+name: "Trigger AzDO Review Pipeline"
+
+# Allows admins to trigger the maui-copilot AzDO pipeline (definition 27723)
+# from a PR comment with "/review <platform>" or via manual workflow dispatch.
+#
+# Usage:
+#   PR comment:  /review android   (or ios, catalyst, windows)
+#   Manual:      Actions → "Trigger AzDO Review Pipeline" → Run workflow
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull Request Number'
+        required: true
+        type: number
+      platform:
+        description: 'Target Platform'
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+          - catalyst
+          - windows
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  trigger-review:
+    name: Queue Review Pipeline
+    runs-on: ubuntu-latest
+    if: |
+      github.repository_owner == 'dotnet' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.issue.pull_request != '' &&
+        startsWith(github.event.comment.body, '/review')))
+    steps:
+      - name: Check permissions
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login
+            });
+            const allowed = ['admin', 'maintain'];
+            if (!allowed.includes(data.permission)) {
+              core.setFailed(`User @${context.payload.comment.user.login} needs admin or maintain access. Current: ${data.permission}`);
+            }
+
+      - name: Parse inputs
+        id: parse
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUT_PLATFORM: ${{ inputs.platform }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "pr_number=$INPUT_PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "platform=$INPUT_PLATFORM" >> "$GITHUB_OUTPUT"
+          else
+            PR_NUMBER="$ISSUE_NUMBER"
+            # Extract platform from comment: /review <platform>
+            PLATFORM=$(echo "$COMMENT_BODY" | sed 's|^/review[[:space:]]*||' | tr '[:upper:]' '[:lower:]' | xargs)
+            if [ -z "$PLATFORM" ]; then
+              PLATFORM="android"
+            fi
+            # Sanitize: only allow alphabetic characters
+            PLATFORM=$(echo "$PLATFORM" | tr -cd 'a-z')
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate platform
+        shell: bash
+        env:
+          PLATFORM: ${{ steps.parse.outputs.platform }}
+        run: |
+          if [[ "$PLATFORM" != "android" && "$PLATFORM" != "ios" && "$PLATFORM" != "catalyst" && "$PLATFORM" != "windows" ]]; then
+            echo "::error::Invalid platform '$PLATFORM'. Must be 'android', 'ios', 'catalyst', or 'windows'."
+            exit 1
+          fi
+
+      - name: Queue Azure DevOps pipeline
+        id: queue
+        shell: bash
+        env:
+          REVIEW_PR_AZDO_PAT: ${{ secrets.REVIEW_PR_AZDO_PAT }}
+          PR_NUMBER: ${{ steps.parse.outputs.pr_number }}
+          PLATFORM: ${{ steps.parse.outputs.platform }}
+        run: |
+          if [ -z "$REVIEW_PR_AZDO_PAT" ]; then
+            echo "::error::REVIEW_PR_AZDO_PAT secret is not configured."
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          AUTH=$(printf ':%s' "$REVIEW_PR_AZDO_PAT" | base64 -w0)
+
+          echo "Queuing review pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM})"
+
+          jq -n \
+            --arg pr "$PR_NUMBER" \
+            --arg plat "$PLATFORM" \
+            '{
+              definition: {id: 27723},
+              sourceBranch: "refs/heads/main",
+              templateParameters: {
+                PRNumber: $pr,
+                Platform: $plat
+              }
+            }' > /tmp/request.json
+
+          HTTP_CODE=$(curl -s -o /tmp/response.json -w "%{http_code}" -X POST \
+            "https://devdiv.visualstudio.com/DevDiv/_apis/build/builds?api-version=7.0" \
+            -H "Authorization: Basic ${AUTH}" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/request.json)
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            BUILD_ID=$(jq -r '.id' /tmp/response.json)
+            BUILD_URL=$(jq -r '._links.web.href' /tmp/response.json)
+            echo "✅ Pipeline queued successfully!"
+            echo "Build ID: $BUILD_ID"
+            echo "Build URL: $BUILD_URL"
+            echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+            echo "build_url=$BUILD_URL" >> "$GITHUB_OUTPUT"
+            echo "success=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Failed to queue pipeline (HTTP $HTTP_CODE)"
+            # Show only the error message, not full response
+            jq -r '.message // "Unknown error"' /tmp/response.json 2>/dev/null || true
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Post reply comment
+        if: github.event_name == 'issue_comment' && steps.queue.outputs.success == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const buildUrl = '${{ steps.queue.outputs.build_url }}';
+            const buildId = '${{ steps.queue.outputs.build_id }}';
+            const platform = '${{ steps.parse.outputs.platform }}';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🚀 **Review pipeline queued** for **${platform}**\n\n[View build #${buildId}](${buildUrl})`
+            });
+
+      - name: Add reaction to comment
+        if: github.event_name == 'issue_comment' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const success = '${{ steps.queue.outputs.success }}' === 'true';
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: success ? 'rocket' : 'confused'
+            });
