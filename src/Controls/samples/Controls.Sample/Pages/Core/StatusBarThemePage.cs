@@ -29,7 +29,8 @@ namespace Maui.Controls.Sample.Pages
 					new Label
 					{
 						Text = "Window.StatusBarTheme",
-						Style = (Style)Application.Current.Resources["Headline"]
+						FontSize = 24,
+						FontAttributes = FontAttributes.Bold
 					},
 					new Label
 					{
