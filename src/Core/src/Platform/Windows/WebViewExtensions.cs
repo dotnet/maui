@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 
@@ -52,8 +53,8 @@ namespace Microsoft.Maui.Platform
 				{
 					platformWebView.CoreWebView2.Profile.PreferredColorScheme = platformWebView.ActualTheme switch
 					{
-						Element.Dark => CoreWebView2PreferredColorScheme.Dark,
-						Element.Light => CoreWebView2PreferredColorScheme.Light,
+						ElementTheme.Dark => CoreWebView2PreferredColorScheme.Dark,
+						ElementTheme.Light => CoreWebView2PreferredColorScheme.Light,
 						_ => CoreWebView2PreferredColorScheme.Auto
 					};
 				}
