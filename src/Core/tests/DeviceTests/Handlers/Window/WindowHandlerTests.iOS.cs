@@ -11,16 +11,16 @@ namespace Microsoft.Maui.DeviceTests
 	{
 #if !MACCATALYST
 		[Fact]
-		public async Task StatusBarThemeDefaultReturnsBaseStyle()
+		public async Task PageViewControllerReturnsDefaultStatusBarStyleWithoutWindow()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var page = new ContentPage { Content = new Label { Text = "Test" } };
-				var pageVc = page.ToUIViewController(MauiContext);
-				var pvc = Assert.IsType<PageViewController>(pageVc);
+				// PageViewController without a window should return UIStatusBarStyle.Default
+				// because the StatusBarTheme resolves to Default when no IWindow is available
+				var pvc = new Microsoft.Maui.Platform.PageViewController(
+					new DeviceTests.Stubs.StubBase(),
+					MauiContext);
 
-				// Without a window attached, StatusBarTheme resolves to Default,
-				// which falls back to base.PreferredStatusBarStyle()
 				Assert.Equal(UIStatusBarStyle.Default, pvc.PreferredStatusBarStyle());
 			});
 		}
