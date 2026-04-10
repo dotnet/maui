@@ -1,5 +1,7 @@
 #nullable enable
+Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback.OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 static Microsoft.Maui.ApplicationModel.Platform.OnAppInstanceActivated(Microsoft.UI.Xaml.Application! application, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
+static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.OnAppInstanceActivated(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 *REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
 *REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!

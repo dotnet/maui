@@ -60,6 +60,14 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// When running behind a reverse proxy (e.g. dev tunnels, Azure App Service),
+// use the forwarded headers so OAuth redirect URIs use the public hostname
+// instead of localhost.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+	ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All
+});
+
 if (app.Environment.IsDevelopment())
 {
 	app.UseDeveloperExceptionPage();
@@ -81,8 +89,15 @@ const string callbackScheme = "xamarinessentials";
 // 1. First request → not authenticated → server challenges the provider (e.g. Google)
 // 2. User signs in with the provider in the browser
 // 3. Provider redirects back here with tokens
-// 4. Server builds a xamarinessentials://# redirect with access_token, etc.
+// 4. Server builds a callback URI with tokens and redirects back to the app
 // 5. OS delivers the custom-scheme URI back to the MAUI app
+//
+// The callback uses query string format (?key=value) so that:
+// - Windows OAuth2Manager.CompleteAuthRequest can parse it (requires ? not #)
+// - iOS/Android WebAuthenticatorResult.ParseQueryString handles both ? and # formats
+//
+// The server preserves the 'state' parameter from the original request so that
+// OAuth2Manager can match the callback to the pending authorization request.
 app.MapGet("/mobileauth/{scheme}", async (string scheme, HttpContext httpContext) =>
 {
 	var auth = await httpContext.AuthenticateAsync(scheme);
@@ -103,16 +118,20 @@ app.MapGet("/mobileauth/{scheme}", async (string scheme, HttpContext httpContext
 
 	var qs = new Dictionary<string, string>
 	{
+		// Standard OAuth2 parameters
+		{ "code", auth.Properties.GetTokenValue("code") ?? Guid.NewGuid().ToString() },
+		{ "state", httpContext.Request.Query["state"].FirstOrDefault()
+			?? auth.Properties.GetTokenValue("state") ?? string.Empty },
+		// Additional tokens for server-brokered flows (iOS/Android compatibility)
 		{ "access_token", auth.Properties.GetTokenValue("access_token")! },
 		{ "refresh_token", auth.Properties.GetTokenValue("refresh_token") ?? string.Empty },
 		{ "expires_in", (auth.Properties.ExpiresUtc?.ToUnixTimeSeconds() ?? -1).ToString() },
 		{ "email", email },
-		{ "code", auth.Properties.GetTokenValue("code") ?? Guid.NewGuid().ToString() },
-		{ "state", auth.Properties.GetTokenValue("state") ?? string.Empty },
 	};
 
-	// Build the callback URI: xamarinessentials://#access_token=...&refresh_token=...
-	var url = callbackScheme + "://#" + string.Join(
+	// Use query string format (?) for Windows OAuth2Manager compatibility.
+	// iOS/Android WebAuthenticatorResult handles both ? and # via WebUtils.ParseQueryString.
+	var url = callbackScheme + "://callback?" + string.Join(
 		"&",
 		qs.Where(kvp => !string.IsNullOrEmpty(kvp.Value) && kvp.Value != "-1")
 		.Select(kvp => $"{WebUtility.UrlEncode(kvp.Key)}={WebUtility.UrlEncode(kvp.Value)}"));
@@ -123,11 +142,11 @@ app.MapGet("/mobileauth/{scheme}", async (string scheme, HttpContext httpContext
 // Simple passthrough redirect used by device tests.
 // Echoes query parameters back as a callback URI so the client can
 // validate the round-trip without needing a real OAuth provider.
-// Example: /redirect?access_token=abc → xamarinessentials://?access_token=abc
+// Example: /redirect?access_token=abc → xamarinessentials://callback?access_token=abc
 app.MapGet("/redirect", (HttpContext httpContext) =>
 {
 	var qs = httpContext.Request.QueryString.Value ?? string.Empty;
-	var url = callbackScheme + "://" + qs;
+	var url = callbackScheme + "://callback" + qs;
 	httpContext.Response.Redirect(url);
 });
 

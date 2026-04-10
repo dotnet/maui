@@ -67,7 +67,23 @@ namespace Microsoft.Maui.Hosting
 				life.AddWindows(windows => windows
 					.OnAppInstanceActivated((application, args) =>
 					{
-						return ApplicationModel.Platform.OnAppInstanceActivated(application, args);
+						// Let the WebAuthenticator (default or custom) handle the callback first.
+						if (ApplicationModel.Platform.OnAppInstanceActivated(application, args))
+							return true;
+
+						// No handler claimed it — check if another instance owns the
+						// activation key. This handles the case where the OS launches a
+						// transient instance for a protocol callback that belongs to the
+						// original instance's pending OAuth flow.
+						var keyInstance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("MauiEssentials");
+						if (!keyInstance.IsCurrent)
+						{
+							keyInstance.RedirectActivationToAsync(args).AsTask().GetAwaiter().GetResult();
+							System.Diagnostics.Process.GetCurrentProcess().Kill();
+							return true;
+						}
+
+						return false;
 					})
 					.OnActivated((window, args) =>
 					{

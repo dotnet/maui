@@ -62,6 +62,15 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="intent">An <see cref="Intent"/> object containing additional data about this resume operation.</param>
 		/// <returns><see langword="true"/> when the callback can be processed, otherwise <see langword="false"/>.</returns>
 		bool OnResumeCallback(Intent intent);
+#elif WINDOWS
+		/// <summary>
+		/// Called when the app receives an AppInstance activation callback (e.g. protocol activation)
+		/// that may be part of an authentication flow. Custom implementations can handle the activation
+		/// before the default single-instance redirect behavior runs.
+		/// </summary>
+		/// <param name="args">The activation arguments delivered by the OS.</param>
+		/// <returns><see langword="true"/> when the activation was handled, otherwise <see langword="false"/>.</returns>
+		bool OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments args);
 #endif
 	}
 
@@ -196,6 +205,10 @@ namespace Microsoft.Maui.Authentication
 		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnResumeCallback(Intent)"/>
 		public static bool OnResume(this IWebAuthenticator webAuthenticator, Intent intent) =>
 			webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
+#elif WINDOWS
+		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments)"/>
+		public static bool OnAppInstanceActivated(this IWebAuthenticator webAuthenticator, Microsoft.Windows.AppLifecycle.AppActivationArguments args) =>
+			webAuthenticator.AsPlatformCallback().OnAppInstanceActivatedCallback(args);
 #endif
 	}
 

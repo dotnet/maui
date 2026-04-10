@@ -161,7 +161,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <param name="args">The activation arguments.</param>
 		/// <returns><see langword="true"/> if a platform feature handled the activation; otherwise, <see langword="false"/>.</returns>
 		public static bool OnAppInstanceActivated(UI.Xaml.Application application, Microsoft.Windows.AppLifecycle.AppActivationArguments args) =>
-			WebAuthenticatorImplementation.OnAppInstanceActivated(application, args);
+			WebAuthenticator.Default.OnAppInstanceActivated(args);
 
 #elif TIZEN
 		/// <summary>
