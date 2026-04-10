@@ -15,6 +15,7 @@
             <StackLayout Padding="12,0,12,12" Spacing="6">
 
                 <Button Text="Microsoft" Command="{Binding MicrosoftCommand}" BackgroundColor="#00A4EF" TextColor="White" />
+                <Button Text="Microsoft (Direct OAuth2)" Command="{Binding MicrosoftDirectCommand}" BackgroundColor="#7FBA00" TextColor="White" />
                 <Button Text="Google" Command="{Binding GoogleCommand}" BackgroundColor="#d34836" TextColor="White" />
                 <Button Text="Facebook" Command="{Binding FacebookCommand}" BackgroundColor="#3b5998" TextColor="White" />
                 <Button Text="Apple" Command="{Binding AppleCommand}" BackgroundColor="Black" TextColor="White" />

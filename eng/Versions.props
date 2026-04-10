@@ -88,6 +88,7 @@
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>10.0.0</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>10.0.0</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
     <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>10.0.0</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <AspNetSecurityOAuthApplePackageVersion>9.2.0</AspNetSecurityOAuthApplePackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>10.0.0</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>10.0.0</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>10.0.0</MicrosoftAspNetCoreComponentsPackageVersion>

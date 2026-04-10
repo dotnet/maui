@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="webAuthenticatorOptions">A <see cref="WebAuthenticatorOptions"/> instance containing additional configuration for this authentication call.</param>
 		/// <returns>A <see cref="WebAuthenticatorResult"/> object with the results of this operation.</returns>
 		/// <exception cref="TaskCanceledException">Thrown when the user canceled the authentication flow.</exception>
-		/// <exception cref="PlatformNotSupportedException">Windows: Thrown when called on Windows.</exception>
 		/// <exception cref="FeatureNotSupportedException">iOS/macOS: Thrown when iOS version is less than 13 is used or macOS less than 13.1 is used.</exception>
 		/// <exception cref="InvalidOperationException">
 		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
@@ -36,7 +35,6 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="cancellationToken">A <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
 		/// <returns>A <see cref="WebAuthenticatorResult"/> object with the results of this operation.</returns>
 		/// <exception cref="TaskCanceledException">Thrown when the user canceled the authentication flow.</exception>
-		/// <exception cref="PlatformNotSupportedException">Windows: Thrown when called on Windows.</exception>
 		/// <exception cref="FeatureNotSupportedException">iOS/macOS: Thrown when iOS version is less than 13 is used or macOS less than 13.1 is used.</exception>
 		/// <exception cref="InvalidOperationException">
 		/// <para>Android: Thrown when the no IntentFilter has been created for the callback URL.</para>
@@ -64,6 +62,15 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="intent">An <see cref="Intent"/> object containing additional data about this resume operation.</param>
 		/// <returns><see langword="true"/> when the callback can be processed, otherwise <see langword="false"/>.</returns>
 		bool OnResumeCallback(Intent intent);
+#elif WINDOWS
+		/// <summary>
+		/// Called when the app receives an AppInstance activation callback (e.g. protocol activation)
+		/// that may be part of an authentication flow. Custom implementations can handle the activation
+		/// before the default single-instance redirect behavior runs.
+		/// </summary>
+		/// <param name="args">The activation arguments delivered by the OS.</param>
+		/// <returns><see langword="true"/> when the activation was handled, otherwise <see langword="false"/>.</returns>
+		bool OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments args);
 #endif
 	}
 
@@ -93,9 +100,6 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="url"> Url to navigate to, beginning the authentication flow.</param>
 		/// <param name="callbackUrl"> Expected callback url that the navigation flow will eventually redirect to.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
-#if !NETSTANDARD
-		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-#endif
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl)
 			=> Current.AuthenticateAsync(url, callbackUrl);
 
@@ -104,18 +108,12 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="callbackUrl"> Expected callback url that the navigation flow will eventually redirect to.</param>
 		/// <param name="cancellationToken">A <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
-#if !NETSTANDARD
-		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-#endif
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(Uri url, Uri callbackUrl, CancellationToken cancellationToken)
 			=> Current.AuthenticateAsync(url, callbackUrl, cancellationToken);
 
 		/// <summary>Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.The start url and callbackUrl are specified in the webAuthenticatorOptions.</summary>
 		/// <param name="webAuthenticatorOptions">Options to configure the authentication request.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
-#if !NETSTANDARD
-		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-#endif
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions);
 
@@ -123,9 +121,6 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="webAuthenticatorOptions">Options to configure the authentication request.</param>
 		/// <param name="cancellationToken">A <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
 		/// <returns>Returns a result parsed out from the callback url.</returns>
-#if !NETSTANDARD
-		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-#endif
 		public static Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
 			=> Current.AuthenticateAsync(webAuthenticatorOptions, cancellationToken);
 
@@ -210,6 +205,10 @@ namespace Microsoft.Maui.Authentication
 		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnResumeCallback(Intent)"/>
 		public static bool OnResume(this IWebAuthenticator webAuthenticator, Intent intent) =>
 			webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
+#elif WINDOWS
+		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments)"/>
+		public static bool OnAppInstanceActivated(this IWebAuthenticator webAuthenticator, Microsoft.Windows.AppLifecycle.AppActivationArguments args) =>
+			webAuthenticator.AsPlatformCallback().OnAppInstanceActivatedCallback(args);
 #endif
 	}
 
