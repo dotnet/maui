@@ -783,10 +783,15 @@ namespace Microsoft.Maui.Layouts.Flex
 				float flex_size = 0;
 				if (layout.flex_dim > 0)
 				{
+					// Only the free space is distributed proportionally,
+					// not the total container space. layout.flex_dim was inflated by extra_flex_dim
+					// (the sum of measured sizes of growing items), so we recover the actual free
+					// space by subtracting it back. The item's measured size is preserved and the
+					// proportional share of free space is added on top.
+					float freeSpace = Math.Max(0, layout.flex_dim - layout.extra_flex_dim);
 					if (child.Grow != 0)
 					{
-						child.Frame[layout.frame_size_i] = 0; // Ignore previous size when growing.
-						flex_size = (layout.flex_dim / layout.flex_grows) * child.Grow;
+						flex_size = (freeSpace / layout.flex_grows) * child.Grow;
 					}
 				}
 				else if (layout.flex_dim < 0)
