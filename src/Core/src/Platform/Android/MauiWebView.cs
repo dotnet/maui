@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics;
+using Android.Views;
 using Android.Webkit;
 
 namespace Microsoft.Maui.Platform
@@ -40,6 +41,27 @@ namespace Microsoft.Maui.Platform
 				_clipRect.Set(0, 0, 0, 0);
 				ClipBounds = _clipRect;
 			}
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (e == null)
+				return false;
+
+			switch (e.Action)
+			{
+				case MotionEventActions.Down:
+				case MotionEventActions.Move:
+					Parent?.RequestDisallowInterceptTouchEvent(true);
+					break;
+
+				case MotionEventActions.Up:
+				case MotionEventActions.Cancel:
+					Parent?.RequestDisallowInterceptTouchEvent(false);
+					break;
+			}
+
+			return base.OnTouchEvent(e);
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
