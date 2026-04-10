@@ -4,9 +4,15 @@
     Posts or updates the gate verification comment on a GitHub Pull Request.
 
 .DESCRIPTION
-    Creates a separate comment for the gate result, identified by <!-- AI Gate --> marker.
+    Maintains ONE comment per PR, identified by <!-- AI Gate --> marker.
+    Each gate run adds an expandable session keyed by HEAD commit SHA.
+    - Same commit SHA → replaces that session in-place.
+    - New commit SHA  → prepends a new session (latest first).
+    Older sessions stay collapsed; the newest is expanded by default.
+
+    After posting, the PR author is @-mentioned so they know to review.
+
     Reads content from CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/gate/content.md.
-    Updates existing gate comment if found, creates new one otherwise.
 
 .PARAMETER PRNumber
     The pull request number (required)
@@ -58,10 +64,9 @@ if ([string]::IsNullOrWhiteSpace($gateContent)) {
 Write-Host "✅ Loaded gate content ($($gateContent.Length) chars)" -ForegroundColor Green
 
 # ============================================================================
-# BUILD COMMENT BODY
+# FETCH PR METADATA (commit + author)
 # ============================================================================
 
-# Get latest commit info
 try {
     $commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>$null | ConvertFrom-Json
 } catch {
@@ -69,16 +74,27 @@ try {
     $commitJson = $null
 }
 $commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
-$commitSha = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
-$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$($commitJson.sha)" } else { "#" }
+$commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
+$commitFull = if ($commitJson) { $commitJson.sha } else { "" }
+$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
 
-$commentBody = @"
-$MARKER
+try {
+    $prAuthor = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '.user.login' 2>$null
+} catch { $prAuthor = $null }
 
-## 🚦 Gate - Test Before and After Fix
+$timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
 
-<details>
-<summary>📊 <strong>Expand Full Gate</strong> — <a href="$commitUrl"><code>$commitSha</code></a> · <strong>$commitTitle</strong></summary>
+# ============================================================================
+# BUILD NEW SESSION BLOCK
+# ============================================================================
+
+$sessionMarkerStart = "<!-- SESSION:$commitSha7 START -->"
+$sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
+
+$newSessionBlock = @"
+$sessionMarkerStart
+<details open>
+<summary>🚦 <strong>Gate Session</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$commitTitle</strong> · <em>$timestamp</em></summary>
 
 ---
 
@@ -87,7 +103,103 @@ $gateContent
 ---
 
 </details>
+$sessionMarkerEnd
 "@
+
+# ============================================================================
+# MERGE WITH EXISTING SESSIONS
+# ============================================================================
+
+function Merge-Sessions {
+    param(
+        [string]$ExistingBody,
+        [string]$NewSession,
+        [string]$CommitSha7
+    )
+
+    $sessionPattern = '(?s)<!-- SESSION:([a-f0-9]+) START -->.*?<!-- SESSION:\1 END -->'
+    $existingSessions = [regex]::Matches($ExistingBody, $sessionPattern)
+
+    $sessions = [ordered]@{}
+    foreach ($match in $existingSessions) {
+        $sha = $match.Groups[1].Value
+        $sessions[$sha] = $match.Value
+    }
+
+    $sessions[$CommitSha7] = $NewSession
+
+    $orderedKeys = @($CommitSha7) + @($sessions.Keys | Where-Object { $_ -ne $CommitSha7 })
+
+    $allSessions = @()
+    $isFirst = $true
+    foreach ($sha in $orderedKeys) {
+        $block = $sessions[$sha]
+        if ($isFirst) {
+            $block = $block -replace '<details(?:\s+open)?>', '<details open>'
+            $isFirst = $false
+        } else {
+            $block = $block -replace '<details\s+open>', '<details>'
+        }
+        $allSessions += $block
+    }
+
+    return ($allSessions -join "`n`n---`n`n")
+}
+
+# ============================================================================
+# FIND EXISTING COMMENT & BUILD FINAL BODY
+# ============================================================================
+
+Write-Host "Checking for existing gate comment..." -ForegroundColor Yellow
+$existingCommentId = $null
+$existingBody = $null
+
+$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
+    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | {id, body}" 2>$null
+
+if ($existingRaw -and $existingRaw -ne "null") {
+    try {
+        $existingObj = $existingRaw | ConvertFrom-Json
+        if ($existingObj.id) {
+            $existingCommentId = $existingObj.id
+            $existingBody = $existingObj.body
+            Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "⚠️ Could not parse existing comment: $_" -ForegroundColor Yellow
+    }
+}
+
+$authorPing = ""
+if ($prAuthor) {
+    $authorPing = "> 👋 @$prAuthor — new gate results are available. Please review the latest session below."
+}
+
+if ($existingBody) {
+    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
+
+    $commentBody = @"
+$MARKER
+
+## 🚦 Gate — Test Before and After Fix
+
+$authorPing
+
+$mergedSessions
+"@
+} else {
+    $commentBody = @"
+$MARKER
+
+## 🚦 Gate — Test Before and After Fix
+
+$authorPing
+
+$newSessionBlock
+"@
+}
+
+$commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 
 # ============================================================================
 # DRY RUN
@@ -105,31 +217,19 @@ if ($DryRun) {
 # POST OR UPDATE COMMENT
 # ============================================================================
 
-Write-Host "Checking for existing gate comment..." -ForegroundColor Yellow
-# Use --paginate to search ALL comments (not just first 30), pick the LAST matching one
-# so we always update the most recent gate comment
-$existingCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
-    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | .id" 2>$null
-
-# gh --jq returns "null" as a string when the array is empty
-if ($existingCommentId -eq "null" -or [string]::IsNullOrWhiteSpace($existingCommentId)) {
-    $existingCommentId = $null
-}
-
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {
     @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
 
     if ($existingCommentId) {
-        Write-Host "✓ Found existing gate comment (ID: $existingCommentId) — updating..." -ForegroundColor Green
+        Write-Host "Updating gate comment (ID: $existingCommentId)..." -ForegroundColor Yellow
         try {
             gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input $tempFile 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "PATCH failed" }
             Write-Host "✅ Gate comment updated" -ForegroundColor Green
             Write-Output "COMMENT_ID=$existingCommentId"
         } catch {
-            Write-Host "⚠️ Could not update comment $existingCommentId (may be owned by different user): $_" -ForegroundColor Yellow
-            # Try to find a comment we CAN update (owned by current authenticated user)
+            Write-Host "⚠️ Could not update comment $existingCommentId : $_" -ForegroundColor Yellow
             $botLogin = gh api user --jq .login 2>$null
             if ($botLogin) {
                 $ownCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `

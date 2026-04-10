@@ -4,9 +4,13 @@
     Posts or updates the AI review summary comment on a GitHub Pull Request.
 
 .DESCRIPTION
-    Creates ONE comment for the PR review with phases wrapped in expandable sections.
-    Uses HTML marker <!-- AI Summary --> for identification.
-    Always overwrites the existing comment (no session history).
+    Maintains ONE comment per PR, identified by <!-- AI Summary --> marker.
+    Each review run adds an expandable session keyed by HEAD commit SHA.
+    - Same commit SHA → replaces that session in-place.
+    - New commit SHA  → prepends a new session (latest first).
+    Older sessions stay collapsed; the newest is expanded by default.
+
+    After posting, the PR author is @-mentioned so they know to review.
 
     Content is auto-loaded from PRAgent phase files:
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
@@ -62,7 +66,6 @@ $phases = [ordered]@{
 }
 
 $phaseSections = @()
-$statusRows = @()
 
 foreach ($key in $phases.Keys) {
     $phase = $phases[$key]
@@ -72,7 +75,6 @@ foreach ($key in $phases.Keys) {
         $content = Get-Content $filePath -Raw -Encoding UTF8
         if (-not [string]::IsNullOrWhiteSpace($content)) {
             Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
-            $statusRows += "| $($phase.Title -replace ' —.*','') | ✅ COMPLETE |"
             $phaseSections += @"
 <details>
 <summary><strong>$($phase.Icon) $($phase.Title)</strong></summary>
@@ -85,11 +87,9 @@ $content
 "@
         } else {
             Write-Host "  ⏭️  $key (empty)" -ForegroundColor Gray
-            $statusRows += "| $($phase.Title -replace ' —.*','') | ⏳ PENDING |"
         }
     } else {
         Write-Host "  ⏭️  $key (not found)" -ForegroundColor Gray
-        $statusRows += "| $($phase.Title -replace ' —.*','') | ⏳ PENDING |"
     }
 }
 
@@ -98,10 +98,9 @@ if ($phaseSections.Count -eq 0) {
 }
 
 # ============================================================================
-# BUILD COMMENT BODY
+# FETCH PR METADATA (commit + author)
 # ============================================================================
 
-# Get latest commit info for the summary header
 try {
     $commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>$null | ConvertFrom-Json
 } catch {
@@ -109,20 +108,30 @@ try {
     $commitJson = $null
 }
 $commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
-$commitSha = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
-$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$($commitJson.sha)" } else { "#" }
+$commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
+$commitFull = if ($commitJson) { $commitJson.sha } else { "" }
+$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
 
-$statusTable = "| Phase | Status |`n|-------|--------|`n$($statusRows -join "`n")"
+try {
+    $prAuthor = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '.user.login' 2>$null
+} catch { $prAuthor = $null }
+
+$timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
+
+# ============================================================================
+# BUILD NEW SESSION BLOCK
+# ============================================================================
+
 $phaseContent = $phaseSections -join "`n`n---`n`n"
+$sessionMarkerStart = "<!-- SESSION:$commitSha7 START -->"
+$sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
 
-$commentBody = @"
-$MARKER
-
-## 🤖 AI Summary
-
-<!-- SECTION:PR-REVIEW -->
-<details>
-<summary>📊 <strong>Expand Full Review</strong> — <a href="$commitUrl"><code>$commitSha</code></a> · <strong>$commitTitle</strong></summary>
+# The latest session is built with <details open>; when merged into existing
+# sessions the script re-tags only the newest as "open".
+$newSessionBlock = @"
+$sessionMarkerStart
+<details open>
+<summary>📊 <strong>Review Session</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$commitTitle</strong> · <em>$timestamp</em></summary>
 
 ---
 
@@ -131,8 +140,118 @@ $phaseContent
 ---
 
 </details>
-<!-- /SECTION:PR-REVIEW -->
+$sessionMarkerEnd
 "@
+
+# ============================================================================
+# MERGE WITH EXISTING SESSIONS
+# ============================================================================
+
+function Merge-Sessions {
+    param(
+        [string]$ExistingBody,
+        [string]$NewSession,
+        [string]$CommitSha7,
+        [string]$Marker
+    )
+
+    # Extract all session blocks from existing body
+    $sessionPattern = '(?s)<!-- SESSION:([a-f0-9]+) START -->.*?<!-- SESSION:\1 END -->'
+    $existingSessions = [regex]::Matches($ExistingBody, $sessionPattern)
+
+    $sessions = [ordered]@{}
+    foreach ($match in $existingSessions) {
+        $sha = $match.Groups[1].Value
+        $sessions[$sha] = $match.Value
+    }
+
+    # Replace or prepend new session
+    $sessions[$CommitSha7] = $NewSession
+
+    # Rebuild: newest session first (the one we just added/replaced)
+    $orderedKeys = @($CommitSha7) + @($sessions.Keys | Where-Object { $_ -ne $CommitSha7 })
+
+    $allSessions = @()
+    $isFirst = $true
+    foreach ($sha in $orderedKeys) {
+        $block = $sessions[$sha]
+        if ($isFirst) {
+            # Ensure latest session has <details open>
+            $block = $block -replace '<details(?:\s+open)?>', '<details open>'
+            $isFirst = $false
+        } else {
+            # Collapse older sessions
+            $block = $block -replace '<details\s+open>', '<details>'
+        }
+        $allSessions += $block
+    }
+
+    return ($allSessions -join "`n`n---`n`n")
+}
+
+# ============================================================================
+# FIND EXISTING COMMENT & BUILD FINAL BODY
+# ============================================================================
+
+Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
+$existingCommentId = $null
+$existingBody = $null
+
+$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
+    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | {id, body}" 2>$null
+
+if ($existingRaw -and $existingRaw -ne "null") {
+    try {
+        $existingObj = $existingRaw | ConvertFrom-Json
+        if ($existingObj.id) {
+            $existingCommentId = $existingObj.id
+            $existingBody = $existingObj.body
+            Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "⚠️ Could not parse existing comment: $_" -ForegroundColor Yellow
+    }
+}
+
+$authorPing = ""
+if ($prAuthor) {
+    $authorPing = "> 👋 @$prAuthor — new AI review results are available. Please review the latest session below."
+}
+
+if ($existingBody) {
+    # Merge new session into existing body
+    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7 -Marker $MARKER
+
+    # Preserve any PR-FINALIZE section that may already exist
+    $finalizeSection = ""
+    $finalizePattern = '(?s)(<!-- SECTION:PR-FINALIZE -->.*?<!-- /SECTION:PR-FINALIZE -->)'
+    if ($existingBody -match $finalizePattern) {
+        $finalizeSection = "`n`n" + $Matches[1]
+    }
+
+    $commentBody = @"
+$MARKER
+
+## 🤖 AI Summary
+
+$authorPing
+
+$mergedSessions$finalizeSection
+"@
+} else {
+    $commentBody = @"
+$MARKER
+
+## 🤖 AI Summary
+
+$authorPing
+
+$newSessionBlock
+"@
+}
+
+# Clean up excessive blank lines
+$commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 
 Write-Host "  ✅ Built comment ($($commentBody.Length) chars)" -ForegroundColor Green
 
@@ -152,21 +271,12 @@ if ($DryRun) {
 # POST OR UPDATE COMMENT
 # ============================================================================
 
-Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
-# Use --paginate to search ALL comments (not just first 30), pick the LAST matching one
-$existingCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
-    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | .id" 2>$null
-
-if ($existingCommentId -eq "null" -or [string]::IsNullOrWhiteSpace($existingCommentId)) {
-    $existingCommentId = $null
-}
-
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {
     @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
 
     if ($existingCommentId) {
-        Write-Host "✓ Found existing comment (ID: $existingCommentId) — updating..." -ForegroundColor Green
+        Write-Host "Updating comment (ID: $existingCommentId)..." -ForegroundColor Yellow
         try {
             gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input $tempFile 2>&1 | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "PATCH failed" }
