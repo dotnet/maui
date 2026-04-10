@@ -10,7 +10,15 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
-			handler.PlatformView?.UpdateIsRunning(activityIndicator);
+			var progressBar = handler.PlatformView;
+			if (progressBar is null)
+			{
+				return;
+			}
+
+			// Defer update via Post() so it runs after the layout traversal completes,
+			// ensuring startAnimation() is not silently ignored on views still being positioned.
+			progressBar.Post(() => progressBar.UpdateIsRunning(activityIndicator));
 		}
 
 		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
