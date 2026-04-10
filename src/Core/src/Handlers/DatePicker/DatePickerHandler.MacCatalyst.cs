@@ -10,10 +10,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly UIDatePickerProxy _proxy = new();
 		NSObject? _windowCloseObserver;
-		readonly List<UITextField> _textFields = new();
-		bool _isOpen;
-
-		static readonly NSString NSWindowDidCloseNotification = new("NSWindowDidCloseNotification");
+		bool _isDatePickerOpen;
 
 		protected override UIDatePicker CreatePlatformView()
 		{
@@ -34,12 +31,12 @@ namespace Microsoft.Maui.Handlers
 
 			// The compact UIDatePicker on MacCatalyst uses internal UITextField subviews
 			// for the date segments. Wire up EditingDidBegin directly on those fields.
-			FindAndWireTextFields(platformView);
+			WireTextFields(platformView);
 
 			// On MacCatalyst the popover runs in an AppKit NSWindow. Tapping outside
 			// dismisses it at the AppKit level without firing UITextField EditingDidEnd,
 			// so NSWindowDidCloseNotification is needed for close.
-			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSWindowDidCloseNotification, OnWindowClosed);
+			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(new("NSWindowDidCloseNotification"), OnWindowClosed);
 
 			base.ConnectHandler(platformView);
 		}
@@ -48,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_proxy.Disconnect(platformView);
 
-			UnwireTextFields();
+			UnwireTextFields(platformView);
 
 			if (_windowCloseObserver is not null)
 			{
@@ -56,47 +53,57 @@ namespace Microsoft.Maui.Handlers
 				_windowCloseObserver = null;
 			}
 
-			_isOpen = false;
+			_isDatePickerOpen = false;
 
 			base.DisconnectHandler(platformView);
 		}
 
-		// Recursively searches the UIDatePicker's view hierarchy for internal
-		// UITextField subviews used by the compact date picker on MacCatalyst
-		// and subscribes to their editing events to track focus state.
-		void FindAndWireTextFields(UIView view)
+
+		// Recursively traverses the view hierarchy and yields all UITextField subviews.
+		// Used to find the internal text fields of the compact UIDatePicker on MacCatalyst.
+		static IEnumerable<UITextField> GetTextFields(UIView view)
 		{
 			foreach (var subview in view.Subviews)
 			{
+
 				if (subview is UITextField textField)
 				{
-					textField.EditingDidBegin += OnEditingDidBegin;
-					_textFields.Add(textField);
+					yield return textField;
 				}
 				else
 				{
-					FindAndWireTextFields(subview);
+					foreach (var nested in GetTextFields(subview))
+					{
+						yield return nested;
+					}
 				}
 			}
 		}
 
-		void UnwireTextFields()
+		void WireTextFields(UIView view)
 		{
-			foreach (var textField in _textFields)
+			foreach (var textField in GetTextFields(view))
+			{
+				textField.EditingDidBegin += OnEditingDidBegin;
+			}
+		}
+
+		void UnwireTextFields(UIView view)
+		{
+			foreach (var textField in GetTextFields(view))
 			{
 				textField.EditingDidBegin -= OnEditingDidBegin;
 			}
-			_textFields.Clear();
 		}
 
 		void OnEditingDidBegin(object? sender, EventArgs e)
 		{
-			if (_isOpen)
+			if (_isDatePickerOpen)
 			{
 				return;
 			}
 
-			_isOpen = true;
+			_isDatePickerOpen = true;
 			if (VirtualView is IDatePicker virtualView)
 			{
 				virtualView.IsFocused = virtualView.IsOpen = true;
@@ -105,12 +112,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnWindowClosed(NSNotification notification)
 		{
-			if (!_isOpen)
+			if (!_isDatePickerOpen)
 			{
 				return;
 			}
 
-			_isOpen = false;
+			_isDatePickerOpen = false;
 
 			if (UpdateImmediately)
 			{
@@ -132,9 +139,10 @@ namespace Microsoft.Maui.Handlers
 
 		void ResignTextFields()
 		{
+			var platformView = PlatformView;
 			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
 			{
-				foreach (var textField in _textFields)
+				foreach (var textField in GetTextFields(platformView))
 				{
 					if (textField.IsFirstResponder)
 					{
