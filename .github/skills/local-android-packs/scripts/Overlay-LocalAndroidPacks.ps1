@@ -12,9 +12,9 @@
 .PARAMETER AndroidSrcPath
     Path to the local dotnet/android repository root.
 
-.PARAMETER Config
+.PARAMETER Configuration
     Build configuration to use for locating packs. Default: Release.
-    The local packs are expected at: <AndroidSrcPath>/bin/<Config>/lib/packs/
+    The local packs are expected at: <AndroidSrcPath>/bin/<Configuration>/lib/packs/
 
 .PARAMETER Restore
     Undo a previous overlay by restoring the original manifest and removing
@@ -26,7 +26,7 @@
 
 .EXAMPLE
     # Overlay Debug packs
-    ./Overlay-LocalAndroidPacks.ps1 -AndroidSrcPath ~/repos/android -Config Debug
+    ./Overlay-LocalAndroidPacks.ps1 -AndroidSrcPath ~/repos/android -Configuration Debug
 
 .EXAMPLE
     # Restore original packs
@@ -39,7 +39,7 @@ param(
     [string]$AndroidSrcPath,
 
     [Parameter(ParameterSetName = 'Overlay')]
-    [string]$Config = 'Release',
+    [string]$Configuration = 'Release',
 
     [Parameter(Mandatory = $true, ParameterSetName = 'Restore')]
     [switch]$Restore
@@ -71,8 +71,8 @@ function ConvertFrom-JsonSafe {
     <#
     .SYNOPSIS
         Parse JSON that may contain trailing commas (common in workload manifests).
-        PowerShell's ConvertFrom-Json is strict about trailing commas, so we
-        strip them before parsing.
+        PowerShell versions before 7.5 are strict about trailing commas in JSON;
+        this provides backward compatibility by stripping them before parsing.
     #>
     param([string]$JsonText)
     $cleaned = $JsonText -replace ',\s*([\]\}])', '$1'
@@ -255,10 +255,10 @@ function Invoke-Restore {
 function Invoke-Overlay {
     param(
         [string]$AndroidSrcPath,
-        [string]$Config
+        [string]$Configuration
     )
 
-    $localPacksPath = Join-Path $AndroidSrcPath "bin/$Config/lib/packs"
+    $localPacksPath = Join-Path $AndroidSrcPath "bin/$Configuration/lib/packs"
 
     # --- Step 1: Validate inputs ---
     Write-Step "Validating inputs..."
@@ -268,7 +268,7 @@ function Invoke-Overlay {
     }
 
     if (-not (Test-Path $localPacksPath)) {
-        throw "Local packs directory not found: $localPacksPath`nVerify that dotnet/android was built with configuration '$Config'."
+        throw "Local packs directory not found: $localPacksPath`nVerify that dotnet/android was built with configuration '$Configuration'."
     }
 
     if (-not (Test-Path $DotnetRoot)) {
@@ -363,7 +363,7 @@ function Invoke-Overlay {
     }
 
     if ($overlayablePacks.Count -eq 0) {
-        throw "No local packs match manifest entries. Verify that dotnet/android was built with configuration '$Config'."
+        throw "No local packs match manifest entries. Verify that dotnet/android was built with configuration '$Configuration'."
     }
 
     # --- Step 4: Create backup ---
@@ -380,7 +380,7 @@ function Invoke-Overlay {
         localVersion    = $localVersion
         manifestPath    = $manifestPath
         timestamp       = (Get-Date -Format 'o')
-        config          = $Config
+        config          = $Configuration
         overlaidPacks   = @()
     }
     $metadata | ConvertTo-Json -Depth 5 | Set-Content -Path $BackupMetadataFile
@@ -479,7 +479,7 @@ try {
     }
     else {
         $resolvedAndroidPath = (Resolve-Path $AndroidSrcPath).Path
-        Invoke-Overlay -AndroidSrcPath $resolvedAndroidPath -Config $Config
+        Invoke-Overlay -AndroidSrcPath $resolvedAndroidPath -Configuration $Configuration
     }
 }
 catch {

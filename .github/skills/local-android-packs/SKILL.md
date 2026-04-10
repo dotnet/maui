@@ -47,7 +47,7 @@ Override the provisioned Android workload packs in `.dotnet/` with locally built
 
 ```powershell
 .github/skills/local-android-packs/scripts/Overlay-LocalAndroidPacks.ps1 `
-    -AndroidSrcPath ~/repos/android -Config Debug
+    -AndroidSrcPath ~/repos/android -Configuration Debug
 ```
 
 ### Restore original packs
@@ -80,6 +80,8 @@ Everything is reversible — run with `-Restore` to undo all changes.
 ## Pack Coverage
 
 The following packs are overlaid (all net11 packs from the manifest):
+
+> Pack names include the Android API level (currently 36). The script discovers these dynamically from the manifest, so the table below shows examples from the current version.
 
 | Pack ID (manifest entry) | Resolved Name | Kind |
 |--------------------------|---------------|------|
@@ -117,9 +119,9 @@ If an overlay fails partway through, the script automatically attempts to roll b
 
 ### "Local packs directory not found"
 
-The path `<AndroidSrcPath>/bin/<Config>/lib/packs` doesn't exist. Verify that:
+The path `<AndroidSrcPath>/bin/<Configuration>/lib/packs` doesn't exist. Verify that:
 - Your `-AndroidSrcPath` points to the dotnet/android repo root
-- You built with the correct configuration (`-Config Release` vs `-Config Debug`)
+- You built with the correct configuration (`-Configuration Release` vs `-Configuration Debug`)
 - The build completed successfully (`dotnet build Xamarin.Android.sln -c Release`)
 
 ### "No manifest found"
