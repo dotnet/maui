@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,6 +26,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize;
 		bool _isCarouselViewReady;
+		bool _isInternalPositionUpdate;
+		int _gotoPosition = -1;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -190,6 +193,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.UpdateCurrentItem();
 		}
 
+		protected override async Task ScrollTo(ScrollToRequestEventArgs args)
+		{
+			if (args.IsAnimated && args.Mode == ScrollToMode.Position)
+			{
+				_gotoPosition = args.Index;
+
+				// Commit position before animation so PreviousPosition/PreviousItem are correct immediately.
+				SetCarouselViewPosition(_gotoPosition);
+			}
+
+			try
+			{
+				await base.ScrollTo(args);
+			}
+			finally
+			{
+				// Conditional reset guards against a concurrent ScrollTo replacing the target.
+				if (_gotoPosition == args.Index)
+					_gotoPosition = -1;
+			}
+		}
+
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			// If the initial position hasn't been set, we have a UpdateInitialPosition call on CarouselViewHandler
@@ -310,9 +335,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SetCarouselViewPosition(int position)
 		{
 			if (ItemCount == 0)
-			{
 				return;
-			}
 
 			if (!IsValidPosition(position))
 				return;
@@ -385,9 +408,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
 			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
+			{
 				return;
+			}
 
-			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			if (_gotoPosition != -1)
+			{
+				return;
+			}
+
+			// Disable animation during collection changes to prevent cascading scroll events
+			var animate = ItemsView.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
+			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: animate);
 		}
 
 		void UpdatePosition()
@@ -491,6 +523,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+			// Ignore ViewChanged events fired before the initial position is established.
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+
 			var position = e.CenterItemIndex;
 
 			if (position == -1)
@@ -499,6 +537,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (position == Element.Position)
+			{
+				return;
+			}
+
+			// Suppress intermediate scroll events during a programmatic animated scroll.
+			if (_gotoPosition != -1)
 			{
 				return;
 			}
@@ -523,34 +567,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var carouselPosition = ItemsView.Position;
-			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
-			var count = (sender as IList).Count;
-
-			bool removingCurrentElement = currentItemPosition == -1;
-			bool removingLastElement = e.OldStartingIndex == count;
-			bool removingFirstElement = e.OldStartingIndex == 0;
-			bool removingCurrentElementButNotFirst = removingCurrentElement && removingLastElement && ItemsView.Position > 0;
-
-			if (removingCurrentElementButNotFirst)
+			// Set flag to disable animation during collection changes
+			_isInternalPositionUpdate = true;
+			
+			try
 			{
-				carouselPosition = ItemsView.Position - 1;
+				var carouselPosition = ItemsView.Position;
+				var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+				var count = (sender as IList).Count;
 
+				bool removingCurrentElement = currentItemPosition == -1;
+				bool removingLastElement = e.OldStartingIndex == count;
+				bool removingFirstElement = e.OldStartingIndex == 0;
+				bool removingCurrentElementButNotFirst = removingCurrentElement && removingLastElement && ItemsView.Position > 0;
+
+				if (removingCurrentElementButNotFirst)
+				{
+					carouselPosition = ItemsView.Position - 1;
+				}
+				else if (removingFirstElement && !removingCurrentElement)
+				{
+					carouselPosition = currentItemPosition;
+				}
+
+				// If we are adding a new item make sure to maintain the CurrentItemPosition
+				else if (e.Action == NotifyCollectionChangedAction.Add
+					&& currentItemPosition != -1)
+				{
+					carouselPosition = currentItemPosition;
+				}
+
+				if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+				{
+					carouselPosition = count == 0 ? 0 : count - 1;
+				}
+				else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+				{
+					carouselPosition = 0;
+				}
+
+				SetCarouselViewCurrentItem(carouselPosition);
+				SetCarouselViewPosition(carouselPosition);
 			}
-			else if (removingFirstElement && !removingCurrentElement)
+			finally
 			{
-				carouselPosition = currentItemPosition;
+				// Reset flag after collection operations complete
+				_isInternalPositionUpdate = false;
 			}
-
-			// If we are adding a new item make sure to maintain the CurrentItemPosition
-			else if (e.Action == NotifyCollectionChangedAction.Add
-				&& currentItemPosition != -1)
-			{
-				carouselPosition = currentItemPosition;
-			}
-
-			SetCarouselViewCurrentItem(carouselPosition);
-			SetCarouselViewPosition(carouselPosition);
 		}
 
 		void OnListViewSizeChanged(object sender, SizeChangedEventArgs e) => Resize(e.NewSize);
@@ -595,7 +658,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				item.ItemHeight = itemHeight;
 				item.ItemWidth = itemWidth;
 			}
-			ListViewBase.InvalidateMeasure();
 		}
 	}
 }

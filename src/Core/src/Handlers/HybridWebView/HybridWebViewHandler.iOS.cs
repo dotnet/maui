@@ -77,6 +77,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.EvaluateJavaScript(request);
 		}
 
+		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
+		{
+			// Update the WKWebView itself so SemanticContentAttribute is set correctly
+			handler.PlatformView?.UpdateFlowDirection(hybridWebView);
+
+			// Also update the internal ScrollView so the scrollbar aligns with the flow direction
+			var scrollView = handler.PlatformView?.ScrollView;
+			if (scrollView == null)
+				return;
+
+			scrollView.UpdateFlowDirectionForScrollView(hybridWebView);
+		}
+
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 			if (arg is not HybridWebViewRawMessage hybridWebViewRawMessage || handler.PlatformView is not IHybridPlatformWebView hybridPlatformWebView)

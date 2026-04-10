@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
-		static readonly BindablePropertyKey IsActivatedPropertyKey = 
+		static readonly BindablePropertyKey IsActivatedPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
@@ -44,11 +45,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
@@ -228,6 +231,16 @@ namespace Microsoft.Maui.Controls
 
 		int _batchFrameUpdate = 0;
 
+		static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			// Only trigger SizeChanged if not being updated from platform (FrameChanged)
+			if (window._batchFrameUpdate == 0)
+			{
+				window.SizeChanged?.Invoke(window, EventArgs.Empty);
+			}
+		}
+
 		void IWindow.FrameChanged(Rect frame)
 		{
 			if (new Rect(X, Y, Width, Height) == frame)
@@ -328,7 +341,9 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal AlertManager AlertManager { get; }
+		internal IAlertManager AlertManager { get; private set; }
+
+		bool _alertManagerResolved;
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
 
@@ -652,6 +667,7 @@ namespace Microsoft.Maui.Controls
 				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
+				AlertManager.Unsubscribe();
 			}
 
 			if (oldPage is Shell shell)
@@ -698,12 +714,33 @@ namespace Microsoft.Maui.Controls
 		void OnPageHandlerChanged(object? sender, EventArgs e)
 		{
 			ModalNavigationManager.PageAttachedHandler();
+			TryResolveAlertManager();
 			AlertManager.Subscribe();
 		}
 
 		void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
 			AlertManager.Unsubscribe();
+		}
+
+		void TryResolveAlertManager()
+		{
+			if (_alertManagerResolved)
+				return;
+
+			if (AlertManager is not Platform.AlertManager)
+			{
+				_alertManagerResolved = true;
+				return;
+			}
+
+			var customManager = Handler?.MauiContext?.Services?.GetService<IAlertManager>();
+			if (customManager is not null)
+			{
+				AlertManager.Unsubscribe(); // defensive: no-op if not yet subscribed
+				AlertManager = customManager;
+			}
+			_alertManagerResolved = true;
 		}
 
 		void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

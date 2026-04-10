@@ -127,30 +127,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
 		{
-			if (VirtualView is null)
+			// Use the nullable IViewHandler.VirtualView (not the typed property) for the null
+			// check. The typed VirtualView throws InvalidOperationException if base.VirtualView
+			// is null, which can happen if the handler was disconnected before this event fires.
+			if (((IViewHandler)this).VirtualView is null)
 				return;
 
 			if (sender is not ItemCollection items)
 				return;
 
-			var itemsCount = items.Count;
-
-			if (itemsCount == 0)
-				return;
-
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			ListViewBase.DispatcherQueue.TryEnqueue(() =>
 			{
-				var firstItem = items[0];
-				// Keeps the first item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(firstItem);
-			}
+				// The lambda is dispatched asynchronously. By the time it runs, the handler may
+				// have been disconnected (e.g. by element.DisconnectHandlers() in
+				// CleanUpCollectionViewSource), setting base.VirtualView to null. The typed
+				// VirtualView property throws in that case, so use the nullable interface accessor
+				// here to safely bail out instead of crashing (issue #9075).
+				if (((IViewHandler)this).VirtualView is null || ListViewBase is null)
+				{
+					return;
+				}
 
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-			{
-				var lastItem = items[itemsCount - 1];
-				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(lastItem, ScrollIntoViewAlignment.Leading);
-			}
+				var itemsCount = items.Count;
+
+				if (itemsCount == 0)
+				{
+					return;
+				}
+
+				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+				{
+					var firstItem = items[0];
+					// Keeps the first item in the list displayed when new items are added.
+					ListViewBase.ScrollIntoView(firstItem);
+				}
+
+				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+				{
+					var lastItem = items[itemsCount - 1];
+					// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+					ListViewBase.ScrollIntoView(lastItem, ScrollIntoViewAlignment.Leading);
+				}
+			});
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
@@ -184,7 +202,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				foreach (var item in platformView.GetChildren<ItemContentControl>())
 				{
 					var element = item.GetVisualElement();
-					VirtualView.RemoveLogicalChild(element);
+
+					if (element is not null)
+					{
+						element.DisconnectHandlers();
+						VirtualView.RemoveLogicalChild(element);
+					}
 				}
 			}
 
@@ -227,15 +250,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				if (_emptyViewDisplayed)
-				{
-					if (_emptyView != null && ListViewBase is IEmptyView emptyView)
-						emptyView.EmptyViewVisibility = WVisibility.Collapsed;
-
-					ItemsView.RemoveLogicalChild(_formsEmptyView);
-				}
-
-				_emptyViewDisplayed = false;
+				RemoveEmptyView();
 			}
 		}
 
@@ -311,28 +326,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var emptyView = Element.EmptyView;
+			var emptyViewTemplate = Element.EmptyViewTemplate;
 
-			if (emptyView == null)
+			if (emptyView is null && emptyViewTemplate is null)
 			{
+				RemoveEmptyView();
+				if (_formsEmptyView is IView formsView && formsView.Handler is not null)
+				{
+					formsView.Handler.DisconnectHandler();
+				}
+				_emptyView = null;
+				_formsEmptyView = null;
+				(ListViewBase as IEmptyView)?.SetEmptyView(null, null);
 				return;
 			}
 
-			switch (emptyView)
+			if (emptyViewTemplate is DataTemplate template)
 			{
-				case string text:
-					_emptyView = new TextBlock
-					{
-						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-						Text = text
-					};
-					break;
-				case View view:
-					_emptyView = RealizeEmptyView(view);
-					break;
-				default:
-					_emptyView = RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate);
-					break;
+				_emptyView = RealizeEmptyViewTemplate(emptyView, template);
+			}
+			else if (emptyView is View view)
+			{
+				_emptyView = RealizeEmptyView(view);
+			}
+			else
+			{
+				_emptyView = new TextBlock
+				{
+					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+					Text = emptyView?.ToString() ?? string.Empty,
+				};
+			}
+
+			if (_formsEmptyView is not null && _emptyView is not null)
+			{
+				var margin = _formsEmptyView.Margin;
+				_emptyView.Margin = WinUIHelpers.CreateThickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
 			}
 
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
@@ -353,6 +383,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemsSource();
 			UpdateScrollBarVisibility();
 			UpdateEmptyView();
+		}
+
+		void RemoveEmptyView()
+		{
+			if (_emptyView is not null && ListViewBase is IEmptyView emptyViewControl)
+			{
+				emptyViewControl.EmptyViewVisibility = WVisibility.Collapsed;
+			}
+
+			if (_formsEmptyView is not null && _emptyViewDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(_formsEmptyView);
+			}
+
+			_emptyViewDisplayed = false;
 		}
 
 		void FindScrollViewer(ListViewBase listView)
@@ -453,21 +498,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
 		{
-			if (emptyViewTemplate == null)
-			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext.ToString()
-				};
-			}
-
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
-			var view = template.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeEmptyView(view);
+			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, ItemsView);
+			var templatedElement = template.CreateContent() as View;
+			templatedElement.BindingContext = bindingContext;
+			return RealizeEmptyView(templatedElement);
 		}
 
 		FrameworkElement RealizeEmptyView(View view)

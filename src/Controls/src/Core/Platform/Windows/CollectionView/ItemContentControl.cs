@@ -3,6 +3,7 @@ using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WSize = Windows.Foundation.Size;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement _visualElement;
 		IViewHandler _handler;
 		DataTemplate _currentTemplate;
+		bool _isMeasureInvalidationPending;
 
 		public ItemContentControl()
 		{
@@ -98,7 +100,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty ItemHeightProperty = DependencyProperty.Register(
 			nameof(ItemHeight), typeof(double), typeof(ItemContentControl),
-			new PropertyMetadata(default(double)));
+			new PropertyMetadata(default(double), OnItemDimensionChanged));
 
 		public double ItemHeight
 		{
@@ -108,12 +110,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty ItemWidthProperty = DependencyProperty.Register(
 			nameof(ItemWidth), typeof(double), typeof(ItemContentControl),
-			new PropertyMetadata(default(double)));
+			new PropertyMetadata(default(double), OnItemDimensionChanged));
 
 		public double ItemWidth
 		{
 			get => (double)GetValue(ItemWidthProperty);
 			set => SetValue(ItemWidthProperty, value);
+		}
+
+		static void OnItemDimensionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (Equals(e.OldValue, e.NewValue))
+			{
+				return;
+			}
+
+			((ItemContentControl)d).InvalidateItemDimensionMeasure();
 		}
 
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
@@ -181,6 +193,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_visualElement.BindingContext = dataContext;
+				itemsView?.AddLogicalChild(_visualElement);
 				_handler = _visualElement.ToHandler(mauiContext);
 
 				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
@@ -198,6 +211,10 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// We are reusing this ItemContentControl and we can reuse the Element
 				_visualElement.BindingContext = dataContext;
+
+				// Re-add to the logical tree after RemoveLogicalChild was called at the top of Realize(),
+				// so styles, resources, and VSM states continue to resolve correctly on recycled cells.
+				itemsView?.AddLogicalChild(_visualElement);
 			}
 
 			if (_handler.VirtualView is ICrossPlatformLayout)
@@ -209,13 +226,11 @@ namespace Microsoft.Maui.Controls.Platform
 				Content = new ContentLayoutPanel(_handler.VirtualView);
 			}
 
-			itemsView?.AddLogicalChild(_visualElement);
-
 			if (itemsView is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode is not SelectionMode.None)
 			{
 				bool isSelected = false;
 				if (selectableItemsView.SelectionMode == SelectionMode.Single)
-					isSelected = selectableItemsView.SelectedItem == FormsDataContext;
+					isSelected = object.Equals(selectableItemsView.SelectedItem, FormsDataContext);
 				else
 					isSelected = selectableItemsView.SelectedItems.Contains(FormsDataContext);
 
@@ -254,6 +269,34 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnViewMeasureInvalidated(object sender, EventArgs e)
 		{
 			InvalidateMeasure();
+		}
+
+		void InvalidateItemDimensionMeasure()
+		{
+			if (_isMeasureInvalidationPending)
+			{
+				return;
+			}
+
+			var dispatcherQueue = DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+
+			if (dispatcherQueue is null)
+			{
+				InvalidateMeasure();
+				return;
+			}
+
+			_isMeasureInvalidationPending = true;
+
+			if (!dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+				{
+					_isMeasureInvalidationPending = false;
+					InvalidateMeasure();
+				}))
+			{
+				_isMeasureInvalidationPending = false;
+				InvalidateMeasure();
+			}
 		}
 
 		void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
