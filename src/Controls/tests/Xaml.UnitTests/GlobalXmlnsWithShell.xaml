@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.GlobalXmlnsWithShell"
+    Title="GlobalXmlnsWithShell">
+    <ShellContent
+        x:Name="homeContent"
+        Title="Home"
+        Route="MainPage" />
+</Shell>
