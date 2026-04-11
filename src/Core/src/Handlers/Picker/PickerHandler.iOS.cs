@@ -220,7 +220,19 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(picker);
+			if (handler.PlatformView is not MauiPicker platformView)
+			{
+				return;
+			}
+
+			if (platformView.IsLoaded())
+			{
+				platformView.UpdateCharacterSpacing(picker);
+			}
+			else
+			{
+				platformView.OnLoaded(() => platformView.UpdateCharacterSpacing(picker));
+			}
 		}
 
 		public static void MapFont(IPickerHandler handler, IPicker picker)
@@ -256,6 +268,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
+
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 

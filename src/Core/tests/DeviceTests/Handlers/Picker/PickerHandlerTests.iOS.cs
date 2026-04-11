@@ -64,6 +64,55 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			const double xplatCharacterSpacing = 4;
+
+			var picker = new PickerStub
+			{
+				Items = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectedIndex = 1,
+				CharacterSpacing = xplatCharacterSpacing
+			};
+
+			var values = await GetValueAsync(picker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = picker.CharacterSpacing,
+					PlatformViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+		}
+
+		[Fact(DisplayName = "CharacterSpacing Maintained After SelectedIndex Change")]
+		public async Task CharacterSpacingMaintainedAfterSelectedIndexChange()
+		{
+			const double xplatCharacterSpacing = 4;
+
+			var picker = new PickerStub
+			{
+				Items = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectedIndex = 0,
+				CharacterSpacing = xplatCharacterSpacing
+			};
+
+			await SetValueAsync(picker, 2, (handler, value) =>
+			{
+				handler.VirtualView.SelectedIndex = value;
+				handler.UpdateValue(nameof(IPicker.SelectedIndex));
+			});
+
+			var nativeCharacterSpacing = await GetValueAsync(picker, (handler) =>
+				GetNativeCharacterSpacing(handler));
+
+			Assert.Equal(xplatCharacterSpacing, nativeCharacterSpacing);
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
 			pickerHandler.PlatformView;
 
@@ -108,6 +157,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var mauiPicker = GetNativePicker(pickerHandler);
 			return mauiPicker.TextColor;
+		}
+
+		double GetNativeCharacterSpacing(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.AttributedText.GetCharacterSpacing();
 		}
 
 		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>

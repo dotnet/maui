@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -49,6 +50,8 @@ namespace Microsoft.Maui.Platform
 				platformPicker.Text = null;
 				platformPicker.UpdatePickerTitle(picker);
 			}
+
+			platformPicker.UpdateCharacterSpacing(picker);
 
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
