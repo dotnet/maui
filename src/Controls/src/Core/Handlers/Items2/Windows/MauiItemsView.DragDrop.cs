@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public void UpdateCanReorderItems(bool canReorderItems)
 		{
 			_canReorderItems = canReorderItems;
-			
+
 			if (_scrollView is not null)
 			{
 				if (canReorderItems)
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		
+
 		#region Drag and Drop Event Wiring
 
 		void WireUpDragDropEvents()
@@ -77,7 +77,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_itemsRepeater is not null)
 			{
+				_itemsRepeater.ElementPrepared -= ItemsRepeater_ElementPrepared;
+				_itemsRepeater.ElementClearing -= ItemsRepeater_ElementClearing;
 				_itemsRepeater.ElementPrepared += ItemsRepeater_ElementPrepared;
+				_itemsRepeater.ElementClearing += ItemsRepeater_ElementClearing;
 			}
 		}
 
@@ -109,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (!_canReorderItems)
 				return;
-			
+
 			if (args.Element is ItemContainer itemContainer)
 			{
 				itemContainer.Tag = args.Index;
@@ -118,7 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				itemContainer.DragStarting += ItemContainer_DragStarting;
 			}
 		}
-		
+
 		void ItemsRepeater_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
 		{
 			if (args.Element is ItemContainer itemContainer)
@@ -136,24 +139,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void ItemContainer_DragStarting(UIElement sender, UI.Xaml.DragStartingEventArgs args)
 		{
 			var itemContainer = (ItemContainer)sender;
-			
-			object? item = null;
-			if (itemContainer.Tag is int index && index >= 0 && ItemsSource is IList itemsList && index < itemsList.Count)
+
+			// Use the container's currently bound item first. The tag/index can become stale
+			// after a reorder because the element is reused without being fully recreated.
+			object? item = GetContainerItem(itemContainer);
+			if (item is null && itemContainer.Tag is int index && index >= 0 && ItemsSource is IList itemsList && index < itemsList.Count)
 			{
 				item = GetItemAtIndex(index, itemsList);
 			}
-			
+
 			if (item == null || ItemsSource == null)
 			{
 				args.Cancel = true;
 				return;
 			}
-			
+
 			_draggedItem = item;
 			args.Data.Properties.Add("DragSource", "MauiItemsView");
 			args.Data.RequestedOperation = WDataTransfer.DataPackageOperation.Move;
 		}
-		
+
 		void ScrollView_DragEnter(object sender, UI.Xaml.DragEventArgs e)
 		{
 			if (!_canReorderItems)
@@ -161,12 +166,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				e.AcceptedOperation = WDataTransfer.DataPackageOperation.None;
 				return;
 			}
-			
+
 			e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 			e.DragUIOverride.IsGlyphVisible = false;
 			e.DragUIOverride.IsCaptionVisible = false;
 		}
-		
+
 		void ScrollView_DragOver(object sender, UI.Xaml.DragEventArgs e)
 		{
 
@@ -188,17 +193,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				System.Diagnostics.Debug.WriteLine($"DragOver: No container under pointer");
 				return;
 			}
-			
+
 			var pt = e.GetPosition(targetContainer);
-			
+
 			int targetIndex = GetContainerIndex(targetContainer);
 			System.Diagnostics.Debug.WriteLine($"DragOver: targetIndex={targetIndex}, isHorizontal={_isHorizontalLayout}");
-			
+
 			if (targetIndex < 0)
 			{
 				return;
 			}
-			
+
 			// Calculate if we should insert before or after based on pointer position
 			if (_isHorizontalLayout)
 			{
@@ -208,7 +213,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_insertAfter = pt.Y >= targetContainer.ActualHeight / 2;
 			}
-			
+
 			// Insert AT target position or AFTER based on pointer position
 			_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
 
@@ -216,14 +221,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 			e.Handled = true;
-			
+
 		}
-		
+
 		void ScrollView_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 		{
 			StopAutoScroll();
 		}
-		
+
 		void ScrollView_Drop(object sender, UI.Xaml.DragEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine($"=== DROP EVENT ===");
@@ -231,22 +236,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			System.Diagnostics.Debug.WriteLine($"  ItemsSource is IList: {ItemsSource is IList}");
 			System.Diagnostics.Debug.WriteLine($"  _draggedItem: {_draggedItem}");
 			System.Diagnostics.Debug.WriteLine($"  _insertionIndex: {_insertionIndex}");
-			
+
 			if (!_canReorderItems || ItemsSource is not IList itemsList || _draggedItem is null || _insertionIndex < 0)
 			{
 				System.Diagnostics.Debug.WriteLine($"  DROP CANCELLED - Validation failed");
 				CleanupDragState();
 				return;
 			}
-			
+
 			System.Diagnostics.Debug.WriteLine($"  Proceeding with reorder...");
-			
+
 			try
 			{
 				bool reordered = PerformReorder(itemsList);
-				
+
 				System.Diagnostics.Debug.WriteLine($"  Reorder result: {reordered}");
-				
+
 				if (reordered)
 				{
 					ReorderCompleted?.Invoke(this, EventArgs.Empty);
@@ -269,40 +274,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				System.Diagnostics.Debug.WriteLine($"  PerformReorder: _draggedItem is null");
 				return false;
 			}
-			
+
 			int oldIndex = IndexOfItem(_draggedItem, itemsList);
 			System.Diagnostics.Debug.WriteLine($"  PerformReorder: oldIndex={oldIndex}, _insertionIndex={_insertionIndex}");
-			
+
 			if (oldIndex < 0)
 			{
 				System.Diagnostics.Debug.WriteLine($"  PerformReorder: oldIndex < 0");
 				return false;
 			}
-			
+
 			int adjustedInsertionIndex = _insertionIndex;
-			
+
 			if (oldIndex < adjustedInsertionIndex)
 			{
 				adjustedInsertionIndex--;
 				System.Diagnostics.Debug.WriteLine($"  Adjusted insertion index: {adjustedInsertionIndex}");
 			}
-			
+
 			if (oldIndex == adjustedInsertionIndex)
 			{
 				System.Diagnostics.Debug.WriteLine($"  Same position - no reorder needed");
 				return false;
 			}
-			
+
 			// Store the wrapper object (ItemTemplateContext2), not the unwrapped item
 			var wrapperToMove = itemsList[oldIndex];
 			System.Diagnostics.Debug.WriteLine($"  Moving wrapper from {oldIndex} to {adjustedInsertionIndex}");
-			
+
 			itemsList.RemoveAt(oldIndex);
 			adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
 			itemsList.Insert(adjustedInsertionIndex, wrapperToMove);
-			
+
 			System.Diagnostics.Debug.WriteLine($"  Reorder complete - final index: {adjustedInsertionIndex}");
-			
+
 			DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 			{
 				_itemsRepeater?.UpdateLayout();
@@ -311,7 +316,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var container = FindContainerByIndex(adjustedInsertionIndex);
 				container?.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = true });
 			});
-			
+
 			return true;
 		}
 
@@ -323,14 +328,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (_itemsRepeater is null)
 				return null;
-			
+
 			var position = e.GetPosition(_itemsRepeater);
-			
+
 			var elements = VisualTreeHelper.FindElementsInHostCoordinates(
 				_itemsRepeater.TransformToVisual(null).TransformPoint(position),
 				_itemsRepeater,
 				false);
-			
+
 			foreach (var element in elements)
 			{
 				if (element is ItemContainer itemContainer && itemContainer.Tag is int)
@@ -338,42 +343,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return itemContainer;
 				}
 			}
-			
+
 			// Fallback: find by position
 			if (ItemsSource is IList itemsList && itemsList.Count > 0)
 			{
 				var allContainers = FindAllContainers().ToList();
-				
+
 				foreach (var container in allContainers)
 				{
 					try
 					{
 						var containerPosition = container.TransformToVisual(_itemsRepeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
-						
+
 						bool isInBounds;
 						if (_isHorizontalLayout)
 						{
-							isInBounds = position.X >= containerPosition.X && 
+							isInBounds = position.X >= containerPosition.X &&
 										position.X <= containerPosition.X + container.ActualWidth;
 						}
 						else
 						{
-							isInBounds = position.Y >= containerPosition.Y && 
+							isInBounds = position.Y >= containerPosition.Y &&
 										position.Y <= containerPosition.Y + container.ActualHeight;
 						}
-						
+
 						if (isInBounds)
 							return container;
 					}
 					catch { }
 				}
-				
+
 				// Return last container if pointer is beyond all containers
 				if (allContainers.Count > 0)
 				{
 					var lastContainer = allContainers.Last();
 					var lastPos = lastContainer.TransformToVisual(_itemsRepeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
-					
+
 					bool isBeyondLast;
 					if (_isHorizontalLayout)
 					{
@@ -383,23 +388,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						isBeyondLast = position.Y > lastPos.Y + lastContainer.ActualHeight;
 					}
-					
+
 					if (isBeyondLast)
 						return lastContainer;
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		FrameworkElement? FindContainerByIndex(int index)
 		{
 			if (ItemsSource is not IList itemsList || index < 0 || index >= itemsList.Count)
 				return null;
-			
+
 			return FindAllContainers().FirstOrDefault(c => GetContainerIndex(c) == index);
 		}
-		
+
 		IEnumerable<FrameworkElement> FindAllContainers()
 		{
 			if (_itemsRepeater is not null && ItemsSource is IList itemsList)
@@ -412,16 +417,39 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 		}
-		
+
+		object? GetContainerItem(FrameworkElement container)
+		{
+			if (container is ItemContainer itemContainer &&
+				itemContainer.Child is ElementWrapper wrapper &&
+				wrapper.VirtualView is View view)
+			{
+				return view.BindingContext;
+			}
+
+			return null;
+		}
+
 		int GetContainerIndex(FrameworkElement container)
 		{
+			if (ItemsSource is IList itemsList)
+			{
+				var item = GetContainerItem(container);
+				if (item is not null)
+				{
+					var liveIndex = IndexOfItem(item, itemsList);
+					if (liveIndex >= 0)
+						return liveIndex;
+				}
+			}
+
 			if (container.Tag is int index)
 				return index;
-			
+
 			var allContainers = FindAllContainers().ToList();
 			return allContainers.IndexOf(container);
 		}
-		
+
 		int IndexOfItem(object item, IList itemsList)
 		{
 			for (int i = 0; i < itemsList.Count; i++)
@@ -432,14 +460,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			return -1;
 		}
-		
+
 		object? GetItemAtIndex(int index, IList itemsList)
 		{
 			var item = itemsList[index];
-			
+
 			if (item is ItemTemplateContext2 itc)
 				return itc.Item;
-			
+
 			return item;
 		}
 
