@@ -5,6 +5,7 @@ using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -62,6 +63,41 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatTitleColor, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		[Theory(DisplayName = "Updating SelectedIndex Does Not Affect CharacterSpacing")]
+		[InlineData(0, 1)]
+		[InlineData(1, 0)]
+		public async Task SelectedIndexDoesNotAffectCharacterSpacing(int initialIndex, int newIndex)
+		{
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				Items = new List<string> { "Apple", "Banana", "Cherry" },
+				CharacterSpacing = 4,
+				SelectedIndex = initialIndex
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(picker);
+				handler.UpdateValue(nameof(IPicker.CharacterSpacing));
+
+				var before = GetNativeCharacterSpacing(handler);
+				Assert.Equal(4.0, before);
+
+				picker.SelectedIndex = newIndex;
+				handler.UpdateValue(nameof(IPicker.SelectedIndex));
+
+				var after = GetNativeCharacterSpacing(handler);
+				Assert.Equal(4.0, after);
+			});
+		}
+
+		double GetNativeCharacterSpacing(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.AttributedText.GetCharacterSpacing();
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
