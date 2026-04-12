@@ -10,7 +10,7 @@
 						Background="Gray"
 						HorizontalOptions="Center">
 			<CollectionView.ItemsLayout>
-				<LinearItemsLayout Orientation="Vertical"
+				<LinearItemsLayout Orientation="Horizontal"
 								   ItemSpacing="10"/>
 			</CollectionView.ItemsLayout>
 			<CollectionView.ItemTemplate>
