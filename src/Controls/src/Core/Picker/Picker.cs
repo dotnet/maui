@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
@@ -417,7 +418,11 @@ namespace Microsoft.Maui.Controls
 
 			index = GetSelectedIndexForCollectionMutation();
 
-			if (index == -1 && SelectedItem != null)
+			bool selectedItemWasRemoved =
+				e.OldItems != null &&
+				e.OldItems.Cast<object>().Contains(SelectedItem);
+
+			if (selectedItemWasRemoved)
 			{
 				ClampSelectedIndex(-1);
 				return;
