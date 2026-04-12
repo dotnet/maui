@@ -15,6 +15,9 @@
                 Text="Add Pin" 
                 Clicked="OnAddPinClicked" />
             <Button 
+                Text="Move Pin"
+                Clicked="OnMovePinClicked"/>
+            <Button
                 Text="Remove Pin"
                 Clicked="OnRemovePinClicked" />
             <Button 
