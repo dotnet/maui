@@ -87,6 +87,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
+			// iOS maps page ToolbarItems to native UIBarButtonItem instances.
+			// In Modal + NavigationPage scenarios, those wrappers can outlive the managed page
+			// briefly during dismiss and keep toolbar callbacks rooted, which delays collection
+			// of the popped modal page. Clearing ToolbarItems before DismissViewControllerAsync
+			// breaks that retention chain early so pop can complete without leaking page references.
+			ClearToolbarItemsForModalPop(modal);
 
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
 
@@ -101,6 +107,38 @@ namespace Microsoft.Maui.Controls.Platform
 			// this will usually happen as a result of swapping out the content on the window
 			// which is what was acting as the PresentingViewController
 			return modal;
+		}
+
+		static void ClearToolbarItemsForModalPop(Page modal)
+		{
+			if (modal is null)
+			{
+				return;
+			}
+
+			ClearToolbarItems(modal);
+
+			if (modal is NavigationPage navigationPage)
+			{
+				var current = navigationPage.CurrentPage;
+				if (current is not null && current != modal)
+				{
+					ClearToolbarItems(current);
+				}
+			}
+		}
+
+		static void ClearToolbarItems(Page page)
+		{
+			if (page.ToolbarItems.Count == 0)
+			{
+				return;
+			}
+
+			for (var i = page.ToolbarItems.Count - 1; i >= 0; i--)
+			{
+				page.ToolbarItems.RemoveAt(i);
+			}
 		}
 
 		Task PushModalPlatformAsync(Page modal, bool animated)
