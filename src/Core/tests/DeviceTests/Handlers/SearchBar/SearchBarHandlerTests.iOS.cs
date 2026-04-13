@@ -7,7 +7,6 @@ using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -25,13 +24,20 @@ namespace Microsoft.Maui.DeviceTests
 			// Before the fix (no DidChangeSelection handler), CursorPosition stayed at 0.
 			var searchBar = new SearchBarStub { Text = "Hello" };
 
-			await AttachAndRun(searchBar, async (handler) =>
+			await AttachAndRun(searchBar, (handler) =>
 			{
+				var control = handler.QueryEditor;
 				// Simulate user tapping the SearchBar to focus it
-				handler.QueryEditor.BecomeFirstResponder();
+				control.BecomeFirstResponder();
 
-				// UIKit fires DidChangeSelection after focus; OnSelectionChanged should update CursorPosition.
-				await AssertEventually(() => searchBar.CursorPosition == 5);
+				// On iOS, BecomeFirstResponder auto-positions cursor at end and fires DidChangeSelection.
+				// On Mac Catalyst, the focus model differs and DidChangeSelection may not fire automatically.
+				// Explicitly set cursor to end of text to simulate user tap behavior on all platforms.
+				var endPos = control.GetPosition(control.BeginningOfDocument, 5);
+				control.SelectedTextRange = control.GetTextRange(endPos, endPos);
+
+				// OnSelectionChanged should update CursorPosition via DidChangeSelection
+				Assert.Equal(5, searchBar.CursorPosition);
 			});
 
 			// Cursor should be at position 5 (end of "Hello") after focus
