@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls;
+using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -7,7 +8,7 @@ public class Issue34897 : ContentPage
 {
 	public Issue34897()
 	{
-		// This reproduces the bug: Header set statically with EmptyView active and no ItemsSource.
+		// This reproduces the bug: Header set statically with EmptyView active and ItemsSource=null.
 		// UICollectionViewCompositionalLayout drops boundary supplementary items (header/footer)
 		// when NumberOfSections returns 0 — which happens when ItemsSource is null.
 		var collectionView = new CollectionView
@@ -34,7 +35,9 @@ public class Issue34897 : ContentPage
 				BackgroundColor = Colors.LightYellow,
 				Padding = new Thickness(8),
 			},
-			// ItemsSource intentionally NOT set (null) — this is the bug scenario
+			// ItemsSource intentionally set to null (not an empty collection)
+			// This is the key condition that triggers the bug
+			ItemsSource = null,
 		};
 
 		Content = new StackLayout
