@@ -709,7 +709,7 @@ static class SetPropertyHelpers
 		if (resolution.Location == MemberLocation.Neither &&
 			!string.IsNullOrEmpty(resolution.RootIdentifier) &&
 			MemberResolver.IsSimpleIdentifier(expression.Code) &&
-			!MemberResolver.StartsWithTypeReference(context.Compilation, expression.Code, MemberResolver.GetContainingNamespace(context.RootType)))
+			!resolution.ResolvesToStaticType)
 		{
 			var neitherLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, neitherLocation, resolution.RootIdentifier, context.RootType?.Name ?? "this", dataTypeSymbol.Name));

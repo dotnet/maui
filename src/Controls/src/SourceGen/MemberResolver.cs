@@ -46,13 +46,17 @@ internal readonly struct MemberResolutionResult
 	
 	/// <summary>True if the root identifier matches a well-known static type name.</summary>
 	public bool ConflictsWithStaticType { get; }
-	
-	public MemberResolutionResult(MemberLocation location, string expression, string rootIdentifier, bool conflictsWithStaticType = false)
+
+	/// <summary>True if the expression starts with a resolvable static type reference.</summary>
+	public bool ResolvesToStaticType { get; }
+
+	public MemberResolutionResult(MemberLocation location, string expression, string rootIdentifier, bool conflictsWithStaticType = false, bool resolvesToStaticType = false)
 	{
 		Location = location;
 		Expression = expression;
 		RootIdentifier = rootIdentifier;
 		ConflictsWithStaticType = conflictsWithStaticType;
+		ResolvesToStaticType = resolvesToStaticType;
 	}
 	
 	public bool IsBinding => Location == MemberLocation.DataType || Location == MemberLocation.ForcedDataType;
@@ -116,10 +120,9 @@ internal static class MemberResolver
 		var onThis = thisType != null && HasMember(thisType, rootIdentifier);
 		var onDataType = dataType != null && HasMember(dataType, rootIdentifier);
 		
-		// Check if root identifier also resolves to a type in the compilation
-		var conflictsWithStatic = (onThis || onDataType) && 
-			compilation != null && 
-			ResolvesToType(compilation, rootIdentifier, GetContainingNamespace(thisType));
+		var resolvesToStaticType = compilation != null &&
+			StartsWithTypeReference(compilation, trimmed, GetContainingNamespace(thisType));
+		var conflictsWithStatic = (onThis || onDataType) && resolvesToStaticType;
 
 		MemberLocation location;
 		if (onThis && onDataType)
@@ -131,7 +134,7 @@ internal static class MemberResolver
 		else
 			location = MemberLocation.Neither;
 
-		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic);
+		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic, resolvesToStaticType);
 	}
 	
 	/// <summary>
