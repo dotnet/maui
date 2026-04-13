@@ -13,7 +13,6 @@ public class Issue34823 : NavigationPage
 		{
 			BindingContext = this;
 			Title = "WebView Test";
-			this.SetAppThemeColor(BackgroundColorProperty, Colors.White, Colors.Black);
             
 			var webButton = new Button
 			{
