@@ -1,83 +1,123 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 34823, "WebView on Windows Does Not Inherit App Theme", PlatformAffected.UWP)]
-public class Issue34823 : ContentPage
+public class Issue34823 : NavigationPage
 {
-    readonly WebView _webView;
-    public Issue34823()
-    {
-        _webView = new WebView
-        {
-            AutomationId = "ThemedWebView",
-            HeightRequest = 260,
-            Background = new SolidColorBrush(Colors.Green),
-            Source = new HtmlWebViewSource
-            {
-                Html = """
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <style>
-    @media (prefers-color-scheme: dark) {
-      html, body { background-color: black; color: white; }
-    }
-    @media (prefers-color-scheme: light) {
-      html, body { background-color: white; color: black; }
-    }
-  </style>
-</head>
-<body>
-  <h3>Issue34823 WebView Theme Probe</h3>
-</body>
-</html>
-"""
-            }
-        };
+	public Issue34823() : base(new Issue34823MainPage())
+	{
+	}
 
-        var forceDarkButton = new Button
-        {
-            AutomationId = "ForceDarkThemeButton",
-            Text = "Force Dark Theme"
-        };
+	class Issue34823MainPage : ContentPage
+	{
+		public Issue34823MainPage()
+		{
+			BindingContext = this;
+			Title = "WebView Test";
+			this.SetAppThemeColor(BackgroundColorProperty, Colors.White, Colors.Black);
+            
+			var webButton = new Button
+			{
+				Text = "Switch to web page",
+				HorizontalOptions = LayoutOptions.Center,
+				Margin = new Thickness(10)
+			};
+			webButton.Clicked += OnWebClicked;
 
-        forceDarkButton.Clicked += (_, _) =>
-        {
-            if (Application.Current is null)
-                return;
+			var darkModeSwitch = new Switch();
+			darkModeSwitch.SetBinding(Switch.IsToggledProperty, nameof(Dark), mode: BindingMode.TwoWay);
 
-            Application.Current.UserAppTheme = AppTheme.Dark;
-        };
+			Content = new ScrollView
+			{
+				Content = new VerticalStackLayout
+				{
+					Padding = 30,
+					Spacing = 25,
+					Children =
+					{
+						webButton,
+						new HorizontalStackLayout
+						{
+							HorizontalOptions = LayoutOptions.Center,
+							Children =
+							{
+								new Label
+								{
+									Text = "Dark Mode",
+									VerticalOptions = LayoutOptions.Center
+								},
+								darkModeSwitch
+							}
+						}
+					}
+				}
+			};
+		}
 
-        var forceLightButton = new Button
-        {
-            AutomationId = "ForceLightThemeButton",
-            Text = "Force Light Theme"
-        };
+		private async void OnWebClicked(object sender, EventArgs e)
+		{
+			var webView = new WebView();
 
-        forceLightButton.Clicked += (_, _) =>
-        {
-            if (Application.Current is null)
-                return;
+			var helpPage = new ContentPage
+			{
+				Title = "Web Page",
+				Content = new Grid
+				{
+					Children =
+					{
+						webView
+					}
+				}
+			};
+			helpPage.SetAppThemeColor(BackgroundColorProperty, Colors.White, Colors.Black);
 
-            Application.Current.UserAppTheme = AppTheme.Light;
-        };
+			helpPage.NavigatedTo += async (_, __) =>
+			{
+				webView.Source = new HtmlWebViewSource
+				{
+					Html = """
+						<html>
+						<head>
+						  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+						  <title>Preparing Help</title>
+						  <style>
+						    @media (prefers-color-scheme: dark) {
+						        html, body {
+						            color: white;
+						            background-color: black;
+						        }
+						    }
 
-        Content = new VerticalStackLayout
-        {
-            Padding = 16,
-            Spacing = 10,
-            Children =
-            {
-                new Label
-                {
-                    Text = "This page verifies that explicit WebView background keeps the web color-scheme as light.",
-                    AutomationId = "InstructionLabel"
-                },
-                forceDarkButton,
-                forceLightButton,
-                _webView
-            }
-        };
-    }
+						    @media (prefers-color-scheme: light) {
+						        html, body {
+						            color: black;
+						            background-color: white;
+						        }
+						    }
+						  </style>
+						</head>
+						<body>
+						<center><h1>Text on a web page</h1></center>
+						</body>
+						</html>
+						"""
+				};
+			};
+
+			await Navigation.PushAsync(helpPage);
+		}
+
+		public bool Dark
+		{
+			set
+			{
+				if (value != Dark)
+				{
+					Application.Current!.UserAppTheme = value ? AppTheme.Dark : AppTheme.Light;
+				}
+			}
+			get =>
+				Application.Current?.UserAppTheme == AppTheme.Dark ||
+				Application.Current?.RequestedTheme == AppTheme.Dark;
+		}
+	}
 }
