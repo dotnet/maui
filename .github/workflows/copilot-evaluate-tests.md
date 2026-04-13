@@ -23,6 +23,8 @@ on:
   bots:
     - "copilot-swe-agent[bot]"
 
+labels: ["pr-review", "testing"]
+
 if: >-
   ((!github.event.repository.fork) || github.event_name == 'workflow_dispatch') &&
   (

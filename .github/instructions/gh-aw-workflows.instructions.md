@@ -130,6 +130,7 @@ Reference: https://securitylab.github.com/resources/github-actions-preventing-pw
 | `workflow_dispatch` | ❌ Skipped | ✅ Works — user steps handle checkout and restore is final |
 | `issue_comment` (same-repo) | ✅ Yes | ✅ Works — files already on PR branch |
 | `issue_comment` (fork) | ✅ Yes | ⚠️ Works — `checkout_pr_branch.cjs` re-checks out fork branch after user steps, potentially overwriting restored infra. Acceptable because agent is sandboxed (no credentials, max 1 comment via safe-outputs). Pre-flight check catches missing `SKILL.md` if fork isn't rebased. |
+| `slash_command` | ✅ Yes (compiles to `issue_comment` internally) | Same behavior as `issue_comment` above, but with platform-managed command matching, emoji reactions, and sanitized input. Prefer `slash_command:` over manual `issue_comment` + `startsWith()`. |
 
 ### The `issue_comment` + Fork Problem
 
