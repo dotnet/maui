@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Test fails on iOS, Windows and Catalyst because of Header is not visible https://github.com/dotnet/maui/issues/34897
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
