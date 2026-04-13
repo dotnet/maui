@@ -741,6 +741,12 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void FillWithImage(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
+
+			// The pattern phase is pre-set to (Frame.X, Frame.Y) by PlatformGraphicsView,
+			// which shifts the image tile and causes it to split across the fill rect.
+			// Reset it here to the fill rect origin so the image starts at the right place.
+			_context.SetPatternPhase(new CGSize(x, y));
+
 			var baseColorspace = _getColorspace?.Invoke();
 			var colorspace = CGColorSpace.CreatePattern(baseColorspace);
 			_context.SetFillColorSpace(colorspace);
