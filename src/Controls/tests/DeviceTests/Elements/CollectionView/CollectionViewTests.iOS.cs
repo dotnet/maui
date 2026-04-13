@@ -310,6 +310,36 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Fact]
+		public async Task CollectionViewScrollsToTopIsEnabled()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = Enumerable.Range(0, 20).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var uiCollectionView = handler.Controller.CollectionView;
+				Assert.True(uiCollectionView.ScrollsToTop, "CollectionView's UICollectionView should have ScrollsToTop enabled");
+			});
+		}
+
 		Rect GetCollectionViewCellBounds(IView cellContent)
 		{
 			if (!cellContent.ToPlatform().IsLoaded())
