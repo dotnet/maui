@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiPageControl : UIPageControl, IUIViewLifeCycleEvents
 	{
 		const int DefaultIndicatorSize = 6;
+		const double IndicatorSizeTolerance = 0.001;
 		const string SquareSymbol = "squareshape.fill";
 		const string CircleSymbol = "circlebadge.fill";
 		WeakReference<IIndicatorView>? _indicatorView;
