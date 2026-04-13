@@ -425,7 +425,6 @@ namespace Microsoft.Maui.Controls
 			if (selectedItemWasRemoved)
 			{
 				ClampSelectedIndex(-1);
-				return;
 			}
 
 			if (removeStart <= index)
