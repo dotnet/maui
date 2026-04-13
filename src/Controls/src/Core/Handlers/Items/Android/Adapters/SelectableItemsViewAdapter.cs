@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
         		UpdateMauiSelection(adapterPosition);
         		// Unconditionally sync visual state for Single mode.
         		// Handles value-equal items where PropertyChanged is suppressed.
-        		if (ItemsView.SelectionMode == SelectionMode.Single && sender is SelectableViewHolder clickedHolder)
+        		if (ItemsView.SelectedItem is not null && ItemsView.SelectionMode == SelectionMode.Single && sender is SelectableViewHolder clickedHolder)
         		{
             		ClearPlatformSelection();
             		clickedHolder.IsSelected = true;
