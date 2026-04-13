@@ -65,14 +65,13 @@ concurrency:
   group: "evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}"
   cancel-in-progress: true
 
-timeout-minutes: 15
+timeout-minutes: 20
 
 steps:
   - name: Gate — skip if no test source files in diff
-    if: github.event_name == 'pull_request_target'
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
     run: |
       # Try gh pr diff first; fall back to REST API for large PRs (300+ files)
       TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null \
@@ -155,7 +154,7 @@ Do not post a comment and do not silently exit — always use `noop` so the work
 ## Running the skill
 
 1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). If `gh` CLI is unavailable, use the GitHub MCP tools instead.
-2. Run `pwsh .github/skills/evaluate-pr-tests/scripts/Gather-TestContext.ps1` to gather automated context
+2. Run `pwsh .github/skills/evaluate-pr-tests/scripts/Gather-TestContext.ps1 -PrNumber <number>` to gather automated context (use the PR number from the Context section above)
 3. Read the context report and the actual changed files, then evaluate per SKILL.md criteria
 4. Post results using `add_comment` with `item_number` set to the PR number
 

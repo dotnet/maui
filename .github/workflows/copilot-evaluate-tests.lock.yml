@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0e2fd785240c3ad98d232bd3281aca1e90802f6ba441fa20e57f8cc11e504748","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f433e59f7d91527b26a1c81c7dcd412aaedd51107340c2ebeda22b044bb532de","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -366,8 +366,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        if: github.event_name == 'pull_request_target'
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
         name: Gate — skip if no test source files in diff
         run: "# Try gh pr diff first; fall back to REST API for large PRs (300+ files)\nTEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  TEST_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>/dev/null \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
       - env:
@@ -639,7 +638,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
@@ -1008,7 +1007,7 @@ jobs:
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🧪 *Test evaluation by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔬 Evaluating tests on this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Test evaluation complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Test evaluation failed. [{workflow_name}]({run_url}) {status}\"}"
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
-          GH_AW_TIMEOUT_MINUTES: "15"
+          GH_AW_TIMEOUT_MINUTES: "20"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
