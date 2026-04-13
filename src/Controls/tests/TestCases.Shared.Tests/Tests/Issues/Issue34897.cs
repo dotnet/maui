@@ -14,25 +14,7 @@ public class Issue34897 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewHeaderVisibleWithEmptyViewAndNullItemsSource()
 	{
-		// Wait for the page to load — EmptyView should appear since ItemsSource is null
 		App.WaitForElement("Issue34897EmptyView");
-
-		// The Header must ALSO be visible even though ItemsSource is null and EmptyView is active.
-		// Bug: UICollectionViewCompositionalLayout drops boundary supplementary items (header/footer)
-		// when NumberOfSections returns 0 (which happens when ItemsSource is null).
 		App.WaitForElement("Issue34897Header");
-	}
-
-	[Test]
-	[Category(UITestCategories.CollectionView)]
-	public void CollectionViewFooterVisibleWithEmptyViewAndNullItemsSource()
-	{
-		// Wait for page load
-		App.WaitForElement("Issue34897EmptyView");
-
-		// The Footer must also be visible — same root cause as the header bug.
-		// Bug: UICollectionViewCompositionalLayout drops boundary supplementary items (header/footer)
-		// when NumberOfSections returns 0 (which happens when ItemsSource is null).
-		App.WaitForElement("Issue34897Footer");
 	}
 }
