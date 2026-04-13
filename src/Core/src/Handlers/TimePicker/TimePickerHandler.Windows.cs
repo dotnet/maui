@@ -11,19 +11,11 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(TimePicker platformView)
 		{
 			platformView.SelectedTimeChanged += OnSelectedTimeChanged;
-			platformView.Loaded += OnLoaded;
-		}
-
-		void OnLoaded(object sender, RoutedEventArgs e)
-		{
-			// Need to update character spacing after the control is loaded
-			PlatformView.UpdateCharacterSpacing(VirtualView);
 		}
 
 		protected override void DisconnectHandler(TimePicker platformView)
 		{
 			platformView.SelectedTimeChanged -= OnSelectedTimeChanged;
-			platformView.Loaded -= OnLoaded;
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)

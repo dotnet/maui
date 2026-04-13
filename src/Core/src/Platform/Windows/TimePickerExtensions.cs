@@ -28,11 +28,18 @@ public static class TimePickerExtensions
 	public static void UpdateCharacterSpacing(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
 		platformTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
-
-		if (platformTimePicker.IsLoaded)
+		if (!platformTimePicker.IsLoaded)
 		{
-			UpdateCharacterSpacingInTimePicker(platformTimePicker);
+			RoutedEventHandler? onLoaded = null;
+			onLoaded = (s, e) =>
+			{
+				platformTimePicker.Loaded -= onLoaded;
+				UpdateCharacterSpacingInTimePicker(platformTimePicker);
+			};
+			platformTimePicker.Loaded += onLoaded;
+			return;
 		}
+		UpdateCharacterSpacingInTimePicker(platformTimePicker);
 	}
 
 	public static void UpdateFont(this TimePicker platformTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
