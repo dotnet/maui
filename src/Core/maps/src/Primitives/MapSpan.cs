@@ -71,7 +71,9 @@ namespace Microsoft.Maui.Maps
 			return new MapSpan(new Location(lat, Center.Longitude), Math.Min(LatitudeDegrees, maxDLat), LongitudeDegrees);
 		}
 
-		/// <inheritdoc/>
+		/// <summary>Determines whether the specified object is equal to the current <see cref="MapSpan"/>.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
@@ -152,7 +154,8 @@ namespace Microsoft.Maui.Maps
 			return new MapSpan(new Location(centerLat, centerLon), latDegrees, lonDegrees);
 		}
 
-		/// <inheritdoc/>
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()
 		{
 			unchecked
@@ -229,7 +232,8 @@ namespace Microsoft.Maui.Maps
 			return latCircumference * longitudeDegrees / 360;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>Returns a string representation of the <see cref="MapSpan"/>.</summary>
+		/// <returns>A string that represents the current <see cref="MapSpan"/>.</returns>
 		public override string ToString()
 		{
 			return $"{Center}, {LatitudeDegrees}, {LongitudeDegrees}";
