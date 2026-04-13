@@ -6,8 +6,9 @@ on:
     paths:
       - 'src/**/tests/**'
       - 'src/**/test/**'
-  issue_comment:
-    types: [created]
+  slash_command:
+    name: evaluate-tests
+    events: [pull_request_comment, issue_comment]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -27,9 +28,7 @@ if: >-
   (
     (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
     github.event_name == 'workflow_dispatch' ||
-    (github.event_name == 'issue_comment' &&
-     github.event.issue.pull_request &&
-     startsWith(github.event.comment.body, '/evaluate-tests'))
+    github.event_name == 'issue_comment'
   )
 
 permissions:
