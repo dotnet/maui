@@ -438,7 +438,59 @@ function Invoke-Overlay {
         Write-Info "  $($pack.targetPackName) : $installedVersion → $localVersion"
     }
 
-    # --- Step 7: Summary ---
+    # --- Step 7: Backfill debugging support files ---
+    # The local build may not include debugging task DLLs. If missing, copy them
+    # from the provisioned (original) SDK pack so FastDev continues to work.
+    $overlaidSdkDir = Join-Path $DotnetRoot "packs/$platformSdkAlias/$localVersion"
+    $debuggingTasksDll = Join-Path $overlaidSdkDir 'tools/Xamarin.Android.Build.Debugging.Tasks.dll'
+
+    if (Test-Path $overlaidSdkDir) {
+        if (-not (Test-Path $debuggingTasksDll)) {
+            Write-Step "Backfilling debugging support files..."
+
+            $provisionedSdkDir = Join-Path $DotnetRoot "packs/$platformSdkAlias/$installedVersion"
+
+            if (Test-Path $provisionedSdkDir) {
+                try {
+                    # Find all debugging-related files in the provisioned pack's tools tree
+                    $provisionedToolsDir = Join-Path $provisionedSdkDir 'tools'
+                    $debuggingFiles = Get-ChildItem -Path $provisionedToolsDir -Filter '*Debugging*' -Recurse -File
+
+                    $copiedCount = 0
+                    foreach ($file in $debuggingFiles) {
+                        $relativePath = $file.FullName.Substring($provisionedToolsDir.Length).TrimStart([IO.Path]::DirectorySeparatorChar)
+                        $destPath = Join-Path $overlaidSdkDir "tools/$relativePath"
+                        $destDir = Split-Path $destPath -Parent
+
+                        if (-not (Test-Path $destDir)) {
+                            New-Item -Path $destDir -ItemType Directory -Force | Out-Null
+                        }
+
+                        Copy-Item -Path $file.FullName -Destination $destPath -Force
+                        $copiedCount++
+                    }
+
+                    Write-Info "Backfilled $copiedCount debugging support files from provisioned pack"
+                }
+                catch {
+                    Write-Warn "Failed to backfill debugging support files: $_"
+                    Write-Warn "FastDev may not work correctly."
+                }
+            }
+            else {
+                Write-Warn "Provisioned SDK pack not found at: $provisionedSdkDir"
+                Write-Warn "Could not backfill debugging support files — FastDev may not work."
+            }
+
+            # Verify the backfill actually landed the critical DLL
+            if (-not (Test-Path $debuggingTasksDll)) {
+                Write-Warn "Debugging support files could not be backfilled — FastDev may not work."
+                Write-Warn "You can manually copy debugging files from the provisioned pack at: $provisionedSdkDir"
+            }
+        }
+    }
+
+    # --- Step 8: Summary ---
     Write-Host ""
     Write-Success "=== Overlay Complete ==="
     Write-Host ""
