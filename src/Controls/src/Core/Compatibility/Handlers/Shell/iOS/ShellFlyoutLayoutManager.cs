@@ -221,8 +221,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 				}
 
-				// We take the measured header height without margin, since the margin is already accounted for in the positioning of the scroll view itself.
-				ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
+				var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
+				if (headerBehavior == FlyoutHeaderBehavior.Default || headerBehavior == FlyoutHeaderBehavior.Fixed)
+				{
+					// For Default/Fixed, the scroll view is positioned below the header,
+					// so no top content inset is needed.
+					ScrollView.ContentInset = new UIEdgeInsets(0, 0, 0, 0);
+				}
+				else
+				{
+					// For Scroll/CollapseOnScroll, the scroll view overlaps the header so the header
+					// can scroll away or shrink. We use content inset to push items below it initially.
+					ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
+				}
 			}
 			else
 			{
@@ -328,9 +339,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					// For ScrollView, we need to consider the margin, but we should not consider the header height, since it should overlap with the scroll view. 
-					// The content inset is already managed by SetHeaderContentInset.
-					contentYOffset += HeaderView.View.Margin.VerticalThickness;
+					var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
+					if (headerBehavior == FlyoutHeaderBehavior.Default || headerBehavior == FlyoutHeaderBehavior.Fixed)
+					{
+						// For Default/Fixed, position the scroll view below the header so items
+						// cannot scroll behind it. No content inset is needed in this case.
+						contentYOffset += HeaderView.Frame.Height;
+					}
+					else
+					{
+						// For Scroll/CollapseOnScroll, the scroll view overlaps the header so the header
+						// can scroll away or shrink. The content inset is managed by SetHeaderContentInset.
+						contentYOffset += HeaderView.View.Margin.VerticalThickness;
+					}
 				}
 			}
 
