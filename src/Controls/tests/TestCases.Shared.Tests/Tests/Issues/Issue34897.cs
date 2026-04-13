@@ -31,7 +31,8 @@ public class Issue34897 : _IssuesUITest
 		App.WaitForElement("Issue34897EmptyView");
 
 		// The Footer must also be visible — same root cause as the header bug.
-		// This test covers the footer scenario guarded by TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST.
-		App.WaitForElement("Issue34897Header");
+		// Bug: UICollectionViewCompositionalLayout drops boundary supplementary items (header/footer)
+		// when NumberOfSections returns 0 (which happens when ItemsSource is null).
+		App.WaitForElement("Issue34897Footer");
 	}
 }

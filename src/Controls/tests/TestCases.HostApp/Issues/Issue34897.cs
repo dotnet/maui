@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34897, "CollectionView Header is not visible when ItemsSource is not set and EmptyView is set", PlatformAffected.iOS | PlatformAffected.MacCatalyst)]
+[Issue(IssueTracker.Github, 34897, "CollectionView Header is not visible when ItemsSource is not set and EmptyView is set", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue34897 : ContentPage
 {
 	public Issue34897()
@@ -18,6 +18,13 @@ public class Issue34897 : ContentPage
 				Text = "CollectionView Header",
 				AutomationId = "Issue34897Header",
 				BackgroundColor = Colors.LightBlue,
+				Padding = new Thickness(8),
+			},
+			Footer = new Label
+			{
+				Text = "CollectionView Footer",
+				AutomationId = "Issue34897Footer",
+				BackgroundColor = Colors.LightGreen,
 				Padding = new Thickness(8),
 			},
 			EmptyView = new Label
@@ -36,7 +43,7 @@ public class Issue34897 : ContentPage
 			{
 				new Label
 				{
-					Text = "Header and EmptyView should both be visible below:",
+					Text = "Header, Footer and EmptyView should all be visible below:",
 					Margin = new Thickness(8),
 				},
 				collectionView,
