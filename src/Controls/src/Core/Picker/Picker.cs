@@ -419,6 +419,7 @@ namespace Microsoft.Maui.Controls
 			index = GetSelectedIndexForCollectionMutation();
 
 			bool selectedItemWasRemoved =
+				SelectedItem != null &&
 				e.OldItems != null &&
 				e.OldItems.Cast<object>().Contains(SelectedItem);
 
@@ -426,11 +427,12 @@ namespace Microsoft.Maui.Controls
 			{
 				ClampSelectedIndex(-1);
 			}
-
-			if (removeStart <= index)
+			else if (removeStart <= index)
 			{
 				ClampSelectedIndex(index);
 			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
 		int GetSelectedIndex()
