@@ -200,10 +200,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.PlatformView is PlatformView pv)
 			{
-				// If the view is wrapped in a WrapperView (for Shadow/Clip), apply batched properties to the wrapper instead.
-				var viewToInitialize = pv.Parent is WrapperView ? (PlatformView)pv.Parent : pv;
-				viewToInitialize.Initialize(view);
-			}
+				pv.Initialize(view);
+			}	
 		}
 #endif
 
