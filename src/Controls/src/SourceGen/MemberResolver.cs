@@ -44,13 +44,17 @@ internal readonly struct MemberResolutionResult
 	
 	/// <summary>True if the root identifier matches a well-known static type name.</summary>
 	public bool ConflictsWithStaticType { get; }
+
+	/// <summary>True if the expression starts with a resolvable static type reference.</summary>
+	public bool ResolvesToStaticType { get; }
 	
-	public MemberResolutionResult(MemberLocation location, string expression, string rootIdentifier, bool conflictsWithStaticType = false)
+	public MemberResolutionResult(MemberLocation location, string expression, string rootIdentifier, bool conflictsWithStaticType = false, bool resolvesToStaticType = false)
 	{
 		Location = location;
 		Expression = expression;
 		RootIdentifier = rootIdentifier;
 		ConflictsWithStaticType = conflictsWithStaticType;
+		ResolvesToStaticType = resolvesToStaticType;
 	}
 	
 	public bool IsBinding => Location == MemberLocation.DataType || Location == MemberLocation.ForcedDataType;
@@ -115,9 +119,8 @@ internal static class MemberResolver
 		var onDataType = dataType != null && HasMember(dataType, rootIdentifier);
 		
 		// Check if root identifier also resolves to a type in the compilation
-		var conflictsWithStatic = (onThis || onDataType) && 
-			compilation != null && 
-			ResolvesToType(compilation, rootIdentifier);
+		var resolvesToStaticType = compilation != null && StartsWithTypeReference(compilation, trimmed);
+		var conflictsWithStatic = (onThis || onDataType) && resolvesToStaticType;
 
 		MemberLocation location;
 		if (onThis && onDataType)
@@ -129,47 +132,110 @@ internal static class MemberResolver
 		else
 			location = MemberLocation.Neither;
 
-		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic);
+		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic, resolvesToStaticType);
 	}
 	
 	/// <summary>
-	/// Checks if an identifier resolves to a type in the compilation (including via global usings).
+	/// Checks whether an expression starts with a resolvable static type reference.
+	/// This supports both unqualified type names via global usings (e.g. DateTime.Now)
+	/// and fully qualified references (e.g. System.DateTime.Now).
+	/// </summary>
+	private static bool StartsWithTypeReference(Compilation compilation, string expression)
+	{
+		if (string.IsNullOrWhiteSpace(expression))
+			return false;
+
+		var leadingIdentifiers = GetLeadingIdentifierChain(expression);
+		for (var length = leadingIdentifiers.Count; length >= 1; length--)
+		{
+			var candidate = string.Join(".", leadingIdentifiers.Take(length));
+			if (ResolvesToType(compilation, candidate))
+				return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Checks if an identifier or fully-qualified type name resolves to a type in the compilation
+	/// (including via global usings).
 	/// </summary>
 	private static bool ResolvesToType(Compilation compilation, string identifier)
 	{
-		// Collect all global using namespaces from the compilation's syntax trees
-		var globalNamespaces = new HashSet<string>();
-		
+		if (string.IsNullOrWhiteSpace(identifier))
+			return false;
+
+		identifier = StripGlobalQualifier(identifier);
+
+		// Fully-qualified type names can be checked directly.
+		if (compilation.GetTypeByMetadataName(identifier) != null)
+			return true;
+
+		// Collect all global using namespaces from the compilation's syntax trees.
+		var globalNamespaces = new HashSet<string>(StringComparer.Ordinal);
 		foreach (var tree in compilation.SyntaxTrees)
 		{
 			var root = tree.GetRoot();
 			foreach (var usingDirective in root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.UsingDirectiveSyntax>())
 			{
-				// Check for global usings (global using System;)
-				if (usingDirective.GlobalKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GlobalKeyword))
-				{
-					var namespaceName = usingDirective.Name?.ToString();
-					if (!string.IsNullOrEmpty(namespaceName))
-						globalNamespaces.Add(namespaceName!);
-				}
+				if (!usingDirective.GlobalKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GlobalKeyword) ||
+					usingDirective.StaticKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StaticKeyword))
+					continue;
+
+				var namespaceName = StripGlobalQualifier(usingDirective.Name?.ToString() ?? string.Empty);
+				if (!string.IsNullOrEmpty(namespaceName))
+					globalNamespaces.Add(namespaceName);
 			}
 		}
-		
-		// Check if the identifier resolves to a type in any of the global namespaces
+
+		// Check if the identifier resolves to a type in any of the global namespaces.
 		foreach (var ns in globalNamespaces)
 		{
 			var fullName = $"{ns}.{identifier}";
-			var type = compilation.GetTypeByMetadataName(fullName);
-			if (type != null)
+			if (compilation.GetTypeByMetadataName(fullName) != null)
 				return true;
 		}
-		
-		// Also check in the global namespace itself
-		var globalType = compilation.GetTypeByMetadataName(identifier);
-		if (globalType != null)
-			return true;
-		
+
 		return false;
+	}
+
+	private static List<string> GetLeadingIdentifierChain(string expression)
+	{
+		var identifiers = new List<string>();
+		var trimmed = expression.TrimStart();
+		var i = 0;
+
+		if (trimmed.StartsWith("global::", StringComparison.Ordinal))
+			i = "global::".Length;
+
+		while (i < trimmed.Length)
+		{
+			if (!char.IsLetter(trimmed[i]) && trimmed[i] != '_')
+				break;
+
+			var start = i;
+			i++;
+
+			while (i < trimmed.Length && (char.IsLetterOrDigit(trimmed[i]) || trimmed[i] == '_'))
+				i++;
+
+			identifiers.Add(trimmed.Substring(start, i - start));
+
+			if (i >= trimmed.Length || trimmed[i] != '.')
+				break;
+
+			i++;
+		}
+
+		return identifiers;
+	}
+
+	private static string StripGlobalQualifier(string identifier)
+	{
+		const string globalQualifier = "global::";
+		return identifier.StartsWith(globalQualifier, StringComparison.Ordinal)
+			? identifier.Substring(globalQualifier.Length)
+			: identifier;
 	}
 
 	/// <summary>
