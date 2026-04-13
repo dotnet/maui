@@ -17,13 +17,19 @@ public class Issue34823 : NavigationPage
 			var webButton = new Button
 			{
 				Text = "Switch to web page",
+                AutomationId = "WebButton",
 				HorizontalOptions = LayoutOptions.Center,
 				Margin = new Thickness(10)
 			};
 			webButton.Clicked += OnWebClicked;
 
-			var darkModeSwitch = new Switch();
-			darkModeSwitch.SetBinding(Switch.IsToggledProperty, nameof(Dark), mode: BindingMode.TwoWay);
+			var themeButton = new Button
+			{
+				Text = "Toggle Theme",
+				AutomationId = "ThemeButton",
+				HorizontalOptions = LayoutOptions.Center
+			};
+			themeButton.Clicked += OnThemeButtonClicked;
 
 			Content = new ScrollView
 			{
@@ -39,12 +45,7 @@ public class Issue34823 : NavigationPage
 							HorizontalOptions = LayoutOptions.Center,
 							Children =
 							{
-								new Label
-								{
-									Text = "Dark Mode",
-									VerticalOptions = LayoutOptions.Center
-								},
-								darkModeSwitch
+								themeButton
 							}
 						}
 					}
@@ -52,7 +53,12 @@ public class Issue34823 : NavigationPage
 			};
 		}
 
-		private async void OnWebClicked(object sender, EventArgs e)
+		void OnThemeButtonClicked(object sender, EventArgs e)
+		{
+			Application.Current!.UserAppTheme = Dark ? AppTheme.Light : AppTheme.Dark;
+		}
+
+		async void OnWebClicked(object sender, EventArgs e)
 		{
 			var webView = new WebView();
 
