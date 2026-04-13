@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // This test fails on Windows because we no longer works with CollectionView on Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,3 +19,4 @@ public class Issue34897 : _IssuesUITest
 		App.WaitForElement("Issue34897Header");
 	}
 }
+#endif
