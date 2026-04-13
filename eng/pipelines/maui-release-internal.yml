@@ -74,8 +74,10 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    featureFlags:
+      disableNetworkIsolation: true
     settings:
-      networkIsolationPolicy: Permissive,NuGet
+      networkIsolationPolicy: Permissive
     pool: ${{ parameters.VM_IMAGE_HOST }}
     sdl:
       binskim:
