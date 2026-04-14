@@ -708,6 +708,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void FillWithPattern(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
+
+			// Reset the pattern phase so the pattern starts at the correct origin.
+			_context.SetPatternPhase(new CGSize(x, y));
+
 			var colorspace = CGColorSpace.CreatePattern(null);
 			_context.SetFillColorSpace(colorspace);
 
