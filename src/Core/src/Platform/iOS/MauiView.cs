@@ -144,6 +144,10 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
+		// Indicates whether the measure invalidation has already been propagated
+		// to ancestors during this main loop.
+		bool _measureInvalidatedPropagated;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -621,6 +625,10 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The size that fits within the constraints</returns>
 		public override CGSize SizeThatFits(CGSize size)
 		{
+			// Invalidations shouldn't happen during measure pass,
+			// but we need to support that in case it happens.
+			_measureInvalidatedPropagated = false;
+
 			if (_crossPlatformLayoutReference == null)
 			{
 				return base.SizeThatFits(size);
@@ -652,6 +660,9 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			// Allow measure invalidations during layout pass
+			_measureInvalidatedPropagated = false;
 
 			if (_crossPlatformLayoutReference == null)
 			{
@@ -799,6 +810,12 @@ namespace Microsoft.Maui.Platform
 
 			// If we're not propagating, then this view is the one triggering the invalidation
 			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
+			if (_measureInvalidatedPropagated)
+			{
+				return false;
+			}
+
+			_measureInvalidatedPropagated = true;
 			return true;
 		}
 

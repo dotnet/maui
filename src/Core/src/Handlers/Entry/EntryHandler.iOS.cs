@@ -48,6 +48,30 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, entry);
 		}
 
+		public static void MapBackground(IEntryHandler handler, IEntry entry)
+		{
+			if (handler.PlatformView is not MauiTextField platformView)
+				return;
+
+			if (entry.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+				return;
+			}
+			else if (entry.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+				return;
+			}
+			else
+			{
+				platformView.UpdateBackground(entry);
+			}
+		}
+
 		public static void MapTextColor(IEntryHandler handler, IEntry entry)
 		{
 			handler.PlatformView?.UpdateTextColor(entry);
@@ -212,8 +236,8 @@ namespace Microsoft.Maui.Handlers
 
 					VirtualView.UpdateText(platformView.Text);
 				}
-			}	
-				
+			}
+
 			void OnEditingEnded(object? sender, EventArgs e)
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
