@@ -5,8 +5,6 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
 using DateFormat = Android.Text.Format.DateFormat;
-using Android.Views;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -28,24 +26,6 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ShowPicker = ShowPickerDialog;
 			platformView.HidePicker = HidePickerDialog;
-			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
-			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
-
-			if (platformView.IsAttachedToWindow)
-			{
-				OnViewAttachedToWindow();
-			}
-		}
-
-		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
-		{
-			// Called when an activity is destroyed or view is detached
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
-		}
-
-		void OnViewAttachedToWindow(object? sender = null, View.ViewAttachedToWindowEventArgs? e = null)
-		{
-			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker platformView)
@@ -57,14 +37,8 @@ namespace Microsoft.Maui.Handlers
 				_dialog = null;
 			}
 
-			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
-			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
-			OnViewDetachedFromWindow();
-
 			platformView.ShowPicker = null;
 			platformView.HidePicker = null;
-
-			base.DisconnectHandler(platformView);
 		}
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
@@ -115,22 +89,6 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(timePicker, fontManager);
-		}
-
-		// Make it public in .NET 11.
-		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
-		{
-			if (handler.PlatformView is not null)
-			{
-				handler.PlatformView.UpdateFlowDirection(timePicker);
-
-				// For 12-hour format, also apply text alignment to handle AM/PM positioning
-				// For 24-hour format, UpdateFlowDirection alone is sufficient
-				if (handler is TimePickerHandler timePickerHandler && !timePickerHandler.Use24HourView)
-				{
-					handler.PlatformView.UpdateTextAlignment(timePicker);
-				}
-			}
 		}
 
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
@@ -214,21 +172,6 @@ namespace Microsoft.Maui.Handlers
 					return DateFormat.Is24HourFormat(PlatformView?.Context);
 
 				return IsCustom24HourFormat(VirtualView.Format);
-			}
-		}
-
-		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
-		{
-			// Only handle orientation changes when dialog is actually showing
-			if (_dialog is not null && _dialog.IsShowing)
-			{
-				// Unsubscribe first to prevent the DismissEvent from hiding the new dialog
-				_dialog.DismissEvent -= OnDialogDismiss;
-				_dialog.Dismiss();
-				_dialog = null;
-
-				// Recreate dialog with current values to handle orientation change
-				ShowPickerDialog(VirtualView?.Time);
 			}
 		}
 	}

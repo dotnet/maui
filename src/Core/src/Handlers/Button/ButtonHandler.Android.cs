@@ -23,10 +23,6 @@ namespace Microsoft.Maui.Handlers
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
-		// Cached default Material theme text colors, captured before any MAUI property mapping.
-		// Restored when TextColor is set to null (e.g. when a VisualState setter is unapplied).
-		ColorStateList? _defaultTextColors;
-
 		protected override MaterialButton CreatePlatformView()
 		{
 			MaterialButton platformButton = new MauiMaterialButton(Context)
@@ -51,9 +47,6 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnNativeViewFocusChange;
 			platformView.LayoutChange += OnPlatformViewLayoutChange;
 
-			// Capture Material theme defaults before MAUI property mapping is applied
-			_defaultTextColors = platformView.TextColors;
-
 			base.ConnectHandler(platformView);
 		}
 
@@ -67,8 +60,6 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.FocusChange -= OnNativeViewFocusChange;
 			platformView.LayoutChange -= OnPlatformViewLayoutChange;
-
-			_defaultTextColors = null;
 
 			ImageSourceLoader.Reset();
 
@@ -108,16 +99,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			if (button.TextColor is null)
-			{
-				// Restore the Material theme default colors captured before any MAUI mapping
-				if (handler is ButtonHandler buttonHandler && buttonHandler._defaultTextColors is not null)
-					handler.PlatformView?.SetTextColor(buttonHandler._defaultTextColors);
-			}
-			else
-			{
-				handler.PlatformView?.UpdateTextColor(button);
-			}
+			handler.PlatformView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)

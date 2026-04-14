@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Platform
 			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			IsTitleBarAutoPaddingEnabled = false;
 			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
-			AlwaysShowHeader = false;
 
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
@@ -56,7 +55,6 @@ namespace Microsoft.Maui.Platform
 
 				UpdateToolbarPlacement();
 				UpdateHeaderPropertyBinding();
-				UpdateHeaderVisibility();
 			}
 		}
 
@@ -70,7 +68,6 @@ namespace Microsoft.Maui.Platform
 		{
 			UpdateToolbarPlacement();
 			UpdatePaneContentGridMargin();
-			UpdateHeaderVisibility();
 		}
 
 
@@ -253,54 +250,6 @@ namespace Microsoft.Maui.Platform
 			_useCustomAppTitleBar = useCustomAppTitleBar;
 			_appBarTitleHeight = appTitleBarHeight;
 			UpdateNavigationAndPaneButtonHolderGridStyles();
-		}
-
-		internal void UpdateHeaderVisibility()
-		{
-			if (Toolbar is null || PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
-			{
-				return;
-			}
-
-			if (IsHeaderContentEmpty())
-			{
-				CollapseEmptyHeader();
-			}
-			else if (TopNavArea is not null &&
-					(PaneFooter == Toolbar || Header is null))
-			{
-				Header = Toolbar;
-			}
-		}
-
-		bool IsHeaderContentEmpty()
-		{
-			return string.IsNullOrEmpty(Toolbar?.Title) &&
-				   Toolbar?.TitleView is null &&
-				   !HasMenuBarItems() &&
-				   !HasToolbarItems() &&
-				   !HasTitleIcon();
-		}
-
-		bool HasMenuBarItems() => Toolbar?.HasMenuBarContent ?? false;
-
-		bool HasToolbarItems()
-		{
-			if (Toolbar?.CommandBar == null)
-				return false;
-
-			return Toolbar?.CommandBar.PrimaryCommands.Count > 0 ||
-				   Toolbar?.CommandBar.SecondaryCommands.Count > 0;
-		}
-
-		bool HasTitleIcon() => Toolbar?.TitleIconImage?.Visibility == UI.Xaml.Visibility.Visible;
-
-		void CollapseEmptyHeader()
-		{
-			if (Header is not null)
-			{
-				Header = null;
-			}
 		}
 
 		void UpdateNavigationAndPaneButtonHolderGridStyles()

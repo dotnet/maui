@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		bool _isRotating = false;
 		bool _isUpdating = false;
-		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
@@ -210,7 +209,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
-			_isInternalCollectionUpdate = false;
 		}
 
 		internal void UpdateScrollingConstraints()
@@ -315,21 +313,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_positionAfterUpdate = GetPositionWhenAddingItems(carouselPosition, currentItemPosition);
 			}
-
-			// Suppress any scroll-driven SetPosition calls that UIKit fires during the batch update
-			_isInternalCollectionUpdate = true;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			// Clear before anything else so SetPosition/SetCurrentItem called from this method are not suppressed
-			_isInternalCollectionUpdate = false;
-
 			int targetPosition;
 			if (_positionAfterUpdate == -1)
 			{
-				_isUpdating = false;
 				return;
 			}
 
@@ -356,6 +347,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
+
 			_isUpdating = false;
 			ScrollToPosition(targetPosition, targetPosition, false, true);
 		}
@@ -366,7 +358,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return currentItemPosition != -1 ? currentItemPosition : carouselPosition;
 		}
 
-		int GetTargetPosition()
+		private int GetTargetPosition()
 		{
 			if (ItemsSource.ItemCount == 0)
 			{
@@ -488,12 +480,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void SetPosition(int position)
 		{
-			// Suppress spurious calls from UIKit scroll callbacks during a collection batch update
-			if (_isInternalCollectionUpdate)
-			{
-				return;
-			}
-
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
