@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"5e89be1390fc8a350db540c3696a0995b385eea4e6553806325678f807479fb7","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"698fe19ee67db9f4c5d7b49647270bb1a873f5dec6ef69a664e80303f43a773a","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -372,7 +372,7 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && env.HAS_TEST_FILES != 'false'
         name: Checkout PR and restore agent infrastructure
         run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 

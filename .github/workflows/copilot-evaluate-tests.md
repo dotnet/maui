@@ -98,8 +98,9 @@ steps:
   # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
   # workflow_dispatch skips the platform checkout entirely, so we must do it here.
   # The script gates on PR author having write access before checkout.
+  # Skip if gate determined no test files (HAS_TEST_FILES set by gate step via GITHUB_ENV).
   - name: Checkout PR and restore agent infrastructure
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && env.HAS_TEST_FILES != 'false'
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ inputs.pr_number }}
