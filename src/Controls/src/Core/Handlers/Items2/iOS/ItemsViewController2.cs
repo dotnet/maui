@@ -182,8 +182,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 			}
 
-			CollectionView.ScrollsToTop = true;
-
 			RegisterViewTypes();
 
 			EnsureLayoutInitialized();

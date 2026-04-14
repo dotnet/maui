@@ -16,7 +16,6 @@ internal readonly struct XmlName(string namespaceUri, string localName)
 	public static readonly XmlName xFieldModifier = new("x", "FieldModifier");
 	public static readonly XmlName xKey = new("x", "Key");
 	public static readonly XmlName xName = new("x", "Name");
-	public static readonly XmlName xCode = new("x", "Code");
 	public static readonly XmlName xTypeArguments = new("x", "TypeArguments");
 	public static readonly XmlName mcIgnorable = new(XamlParser.McUri, "Ignorable");
 	public static readonly XmlName Empty = new();

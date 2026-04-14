@@ -84,28 +84,6 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, editor);
 		}
 
-		public static void MapBackground(IEditorHandler handler, IEditor editor)
-		{
-			if (handler.PlatformView is not MauiTextView platformView)
-				return;
-
-			if (editor.Background is ImageSourcePaint image)
-			{
-				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
-					.FireAndForget(handler);
-			}
-			else if (editor.Background.IsNullOrEmpty())
-			{
-				platformView.RemoveBackgroundLayer();
-				platformView.BackgroundColor = null;
-			}
-			else
-			{
-				platformView.UpdateBackground(editor);
-			}
-		}
-
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateTextColor(editor);
 
