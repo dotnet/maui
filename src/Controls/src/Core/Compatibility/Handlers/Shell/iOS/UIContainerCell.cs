@@ -131,10 +131,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
-				if (baseShellItem.IsChecked)
-					VisualStateManager.GoToState(View, "Selected");
-				else
+				var targetState = baseShellItem.IsChecked ? "Selected" : "Normal";
+				
+				// Force a complete refresh of DynamicResource bindings in visual states.
+				// VisualStateManager.GoToState() optimizes by returning early if already in the target state,
+				// so DynamicResource changes are not re-applied. We work around this by always transitioning
+				// through Normal first, which forces setters to be unapplied and re-applied.
+				// This fixes an issue where dynamic resources don't update when cells are reused after
+				// flyout is reopened or when application resources change at runtime.
+				// See: https://github.com/dotnet/maui/issues/34931
+				if (targetState != "Normal")
+				{
 					VisualStateManager.GoToState(View, "Normal");
+				}
+				
+				// Always apply the target state to handle transitions and ensure proper state
+				VisualStateManager.GoToState(View, targetState);
 			}
 		}
 

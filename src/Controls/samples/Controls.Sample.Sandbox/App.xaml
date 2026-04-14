@@ -5,9 +5,7 @@
              x:Class="Maui.Controls.Sample.App">
     <Application.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-
-            </ResourceDictionary.MergedDictionaries>
+            <Color x:Key="Primary">#512BD4</Color>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
