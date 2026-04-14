@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 		bool _isTouchDown;
 		bool _isSwiping;
 		double _swipeOffset;
-		double _swipeThreshold;
+		double _swipeOpenDistance;
 		CGRect _originalBounds;
 		List<CGRect> _swipeItemsRect;
 		bool _isSwipeEnabled;
@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Platform
 
 			if (item?.Handler?.PlatformView is UIView platformView)
 			{
-				_swipeThreshold = 0;
+				_swipeOpenDistance = 0;
 				LayoutSwipeItems(GetNativeSwipeItems());
 				SwipeToThreshold(false);
 			}
@@ -704,7 +704,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_isOpen = false;
 			_swipeItems.Clear();
-			_swipeThreshold = 0;
+			_swipeOpenDistance = 0;
 			_swipeOffset = 0;
 			_originalBounds = CGRect.Empty;
 
@@ -719,7 +719,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_isResettingSwipe = false;
 			_isSwiping = false;
-			_swipeThreshold = 0;
+			_swipeOpenDistance = 0;
 			_swipeDirection = null;
 			DisposeSwipeItems();
 		}
@@ -731,7 +731,7 @@ namespace Microsoft.Maui.Platform
 
 			_isResettingSwipe = true;
 			_isSwiping = false;
-			_swipeThreshold = 0;
+			_swipeOpenDistance = 0;
 			_swipeDirection = null;
 
 			if (animated)
@@ -885,17 +885,17 @@ namespace Microsoft.Maui.Platform
 
 		double GetSwipeOpenDistance()
 		{
-			if (Math.Abs(_swipeThreshold) > double.Epsilon)
-				return _swipeThreshold;
+			if (Math.Abs(_swipeOpenDistance) > double.Epsilon)
+				return _swipeOpenDistance;
 
 			var swipeItems = GetSwipeItemsByDirection();
 
 			if (swipeItems == null)
 				return 0;
 
-			_swipeThreshold = GetSwipeOpenDistance(swipeItems);
+			_swipeOpenDistance = GetSwipeOpenDistance(swipeItems);
 
-			return _swipeThreshold;
+			return _swipeOpenDistance;
 		}
 
 		double GetSwipeOpenDistance(ISwipeItems swipeItems)
