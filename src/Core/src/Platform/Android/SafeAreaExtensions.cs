@@ -328,8 +328,10 @@ internal static class SafeAreaExtensions
 				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
 					return keyBoardInsets.Bottom;
 
-				// if the keyboard is showing then we will just return 0 for the bottom inset
-				// because that part of the view is covered by the keyboard so we don't want to pad the view
+				// Container/Default: preserve nav bar inset so content doesn't jump (All is handled above by IsSoftInput)
+				if (SafeAreaEdges.IsContainer(safeAreaRegion) || safeAreaRegion == SafeAreaRegions.Default)
+					return originalSafeArea;
+
 				return 0;
 			}
 		}
