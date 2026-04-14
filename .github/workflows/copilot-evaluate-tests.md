@@ -86,9 +86,11 @@ steps:
           || true)
       fi
       if [ -z "$TEST_FILES" ]; then
-        echo "⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation."
-        exit 1
+        echo "⏭️ No test source files (.cs/.xaml) found in PR diff."
+        echo "HAS_TEST_FILES=false" >> "$GITHUB_ENV"
+        exit 0
       fi
+      echo "HAS_TEST_FILES=true" >> "$GITHUB_ENV"
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 

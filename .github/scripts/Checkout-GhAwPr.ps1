@@ -64,7 +64,7 @@ if ($LASTEXITCODE -ne 0) {
 $AllowedRoles = @('admin', 'write', 'maintain')
 if ($Permission -notin $AllowedRoles) {
     Write-Host "⏭️ PR author '$($PrInfo.author)' has '$Permission' access. workflow_dispatch only processes PRs from authors with write access."
-    exit 0
+    exit 1
 }
 
 $IsFork = if ($PrInfo.isFork) { "fork" } else { "same-repo" }
