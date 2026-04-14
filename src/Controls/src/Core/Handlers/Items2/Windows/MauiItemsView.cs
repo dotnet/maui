@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		ContentControl? _headerContentControl;
 		FrameworkElement? _header;
 		View? _mauiHeader;
-		
+
 		ContentControl? _footerContentControl;
 		FrameworkElement? _footer;
 		View? _mauiFooter;
@@ -35,9 +35,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isHorizontalLayout;
 		WScrollView? _scrollView;
 
+		// Reference to the MAUI ItemsView for accessing the original ItemsSource
+		ItemsView? _mauiItemsView;
+
 		public MauiItemsView()
 		{
 			Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		}
+
+		/// <summary>
+		/// Sets a reference to the MAUI ItemsView for accessing the original ItemsSource.
+		/// </summary>
+		public void SetMauiItemsView(ItemsView? itemsView)
+		{
+			_mauiItemsView = itemsView;
 		}
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =

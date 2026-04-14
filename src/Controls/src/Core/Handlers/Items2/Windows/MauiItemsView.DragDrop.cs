@@ -233,11 +233,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			System.Diagnostics.Debug.WriteLine($"=== DROP EVENT ===");
 			System.Diagnostics.Debug.WriteLine($"  _canReorderItems: {_canReorderItems}");
-			System.Diagnostics.Debug.WriteLine($"  ItemsSource is IList: {ItemsSource is IList}");
+			System.Diagnostics.Debug.WriteLine($"  _mauiItemsView?.ItemsSource is IList: {_mauiItemsView?.ItemsSource is IList}");
 			System.Diagnostics.Debug.WriteLine($"  _draggedItem: {_draggedItem}");
 			System.Diagnostics.Debug.WriteLine($"  _insertionIndex: {_insertionIndex}");
 
-			if (!_canReorderItems || ItemsSource is not IList itemsList || _draggedItem is null || _insertionIndex < 0)
+			// Use the original MAUI ItemsView's ItemsSource (not the wrapped WinUI ItemsSource)
+			if (!_canReorderItems || _mauiItemsView?.ItemsSource is not IList itemsList || _draggedItem is null || _insertionIndex < 0)
 			{
 				System.Diagnostics.Debug.WriteLine($"  DROP CANCELLED - Validation failed");
 				CleanupDragState();
@@ -254,6 +255,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (reordered)
 				{
+					// Send reorder completed notification through the MAUI ItemsView
+					if (_mauiItemsView is ReorderableItemsView reorderableItemsView)
+					{
+						reorderableItemsView.SendReorderCompleted();
+					}
 					ReorderCompleted?.Invoke(this, EventArgs.Empty);
 				}
 			}

@@ -369,7 +369,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void OnLayoutUpdated(object? s, object args)
 		{
 			if (PlatformView is null)
-			{
+			{  
 				_scrollUpdatePending = false;
 				return;
 			}
@@ -416,6 +416,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				Layout = CreateItemsLayout()
 			};
+
+			// Set the MAUI ItemsView reference for reordering support
+			itemsView.SetMauiItemsView(VirtualView);
 
 			if (IsLayoutHorizontal)
 			{
