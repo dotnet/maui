@@ -83,6 +83,7 @@ function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
             if ($mainMajor -eq $Major) { return "main" }
         }
     }
+    Write-Warning "Could not read MajorVersion from origin/main:eng/Versions.props — falling back to net$Major.0"
     return "net$Major.0"
 }
 
@@ -97,7 +98,10 @@ function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
         Write-Verbose "  Fetching commit $GitRef..."
         $null = git -C $Repo fetch origin $GitRef --quiet 2>&1
         $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
-        if ($LASTEXITCODE -ne 0) { return $null }
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Could not read Versions.props at commit $GitRef (even after fetch)"
+            return $null
+        }
     }
     $joined = ($versionXml -join "`n")
     if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
@@ -487,9 +491,6 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
         Errors            = [System.Collections.ArrayList]::new()
     }
 
-    $pr = Get-PrInfo $PrNum
-    if (-not $pr) { throw "Could not fetch PR #$PrNum" }
-
     # Safety: skip PRs targeting a different .NET version branch
     if (-not (Test-PrBelongsToVersion $pr.BaseRef $Branch $Major)) {
         Write-Warning "PR #$PrNum targets '$($pr.BaseRef)' which is not for .NET $Major (MainBranch: $Branch). Skipping."
@@ -520,15 +521,18 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
 
     if (-not $PrevTag) {
         $PrevTag = Find-PreviousTag $ReleaseTag $allTags
-        if (-not $PrevTag) { throw "Cannot determine previous tag for $ReleaseTag" }
+        # No previous tag means this is the first release (e.g. GA).
+        # We'll use Get-PrNumbersReachableFromTag instead of a range.
     }
 
     # Detect which branch owns this version's tags
     $Branch = Get-MainBranchForVersion $Major $Repo
 
+    $prevDisplay = if ($PrevTag) { $PrevTag } else { "(root)" }
+
     Write-Host "`n$('═' * 70)"
     Write-Host "  Release: $ReleaseTag"
-    Write-Host "  Previous: $PrevTag"
+    Write-Host "  Previous: $prevDisplay"
     Write-Host "  Main branch: $Branch"
     Write-Host "  Expected milestone: $expectedMs"
     Write-Host "$('═' * 70)`n"
@@ -541,8 +545,13 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
     }
     Write-Host "  Resolved to: `"$($match.Title)`" (#$($match.Number))`n"
 
-    Write-Host "Finding PRs between $PrevTag..$ReleaseTag..."
-    $prNumbers = Get-PrNumbersBetweenTags $PrevTag $ReleaseTag $Repo
+    if ($PrevTag) {
+        Write-Host "Finding PRs between $PrevTag..$ReleaseTag..."
+        $prNumbers = Get-PrNumbersBetweenTags $PrevTag $ReleaseTag $Repo
+    } else {
+        Write-Host "Finding all PRs reachable from $ReleaseTag (first tag)..."
+        $prNumbers = Get-PrNumbersReachableFromTag $ReleaseTag $Repo
+    }
     Write-Host "  Found $($prNumbers.Count) PRs`n"
 
     $report = @{
@@ -630,7 +639,7 @@ function Write-Report([hashtable]$Report) {
 function Save-ReportJson([hashtable]$Report, [string]$Path) {
     $data = @{
         tag                = $Report.Tag
-        previous_tag       = $Report.PreviousTag
+        previous_tag       = if ($Report.ContainsKey('PreviousTag')) { $Report.PreviousTag } else { $null }
         expected_milestone = $Report.ExpectedMilestone
         resolved_milestone = $Report.ResolvedMilestone
         summary            = @{
