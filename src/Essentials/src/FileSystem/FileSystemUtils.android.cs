@@ -60,6 +60,10 @@ namespace Microsoft.Maui.Storage
 
 			// try resolve using the content provider
 			var absolute = ResolvePhysicalPath(uri, requireExtendedAccess);
+			// On API 28 and below, ResolvePhysicalPath may return a raw filesystem path that passes
+			// File.Exists() but lacks read permission, causing UnauthorizedAccessException.
+			// IsFileReadable uses Java.IO.File.canRead() to verify actual read access before using the path.
+			// On API 29+, ResolvePhysicalPath skips document resolution for content URIs, so this is not needed.
 			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute) && IsFileReadable(absolute))
 				return absolute;
 
