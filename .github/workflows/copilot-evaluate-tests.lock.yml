@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"3696e1009391ebf26f6ff0200253ee7cdb40480282a5dcc5ca67c3408ed8b406","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b93d66e9ef685f04f4a2d93d11d4537ff6be75abd61211e325db8fe42ef599d2","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -32,43 +32,19 @@ name: "Evaluate PR Tests"
     types:
     - created
     - edited
-  pull_request_target:
-    paths:
-    - src/**/tests/**
-    - src/**/test/**
-    types:
-    - opened
-    - synchronize
-    - reopened
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: PR number to evaluate
-        required: true
-        type: number
-      suppress_output:
-        default: false
-        description: Dry-run — evaluate but do not post output on the PR
-        required: false
-        type: boolean
 
 permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
+  group: evaluate-pr-tests-${{ github.event.issue.number || github.run_id }}
 
 run-name: "Evaluate PR Tests"
 
 jobs:
   activation:
     needs: pre_activation
-    if: >
-      (needs.pre_activation.outputs.activated == 'true') && (((!github.event.repository.fork) || github.event_name == 'workflow_dispatch') && (
-      (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'issue_comment'
-      ))
+    if: (needs.pre_activation.outputs.activated == 'true') && (github.event_name == 'issue_comment')
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -182,7 +158,6 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -251,7 +226,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
         with:
@@ -264,7 +239,6 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -288,7 +262,6 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_93C755A4: process.env.GH_AW_EXPR_93C755A4,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -366,15 +339,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          PR_NUMBER: ${{ github.event.issue.number }}
         name: Gate — skip if no test source files in diff
         run: "# Try gh pr diff first; fall back to REST API for large PRs (300+ files)\nTEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  TEST_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>/dev/null \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
-      - env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-        if: github.event_name == 'workflow_dispatch'
-        name: Checkout PR and restore agent infrastructure
-        run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 
       - name: Configure Git credentials
         env:
@@ -1053,12 +1020,7 @@ jobs:
             await main();
 
   pre_activation:
-    if: >
-      ((!github.event.repository.fork) || github.event_name == 'workflow_dispatch') && (
-      (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'issue_comment'
-      )
+    if: github.event_name == 'issue_comment'
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ (steps.check_membership.outputs.is_team_member == 'true') && (steps.check_command_position.outputs.command_position_ok == 'true') }}

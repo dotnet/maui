@@ -1,37 +1,32 @@
 ---
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-    paths:
-      - 'src/**/tests/**'
-      - 'src/**/test/**'
+  # pull_request_target:
+  #   types: [opened, synchronize, reopened]
+  #   paths:
+  #     - 'src/**/tests/**'
+  #     - 'src/**/test/**'
   slash_command:
     name: evaluate-tests
     events: [pull_request_comment, issue_comment]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to evaluate'
-        required: true
-        type: number
-      suppress_output:
-        description: 'Dry-run — evaluate but do not post output on the PR'
-        required: false
-        type: boolean
-        default: false
+  # workflow_dispatch:
+  #   inputs:
+  #     pr_number:
+  #       description: 'PR number to evaluate'
+  #       required: true
+  #       type: number
+  #     suppress_output:
+  #       description: 'Dry-run — evaluate but do not post output on the PR'
+  #       required: false
+  #       type: boolean
+  #       default: false
   bots:
     - "copilot-swe-agent[bot]"
 
 labels: ["pr-review", "testing"]
 
 if: >-
-  ((!github.event.repository.fork) || github.event_name == 'workflow_dispatch') &&
-  (
-    (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
-    github.event_name == 'workflow_dispatch' ||
-    github.event_name == 'issue_comment'
-  )
+  github.event_name == 'issue_comment'
 
 permissions:
   contents: read
@@ -62,7 +57,7 @@ tools:
 network: defaults
 
 concurrency:
-  group: "evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}"
+  group: "evaluate-pr-tests-${{ github.event.issue.number || github.run_id }}"
   cancel-in-progress: true
 
 timeout-minutes: 20
@@ -71,7 +66,7 @@ steps:
   - name: Gate — skip if no test source files in diff
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+      PR_NUMBER: ${{ github.event.issue.number }}
     run: |
       # Try gh pr diff first; fall back to REST API for large PRs (300+ files)
       TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null \
@@ -92,16 +87,14 @@ steps:
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 
-  # Only needed for workflow_dispatch — for pull_request_target and issue_comment,
-  # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
-  # workflow_dispatch skips the platform checkout entirely, so we must do it here.
-  # The script gates on PR author having write access before checkout.
-  - name: Checkout PR and restore agent infrastructure
-    if: github.event_name == 'workflow_dispatch'
-    env:
-      GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ inputs.pr_number }}
-    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+  # Checkout is handled automatically by the gh-aw platform's checkout_pr_branch.cjs
+  # for slash_command/issue_comment triggers. No manual checkout needed.
+  # - name: Checkout PR and restore agent infrastructure
+  #   if: github.event_name == 'workflow_dispatch'
+  #   env:
+  #     GH_TOKEN: ${{ github.token }}
+  #     PR_NUMBER: ${{ inputs.pr_number }}
+  #   run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
 # Evaluate PR Tests
@@ -111,7 +104,7 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR Number**: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+- **PR Number**: ${{ github.event.issue.number }}
 
 The PR branch has been checked out for you. All files from the PR are available locally.
 
@@ -135,11 +128,13 @@ If the file is **missing**, the fork PR branch is likely not rebased on the late
 
 Then stop — do not proceed with the evaluation.
 
+<!-- Dry-run mode is disabled while workflow_dispatch is commented out
 ## Dry-run mode
 
 When triggered via `workflow_dispatch`, the `suppress_output` input controls behavior.
 - If `${{ inputs.suppress_output }}` == **true**, perform the full evaluation but **do not** post output on the PR. Write the evaluation to the workflow log only. This is useful for testing the skill without spamming the PR.
 - If **false** (default), post the output as normal.
+-->
 
 ## When no action is needed
 
@@ -160,9 +155,7 @@ Do not post a comment and do not silently exit — always use `noop` so the work
 
 ## Posting Results
 
-If dry-run mode is active (`suppress_output` is true), log the evaluation report to stdout and stop — do **not** call `add_comment`.
-
-Otherwise, call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
+Call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
 
 ```markdown
 ## 🧪 PR Test Evaluation
