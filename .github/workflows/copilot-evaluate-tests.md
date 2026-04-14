@@ -25,8 +25,8 @@ on:
 
 labels: ["pr-review", "testing"]
 
-if: >-
-  github.event_name == 'issue_comment'
+# The if: condition is omitted — slash_command compiles to issue_comment,
+# so the platform's pre_activation job handles trigger filtering.
 
 permissions:
   contents: read
@@ -69,17 +69,21 @@ steps:
       PR_NUMBER: ${{ github.event.issue.number }}
     run: |
       # Verify this is an open PR
-      STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq .state 2>/dev/null || echo "UNKNOWN")
+      if ! STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq .state 2>&1); then
+        echo "❌ Failed to fetch PR #$PR_NUMBER state: $STATE"
+        exit 1
+      fi
       if [ "$STATE" != "OPEN" ]; then
         echo "⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation."
         exit 1
       fi
-      # Try gh pr diff first; fall back to REST API for large PRs (300+ files)
-      TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null \
-        | grep -E '\.(cs|xaml)$' \
-        | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \
-        || true)
-      if [ -z "$TEST_FILES" ]; then
+      # Try gh pr diff first; fall back to REST API only on command failure
+      if DIFF_OUTPUT=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null); then
+        TEST_FILES=$(echo "$DIFF_OUTPUT" \
+          | grep -E '\.(cs|xaml)$' \
+          | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \
+          || true)
+      else
         # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API
         TEST_FILES=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename' 2>/dev/null \
           | grep -E '\.(cs|xaml)$' \
