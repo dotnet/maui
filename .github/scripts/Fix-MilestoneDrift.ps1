@@ -69,6 +69,23 @@ if ($MyInvocation.InvocationName -ne '.') {
 
 #region ── Milestone mapping helpers ──────────────────────────────────────
 
+function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
+    <# Determines which development branch owns a .NET version by reading
+       MajorVersion from eng/Versions.props on main. If main's MajorVersion
+       matches, the version lives on main. Otherwise it's on net{Major}.0.
+       This works correctly across version transitions — when main moves
+       from .NET 10 to .NET 11, MajorVersion in Versions.props changes too. #>
+    $versionXml = git -C $Repo --no-pager show origin/main:eng/Versions.props 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $joined = ($versionXml -join "`n")
+        if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
+            $mainMajor = [int]$Matches[1]
+            if ($mainMajor -eq $Major) { return "main" }
+        }
+    }
+    return "net$Major.0"
+}
+
 function ConvertTo-Milestone([string]$ReleaseTag) {
     <# Converts "10.0.50" → ".NET 10 SR5", "10.0.0" → ".NET 10.0 GA" #>
     if ($ReleaseTag -notmatch '^(\d+)\.0\.(\d+)$') { return $null }
@@ -131,6 +148,42 @@ function Find-PreviousTag([string]$ReleaseTag, [string[]]$AllTags) {
         $_ -match "^$major\.0\.(\d+)$" -and [int]$Matches[1] -lt $patch
     } | Sort-Object { Get-PatchVersion $_ }
     return ($candidates | Select-Object -Last 1)
+}
+
+function Test-PrBelongsToVersion([string]$BaseRef, [string]$MainBranch, [int]$Major) {
+    <# Checks if a PR's base branch is compatible with the version being analyzed.
+       Prevents merge-up commits from causing incorrect milestoning.
+       E.g. when main (.NET 10) merges into net11.0, the .NET 10 PRs should not
+       be milestoned as .NET 11. #>
+    if ([string]::IsNullOrEmpty($BaseRef)) { return $true }
+
+    # PR targets the main branch for this version — always allowed
+    if ($BaseRef -eq $MainBranch) { return $true }
+
+    # Allow inflight/darc branches only if they feed into this version's main branch
+    if ($BaseRef -match '^(inflight|darc)/') {
+        # inflight/* and darc/* branches feed into 'main', so only allow when MainBranch is 'main'
+        return ($MainBranch -eq 'main')
+    }
+
+    # Release branches: only allow if they match this major version
+    if ($BaseRef -match '^release/(\d+)\.') {
+        return ([int]$Matches[1] -eq $Major)
+    }
+
+    # Reject PRs explicitly targeting a different .NET version branch (net11.0, net12.0, etc.)
+    if ($BaseRef -match '^net(\d+)\.\d+$') {
+        return ([int]$Matches[1] -eq $Major)
+    }
+
+    # Reject 'main' when we're analyzing a non-main version (e.g. .NET 11 on net11.0)
+    # PRs targeting 'main' belong to the .NET version that lives on main, not this one.
+    if ($BaseRef -eq 'main' -and $MainBranch -ne 'main') {
+        return $false
+    }
+
+    # Unknown branches (feature/*, etc.) — allow
+    return $true
 }
 
 #endregion
@@ -238,6 +291,7 @@ function Get-PrInfo([int]$PrNum) {
             MsNumber  = if ($pr.milestone) { $pr.milestone.number } else { $null }
             Url       = $pr.html_url
             Body      = if ($pr.body) { $pr.body } else { "" }
+            BaseRef   = if ($pr.base -and $pr.base.ref) { $pr.base.ref } else { $null }
         }
     } catch {
         Write-Warning "Failed to fetch PR #$PrNum`: $_"
@@ -366,6 +420,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     $expectedMs = ConvertTo-Milestone $ReleaseTag
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
+    # Detect which branch owns this version's tags
+    $Branch = Get-MainBranchForVersion $Major $Repo
+    Write-Host "Detected main branch for .NET $Major`: $Branch"
     Write-Host "Expected milestone: $expectedMs"
     Write-Host "Fetching GitHub milestones..."
     $allMilestones = Get-AllMilestones
@@ -390,6 +447,12 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
 
     $pr = Get-PrInfo $PrNum
     if (-not $pr) { throw "Could not fetch PR #$PrNum" }
+
+    # Safety: skip PRs targeting a different .NET version branch
+    if (-not (Test-PrBelongsToVersion $pr.BaseRef $Branch $Major)) {
+        Write-Warning "PR #$PrNum targets '$($pr.BaseRef)' which is not for .NET $Major (MainBranch: $Branch). Skipping."
+        return $report
+    }
     $report.PrsChecked++
 
     Test-AndRecordCorrection "pr" $PrNum $pr.Title $pr.Url $pr.Milestone $expectedMs $match 0 $report
@@ -406,7 +469,7 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     return $report
 }
 
-function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$Repo) {
+function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$Repo, [int]$Major) {
     $expectedMs = ConvertTo-Milestone $ReleaseTag
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
@@ -418,9 +481,13 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         if (-not $PrevTag) { throw "Cannot determine previous tag for $ReleaseTag" }
     }
 
+    # Detect which branch owns this version's tags
+    $Branch = Get-MainBranchForVersion $Major $Repo
+
     Write-Host "`n$('═' * 70)"
     Write-Host "  Release: $ReleaseTag"
     Write-Host "  Previous: $PrevTag"
+    Write-Host "  Main branch: $Branch"
     Write-Host "  Expected milestone: $expectedMs"
     Write-Host "$('═' * 70)`n"
 
@@ -459,6 +526,13 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
             [void]$report.Errors.Add("Failed to fetch PR #$prNum")
             continue
         }
+
+        # Safety: skip PRs targeting a different .NET version branch
+        if (-not (Test-PrBelongsToVersion $pr.BaseRef $Branch $Major)) {
+            Write-Verbose "  ⏭️  PR #$prNum targets '$($pr.BaseRef)' — not for .NET $Major, skipping"
+            $report.PrsSkippedWrongBranch = ($report.PrsSkippedWrongBranch ?? 0) + 1
+            continue
+        }
         $report.PrsChecked++
 
         Test-AndRecordCorrection "pr" $prNum $pr.Title $pr.Url $pr.Milestone $expectedMs $match 0 $report
@@ -488,6 +562,9 @@ function Write-Report([hashtable]$Report) {
     Write-Host "  Resolved milestone: $($Report.ResolvedMilestone)"
     Write-Host "  PRs in range: $($Report.TotalPrs)"
     Write-Host "  PRs checked: $($Report.PrsChecked)"
+    if ($Report.ContainsKey('PrsSkippedWrongBranch') -and $Report.PrsSkippedWrongBranch -gt 0) {
+        Write-Host "  PRs skipped (wrong branch): $($Report.PrsSkippedWrongBranch)"
+    }
     Write-Host "  Issues checked: $($Report.IssuesChecked)"
     Write-Host "  Already correct: $($Report.AlreadyCorrect)"
     Write-Host "  Corrections needed: $($Report.Corrections.Count)"
@@ -625,7 +702,7 @@ if ($PrNumber -gt 0) {
     if ($CreateIssue -and $report.Corrections.Count -gt 0) { New-GitHubIssue $report $Apply.IsPresent }
 }
 elseif ($Tag) {
-    $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath
+    $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath $MajorVersion
     Write-Report $report
     $outPath = if ($Output) { $Output } else { "milestone-drift-$($Tag -replace '\.','_').json" }
     Save-ReportJson $report $outPath

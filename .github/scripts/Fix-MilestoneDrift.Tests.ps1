@@ -252,3 +252,66 @@ Describe 'Test-IsSrTag' {
         Test-IsSrTag 'not-a-tag' 10 | Should -BeFalse
     }
 }
+
+Describe 'Test-PrBelongsToVersion' {
+    Context 'MainBranch = main (e.g. .NET 10)' {
+        It 'allows PRs targeting main' {
+            Test-PrBelongsToVersion 'main' 'main' 10 | Should -BeTrue
+        }
+
+        It 'allows PRs targeting inflight branches' {
+            Test-PrBelongsToVersion 'inflight/current' 'main' 10 | Should -BeTrue
+        }
+
+        It 'allows PRs targeting release branches for same version' {
+            Test-PrBelongsToVersion 'release/10.0.50' 'main' 10 | Should -BeTrue
+        }
+
+        It 'allows PRs targeting darc branches' {
+            Test-PrBelongsToVersion 'darc/main-abc123' 'main' 10 | Should -BeTrue
+        }
+
+        It 'rejects PRs targeting net11.0' {
+            Test-PrBelongsToVersion 'net11.0' 'main' 10 | Should -BeFalse
+        }
+
+        It 'rejects PRs targeting net12.0' {
+            Test-PrBelongsToVersion 'net12.0' 'main' 10 | Should -BeFalse
+        }
+
+        It 'allows PRs targeting feature branches' {
+            Test-PrBelongsToVersion 'feature/my-feature' 'main' 10 | Should -BeTrue
+        }
+
+        It 'allows null/empty base ref' {
+            Test-PrBelongsToVersion $null 'main' 10 | Should -BeTrue
+            Test-PrBelongsToVersion '' 'main' 10 | Should -BeTrue
+        }
+    }
+
+    Context 'MainBranch = net11.0 (e.g. .NET 11)' {
+        It 'allows PRs targeting net11.0' {
+            Test-PrBelongsToVersion 'net11.0' 'net11.0' 11 | Should -BeTrue
+        }
+
+        It 'rejects PRs targeting main (those are .NET 10)' {
+            Test-PrBelongsToVersion 'main' 'net11.0' 11 | Should -BeFalse
+        }
+
+        It 'rejects PRs targeting inflight (feeds into main, not net11.0)' {
+            Test-PrBelongsToVersion 'inflight/current' 'net11.0' 11 | Should -BeFalse
+        }
+
+        It 'rejects PRs targeting net10.0' {
+            Test-PrBelongsToVersion 'net10.0' 'net11.0' 11 | Should -BeFalse
+        }
+
+        It 'allows PRs targeting release/11.x branches' {
+            Test-PrBelongsToVersion 'release/11.0.10' 'net11.0' 11 | Should -BeTrue
+        }
+
+        It 'rejects PRs targeting release/10.x branches' {
+            Test-PrBelongsToVersion 'release/10.0.50' 'net11.0' 11 | Should -BeFalse
+        }
+    }
+}
