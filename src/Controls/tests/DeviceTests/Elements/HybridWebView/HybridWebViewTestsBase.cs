@@ -40,7 +40,6 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 			HybridRoot = "HybridTestRoot",
 			DefaultFile = defaultFile ?? "index.html",
 		};
-
 		await RunTest(hybridWebView, (handler, view) => test(view));
 	}
 
@@ -59,12 +58,7 @@ public partial class HybridWebViewTestsBase : ControlsHandlerTestBase
 		{
 			await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
-			// Use a cancellation token with a timeout
-			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-
-			var testWrapper = test((HybridWebViewHandler)handler, hybridWebView);
-
-			await testWrapper.WaitAsync(cts.Token);
+			await test((HybridWebViewHandler)handler, hybridWebView);
 		});
 	}
 
