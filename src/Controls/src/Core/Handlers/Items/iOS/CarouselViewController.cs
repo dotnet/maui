@@ -354,14 +354,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			int carouselPosition = carousel.Position;
 			_positionAfterUpdate = carouselPosition;
-			var currentItemIndex = ItemsSource.GetIndexForItem(carousel.CurrentItem);
-			var currentItemPosition = currentItemIndex.Row;
+			var currentItemPosition = ItemsSource.GetIndexForItem(carousel.CurrentItem).Row;
 			var count = ItemsSource.ItemCount;
-
-			if (currentItemPosition < 0)
-			{
-				return;
-			}
 
 			if (e.Action == NotifyCollectionChangedAction.Remove)
 			{
