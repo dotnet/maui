@@ -120,6 +120,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
+		const string hybridWebViewDynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
 			// Keep the RequiresDynamicCode path isolated under the HybridWebView feature switch
@@ -128,9 +129,9 @@ public static partial class AppHostBuilderExtensions
 			AddHybridWebViewHandler(handlersCollection);
 		}
 #if !NETSTANDARD
-		[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
+		[RequiresDynamicCode(hybridWebViewDynamicFeatures)]
 #endif
-		[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
+		[RequiresUnreferencedCode(hybridWebViewDynamicFeatures)]
 		static void AddHybridWebViewHandler(IMauiHandlersCollection handlersCollection)
 		{
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
