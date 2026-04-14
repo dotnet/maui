@@ -122,7 +122,17 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+			// Keep the RequiresDynamicCode path isolated under the HybridWebView feature switch
+			// so NativeAOT/full-trim apps don't pick up HybridWebView warnings just by
+			// evaluating the default handler registration list.
+			AddHybridWebViewHandler(handlersCollection);
+		}
+#if !NETSTANDARD
+		[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
+#endif
+		[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
+		static void AddHybridWebViewHandler(IMauiHandlersCollection handlersCollection)
+		{
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
 
