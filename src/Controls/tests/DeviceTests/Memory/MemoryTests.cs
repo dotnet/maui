@@ -102,6 +102,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(NavigationPage))]
 	// Issue #27411 (partially) and #33918 have been fixed - NavigationPage no longer leaks on Android
 	[InlineData(typeof(TabbedPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ContentPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NavigationPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TabbedPage))]
 	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
