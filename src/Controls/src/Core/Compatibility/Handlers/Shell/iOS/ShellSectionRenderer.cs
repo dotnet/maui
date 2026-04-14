@@ -359,6 +359,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					DisposePage(tracker, true);
 				}
+
+				// The root content page is not in Stack (Stack[0] is null).
+				// Disconnect it explicitly to prevent child handler leaks (dotnet/maui#34898).
+				foreach (var content in ShellSection.Items)
+				{
+					if (content is IShellContentController { Page: Page contentPage })
+					{
+						DisposePage(contentPage, true);
+					}
+				}
 			}
 
 			_disposed = true;

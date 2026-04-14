@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_shellContent != null)
 			{
 				((IShellContentController)_shellContent).RecyclePage(_page);
-				_page.Handler = null;
+				_page.DisconnectHandlers();
 			}
 
 			if (_shellPageContainer != null)

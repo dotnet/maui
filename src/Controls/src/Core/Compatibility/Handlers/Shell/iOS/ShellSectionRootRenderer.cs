@@ -192,6 +192,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					var element = oldRenderer.VirtualView;
 					oldRenderer?.DisconnectHandler();
+
+					// Recursively disconnect handlers on child elements of the page
+					// to prevent memory leaks when Shell items are cleared (dotnet/maui#34898)
+					if (element is IView view)
+					{
+						view.DisconnectHandlers();
+					}
 				}
 
 				_renderers.Clear();
