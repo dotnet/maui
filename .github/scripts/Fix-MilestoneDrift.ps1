@@ -86,6 +86,22 @@ function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
     return "net$Major.0"
 }
 
+function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
+    <# Reads MajorVersion and PatchVersion from eng/Versions.props at a specific
+       git ref (commit SHA, branch, tag). Returns a synthetic release tag string
+       like "10.0.60" that can be passed to ConvertTo-Milestone. #>
+    $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
+    if ($LASTEXITCODE -ne 0) { return $null }
+    $joined = ($versionXml -join "`n")
+    if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
+        $major = $Matches[1]
+    } else { return $null }
+    if ($joined -match '<PatchVersion>(\d+)</PatchVersion>') {
+        $patch = $Matches[1]
+    } else { return $null }
+    return "$major.0.$patch"
+}
+
 function ConvertTo-Milestone([string]$ReleaseTag) {
     <# Converts "10.0.50" → ".NET 10 SR5", "10.0.0" → ".NET 10.0 GA" #>
     if ($ReleaseTag -notmatch '^(\d+)\.0\.(\d+)$') { return $null }
@@ -285,13 +301,14 @@ function Get-PrInfo([int]$PrNum) {
             }
         }
         return @{
-            Number    = $PrNum
-            Title     = $pr.title
-            Milestone = if ($pr.milestone) { $pr.milestone.title } else { $null }
-            MsNumber  = if ($pr.milestone) { $pr.milestone.number } else { $null }
-            Url       = $pr.html_url
-            Body      = if ($pr.body) { $pr.body } else { "" }
-            BaseRef   = if ($pr.base -and $pr.base.ref) { $pr.base.ref } else { $null }
+            Number         = $PrNum
+            Title          = $pr.title
+            Milestone      = if ($pr.milestone) { $pr.milestone.title } else { $null }
+            MsNumber       = if ($pr.milestone) { $pr.milestone.number } else { $null }
+            Url            = $pr.html_url
+            Body           = if ($pr.body) { $pr.body } else { "" }
+            BaseRef        = if ($pr.base -and $pr.base.ref) { $pr.base.ref } else { $null }
+            MergeCommitSha = if ($pr.merge_commit_sha) { $pr.merge_commit_sha } else { $null }
         }
     } catch {
         Write-Warning "Failed to fetch PR #$PrNum`: $_"
@@ -391,21 +408,16 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     Write-Host "  Single-PR mode: #$PrNum"
     Write-Host "$('═' * 70)`n"
 
-    # Auto-detect tag if not provided
-    if (-not $ReleaseTag) {
-        Write-Host "Auto-detecting release tag for PR #$PrNum..."
-        $found = Find-TagContainingPr $PrNum $Repo $Major
-        if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $Major" }
-        $ReleaseTag = $found.Tag
-        $prevDisplay = if ($found.PreviousTag) { $found.PreviousTag } else { "(root)" }
-        Write-Host "  Found in: $prevDisplay..$ReleaseTag`n"
-    } else {
-        # Validate provided tag exists in the repo
+    # Fetch PR info first — we need merge_commit_sha for version detection
+    $pr = Get-PrInfo $PrNum
+    if (-not $pr) { throw "Could not fetch PR #$PrNum" }
+
+    if ($ReleaseTag) {
+        # Explicit tag: validate it exists and optionally check PR is in range
         $allTags = Get-AllTags $Repo
         if ($ReleaseTag -notin $allTags) {
             throw "Tag '$ReleaseTag' not found in repo. Available SR tags: $(($allTags | Where-Object { $_ -match '^\d+\.0\.\d+$' }) -join ', ')"
         }
-        # Confirm the PR is actually in this tag's range
         $prev = Find-PreviousTag $ReleaseTag $allTags
         if ($prev) {
             $prsInRange = Get-PrNumbersBetweenTags $prev $ReleaseTag $Repo
@@ -415,15 +427,37 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
         if ($PrNum -notin $prsInRange) {
             Write-Warning "PR #$PrNum is not in the commit range for tag $ReleaseTag. The milestone may be set incorrectly."
         }
+        Write-Host "  Using explicit tag: $ReleaseTag"
+    } elseif ($pr.MergeCommitSha) {
+        # No tag — read Versions.props at the merge commit to determine
+        # the version the branch was building when this PR merged.
+        $versionAtMerge = Get-VersionFromGitRef $pr.MergeCommitSha $Repo
+        if ($versionAtMerge) {
+            $ReleaseTag = $versionAtMerge
+            Write-Host "  Version from Versions.props at merge commit: $ReleaseTag"
+        }
+    }
+
+    # Fallback: try to find in existing tag ranges
+    if (-not $ReleaseTag) {
+        Write-Host "Auto-detecting release tag for PR #$PrNum..."
+        $found = Find-TagContainingPr $PrNum $Repo $Major
+        if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $Major" }
+        $ReleaseTag = $found.Tag
+        $prevDisplay = if ($found.PreviousTag) { $found.PreviousTag } else { "(root)" }
+        Write-Host "  Found in: $prevDisplay..$ReleaseTag"
     }
 
     $expectedMs = ConvertTo-Milestone $ReleaseTag
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
+    # Auto-detect MajorVersion from the tag if not explicitly set
+    if ($ReleaseTag -match '^(\d+)\.') { $Major = [int]$Matches[1] }
+
     # Detect which branch owns this version's tags
     $Branch = Get-MainBranchForVersion $Major $Repo
-    Write-Host "Detected main branch for .NET $Major`: $Branch"
-    Write-Host "Expected milestone: $expectedMs"
+    Write-Host "  Main branch for .NET $Major`: $Branch"
+    Write-Host "  Expected milestone: $expectedMs"
     Write-Host "Fetching GitHub milestones..."
     $allMilestones = Get-AllMilestones
     $match = Find-MatchingMilestone $expectedMs $allMilestones
@@ -702,6 +736,10 @@ if ($PrNumber -gt 0) {
     if ($CreateIssue -and $report.Corrections.Count -gt 0) { New-GitHubIssue $report $Apply.IsPresent }
 }
 elseif ($Tag) {
+    # Auto-detect MajorVersion from the tag if not explicitly overridden
+    if ($Tag -match '^(\d+)\.' -and -not $PSBoundParameters.ContainsKey('MajorVersion')) {
+        $MajorVersion = [int]$Matches[1]
+    }
     $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath $MajorVersion
     Write-Report $report
     $outPath = if ($Output) { $Output } else { "milestone-drift-$($Tag -replace '\.','_').json" }
