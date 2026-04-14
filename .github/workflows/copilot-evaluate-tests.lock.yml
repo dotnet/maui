@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b93d66e9ef685f04f4a2d93d11d4537ff6be75abd61211e325db8fe42ef599d2","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4b6d0daf533af755e69a1c769871c511ee28df89f94422bd4b20ec1323ab4559","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -341,7 +341,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number }}
         name: Gate — skip if no test source files in diff
-        run: "# Try gh pr diff first; fall back to REST API for large PRs (300+ files)\nTEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  TEST_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>/dev/null \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
+        run: "# Verify this is an open PR\nSTATE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state --jq .state 2>/dev/null || echo \"UNKNOWN\")\nif [ \"$STATE\" != \"OPEN\" ]; then\n  echo \"⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation.\"\n  exit 1\nfi\n# Try gh pr diff first; fall back to REST API for large PRs (300+ files)\nTEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  TEST_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>/dev/null \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
 
       - name: Configure Git credentials
         env:

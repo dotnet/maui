@@ -8,7 +8,7 @@ on:
   #     - 'src/**/test/**'
   slash_command:
     name: evaluate-tests
-    events: [pull_request_comment, issue_comment]
+    events: [pull_request_comment]
   # workflow_dispatch:
   #   inputs:
   #     pr_number:
@@ -68,6 +68,12 @@ steps:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.issue.number }}
     run: |
+      # Verify this is an open PR
+      STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq .state 2>/dev/null || echo "UNKNOWN")
+      if [ "$STATE" != "OPEN" ]; then
+        echo "⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation."
+        exit 1
+      fi
       # Try gh pr diff first; fall back to REST API for large PRs (300+ files)
       TEST_FILES=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null \
         | grep -E '\.(cs|xaml)$' \
