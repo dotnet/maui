@@ -154,17 +154,15 @@ steps:
 ```
 
 The script:
-1. Captures the base branch SHA before checkout
-2. Checks out the PR branch via `gh pr checkout`
-3. Deletes `.github/skills/` and `.github/instructions/` (prevents fork-added files)
-4. Restores them from the base branch SHA (best-effort, non-fatal)
+1. Verifies the PR author has write access and rejects fork PRs
+2. Captures the base branch SHA before checkout
+3. Checks out the PR branch via `gh pr checkout`
+4. Restores `.github/skills/`, `.github/instructions/`, and `.github/copilot-instructions.md` from the base branch SHA (fatal on failure)
 
 **Behavior by trigger:**
 - **`workflow_dispatch`**: Platform checkout is skipped, so the restore IS the final workspace state (trusted files from base branch)
-- **`pull_request`** (same-repo): User step restores trusted infra. `checkout_pr_branch.cjs` runs after and re-checks out PR branch — for same-repo PRs, skill files typically match main unless the PR modified them.
-- **`pull_request`** (fork with `forks: ["*"]`): Same as above, but fork's skill files may differ. Same residual risk as `issue_comment` fork case — agent is sandboxed, pre-flight catches missing `SKILL.md`.
-- **`issue_comment`** (same-repo): Platform re-checks out PR branch — files already match, effectively a no-op
-- **`issue_comment`** (fork): Platform re-checks out fork branch after us, overwriting restored files. Agent is sandboxed; pre-flight in the prompt catches missing `SKILL.md`
+- **`slash_command`** (same-repo): Platform's `checkout_pr_branch.cjs` handles checkout. Skill files typically match main unless the PR modified them.
+- **`slash_command`** (fork): Platform re-checks out fork branch after user steps, overwriting restored files. Agent is sandboxed; pre-flight in the prompt catches missing `SKILL.md`
 
 ### Anti-Patterns
 

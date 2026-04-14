@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4b6d0daf533af755e69a1c769871c511ee28df89f94422bd4b20ec1323ab4559","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"6dce84b30064a2f881468240d22e3cc9deec065589e6f1c59aef9b8eb1451280","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":

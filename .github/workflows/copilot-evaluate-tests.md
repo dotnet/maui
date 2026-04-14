@@ -93,14 +93,13 @@ steps:
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 
-  # Checkout is handled automatically by the gh-aw platform's checkout_pr_branch.cjs
-  # for slash_command/issue_comment triggers. No manual checkout needed.
-  # - name: Checkout PR and restore agent infrastructure
-  #   if: github.event_name == 'workflow_dispatch'
-  #   env:
-  #     GH_TOKEN: ${{ github.token }}
-  #     PR_NUMBER: ${{ inputs.pr_number }}
-  #   run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+  # For slash_command triggers, the gh-aw platform's checkout_pr_branch.cjs runs
+  # AFTER all user steps and overlays the PR branch onto the workspace. This means
+  # fork PRs can supply their own .github/skills/ and .github/instructions/.
+  # We cannot restore trusted infra here because the platform checkout runs later.
+  # Mitigation: agent is sandboxed (no credentials), max 1 comment via safe-outputs,
+  # and the agent prompt includes a pre-flight check that catches missing SKILL.md.
+  # See: .github/instructions/gh-aw-workflows.instructions.md "The issue_comment + Fork Problem"
 ---
 
 # Evaluate PR Tests

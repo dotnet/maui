@@ -1,22 +1,21 @@
 <#
 .SYNOPSIS
-    Shared PR checkout for gh-aw (GitHub Agentic Workflows).
+    Shared PR checkout and trusted-infra restore for gh-aw workflows.
 
 .DESCRIPTION
     Checks out a PR branch and restores trusted agent infrastructure (skills,
     instructions) from the base branch. This gives the agent the PR's code
     changes with the latest skills and instructions from main.
 
-    This script is only invoked for workflow_dispatch triggers. For
-    pull_request_target and issue_comment, the gh-aw platform's
-    checkout_pr_branch.cjs handles PR checkout automatically.
-    workflow_dispatch skips the platform checkout entirely, so this script
-    is the only thing that gets the PR code onto disk.
+    Currently used for workflow_dispatch triggers. For slash_command and
+    issue_comment triggers, the gh-aw platform's checkout_pr_branch.cjs
+    handles PR checkout automatically — but may overwrite trusted infra
+    with fork-supplied files. Call this script after platform checkout to
+    restore trusted .github/ from the base branch.
 
-    SECURITY: Before checkout, the script verifies the PR is not from a
-    fork and that the author has write access (write, maintain, or admin).
-    Fork PRs are evaluated via pull_request_target instead (where the
-    platform handles checkout safely inside a sandboxed container).
+    SECURITY: Before checkout, the script verifies the PR author has
+    write access (write, maintain, or admin) and rejects fork PRs.
+    This prevents checkout of untrusted code in privileged contexts.
 
     DO NOT add steps after this that run scripts from the workspace
     (e.g., ./build.sh, pwsh ./script.ps1). That would create a code
@@ -44,14 +43,26 @@ $PrNumber = $env:PR_NUMBER
 
 # ── Verify PR is same-repo and author has write access ───────────────────────
 
-$PrInfo = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY --json author,isCrossRepository --jq '{author: .author.login, isFork: .isCrossRepository}' | ConvertFrom-Json
+$RawJson = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY --json author,isCrossRepository --jq '{author: .author.login, isFork: .isCrossRepository}'
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to fetch PR #$PrNumber metadata"
     exit 1
 }
 
+try {
+    $PrInfo = $RawJson | ConvertFrom-Json
+} catch {
+    Write-Host "❌ PR #$PrNumber returned malformed JSON: $RawJson"
+    exit 1
+}
+
 if (-not $PrInfo -or -not $PrInfo.author) {
     Write-Host "❌ PR #$PrNumber returned empty or malformed metadata"
+    exit 1
+}
+
+if ($PrInfo.isFork) {
+    Write-Host "⏭️ PR #$PrNumber is from a fork — skipping. Fork PRs are evaluated in the sandboxed agent container via the platform's checkout_pr_branch.cjs."
     exit 1
 }
 
@@ -67,8 +78,7 @@ if ($Permission -notin $AllowedRoles) {
     exit 1
 }
 
-$IsFork = if ($PrInfo.isFork) { "fork" } else { "same-repo" }
-Write-Host "✅ PR #$PrNumber by '$($PrInfo.author)' ($Permission access, $IsFork)"
+Write-Host "✅ PR #$PrNumber by '$($PrInfo.author)' ($Permission access, same-repo)"
 
 # ── Save base branch SHA ─────────────────────────────────────────────────────
 
@@ -95,13 +105,12 @@ git log --oneline -1
 # Replace skills and instructions with base branch versions to ensure the agent
 # always uses trusted infrastructure from main. Uses git checkout to read files
 # directly from the commit tree — works in shallow clones (no history traversal).
-
-if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
-if (Test-Path '.github/instructions/') { Remove-Item -Recurse -Force '.github/instructions/' }
+# Restore BEFORE deleting so a failure doesn't leave the workspace without infra.
 
 git checkout $BaseSha -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Restored agent infrastructure from base branch ($BaseSha)"
 } else {
-    Write-Host "⚠️ Could not restore agent infrastructure from base branch — files may come from the PR branch"
+    Write-Host "❌ Failed to restore agent infrastructure from base branch — aborting to prevent running with untrusted infra"
+    exit 1
 }
