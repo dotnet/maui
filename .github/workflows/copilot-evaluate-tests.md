@@ -1,9 +1,8 @@
 ---
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    forks: ["*"]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
     paths:
       - 'src/**/tests/**'
       - 'src/**/test/**'
@@ -15,9 +14,14 @@ on:
         description: 'PR number to evaluate'
         required: true
         type: number
+      suppress_comment:
+        description: 'Dry-run — evaluate but do not post a comment on the PR'
+        required: false
+        type: boolean
+        default: false
 
 if: >-
-  (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+  (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false) ||
   github.event_name == 'workflow_dispatch' ||
   (github.event_name == 'issue_comment' &&
    github.event.issue.pull_request &&
@@ -46,8 +50,12 @@ safe-outputs:
 tools:
   github:
     toolsets: [default]
+  bash: ["dotnet", "pwsh", "gh", "env", "ls", "cat", "head", "tail", "grep", "echo", "find"]
 
-network: defaults
+network:
+  allowed:
+    - defaults
+    - dotnet
 
 concurrency:
   group: "evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}"
@@ -57,7 +65,7 @@ timeout-minutes: 15
 
 steps:
   - name: Gate — skip if no test source files in diff
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request_target'
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -73,9 +81,10 @@ steps:
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 
-  # Only needed for workflow_dispatch — for pull_request and issue_comment,
+  # Only needed for workflow_dispatch — for pull_request_target and issue_comment,
   # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
   # workflow_dispatch skips the platform checkout entirely, so we must do it here.
+  # The script gates on PR author having write access before checkout.
   - name: Checkout PR and restore agent infrastructure
     if: github.event_name == 'workflow_dispatch'
     env:
@@ -110,12 +119,59 @@ If the file is **missing**, the fork PR branch is likely not rebased on the late
 
 ❌ **Cannot evaluate**: this PR's branch does not include the evaluate-pr-tests skill (`.github/skills/evaluate-pr-tests/SKILL.md` is missing).
 
-**Fix**: rebase your fork on the latest `main` branch, or use the **workflow_dispatch** trigger (Actions tab → "Evaluate PR Tests" → "Run workflow" → enter PR number) which handles this automatically.
+**Fix**: rebase your fork on the latest `main` branch and push again. The evaluation will trigger automatically once the skill file is available.
 ```
 
 Then stop — do not proceed with the evaluation.
 
-## Running the skill
+## Dry-run mode
+
+When triggered via `workflow_dispatch` with `suppress_comment` = `${{ inputs.suppress_comment }}`:
+- If **true**, perform the full evaluation but **do not** post a comment on the PR. Write the evaluation to the workflow log only. This is useful for testing the skill without spamming the PR.
+- If **false** (default), post the comment as normal.
+
+## When no action is needed
+
+If there is nothing to evaluate (PR has no test files, PR is a docs-only change, etc.), you **must** call the `noop` tool with a message explaining why:
+
+```json
+{"noop": {"message": "No action needed: [brief explanation, e.g. 'PR contains no test files']"}}
+```
+
+Do not post a comment and do not silently exit — always use `noop` so the workflow run shows a clear reason.
+
+## EXPERIMENT: Build Environment Test (run this FIRST)
+
+Before doing anything else, run these commands and report what you find:
+
+```bash
+echo "=== Step 1: Check .NET SDK ==="
+dotnet --version 2>&1 || echo "dotnet CLI not found"
+
+echo "=== Step 2: Check env vars containing TOKEN (names only, redacted values) ==="
+env | grep -i TOKEN | sed 's/=.*/=<REDACTED>/' 2>&1 || echo "No TOKEN vars"
+
+echo "=== Step 3: Network test - api.nuget.org ==="
+curl -s --connect-timeout 5 https://api.nuget.org/v3/index.json 2>&1 | head -c 200 || echo "BLOCKED"
+
+echo "=== Step 4: Find HostApp project ==="
+find . -name "Maui.Controls.Sample.HostApp.csproj" -type f 2>/dev/null | head -5
+
+echo "=== Step 5: Try dotnet restore ==="
+HOSTAPP=$(find . -name "Maui.Controls.Sample.HostApp.csproj" -type f 2>/dev/null | head -1)
+if [ -n "$HOSTAPP" ]; then
+  dotnet restore "$HOSTAPP" 2>&1 | tail -30
+  echo "=== Step 6: Try dotnet build (Android, no restore) ==="
+  dotnet build "$HOSTAPP" -f net10.0-android -c Debug --no-restore 2>&1 | tail -30
+else
+  echo "HostApp project not found - listing workspace root:"
+  ls -la
+fi
+```
+
+After running the experiment, post the full results using `add_comment` with `item_number` set to the PR number. Include ALL output from every step. Then call `noop` with message "Build experiment complete" and STOP — do not proceed with the regular evaluation below.
+
+## Running the skill (SKIP FOR THIS EXPERIMENT)
 
 1. Use `gh pr view <number>` to fetch PR metadata (title, body, labels, base branch). If `gh` CLI is unavailable, use the GitHub MCP tools instead.
 2. Run `pwsh .github/skills/evaluate-pr-tests/scripts/Gather-TestContext.ps1` to gather automated context
@@ -124,7 +180,9 @@ Then stop — do not proceed with the evaluation.
 
 ## Posting Results
 
-Call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
+If dry-run mode is active (`suppress_comment` is true), log the evaluation report to stdout and stop — do **not** call `add_comment`.
+
+Otherwise, call `add_comment` with `item_number` set to the PR number. Wrap the report in a collapsible `<details>` block:
 
 ```markdown
 ## 🧪 PR Test Evaluation

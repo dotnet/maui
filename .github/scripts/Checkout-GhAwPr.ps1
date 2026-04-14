@@ -4,23 +4,23 @@
 
 .DESCRIPTION
     Checks out a PR branch and restores trusted agent infrastructure (skills,
-    instructions) from the base branch. Works for both same-repo and fork PRs.
+    instructions) from the base branch. This gives the agent the PR's code
+    changes with the latest skills and instructions from main.
 
-    This script is only invoked for workflow_dispatch triggers. For pull_request
-    and issue_comment, the gh-aw platform's checkout_pr_branch.cjs handles PR
-    checkout automatically (it runs as a platform step after all user steps).
-    workflow_dispatch skips the platform checkout entirely, so this script is
-    the only thing that gets the PR code onto disk.
+    This script is only invoked for workflow_dispatch triggers. For
+    pull_request_target and issue_comment, the gh-aw platform's
+    checkout_pr_branch.cjs handles PR checkout automatically.
+    workflow_dispatch skips the platform checkout entirely, so this script
+    is the only thing that gets the PR code onto disk.
 
-    SECURITY NOTE: This script checks out PR code onto disk. This is safe
-    because NO subsequent user steps execute workspace code — the gh-aw
-    platform copies the workspace into a sandboxed container with scrubbed
-    credentials before starting the agent. The classic "pwn-request" attack
-    requires checkout + execution; we only do checkout.
+    SECURITY: Before checkout, the script verifies the PR is not from a
+    fork and that the author has write access (write, maintain, or admin).
+    Fork PRs are evaluated via pull_request_target instead (where the
+    platform handles checkout safely inside a sandboxed container).
 
     DO NOT add steps after this that run scripts from the workspace
-    (e.g., ./build.sh, pwsh ./script.ps1). That would create an actual
-    fork code execution vulnerability. See:
+    (e.g., ./build.sh, pwsh ./script.ps1). That would create a code
+    execution vulnerability. See:
     https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
 
 .NOTES
@@ -42,9 +42,34 @@ if (-not $env:PR_NUMBER -or $env:PR_NUMBER -eq '0') {
 
 $PrNumber = $env:PR_NUMBER
 
+# ── Verify PR is same-repo and author has write access ───────────────────────
+
+$PrInfo = gh pr view $PrNumber --repo $env:GITHUB_REPOSITORY --json author,isCrossRepository --jq '{author: .author.login, isFork: .isCrossRepository}' | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to fetch PR #$PrNumber metadata"
+    exit 1
+}
+
+if ($PrInfo.isFork) {
+    Write-Host "⏭️ PR #$PrNumber is from a fork. workflow_dispatch does not check out fork PRs."
+    Write-Host "   Fork PRs are evaluated automatically via pull_request_target."
+    exit 1
+}
+
+$Permission = gh api "repos/$($env:GITHUB_REPOSITORY)/collaborators/$($PrInfo.author)/permission" --jq '.permission'
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to check permissions for '$($PrInfo.author)'"
+    exit 1
+}
+
+$AllowedRoles = @('admin', 'write', 'maintain')
+if ($Permission -notin $AllowedRoles) {
+    Write-Host "⏭️ PR author '$($PrInfo.author)' has '$Permission' access. workflow_dispatch only processes PRs from authors with write access."
+    exit 1
+}
+Write-Host "✅ PR #$PrNumber by '$($PrInfo.author)' ($Permission access, same-repo)"
+
 # ── Save base branch SHA ─────────────────────────────────────────────────────
-# Must be captured BEFORE checkout replaces HEAD.
-# Exported for potential use by downstream platform steps (e.g., checkout_pr_branch.cjs)
 
 $BaseSha = git rev-parse HEAD
 if ($LASTEXITCODE -ne 0) {
@@ -52,6 +77,7 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 Add-Content -Path $env:GITHUB_ENV -Value "BASE_SHA=$BaseSha"
+Write-Host "Base branch SHA: $BaseSha"
 
 # ── Checkout PR branch ──────────────────────────────────────────────────────
 
@@ -65,10 +91,9 @@ Write-Host "✅ Checked out PR #$PrNumber"
 git log --oneline -1
 
 # ── Restore agent infrastructure from base branch ────────────────────────────
-# This script only runs for workflow_dispatch (other triggers use the platform's
-# checkout_pr_branch.cjs instead). For workflow_dispatch the platform checkout is
-# skipped, so this restore IS the final workspace state.
-# rm -rf first to prevent fork-added files from surviving the restore.
+# Replace skills and instructions with base branch versions to ensure the agent
+# always uses trusted infrastructure from main. Uses git checkout to read files
+# directly from the commit tree — works in shallow clones (no history traversal).
 
 if (Test-Path '.github/skills/') { Remove-Item -Recurse -Force '.github/skills/' }
 if (Test-Path '.github/instructions/') { Remove-Item -Recurse -Force '.github/instructions/' }
