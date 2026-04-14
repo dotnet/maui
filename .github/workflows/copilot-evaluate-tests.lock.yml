@@ -22,7 +22,7 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"230a1bc8346ff7d470433b8c4847233d31fc36b5e896076487ef4ecc9b0bb781","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"2b2d6af9e369ce38bce64b975f84f095a6dd87ee1f5efb57e045a85f68970829","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
@@ -344,7 +344,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number }}
         name: Gate — skip if no test source files in diff
-        run: "# Verify this is an open PR\nif ! STATE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state --jq .state 2>&1); then\n  echo \"❌ Failed to fetch PR #$PR_NUMBER state: $STATE\"\n  exit 1\nfi\nif [ \"$STATE\" != \"OPEN\" ]; then\n  echo \"⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation.\"\n  exit 1\nfi\n# Try gh pr diff first; fall back to REST API only on command failure\nif DIFF_OUTPUT=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null); then\n  TEST_FILES=$(echo \"$DIFF_OUTPUT\" \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nelse\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  TEST_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>/dev/null \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
+        run: "# Verify this is an open PR\nif ! STATE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state --jq .state 2>&1); then\n  echo \"❌ Failed to fetch PR #$PR_NUMBER state: $STATE\"\n  exit 1\nfi\nif [ \"$STATE\" != \"OPEN\" ]; then\n  echo \"⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation.\"\n  exit 1\nfi\n# Try gh pr diff first; fall back to REST API only on command failure\nif DIFF_OUTPUT=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null); then\n  TEST_FILES=$(echo \"$DIFF_OUTPUT\" \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nelse\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  if ! API_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>&1); then\n    echo \"❌ gh pr diff failed and REST API fallback also failed: $API_FILES\"\n    exit 1\n  fi\n  TEST_FILES=$(echo \"$API_FILES\" \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
 
       - name: Configure Git credentials
         env:

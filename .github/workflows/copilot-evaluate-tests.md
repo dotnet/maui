@@ -85,7 +85,11 @@ steps:
           || true)
       else
         # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API
-        TEST_FILES=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename' 2>/dev/null \
+        if ! API_FILES=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename' 2>&1); then
+          echo "❌ gh pr diff failed and REST API fallback also failed: $API_FILES"
+          exit 1
+        fi
+        TEST_FILES=$(echo "$API_FILES" \
           | grep -E '\.(cs|xaml)$' \
           | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \
           || true)
