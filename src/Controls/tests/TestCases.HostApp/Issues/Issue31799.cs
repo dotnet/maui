@@ -37,15 +37,29 @@ public class Issue31799 : FlyoutPage
             ? "This is the Selected tab"
             : "Test PASSES if only one tab is being selected, else FAILS";
 
-        return new ContentPage
+        VerticalStackLayout stack = new VerticalStackLayout
+        {
+            Padding = 20,
+            Children = { CreateLabel(labelText, isMain ? "SelectedTabLabel" : "NewSelectedTabLabel") }
+        };
+
+        ContentPage page = new ContentPage
         {
             Title = "Selected Tab",
-            Content = new VerticalStackLayout 
-            { 
-                Padding = 20,
-                Children = { CreateLabel(labelText, isMain ? "SelectedTabLabel" : "NewSelectedTabLabel") }
-            }
+            Content = stack
         };
+
+        if (!isMain)
+        {
+            // Provides a way for UI tests to navigate back and verify the original
+            // TabbedPage also shows only one selected tab after the round-trip.
+            stack.Children.Add(CreateButton("Go Back", "GoBackButton", async (s, e) =>
+            {
+                await page.Navigation.PopAsync();
+            }));
+        }
+
+        return page;
     }
 
     ContentPage CreateUnselectedTab(bool isMain)

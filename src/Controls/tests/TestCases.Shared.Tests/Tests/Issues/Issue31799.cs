@@ -25,6 +25,10 @@ public class Issue31799 : _IssuesUITest
 
         App.WaitForElement("NewSelectedTabLabel");
         VerifyScreenshot();
+
+        App.Tap("GoBackButton");
+        App.WaitForElement("CreateTabbedPageButton");
+        VerifyScreenshot("VerifyOriginalTabbedPageDoesNotHaveMultipleTabsSelected");
     }
 }
 #endif
