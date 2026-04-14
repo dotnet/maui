@@ -7,6 +7,16 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateBackground(this AppCompatRadioButton platformRadioButton, IRadioButton radioButton)
 		{
+			if (radioButton.Background.IsNullOrEmpty())
+			{
+				if (platformRadioButton.Background is BorderDrawable existingDrawable)
+				{
+					platformRadioButton.Background = null;
+					existingDrawable.Dispose();
+				}
+				return;
+			}
+
 			platformRadioButton.UpdateBorderDrawable(radioButton);
 		}
 
