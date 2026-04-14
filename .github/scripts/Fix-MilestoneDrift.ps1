@@ -167,11 +167,6 @@ function Find-MatchingMilestone([string]$Expected, [hashtable]$AllMilestones) {
             return @{ Title = $key; Number = $AllMilestones[$key] }
         }
     }
-    # Try ".NET 10 SR5" → ".NET 10.0 SR5"
-    $alt = $Expected -replace '\.NET (\d+) SR', '.NET $1.0 SR'
-    if ($AllMilestones.ContainsKey($alt)) {
-        return @{ Title = $alt; Number = $AllMilestones[$alt] }
-    }
     return $null
 }
 
@@ -293,11 +288,12 @@ function Invoke-GhApi([string]$Endpoint) {
 
 function Get-AllMilestones {
     $milestones = @{}; $page = 1
-    do {
+    while ($true) {
         $data = Invoke-GhApi "repos/dotnet/maui/milestones?state=all&per_page=100&page=$page"
         foreach ($ms in $data) { $milestones[$ms.title] = $ms.number }
+        if ($data.Count -lt 100) { break }
         $page++
-    } while ($data.Count -eq 100)
+    }
     return $milestones
 }
 
@@ -652,6 +648,7 @@ function Save-ReportJson([hashtable]$Report, [string]$Path) {
         summary            = @{
             total_prs_in_range = $Report.TotalPrs
             prs_checked        = $Report.PrsChecked
+            prs_skipped_wrong_branch = if ($Report.ContainsKey('PrsSkippedWrongBranch')) { $Report.PrsSkippedWrongBranch } else { 0 }
             issues_checked     = $Report.IssuesChecked
             already_correct    = $Report.AlreadyCorrect
             corrections_needed = $Report.Corrections.Count
