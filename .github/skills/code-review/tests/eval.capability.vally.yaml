@@ -44,7 +44,7 @@ description: >-
   measured against real PRs (tool-call ordering, structured-output shape,
   API-misuse refusal, blast-radius reasoning, prior-review surfacing,
   CI-status interpretation).
-version: "1.0.0"
+version: "1.1.0"
 type: capability
 
 defaults:
@@ -466,6 +466,103 @@ stimuli:
       - >-
         The agent does not claim "clean build" or "all checks pass"
         based on exit 0 alone.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 10 — Trimming/AOT: a documented compiler limitation permits a
+  # narrowly scoped suppression. Reviewers must trace the annotation chain
+  # instead of applying a blanket "all IL warnings are bugs" heuristic.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: trim-aot-scoped-suppression-requires-annotation-chain-proof
+    tags:
+      target_pr: "34868"
+      kind: trim-aot
+    prompt: >-
+      Code review PR #34868 in dotnet/maui. Perform the standard review
+      workflow, with particular attention to the IL2026/IL3050 suppression
+      around HybridWebView handler registration. Do not assume the suppression
+      is either valid or invalid: trace the annotation chain, feature guard,
+      affected publish configuration, and platform-specific analyzer behavior
+      before deciding whether it is justified.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(IL2026|IL3050|FeatureGuard)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent inspects the changed HybridWebView registration in
+        AppHostBuilderExtensions and identifies the
+        RuntimeFeature.IsHybridWebViewSupported guard together with the
+        narrowly scoped IL2026/IL3050 pragma and immediate restore.
+      - >-
+        The agent explains that the guard disables the registration for the
+        NativeAOT/full-trim configuration, while Android NativeAOT ILC does
+        not honor the guard for warning suppression even though iOS and
+        MacCatalyst do. Equivalent descriptions of the documented
+        platform/toolchain limitation are acceptable.
+      - >-
+        The agent does not reject this pragma merely because it suppresses
+        IL2026/IL3050. It recognizes the evidence required for this exception
+        and distinguishes it from a broad or unexplained suppression hiding a
+        reachable dynamic-code path.
+      - >-
+        The review applies the same standard prospectively: any accepted
+        suppression must be limited to the affected call and diagnostic, have
+        an immediately restored scope, and document why the code is
+        unreachable for the affected configuration.
+    constraints:
+      max_duration: 5m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 11 — Trimming/AOT: the net11.0 structural alternative isolates
+  # annotated registration instead of relying on a suppression. The reviewer
+  # must evaluate it in its branch context without inventing a main-branch
+  # reference or a false const-metadata rule.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: trim-aot-annotated-helper-is-branch-scoped-structural-fix
+    tags:
+      target_pr: "34958"
+      kind: trim-aot
+    prompt: >-
+      Code review PR #34958 in dotnet/maui. Perform the standard review
+      workflow and evaluate the NativeAOT/full-trim warning fix around
+      HybridWebView registration. Trace the annotation chain and assess whether
+      the structural fix removes the reachable warning path without hiding it.
+      Keep conclusions scoped to the PR's target branch.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(IL2026|IL3050|RequiresDynamicCode|RequiresUnreferencedCode)'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent recognizes that the fix moves the HybridWebView registration
+        into a helper whose RequiresDynamicCode and RequiresUnreferencedCode
+        annotations match the dynamic handler path, allowing the existing
+        feature guard to cover a direct annotated call.
+      - >-
+        The agent identifies the generic handler registration or equivalent
+        annotation-chain shape that motivated the structural separation,
+        rather than treating the warning as automatically false-positive.
+      - >-
+        The agent keeps the helper reference scoped to the net11.0 PR branch
+        and does not claim that the helper already exists on main.
+      - >-
+        The agent does not claim that reading a const string from another type
+        by itself creates a type or member metadata reference. It evaluates
+        the actual annotation and reachability behavior instead.
     constraints:
       max_duration: 5m
       expect_skills:

@@ -312,6 +312,10 @@ Patterns that work with .NET trimmer and NativeAOT.
 - CHECK: `System.OperatingSystem` APIs used instead of `RuntimeInformation` for linker-friendly detection
 - CHECK: XAML compilation paths produce code without runtime type resolution
 - CHECK: `DynamicDependency` or `DynamicallyAccessedMembers` attributes applied when reflection is unavoidable
+- CHECK: For IL2026/IL3050, trace the complete annotation chain before recommending a fix: identify the annotated member, any generic or `DynamicallyAccessedMembers` hop, the feature guard, and the target platform/toolchain that produced the warning
+- CHECK: Do not assume either that a `FeatureGuard` silences every annotation chain or that every IL2026/IL3050 suppression is wrong. Validate that the guarded path is disabled for the affected publish configuration and that the relevant analyzer honors the guard on that platform
+- CHECK: Reject broad suppressions and expected-warning baselines that hide a reachable dynamic-code path. A scoped `#pragma` or `UnconditionalSuppressMessage` is acceptable only when the path is proven unreachable for the affected configuration, a platform/toolchain limitation is documented, and the diagnostic scope is restored immediately after the affected call
+- CHECK: Prefer a structural fix when the warning represents a real reachability path: isolate annotated registration behind a helper with matching annotations, or replace reflection/dynamic serialization with source-generated metadata. Do not present a branch-specific helper as if it exists on every target branch
 
 ### 19. CollectionView — iOS/MacCatalyst (Items2/) `[major]`
 
@@ -521,7 +525,7 @@ These apply regardless of file paths: Logic and Correctness, Regression Preventi
 | Dimension | Trigger |
 |---|---|
 | Public API Surface | Adds/removes `public` members or modifies `PublicAPI.Unshipped.txt` |
-| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance` |
+| Trimming/AOT | Uses reflection, `Type.GetType`, or `Activator.CreateInstance`; adds or changes `RequiresDynamicCode`, `RequiresUnreferencedCode`, `DynamicallyAccessedMembers`, `FeatureGuard`, `UnconditionalSuppressMessage`, or an IL20xx/IL30xx suppression |
 | Backward Compatibility | Changes defaults, removes APIs, or touches Compatibility/ |
 
 ---
