@@ -103,12 +103,15 @@ function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
 }
 
 function ConvertTo-Milestone([string]$ReleaseTag) {
-    <# Converts "10.0.50" → ".NET 10 SR5", "10.0.0" → ".NET 10.0 GA" #>
+    <# Converts "10.0.50" → ".NET 10 SR5", "10.0.41" → ".NET 10 SR4.1", "10.0.0" → ".NET 10.0 GA" #>
     if ($ReleaseTag -notmatch '^(\d+)\.0\.(\d+)$') { return $null }
     $major = [int]$Matches[1]; $patch = [int]$Matches[2]
     if ($patch -eq 0)  { return ".NET $major.0 GA" }
     if ($patch -lt 10) { return ".NET $major.0 SR1" }
-    return ".NET $major SR$([math]::Floor($patch / 10))"
+    $sr = [math]::Floor($patch / 10)
+    $sub = $patch % 10
+    if ($sub -eq 0) { return ".NET $major SR$sr" }
+    return ".NET $major SR$sr.$sub"
 }
 
 function Get-PatchVersion([string]$ReleaseTag) {
@@ -121,7 +124,8 @@ function Test-IsSrTag([string]$ReleaseTag, [int]$Major) {
 }
 
 function Test-MilestoneMatch([string]$Actual, [string]$Expected) {
-    <# Handles ".NET 10.0 SR4" vs ".NET 10 SR4" and sub-patches like ".NET 10 SR5.1" #>
+    <# Handles ".NET 10.0 SR4" vs ".NET 10 SR4" normalization only.
+       Sub-patches like ".NET 10 SR4.1" are distinct milestones and do NOT match ".NET 10 SR4". #>
     if ([string]::IsNullOrEmpty($Actual)) { return $false }
     if ($Actual -eq $Expected) { return $true }
 
@@ -129,9 +133,6 @@ function Test-MilestoneMatch([string]$Actual, [string]$Expected) {
     $normActual   = $Actual   -replace '\.NET (\d+)\.0 SR', '.NET $1 SR'
     $normExpected = $Expected -replace '\.NET (\d+)\.0 SR', '.NET $1 SR'
     if ($normActual -eq $normExpected) { return $true }
-
-    # Sub-patch: ".NET 10 SR5.1" matches ".NET 10 SR5"
-    if ($normActual -match "^$([regex]::Escape($normExpected))\.\d+$") { return $true }
 
     return $false
 }

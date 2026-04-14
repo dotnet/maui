@@ -25,13 +25,13 @@ Describe 'ConvertTo-Milestone' {
 
     It 'maps SR tag "<Tag>" to "<Expected>"' -ForEach @(
         @{ Tag = '10.0.10'; Expected = '.NET 10 SR1' }
-        @{ Tag = '10.0.11'; Expected = '.NET 10 SR1' }
+        @{ Tag = '10.0.11'; Expected = '.NET 10 SR1.1' }
         @{ Tag = '10.0.20'; Expected = '.NET 10 SR2' }
-        @{ Tag = '10.0.31'; Expected = '.NET 10 SR3' }
+        @{ Tag = '10.0.31'; Expected = '.NET 10 SR3.1' }
         @{ Tag = '10.0.40'; Expected = '.NET 10 SR4' }
-        @{ Tag = '10.0.41'; Expected = '.NET 10 SR4' }
+        @{ Tag = '10.0.41'; Expected = '.NET 10 SR4.1' }
         @{ Tag = '10.0.50'; Expected = '.NET 10 SR5' }
-        @{ Tag = '9.0.82';  Expected = '.NET 9 SR8' }
+        @{ Tag = '9.0.82';  Expected = '.NET 9 SR8.2' }
         @{ Tag = '9.0.90';  Expected = '.NET 9 SR9' }
         @{ Tag = '10.0.100'; Expected = '.NET 10 SR10' }
     ) {
@@ -68,12 +68,16 @@ Describe 'Test-MilestoneMatch' {
         Test-MilestoneMatch '.NET 10 SR4' '.NET 10.0 SR4' | Should -BeTrue
     }
 
-    It 'sub-patch: ".NET 10 SR5.1" matches ".NET 10 SR5"' {
-        Test-MilestoneMatch '.NET 10 SR5.1' '.NET 10 SR5' | Should -BeTrue
+    It 'sub-patch ".NET 10 SR5.1" does NOT match ".NET 10 SR5" (distinct milestones)' {
+        Test-MilestoneMatch '.NET 10 SR5.1' '.NET 10 SR5' | Should -BeFalse
     }
 
-    It 'sub-patch with normalization: ".NET 10.0 SR4.1" matches ".NET 10 SR4"' {
-        Test-MilestoneMatch '.NET 10.0 SR4.1' '.NET 10 SR4' | Should -BeTrue
+    It 'sub-patch ".NET 10 SR4.1" exact match' {
+        Test-MilestoneMatch '.NET 10 SR4.1' '.NET 10 SR4.1' | Should -BeTrue
+    }
+
+    It 'sub-patch with normalization: ".NET 10.0 SR4.1" matches ".NET 10 SR4.1"' {
+        Test-MilestoneMatch '.NET 10.0 SR4.1' '.NET 10 SR4.1' | Should -BeTrue
     }
 
     It 'does not match different SR numbers' {
