@@ -9,8 +9,8 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		// To test shell scenarios, change this to true
-		bool useShell = false;
+		// Keep shell enabled by default for shell-related sandbox scenarios.
+		bool useShell = true;
 
 		if (!useShell)
 		{
