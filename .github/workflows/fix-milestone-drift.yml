@@ -20,7 +20,7 @@ on:
         description: 'Create a GitHub issue with the drift report'
         required: false
         type: boolean
-        default: true
+        default: false
 
 permissions:
   issues: write
