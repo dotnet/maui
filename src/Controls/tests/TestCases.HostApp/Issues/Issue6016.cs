@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 6016, "SwipeView Threshold changes width and offset of the side menu", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 6016, "SwipeView Threshold changes width and offset of the side menu", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue6016 : ContentPage
 {
 	public Issue6016()
