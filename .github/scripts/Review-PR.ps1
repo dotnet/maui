@@ -459,8 +459,9 @@ $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
 $verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
-& pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1 | ForEach-Object { Write-Host "    $_" }
+$gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
 $gateExitCode = $LASTEXITCODE
+$gateOutput | ForEach-Object { Write-Host "    $_" }
 
 # Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
 $gateResult = switch ($gateExitCode) {

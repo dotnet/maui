@@ -22,7 +22,7 @@ Verifies tests actually catch the issue. Supports **all test types** (UI tests, 
 
 Test type is **auto-detected** from changed files. Override with `-TestType` if needed.
 
-**`-Platform` is always required.** It selects which platform to verify the fix on.
+**`-Platform` is required for UI and Device tests.** It selects which platform to verify the fix on. Unit and XAML tests do not require `-Platform`.
 
 ## Activation Guard
 

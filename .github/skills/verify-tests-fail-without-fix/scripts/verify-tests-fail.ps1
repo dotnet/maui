@@ -565,13 +565,26 @@ function Get-TestResultFromOutput {
     # Device test output: check Passed/Failed counts from Run-DeviceTests.ps1
     # Format: "  Passed: 57\n  Failed: 0"
     # Run-DeviceTests.ps1 may retry internally, producing multiple Passed:/Failed: blocks.
-    # Use the MAXIMUM Passed count (the successful run), not the last one (which may be a crash with 0/0).
+    # Use the LAST block where tests actually ran (Passed > 0), so pass/fail counts
+    # come from the same run. Taking MAX independently across blocks can mix results
+    # from different runs (e.g., Run1: Passed=57,Failed=3 + Run2: Passed=60,Failed=0
+    # would incorrectly yield Passed=60,Failed=3).
     $allPassMatches = [regex]::Matches($content, "(?m)^\s*Passed:\s*(\d+)")
     $allFailMatches = [regex]::Matches($content, "(?m)^\s*Failed:\s*(\d+)")
 
     if ($allPassMatches.Count -gt 0) {
-        $devicePassCount = ($allPassMatches | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum
-        $deviceFailCount = if ($allFailMatches.Count -gt 0) { ($allFailMatches | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Maximum).Maximum } else { 0 }
+        # Walk blocks in reverse to find the last one where tests actually ran
+        $devicePassCount = 0
+        $deviceFailCount = 0
+        for ($i = $allPassMatches.Count - 1; $i -ge 0; $i--) {
+            $p = [int]$allPassMatches[$i].Groups[1].Value
+            $f = if ($i -lt $allFailMatches.Count) { [int]$allFailMatches[$i].Groups[1].Value } else { 0 }
+            if ($p -gt 0 -or $f -gt 0) {
+                $devicePassCount = $p
+                $deviceFailCount = $f
+                break
+            }
+        }
         $deviceTotal = $devicePassCount + $deviceFailCount
 
         Write-Host "  📊 Parsed test results: Passed=$devicePassCount Failed=$deviceFailCount Total=$deviceTotal (from $($allPassMatches.Count) result blocks)" -ForegroundColor Gray
@@ -1247,13 +1260,13 @@ function Write-MarkdownReport {
 
     # ── Failure details (only if something went wrong) ──
     $failureLines = @()
-    foreach ($r in $withoutFixResults) {
+    foreach ($r in $WithoutFixResultsList) {
         if ($r.Passed) {
             $failureLines += "- ❌ **$($r.TestName)** PASSED without fix (should fail) — tests don't catch the bug"
         }
         if ($r.EnvError) { $failureLines += "- ⚠️ **$($r.TestName)** without fix: ``$($r.Error)``" }
     }
-    foreach ($r in $withFixResults) {
+    foreach ($r in $WithFixResultsList) {
         if (-not $r.Passed -and -not $r.EnvError) {
             $failureLines += "- ❌ **$($r.TestName)** FAILED with fix (should pass)"
             if ($r.FailureReason) { $failureLines += "  - ``$($r.FailureReason)``" }

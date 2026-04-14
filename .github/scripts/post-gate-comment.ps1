@@ -74,6 +74,7 @@ try {
     $commitJson = $null
 }
 $commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
+$commitTitle = $commitTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
 $commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
 $commitFull = if ($commitJson) { $commitJson.sha } else { "" }
 $commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }

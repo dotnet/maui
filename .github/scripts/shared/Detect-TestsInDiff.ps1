@@ -246,7 +246,10 @@ foreach ($file in $ChangedFiles) {
                             break
                         }
                     }
-                    if (-not $project) { $project = "Controls" }
+                    if (-not $project) {
+                        Write-Warning "Device test file '$file' did not match any known project — skipping."
+                        $testName = $null
+                    }
 
                     # Filter will be set to Method=X after method extraction in Step 4
                     $filter = $testName

@@ -108,6 +108,7 @@ try {
     $commitJson = $null
 }
 $commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
+$commitTitle = $commitTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
 $commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
 $commitFull = if ($commitJson) { $commitJson.sha } else { "" }
 $commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
@@ -151,8 +152,7 @@ function Merge-Sessions {
     param(
         [string]$ExistingBody,
         [string]$NewSession,
-        [string]$CommitSha7,
-        [string]$Marker
+        [string]$CommitSha7
     )
 
     # Extract all session blocks from existing body
@@ -220,7 +220,7 @@ if ($prAuthor) {
 
 if ($existingBody) {
     # Merge new session into existing body
-    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7 -Marker $MARKER
+    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
 
     # Preserve any PR-FINALIZE section that may already exist
     $finalizeSection = ""

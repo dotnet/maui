@@ -91,6 +91,7 @@ if ($LASTEXITCODE -ne 0) {
 
 $pr = $prJson | ConvertFrom-Json
 $prTitle = $pr.title
+$prTitle = $prTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
 $commitSha7 = $pr.headRefOid.Substring(0, 7)
 $commitFull = $pr.headRefOid
 $prAuthor = $pr.author.login
@@ -260,8 +261,12 @@ if ($DryRun) {
 # ============================================================================
 
 $tempFile = [System.IO.Path]::GetTempFileName()
+$tempBodyFile = [System.IO.Path]::GetTempFileName()
 try {
+    # JSON format for gh api --input (PATCH)
     @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+    # Plain text for gh pr comment --body-file (fallback/new)
+    $commentBody | Set-Content -Path $tempBodyFile -Encoding UTF8
 
     if ($existingCommentId) {
         Write-Host "  Updating comment (ID: $existingCommentId)..." -ForegroundColor Gray
@@ -272,14 +277,14 @@ try {
             Write-Host "✅ Code review comment updated on PR #$PRNumber" -ForegroundColor Green
         } catch {
             Write-Host "⚠️  Update failed, creating new comment instead..." -ForegroundColor Yellow
-            $result = gh pr comment $PRNumber --body-file $tempFile 2>&1
+            $result = gh pr comment $PRNumber --body-file $tempBodyFile 2>&1
             if ($LASTEXITCODE -ne 0) { throw "Failed to post comment: $result" }
             Write-Host ""
             Write-Host "✅ Code review comment posted on PR #$PRNumber" -ForegroundColor Green
             Write-Host "   $result" -ForegroundColor Gray
         }
     } else {
-        $result = gh pr comment $PRNumber --body-file $tempFile 2>&1
+        $result = gh pr comment $PRNumber --body-file $tempBodyFile 2>&1
         if ($LASTEXITCODE -ne 0) { throw "Failed to post comment: $result" }
         Write-Host ""
         Write-Host "✅ Code review comment posted on PR #$PRNumber" -ForegroundColor Green
@@ -287,4 +292,5 @@ try {
     }
 } finally {
     Remove-Item -Path $tempFile -ErrorAction SilentlyContinue
+    Remove-Item -Path $tempBodyFile -ErrorAction SilentlyContinue
 }

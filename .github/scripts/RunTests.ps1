@@ -248,8 +248,7 @@ if ($List) {
 
 # Validate TestFilter and Category are not both specified
 if ($TestFilter -and $Category) {
-    Write-Error "Cannot specify both -TestFilter and -Category. Use one or the other."
-    exit 1
+    throw "Cannot specify both -TestFilter and -Category. Use one or the other."
 }
 
 # Build the effective filter
@@ -275,42 +274,35 @@ if (-not $ResultsDirectory) {
 
 # Validate platform requirement for Device and UI tests
 if ($TestType -eq "Device" -and -not $Platform) {
-    Write-Error "Device tests require -Platform (android, ios, maccatalyst, windows)"
-    exit 1
+    throw "Device tests require -Platform (android, ios, maccatalyst, windows)"
 }
 if ($TestType -eq "UI" -and -not $Platform) {
-    Write-Error "UI tests require -Platform (android, ios, catalyst, windows)"
-    exit 1
+    throw "UI tests require -Platform (android, ios, catalyst, windows)"
 }
 
 # Validate filter requirement for UI tests
 if ($TestType -eq "UI" -and -not $effectiveFilter) {
-    Write-Error "UI tests require -TestFilter or -Category"
-    exit 1
+    throw "UI tests require -TestFilter or -Category"
 }
 
 # Validate filter/category requirement for Integration tests
 if ($TestType -eq "Integration" -and -not $effectiveFilter) {
-    Write-Error "Integration tests require -Category or -TestFilter"
-    exit 1
+    throw "Integration tests require -Category or -TestFilter"
 }
 
 # Validate Project for Device tests
 if ($TestType -eq "Device") {
     if (-not $Project) {
-        Write-Error "Device tests require -Project ($($DeviceTestProjects.Keys -join ', '))"
-        exit 1
+        throw "Device tests require -Project ($($DeviceTestProjects.Keys -join ', '))"
     }
     if (-not $DeviceTestProjects.Contains($Project)) {
-        Write-Error "Unknown device test project '$Project'. Valid values: $($DeviceTestProjects.Keys -join ', ')"
-        exit 1
+        throw "Unknown device test project '$Project'. Valid values: $($DeviceTestProjects.Keys -join ', ')"
     }
 }
 
 # Validate Project for Unit tests (if specified)
 if ($TestType -eq "Unit" -and $Project -and -not $UnitTestProjects.Contains($Project)) {
-    Write-Error "Unknown unit test project '$Project'. Valid values: $($UnitTestProjects.Keys -join ', ')"
-    exit 1
+    throw "Unknown unit test project '$Project'. Valid values: $($UnitTestProjects.Keys -join ', ')"
 }
 
 #endregion
@@ -498,7 +490,7 @@ function Invoke-DeviceTests {
     $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
 
     if (-not (Test-Path $deviceTestScript)) {
-        Write-Error "Device test script not found: $deviceTestScript"
+        Write-Warning "Device test script not found: $deviceTestScript"
         return $false
     }
 
@@ -534,7 +526,7 @@ function Invoke-UITests {
     $uiTestScript = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
 
     if (-not (Test-Path $uiTestScript)) {
-        Write-Error "UI test script not found: $uiTestScript"
+        Write-Warning "UI test script not found: $uiTestScript"
         return $false
     }
 
@@ -571,7 +563,7 @@ function Invoke-IntegrationTests {
     $integrationScript = Join-Path $RepoRoot ".github/skills/run-integration-tests/scripts/Run-IntegrationTests.ps1"
 
     if (-not (Test-Path $integrationScript)) {
-        Write-Error "Integration test script not found: $integrationScript"
+        Write-Warning "Integration test script not found: $integrationScript"
         return $false
     }
 
