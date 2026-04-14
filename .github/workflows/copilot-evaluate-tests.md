@@ -86,11 +86,9 @@ steps:
           || true)
       fi
       if [ -z "$TEST_FILES" ]; then
-        echo "⏭️ No test source files (.cs/.xaml) found in PR diff."
-        echo "HAS_TEST_FILES=false" >> "$GITHUB_ENV"
-        exit 0
+        echo "⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate."
+        exit 1
       fi
-      echo "HAS_TEST_FILES=true" >> "$GITHUB_ENV"
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
 
@@ -98,9 +96,8 @@ steps:
   # the gh-aw platform's checkout_pr_branch.cjs handles PR checkout automatically.
   # workflow_dispatch skips the platform checkout entirely, so we must do it here.
   # The script gates on PR author having write access before checkout.
-  # Skip if gate determined no test files (HAS_TEST_FILES set by gate step via GITHUB_ENV).
   - name: Checkout PR and restore agent infrastructure
-    if: github.event_name == 'workflow_dispatch' && env.HAS_TEST_FILES != 'false'
+    if: github.event_name == 'workflow_dispatch'
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ inputs.pr_number }}
