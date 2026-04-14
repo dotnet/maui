@@ -188,9 +188,19 @@ Describe 'Get-LinkedIssues' {
         $result | Should -Contain 555
     }
 
-    It 'extracts full GitHub issue URLs' {
-        $result = Get-LinkedIssues "See https://github.com/dotnet/maui/issues/33800" "Title"
+    It 'extracts full GitHub issue URLs with fixing keyword' {
+        $result = Get-LinkedIssues "Fixes https://github.com/dotnet/maui/issues/33800" "Title"
         $result | Should -Contain 33800
+    }
+
+    It 'ignores bare GitHub issue URLs without fixing keyword' {
+        $result = @(Get-LinkedIssues "See https://github.com/dotnet/maui/issues/33800" "Title")
+        $result | Should -HaveCount 0
+    }
+
+    It 'ignores informational URL references' {
+        $result = @(Get-LinkedIssues "I believe a previously closed issue maybe the same thing happening:`nhttps://github.com/dotnet/maui/issues/17549" "Title")
+        $result | Should -HaveCount 0
     }
 
     It 'extracts from title' {
@@ -199,7 +209,7 @@ Describe 'Get-LinkedIssues' {
     }
 
     It 'deduplicates' {
-        $result = @(Get-LinkedIssues "Fixes #100`nAlso fixes #100`nhttps://github.com/dotnet/maui/issues/100" "Title")
+        $result = @(Get-LinkedIssues "Fixes #100`nAlso fixes #100`nResolves https://github.com/dotnet/maui/issues/100" "Title")
         $result | Should -HaveCount 1
         $result[0] | Should -Be 100
     }

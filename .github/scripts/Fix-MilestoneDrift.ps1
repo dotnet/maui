@@ -269,7 +269,9 @@ function Get-LinkedIssues([string]$Body, [string]$Title) {
     foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|clos(?:es|ed)?|resolv(?:es|ed)?)\s+#(\d+)', 'IgnoreCase')) {
         [void]$issues.Add([int]$m.Groups[1].Value)
     }
-    foreach ($m in [regex]::Matches($text, 'github\.com/dotnet/maui/issues/(\d+)')) {
+    # Match URLs only when preceded by a fixing keyword (mirrors GitHub auto-close behavior).
+    # Bare URLs like "See https://github.com/.../issues/123" are informational, not fixing references.
+    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|clos(?:es|ed)?|resolv(?:es|ed)?)\s+https?://github\.com/dotnet/maui/issues/(\d+)', 'IgnoreCase')) {
         [void]$issues.Add([int]$m.Groups[1].Value)
     }
     return ($issues | Sort-Object)
@@ -299,6 +301,13 @@ function Test-AndRecordCorrection(
     if (Test-MilestoneMatch $CurrentMilestone $ExpectedMs) {
         $Report.AlreadyCorrect++
         Write-Verbose "  ✅ $ItemType #$ItemNumber`: $CurrentMilestone (correct)"
+        return
+    }
+
+    # Skip if a correction for this item was already recorded (e.g. same issue linked from multiple PRs)
+    $existing = $Report.Corrections | Where-Object { $_.ItemType -eq $ItemType -and $_.Number -eq $ItemNumber }
+    if ($existing) {
+        Write-Verbose "  ⏭️  $ItemType #$ItemNumber`: already queued for correction (via PR #$($existing.RelatedPr))"
         return
     }
 
