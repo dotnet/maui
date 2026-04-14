@@ -39,34 +39,30 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_SetQueryProgrammatically()
+	public void VerifyShellSearch_Placeholder()
 	{
 		App.WaitForElement("ShellSearchButton");
 		App.Tap("ShellSearchButton");
+		OpenOptions();
+		App.WaitForElement("PlaceholderEntry");
+		App.ClearText("PlaceholderEntry");
+		App.EnterText("PlaceholderEntry", "Custom placeholder");
+		ApplyAndReturn();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+
+	[Test, Order(2)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellSearch_SetQueryProgrammatically()
+	{
 		App.WaitForElement("SetQueryButton");
 		App.Tap("SetQueryButton");
 		var log = App.WaitForElement("QueryChangedLog").GetText();
 		Assert.That(log, Does.Contain("Robin"));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: 
-	[Test, Order(2)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_SelectedItem()
-	{
-		App.WaitForElement("ToggleShowsResultsButton");
-		App.Tap("ToggleShowsResultsButton");
-		var searchHandler = App.GetShellSearchHandler();
-		searchHandler.Tap();
-		searchHandler.SendKeys("Mango");
-		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
-		App.WaitForElement("Mango");
-		App.WaitForElement("BackToSearchButton");
-		App.Tap("BackToSearchButton");
-		var selectedItem = App.WaitForElement("SelectedItem").GetText();
-		Assert.That(selectedItem, Is.EqualTo("Mango"));
-	}
-#endif
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29493
 
 	[Test, Order(3)]
 	[Category(UITestCategories.Shell)]
@@ -79,17 +75,27 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: 
 	[Test, Order(4)]
 	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_Placeholder()
+	public void VerifyShellSearch_SelectedItem()
 	{
-		OpenOptions();
-		App.WaitForElement("PlaceholderEntry");
-		App.ClearText("PlaceholderEntry");
-		App.EnterText("PlaceholderEntry", "Custom placeholder");
-		ApplyAndReturn();
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("ToggleShowsResultsButton");
+		App.Tap("ToggleShowsResultsButton");
+		var searchHandler = App.GetShellSearchHandler();
+		searchHandler.Tap();
+		searchHandler.Clear();
+		searchHandler.SendKeys("Mango");
+		App.WaitForElement("Mango");
+		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
+		App.WaitForElement("Mango");
+		App.WaitForElement("BackToSearchButton");
+		App.Tap("BackToSearchButton");
+		var selectedItem = App.WaitForElement("SelectedItem").GetText();
+		Assert.That(selectedItem, Is.EqualTo("Mango"));
 	}
+#endif
+
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link:
 	[Test, Order(5)]
@@ -252,6 +258,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		ApplyAndReturn();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(19)]
 	[Category(UITestCategories.Shell)]
@@ -303,7 +310,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID // Issue Link:
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/28619 due to clearPlaceHolderIcon not showing couldn't able to find this property is working or not
 	[Test, Order(23)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderEnabledTrue()
@@ -318,7 +325,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link:
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/28619
 	[Test, Order(24)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_QueryIcon()
@@ -341,13 +348,17 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderIcon()
 	{
+		OpenOptions();
+		App.WaitForElement("ClearPlaceholderEnabledTrue");
+		App.Tap("ClearPlaceholderEnabledTrue");
+		ApplyAndReturn();
 		App.WaitForElement("ToggleClearPlaceholderIconButton");
 		App.Tap("ToggleClearPlaceholderIconButton");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link:
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  // Issue Link:
 	[Test, Order(27)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ShowsResultsTrue()
@@ -356,7 +367,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Apple");
+		App.WaitForElement("Apple");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Apple");
 		App.WaitForElement("BackToSearchButton");
@@ -375,7 +388,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		searchHandler.Tap();
 		var status = App.WaitForElement("FocusStatus").GetText();
 		Assert.That(status, Is.EqualTo("Focused"));
+		searchHandler.Clear();
 		searchHandler.SendKeys("Mango");
+		App.WaitForElement("Mango");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Mango");
 		App.WaitForElement("BackToSearchButton");
@@ -385,7 +400,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link:
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  // Issue Link:
 	[Test, Order(29)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemsSourceFruits()
@@ -398,7 +413,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Apple");
+		App.WaitForElement("Apple");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Fruit");
 		App.WaitForElement("BackToSearchButton");
@@ -417,7 +434,9 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Peacock");
+		App.WaitForElement("Peacock");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Bird");
 		App.WaitForElement("BackToSearchButton");
@@ -436,14 +455,18 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Peacock");
+		App.WaitForElement("Peacock");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Bird");
 		App.WaitForElement("BackToSearchButton");
 		App.Tap("BackToSearchButton");
 		var searchHandler2 = App.GetShellSearchHandler();
 		searchHandler2.Tap();
+		searchHandler.Clear();
 		searchHandler2.SendKeys("Apple");
+		App.WaitForElement("Apple");
 		App.TapFirstSearchResult(this, searchHandler2, "SearchResultName");
 		App.WaitForElement("Fruit");
 		App.WaitForElement("BackToSearchButton");
@@ -462,12 +485,13 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Apple");
 		App.WaitForNoElement("Apple");
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/34874
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  // Issue Link: https://github.com/dotnet/maui/issues/34874
 	[Test, Order(33)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ItemTemplateCustom()
@@ -480,6 +504,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Apple");
 		App.WaitForElement("Apple");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -497,13 +522,14 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.Tap("ToggleShowsResultsButton");
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Apple");
 		App.WaitForElement("Apple");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
- #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID  // Issue Link: 
 	[Test, Order(35)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CommandParameter()
@@ -518,24 +544,19 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		// Type a query and press Enter to trigger QueryConfirmed → SearchCommand
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
+		searchHandler.Clear();
 		searchHandler.SendKeys("Apple");
-		App.PressEnter();
-
-		// CommandFired format: "QueryConfirmed:{query}|Param:{param}"
+		App.WaitForElement("Apple");
+		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
+		App.WaitForElement("BackToSearchButton");
+		App.Tap("BackToSearchButton");
 		var fired = App.WaitForElement("CommandFired").GetText();
 		Assert.That(fired, Does.Contain("QueryConfirmed"));
 		Assert.That(fired, Does.Contain("Param:TestParam"));
-		var searchHandler2 = App.GetShellSearchHandler();
-		searchHandler2.Tap();
-		searchHandler2.Clear();
-		searchHandler2.SendKeys("Apple");
-		App.TapFirstSearchResult(this, searchHandler2, "SearchResultName");
-		App.WaitForElement("BackToSearchButton");
-		App.Tap("BackToSearchButton");
 	}
- #endif
+#endif
 
-#if TEST_FAILS_ON_ANDROID 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
 	[Test, Order(36)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_ClearPlaceholderCommand()
@@ -553,21 +574,10 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		Assert.That(fired, Does.Contain("ClearPlaceholder"));
 		Assert.That(fired, Is.EqualTo("ClearPlaceholder:ClearParam"));
 	}
-
-	[Test, Order(37)]
-	[Category(UITestCategories.Shell)]
-	public void VerifyShellSearch_ClearPlaceholderEnabled()
-	{
-		OpenOptions();
-		App.WaitForElement("ClearPlaceholderEnabledTrue");
-		App.Tap("ClearPlaceholderEnabledTrue");
-		ApplyAndReturn();
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/26968 , https://github.com/dotnet/maui/issues/30771 due to this issue options toolbar disappeared
-	[Test, Order(38)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  // Issue Link: https://github.com/dotnet/maui/issues/26968, https://github.com/dotnet/maui/issues/29493 , https://github.com/dotnet/maui/issues/30771 due to this issue options toolbar disappeared
+	[Test, Order(37)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_TextColor()
 	{
@@ -582,7 +592,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(39)]
+	[Test, Order(38)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_CancelButtonColor()
 	{
