@@ -18,7 +18,7 @@ class Issue15806 : ContentPage
 					{
 						new VisualStateGroup
 						{
-							Name = "CheckedStates",
+							Name = "CommonStates",
 							States =
 							{
 								new VisualState
