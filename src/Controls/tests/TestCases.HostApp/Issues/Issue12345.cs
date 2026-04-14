@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12345, "RadioButton background remains visible after being set to null on Android",
-    PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 12345, "RadioButton background remains visible after being set to null",
+    PlatformAffected.Android | PlatformAffected.UWP)]
 public class Issue12345 : ContentPage
 {
     public Issue12345()

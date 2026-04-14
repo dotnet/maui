@@ -8,7 +8,7 @@ public class Issue12345 : _IssuesUITest
 {
     public Issue12345(TestDevice testDevice) : base(testDevice) { }
 
-    public override string Issue => "RadioButton background remains visible after being set to null on Android";
+    public override string Issue => "RadioButton background remains visible after being set to null";
 
     [Test]
     [Category(UITestCategories.RadioButton)]
