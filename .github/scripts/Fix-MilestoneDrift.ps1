@@ -106,10 +106,16 @@ function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
     $joined = ($versionXml -join "`n")
     if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
         $major = $Matches[1]
-    } else { return $null }
+    } else {
+        Write-Warning "Could not parse MajorVersion from Versions.props at $GitRef"
+        return $null
+    }
     if ($joined -match '<PatchVersion>(\d+)</PatchVersion>') {
         $patch = $Matches[1]
-    } else { return $null }
+    } else {
+        Write-Warning "Could not parse PatchVersion from Versions.props at $GitRef"
+        return $null
+    }
     return "$major.0.$patch"
 }
 
@@ -562,6 +568,7 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         ResolvedMsNumber  = $match.Number
         TotalPrs          = $prNumbers.Count
         PrsChecked        = 0
+        PrsSkippedWrongBranch = 0
         IssuesChecked     = 0
         AlreadyCorrect    = 0
         Corrections       = [System.Collections.ArrayList]::new()
@@ -581,7 +588,7 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         # Safety: skip PRs targeting a different .NET version branch
         if (-not (Test-PrBelongsToVersion $pr.BaseRef $Branch $Major)) {
             Write-Verbose "  ⏭️  PR #$prNum targets '$($pr.BaseRef)' — not for .NET $Major, skipping"
-            $report.PrsSkippedWrongBranch = ($report.PrsSkippedWrongBranch ?? 0) + 1
+            $report.PrsSkippedWrongBranch++
             continue
         }
         $report.PrsChecked++

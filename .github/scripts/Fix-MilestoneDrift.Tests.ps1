@@ -34,6 +34,7 @@ Describe 'ConvertTo-Milestone' {
         @{ Tag = '9.0.82';  Expected = '.NET 9 SR8.2' }
         @{ Tag = '9.0.90';  Expected = '.NET 9 SR9' }
         @{ Tag = '10.0.100'; Expected = '.NET 10 SR10' }
+        @{ Tag = '10.0.101'; Expected = '.NET 10 SR10.1' }
     ) {
         ConvertTo-Milestone $Tag | Should -Be $Expected
     }
