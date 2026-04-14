@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Storage
 
 			// try resolve using the content provider
 			var absolute = ResolvePhysicalPath(uri, requireExtendedAccess);
-			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute))
+			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute) && IsFileReadable(absolute))
 				return absolute;
 
 			// fall back to just copying it
@@ -69,6 +69,12 @@ namespace Microsoft.Maui.Storage
 				return cached;
 
 			throw new FileNotFoundException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
+		}
+
+		internal static bool IsFileReadable(string path)
+		{
+			var file = new Java.IO.File(path);
+			return file.Exists() && file.CanRead();
 		}
 
 		static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
