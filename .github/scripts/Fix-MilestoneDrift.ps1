@@ -89,9 +89,16 @@ function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
 function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
     <# Reads MajorVersion and PatchVersion from eng/Versions.props at a specific
        git ref (commit SHA, branch, tag). Returns a synthetic release tag string
-       like "10.0.60" that can be passed to ConvertTo-Milestone. #>
+       like "10.0.60" that can be passed to ConvertTo-Milestone.
+       Fetches the commit if not available locally (e.g. PRs merged to inflight). #>
     $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
-    if ($LASTEXITCODE -ne 0) { return $null }
+    if ($LASTEXITCODE -ne 0) {
+        # Commit not in local history — fetch it
+        Write-Verbose "  Fetching commit $GitRef..."
+        $null = git -C $Repo fetch origin $GitRef --quiet 2>&1
+        $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
+        if ($LASTEXITCODE -ne 0) { return $null }
+    }
     $joined = ($versionXml -join "`n")
     if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
         $major = $Matches[1]
