@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using System.Threading;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
@@ -182,9 +181,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>A sentinel object used to indicate that a BindableProperty value has not been set.</summary>
 		public static readonly object UnsetValue = new object();
 
-		private static int _nextInternalId = int.MinValue;
-		internal readonly int InternalId;
-
 		BindableProperty(string propertyName, [DynamicallyAccessedMembers(ReturnTypeMembers)] Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 								 ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
 								 CoerceValueDelegate coerceValue = null, BindablePropertyBindingChanging bindingChanging = null, bool isReadOnly = false, CreateDefaultValueDelegate defaultValueCreator = null)
@@ -195,8 +191,6 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(returnType));
 			if (declaringType is null)
 				throw new ArgumentNullException(nameof(declaringType));
-			
-			InternalId = Interlocked.Increment(ref _nextInternalId);
 
 			// don't use Enum.IsDefined as its redonkulously expensive for what it does
 			if (defaultBindingMode != BindingMode.Default && defaultBindingMode != BindingMode.OneWay && defaultBindingMode != BindingMode.OneWayToSource && defaultBindingMode != BindingMode.TwoWay && defaultBindingMode != BindingMode.OneTime)
