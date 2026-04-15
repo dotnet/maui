@@ -19,13 +19,6 @@ public class ToolbarBadgePage : BasePage
 		// Remove default Settings toolbar item from BasePage and re-add with badge
 		ToolbarItems.Clear();
 
-		_statusLabel = new Label
-		{
-			Text = "Toolbar items above have badges. Use buttons to interact.",
-			FontSize = 16,
-			Margin = new Thickness(0, 0, 0, 20)
-		};
-
 		_numericItem = new ToolbarItem
 		{
 			Text = "Alerts",
@@ -71,6 +64,13 @@ public class ToolbarBadgePage : BasePage
 		ToolbarItems.Add(_colorItem);
 
 		_count = 3;
+
+		_statusLabel = new Label
+		{
+			Text = "Toolbar items above have badges. Use buttons to interact.",
+			FontSize = 16,
+			Margin = new Thickness(0, 0, 0, 20)
+		};
 
 		Content = new ScrollView
 		{

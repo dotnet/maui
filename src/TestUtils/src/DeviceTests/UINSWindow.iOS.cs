@@ -79,27 +79,19 @@ public static class UIWindowExtensions
 				return null;
 
 			var sharedApp = nsapp.PerformSelector(SharedApplicationSelector);
-			if (sharedApp is null)
-				return null;
-
 			var windows = sharedApp.PerformSelector(WindowsSelector) as NSArray;
-			if (windows is null)
-				return null;
 
-			for (nuint i = 0; i < windows.Count; i++)
+			for (nuint i = 0; i < windows!.Count; i++)
 			{
 				var nswin = windows.GetItem<NSObject>(i);
-				if (nswin is null)
-					continue;
 
-				if (nswin.PerformSelector(UIWindowsSelector) is not NSArray uiwindows)
-					continue;
+				var uiwindows = nswin.PerformSelector(UIWindowsSelector) as NSArray;
 
-				for (nuint j = 0; j < uiwindows.Count; j++)
+				for (nuint j = 0; j < uiwindows!.Count; j++)
 				{
 					var uiwin = uiwindows.GetItem<UIWindow>(j);
 
-					if (uiwin is not null && uiwin.Handle == uiWindow.Handle)
+					if (uiwin.Handle == uiWindow.Handle)
 						return new UINSWindow(nswin.Handle, uiWindow);
 				}
 			}

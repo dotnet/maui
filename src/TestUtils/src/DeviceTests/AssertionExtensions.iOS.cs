@@ -247,15 +247,14 @@ namespace Microsoft.Maui.DeviceTests
 #pragma warning disable CA1416 // Validate platform compatibility
 			UIGraphics.BeginImageContext(imageRect.Size);
 			var context = UIGraphics.GetCurrentContext();
-			if (context is not null)
-				view.Layer.RenderInContext(context);
+			view.Layer.RenderInContext(context);
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 #pragma warning restore CA1416 // Validate platform compatibility
 
-			logger?.LogDebug($"Finish: {image?.Size}");
+			logger?.LogDebug($"Finish: {image.Size}");
 
-			return Task.FromResult(image!);
+			return Task.FromResult(image);
 		}
 
 		public static UIColor ColorAtPoint(this UIImage bitmap, int x, int y)
