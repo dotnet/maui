@@ -6,21 +6,25 @@ on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize]
+    paths:
+      - '.github/workflows/pr-review-queue.yml'
+      - '.github/skills/find-reviewable-pr/**'
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: read
 
 concurrency:
-  group: pr-review-queue
+  group: pr-review-queue-${{ github.event_name }}-${{ github.event.pull_request.number || 'scheduled' }}
   cancel-in-progress: true
 
 jobs:
   generate-report:
     runs-on: ubuntu-latest
-    # On pull_request, only validate the script runs — don't create issues
     if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
 
@@ -29,19 +33,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set +e
           pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 \
             -Category all \
             -OutputFormat markdown \
             > pr-review-queue-raw.md 2>pr-query-errors.txt
+          rc=$?
+          set -e
 
-          if [ $? -ne 0 ]; then
+          if [ $rc -ne 0 ]; then
             echo "::error::Query script failed"
             cat pr-query-errors.txt
             exit 1
           fi
 
-          # Strip Write-Host progress lines — keep only markdown (starts at "# ")
-          sed -n '/^# 📋/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
+          # Strip Write-Host progress lines — keep only markdown
+          sed -n '/^<!-- PR_REVIEW_QUEUE_BEGIN -->/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
 
           if [ ! -s pr-review-queue-body.md ]; then
             echo "::error::Query produced empty output"
@@ -79,6 +86,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
 
@@ -86,18 +96,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set +e
           pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 \
             -Category all \
             -OutputFormat markdown \
             > pr-review-queue-raw.md 2>pr-query-errors.txt
+          rc=$?
+          set -e
 
-          if [ $? -ne 0 ]; then
+          if [ $rc -ne 0 ]; then
             echo "::error::Query script failed"
             cat pr-query-errors.txt
             exit 1
           fi
 
-          sed -n '/^# 📋/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
+          sed -n '/^<!-- PR_REVIEW_QUEUE_BEGIN -->/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
 
           if [ ! -s pr-review-queue-body.md ]; then
             echo "::error::Query produced empty output"

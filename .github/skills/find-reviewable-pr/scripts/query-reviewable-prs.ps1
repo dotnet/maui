@@ -1028,6 +1028,7 @@ function Format-Markdown-Output {
     $date = (Get-Date).ToString("yyyy-MM-dd")
     $md = [System.Text.StringBuilder]::new()
 
+    [void]$md.AppendLine("<!-- PR_REVIEW_QUEUE_BEGIN -->")
     [void]$md.AppendLine("# 📋 PR Review Queue — $date")
     [void]$md.AppendLine("")
 
@@ -1042,7 +1043,8 @@ function Format-Markdown-Output {
             [void]$md.AppendLine("|----|-------|--------|----------|-----|---------|")
         }
         foreach ($pr in $prs) {
-            $title = if ($pr.Title.Length -gt 60) { $pr.Title.Substring(0, 57) + "..." } else { $pr.Title }
+            $rawTitle = if ($pr.Title.Length -gt 60) { $pr.Title.Substring(0, 57) + "..." } else { $pr.Title }
+            $title = $rawTitle.Replace('|', '\|')
             $link = "[#$($pr.Number)]($($pr.URL))"
             if ($showMilestone) {
                 [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Milestone) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
@@ -1116,7 +1118,7 @@ function Format-Markdown-Output {
         $list = @(& $excludeStale $list)
         if ($list.Count -gt 0) {
             [void]$md.AppendLine("## 🤝 Partner PRs")
-            & $renderTable ($list | Select-Object -First 10)
+            & $renderTable ($list | Select-Object -First $Limit)
         }
     }
 
@@ -1126,7 +1128,7 @@ function Format-Markdown-Output {
         $list = @(& $excludeStale $list)
         if ($list.Count -gt 0) {
             [void]$md.AppendLine("## ✨ Community PRs")
-            & $renderTable ($list | Select-Object -First 10)
+            & $renderTable ($list | Select-Object -First $Limit)
         }
     }
 
@@ -1146,14 +1148,15 @@ function Format-Markdown-Output {
         }
     }
 
-    # Queue Health
+    # Queue Health (apply same stale/do-not-merge exclusion as displayed sections)
+    $filteredPRs = @(& $excludeStale $processedPRs)
     $totalP0 = @(& $excludeStale (& $defaultFilter $priorityPRs)).Count
     $totalApproved = @(& $excludeStale $approvedPRs).Count
-    $oldest = $processedPRs | Sort-Object Age -Descending | Select-Object -First 1
-    $over30 = @($processedPRs | Where-Object { $_.Age -gt 30 }).Count
+    $oldest = $filteredPRs | Sort-Object Age -Descending | Select-Object -First 1
+    $over30 = @($filteredPRs | Where-Object { $_.Age -gt 30 }).Count
 
     [void]$md.AppendLine("## 📊 Queue Health")
-    [void]$md.AppendLine("- **Total PRs needing review**: $($processedPRs.Count)")
+    [void]$md.AppendLine("- **Total PRs needing review**: $($filteredPRs.Count)")
     [void]$md.AppendLine("- **P/0 PRs**: $totalP0 (target: 0)")
     [void]$md.AppendLine("- **Approved but not merged**: $totalApproved")
     if ($oldest) {
