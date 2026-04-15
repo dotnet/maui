@@ -32,16 +32,6 @@ on:
       - '.github/agents/**'
       - '.github/workflows/skill-validation.yml'
 
-  # Bootstrap: pull_request trigger lets the workflow run from the PR branch
-  # before it exists on main. Once merged, pull_request_target takes over.
-  # This trigger can be removed after the first merge to main.
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - '.github/skills/**'
-      - '.github/agents/**'
-      - '.github/workflows/skill-validation.yml'
-
   issue_comment:
     types: [created]
 
@@ -55,7 +45,7 @@ concurrency:
         && format('eval-{0}', github.event.issue.number)
       || github.event_name == 'issue_comment'
         && format('noop-{0}-{1}', github.event.issue.number, github.event.comment.id)
-      || (github.event_name == 'pull_request_target' || github.event_name == 'pull_request')
+      || github.event_name == 'pull_request_target'
         && format('pr-{0}', github.event.pull_request.number)
       || github.run_id
     }}
@@ -78,7 +68,7 @@ jobs:
   # ==========================================================================
   pr-gate:
     name: PR gate
-    if: github.event_name == 'pull_request_target' || github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -492,7 +482,7 @@ jobs:
       # ── Prepare test directory layout ─────────────────────────────
       # skill-validator evaluate expects tests at <tests-dir>/<skill>/eval.yaml
       # but maui keeps them co-located at .github/skills/<skill>/tests/eval.yaml.
-      # Create a flat tests directory with symlinks to match the expected layout.
+      # Create a flat tests directory by copying files to match the expected layout.
       - name: Prepare test directory
         run: |
           mkdir -p eval-tests
@@ -958,12 +948,16 @@ jobs:
             const body = lines.join('\n');
 
             // Upsert comment (find existing with marker, update or create)
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              per_page: 100,
-            });
+            // Paginate to handle PRs with 100+ comments
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              }
+            );
 
             const existing = comments.find(c => c.body && c.body.includes(marker));
 
