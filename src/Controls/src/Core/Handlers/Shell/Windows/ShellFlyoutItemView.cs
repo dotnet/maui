@@ -47,6 +47,9 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					_shell?.RemoveLogicalChild(_content);
 
+				// Remove resource listener from previous content
+				if (_content is IElementDefinition contentDef)
+					contentDef.RemoveResourcesChangedListener(OnResourcesChanged);
 				_content.Cleanup();
 				_content.BindingContext = null;
 				_content.Parent = null;
@@ -79,7 +82,9 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					_shell.AddLogicalChild(_content);
 
-
+				// Listen for resource changes to re-apply visual state when DynamicResources change at runtime
+				if (_content is IElementDefinition contentDef)
+					contentDef.AddResourcesChangedListener(OnResourcesChanged);
 				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 
 				Content = platformView;
@@ -142,10 +147,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateVisualState()
 		{
-			if (_content?.BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
+			if (_content?.BindingContext is BaseShellItem baseShellItem)
 			{
-				_content.IsItemSelected = baseShellItem.IsChecked;
+				VisualStateManager.GoToState(_content, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 			}
+		}
+
+		void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			UpdateVisualState();
 		}
 
 		static void IsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

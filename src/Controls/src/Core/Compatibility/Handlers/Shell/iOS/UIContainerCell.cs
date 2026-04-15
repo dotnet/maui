@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
@@ -10,6 +11,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IPlatformViewHandler _renderer;
 		object _bindingContext;
+		readonly Shell _shell;
+		IElementDefinition _bindingContextResource;
+		IElementDefinition _viewResource;
 
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
 		internal NSIndexPath IndexPath { get; set; }
@@ -17,7 +21,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal UIContainerCell(string cellId, View view, Shell shell, object context) : base(UITableViewCellStyle.Default, cellId)
 		{
+			_shell = shell;
 			View = view;
+			_viewResource = view as IElementDefinition;
+			_viewResource?.AddResourcesChangedListener(OnResourcesChanged);
 			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
@@ -75,6 +82,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
+			_viewResource?.RemoveResourcesChangedListener(OnResourcesChanged);
+			_viewResource = null;
+			_bindingContextResource?.RemoveResourcesChangedListener(OnResourcesChanged);
+			_bindingContextResource = null;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
@@ -101,19 +112,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (value == _bindingContext)
+				{
+					UpdateVisualState();
 					return;
+				}
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 					baseShell.PropertyChanged -= OnElementPropertyChanged;
 
+				_bindingContextResource?.RemoveResourcesChangedListener(OnResourcesChanged);
+				_bindingContextResource = null;
+
 				_bindingContext = value;
 				View.BindingContext = value;
+				_bindingContextResource = value as IElementDefinition;
+				_bindingContextResource?.AddResourcesChangedListener(OnResourcesChanged);
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell2)
-				{
 					baseShell2.PropertyChanged += OnElementPropertyChanged;
-					UpdateVisualState();
-				}
+
+				UpdateVisualState();
 			}
 		}
 
@@ -138,9 +156,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
-			{
 				UpdateVisualState();
-			}
+		}
+
+		void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			UpdateVisualState();
 		}
 	}
 }

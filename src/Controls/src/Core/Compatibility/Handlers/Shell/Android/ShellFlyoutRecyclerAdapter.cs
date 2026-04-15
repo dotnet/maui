@@ -274,16 +274,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				set
 				{
 					if (_element == value)
+					{
+						UpdateVisualState();
 						return;
+					}
 
-					if (View.Parent is BaseShellItem bsi)
-						bsi.RemoveLogicalChild(View);
+					if (View.Parent is BaseShellItem bsiParent)
+						bsiParent.RemoveLogicalChild(View);
 					else
 						_shell.RemoveLogicalChild(View);
 
-					if (_element != null && _element is BaseShellItem)
+					if (_element != null)
 					{
-						_element.PropertyChanged -= OnElementPropertyChanged;
+						if (_element is BaseShellItem bsiOld)
+							bsiOld.PropertyChanged -= OnElementPropertyChanged;
+						var elemDef = _element as IElementDefinition;
+						elemDef?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 					}
 
 					_element = value;
@@ -298,7 +304,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						else
 							_shell.AddLogicalChild(View);
 
-						_element.PropertyChanged += OnElementPropertyChanged;
+						if (value is BaseShellItem bsiNewEvent)
+							bsiNewEvent.PropertyChanged += OnElementPropertyChanged;
+						var elemDef = _element as IElementDefinition;
+						elemDef?.AddResourcesChangedListener(OnElementResourcesChanged);
 						UpdateVisualState();
 					}
 				}
@@ -306,9 +315,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void UpdateVisualState()
 			{
-				if (Element is BaseShellItem baseShellItem && baseShellItem != null)
+				if (Element is BaseShellItem baseShellItem)
 				{
-					View.IsItemSelected = baseShellItem.IsChecked;
+					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 				}
 			}
 
@@ -316,6 +325,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
 					UpdateVisualState();
+			}
+
+			void OnElementResourcesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				UpdateVisualState();
 			}
 
 			void OnClicked(object sender, EventArgs e)
@@ -336,6 +350,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (disposing)
 				{
 					_itemView.Click -= OnClicked;
+					var elemDef = _element as IElementDefinition;
+					elemDef?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 
 					Element = null;
 					_itemView = null;
