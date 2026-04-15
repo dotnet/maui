@@ -347,7 +347,7 @@ stages:
           - bash: |
               echo "Authenticating with GitHub CLI..."
               if [ -z "$GH_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]GH_COMMENT_TOKEN is not set. Please configure the pipeline variable."
+                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
                 exit 1
               fi
               gh auth status

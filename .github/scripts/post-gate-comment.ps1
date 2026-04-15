@@ -155,20 +155,21 @@ Write-Host "Checking for existing gate comment..." -ForegroundColor Yellow
 $existingCommentId = $null
 $existingBody = $null
 
-$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
-    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | {id, body}" 2>$null
-
-if ($existingRaw -and $existingRaw -ne "null") {
+$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+$existingObj = $null
+if ($existingRaw) {
     try {
-        $existingObj = $existingRaw | ConvertFrom-Json
-        if ($existingObj.id) {
-            $existingCommentId = $existingObj.id
-            $existingBody = $existingObj.body
-            Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
-        }
+        $allComments = $existingRaw | ConvertFrom-Json
+        $existingObj = @($allComments | Where-Object { $_.body -and $_.body.Contains($MARKER) }) | Select-Object -Last 1
     } catch {
-        Write-Host "⚠️ Could not parse existing comment: $_" -ForegroundColor Yellow
+        Write-Host "⚠️ Could not parse comments: $_" -ForegroundColor Yellow
     }
+}
+
+if ($existingObj -and $existingObj.id) {
+    $existingCommentId = $existingObj.id
+    $existingBody = $existingObj.body
+    Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
 }
 
 $authorPing = ""
@@ -233,8 +234,15 @@ try {
             Write-Host "⚠️ Could not update comment $existingCommentId : $_" -ForegroundColor Yellow
             $botLogin = gh api user --jq .login 2>$null
             if ($botLogin) {
-                $ownCommentId = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
-                    --jq "[.[] | select((.body | contains(`"$MARKER`")) and .user.login == `"$botLogin`")] | last | .id" 2>$null
+                $ownRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+                $ownCommentId = $null
+                if ($ownRaw) {
+                    try {
+                        $ownAll = $ownRaw | ConvertFrom-Json
+                        $ownMatch = @($ownAll | Where-Object { $_.body -and $_.body.Contains($MARKER) -and $_.user.login -eq $botLogin }) | Select-Object -Last 1
+                        if ($ownMatch) { $ownCommentId = $ownMatch.id }
+                    } catch { }
+                }
                 if ($ownCommentId -and $ownCommentId -ne "null") {
                     Write-Host "  Retrying with own comment (ID: $ownCommentId)..." -ForegroundColor Yellow
                     gh api --method PATCH "repos/dotnet/maui/issues/comments/$ownCommentId" --input $tempFile 2>&1 | Out-Null

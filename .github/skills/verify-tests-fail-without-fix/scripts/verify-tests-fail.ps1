@@ -106,8 +106,7 @@ if ($Platform -eq "maccatalyst") {
 
 # Platform is required for UI and device tests, optional for unit/XAML tests
 if ($TestType -in @("UITest", "DeviceTest") -and -not $Platform) {
-    Write-Error "$TestType requires -Platform parameter (android, ios, catalyst, windows)."
-    exit 1
+    throw "$TestType requires -Platform parameter (android, ios, catalyst, windows)."
 }
 
 # ============================================================
@@ -148,8 +147,7 @@ if (-not $PRNumber) {
         }
         
         if (-not $foundPR) {
-            Write-Error "Could not auto-detect PR number. Please provide -PRNumber parameter."
-            exit 1
+            throw "Could not auto-detect PR number. Please provide -PRNumber parameter."
         }
     }
 }
@@ -431,6 +429,9 @@ function Invoke-TestRun {
             }
 
             $devicePlatform = if ($Platform -eq "catalyst") { "maccatalyst" } else { $Platform }
+            if (-not $DetectedProject) {
+                Write-Warning "Could not determine device test project — defaulting to 'Controls'."
+            }
             $deviceProject = if ($DetectedProject) { $DetectedProject } else { "Controls" }
 
             $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"

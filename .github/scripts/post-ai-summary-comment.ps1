@@ -197,20 +197,21 @@ Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
 $existingCommentId = $null
 $existingBody = $null
 
-$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate `
-    --jq "[.[] | select(.body | contains(`"$MARKER`"))] | last | {id, body}" 2>$null
-
-if ($existingRaw -and $existingRaw -ne "null") {
+$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+$existingObj = $null
+if ($existingRaw) {
     try {
-        $existingObj = $existingRaw | ConvertFrom-Json
-        if ($existingObj.id) {
-            $existingCommentId = $existingObj.id
-            $existingBody = $existingObj.body
-            Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
-        }
+        $allComments = $existingRaw | ConvertFrom-Json
+        $existingObj = @($allComments | Where-Object { $_.body -and $_.body.Contains($MARKER) }) | Select-Object -Last 1
     } catch {
-        Write-Host "⚠️ Could not parse existing comment: $_" -ForegroundColor Yellow
+        Write-Host "⚠️ Could not parse comments: $_" -ForegroundColor Yellow
     }
+}
+
+if ($existingObj -and $existingObj.id) {
+    $existingCommentId = $existingObj.id
+    $existingBody = $existingObj.body
+    Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
 }
 
 $authorPing = ""
