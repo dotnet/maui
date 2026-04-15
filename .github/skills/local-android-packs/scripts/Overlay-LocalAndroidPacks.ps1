@@ -228,12 +228,12 @@ function Invoke-Restore {
         $errors += "Manifest backup not found: $manifestBackup"
     }
 
-    # Step 3: Clean up backup directory
-    try {
+    # Step 3: Clean up backup (only if no errors occurred)
+    if ($errors.Count -eq 0 -and (Test-Path $BackupDir)) {
         Remove-Item -Path $BackupDir -Recurse -Force
-    }
-    catch {
-        $errors += "Failed to remove backup directory: $_"
+        Write-Host "  Backup directory cleaned up" -ForegroundColor DarkGray
+    } elseif ($errors.Count -gt 0) {
+        Write-Host "  ⚠️  Backup preserved at $BackupDir due to errors above" -ForegroundColor Yellow
     }
 
     # Summary
@@ -297,10 +297,13 @@ function Invoke-Overlay {
     $localVersion = Get-LocalPackVersion -LocalPacksPath $localPacksPath
     Write-Info "Local build version: $localVersion"
 
-    if ($localVersion -eq $installedVersion) {
-        throw "Local build version ($localVersion) matches the installed version." + `
-              " Overlay would delete the existing packs and leave the SDK broken on restore." + `
-              " Build dotnet/android at a different version, or modify the version suffix before overlaying."
+    # Check for physical directory collision — would overlay overwrite existing pack dirs?
+    $sdkAlias = Get-PlatformSdkAlias
+    $collisionPath = Join-Path $DotnetRoot "packs/$sdkAlias/$localVersion"
+    if (Test-Path $collisionPath) {
+        throw "Local build version ($localVersion) already exists at $collisionPath." +
+              " Overlay would overwrite existing packs and leave the SDK broken on restore." +
+              " Build dotnet/android at a different version, or run with -Restore first."
     }
 
     $net11Packs = Get-ManifestNet11Packs -Manifest $manifest
