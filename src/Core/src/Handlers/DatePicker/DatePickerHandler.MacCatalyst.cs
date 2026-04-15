@@ -33,11 +33,6 @@ namespace Microsoft.Maui.Handlers
 			// for the date segments. Wire up EditingDidBegin directly on those fields.
 			WireTextFields(platformView);
 
-			// On MacCatalyst the popover runs in an AppKit NSWindow. Tapping outside
-			// dismisses it at the AppKit level without firing UITextField EditingDidEnd,
-			// so NSWindowDidCloseNotification is needed for close.
-			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(new("NSWindowDidCloseNotification"), OnWindowClosed);
-
 			base.ConnectHandler(platformView);
 		}
 
@@ -104,6 +99,14 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_isDatePickerOpen = true;
+
+			// Register a one-shot observer scoped to this picker's open lifetime.
+			// On MacCatalyst the popover runs in an AppKit NSWindow; tapping outside
+			// dismisses it at the AppKit level without firing UITextField EditingDidEnd.
+			// Registering here (not in ConnectHandler) avoids spurious fires from
+			// unrelated window closes while the picker is not open.
+			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(new("NSWindowDidCloseNotification"), OnWindowClosed);
+
 			if (VirtualView is IDatePicker virtualView)
 			{
 				virtualView.IsFocused = virtualView.IsOpen = true;
@@ -112,17 +115,14 @@ namespace Microsoft.Maui.Handlers
 
 		void OnWindowClosed(NSNotification notification)
 		{
-			if (!_isDatePickerOpen)
+			// One-shot: remove the observer immediately so it won't fire again.
+			if (_windowCloseObserver is not null)
 			{
-				return;
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_windowCloseObserver);
+				_windowCloseObserver = null;
 			}
 
 			_isDatePickerOpen = false;
-
-			if (UpdateImmediately)
-			{
-				SetVirtualViewDate();
-			}
 
 			if (VirtualView is IDatePicker virtualView)
 			{
