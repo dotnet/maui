@@ -35,7 +35,7 @@
     <PublishAot>true</PublishAot>
     <_IsPublishing>true</_IsPublishing>
     <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
-    <WarningsNotAsErrors>IL3050</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL3050</WarningsNotAsErrors>
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
