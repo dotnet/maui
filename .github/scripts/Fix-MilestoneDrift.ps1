@@ -143,14 +143,14 @@ function Test-IsReleaseTag([string]$ReleaseTag, [int]$Major) {
 }
 
 function Test-MilestoneMatch([string]$Actual, [string]$Expected) {
-    <# Handles ".NET 10.0 SR4" vs ".NET 10 SR4" normalization only.
+    <# Handles ".NET 10.0 SR4" vs ".NET 10 SR4" and ".NET 10.0 GA" vs ".NET 10 GA" normalization.
        Sub-patches like ".NET 10 SR4.1" are distinct milestones and do NOT match ".NET 10 SR4". #>
     if ([string]::IsNullOrEmpty($Actual)) { return $false }
     if ($Actual -eq $Expected) { return $true }
 
-    # Normalize: ".NET 10.0 SRx" → ".NET 10 SRx"
-    $normActual   = $Actual   -replace '\.NET (\d+)\.0 SR', '.NET $1 SR'
-    $normExpected = $Expected -replace '\.NET (\d+)\.0 SR', '.NET $1 SR'
+    # Normalize: ".NET 10.0 SRx" → ".NET 10 SRx" and ".NET 10.0 GA" → ".NET 10 GA"
+    $normActual   = $Actual   -replace '\.NET (\d+)\.0 (SR|GA)', '.NET $1 $2'
+    $normExpected = $Expected -replace '\.NET (\d+)\.0 (SR|GA)', '.NET $1 $2'
     if ($normActual -eq $normExpected) { return $true }
 
     return $false
@@ -161,10 +161,10 @@ function Find-MatchingMilestone([string]$Expected, [hashtable]$AllMilestones) {
     if ($AllMilestones.ContainsKey($Expected)) {
         return @{ Title = $Expected; Number = $AllMilestones[$Expected] }
     }
-    # Normalized search
-    $normExpected = $Expected -replace '\.NET (\d+)\.0 SR', '.NET $1 SR'
+    # Normalized search (handles ".NET 10.0 SRx" ↔ ".NET 10 SRx" and ".NET 10.0 GA" ↔ ".NET 10 GA")
+    $normExpected = $Expected -replace '\.NET (\d+)\.0 (SR|GA)', '.NET $1 $2'
     foreach ($key in $AllMilestones.Keys) {
-        $normKey = $key -replace '\.NET (\d+)\.0 SR', '.NET $1 SR'
+        $normKey = $key -replace '\.NET (\d+)\.0 (SR|GA)', '.NET $1 $2'
         if ($normKey -eq $normExpected) {
             return @{ Title = $key; Number = $AllMilestones[$key] }
         }
@@ -386,7 +386,12 @@ function Test-AndRecordCorrection(
     [hashtable]$Report
 ) {
     if (Test-MilestoneMatch $CurrentMilestone $ExpectedMs) {
-        $Report.AlreadyCorrect++
+        # Dedup: don't count the same item as correct twice (e.g. issue linked from multiple PRs)
+        $key = "$ItemType`:$ItemNumber"
+        if (-not $Report.ContainsKey('_checkedItems')) { $Report._checkedItems = [System.Collections.Generic.HashSet[string]]::new() }
+        if ($Report._checkedItems.Add($key)) {
+            $Report.AlreadyCorrect++
+        }
         Write-Verbose "  ✅ $ItemType #$ItemNumber`: $CurrentMilestone (correct)"
         return
     }
@@ -478,7 +483,19 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     $allMilestones = Get-AllMilestones
     $match = Find-MatchingMilestone $expectedMs $allMilestones
     if (-not $match) {
-        throw "No GitHub milestone found matching `"$expectedMs`". Available: $($allMilestones.Keys -join ', ')"
+        # Milestone may not have been created yet (common during normal development).
+        # Warn and return empty report — prevents red CI on every auto-triggered merge.
+        Write-Warning "No GitHub milestone found matching `"$expectedMs`". The milestone may not have been created yet. Skipping."
+        return @{
+            Tag               = $ReleaseTag
+            ExpectedMilestone = $expectedMs
+            TotalPrs          = 1
+            PrsChecked        = 0
+            IssuesChecked     = 0
+            AlreadyCorrect    = 0
+            Corrections       = [System.Collections.ArrayList]::new()
+            Errors            = [System.Collections.ArrayList]::new()
+        }
     }
     Write-Host "  Resolved to: `"$($match.Title)`" (#$($match.Number))`n"
 
@@ -628,7 +645,11 @@ function Write-Report([hashtable]$Report) {
     Write-Host ""
 
     if ($Report.Corrections.Count -eq 0) {
-        Write-Host "  ✅ All milestones are correct!`n"
+        if ($Report.Errors.Count -gt 0 -and $Report.PrsChecked -eq 0) {
+            Write-Host "  ❌ No PRs were successfully checked — all $($Report.Errors.Count) failed.`n"
+        } else {
+            Write-Host "  ✅ All milestones are correct!`n"
+        }
         return
     }
 
@@ -774,6 +795,9 @@ elseif ($Tag) {
     Save-ReportJson $report $outPath
     Invoke-ApplyCorrections $report $Apply.IsPresent
     if ($CreateIssue -and $report.Corrections.Count -gt 0) { New-GitHubIssue $report $Apply.IsPresent }
+    if ($report.Errors.Count -gt 0 -and $report.PrsChecked -eq 0) {
+        throw "Release analysis failed: $($report.Errors.Count) errors, 0 PRs checked."
+    }
 }
 else {
     Write-Host "Error: -PrNumber or -Tag is required." -ForegroundColor Red

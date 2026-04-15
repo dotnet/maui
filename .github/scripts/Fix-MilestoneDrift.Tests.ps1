@@ -69,6 +69,14 @@ Describe 'Test-MilestoneMatch' {
         Test-MilestoneMatch '.NET 10 SR4' '.NET 10.0 SR4' | Should -BeTrue
     }
 
+    It 'GA normalized match: ".NET 10.0 GA" matches ".NET 10 GA"' {
+        Test-MilestoneMatch '.NET 10.0 GA' '.NET 10 GA' | Should -BeTrue
+    }
+
+    It 'GA normalized match: ".NET 10 GA" matches ".NET 10.0 GA"' {
+        Test-MilestoneMatch '.NET 10 GA' '.NET 10.0 GA' | Should -BeTrue
+    }
+
     It 'sub-patch ".NET 10 SR5.1" does NOT match ".NET 10 SR5" (distinct milestones)' {
         Test-MilestoneMatch '.NET 10 SR5.1' '.NET 10 SR5' | Should -BeFalse
     }
