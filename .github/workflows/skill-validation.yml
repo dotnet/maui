@@ -943,9 +943,41 @@ jobs:
               }
             }
 
-            lines.push(`[📋 View full workflow run](${runUrl})`);
+            // ── Investigation prompt for failures ─────────────────
+            // When any evaluated skill failed, build a copy-paste prompt
+            // that tells the user how to download artifacts and investigate
+            // with their AI coding agent (same pattern as dotnet/skills).
+            let investigatePrompt = '';
+            if (hasResults && !evalPassed) {
+              const runId = context.runId;
+              const repo = `${context.repo.owner}/${context.repo.repo}`;
+              investigatePrompt = [
+                '',
+                '> **To investigate failures**, paste this to your AI coding agent:',
+                '>',
+                `> _For PR #${prNumber} in ${repo}, download eval artifacts with ` +
+                `\`gh run download ${runId} --repo ${repo} --pattern "skill-eval-results-*" --dir ./eval-results\`, ` +
+                `then fetch https://raw.githubusercontent.com/dotnet/skills/main/eng/skill-validator/src/docs/InvestigatingResults.md ` +
+                `and follow it to analyze the results.json files. Diagnose each failure, suggest fixes to the eval.yaml ` +
+                `and skill content, and tell me what to fix first._`,
+              ].join('\n');
+            }
+
+            // ── Pipeline link (styled like dotnet/skills) ─────────
+            lines.push(`[🔍 Full results and investigation steps](${runUrl})`);
 
             const body = lines.join('\n');
+
+            // ── Write step summary with investigation prompt ──────
+            const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+            if (summaryPath) {
+              const summaryLines = ['## Skill Validation Results', ''];
+              summaryLines.push(body.replace(marker, '').trim());
+              if (investigatePrompt) {
+                summaryLines.push(investigatePrompt);
+              }
+              fs.appendFileSync(summaryPath, summaryLines.join('\n') + '\n');
+            }
 
             // Upsert comment (find existing with marker, update or create)
             // Paginate to handle PRs with 100+ comments
