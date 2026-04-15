@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Storage
 
 		internal static bool IsFileReadable(string path)
 		{
-			var file = new Java.IO.File(path);
+			using var file = new Java.IO.File(path);
 			return file.Exists() && file.CanRead();
 		}
 
