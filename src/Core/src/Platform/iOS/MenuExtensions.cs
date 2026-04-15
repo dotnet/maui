@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-#pragma warning disable CA1416 // TOOO: UIMenuOptions.SingleSelection is only supported on: 'ios' 15.0 and later, 'tvos' 15.0 and later.
+#pragma warning disable CA1416 // TODO: UIMenuOptions.SingleSelection is only supported on: 'ios' 15.0 and later, 'tvos' 15.0 and later.
 				// This means we are creating our own new menu/submenu
 				platformMenu =
 					UIMenu.Create(title, uiImage, UIMenuIdentifier.None,
