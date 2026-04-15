@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			// Always call base.OnMeasure — unlike ContentViewGroup/LayoutViewGroup,
+			// SwipeRefreshLayout.onMeasure internally measures its spinner indicator
+			// (mCircleView). Skipping this leaves the spinner at 0x0, making it invisible.
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 
 			if (CrossPlatformLayout is null)
@@ -49,11 +52,33 @@ namespace Microsoft.Maui.Platform
 			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
 			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
 
-			CrossPlatformLayout?.CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+
+			var measure = CrossPlatformLayout.CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+
+			// Unlike ContentViewGroup/LayoutViewGroup, SwipeRefreshLayout internally positions
+			// its spinner at getMeasuredWidth()/2. We must use the full spec size for both
+			// Exactly and AtMost modes (matching View.getDefaultSize behavior) so the spinner
+			// is centered correctly. Only for Unspecified do we use the cross-platform measure.
+			var width = widthMode == MeasureSpecMode.Unspecified ? measure.Width : deviceIndependentWidth;
+			var height = heightMode == MeasureSpecMode.Unspecified ? measure.Height : deviceIndependentHeight;
+
+			var platformWidth = _context.ToPixels(width);
+			var platformHeight = _context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
+			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
+			// Always call base.OnLayout — SwipeRefreshLayout.onLayout positions the
+			// spinner indicator (mCircleView) centered horizontally. Without this,
+			// the spinner won't appear or will be mispositioned.
 			base.OnLayout(changed, left, top, right, bottom);
 			if (CrossPlatformLayout is null)
 			{

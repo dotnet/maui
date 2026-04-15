@@ -25,6 +25,23 @@ public class StepperFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
 	}
 
+	[Test, Order(2)]
+	public void Stepper_ValueChangedEvent_IsRaised()
+	{
+		App.WaitForElement("Options");
+
+		Assert.That(
+			App.FindElement("ValueChangedEventLabel").GetText(),
+			Is.EqualTo("Not Raised")
+		);
+		App.IncreaseStepper("StepperControl");
+
+		Assert.That(
+			App.FindElement("ValueChangedEventLabel").GetText(),
+			Is.EqualTo("Raised")
+		);
+	}
+
 	[Test]
 	public void Stepper_SetMinimumValue_VerifyMinimumLabel()
 	{
@@ -167,7 +184,6 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForNoElement("StepperControl");
 	}
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST     //Related Issue Link : https://github.com/dotnet/maui/issues/29704
 	[Test]
 	public void Stepper_ChangeFlowDirection_RTL_VerifyVisualState()
 	{
@@ -180,7 +196,7 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Options");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
+
 	[Test]
 	public void Stepper_AtMinimumValue_DecrementButtonDisabled()
 	{
@@ -344,5 +360,144 @@ public class StepperFeatureTests : _GalleryUITest
 
 		var currentValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(currentValue, Is.EqualTo("0.00"));
+	}
+
+	[Test]
+	public void Stepper_ValueChanged_ShouldFire_WhenValueIsClampedToMinimum()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("MinimumEntry");
+		App.ClearText("MinimumEntry");
+		App.EnterText("MinimumEntry", "5");
+		App.PressEnter();
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+
+		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("5.00"));
+		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Raised"));
+	}
+
+	[Test]
+	public void Stepper_ValueChanged_ShouldFire_WhenValueIsClampedToMaximum()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("MaximumEntry");
+		App.ClearText("MaximumEntry");
+		App.EnterText("MaximumEntry", "10");
+		App.PressEnter();
+
+		App.WaitForElement("ValueEntry");
+		App.ClearText("ValueEntry");
+		App.EnterText("ValueEntry", "50");
+		App.PressEnter();
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+
+		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("10.00"));
+		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Raised"));
+	}
+
+	[Test]
+	public void Stepper_ValueChanged_Arguments_NotRaised_WhenDisabled()
+	{
+		App.WaitForElement("Options");
+
+		App.Tap("Options");
+		App.WaitForElement("IsEnabledFalseRadio");
+		App.Tap("IsEnabledFalseRadio");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("Options");
+
+		App.IncreaseStepper("StepperControl");
+
+		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Not Raised"));
+	}
+
+
+	[Test]
+	public void Stepper_ValueChanged_Arguments_FirstChange()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Not Raised"));
+
+		App.IncreaseStepper("StepperControl");
+
+		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Raised"));
+
+		Assert.That(App.FindElement("OldValueLabel").GetText(), Is.EqualTo("0.00"));
+		Assert.That(App.FindElement("NewValueLabel").GetText(), Is.EqualTo("1.00"));
+	}
+
+	[Test]
+	public void Stepper_ValueChanged_Arguments_SecondChange()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.IncreaseStepper("StepperControl");
+		App.IncreaseStepper("StepperControl");
+
+		Assert.That(App.FindElement("OldValueLabel").GetText(), Is.EqualTo("1.00"));
+		Assert.That(App.FindElement("NewValueLabel").GetText(), Is.EqualTo("2.00"));
+	}
+
+	[Test]
+	public void Stepper_ValueChanged_Arguments_WhenValueChangedFromOptions()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		Assert.That(
+			App.FindElement("ValueChangedEventLabel").GetText(),
+			Is.EqualTo("Not Raised")
+		);
+
+		App.Tap("Options");
+		App.WaitForElement("ValueEntry");
+
+		App.ClearText("ValueEntry");
+		App.EnterText("ValueEntry", "5");
+		App.PressEnter();
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		App.WaitForElement("Options");
+
+		Assert.That(
+			App.FindElement("ValueChangedEventLabel").GetText(),
+			Is.EqualTo("Raised")
+		);
+
+		Assert.That(
+			App.FindElement("OldValueLabel").GetText(),
+			Is.EqualTo("0.00")
+		);
+
+		Assert.That(
+			App.FindElement("NewValueLabel").GetText(),
+			Is.EqualTo("5.00")
+		);
 	}
 }
