@@ -41,6 +41,16 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
 ~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeText.get -> string
+~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
+~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResourcesChangedEventArgs(System.Collections.Generic.IEnumerable<string> keys, System.Func<string, object> resolver) -> void
@@ -51,9 +61,9 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 ~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
 ~static Microsoft.Maui.Controls.VisualStateManager.InvalidateVisualStates(Microsoft.Maui.Controls.VisualElement visualElement) -> void
-~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
-~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
-~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
-~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
+~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
