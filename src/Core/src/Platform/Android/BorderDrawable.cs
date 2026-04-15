@@ -398,9 +398,13 @@ namespace Microsoft.Maui.Platform
 			if (platformPaint != null)
 			{
 				if (_backgroundColor != null)
+				{
+					// Clear any gradient shader from a previous paint so the solid color is used
+					platformPaint.SetShader(null);
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 					platformPaint.Color = _backgroundColor.Value;
 #pragma warning restore CA1416
+				}
 				else
 				{
 					if (_background != null)
