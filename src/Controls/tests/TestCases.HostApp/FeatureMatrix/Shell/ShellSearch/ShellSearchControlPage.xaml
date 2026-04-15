@@ -159,6 +159,8 @@
                                                  AutomationId="SelectedItem"
                                                  Text="{Binding SelectedItem}"/>
                                    </Grid>
+                                    <!-- Spacer to ensure content is scrollable for Collapsible search box -->
+                                   <BoxView HeightRequest="600" Color="Transparent" />
                             </VerticalStackLayout>
                      </ScrollView>
               </ContentPage>

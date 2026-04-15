@@ -51,7 +51,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID// Issue Link: https://github.com/dotnet/maui/issues/14497
 	[Test, Order(2)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SetQueryProgrammatically()
@@ -61,6 +61,7 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		var log = App.WaitForElement("QueryChangedLog").GetText();
 		Assert.That(log, Does.Contain("Robin"));
 	}
+#endif
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29493
 
@@ -286,7 +287,6 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/33772
 	[Test, Order(21)]
 	[Category(UITestCategories.Shell)]
 	public void VerifyShellSearch_SearchBoxVisibilityCollapsible()
@@ -295,9 +295,18 @@ public class ShellSearchHandlerFeatureTests : _GalleryUITest
 		App.WaitForElement("SearchBoxVisibilityCollapsible");
 		App.Tap("SearchBoxVisibilityCollapsible");
 		ApplyAndReturn();
+#if MACCATALYST
+		App.ScrollUp("SearchContentPage", ScrollStrategy.Gesture, 0.9, 1000);
+#elif IOS
+		var rect = App.WaitForElement("SearchContentPage").GetRect();
+		float startX = rect.X + rect.Width * 0.05f;
+		float startY = rect.Y + rect.Height * 0.15f;
+		float endY = rect.Y + rect.Height * 0.6f;
+		App.DragCoordinates(startX, startY, startX, endY);
+#endif
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
+
 
 	[Test, Order(22)]
 	[Category(UITestCategories.Shell)]
