@@ -14,6 +14,7 @@
 
     Content is auto-loaded from PRAgent phase files:
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md
 
     Gate is posted separately by post-gate-comment.ps1.
 
@@ -60,9 +61,10 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "pre-flight" = @{ File = "pre-flight/content.md"; Icon = "🔍"; Title = "Pre-Flight — Context & Validation" }
-    "try-fix"    = @{ File = "try-fix/content.md";    Icon = "🔧"; Title = "Fix — Analysis & Comparison" }
-    "report"     = @{ File = "report/content.md";     Icon = "📋"; Title = "Report — Final Recommendation" }
+    "pre-flight"  = @{ File = "pre-flight/content.md";     Icon = "🔍"; Title = "Pre-Flight — Context & Validation" }
+    "code-review" = @{ File = "pre-flight/code-review.md"; Icon = "🔬"; Title = "Code Review — Deep Analysis" }
+    "try-fix"     = @{ File = "try-fix/content.md";        Icon = "🔧"; Title = "Fix — Analysis & Comparison" }
+    "report"      = @{ File = "report/content.md";         Icon = "📋"; Title = "Report — Final Recommendation" }
 }
 
 $phaseSections = @()
