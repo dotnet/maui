@@ -746,7 +746,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_context.SaveState();
 
-			// The pattern phase is pre-set to (Frame.X, Frame.Y) by PlatformGraphicsView,
+			// The view's PatternPhase is pre-set by PlatformGraphicsView,
 			// which shifts the image tile and causes it to split across the fill rect.
 			// Reset it here to the fill rect origin so the image starts at the right place.
 			_context.SetPatternPhase(new CGSize(x, y));
