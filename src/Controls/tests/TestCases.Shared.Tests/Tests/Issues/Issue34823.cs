@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_ANDROID // This test fails on Android because of user app theme is not responsive in Hostapp.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -33,3 +34,4 @@ public class Issue34823 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
