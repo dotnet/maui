@@ -1788,18 +1788,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIconImageSource(page) != null || NavigationPage.GetTitleView(page) != null;
 
-			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
+			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page), NavigationPage.GetBackButtonAccessibilityLabel(page));
 
-			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
+			internal void UpdateBackButtonTitle(string title, string backButtonTitle, string backButtonAccessibilityLabel = null)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
+				{
 					NavigationItem.Title = title;
+				}
 
-				if (backButtonTitle != null)
+				if (backButtonTitle is not null || backButtonAccessibilityLabel is not null)
+				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
-					NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
+					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
+					// When no custom title is provided, fall back to the page title so iOS
+					// shows the same text it would have shown with the default back button.
+					barButtonItem.Title = backButtonTitle ?? title;
+					if (backButtonAccessibilityLabel is not null)
+					{
+						barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;
+					}
+					NavigationItem.BackBarButtonItem = barButtonItem;
+				}
 				else
+				{
 					NavigationItem.BackBarButtonItem = null;
+				}
 			}
 
 			internal void UpdateTitleArea(Page page)
@@ -1819,11 +1833,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
+				string backButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(page);
+
 				_navigation.TryGetTarget(out NavigationRenderer n);
 
 				// First page and we have a flyout detail to contend with
 				UpdateLeftBarButtonItem();
-				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText);
+				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText, backButtonAccessibilityLabel);
 
 				//var hadTitleView = NavigationItem.TitleView != null;
 				ClearTitleViewContainer();
