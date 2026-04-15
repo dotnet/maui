@@ -21,9 +21,13 @@
 
    | Condition | Recommendation |
    |-----------|----------------|
-   | PR's fix selected and Gate passed | `✅ APPROVE` |
+   | PR's fix selected and Gate passed and code review LGTM | `✅ APPROVE` |
+   | PR's fix selected and Gate passed but code review NEEDS_DISCUSSION | `⚠️ REQUEST CHANGES` — include code review concerns |
+   | Code review verdict is NEEDS_CHANGES (any ❌ errors) | `⚠️ REQUEST CHANGES` — code review found errors |
    | Alternative fix found via Try-Fix | `⚠️ REQUEST CHANGES` — suggest alternative |
    | Gate failed | `⚠️ REQUEST CHANGES` — fix doesn't work |
+
+   **🚨 Hard gate:** If the code review (from Pre-Flight) has verdict `NEEDS_CHANGES`, the final recommendation MUST be `REQUEST CHANGES` regardless of Gate or Try-Fix results. Code-review ❌ Errors cannot be overridden by passing tests alone.
 
 2. **Write output files** — Save recommendation to `content.md`
 
@@ -47,9 +51,13 @@ Write `content.md`:
 | Phase | Status | Notes |
 |---|---|---|
 | Pre-Flight | ✅ COMPLETE | {notes} |
+| Code Review | {verdict} ({confidence}) | {error_count} errors, {warning_count} warnings |
 | Gate | ✅ PASSED | {platform} |
 | Try-Fix | ✅ COMPLETE | {N} attempts, {M} passing |
 | Report | ✅ COMPLETE | |
+
+### Code Review Impact on Try-Fix
+{Brief description of how code-review findings influenced try-fix exploration. Did any model specifically address a code review ❌ Error? Did failure-mode probes reveal issues that guided fix approaches?}
 
 ### Summary
 {Brief summary of the review}
@@ -58,7 +66,7 @@ Write `content.md`:
 {Root cause analysis}
 
 ### Fix Quality
-{Assessment of the fix}
+{Assessment of the fix — informed by both gate results and code review findings}
 ```
 
 ---

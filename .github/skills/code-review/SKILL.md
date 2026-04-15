@@ -17,7 +17,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 **Do NOT use for:** "what does PR #XXXXX do?", "summarize PR", "describe the changes", or any informational query — just answer those directly without invoking this skill.
 
 > **How this differs from other skills:**
-> - **`pr-review`** — End-to-end PR workflow (4 phases: pre-flight, gate, try-fix, report). Use when you want the full pipeline including test verification and fix attempts.
+> - **`pr-review`** — End-to-end PR workflow (3 phases: pre-flight with code review, try-fix, report; gate runs separately). Use when you want the full pipeline including test verification and fix attempts. Pre-Flight invokes this skill as a sub-agent for independence-first code analysis.
 > - **`pr-finalize`** — Verifies PR title/description match implementation + light code review. Use before merging.
 > - **`code-review`** (this skill) — Deep code-only review with MAUI domain rules. Use when you want a thorough code analysis without running tests or modifying the PR.
 
