@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_rootView = null;
 
 		}
-
+        
 		// Use OnDestroy instead of OnDestroyView because OnDestroyView will be
 		// called before the animation completes. This causes tons of tiny issues.
 		public override void OnDestroy()
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void OnHiddenChanged(bool hidden)
 		{
 			base.OnHiddenChanged(hidden);
-
+            
 			if (!hidden && _shellToolbar?.Handler != null)
 			{
 				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
