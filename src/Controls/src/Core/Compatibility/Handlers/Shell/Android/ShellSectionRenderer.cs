@@ -224,21 +224,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_rootView.Dispose();
 			}
 
-			// Disconnect handlers for all content pages in this section to prevent
-			// memory leaks when Shell items are cleared (dotnet/maui#34898).
-			// ShellFragmentContainer.OnDestroyView may not run synchronously,
-			// so disconnect here as a safety net.
-			if (ShellSection is not null)
-			{
-				foreach (var content in SectionController.GetItems())
-				{
-					if (content is IShellContentController { Page: Page page })
-					{
-						page.DisconnectHandlers();
-					}
-				}
-			}
-
 			_toolbarAppearanceTracker = null;
 			_tabLayoutAppearanceTracker = null;
 			_toolbarTracker = null;
@@ -257,11 +242,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Destroy();
 			base.OnDestroy();
 		}
-
+		
 		public override void OnHiddenChanged(bool hidden)
 		{
 			base.OnHiddenChanged(hidden);
-
+			
 			if (!hidden && _shellToolbar?.Handler != null)
 			{
 				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
