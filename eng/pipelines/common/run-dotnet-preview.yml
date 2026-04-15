@@ -48,12 +48,11 @@ steps:
         & $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}
         $commandExitCode = $LASTEXITCODE
         if ([System.Convert]::ToBoolean("${{ parameters.continueOnError }}") -eq $false -and $commandExitCode -ne 0) {
-            Write-Host "##vso[task.logissue type=error]Command failed with exit code $commandExitCode."
-            Write-Host "##vso[task.complete result=Failed;]"
-            exit $commandExitCode
-        }
-        if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}") -and $commandExitCode -ne 0) {
-            Write-Host "##vso[task.logissue type=error]Test suite had $commandExitCode failure(s)."
+            if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}")) {
+                Write-Host "##vso[task.logissue type=error]Test suite had $commandExitCode failure(s)."
+            } else {
+                Write-Host "##vso[task.logissue type=error]Command failed with exit code $commandExitCode."
+            }
             Write-Host "##vso[task.complete result=Failed;]"
             exit $commandExitCode
         }
