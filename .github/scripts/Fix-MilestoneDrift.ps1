@@ -81,6 +81,8 @@ function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
         if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
             $mainMajor = [int]$Matches[1]
             if ($mainMajor -eq $Major) { return "main" }
+            Write-Verbose "origin/main has MajorVersion=$mainMajor, not $Major — version lives on net$Major.0"
+            return "net$Major.0"
         }
     }
     Write-Warning "Could not read MajorVersion from origin/main:eng/Versions.props — falling back to net$Major.0"
@@ -136,7 +138,7 @@ function Get-PatchVersion([string]$ReleaseTag) {
     return 0
 }
 
-function Test-IsSrTag([string]$ReleaseTag, [int]$Major) {
+function Test-IsReleaseTag([string]$ReleaseTag, [int]$Major) {
     return ($ReleaseTag -match "^$Major\.0\.\d+$")
 }
 
@@ -254,7 +256,7 @@ function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
     <# Searches tag ranges to find which release contains this PR.
        Handles GA (first tag) by searching all reachable commits. #>
     $allTags = Get-AllTags $Repo
-    $srTags = $allTags | Where-Object { Test-IsSrTag $_ $Major } |
+    $srTags = $allTags | Where-Object { Test-IsReleaseTag $_ $Major } |
               Sort-Object { Get-PatchVersion $_ }
 
     for ($i = 0; $i -lt $srTags.Count; $i++) {
@@ -351,12 +353,12 @@ function Get-IssueInfo([int]$IssueNumber) {
 function Get-LinkedIssues([string]$Body, [string]$Title) {
     $text = "$Title`n$Body"
     $issues = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|clos(?:es|ed)?|resolv(?:es|ed)?)\s+#(\d+)', 'IgnoreCase')) {
+    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+#(\d+)', 'IgnoreCase')) {
         [void]$issues.Add([int]$m.Groups[1].Value)
     }
     # Match URLs only when preceded by a fixing keyword (mirrors GitHub auto-close behavior).
     # Bare URLs like "See https://github.com/.../issues/123" are informational, not fixing references.
-    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|clos(?:es|ed)?|resolv(?:es|ed)?)\s+https?://github\.com/dotnet/maui/issues/(\d+)', 'IgnoreCase')) {
+    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+https?://github\.com/dotnet/maui/issues/(\d+)', 'IgnoreCase')) {
         [void]$issues.Add([int]$m.Groups[1].Value)
     }
     return ($issues | Sort-Object)
@@ -662,6 +664,7 @@ function Save-ReportJson([hashtable]$Report, [string]$Path) {
 }
 
 function Invoke-ApplyCorrections([hashtable]$Report, [bool]$DoApply) {
+    $failCount = 0
     foreach ($c in $Report.Corrections) {
         $current = if ($c.Current) { $c.Current } else { "(none)" }
         if ($DoApply) {
@@ -669,11 +672,15 @@ function Invoke-ApplyCorrections([hashtable]$Report, [bool]$DoApply) {
                 Set-ItemMilestone $c.Number $c.ResolvedNo
                 Write-Host "  ✅ Updated $($c.ItemType) #$($c.Number): $current → $($c.Resolved)"
             } catch {
+                $failCount++
                 Write-Host "  ❌ Failed $($c.ItemType) #$($c.Number): $_"
             }
         } else {
             Write-Host "  [DRY-RUN] Would set $($c.ItemType) #$($c.Number) milestone: $current → $($c.Resolved)"
         }
+    }
+    if ($failCount -gt 0) {
+        throw "$failCount milestone update(s) failed. Check output above for details."
     }
 }
 

@@ -193,6 +193,12 @@ Describe 'Get-LinkedIssues' {
         $result | Should -Contain 555
     }
 
+    It 'extracts bare "close" and "resolve" forms' {
+        $result = Get-LinkedIssues "Close #777`nResolve #888" "Title"
+        $result | Should -Contain 777
+        $result | Should -Contain 888
+    }
+
     It 'extracts full GitHub issue URLs with fixing keyword' {
         $result = Get-LinkedIssues "Fixes https://github.com/dotnet/maui/issues/33800" "Title"
         $result | Should -Contain 33800
@@ -242,19 +248,19 @@ Describe 'Get-PatchVersion' {
     }
 }
 
-Describe 'Test-IsSrTag' {
+Describe 'Test-IsReleaseTag' {
     It 'accepts valid .NET 10 SR tags' {
-        Test-IsSrTag '10.0.50' 10 | Should -BeTrue
-        Test-IsSrTag '10.0.0' 10  | Should -BeTrue
+        Test-IsReleaseTag '10.0.50' 10 | Should -BeTrue
+        Test-IsReleaseTag '10.0.0' 10  | Should -BeTrue
     }
 
     It 'rejects wrong major version' {
-        Test-IsSrTag '9.0.82' 10  | Should -BeFalse
+        Test-IsReleaseTag '9.0.82' 10  | Should -BeFalse
     }
 
     It 'rejects non-SR tags' {
-        Test-IsSrTag '10.0.0-preview.7.25406.3' 10 | Should -BeFalse
-        Test-IsSrTag 'not-a-tag' 10 | Should -BeFalse
+        Test-IsReleaseTag '10.0.0-preview.7.25406.3' 10 | Should -BeFalse
+        Test-IsReleaseTag 'not-a-tag' 10 | Should -BeFalse
     }
 }
 
