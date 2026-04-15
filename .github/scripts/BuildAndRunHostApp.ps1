@@ -313,8 +313,9 @@ try {
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
     
-    # Display test output
-    $testOutput | ForEach-Object { Write-Host $_ }
+    # Output test results to the output stream so callers can capture them
+    # (Write-Host goes to the Information stream which is not captured by 2>&1)
+    $testOutput | ForEach-Object { Write-Output $_ }
     
     $testExitCode = $LASTEXITCODE
     

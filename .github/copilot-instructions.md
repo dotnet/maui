@@ -245,7 +245,18 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 
 #### User-Facing Skills
 
-1. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
+1. **pr-review** (`.github/skills/pr-review/SKILL.md`)
+   - **Purpose**: End-to-end PR review orchestrator — 3 phases: pr-preflight, try-fix, pr-report. Gate runs separately before this skill via Review-PR.ps1.
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Capabilities**: Multi-model fix exploration, alternative comparison, PR review recommendation
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
+   - **Phase instructions** (in `.github/pr-review/`):
+     - `pr-preflight.md` — Context gathering from issue/PR
+     - `pr-report.md` — Final recommendation
+   - **Phase skill**: `try-fix` — Multi-model fix exploration
+   - **Note**: Gate (test verification) runs as a script step in `Review-PR.ps1` before this skill is invoked. Gate result is passed in the prompt.
+
+2. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
    - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
    - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention"
    - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
@@ -286,8 +297,8 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
    - **Output**: Test files for Controls.Xaml.UnitTests
 
-8. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
-   - **Purpose**: Verifies UI tests catch the bug before fix and pass with fix
+9. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+   - **Purpose**: Verifies tests catch the bug before fix and pass with fix. Auto-detects test type (UI, device, unit, XAML) and dispatches to the appropriate runner.
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
