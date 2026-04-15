@@ -85,9 +85,10 @@ jobs:
     steps:
       - name: Determine fork status
         id: info
+        env:
+          HEAD: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE: ${{ github.event.pull_request.base.repo.full_name }}
         run: |
-          HEAD="${{ github.event.pull_request.head.repo.full_name }}"
-          BASE="${{ github.event.pull_request.base.repo.full_name }}"
           IS_FORK=$([[ "$HEAD" != "$BASE" ]] && echo true || echo false)
           echo "is_fork=$IS_FORK" >> $GITHUB_OUTPUT
           echo "PR from $HEAD → $BASE (fork=$IS_FORK)"
@@ -96,8 +97,9 @@ jobs:
         id: perms
         env:
           GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
-          AUTHOR="${{ github.event.pull_request.user.login }}"
+          AUTHOR="$AUTHOR"
           PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${AUTHOR}/permission" \
             --jq '.permission' 2>/dev/null || echo "none")
           echo "PR author $AUTHOR has permission: $PERMISSION"
@@ -111,8 +113,8 @@ jobs:
         id: discover
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
           CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
             --paginate --jq '.[].filename')
 
@@ -123,9 +125,10 @@ jobs:
           echo "has_skill_changes=$( [ -n "$SKILL_DIRS" ] && echo true || echo false )" >> $GITHUB_OUTPUT
           echo "has_agent_changes=$( [ -n "$AGENT_FILES" ] && echo true || echo false )" >> $GITHUB_OUTPUT
 
-          echo "changed_skills<<EOF" >> $GITHUB_OUTPUT
+          DELIM="EOF_$(openssl rand -hex 8)"
+          echo "changed_skills<<$DELIM" >> $GITHUB_OUTPUT
           echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
 
           echo "Changed skills: $SKILL_DIRS"
           echo "Changed agents: $AGENT_FILES"
@@ -148,10 +151,11 @@ jobs:
       - name: Check commenter permissions
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMENTER: ${{ github.event.comment.user.login }}
         run: |
-          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${{ github.event.comment.user.login }}/permission" \
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${COMMENTER}/permission" \
             --jq '.permission')
-          echo "Commenter ${{ github.event.comment.user.login }} has permission: $PERMISSION"
+          echo "Commenter $COMMENTER has permission: $PERMISSION"
           if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
             echo "::error::User does not have write access"
             exit 1
@@ -173,8 +177,9 @@ jobs:
       - name: Add reaction to comment
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
         run: |
-          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+          gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions" \
             -X POST -f content='eyes' || true
 
       - name: Set pending commit status
@@ -256,6 +261,8 @@ jobs:
       - name: Run skill-validator check
         id: check
         shell: bash
+        env:
+          CHANGED_SKILLS: ${{ needs.pr-gate.outputs.changed_skills }}
         run: |
           rc=0
 
@@ -273,7 +280,7 @@ jobs:
                 if [ -d "$SKILL_DIR" ]; then
                   SKILLS_ARG="$SKILLS_ARG --skills $SKILL_DIR"
                 fi
-              done <<< "${{ needs.pr-gate.outputs.changed_skills }}"
+              done <<< "$CHANGED_SKILLS"
               # Fallback to all if no specific skills found
               [ -z "$SKILLS_ARG" ] && SKILLS_ARG="--skills .github/skills"
             else
@@ -383,8 +390,8 @@ jobs:
         id: changed
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
         run: |
-          PR_NUMBER="${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}"
           CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
             --paginate --jq '.[].filename')
 
@@ -394,9 +401,10 @@ jobs:
           # Check for workflow changes (evaluate all skills with tests)
           WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
 
-          echo "skill_dirs<<EOF" >> $GITHUB_OUTPUT
+          DELIM="EOF_$(openssl rand -hex 8)"
+          echo "skill_dirs<<$DELIM" >> $GITHUB_OUTPUT
           echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
 
           if [ -n "$WORKFLOW_CHANGES" ]; then
             echo "eval_all=true" >> $GITHUB_OUTPUT
@@ -407,6 +415,8 @@ jobs:
       - name: Find skills with eval tests
         id: find
         shell: pwsh
+        env:
+          SKILL_DIRS: ${{ steps.changed.outputs.skill_dirs }}
         run: |
           $entries = @()
           $evalAll = "${{ steps.changed.outputs.eval_all }}" -eq "true"
@@ -416,9 +426,7 @@ jobs:
             $skills = @(Get-ChildItem -Path ".github/skills" -Directory |
               Select-Object -ExpandProperty Name)
           } else {
-            $raw = @"
-          ${{ steps.changed.outputs.skill_dirs }}
-          "@
+            $raw = $env:SKILL_DIRS
             $skills = @($raw.Split("`n", [StringSplitOptions]::RemoveEmptyEntries) |
               ForEach-Object { $_.Trim() } |
               Where-Object { $_ })
@@ -560,8 +568,11 @@ jobs:
           fi
 
           JOB_INDEX="${{ strategy.job-index }}"
-          if [ -n "$JOB_INDEX" ]; then
-            IDX=$(( JOB_INDEX % ${#TOKENS[@]} ))
+          RUN_ID="${{ github.run_id }}"
+          if [ -n "$JOB_INDEX" ] && [ ${#TOKENS[@]} -gt 1 ]; then
+            IDX=$(( (JOB_INDEX + RUN_ID) % ${#TOKENS[@]} ))
+          elif [ -n "$JOB_INDEX" ]; then
+            IDX=0
           else
             IDX=$((RANDOM % ${#TOKENS[@]}))
           fi
@@ -574,9 +585,13 @@ jobs:
       - name: Run skill-validator evaluate
         id: eval-run
         env:
-          GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          COPILOT_TOKEN: ${{ steps.select-token.outputs.token }}
           RESULTS_PATH: eval-results/${{ matrix.entry.name }}
+          SKILLS_PATH: ${{ matrix.entry.skills_path }}
         run: |
+          # skill-validator reads GITHUB_TOKEN for API access
+          export GITHUB_TOKEN="$COPILOT_TOKEN"
+
           ARGS="--verdict-warn-only --verbose"
           ARGS="$ARGS --results-dir $RESULTS_PATH --reporter console --reporter json --reporter markdown"
           ARGS="$ARGS --model claude-opus-4.6"
@@ -589,7 +604,7 @@ jobs:
           set +e
           skill-validator-bin/skill-validator evaluate $ARGS \
             --tests-dir eval-tests \
-            ${{ matrix.entry.skills_path }}
+            "$SKILLS_PATH"
           EVAL_RC=$?
           set -e
 
@@ -732,7 +747,7 @@ jobs:
               lines.push('<summary>Full validator output</summary>');
               lines.push('');
               lines.push('```text');
-              lines.push(staticOutput);
+              lines.push(staticOutput.replace(/```/g, '` ` `'));
               lines.push('```');
               lines.push('');
               lines.push('</details>');
@@ -839,7 +854,7 @@ jobs:
                     // Timeout indicator
                     const timeoutFlag = sc.timedOut ? ' ⏳' : '';
 
-                    // Verdict icon — per-scenario: improvement > 0 = pass
+                    // Verdict icon — per-scenario: improvement >= 0 means not regressed
                     const improvement = sc.improvementScore || 0;
                     const scenarioIcon = improvement >= 0 ? '✅' : '⚠️';
 
@@ -854,7 +869,9 @@ jobs:
                       footnotes.push(`<a href="#user-content-ref-${fnIndex}" id="fn-${fnIndex}"><strong>[${fnIndex}]</strong></a> ${parts.join('. ')}`);
                     }
 
-                    lines.push(`| ${verdict.skillName} | ${sc.scenarioName} | ${baseStr}${timeoutFlag} | ${skilledStr}${timeoutFlag} | ${scenarioIcon}${footRef} |`);
+                    const safeSkillName = (verdict.skillName || '').replace(/\|/g, '\\|');
+                    const safeScenarioName = (sc.scenarioName || '').replace(/\|/g, '\\|');
+                    lines.push(`| ${safeSkillName} | ${safeScenarioName} | ${baseStr}${timeoutFlag} | ${skilledStr}${timeoutFlag} | ${scenarioIcon}${footRef} |`);
                   }
                 }
                 lines.push('');
