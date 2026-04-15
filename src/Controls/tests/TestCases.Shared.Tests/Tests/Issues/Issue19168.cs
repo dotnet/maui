@@ -17,6 +17,7 @@ public class Issue19168 : _IssuesUITest
 	{
 		App.WaitForElement("Picker");
 		App.Tap("Picker");
+		App.WaitForElement("Baboon");
 #if MACCATALYST
 		App.TapCoordinates(600, 200);
 		App.WaitForElement("Button");
