@@ -32,6 +32,16 @@ on:
       - '.github/agents/**'
       - '.github/workflows/skill-validation.yml'
 
+  # Bootstrap: pull_request trigger lets the workflow run from the PR branch
+  # before it exists on main. Once merged, pull_request_target takes over.
+  # This trigger can be removed after the first merge to main.
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.github/workflows/skill-validation.yml'
+
   issue_comment:
     types: [created]
 
@@ -45,7 +55,7 @@ concurrency:
         && format('eval-{0}', github.event.issue.number)
       || github.event_name == 'issue_comment'
         && format('noop-{0}-{1}', github.event.issue.number, github.event.comment.id)
-      || github.event_name == 'pull_request_target'
+      || (github.event_name == 'pull_request_target' || github.event_name == 'pull_request')
         && format('pr-{0}', github.event.pull_request.number)
       || github.run_id
     }}
@@ -68,7 +78,7 @@ jobs:
   # ==========================================================================
   pr-gate:
     name: PR gate
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request_target' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
