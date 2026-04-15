@@ -16,19 +16,12 @@ namespace Microsoft.Maui.Platform
 
 		public MauiSearchBar(NSCoder coder) : base(coder)
 		{
+			InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		public MauiSearchBar(CGRect frame) : base(frame)
 		{
-		}
-
-		// MAUI manages safe area at the layout level for all views. Override as a computed
-		// property so UIKit cannot reset the value after construction — prevents double
-		// safe-area inset on iPadOS 26+ windowed mode (#34551).
-		public override bool InsetsLayoutMarginsFromSafeArea
-		{
-			get => false;
-			set { }
+			InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		protected MauiSearchBar(NSObjectFlag t) : base(t)
