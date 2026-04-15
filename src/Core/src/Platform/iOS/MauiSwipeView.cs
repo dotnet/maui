@@ -294,6 +294,11 @@ namespace Microsoft.Maui.Platform
 			if (items == null || items.Count == 0)
 				return;
 
+			// Clean up any previous swipe items to prevent duplicate key exceptions
+			// when Open() is called again after _isOpen was reset without DisposeSwipeItems
+			_swipeItems.Clear();
+			_actionView?.RemoveFromSuperview();
+
 			_swipeItemsRect = new List<CGRect>();
 
 			double swipeItemsWidth;
@@ -802,7 +807,7 @@ namespace Microsoft.Maui.Platform
 					() =>
 					{
 						_swipeOffset = Math.Abs(GetSwipeThreshold());
-						
+
 						// If the user swiped left or up, we need a negative offset to move content in the correct direction on the screen.
 						if (_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Up)
 							_swipeOffset = -_swipeOffset;
