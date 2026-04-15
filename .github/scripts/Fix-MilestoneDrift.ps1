@@ -24,9 +24,6 @@
 .PARAMETER PreviousTag
     Previous release tag. Auto-detected if omitted.
 
-.PARAMETER MajorVersion
-    Major .NET version (default: 10).
-
 .PARAMETER RepoPath
     Path to a dotnet/maui git checkout with full tag history.
 
@@ -50,7 +47,6 @@ param(
     [int]$PrNumber,
     [string]$Tag,
     [string]$PreviousTag,
-    [int]$MajorVersion = 10,
     [string]$RepoPath = ".",
     [string]$Output,
     [switch]$Apply,
@@ -68,6 +64,18 @@ if ($MyInvocation.InvocationName -ne '.') {
 }
 
 #region ── Milestone mapping helpers ──────────────────────────────────────
+
+function Get-CurrentMajorVersion([string]$Repo) {
+    <# Reads MajorVersion from eng/Versions.props on origin/main. #>
+    $versionXml = git -C $Repo --no-pager show origin/main:eng/Versions.props 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $joined = ($versionXml -join "`n")
+        if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
+            return [int]$Matches[1]
+        }
+    }
+    throw "Could not read MajorVersion from origin/main:eng/Versions.props"
+}
 
 function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
     <# Determines which development branch owns a .NET version by reading
@@ -424,7 +432,7 @@ function Test-AndRecordCorrection(
 
 #region ── Analysis ───────────────────────────────────────────────────────
 
-function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo, [int]$Major) {
+function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo) {
     Write-Host "`n$('═' * 70)"
     Write-Host "  Single-PR mode: #$PrNum"
     Write-Host "$('═' * 70)`n"
@@ -462,8 +470,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     # Fallback: try to find in existing tag ranges
     if (-not $ReleaseTag) {
         Write-Host "Auto-detecting release tag for PR #$PrNum..."
-        $found = Find-TagContainingPr $PrNum $Repo $Major
-        if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $Major" }
+        $fallbackMajor = Get-CurrentMajorVersion $Repo
+        $found = Find-TagContainingPr $PrNum $Repo $fallbackMajor
+        if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $fallbackMajor" }
         $ReleaseTag = $found.Tag
         $prevDisplay = if ($found.PreviousTag) { $found.PreviousTag } else { "(root)" }
         Write-Host "  Found in: $prevDisplay..$ReleaseTag"
@@ -472,8 +481,8 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     $expectedMs = ConvertTo-Milestone $ReleaseTag
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
-    # Auto-detect MajorVersion from the tag if not explicitly set
-    if ($ReleaseTag -match '^(\d+)\.') { $Major = [int]$Matches[1] }
+    # Derive MajorVersion from the tag
+    $Major = if ($ReleaseTag -match '^(\d+)\.') { [int]$Matches[1] } else { Get-CurrentMajorVersion $Repo }
 
     # Detect which branch owns this version's tags
     $Branch = Get-MainBranchForVersion $Major $Repo
@@ -533,9 +542,12 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo,
     return $report
 }
 
-function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$Repo, [int]$Major) {
+function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$Repo) {
     $expectedMs = ConvertTo-Milestone $ReleaseTag
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
+
+    # Derive MajorVersion from the tag
+    $Major = if ($ReleaseTag -match '^(\d+)\.') { [int]$Matches[1] } else { Get-CurrentMajorVersion $Repo }
 
     $allTags = Get-AllTags $Repo
     if ($ReleaseTag -notin $allTags) { throw "Tag $ReleaseTag not found in repo" }
@@ -778,18 +790,14 @@ if ($Apply) {
 }
 
 if ($PrNumber -gt 0) {
-    $report = Invoke-AnalyzeSinglePr $PrNumber $Tag $RepoPath $MajorVersion
+    $report = Invoke-AnalyzeSinglePr $PrNumber $Tag $RepoPath
     Write-Report $report
     if ($Output) { Save-ReportJson $report $Output }
     Invoke-ApplyCorrections $report $Apply.IsPresent
     if ($CreateIssue -and $report.Corrections.Count -gt 0) { New-GitHubIssue $report $Apply.IsPresent }
 }
 elseif ($Tag) {
-    # Auto-detect MajorVersion from the tag if not explicitly overridden
-    if ($Tag -match '^(\d+)\.' -and -not $PSBoundParameters.ContainsKey('MajorVersion')) {
-        $MajorVersion = [int]$Matches[1]
-    }
-    $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath $MajorVersion
+    $report = Invoke-AnalyzeRelease $Tag $PreviousTag $RepoPath
     Write-Report $report
     $outPath = if ($Output) { $Output } else { "milestone-drift-$($Tag -replace '\.','_').json" }
     Save-ReportJson $report $outPath
