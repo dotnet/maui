@@ -54,6 +54,21 @@ Describe 'ConvertTo-Milestone' {
     ) {
         ConvertTo-Milestone $Tag | Should -BeNullOrEmpty
     }
+
+    It 'maps preview "<Tag>" with label "<Label>" iter <Iter> to "<Expected>"' -ForEach @(
+        @{ Tag = '11.0.0'; Label = 'preview'; Iter = 1; Expected = '.NET 11.0-preview1' }
+        @{ Tag = '11.0.0'; Label = 'preview'; Iter = 3; Expected = '.NET 11.0-preview3' }
+        @{ Tag = '11.0.0'; Label = 'preview'; Iter = 7; Expected = '.NET 11.0-preview7' }
+        @{ Tag = '12.0.0'; Label = 'rc';      Iter = 1; Expected = '.NET 12.0-rc1' }
+        @{ Tag = '12.0.0'; Label = 'rc';      Iter = 2; Expected = '.NET 12.0-rc2' }
+    ) {
+        ConvertTo-Milestone $Tag $Label $Iter | Should -Be $Expected
+    }
+
+    It 'maps to GA when no pre-release label' {
+        ConvertTo-Milestone '11.0.0' $null 0 | Should -Be '.NET 11.0 GA'
+        ConvertTo-Milestone '11.0.0' | Should -Be '.NET 11.0 GA'
+    }
 }
 
 Describe 'Test-MilestoneMatch' {
@@ -157,11 +172,12 @@ Describe 'Find-PreviousTag' {
             '10.0.0', '10.0.1', '10.0.10', '10.0.11',
             '10.0.20', '10.0.30', '10.0.31',
             '10.0.40', '10.0.41', '10.0.50',
-            '9.0.82', '9.0.90'
+            '9.0.82', '9.0.90',
+            '11.0.0-preview.1.26107', '11.0.0-preview.2.26152.10', '11.0.0-preview.3.26203.7'
         )
     }
 
-    It '"<Tag>" → "<Expected>"' -ForEach @(
+    It 'stable: "<Tag>" → "<Expected>"' -ForEach @(
         @{ Tag = '10.0.50';  Expected = '10.0.41' }
         @{ Tag = '10.0.41';  Expected = '10.0.40' }
         @{ Tag = '10.0.40';  Expected = '10.0.31' }
@@ -173,8 +189,16 @@ Describe 'Find-PreviousTag' {
         Find-PreviousTag $Tag $tags | Should -Be $Expected
     }
 
+    It 'preview: "<Tag>" → "<Expected>"' -ForEach @(
+        @{ Tag = '11.0.0-preview.3.26203.7';  Expected = '11.0.0-preview.2.26152.10' }
+        @{ Tag = '11.0.0-preview.2.26152.10'; Expected = '11.0.0-preview.1.26107' }
+    ) {
+        Find-PreviousTag $Tag $tags | Should -Be $Expected
+    }
+
     It 'returns $null when no previous exists' {
         Find-PreviousTag '10.0.0' $tags | Should -BeNullOrEmpty
+        Find-PreviousTag '11.0.0-preview.1.26107' $tags | Should -BeNullOrEmpty
     }
 
     It 'only considers same major version' {
@@ -245,6 +269,35 @@ Describe 'Get-LinkedIssues' {
     }
 }
 
+Describe 'ConvertBranchToMilestone' {
+    It 'maps GA branch' {
+        ConvertBranchToMilestone 'release/10.0.1xx' | Should -Be '.NET 10.0 GA'
+    }
+
+    It 'maps SR branches' {
+        ConvertBranchToMilestone 'release/10.0.1xx-sr1' | Should -Be '.NET 10 SR1'
+        ConvertBranchToMilestone 'release/10.0.1xx-sr5' | Should -Be '.NET 10 SR5'
+        ConvertBranchToMilestone 'release/10.0.1xx-sr10' | Should -Be '.NET 10 SR10'
+    }
+
+    It 'maps preview branches' {
+        ConvertBranchToMilestone 'release/11.0.1xx-preview1' | Should -Be '.NET 11.0-preview1'
+        ConvertBranchToMilestone 'release/11.0.1xx-preview3' | Should -Be '.NET 11.0-preview3'
+        ConvertBranchToMilestone 'release/11.0.1xx-preview7' | Should -Be '.NET 11.0-preview7'
+    }
+
+    It 'maps RC branches' {
+        ConvertBranchToMilestone 'release/12.0.1xx-rc1' | Should -Be '.NET 12.0-rc1'
+        ConvertBranchToMilestone 'release/12.0.1xx-rc2' | Should -Be '.NET 12.0-rc2'
+    }
+
+    It 'returns $null for non-release branches' {
+        ConvertBranchToMilestone 'main' | Should -BeNullOrEmpty
+        ConvertBranchToMilestone 'net11.0' | Should -BeNullOrEmpty
+        ConvertBranchToMilestone 'feature/something' | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Get-PatchVersion' {
     It '"<Tag>" → <Expected>' -ForEach @(
         @{ Tag = '10.0.50';  Expected = 50 }
@@ -257,17 +310,22 @@ Describe 'Get-PatchVersion' {
 }
 
 Describe 'Test-IsReleaseTag' {
-    It 'accepts valid .NET 10 SR tags' {
+    It 'accepts valid .NET 10 stable tags' {
         Test-IsReleaseTag '10.0.50' 10 | Should -BeTrue
         Test-IsReleaseTag '10.0.0' 10  | Should -BeTrue
     }
 
-    It 'rejects wrong major version' {
-        Test-IsReleaseTag '9.0.82' 10  | Should -BeFalse
+    It 'accepts preview/RC tags for same major' {
+        Test-IsReleaseTag '11.0.0-preview.3.26203.7' 11 | Should -BeTrue
+        Test-IsReleaseTag '10.0.0-rc.1.25424.2' 10 | Should -BeTrue
     }
 
-    It 'rejects non-SR tags' {
-        Test-IsReleaseTag '10.0.0-preview.7.25406.3' 10 | Should -BeFalse
+    It 'rejects wrong major version' {
+        Test-IsReleaseTag '9.0.82' 10  | Should -BeFalse
+        Test-IsReleaseTag '11.0.0-preview.3.26203.7' 10 | Should -BeFalse
+    }
+
+    It 'rejects non-release tags' {
         Test-IsReleaseTag 'not-a-tag' 10 | Should -BeFalse
     }
 }
