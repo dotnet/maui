@@ -47,14 +47,22 @@ steps:
         Write-Host "Running command: $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}"
         & $dotnetPath ${{ parameters.command }} ${{ parameters.project }} ${{ parameters.arguments }}
         $commandExitCode = $LASTEXITCODE
-        if ([System.Convert]::ToBoolean("${{ parameters.continueOnError }}") -eq $false -and $commandExitCode -ne 0) {
-            if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}")) {
+        if ($commandExitCode -ne 0) {
+            if ([System.Convert]::ToBoolean("${{ parameters.continueOnError }}") -eq $false) {
+                # Hard fail — exit immediately
+                if ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}")) {
+                    Write-Host "##vso[task.logissue type=error]Test suite had $commandExitCode failure(s)."
+                } else {
+                    Write-Host "##vso[task.logissue type=error]Command failed with exit code $commandExitCode."
+                }
+                Write-Host "##vso[task.complete result=Failed;]"
+                exit $commandExitCode
+            } elseif ([System.Convert]::ToBoolean("${{ parameters.useExitCodeForErrors }}")) {
+                # Soft fail — log error + mark failed, but DON'T exit
+                # (so downstream PublishTestResults steps still run)
                 Write-Host "##vso[task.logissue type=error]Test suite had $commandExitCode failure(s)."
-            } else {
-                Write-Host "##vso[task.logissue type=error]Command failed with exit code $commandExitCode."
+                Write-Host "##vso[task.complete result=Failed;]"
             }
-            Write-Host "##vso[task.complete result=Failed;]"
-            exit $commandExitCode
         }
     displayName: ${{ parameters.displayName }}
     condition: ${{ parameters.condition }}
