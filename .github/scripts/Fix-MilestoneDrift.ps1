@@ -523,6 +523,10 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
     Write-Host "  Single-PR mode: #$PrNum"
     Write-Host "$('═' * 70)`n"
 
+    $expectedMs = $null
+    $script:_preLabel = $null
+    $script:_preIter = $null
+
     # Fetch PR info first — we need merge_commit_sha for version detection
     $pr = Get-PrInfo $PrNum
     if (-not $pr) { throw "Could not fetch PR #$PrNum" }
@@ -582,10 +586,16 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         $preIter = if ($script:_preIter) { $script:_preIter } else { 0 }
         $expectedMs = ConvertTo-Milestone $ReleaseTag $preLabel $preIter
     }
-    if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
+    if (-not $expectedMs) { throw "Cannot determine milestone for PR #$PrNum" }
 
-    # Derive MajorVersion from the tag
-    $Major = if ($ReleaseTag -match '^(\d+)\.') { [int]$Matches[1] } else { Get-CurrentMajorVersion $Repo }
+    # Derive MajorVersion from the milestone name, tag, or Versions.props
+    $Major = if ($expectedMs -match '\.NET (\d+)') {
+        [int]$Matches[1]
+    } elseif ($ReleaseTag -and $ReleaseTag -match '^(\d+)\.') {
+        [int]$Matches[1]
+    } else {
+        Get-CurrentMajorVersion $Repo
+    }
 
     # Detect which branch owns this version's tags
     $Branch = Get-MainBranchForVersion $Major $Repo
