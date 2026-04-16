@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34975, "[iOS] Title view memory leak when using Shell.TitleView and x:Name", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 34975, "[iOS][Android] Title view memory leak when using Shell.TitleView and x:Name", PlatformAffected.iOS | PlatformAffected.Android)]
 public class Issue34975 : Shell
 {
 	public Issue34975()

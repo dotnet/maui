@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue34975 : _IssuesUITest
 {
-	public override string Issue => "[iOS] Title view memory leak when using Shell.TitleView and x:Name";
+	public override string Issue => "[iOS][Android] Title view memory leak when using Shell.TitleView and x:Name";
 
 	public Issue34975(TestDevice device) : base(device) { }
 
