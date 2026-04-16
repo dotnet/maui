@@ -40,16 +40,25 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 > **Purpose:** Perform deep code analysis using the `code-review` skill to surface correctness issues, safety concerns, and MAUI convention violations BEFORE Try-Fix explores alternatives. These findings guide Try-Fix models toward higher-quality fixes.
 
 > **🚨 Independence-first requirement:** Step 7 MUST be invoked as a **separate sub-agent** (via the `task` tool with `agent_type: "general-purpose"`) so the code-review skill can form its assessment from the code BEFORE reading any PR narrative. The sub-agent receives ONLY the PR number — not the context gathered in Part A. This prevents anchoring bias.
+>
+> **Validation constraint:** The Step 7 prompt MUST NOT contain issue titles, root-cause descriptions, bug summaries, or any Part A content — only `PR #XXXXX`. If you find yourself adding context "to help" the sub-agent, you are violating independence-first.
 
 7. **Invoke the code-review skill as a sub-agent:**
 
-   ```
-   prompt: |
-     Run the code-review skill for PR #XXXXX.
-     Follow the full 6-step workflow in .github/skills/code-review/SKILL.md.
-     Output the review in the format specified by that skill.
-   agent_type: general-purpose
-   mode: sync
+   Use the `task` tool to launch a separate agent. The prompt MUST NOT contain issue titles, root-cause descriptions, or any Part A context — only the PR number.
+
+   ```python
+   task(
+     name="code-review",
+     description="Code review for PR",
+     agent_type="general-purpose",
+     mode="sync",
+     prompt="""
+       Run the code-review skill for PR #XXXXX.
+       Follow the full 6-step workflow in .github/skills/code-review/SKILL.md.
+       Output the review in the format specified by that skill.
+     """
+   )
    ```
 
    The sub-agent internally follows the code-review skill's 6-step workflow:
@@ -59,6 +68,12 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
    4. Reconcile with PR narrative and prior reviews
    5. Check CI status
    6. Blast radius, failure-mode probing, and verdict
+
+**If Step 7 fails, times out, or returns malformed output:**
+- Write `pre-flight/code-review.md` with: `## Code Review: SKIPPED\n\nReason: {failure description}`
+- Set verdict to `SKIPPED` in the Code Review Summary section of `content.md`
+- Omit `hints` from Try-Fix prompts (the `hints` field becomes optional when code review is unavailable)
+- Do NOT apply the code-review hard gate in Phase 3 (Report) — treat as if code review was not run
 
 **Store the sub-agent's full output** in `pre-flight/code-review.md` — use the exact output format from the code-review skill (do NOT reformat or summarize into a different template).
 
@@ -89,13 +104,14 @@ Write `content.md`:
 - {Finding 2}
 
 ### Code Review Summary
-**Verdict:** {LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION}
-**Confidence:** {high / medium / low}
+**Verdict:** {LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION / SKIPPED}
+**Confidence:** {high / medium / low / N/A}
 **Errors:** {count} | **Warnings:** {count} | **Suggestions:** {count}
 
 Key code review findings:
 - {❌/⚠️/💡} {Brief finding with file:line reference}
 - ...
+*(If SKIPPED: "Code review sub-agent failed or timed out. Reason: {details}")*
 
 ### Fix Candidates
 | # | Source | Approach | Test Result | Files Changed | Notes |

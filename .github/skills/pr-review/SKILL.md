@@ -45,7 +45,7 @@ Phase 3: Report       → Write review recommendation                     → .g
 
 ### Multi-Model Configuration
 
-Phase 3 uses these 4 AI models (run SEQUENTIALLY — they modify the same files):
+Phase 2 uses these 4 AI models (run SEQUENTIALLY — they modify the same files):
 
 | Order | Model |
 |-------|-------|
@@ -98,6 +98,8 @@ Even if the PR's fix looks correct and Gate passed, you MUST still run all 4 mod
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
+"Independent" means each model explores a **different fix approach** from the PR's fix — not that models are isolated from code-review context. Code-review findings are provided as advisory background to improve fix quality.
+
 The purpose is NOT to re-test the PR's fix, but to:
 1. **Generate independent fix ideas** — What would YOU do to fix this bug?
 2. **Test those ideas empirically** — Actually implement and run tests
@@ -130,28 +132,26 @@ prompt: |
   - target_files:
     - src/{area}/{file1}.cs
     - src/{area}/{file2}.cs
-  - code_review_findings:
-    - errors:
-      - {❌ Error finding 1 with file:line reference}
-      - {❌ Error finding 2 with file:line reference}
-    - warnings:
-      - {⚠️ Warning finding 1 with file:line reference}
-      - {⚠️ Warning finding 2 with file:line reference}
-    - failure_modes:
-      - {Failure mode 1}: {What happens in this scenario}
-      - {Failure mode 2}: {What happens in this scenario}
-    - blast_radius: {Summary — e.g., "Runs for ALL toolbar items at startup, not just badged ones"}
-    - verdict: {LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION} (confidence: {high/medium/low})
+  - hints: |
+      Code review found the following concerns (advisory — use to inform your approach, not as a checklist):
+      Errors:
+        - {❌ Error finding 1 with file:line reference}
+      # Include warnings ONLY if relevant to the root cause:
+      # Warnings:
+      #   - {⚠️ Warning — omit if unrelated to root cause}
+      Failure modes:
+        - {Failure mode 1}: {What happens in this scenario}
+      Blast radius: {Summary — e.g., "Runs for ALL toolbar items at startup, not just badged ones"}
+      Code review verdict: {LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION} (confidence: {high/medium/low})
 
   Generate ONE independent fix idea. Review the PR's fix first to ensure your approach is DIFFERENT.
-  The code review findings above are advisory hints — they highlight potential concerns in the current code,
-  but your fix should focus on the root cause of the failing test. Use the findings to inform your approach,
-  not as a checklist to satisfy.
+  "Independent" means exploring a different fix approach — the code review context above is background
+  information to help you make better decisions, not a constraint on your exploration.
 ```
 
-**🚨 MANDATORY: Include code_review_findings in every try-fix prompt.** These findings from the Pre-Flight code review give each model advisory context about code concerns. If Pre-Flight code review found no issues, include `code_review_findings: none — code review found no issues (verdict: LGTM)`.
+**Include code review context in the `hints` field** (try-fix's documented optional input). If Pre-Flight code review found no issues, use `hints: "Code review found no issues (verdict: LGTM)"`. If code review was SKIPPED, omit the `hints` field entirely.
 
-**Selectivity:** Only include ❌ Error findings and failure-mode probes that are relevant to the bug being fixed. Omit 💡 Suggestions and ⚠️ Warnings that are unrelated to the root cause — they distract from fix exploration.
+**Selectivity:** Only include ❌ Error findings and failure-mode probes that are relevant to the bug being fixed. Omit 💡 Suggestions. Include ⚠️ Warnings only if directly related to the root cause.
 
 **Wait for each to complete before starting the next.**
 
@@ -228,7 +228,7 @@ Deliver the final review recommendation.
 
 > 🚨 **DO NOT post any comments.** All output goes to `CustomAgentLogsTmp/PRState/`.
 
-**Gate:** Phases 1-3 must be complete.
+**Gate:** Phases 1-2 must be complete.
 
 ---
 
@@ -258,7 +258,8 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 
 | Phase | Instructions | Key Action | If Blocked |
 |-------|--------------|------------|------------|
-| 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info, continue |
+| Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
+| 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
 | 2. Try-Fix | `try-fix` skill (×4) | **4-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
 | 3. Report | `pr-report.md` | Write review recommendation | Never skip |
 
