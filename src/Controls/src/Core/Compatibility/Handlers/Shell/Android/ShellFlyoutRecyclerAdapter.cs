@@ -275,7 +275,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (_element == value)
 					{
-						UpdateVisualState();
 						return;
 					}
 
@@ -284,10 +283,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 						_shell.RemoveLogicalChild(View);
 
-					if (_element != null)
+					if (_element != null && _element is BaseShellItem)
 					{
-						if (_element is BaseShellItem bsiOld)
-							bsiOld.PropertyChanged -= OnElementPropertyChanged;
+						_element.PropertyChanged -= OnElementPropertyChanged;
 						var elemDef = _element as IElementDefinition;
 						elemDef?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 					}
@@ -304,8 +302,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						else
 							_shell.AddLogicalChild(View);
 
-						if (value is BaseShellItem bsiNewEvent)
-							bsiNewEvent.PropertyChanged += OnElementPropertyChanged;
+						_element.PropertyChanged += OnElementPropertyChanged;
 						var elemDef = _element as IElementDefinition;
 						elemDef?.AddResourcesChangedListener(OnElementResourcesChanged);
 						UpdateVisualState();
