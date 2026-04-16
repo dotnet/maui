@@ -46,14 +46,7 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = mauiDrawable;
 			}
 
-			if (radioButton.Background.IsNullOrEmpty())
-			{
-				mauiDrawable.SetBackground(new SolidPaint { Color = Colors.Transparent });
-			}
-			else
-			{
-				mauiDrawable.SetBackground(radioButton.Background);
-			}
+			mauiDrawable.SetBackground(radioButton.Background);
 
 			if (radioButton.StrokeColor != null)
 				mauiDrawable.SetBorderBrush(new SolidPaint { Color = radioButton.StrokeColor });

@@ -9,11 +9,21 @@ public class Issue34993 : ContentPage
         var radioButton = new RadioButton
         {
             Content = "RadioButton Background Test",
-            Background = new SolidColorBrush(Colors.Red),
             AutomationId = "BackgroundRadioButton",
             HorizontalOptions = LayoutOptions.Fill,
             Padding = new Thickness(10),
         };
+
+        radioButton.Background = new LinearGradientBrush(
+            new GradientStopCollection
+            {
+                new GradientStop { Color = Colors.Red, Offset = 0.0f },
+                new GradientStop { Color = Colors.Blue, Offset = 1.0f }
+            },
+            new Point(0, 0),
+            new Point(1, 1)
+        );
+
 
         var resetButton = new Button
         {
