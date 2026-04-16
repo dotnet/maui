@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateBackground(this RadioButton platformRadioButton, IRadioButton button)
 		{
-			UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, button.Backgroundr?.ToPlatform());
+			UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, button.Background?.ToPlatform());
 
 			platformRadioButton.RefreshThemeResources();
 		}
