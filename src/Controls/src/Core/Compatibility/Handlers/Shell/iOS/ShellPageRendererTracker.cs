@@ -599,15 +599,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem.LeftBarButtonItem != null)
 				{
+					var customA11yLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
+					bool hasCustomLabel = !string.IsNullOrEmpty(customA11yLabel);
+
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage || !backButtonVisible)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
-							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = hasCustomLabel ? customA11yLabel : "Menu";
 						}
 						else
+						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
+							if (hasCustomLabel)
+							{
+								NavigationItem.LeftBarButtonItem.AccessibilityLabel = customA11yLabel;
+							}
+						}
 					}
 					else
 					{
@@ -618,7 +627,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					{
 #pragma warning disable CS0618 // Type or member is obsolete
 						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
-						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+						if (!hasCustomLabel)
+						{
+							NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+						}
 #pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
@@ -637,6 +649,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var behavior = BackButtonBehavior;
 			var text = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.TextOverrideProperty, null);
+			var accessibilityLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
 
 			var navController = ViewController?.NavigationController;
 
@@ -653,10 +666,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						var previousNavItem = viewControllers[count - 2].NavigationItem;
 						if (previousNavItem != null)
 						{
-							if (text is not null)
+							if (text is not null || !string.IsNullOrEmpty(accessibilityLabel))
 							{
 								var barButtonItem = (previousNavItem.BackBarButtonItem ??= new UIBarButtonItem());
-								barButtonItem.Title = text;
+								if (text is not null)
+								{
+									barButtonItem.Title = text;
+								}
+								if (!string.IsNullOrEmpty(accessibilityLabel))
+								{
+									barButtonItem.AccessibilityLabel = accessibilityLabel;
+								}
 							}
 							else if (previousNavItem.BackBarButtonItem != null)
 							{

@@ -558,6 +558,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var backButtonHandler = Shell.GetEffectiveBackButtonBehavior(Page);
 			var image = GetFlyoutIcon(backButtonHandler, Page);
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
+
+			var accessibilityLabel = backButtonHandler.GetPropertyIfSet<string>(
+				BackButtonBehavior.AccessibilityLabelProperty, null);
+
+			if (!string.IsNullOrEmpty(accessibilityLabel))
+			{
+				toolbar.NavigationContentDescription = accessibilityLabel;
+				return;
+			}
+
 			var automationId = image?.AutomationId ?? text;
 
 			//if AutomationId was specified the user wants to use UITests and interact with FlyoutIcon
