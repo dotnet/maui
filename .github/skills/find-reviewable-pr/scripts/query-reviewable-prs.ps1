@@ -149,19 +149,33 @@ function Invoke-GitHubWithRetry {
 $MAUI_PROJECT_ID = "PVT_kwDOAIt-yc4AH1zp"
 $READY_TO_REVIEW_OPTION_ID = "11d42e2a"
 
-# Helper function to fetch PR numbers in "Ready To Review" from the project board
-function Get-ReadyToReviewPRNumbers {
+# Known bot accounts (excluded from "human review" analysis)
+$KnownBots = @(
+    "github-actions", "azure-pipelines", "MauiBot",
+    "dotnet-policy-service", "copilot-pull-request-reviewer",
+    "dependabot", "dotnet-maestro", "dotnet-maestro-bot",
+    "dotnet-bot"
+)
+
+function Test-IsBot {
+    param([string]$login)
+    return ($login -in $script:KnownBots -or $login -match '\[bot\]$')
+}
+
+# Helper function to fetch project board statuses for all open PRs
+# Returns a hashtable: PR number -> board status name
+function Get-ProjectBoardStatuses {
     param([bool]$HasProjectScope)
-    
+
     if (-not $HasProjectScope) {
         Write-Host "  ⚠ Skipping project board query (missing read:project scope)" -ForegroundColor Yellow
-        return @()
+        return @{}
     }
-    
-    Write-Host "  Fetching 'Ready To Review' items from MAUI SDK Ongoing board..." -ForegroundColor Gray
-    
+
+    Write-Host "  Fetching project board statuses from MAUI SDK Ongoing board..." -ForegroundColor Gray
+
     try {
-        $readyPRs = @()
+        $boardStatuses = @{}
         $hasNextPage = $true
         $endCursor = $null
 
@@ -179,6 +193,7 @@ function Get-ReadyToReviewPRNumbers {
         nodes {
           fieldValueByName(name: "Status") {
             ... on ProjectV2ItemFieldSingleSelectValue {
+              name
               optionId
             }
           }
@@ -198,26 +213,98 @@ function Get-ReadyToReviewPRNumbers {
             $parsed = $result | ConvertFrom-Json
 
             foreach ($item in $parsed.data.node.items.nodes) {
-                if ($item.fieldValueByName -and 
-                    $item.fieldValueByName.optionId -eq $READY_TO_REVIEW_OPTION_ID -and
-                    $item.content -and 
+                if ($item.content -and
                     $item.content.number -and
-                    $item.content.state -eq "OPEN") {
-                    $readyPRs += $item.content.number
+                    $item.content.state -eq "OPEN" -and
+                    $item.fieldValueByName -and
+                    $item.fieldValueByName.name) {
+                    $boardStatuses[$item.content.number] = $item.fieldValueByName.name
                 }
             }
 
             $hasNextPage = $parsed.data.node.items.pageInfo.hasNextPage
             $endCursor = $parsed.data.node.items.pageInfo.endCursor
         }
-        
-        Write-Host "    Ready To Review: $($readyPRs.Count) PRs" -ForegroundColor Gray
-        return $readyPRs
+
+        $statusCounts = @{}
+        foreach ($status in $boardStatuses.Values) {
+            $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1
+        }
+        foreach ($s in $statusCounts.GetEnumerator() | Sort-Object -Property Value -Descending) {
+            Write-Host "    $($s.Key): $($s.Value) PRs" -ForegroundColor Gray
+        }
+        return $boardStatuses
     }
     catch {
         Write-Warning "  Could not query project board: $_"
-        return @()
+        return @{}
     }
+}
+
+# Legacy wrapper for backward compatibility
+function Get-ReadyToReviewPRNumbers {
+    param([bool]$HasProjectScope)
+    $statuses = Get-ProjectBoardStatuses -HasProjectScope $HasProjectScope
+    return @($statuses.GetEnumerator() | Where-Object { $_.Value -eq "Ready To Review" } | ForEach-Object { $_.Key })
+}
+
+# Determine "whose turn is it" for a PR
+function Get-TurnState {
+    param($pr, [hashtable]$boardStatuses)
+
+    $authorLogin = $pr.Author
+    $labels = $pr.Labels -split ', '
+
+    # Layer 1: Bot PRs
+    if (Test-IsBot $authorLogin) {
+        return @{ State = "Bot"; Detail = "Automated PR"; Icon = "🤖" }
+    }
+
+    # Layer 2: Blocked states
+    if ('do-not-merge' -in $labels) {
+        return @{ State = "Blocked"; Detail = "Do Not Merge label"; Icon = "🚫" }
+    }
+    if ('stale' -in $labels) {
+        return @{ State = "Blocked"; Detail = "Marked stale"; Icon = "⏸️" }
+    }
+
+    # Layer 3: Project board status (highest-reliability signal)
+    $boardStatus = $boardStatuses[$pr.Number]
+    if ($boardStatus) {
+        switch ($boardStatus) {
+            "Ready To Review"          { return @{ State = "FTE-Review"; Detail = "Board: Ready To Review"; Icon = "🟢" } }
+            "Approved"                 { return @{ State = "FTE-Merge"; Detail = "Board: Approved"; Icon = "✅" } }
+            "Changes Requested"        { return @{ State = "Waiting"; Detail = "Board: Changes Requested"; Icon = "🟡" } }
+            "In Progress"              { return @{ State = "Waiting"; Detail = "Board: In Progress"; Icon = "🟡" } }
+            "Todo"                     { return @{ State = "Backlog"; Detail = "Board: Todo"; Icon = "⚪" } }
+            "Cut from this Milestone"  { return @{ State = "Blocked"; Detail = "Board: Cut from milestone"; Icon = "🚫" } }
+            "Done"                     { return @{ State = "Blocked"; Detail = "Board: Done"; Icon = "🚫" } }
+        }
+    }
+
+    # Layer 4: reviewDecision-based signals (fallback for PRs not on board)
+    if ($pr.IsApproved) {
+        return @{ State = "FTE-Merge"; Detail = "Approved, needs merge"; Icon = "✅" }
+    }
+
+    if ($pr.ReviewDecision -eq "CHANGES_REQUESTED") {
+        # Check if author responded after the last change request
+        if ($pr._AuthorRespondedAfterCR) {
+            return @{ State = "FTE-Review"; Detail = "Author responded to CR"; Icon = "🔄" }
+        }
+        return @{ State = "Waiting"; Detail = "Changes requested"; Icon = "🟡" }
+    }
+
+    # Layer 5: REVIEW_REQUIRED — use "who spoke last" heuristic
+    if ($pr._HasHumanReview) {
+        if ($pr._AuthorSpokeAfterReviewer) {
+            return @{ State = "FTE-Review"; Detail = "Author replied, needs follow-up"; Icon = "🔄" }
+        }
+        return @{ State = "Waiting"; Detail = "Reviewer commented, awaiting author"; Icon = "🟡" }
+    }
+
+    # No human reviews at all — needs first review
+    return @{ State = "FTE-Review"; Detail = "Needs first review"; Icon = "🆕" }
 }
 
 # Check if we have read:project scope by testing a simple query with projectItems
@@ -245,11 +332,12 @@ catch {
 }
 
 # Build the JSON fields list based on available scopes
-$baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,assignees,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews"
+$baseFields = "number,title,labels,createdAt,updatedAt,isDraft,author,assignees,additions,deletions,changedFiles,milestone,url,reviewDecision,reviews,comments"
 $jsonFields = if ($hasProjectScope) { "$baseFields,projectItems" } else { $baseFields }
 
-# Fetch "Ready To Review" PR numbers from the project board
-$readyToReviewPRNumbers = Get-ReadyToReviewPRNumbers -HasProjectScope $hasProjectScope
+# Fetch project board statuses for all open PRs
+$projectBoardStatuses = Get-ProjectBoardStatuses -HasProjectScope $hasProjectScope
+$readyToReviewPRNumbers = @($projectBoardStatuses.GetEnumerator() | Where-Object { $_.Value -eq "Ready To Review" } | ForEach-Object { $_.Key })
 
 # Fetch PRs from dotnet/maui using multiple targeted queries to ensure comprehensive coverage
 Write-Host ""
@@ -593,6 +681,48 @@ foreach ($pr in $allPRs) {
     # Check if PR is approved but not merged
     $isApproved = $pr.reviewDecision -eq "APPROVED"
     
+    # Compute "who spoke last" signals for turn-state detection
+    $authorLogin = $pr.author.login
+    $humanReviews = @()
+    if ($pr.reviews) {
+        $humanReviews = @($pr.reviews | Where-Object { -not (Test-IsBot $_.author.login) })
+    }
+    $hasHumanReview = $humanReviews.Count -gt 0
+
+    # Find latest change-request timestamp and check if author responded
+    $authorRespondedAfterCR = $false
+    $authorSpokeAfterReviewer = $false
+
+    if ($humanReviews.Count -gt 0) {
+        $latestCR = $humanReviews | Where-Object { $_.state -eq "CHANGES_REQUESTED" } |
+            Sort-Object { [DateTime]::Parse($_.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
+            Select-Object -Last 1
+
+        $latestHumanReviewTime = $humanReviews |
+            ForEach-Object { [DateTime]::Parse($_.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
+            Sort-Object | Select-Object -Last 1
+
+        # Check comments for author activity
+        $latestAuthorCommentTime = $null
+        if ($pr.comments) {
+            $authorComments = @($pr.comments | Where-Object { $_.author.login -eq $authorLogin })
+            if ($authorComments.Count -gt 0) {
+                $latestAuthorCommentTime = $authorComments |
+                    ForEach-Object { [DateTime]::Parse($_.createdAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
+                    Sort-Object | Select-Object -Last 1
+            }
+        }
+
+        if ($latestCR -and $latestAuthorCommentTime) {
+            $crTime = [DateTime]::Parse($latestCR.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture)
+            $authorRespondedAfterCR = $latestAuthorCommentTime -gt $crTime
+        }
+
+        if ($latestAuthorCommentTime -and $latestHumanReviewTime) {
+            $authorSpokeAfterReviewer = $latestAuthorCommentTime -gt $latestHumanReviewTime
+        }
+    }
+
     $processedPRs += [PSCustomObject]@{
         Number = $pr.number
         Title = $pr.title
@@ -621,10 +751,27 @@ foreach ($pr in $allPRs) {
         IsReadyToReview = $isReadyToReview
         HasAgentReview = $hasAgentReview
         AgentStatus = $agentStatus
+        _HasHumanReview = $hasHumanReview
+        _AuthorRespondedAfterCR = $authorRespondedAfterCR
+        _AuthorSpokeAfterReviewer = $authorSpokeAfterReviewer
     }
 }
 
 Write-Host "  Processed $($processedPRs.Count) PRs matching filters" -ForegroundColor Green
+
+# Compute turn state for each PR
+Write-Host "  Computing turn states..." -ForegroundColor Cyan
+foreach ($pr in $processedPRs) {
+    $turnState = Get-TurnState -pr $pr -boardStatuses $projectBoardStatuses
+    $pr | Add-Member -NotePropertyName TurnState -NotePropertyValue $turnState.State -Force
+    $pr | Add-Member -NotePropertyName TurnDetail -NotePropertyValue $turnState.Detail -Force
+    $pr | Add-Member -NotePropertyName TurnIcon -NotePropertyValue $turnState.Icon -Force
+}
+
+$turnCounts = $processedPRs | Group-Object TurnState | Sort-Object Count -Descending
+foreach ($g in $turnCounts) {
+    Write-Host "    $($g.Name): $($g.Count)" -ForegroundColor Gray
+}
 
 # Process docs-maui PRs
 $processedDocsMauiPRs = @()
@@ -1029,15 +1176,21 @@ function Format-Markdown-Output {
     $md = [System.Text.StringBuilder]::new()
 
     [void]$md.AppendLine("<!-- PR_REVIEW_QUEUE_BEGIN -->")
-    [void]$md.AppendLine("# 📋 PR Review Queue — $date")
+    [void]$md.AppendLine("# PR Review Queue  -  $date")
     [void]$md.AppendLine("")
 
-    # Helper to render a PR table
+    # Helper to render a PR table with turn-state column
     $renderTable = {
-        param([array]$prs, [bool]$showMilestone = $false)
-        if ($showMilestone) {
+        param([array]$prs, [bool]$showMilestone = $false, [bool]$showTurn = $false)
+        if ($showMilestone -and $showTurn) {
+            [void]$md.AppendLine("| PR | Title | Author | Milestone | Status | Platform | Age |")
+            [void]$md.AppendLine("|----|-------|--------|-----------|--------|----------|-----|")
+        } elseif ($showMilestone) {
             [void]$md.AppendLine("| PR | Title | Author | Milestone | Platform | Age | Updated |")
             [void]$md.AppendLine("|----|-------|--------|-----------|----------|-----|---------|")
+        } elseif ($showTurn) {
+            [void]$md.AppendLine("| PR | Title | Author | Status | Platform | Age |")
+            [void]$md.AppendLine("|----|-------|--------|--------|----------|-----|")
         } else {
             [void]$md.AppendLine("| PR | Title | Author | Platform | Age | Updated |")
             [void]$md.AppendLine("|----|-------|--------|----------|-----|---------|")
@@ -1046,30 +1199,18 @@ function Format-Markdown-Output {
             $rawTitle = if ($pr.Title.Length -gt 60) { $pr.Title.Substring(0, 57) + "..." } else { $pr.Title }
             $title = $rawTitle.Replace('|', '\|')
             $link = "[#$($pr.Number)]($($pr.URL))"
-            if ($showMilestone) {
+            $turnCol = "$($pr.TurnIcon) $($pr.TurnDetail)"
+            if ($showMilestone -and $showTurn) {
+                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Milestone) | $turnCol | $($pr.Platform) | $($pr.Age)d |")
+            } elseif ($showMilestone) {
                 [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Milestone) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
+            } elseif ($showTurn) {
+                [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $turnCol | $($pr.Platform) | $($pr.Age)d |")
             } else {
                 [void]$md.AppendLine("| $link | $title | @$($pr.Author) | $($pr.Platform) | $($pr.Age)d | $($pr.Updated)d ago |")
             }
         }
         [void]$md.AppendLine("")
-    }
-
-    # Helper: filter for display (same logic as Format-Review-Output)
-    $showCategory = {
-        param([string]$cat)
-        if ($Category -eq $cat) { return $true }
-        if ($Category -eq "all") { return $true }
-        if ($Category -eq "default" -and ($cat -eq "priority" -or $cat -eq "milestoned")) { return $true }
-        return $false
-    }
-    $defaultFilter = {
-        param($prList)
-        if ($Category -eq "default") {
-            $prList | Where-Object { $_.ReviewDecision -ne "CHANGES_REQUESTED" }
-        } else {
-            $prList
-        }
     }
 
     # Filter out stale and do-not-merge PRs
@@ -1081,90 +1222,106 @@ function Format-Markdown-Output {
         }
     }
 
-    # 1. Priority (P/0)
-    if ($priorityPRs.Count -gt 0 -and (& $showCategory "priority")) {
-        $list = @(& $excludeStale (& $defaultFilter $priorityPRs))
-        if ($list.Count -gt 0) {
-            [void]$md.AppendLine("## 🔴 Immediate Action Required")
-            [void]$md.AppendLine("")
-            [void]$md.AppendLine("### P/0 Priority")
-            & $renderTable ($list | Select-Object -First $Limit)
-        }
-    }
-
-    # 2. Approved (not merged)
-    if ($approvedPRs.Count -gt 0 -and (& $showCategory "approved")) {
-        $list = if ($Category -eq "approved") { $approvedPRs } else { @($approvedPRs | Where-Object { -not $_.IsPriority }) }
-        $list = @(& $excludeStale $list)
-        if ($list.Count -gt 0) {
-            [void]$md.AppendLine("### ✅ Approved — Ready to Merge")
-            & $renderTable ($list | Select-Object -First $Limit)
-        }
-    }
-
-    # 3. Milestoned
-    if ($milestonedPRs.Count -gt 0 -and (& $showCategory "milestoned")) {
-        $list = if ($Category -eq "milestoned") { $milestonedPRs } else { @($milestonedPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview }) }
-        $list = @(& $excludeStale (& $defaultFilter $list))
-        if ($list.Count -gt 0) {
-            [void]$md.AppendLine("## 📅 Milestoned — Deadline-Driven")
-            & $renderTable ($list | Select-Object -First $Limit) $true
-        }
-    }
-
-    # 4. Partner PRs
-    if ($partnerPRs.Count -gt 0 -and (& $showCategory "partner")) {
-        $list = if ($Category -eq "partner") { $partnerPRs } else { @($partnerPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
-        $list = @(& $excludeStale $list)
-        if ($list.Count -gt 0) {
-            [void]$md.AppendLine("## 🤝 Partner PRs")
-            & $renderTable ($list | Select-Object -First $Limit)
-        }
-    }
-
-    # 5. Community PRs
-    if ($communityPRs.Count -gt 0 -and (& $showCategory "community")) {
-        $list = if ($Category -eq "community") { $communityPRs } else { @($communityPRs | Where-Object { -not $_.IsPriority -and -not $_.IsApproved -and -not $_.IsReadyToReview -and $_.Milestone -eq "" }) }
-        $list = @(& $excludeStale $list)
-        if ($list.Count -gt 0) {
-            [void]$md.AppendLine("## ✨ Community PRs")
-            & $renderTable ($list | Select-Object -First $Limit)
-        }
-    }
-
-    # 6. docs-maui PRs
-    if ((& $showCategory "docs-maui")) {
-        $hasDocs = $false
-        if ($docsMauiPriorityPRs.Count -gt 0) { $hasDocs = $true }
-        if ($docsMauiRecentPRs.Count -gt 0) { $hasDocs = $true }
-        if ($hasDocs) {
-            [void]$md.AppendLine("## 📖 docs-maui PRs")
-            if ($docsMauiPriorityPRs.Count -gt 0) {
-                & $renderTable ($docsMauiPriorityPRs | Select-Object -First $DocsLimit)
-            }
-            if ($docsMauiRecentPRs.Count -gt 0) {
-                & $renderTable ($docsMauiRecentPRs | Select-Object -First $DocsLimit)
-            }
-        }
-    }
-
-    # Queue Health (apply same stale/do-not-merge exclusion as displayed sections)
     $filteredPRs = @(& $excludeStale $processedPRs)
-    $totalP0 = @(& $excludeStale (& $defaultFilter $priorityPRs)).Count
-    $totalApproved = @(& $excludeStale $approvedPRs).Count
+
+    # Compute actionability groups from turn states
+    $fteMerge = @($filteredPRs | Where-Object { $_.TurnState -eq "FTE-Merge" })
+    $fteReview = @($filteredPRs | Where-Object { $_.TurnState -eq "FTE-Review" })
+    $waitingOnAuthor = @($filteredPRs | Where-Object { $_.TurnState -eq "Waiting" })
+    $backlog = @($filteredPRs | Where-Object { $_.TurnState -eq "Backlog" })
+    $blocked = @($filteredPRs | Where-Object { $_.TurnState -eq "Blocked" })
+    $botPRs = @($filteredPRs | Where-Object { $_.TurnState -eq "Bot" })
+    $fteActionable = @($fteMerge) + @($fteReview)
+
+    # Actionability summary at the top
+    [void]$md.AppendLine("## Actionability Summary")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("| Category | Count |")
+    [void]$md.AppendLine("|----------|-------|")
+    [void]$md.AppendLine("| **FTE-Actionable** (review + merge) | **$($fteActionable.Count)** |")
+    [void]$md.AppendLine("| Waiting on Author | $($waitingOnAuthor.Count) |")
+    [void]$md.AppendLine("| Backlog (board: Todo) | $($backlog.Count) |")
+    [void]$md.AppendLine("| Bot / Automated | $($botPRs.Count) |")
+    [void]$md.AppendLine("| Blocked / Stale | $($blocked.Count) |")
+    [void]$md.AppendLine("")
+
+    # P/0 PRs (always show first if any)
+    $p0 = @($filteredPRs | Where-Object { $_.IsPriority })
+    if ($p0.Count -gt 0) {
+        [void]$md.AppendLine("## P/0 Priority")
+        & $renderTable $p0 $false $true
+    }
+
+    # Ready to merge
+    if ($fteMerge.Count -gt 0) {
+        [void]$md.AppendLine("## Ready to Merge")
+        & $renderTable ($fteMerge | Select-Object -First $Limit) $false $true
+    }
+
+    # Needs FTE review (sorted: milestoned first, then by age)
+    $fteReviewNonP0 = @($fteReview | Where-Object { -not $_.IsPriority })
+    if ($fteReviewNonP0.Count -gt 0) {
+        $milestonedReview = @($fteReviewNonP0 | Where-Object { $_.Milestone -ne "" } | Sort-Object Milestone, { $_.Age } -Descending)
+        $unmilestonedReview = @($fteReviewNonP0 | Where-Object { $_.Milestone -eq "" } | Sort-Object Age -Descending)
+
+        [void]$md.AppendLine("## Needs FTE Review ($($fteReviewNonP0.Count) PRs)")
+        [void]$md.AppendLine("")
+        if ($milestonedReview.Count -gt 0) {
+            [void]$md.AppendLine("### Milestoned")
+            & $renderTable ($milestonedReview | Select-Object -First $Limit) $true $true
+        }
+        if ($unmilestonedReview.Count -gt 0) {
+            [void]$md.AppendLine("### Other")
+            & $renderTable ($unmilestonedReview | Select-Object -First $Limit) $false $true
+        }
+    }
+
+    # Waiting on Author (collapsed by default)
+    if ($waitingOnAuthor.Count -gt 0) {
+        [void]$md.AppendLine("<details>")
+        [void]$md.AppendLine("<summary>Waiting on Author ($($waitingOnAuthor.Count) PRs)</summary>")
+        [void]$md.AppendLine("")
+        & $renderTable ($waitingOnAuthor | Sort-Object Age -Descending | Select-Object -First 30) $false $true
+        [void]$md.AppendLine("</details>")
+        [void]$md.AppendLine("")
+    }
+
+    # Bot PRs (collapsed)
+    if ($botPRs.Count -gt 0) {
+        [void]$md.AppendLine("<details>")
+        [void]$md.AppendLine("<summary>Bot / Automated ($($botPRs.Count) PRs)</summary>")
+        [void]$md.AppendLine("")
+        & $renderTable ($botPRs | Sort-Object Age -Descending | Select-Object -First 20)
+        [void]$md.AppendLine("</details>")
+        [void]$md.AppendLine("")
+    }
+
+    # docs-maui PRs
+    $hasDocs = ($docsMauiPriorityPRs.Count -gt 0) -or ($docsMauiRecentPRs.Count -gt 0)
+    if ($hasDocs) {
+        [void]$md.AppendLine("## docs-maui PRs")
+        if ($docsMauiPriorityPRs.Count -gt 0) {
+            & $renderTable ($docsMauiPriorityPRs | Select-Object -First $DocsLimit)
+        }
+        if ($docsMauiRecentPRs.Count -gt 0) {
+            & $renderTable ($docsMauiRecentPRs | Select-Object -First $DocsLimit)
+        }
+    }
+
+    # Queue Health
     $oldest = $filteredPRs | Sort-Object Age -Descending | Select-Object -First 1
     $over30 = @($filteredPRs | Where-Object { $_.Age -gt 30 }).Count
 
-    [void]$md.AppendLine("## 📊 Queue Health")
-    [void]$md.AppendLine("- **Total PRs needing review**: $($filteredPRs.Count)")
-    [void]$md.AppendLine("- **P/0 PRs**: $totalP0 (target: 0)")
-    [void]$md.AppendLine("- **Approved but not merged**: $totalApproved")
+    [void]$md.AppendLine("## Queue Health")
+    [void]$md.AppendLine("- **Total open PRs**: $($filteredPRs.Count)")
+    [void]$md.AppendLine("- **FTE-actionable**: $($fteActionable.Count) (merge: $($fteMerge.Count), review: $($fteReview.Count))")
+    [void]$md.AppendLine("- **Waiting on author**: $($waitingOnAuthor.Count)")
+    [void]$md.AppendLine("- **P/0 PRs**: $($p0.Count) (target: 0)")
     if ($oldest) {
-        [void]$md.AppendLine("- **Oldest unreviewed PR**: [#$($oldest.Number)]($($oldest.URL)) ($($oldest.Age) days)")
+        [void]$md.AppendLine("- **Oldest PR**: [#$($oldest.Number)]($($oldest.URL)) ($($oldest.Age) days)")
     }
     [void]$md.AppendLine("- **PRs > 30 days old**: $over30")
 
-    # Output to stdout (not Write-Host) so it can be redirected to a file
     $md.ToString()
 }
 
