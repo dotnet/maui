@@ -1801,9 +1801,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
 					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
-					// When no custom title is provided, fall back to the page title so iOS
-					// shows the same text it would have shown with the default back button.
-					barButtonItem.Title = backButtonTitle ?? title;
+					if (backButtonTitle is not null)
+					{
+						barButtonItem.Title = backButtonTitle;
+					}
 					if (backButtonAccessibilityLabel is not null)
 					{
 						barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;

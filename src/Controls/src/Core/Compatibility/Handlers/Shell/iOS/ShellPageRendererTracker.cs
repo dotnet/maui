@@ -599,22 +599,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem.LeftBarButtonItem != null)
 				{
-					var customA11yLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
-					bool hasCustomLabel = !string.IsNullOrEmpty(customA11yLabel);
+					var customAccessibilityLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
+					bool hasCustomLabel = !string.IsNullOrEmpty(customAccessibilityLabel);
 
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage || !backButtonVisible)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
-							NavigationItem.LeftBarButtonItem.AccessibilityLabel = hasCustomLabel ? customA11yLabel : "Menu";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = hasCustomLabel ? customAccessibilityLabel : "Menu";
 						}
 						else
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
 							if (hasCustomLabel)
 							{
-								NavigationItem.LeftBarButtonItem.AccessibilityLabel = customA11yLabel;
+								NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
 							}
 						}
 					}
