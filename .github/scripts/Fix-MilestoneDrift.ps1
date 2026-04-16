@@ -348,16 +348,17 @@ function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Ma
         if ($_ -match 'refs/heads/(.+)$') { $Matches[1] }
     } | Where-Object { $_ }
 
-    # Sort: GA first, then SRs, then RCs, then previews.
+    # Sort: GA first, then SRs, then previews, then RCs.
     # If a commit is reachable from both GA and a preview, GA wins.
+    # Previews come before RCs because RCs are cut later in the cycle.
     # GA: release/10.0.1xx (no suffix)
     # SR: release/10.0.1xx-sr1, sr2, ...
-    # RC: release/10.0.1xx-rc1, rc2, ...
     # Preview: release/11.0.1xx-preview1, preview2, ...
+    # RC: release/11.0.1xx-rc1, rc2, ...
     $sorted = $branches | Sort-Object {
         if ($_ -match '-sr(\d+)$')      { return 100  + [int]$Matches[1] }
-        if ($_ -match '-rc(\d+)$')      { return 200  + [int]$Matches[1] }
-        if ($_ -match '-preview(\d+)$') { return 1000 + [int]$Matches[1] }
+        if ($_ -match '-preview(\d+)$') { return 200  + [int]$Matches[1] }
+        if ($_ -match '-rc(\d+)$')      { return 1000 + [int]$Matches[1] }
         return 0  # GA (no suffix) comes first
     }
 
