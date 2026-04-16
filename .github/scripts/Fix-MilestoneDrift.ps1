@@ -178,7 +178,17 @@ function Get-PatchVersion([string]$ReleaseTag) {
 }
 
 function Test-IsReleaseTag([string]$ReleaseTag, [int]$Major) {
-    return ($ReleaseTag -match "^$Major\.0\.\d+$")
+    # Matches stable tags (10.0.50) and preview/RC tags (11.0.0-preview.3.26203.7)
+    return ($ReleaseTag -match "^$Major\.0\.")
+}
+
+function Get-TagSortKey([string]$ReleaseTag) {
+    <# Returns a numeric sort key for ordering tags chronologically.
+       preview1 (100) < preview7 (107) < rc1 (200) < rc2 (201) < GA/stable (500+patch) #>
+    if ($ReleaseTag -match '-preview\.(\d+)') { return 100 + [int]$Matches[1] }
+    if ($ReleaseTag -match '-rc\.(\d+)')      { return 200 + [int]$Matches[1] }
+    if ($ReleaseTag -match '^(\d+)\.0\.(\d+)$') { return 500 + [int]$Matches[2] }
+    return 0
 }
 
 function Test-MilestoneMatch([string]$Actual, [string]$Expected) {
@@ -212,11 +222,17 @@ function Find-MatchingMilestone([string]$Expected, [hashtable]$AllMilestones) {
 }
 
 function Find-PreviousTag([string]$ReleaseTag, [string[]]$AllTags) {
-    if ($ReleaseTag -notmatch '^(\d+)\.0\.(\d+)$') { return $null }
-    $major = [int]$Matches[1]; $patch = [int]$Matches[2]
+    <# Finds the immediately preceding tag for the same major version.
+       Works for both stable tags (10.0.50 → 10.0.41) and preview/RC tags
+       (11.0.0-preview.3.x → 11.0.0-preview.2.x). #>
+    if ($ReleaseTag -notmatch '^(\d+)\.') { return $null }
+    $major = [int]$Matches[1]
+    $thisKey = Get-TagSortKey $ReleaseTag
+
+    # Find all tags for this major version with a lower sort key
     $candidates = $AllTags | Where-Object {
-        $_ -match "^$major\.0\.(\d+)$" -and [int]$Matches[1] -lt $patch
-    } | Sort-Object { Get-PatchVersion $_ }
+        ($_ -match "^$major\.0\.") -and (Get-TagSortKey $_) -lt $thisKey
+    } | Sort-Object { Get-TagSortKey $_ }
     return ($candidates | Select-Object -Last 1)
 }
 
@@ -655,7 +671,18 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
 }
 
 function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$Repo) {
+    # Try direct tag-to-milestone mapping first (works for stable tags like 10.0.50)
     $expectedMs = ConvertTo-Milestone $ReleaseTag
+
+    # If that fails, read Versions.props at the tag (works for preview/RC tags like 11.0.0-preview.3.26203.7)
+    if (-not $expectedMs) {
+        $versionInfo = Get-VersionFromGitRef $ReleaseTag $Repo
+        if ($versionInfo) {
+            $preLabel = $versionInfo.PreLabel
+            $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
+            $expectedMs = ConvertTo-Milestone $versionInfo.Tag $preLabel $preIter
+        }
+    }
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
     # Derive MajorVersion from the tag
