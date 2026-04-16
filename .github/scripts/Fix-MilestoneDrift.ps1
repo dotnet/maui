@@ -312,7 +312,7 @@ function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
        Handles GA (first tag) by searching all reachable commits. #>
     $allTags = Get-AllTags $Repo
     $srTags = $allTags | Where-Object { Test-IsReleaseTag $_ $Major } |
-              Sort-Object { Get-PatchVersion $_ }
+              Sort-Object { Get-TagSortKey $_ }
 
     for ($i = 0; $i -lt $srTags.Count; $i++) {
         $current = $srTags[$i]
@@ -563,6 +563,12 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
             Write-Warning "PR #$PrNum is not in the commit range for tag $ReleaseTag. The milestone may be set incorrectly."
         }
         Write-Host "  Using explicit tag: $ReleaseTag"
+        # For preview/RC tags, read Versions.props at the tag to get pre-release info
+        $versionInfo = Get-VersionFromGitRef $ReleaseTag $Repo
+        if ($versionInfo) {
+            $preLabel = $versionInfo.PreLabel
+            $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
+        }
     } elseif ($pr.MergeCommitSha) {
         # Step 1: Check release branches first — find the earliest release containing this commit.
         # This is the most accurate signal for which release the PR actually ships in.
@@ -572,7 +578,7 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         $releaseBranch = Find-ReleaseBranchForCommit $pr.MergeCommitSha $Repo $detectedMajor
         if ($releaseBranch) {
             $expectedMs = $releaseBranch.Milestone
-            $ReleaseTag = $versionInfo.Tag
+            if ($versionInfo) { $ReleaseTag = $versionInfo.Tag }
             Write-Host "  Found in release branch: $($releaseBranch.Branch) → $expectedMs"
         } else {
             # Step 2: Fall back to Versions.props at the merge commit
@@ -599,7 +605,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
             Write-Host "  Found in: $prevDisplay..$ReleaseTag"
         }
 
-        $expectedMs = ConvertTo-Milestone $ReleaseTag $preLabel $preIter
+        # Use the clean version tag (e.g. "11.0.0") for milestone mapping, not the full tag
+        $cleanTag = if ($versionInfo) { $versionInfo.Tag } else { $ReleaseTag }
+        $expectedMs = ConvertTo-Milestone $cleanTag $preLabel $preIter
     }
     if (-not $expectedMs) { throw "Cannot determine milestone for PR #$PrNum" }
 
