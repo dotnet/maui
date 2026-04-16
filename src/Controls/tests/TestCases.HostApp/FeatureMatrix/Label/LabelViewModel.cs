@@ -151,6 +151,104 @@ public class LabelViewModel : INotifyPropertyChanged
 		set { textTransform = value; OnPropertyChanged(); }
 	}
 
+	private bool isEnabled = true;
+	public bool IsEnabled
+	{
+		get => isEnabled;
+		set
+		{
+			isEnabled = value;
+			LabelHeightRequest = -1;
+			OnPropertyChanged();
+		}
+	}
+
+	private bool isVisible = true;
+	public bool IsVisible
+	{
+		get => isVisible;
+		set { isVisible = value; OnPropertyChanged(); }
+	}
+
+	private Color labelBackgroundColor = Colors.LightGray;
+	public Color LabelBackgroundColor
+	{
+		get => labelBackgroundColor;
+		set { labelBackgroundColor = value; OnPropertyChanged(); }
+	}
+
+	private bool hasShadow;
+	public bool HasShadow
+	{
+		get => hasShadow;
+		set
+		{
+			if (hasShadow != value)
+			{
+				hasShadow = value;
+				if (value)
+				{
+					LabelShadow = new Shadow
+					{
+						Radius = 10,
+						Opacity = 1.0f,
+						Brush = Colors.Black.AsPaint(),
+						Offset = new Point(5, 5)
+					};
+					LabelBackgroundColor = Colors.Transparent;
+				}
+				else
+				{
+					LabelShadow = null;
+					LabelBackgroundColor = Colors.LightGray;
+				}
+				OnPropertyChanged(nameof(HasShadow));
+			}
+		}
+	}
+
+	private Shadow labelShadow;
+	public Shadow LabelShadow
+	{
+		get => labelShadow;
+		private set
+		{
+			if (labelShadow != value)
+			{
+				labelShadow = value;
+				OnPropertyChanged(nameof(LabelShadow));
+			}
+		}
+	}
+
+	private FlowDirection flowDirection = FlowDirection.LeftToRight;
+	public FlowDirection FlowDirection
+	{
+		get => flowDirection;
+		set { flowDirection = value; OnPropertyChanged(); }
+	}
+
+	private double labelHeightRequest = 600;
+	public double LabelHeightRequest
+	{
+		get => labelHeightRequest;
+		set { labelHeightRequest = value; OnPropertyChanged(); }
+	}
+
+	private string tapResult;
+	public string TapResult
+	{
+		get => tapResult;
+		set { tapResult = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsTapResultVisible)); }
+	}
+
+	public bool IsTapResultVisible => !string.IsNullOrEmpty(TapResult);
+
+	public Command TapCommand => new Command(() =>
+	{
+		TapResult = "Tapped";
+	}, () => LabelHeightRequest == -1);
+
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = "") =>

@@ -239,4 +239,41 @@ public partial class LabelOptionsPage : ContentPage
 		}
 	}
 
+	private void OnIsEnabledChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
+		{
+			_viewModel.IsEnabled = rb.Value.ToString() == "True";
+		}
+	}
+
+	private void OnIsVisibleChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
+		{
+			_viewModel.IsVisible = rb.Value.ToString() == "True";
+		}
+	}
+
+	private void OnShadowChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
+		{
+			_viewModel.HasShadow = rb.Value.ToString() == "1";
+		}
+	}
+
+	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
+		{
+			_viewModel.FlowDirection = rb.Value.ToString() switch
+			{
+				"RTL" => FlowDirection.RightToLeft,
+				"LTR" => FlowDirection.LeftToRight,
+				_ => FlowDirection.LeftToRight
+			};
+		}
+	}
+
 }

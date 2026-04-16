@@ -10,9 +10,9 @@
     </ContentPage.ToolbarItems>
     <VerticalStackLayout>
         <Grid Padding="1"
-              RowSpacing="4"
+                RowSpacing="-3"
               ColumnSpacing="2"
-              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
               ColumnDefinitions="*,*">
 
             <VerticalStackLayout Grid.Row="0"
@@ -283,6 +283,82 @@
                                  FontSize="11"
                                  CheckedChanged="OnLineBreakModeChanged"
                                  AutomationId="LineBreakModeTailTruncation"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Row="10"
+                                 Grid.Column="0">
+                <Label Text="IsEnabled"/>
+                <HorizontalStackLayout>
+                    <RadioButton Content="True"
+                                 GroupName="IsEnabled"
+                                 Value="True"
+                                 IsChecked="True"
+                                 FontSize="11"
+                                 CheckedChanged="OnIsEnabledChanged"
+                                 AutomationId="IsEnabledTrue"/>
+                    <RadioButton Content="False"
+                                 GroupName="IsEnabled"
+                                 Value="False"
+                                 FontSize="11"
+                                 CheckedChanged="OnIsEnabledChanged"
+                                 AutomationId="IsEnabledFalse"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Row="10"
+                                 Grid.Column="1">
+                <Label Text="IsVisible"/>
+                <HorizontalStackLayout>
+                    <RadioButton Content="True"
+                                 GroupName="IsVisible"
+                                 Value="True"
+                                 IsChecked="True"
+                                 FontSize="11"
+                                 CheckedChanged="OnIsVisibleChanged"
+                                 AutomationId="IsVisibleTrue"/>
+                    <RadioButton Content="False"
+                                 GroupName="IsVisible"
+                                 Value="False"
+                                 FontSize="11"
+                                 CheckedChanged="OnIsVisibleChanged"
+                                 AutomationId="IsVisibleFalse"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Row="11"
+                                 Grid.Column="0">
+                <Label Text="Shadow"/>
+                <HorizontalStackLayout>
+                    <RadioButton Content="True"
+                                 GroupName="Shadow"
+                                 Value="1"
+                                 FontSize="11"
+                                 CheckedChanged="OnShadowChanged"
+                                 AutomationId="ShadowTrue"/>
+                    <RadioButton Content="False"
+                                 GroupName="Shadow"
+                                 Value="0"
+                                 IsChecked="True"
+                                 FontSize="11"
+                                 CheckedChanged="OnShadowChanged"
+                                 AutomationId="ShadowFalse"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Row="11"
+                                 Grid.Column="1">
+                <Label Text="FlowDirection"/>
+                <HorizontalStackLayout>
+                    <RadioButton Content="LTR"
+                                 GroupName="FlowDirection"
+                                 Value="LTR"
+                                 IsChecked="True"
+                                 FontSize="11"
+                                 CheckedChanged="OnFlowDirectionChanged"
+                                 AutomationId="FlowDirectionLTR"/>
+                    <RadioButton Content="RTL"
+                                 GroupName="FlowDirection"
+                                 Value="RTL"
+                                 FontSize="11"
+                                 CheckedChanged="OnFlowDirectionChanged"
+                                 AutomationId="FlowDirectionRTL"/>
                 </HorizontalStackLayout>
             </VerticalStackLayout>
         </Grid>

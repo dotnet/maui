@@ -11,7 +11,7 @@
 
     <VerticalStackLayout>
       <Label
-        HeightRequest="600"
+        HeightRequest="{Binding LabelHeightRequest}"
         Text="{Binding Text , Mode=TwoWay}"
         CharacterSpacing="{Binding CharacterSpacing}"
         FontAttributes="{Binding FontAttributes}"
@@ -29,7 +29,18 @@
         TextTransform="{Binding TextTransform}"
         TextType="{Binding TextType}"
         VerticalTextAlignment="{Binding VerticalTextAlignment}"
-        BackgroundColor="LightGray"
-        AutomationId="MainLabel"/>
+        IsEnabled="{Binding IsEnabled}"
+        IsVisible="{Binding IsVisible}"
+        FlowDirection="{Binding FlowDirection}"
+        Shadow="{Binding LabelShadow}"
+        BackgroundColor="{Binding LabelBackgroundColor}"
+        AutomationId="MainLabel">
+        <Label.GestureRecognizers>
+          <TapGestureRecognizer Command="{Binding TapCommand}" />
+        </Label.GestureRecognizers>
+      </Label>
+      <Label Text="{Binding TapResult}"
+             IsVisible="{Binding IsTapResultVisible}"
+             AutomationId="TapResultLabel" />
     </VerticalStackLayout>
 </ContentPage>
