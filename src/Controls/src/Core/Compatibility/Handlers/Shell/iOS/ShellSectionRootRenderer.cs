@@ -190,15 +190,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController?.RemoveFromParentViewController();
 
-					var element = oldRenderer.VirtualView;
-					oldRenderer?.DisconnectHandler();
-
-					// Recursively disconnect handlers on child elements of the page
-					// to prevent memory leaks when Shell items are cleared (dotnet/maui#34898)
-					if (element is IView view)
-					{
+					if (oldRenderer.VirtualView is IView view)
 						view.DisconnectHandlers();
-					}
+					else
+						oldRenderer?.DisconnectHandler();
 				}
 
 				_renderers.Clear();
@@ -580,7 +575,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_previousFrameHeader = frame;
 					if (_header.ViewController is ShellSectionRootHeader rootHeader)
 					{
-    					rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+						rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
 					}
 				}
 #endif
