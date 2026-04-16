@@ -18,10 +18,12 @@ public class Issue34917 : _IssuesUITest
 
 		App.Tap(OpenRightButtonId);
 		App.WaitForElement(StatusLabelId);
+		App.WaitForTextToBePresentInElement(StatusLabelId, "Success");
 		Assert.That(App.FindElement(StatusLabelId).GetText(), Is.EqualTo("Success"),
 			"First Open(RightItems) call should succeed.");
 
 		App.Tap(OpenRightButtonId);
+		App.WaitForTextToBePresentInElement(StatusLabelId, "Success");
 		Assert.That(App.FindElement(StatusLabelId).GetText(), Is.EqualTo("Success"),
 			"Second consecutive Open(RightItems) call should not throw an exception.");
 	}
@@ -31,15 +33,18 @@ public class Issue34917 : _IssuesUITest
 	public void SwipeViewOpenBottomDoesNotThrowOnSecondCall()
 	{
 		App.WaitForElement(OpenBottomButtonId);
+		App.WaitForElement(CloseButtonId);
 
 		App.Tap(CloseButtonId);
 
 		App.Tap(OpenBottomButtonId);
 		App.WaitForElement(StatusLabelId);
+		App.WaitForTextToBePresentInElement(StatusLabelId, "Success");
 		Assert.That(App.FindElement(StatusLabelId).GetText(), Is.EqualTo("Success"),
 			"First Open(BottomItems) call should succeed.");
 
 		App.Tap(OpenBottomButtonId);
+		App.WaitForTextToBePresentInElement(StatusLabelId, "Success");
 		Assert.That(App.FindElement(StatusLabelId).GetText(), Is.EqualTo("Success"),
 			"Second consecutive Open(BottomItems) call should not throw an exception.");
 	}
