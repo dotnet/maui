@@ -29,7 +29,12 @@ steps:
 - task: Cache@2
   displayName: cache Gradle downloads
   inputs:
-    key: '"gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/settings.gradle | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle.properties | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/**/build.gradle'
+    key: >-
+      "gradle" | "v1" | "$(Agent.OS)"
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/settings.gradle
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle.properties
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/**/build.gradle
     restoreKeys: |
       "gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
       "gradle" | "v1" | "$(Agent.OS)"
