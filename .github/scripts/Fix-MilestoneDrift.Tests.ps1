@@ -260,6 +260,35 @@ Describe 'Get-LinkedIssues' {
     }
 }
 
+Describe 'ConvertBranchToMilestone' {
+    It 'maps GA branch' {
+        ConvertBranchToMilestone 'release/10.0.1xx' | Should -Be '.NET 10.0 GA'
+    }
+
+    It 'maps SR branches' {
+        ConvertBranchToMilestone 'release/10.0.1xx-sr1' | Should -Be '.NET 10 SR1'
+        ConvertBranchToMilestone 'release/10.0.1xx-sr5' | Should -Be '.NET 10 SR5'
+        ConvertBranchToMilestone 'release/10.0.1xx-sr10' | Should -Be '.NET 10 SR10'
+    }
+
+    It 'maps preview branches' {
+        ConvertBranchToMilestone 'release/11.0.1xx-preview1' | Should -Be '.NET 11.0-preview1'
+        ConvertBranchToMilestone 'release/11.0.1xx-preview3' | Should -Be '.NET 11.0-preview3'
+        ConvertBranchToMilestone 'release/11.0.1xx-preview7' | Should -Be '.NET 11.0-preview7'
+    }
+
+    It 'maps RC branches' {
+        ConvertBranchToMilestone 'release/12.0.1xx-rc1' | Should -Be '.NET 12.0-rc1'
+        ConvertBranchToMilestone 'release/12.0.1xx-rc2' | Should -Be '.NET 12.0-rc2'
+    }
+
+    It 'returns $null for non-release branches' {
+        ConvertBranchToMilestone 'main' | Should -BeNullOrEmpty
+        ConvertBranchToMilestone 'net11.0' | Should -BeNullOrEmpty
+        ConvertBranchToMilestone 'feature/something' | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Get-PatchVersion' {
     It '"<Tag>" → <Expected>' -ForEach @(
         @{ Tag = '10.0.50';  Expected = 50 }

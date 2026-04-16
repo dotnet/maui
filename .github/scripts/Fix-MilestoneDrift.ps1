@@ -317,9 +317,65 @@ function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
     return $null
 }
 
-#endregion
+function ConvertBranchToMilestone([string]$BranchName) {
+    <# Converts a release branch name to a milestone name:
+       release/10.0.1xx        → ".NET 10.0 GA"
+       release/10.0.1xx-sr5    → ".NET 10 SR5"
+       release/11.0.1xx-preview3 → ".NET 11.0-preview3"
+       release/11.0.1xx-rc1    → ".NET 11.0-rc1" #>
+    if ($BranchName -match '^release/(\d+)\.0\.\d+xx$') {
+        return ".NET $([int]$Matches[1]).0 GA"
+    }
+    if ($BranchName -match '^release/(\d+)\.0\.\d+xx-sr(\d+)$') {
+        return ".NET $([int]$Matches[1]) SR$([int]$Matches[2])"
+    }
+    if ($BranchName -match '^release/(\d+)\.0\.\d+xx-(preview|rc)(\d+)$') {
+        return ".NET $([int]$Matches[1]).0-$($Matches[2])$([int]$Matches[3])"
+    }
+    return $null
+}
 
-#region ── GitHub helpers ─────────────────────────────────────────────────
+function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Major) {
+    <# Finds the earliest release branch containing a commit.
+       Checks GA branch first, then SR/preview/RC branches in order.
+       Returns @{ Branch; Milestone } or $null. #>
+
+    # Fetch all release branches for this major version
+    $remoteBranches = git -C $Repo --no-pager ls-remote --heads origin "refs/heads/release/$Major.0.*" 2>&1
+    if ($LASTEXITCODE -ne 0 -or -not $remoteBranches) { return $null }
+
+    $branches = ($remoteBranches -split "`n") | ForEach-Object {
+        if ($_ -match 'refs/heads/(.+)$') { $Matches[1] }
+    } | Where-Object { $_ }
+
+    # Sort: GA first, then by type and number
+    # GA: release/10.0.1xx (no suffix)
+    # SR: release/10.0.1xx-sr1, sr2, ...
+    # Preview: release/11.0.1xx-preview1, preview2, ...
+    # RC: release/11.0.1xx-rc1, rc2, ...
+    $sorted = $branches | Sort-Object {
+        if ($_ -match '-sr(\d+)$')      { return 1000 + [int]$Matches[1] }
+        if ($_ -match '-preview(\d+)$') { return 100  + [int]$Matches[1] }
+        if ($_ -match '-rc(\d+)$')      { return 2000 + [int]$Matches[1] }
+        return 0  # GA (no suffix) comes first
+    }
+
+    # Fetch branch tips and check ancestry
+    foreach ($branch in $sorted) {
+        # Make sure we have the branch ref locally
+        $null = git -C $Repo fetch origin $branch --quiet 2>&1
+        $isAncestor = git -C $Repo merge-base --is-ancestor $CommitSha "origin/$branch" 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            $milestone = ConvertBranchToMilestone $branch
+            if ($milestone) {
+                return @{ Branch = $branch; Milestone = $milestone }
+            }
+        }
+    }
+    return $null
+}
+
+#endregion
 
 function Invoke-GhApi([string]$Endpoint) {
     $result = gh api $Endpoint 2>&1
@@ -489,32 +545,44 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         }
         Write-Host "  Using explicit tag: $ReleaseTag"
     } elseif ($pr.MergeCommitSha) {
-        # No tag — read Versions.props at the merge commit to determine
-        # the version the branch was building when this PR merged.
+        # Step 1: Check release branches first — find the earliest release containing this commit.
+        # This is the most accurate signal for which release the PR actually ships in.
         $versionInfo = Get-VersionFromGitRef $pr.MergeCommitSha $Repo
-        if ($versionInfo) {
-            $ReleaseTag = $versionInfo.Tag
-            $script:_preLabel = $versionInfo.PreLabel
-            $script:_preIter = $versionInfo.PreIter
-            $preDisplay = if ($versionInfo.PreLabel) { " ($($versionInfo.PreLabel)$($versionInfo.PreIter))" } else { "" }
-            Write-Host "  Version from Versions.props at merge commit: $ReleaseTag$preDisplay"
+        $detectedMajor = if ($versionInfo -and $versionInfo.Tag -match '^(\d+)\.') { [int]$Matches[1] } else { Get-CurrentMajorVersion $Repo }
+
+        $releaseBranch = Find-ReleaseBranchForCommit $pr.MergeCommitSha $Repo $detectedMajor
+        if ($releaseBranch) {
+            $expectedMs = $releaseBranch.Milestone
+            Write-Host "  Found in release branch: $($releaseBranch.Branch) → $expectedMs"
+        } else {
+            # Step 2: Fall back to Versions.props at the merge commit
+            if ($versionInfo) {
+                $ReleaseTag = $versionInfo.Tag
+                $script:_preLabel = $versionInfo.PreLabel
+                $script:_preIter = $versionInfo.PreIter
+                $preDisplay = if ($versionInfo.PreLabel) { " ($($versionInfo.PreLabel)$($versionInfo.PreIter))" } else { "" }
+                Write-Host "  Version from Versions.props at merge commit: $ReleaseTag$preDisplay"
+            }
         }
     }
 
-    # Fallback: try to find in existing tag ranges
-    if (-not $ReleaseTag) {
-        Write-Host "Auto-detecting release tag for PR #$PrNum..."
-        $fallbackMajor = Get-CurrentMajorVersion $Repo
-        $found = Find-TagContainingPr $PrNum $Repo $fallbackMajor
-        if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $fallbackMajor" }
-        $ReleaseTag = $found.Tag
-        $prevDisplay = if ($found.PreviousTag) { $found.PreviousTag } else { "(root)" }
-        Write-Host "  Found in: $prevDisplay..$ReleaseTag"
-    }
+    # Determine expected milestone if not already set by release branch detection
+    if (-not $expectedMs) {
+        # Fallback: try to find in existing tag ranges
+        if (-not $ReleaseTag) {
+            Write-Host "Auto-detecting release tag for PR #$PrNum..."
+            $fallbackMajor = Get-CurrentMajorVersion $Repo
+            $found = Find-TagContainingPr $PrNum $Repo $fallbackMajor
+            if (-not $found) { throw "PR #$PrNum not found in any release tag range for .NET $fallbackMajor" }
+            $ReleaseTag = $found.Tag
+            $prevDisplay = if ($found.PreviousTag) { $found.PreviousTag } else { "(root)" }
+            Write-Host "  Found in: $prevDisplay..$ReleaseTag"
+        }
 
-    $preLabel = if ($script:_preLabel) { $script:_preLabel } else { $null }
-    $preIter = if ($script:_preIter) { $script:_preIter } else { 0 }
-    $expectedMs = ConvertTo-Milestone $ReleaseTag $preLabel $preIter
+        $preLabel = if ($script:_preLabel) { $script:_preLabel } else { $null }
+        $preIter = if ($script:_preIter) { $script:_preIter } else { 0 }
+        $expectedMs = ConvertTo-Milestone $ReleaseTag $preLabel $preIter
+    }
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
     # Derive MajorVersion from the tag
