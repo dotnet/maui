@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 8305, "ToolbarItem Badge Support", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 8305, "ToolbarItem Badge Support", PlatformAffected.All, issueTestNumber: 1)]
 public class Issue8305_Toolbar : ContentPage
 {
 	readonly ToolbarItem _badgeTextItem;
@@ -19,7 +19,7 @@ public class Issue8305_Toolbar : ContentPage
 		_badgeTextItem = new ToolbarItem
 		{
 			Text = "Mail",
-			IconImageSource = "envelope.png",
+			IconImageSource = "bank.png",
 			BadgeText = "New",
 			AutomationId = "BadgeTextItem"
 		};
@@ -28,7 +28,7 @@ public class Issue8305_Toolbar : ContentPage
 		_badgeCountItem = new ToolbarItem
 		{
 			Text = "Alerts",
-			IconImageSource = "bell.png",
+			IconImageSource = "calculator.png",
 			BadgeText = "3",
 			AutomationId = "BadgeCountItem"
 		};
@@ -37,7 +37,7 @@ public class Issue8305_Toolbar : ContentPage
 		_badgeColorItem = new ToolbarItem
 		{
 			Text = "Cart",
-			IconImageSource = "cart.png",
+			IconImageSource = "shopping_cart.png",
 			BadgeText = "1",
 			BadgeColor = Colors.Green,
 			AutomationId = "BadgeColorItem"
