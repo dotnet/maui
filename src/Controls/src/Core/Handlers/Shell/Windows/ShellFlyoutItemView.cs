@@ -1,5 +1,6 @@
 #nullable disable
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
