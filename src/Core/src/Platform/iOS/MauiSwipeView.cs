@@ -295,6 +295,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_swipeItemsRect = new List<CGRect>();
+			_swipeItems.Clear();
 
 			double swipeItemsWidth;
 
@@ -1165,8 +1166,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Swipe(animated);
-
-			_swipeOffset = Math.Abs(_swipeOffset);
 		}
 
 		void UpdateOffset(double swipeOffset)
