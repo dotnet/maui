@@ -545,7 +545,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
-			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
+			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition && _initialized)
 			{
 				_gotoPosition = carouselPosition;
 
