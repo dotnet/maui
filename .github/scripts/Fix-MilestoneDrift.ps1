@@ -163,6 +163,9 @@ function ConvertTo-Milestone([string]$ReleaseTag, [string]$PreLabel, [int]$PreIt
     if ($PreLabel -and $PreIter -gt 0) {
         return ".NET $major.0-$PreLabel$PreIter"
     }
+    if ($PreLabel -and $PreIter -le 0) {
+        Write-Warning "PreReleaseVersionLabel is '$PreLabel' but PreReleaseVersionIteration is missing or 0 — falling back to GA/SR mapping"
+    }
 
     if ($patch -eq 0)  { return ".NET $major.0 GA" }
     if ($patch -lt 10) { return ".NET $major.0 SR1" }
@@ -542,6 +545,7 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
     $expectedMs = $null
     $preLabel = $null
     $preIter = 0
+    $versionInfo = $null
 
     # Fetch PR info first — we need merge_commit_sha for version detection
     $pr = Get-PrInfo $PrNum
@@ -608,6 +612,17 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         # Use the clean version tag (e.g. "11.0.0") for milestone mapping, not the full tag
         $cleanTag = if ($versionInfo) { $versionInfo.Tag } else { $ReleaseTag }
         $expectedMs = ConvertTo-Milestone $cleanTag $preLabel $preIter
+
+        # If ConvertTo-Milestone failed (e.g. $cleanTag is a preview tag string),
+        # read Versions.props at the tag to get clean version + pre-release info
+        if (-not $expectedMs -and $ReleaseTag) {
+            $tagVersionInfo = Get-VersionFromGitRef $ReleaseTag $Repo
+            if ($tagVersionInfo) {
+                $preLabel = $tagVersionInfo.PreLabel
+                $preIter = if ($tagVersionInfo.PreIter) { $tagVersionInfo.PreIter } else { 0 }
+                $expectedMs = ConvertTo-Milestone $tagVersionInfo.Tag $preLabel $preIter
+            }
+        }
     }
     if (-not $expectedMs) { throw "Cannot determine milestone for PR #$PrNum" }
 
