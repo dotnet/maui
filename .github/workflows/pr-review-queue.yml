@@ -25,6 +25,7 @@ jobs:
       contents: read
       issues: write
       pull-requests: read
+      repository-projects: read
     steps:
       - uses: actions/checkout@v4
 

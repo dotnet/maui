@@ -1,4 +1,5 @@
 #!/usr/bin/env pwsh
+#Requires -Version 7.0
 <#
 .SYNOPSIS
     Finds open PRs in dotnet/maui and dotnet/docs-maui that are good candidates for review.
@@ -685,41 +686,59 @@ foreach ($pr in $allPRs) {
     $authorLogin = $pr.author.login
     $humanReviews = @()
     if ($pr.reviews) {
-        $humanReviews = @($pr.reviews | Where-Object { -not (Test-IsBot $_.author.login) })
+        $humanReviews = @($pr.reviews | Where-Object {
+            -not (Test-IsBot $_.author.login) -and $_.submittedAt
+        })
     }
-    $hasHumanReview = $humanReviews.Count -gt 0
+    $hasHumanReview = ($humanReviews | Where-Object { $_.author.login -ne $authorLogin }).Count -gt 0
+
+    # Separate reviewer reviews from author reviews
+    $reviewerReviews = @($humanReviews | Where-Object { $_.author.login -ne $authorLogin })
+    $authorReviews = @($humanReviews | Where-Object { $_.author.login -eq $authorLogin })
 
     # Find latest change-request timestamp and check if author responded
     $authorRespondedAfterCR = $false
     $authorSpokeAfterReviewer = $false
 
-    if ($humanReviews.Count -gt 0) {
-        $latestCR = $humanReviews | Where-Object { $_.state -eq "CHANGES_REQUESTED" } |
+    if ($reviewerReviews.Count -gt 0) {
+        $latestCR = $reviewerReviews | Where-Object { $_.state -eq "CHANGES_REQUESTED" } |
             Sort-Object { [DateTime]::Parse($_.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
             Select-Object -Last 1
 
-        $latestHumanReviewTime = $humanReviews |
+        $latestReviewerTime = $reviewerReviews |
             ForEach-Object { [DateTime]::Parse($_.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
             Sort-Object | Select-Object -Last 1
 
-        # Check comments for author activity
-        $latestAuthorCommentTime = $null
+        # Check for author activity: issue comments + author review submissions (inline replies)
+        $latestAuthorActivityTime = $null
+
+        # Source 1: issue-level comments (top-level PR comments, truncated at 100)
         if ($pr.comments) {
-            $authorComments = @($pr.comments | Where-Object { $_.author.login -eq $authorLogin })
+            $authorComments = @($pr.comments | Where-Object { $_.author.login -eq $authorLogin -and $_.createdAt })
             if ($authorComments.Count -gt 0) {
-                $latestAuthorCommentTime = $authorComments |
+                $latestAuthorActivityTime = $authorComments |
                     ForEach-Object { [DateTime]::Parse($_.createdAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
                     Sort-Object | Select-Object -Last 1
             }
         }
 
-        if ($latestCR -and $latestAuthorCommentTime) {
-            $crTime = [DateTime]::Parse($latestCR.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture)
-            $authorRespondedAfterCR = $latestAuthorCommentTime -gt $crTime
+        # Source 2: author-submitted reviews (catches inline review-thread replies)
+        if ($authorReviews.Count -gt 0) {
+            $latestAuthorReviewTime = $authorReviews |
+                ForEach-Object { [DateTime]::Parse($_.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture) } |
+                Sort-Object | Select-Object -Last 1
+            if (-not $latestAuthorActivityTime -or $latestAuthorReviewTime -gt $latestAuthorActivityTime) {
+                $latestAuthorActivityTime = $latestAuthorReviewTime
+            }
         }
 
-        if ($latestAuthorCommentTime -and $latestHumanReviewTime) {
-            $authorSpokeAfterReviewer = $latestAuthorCommentTime -gt $latestHumanReviewTime
+        if ($latestCR -and $latestAuthorActivityTime) {
+            $crTime = [DateTime]::Parse($latestCR.submittedAt, [System.Globalization.CultureInfo]::InvariantCulture)
+            $authorRespondedAfterCR = $latestAuthorActivityTime -gt $crTime
+        }
+
+        if ($latestAuthorActivityTime -and $latestReviewerTime) {
+            $authorSpokeAfterReviewer = $latestAuthorActivityTime -gt $latestReviewerTime
         }
     }
 
@@ -1261,7 +1280,7 @@ function Format-Markdown-Output {
     # Needs FTE review (sorted: milestoned first, then by age)
     $fteReviewNonP0 = @($fteReview | Where-Object { -not $_.IsPriority })
     if ($fteReviewNonP0.Count -gt 0) {
-        $milestonedReview = @($fteReviewNonP0 | Where-Object { $_.Milestone -ne "" } | Sort-Object Milestone, { $_.Age } -Descending)
+        $milestonedReview = @($fteReviewNonP0 | Where-Object { $_.Milestone -ne "" } | Sort-Object @{E='Milestone'; Descending=$false}, @{E={$_.Age}; Descending=$true})
         $unmilestonedReview = @($fteReviewNonP0 | Where-Object { $_.Milestone -eq "" } | Sort-Object Age -Descending)
 
         [void]$md.AppendLine("## Needs FTE Review ($($fteReviewNonP0.Count) PRs)")
