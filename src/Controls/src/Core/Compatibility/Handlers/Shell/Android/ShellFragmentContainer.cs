@@ -35,14 +35,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDestroyView();
 			((IShellContentController)ShellContentTab).RecyclePage(_page);
-		}
-
-		public override void OnDestroy()
-		{
-			base.OnDestroy();
-			// Recursively disconnect handlers on the page and its child elements
-			// to prevent memory leaks when Shell items are cleared
-			_page?.DisconnectHandlers();
 			_page = null;
 		}
 	}

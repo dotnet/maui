@@ -255,6 +255,17 @@ namespace Microsoft.Maui.Controls
 
 			if (controller is BaseShellItem bsi)
 				bsi.PropertyChanged -= BaseShellItemPropertyChanged;
+
+			if (controller is Element element)
+			{
+				foreach (var child in element.Descendants())
+				{
+					if (child is Maui.IElement childController)
+						childController.Handler?.DisconnectHandler();
+				}
+
+				element.Handler?.DisconnectHandler();
+			}
 		}
 
 		void BaseShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
