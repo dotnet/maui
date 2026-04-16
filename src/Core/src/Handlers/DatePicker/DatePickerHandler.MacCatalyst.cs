@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 	{
+		static readonly NSString WindowDidCloseNotification = new("NSWindowDidCloseNotification");
+
 		readonly UIDatePickerProxy _proxy = new();
 		NSObject? _windowCloseObserver;
 		bool _isDatePickerOpen;
@@ -105,7 +107,7 @@ namespace Microsoft.Maui.Handlers
 			// dismisses it at the AppKit level without firing UITextField EditingDidEnd.
 			// Registering here (not in ConnectHandler) avoids spurious fires from
 			// unrelated window closes while the picker is not open.
-			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(new("NSWindowDidCloseNotification"), OnWindowClosed);
+			_windowCloseObserver = NSNotificationCenter.DefaultCenter.AddObserver(WindowDidCloseNotification, OnWindowClosed);
 
 			if (VirtualView is IDatePicker virtualView)
 			{

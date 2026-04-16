@@ -4,18 +4,18 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue34848 : TestContentPage
 {
 	DatePicker _datePicker;
-	Label _OpenstatusLabel;
-	Label _ClosestatusLabel;
+	Label _openStatusLabel;
+	Label _closeStatusLabel;
 	protected override void Init()
 	{
-		_OpenstatusLabel = new Label
+		_openStatusLabel = new Label
 		{
 			AutomationId = "Issue34848OpenStatusLabel",
 			Text = "Opened: Unknown",
 			HorizontalOptions = LayoutOptions.Center
 		};
 
-		_ClosestatusLabel = new Label
+		_closeStatusLabel = new Label
 		{
 			AutomationId = "Issue34848CloseStatusLabel",
 			Text = "Closed: Unknown",
@@ -29,16 +29,16 @@ public class Issue34848 : TestContentPage
 			HorizontalOptions = LayoutOptions.Center
 		};
 
-		_datePicker.Opened += (s, e) => _OpenstatusLabel.Text = "Opened";
-		_datePicker.Closed += (s, e) => _ClosestatusLabel.Text = "Closed";
+		_datePicker.Opened += (s, e) => _openStatusLabel.Text = "Opened";
+		_datePicker.Closed += (s, e) => _closeStatusLabel.Text = "Closed";
 
 		Content = new VerticalStackLayout
 		{
 			Spacing = 10,
 			Children =
 			{
-				_OpenstatusLabel,
-				_ClosestatusLabel,
+				_openStatusLabel,
+				_closeStatusLabel,
 				_datePicker
 			}
 		};
