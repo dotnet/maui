@@ -17,11 +17,11 @@ public class Issue19168 : _IssuesUITest
 	{
 		App.WaitForElement("Picker");
 		App.Tap("Picker");
-		App.WaitForElement("Baboon");
 #if MACCATALYST
 		App.TapCoordinates(600, 200);
 		App.WaitForElement("Button");
 #elif ANDROID
+		App.WaitForElement("Baboon");
 		App.TapCoordinates(0, 100);
 #elif WINDOWS
 		App.TapCoordinates(60, 600);
