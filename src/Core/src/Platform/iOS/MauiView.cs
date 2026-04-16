@@ -328,10 +328,7 @@ namespace Microsoft.Maui.Platform
 			// pick up a phantom keyboard frame from a previous session (#34846).
 			if (_isKeyboardShowing)
 			{
-				_isKeyboardShowing = false;
-				_keyboardFrame = CGRect.Empty;
-				_safeAreaInvalidated = true;
-				SetNeedsLayout();
+				ClearKeyboardState();
 			}
 		}
 
@@ -363,7 +360,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void OnKeyboardWillHide(NSNotification notification)
+		void OnKeyboardWillHide(NSNotification notification) => ClearKeyboardState();
+
+		void ClearKeyboardState()
 		{
 			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
