@@ -323,6 +323,16 @@ namespace Microsoft.Maui.Platform
 				NSNotificationCenter.DefaultCenter.RemoveObserver(hideObserver);
 				_keyboardWillHideObserver = null;
 			}
+
+			// Clear stale keyboard state so that re-subscribing later doesn't
+			// pick up a phantom keyboard frame from a previous session (#34846).
+			if (_isKeyboardShowing)
+			{
+				_isKeyboardShowing = false;
+				_keyboardFrame = CGRect.Empty;
+				_safeAreaInvalidated = true;
+				SetNeedsLayout();
+			}
 		}
 
 		void UpdateKeyboardSubscription()
