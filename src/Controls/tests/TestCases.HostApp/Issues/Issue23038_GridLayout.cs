@@ -31,8 +31,8 @@ public class Issue23038_GridLayout : ContentPage
 					FontAttributes = FontAttributes.Bold,
 					Padding = new Thickness(5),
 				};
-				label.SetBinding(Label.TextProperty, "Name");
-				label.SetBinding(Label.AutomationIdProperty, "Key", stringFormat: "GridHeader{0}");
+				label.SetBinding(Label.TextProperty, nameof(Issue23038Team.Name));
+				label.SetBinding(Label.AutomationIdProperty, nameof(Issue23038Team.Key), stringFormat: "GridHeader{0}");
 				return label;
 			}),
 			GroupFooterTemplate = new DataTemplate(() =>
@@ -43,7 +43,7 @@ public class Issue23038_GridLayout : ContentPage
 					Padding = new Thickness(5),
 				};
 				label.SetBinding(Label.TextProperty, "Count", stringFormat: "Total: {0}");
-				label.SetBinding(Label.AutomationIdProperty, "Key", stringFormat: "GridFooter{0}");
+				label.SetBinding(Label.AutomationIdProperty, nameof(Issue23038Team.Key), stringFormat: "GridFooter{0}");
 				return label;
 			}),
 			ItemTemplate = new DataTemplate(() =>
@@ -52,7 +52,7 @@ public class Issue23038_GridLayout : ContentPage
 				{
 					Padding = new Thickness(5, 2),
 				};
-				label.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, nameof(Issue23038Member.Name));
 				return label;
 			}),
 		};
