@@ -38,6 +38,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UpdateBackButtonVisibility(platformToolbar, toolbar);
 
+			// Set Narrator text for the back button when a custom label is provided.
+			// We only set AutomationProperties.Name when there's an explicit label —
+			// otherwise, leave it untouched so WinUI's default "Back" announcement is preserved.
+			if (platformToolbar.NavigationViewBackButton is not null)
+			{
+				var accessibilityLabel = toolbar.BackButtonAccessibilityLabel;
+				if (!string.IsNullOrEmpty(accessibilityLabel))
+				{
+					Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(
+						platformToolbar.NavigationViewBackButton, accessibilityLabel);
+				}
+			}
+
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
 
