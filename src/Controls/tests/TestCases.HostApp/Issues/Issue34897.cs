@@ -24,18 +24,31 @@ public class Issue34897 : ContentPage
 				AutomationId = "Issue34897EmptyView",
 				BackgroundColor = Colors.LightYellow,
 			},
+			Footer = new Label
+			{
+				Text = "CollectionView Footer",
+				AutomationId = "Issue34897Footer",
+				BackgroundColor = Colors.LightGreen,
+			},
 		};
 
-		Content = new StackLayout
+		var grid = new Grid
 		{
-			Children =
+			RowDefinitions =
 			{
-				new Label
-				{
-					Text = "Header, Footer and EmptyView should all be visible below:",
-				},
-				collectionView,
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star),
 			}
 		};
+
+		var label = new Label
+		{
+			Text = "Header, Footer and EmptyView should all be visible below:",
+		};
+
+		grid.Add(label, 0, 0);
+		grid.Add(collectionView, 0, 1);
+
+		Content = grid;
 	}
 }

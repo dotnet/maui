@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Only applies to non-grouped collections: grouped collections put group headers in
 			// per-section supplementary items, which would crash when accessing the empty group source.
 			if (count == 0
-				&& !(ItemsView is GroupableItemsView { IsGrouped: true })
+				&& ItemsSource is not null && !(ItemsView is GroupableItemsView { IsGrouped: true })
 				&& (ItemsView?.Header is not null || ItemsView?.HeaderTemplate is not null
 					|| ItemsView?.Footer is not null || ItemsView?.FooterTemplate is not null))
 			{

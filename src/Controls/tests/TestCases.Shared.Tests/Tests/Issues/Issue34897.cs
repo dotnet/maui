@@ -17,6 +17,7 @@ public class Issue34897 : _IssuesUITest
 	{
 		App.WaitForElement("Issue34897EmptyView");
 		App.WaitForElement("Issue34897Header");
+		App.WaitForElement("Issue34897Footer");
 	}
 }
 #endif
