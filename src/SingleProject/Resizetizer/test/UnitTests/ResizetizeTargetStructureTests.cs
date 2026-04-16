@@ -1,161 +1,137 @@
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
-	/// <summary>
-	/// Verifies the MSBuild target structure in Microsoft.Maui.Resizetizer.After.targets
-	/// to prevent regression of the "fonts missing on first build" bug (#23268) and
-	/// the "splash screens randomly missing" bug (#33092).
-	///
-	/// Root cause: ProcessMauiFonts and ProcessMauiSplashScreens used Inputs/Outputs
-	/// for incremental builds. When the target was skipped (stamp file up-to-date),
-	/// platform item groups (AndroidAsset, BundleResource, etc.) were never populated
-	/// — causing fonts/splash screens to silently disappear from build output.
-	/// </summary>
-	public class ResizetizeTargetStructureTests
+	public class ResizetizeTargetStructureTests : BaseTest
 	{
-		static readonly XNamespace MSBuildNs = "http://schemas.microsoft.com/developer/msbuild/2003";
-
-		readonly ITestOutputHelper _output;
-		readonly XDocument _targetsDoc;
+		readonly string _repoRoot;
+		readonly string _targetsFilePath;
+		readonly string _taskAssemblyPath;
 
 		public ResizetizeTargetStructureTests(ITestOutputHelper output)
+			: base(output)
 		{
-			_output = output;
+			_repoRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
+			_targetsFilePath = Path.Combine(_repoRoot, "src", "SingleProject", "Resizetizer", "src", "nuget", "buildTransitive", "Microsoft.Maui.Resizetizer.After.targets");
+			_taskAssemblyPath = Path.Combine(_repoRoot, ".buildtasks", "Microsoft.Maui.Resizetizer.dll");
 
-			// Navigate from test output dir (artifacts/bin/.../net10.0/) to repo root
-			var repoRoot = Path.GetFullPath(Path.Combine(
-				Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
-			var targetsFilePath = Path.Combine(repoRoot,
-				"src", "SingleProject", "Resizetizer", "src", "nuget",
-				"buildTransitive", "Microsoft.Maui.Resizetizer.After.targets");
-
-			Assert.True(File.Exists(targetsFilePath),
-				$"Targets file not found at: {targetsFilePath}");
-			_output.WriteLine($"Loading targets from: {targetsFilePath}");
-
-			_targetsDoc = XDocument.Load(targetsFilePath);
-		}
-
-		XElement FindTarget(string name) =>
-			_targetsDoc.Root!
-				.Elements(MSBuildNs + "Target")
-				.FirstOrDefault(t => t.Attribute("Name")?.Value == name);
-
-		XElement FindAndroidPropertyGroup() =>
-			_targetsDoc.Root!
-				.Elements(MSBuildNs + "PropertyGroup")
-				.FirstOrDefault(pg =>
-				{
-					var cond = pg.Attribute("Condition")?.Value;
-					return cond != null
-						&& cond.Contains("_ResizetizerIsAndroidApp", StringComparison.Ordinal)
-						&& !cond.Contains("_ResizetizerIsiOSApp", StringComparison.Ordinal);
-				});
-
-		// ──────────────────────────────────────────────────────────
-		//  ProcessMauiFonts — #23268
-		// ──────────────────────────────────────────────────────────
-
-		[Fact]
-		public void ProcessMauiFonts_ShouldNotHaveInputsAttribute()
-		{
-			var target = FindTarget("ProcessMauiFonts");
-			Assert.NotNull(target);
-			Assert.True(target.Attribute("Inputs") is null,
-				"ProcessMauiFonts must not use Inputs for incremental builds. " +
-				"See https://github.com/dotnet/maui/issues/23268");
+			Assert.True(File.Exists(_targetsFilePath), $"Targets file not found at: {_targetsFilePath}");
+			Assert.True(File.Exists(_taskAssemblyPath), $"Task assembly not found at: {_taskAssemblyPath}");
 		}
 
 		[Fact]
-		public void ProcessMauiFonts_ShouldNotHaveOutputsAttribute()
+		public void Fonts_AreRegistered_OnFirstAndIncrementalBuilds_WhileTargetRemainsIncremental()
 		{
-			var target = FindTarget("ProcessMauiFonts");
-			Assert.NotNull(target);
-			Assert.True(target.Attribute("Outputs") is null,
-				"ProcessMauiFonts must not use Outputs for incremental builds. " +
-				"See https://github.com/dotnet/maui/issues/23268");
+			var projectDir = CreateProject(includeSplashScreen: false);
+
+			RunMsbuild(projectDir, "_ComputeAndroidAssetsPaths", "fonts-build-1.log");
+			Assert.Equal("1", ReadOutputValue(projectDir, "font-count.txt"));
+
+			var secondBuildLog = RunMsbuild(projectDir, "_ComputeAndroidAssetsPaths", "fonts-build-2.log");
+			Assert.Equal("1", ReadOutputValue(projectDir, "font-count.txt"));
+			Assert.Contains("Skipping target \"ProcessMauiFonts\"", secondBuildLog, StringComparison.Ordinal);
 		}
 
 		[Fact]
-		public void Android_ProcessMauiFontsBeforeTargets_ShouldIncludeComputeAndroidAssetsPaths()
+		public void SplashScreens_AreRegistered_OnFirstAndIncrementalBuilds_WhileTargetRemainsIncremental()
 		{
-			var androidPG = FindAndroidPropertyGroup();
-			Assert.NotNull(androidPG);
+			var projectDir = CreateProject(includeSplashScreen: true);
 
-			var beforeTargets = androidPG.Element(MSBuildNs + "ProcessMauiFontsBeforeTargets");
-			Assert.NotNull(beforeTargets);
-			Assert.Contains("_ComputeAndroidAssetsPaths", beforeTargets.Value, StringComparison.Ordinal);
+			RunMsbuild(projectDir, "CheckSplashAssets", "splash-build-1.log");
+			Assert.Equal("1", ReadOutputValue(projectDir, "splash-count.txt"));
+
+			var secondBuildLog = RunMsbuild(projectDir, "CheckSplashAssets", "splash-build-2.log");
+			Assert.Equal("1", ReadOutputValue(projectDir, "splash-count.txt"));
+			Assert.Contains("Skipping target \"ProcessMauiSplashScreens\"", secondBuildLog, StringComparison.Ordinal);
 		}
 
-		[Fact]
-		public void ProcessMauiFonts_MatchesWorkingProcessMauiAssetsPattern()
+		string CreateProject(bool includeSplashScreen)
 		{
-			var assetsTarget = FindTarget("ProcessMauiAssets");
-			Assert.NotNull(assetsTarget);
-			Assert.Null(assetsTarget.Attribute("Inputs"));
-			Assert.Null(assetsTarget.Attribute("Outputs"));
+			var projectDir = Path.Combine(DestinationDirectory, Guid.NewGuid().ToString("N"));
+			Directory.CreateDirectory(projectDir);
 
-			var fontsTarget = FindTarget("ProcessMauiFonts");
-			Assert.NotNull(fontsTarget);
-			Assert.Null(fontsTarget.Attribute("Inputs"));
-			Assert.Null(fontsTarget.Attribute("Outputs"));
-		}
+			var fontPath = Path.Combine(projectDir, "font.ttf");
+			File.WriteAllText(fontPath, "dummy-font", System.Text.Encoding.UTF8);
 
-		// ──────────────────────────────────────────────────────────
-		//  ProcessMauiSplashScreens — #33092
-		// ──────────────────────────────────────────────────────────
-
-		/// <summary>
-		/// ProcessMauiSplashScreens must NOT have Inputs. Same root cause as fonts:
-		/// when skipped, platform item groups (LibraryResourceDirectories,
-		/// BundleResource, ContentWithTargetPath) may not be populated, causing
-		/// splash screens to randomly disappear from builds.
-		/// The custom tasks (GenerateSplashAndroidResources, etc.) have built-in
-		/// file-level incrementality via Resizer.IsUpToDate(), so removing
-		/// Inputs/Outputs does not cause expensive re-rendering.
-		/// </summary>
-		[Fact]
-		public void ProcessMauiSplashScreens_ShouldNotHaveInputsAttribute()
-		{
-			var target = FindTarget("ProcessMauiSplashScreens");
-			Assert.NotNull(target);
-			Assert.True(target.Attribute("Inputs") is null,
-				"ProcessMauiSplashScreens must not use Inputs for incremental builds. " +
-				"See https://github.com/dotnet/maui/issues/33092");
-		}
-
-		[Fact]
-		public void ProcessMauiSplashScreens_ShouldNotHaveOutputsAttribute()
-		{
-			var target = FindTarget("ProcessMauiSplashScreens");
-			Assert.NotNull(target);
-			Assert.True(target.Attribute("Outputs") is null,
-				"ProcessMauiSplashScreens must not use Outputs for incremental builds. " +
-				"See https://github.com/dotnet/maui/issues/33092");
-		}
-
-		/// <summary>
-		/// All three content-producing targets should follow the same pattern
-		/// as ProcessMauiAssets (no Inputs/Outputs).
-		/// </summary>
-		[Fact]
-		public void AllContentTargets_FollowProcessMauiAssetsPattern()
-		{
-			foreach (var targetName in new[] { "ProcessMauiAssets", "ProcessMauiFonts", "ProcessMauiSplashScreens" })
+			var splashItem = string.Empty;
+			if (includeSplashScreen)
 			{
-				var target = FindTarget(targetName);
-				Assert.NotNull(target);
-				Assert.True(target.Attribute("Inputs") is null,
-					$"{targetName} must not use Inputs. See #23268 / #33092");
-				Assert.True(target.Attribute("Outputs") is null,
-					$"{targetName} must not use Outputs. See #23268 / #33092");
+				var splashSource = Path.Combine(_repoRoot, "src", "SingleProject", "Resizetizer", "test", "UnitTests", "images", "camera.png");
+				Assert.True(File.Exists(splashSource), $"Splash source image not found at: {splashSource}");
+				File.Copy(splashSource, Path.Combine(projectDir, "splash.png"), overwrite: true);
+				splashItem = "    <MauiSplashScreen Include=\"splash.png\" />" + Environment.NewLine;
 			}
+
+			var projectContents =
+$@"<Project DefaultTargets=""_ComputeAndroidAssetsPaths"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AndroidApplication>True</AndroidApplication>
+    <OutputType>Exe</OutputType>
+    <IntermediateOutputPath>obj\</IntermediateOutputPath>
+    <EnableMauiAssetProcessing>false</EnableMauiAssetProcessing>
+  </PropertyGroup>
+  <ItemGroup>
+    <MauiFont Include=""font.ttf"" />
+{splashItem}  </ItemGroup>
+  <Import Project=""{_targetsFilePath}"" />
+  <Target Name=""_ComputeAndroidAssetsPaths"">
+    <WriteLinesToFile File=""$(IntermediateOutputPath)font-count.txt"" Lines=""@(AndroidAsset->Count())"" Overwrite=""true"" />
+  </Target>
+  <Target Name=""CheckSplashAssets"" DependsOnTargets=""_CollectMauiSplashScreens"">
+    <WriteLinesToFile File=""$(IntermediateOutputPath)splash-count.txt"" Lines=""@(LibraryResourceDirectories->Count())"" Overwrite=""true"" />
+  </Target>
+</Project>";
+
+			File.WriteAllText(Path.Combine(projectDir, "Test.proj"), projectContents, System.Text.Encoding.UTF8);
+			return projectDir;
+		}
+
+		string RunMsbuild(string projectDir, string target, string logFileName)
+		{
+			var projectFile = Path.Combine(projectDir, "Test.proj");
+			var logFile = Path.Combine(projectDir, logFileName);
+			var args =
+				$"msbuild \"{projectFile}\" " +
+				$"/t:{target} " +
+				$"/v:diag " +
+				$"/p:_ResizetizerTaskAssemblyName=\"{_taskAssemblyPath}\" " +
+				"/p:_ResizetizerIsAndroidApp=True " +
+				"/p:_ResizetizerIsCompatibleApp=True " +
+				"/p:ResizetizerPlatformType=android " +
+				"/p:TargetFrameworkIdentifier=.NETCoreApp";
+
+			var startInfo = new ProcessStartInfo("dotnet", args)
+			{
+				WorkingDirectory = projectDir,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+				UseShellExecute = false,
+				CreateNoWindow = true
+			};
+
+			using var process = Process.Start(startInfo);
+			var standardOutput = process!.StandardOutput.ReadToEnd();
+			var standardError = process.StandardError.ReadToEnd();
+			process.WaitForExit();
+
+			var output = standardOutput + Environment.NewLine + standardError;
+			File.WriteAllText(logFile, output, System.Text.Encoding.UTF8);
+
+			Assert.True(process.ExitCode == 0, $"dotnet msbuild failed with exit code {process.ExitCode}.{Environment.NewLine}{output}");
+
+			return output;
+		}
+
+		static string ReadOutputValue(string projectDir, string fileName)
+		{
+			var outputFile = Path.Combine(projectDir, "obj", fileName);
+			Assert.True(File.Exists(outputFile), $"Expected output file not found: {outputFile}");
+			return File.ReadAllText(outputFile).Trim();
 		}
 	}
 }

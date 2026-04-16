@@ -75,7 +75,9 @@
         <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
+        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
+        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
         <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
 
         <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
@@ -115,14 +117,14 @@
         <ResizetizeDependsOnTargets>
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
-            ProcessMauiSplashScreens;
+            _CollectMauiSplashScreens;
             _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiAssets;
-            ProcessMauiSplashScreens;
+            _CollectMauiSplashScreens;
         </ProcessMauiFontsDependsOnTargets>
     </PropertyGroup>
 
@@ -149,8 +151,8 @@
         </ResizetizeAfterTargets>
 
         <CollectAppManifestsDependsOn>
-            ProcessMauiFonts;
-            ProcessMauiSplashScreens;
+            _CollectMauiFontAssets;
+            _CollectMauiSplashScreens;
             $(CollectAppManifestsDependsOn)
         </CollectAppManifestsDependsOn>
     </PropertyGroup>
@@ -400,7 +402,9 @@
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"
-        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'">
+        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
+        Outputs="$(_MauiSplashStampFile)">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
@@ -427,13 +431,6 @@
             MauiSplashScreen="@(MauiSplashScreen)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
-
-        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
-            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
-            <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
-                <StampFile>$(_ResizetizerStampFile)</StampFile>
-            </LibraryResourceDirectories>
-        </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
@@ -463,10 +460,40 @@
             PlistName="MauiInfo.plist"
             Storyboard="$(_MauiIntermediateStoryboard)"
         />
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
+        <!-- Windows App SDK -->
+        <GenerateSplashAssets
+            Condition="('$(_ResizetizerIsWindowsAppSdk)' == 'True') and '$(_MauiHasSplashScreens)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+        />
+
+        <!-- Tizen -->
+        <TizenSplashUpdater
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(MauiSplashScreen)"
+        />
+        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
+        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
+
+    </Target>
+
+    <Target Name="_CollectMauiSplashScreens"
+        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
+        DependsOnTargets="ProcessMauiSplashScreens">
+        <ItemGroup>
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
-            <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
-            <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
+        </ItemGroup>
+
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
+                <StampFile>$(_ResizetizerStampFile)</StampFile>
+            </LibraryResourceDirectories>
+        </ItemGroup>
+
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+            <_MauiSplashStoryboard Include="$(_MauiIntermediateSplashScreen)MauiSplash.storyboard" Condition="Exists('$(_MauiIntermediateSplashScreen)MauiSplash.storyboard')" />
+            <_MauiSplashPList Include="$(_MauiIntermediateSplashScreen)MauiInfo.plist" Condition="Exists('$(_MauiIntermediateSplashScreen)MauiInfo.plist')" />
             <_MauiSplashImages Include="@(_MauiSplashAssets)" Exclude="@(_MauiSplashStoryboard);@(_MauiSplashPList)" />
             <!-- Add the launch storyboard file -->
             <InterfaceDefinition Include="@(_MauiSplashStoryboard)" Link="%(Filename)%(Extension)" />
@@ -479,44 +506,30 @@
             </BundleResource>
         </ItemGroup>
 
-        <!-- Windows App SDK -->
-        <GenerateSplashAssets
-            Condition="('$(_ResizetizerIsWindowsAppSdk)' == 'True') and '$(_MauiHasSplashScreens)' == 'true'"
-            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-            MauiSplashScreen="@(MauiSplashScreen)"
-        />
-        <ItemGroup Condition="('$(_ResizetizerIsWindowsAppSdk)' == 'True') and '$(_MauiHasSplashScreens)' == 'true'">
-            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <ContentWithTargetPath Include="@(_MauiSplashAssets)">
                 <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
                 <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
         </ItemGroup>
 
-        <!-- Tizen -->
-        <TizenSplashUpdater
-            Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'"
-            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
-            MauiSplashScreen="@(MauiSplashScreen)"
-        />
-        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
-            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <MauiImage Include="@(MauiSplashScreen)" />
             <_MauiSplashScreens Include="$(_MauiIntermediateSplashScreen)splash\*" />
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
-        <!-- Include splash assets as filewrites so they don't get rm'd -->
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
+            <FileWrites Include="$(_MauiSplashStampFile)" />
         </ItemGroup>
 
     </Target>
 
     <Target Name="ProcessMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
-        AfterTargets="$(ProcessMauiFontsAfterTargets)"
-        BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
+        Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
+        Outputs="$(_MauiFontStampFile)"
         DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
 
         <!-- Copy font files over -->
@@ -524,6 +537,27 @@
             SourceFiles="@(MauiFont)"
             DestinationFolder="$(_MauiIntermediateFonts)"
             SkipUnchangedFiles="true" />
+
+        <ItemGroup>
+            <_MauiFontCopiedForProcessing Include="$(_MauiIntermediateFonts)*" />
+        </ItemGroup>
+
+        <!-- Create a partial info.plist for iOS -->
+        <CreatePartialInfoPlistTask
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopiedForProcessing)' != ''"
+            IntermediateOutputPath="$(_MauiIntermediateFonts)"
+            PlistName="MauiInfo.plist"
+            CustomFonts="@(_MauiFontCopiedForProcessing)" />
+
+        <!-- Touch/create our stamp file for outputs -->
+        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
+    </Target>
+
+    <Target Name="_CollectMauiFontAssets"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'"
+        AfterTargets="$(ProcessMauiFontsAfterTargets)"
+        BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
+        DependsOnTargets="ProcessMauiFonts">
 
         <ItemGroup>
             <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
@@ -541,13 +575,6 @@
             <BundleResource Include="@(_MauiFontBundleResource)" />
 
         </ItemGroup>
-
-        <!-- Create a partial info.plist for iOS -->
-        <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(_MauiFontCopied)' != ''"
-            IntermediateOutputPath="$(_MauiIntermediateFonts)"
-            PlistName="MauiInfo.plist"
-            CustomFonts="@(_MauiFontCopied)" />
 
         <!-- iOS - Partial Info.plist for font registration  -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' ">
@@ -590,8 +617,9 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiFontCopied)"  Condition="'@(_MauiFontCopied)' != ''" TizenTpkSubDir="res\fonts\" />
         </ItemGroup>
 
-        <!-- Include our fonts as filewrites so they don't get rm'd -->
+        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
+            <FileWrites Include="$(_MauiFontStampFile)" />
             <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
     </Target>
