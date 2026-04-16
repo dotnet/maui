@@ -100,8 +100,8 @@ function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
 function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
     <# Reads version info from eng/Versions.props at a specific git ref.
        Returns a hashtable with Tag (synthetic release tag like "10.0.60"),
-       PreReleaseLabel (e.g. "preview", "rc", or $null for stable),
-       and PreReleaseIteration (e.g. 3).
+       PreLabel (e.g. "preview", "rc", or $null for stable),
+       and PreIter (e.g. 3).
        Fetches the commit if not available locally (e.g. PRs merged to inflight). #>
     $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
     if ($LASTEXITCODE -ne 0) {
@@ -337,7 +337,7 @@ function ConvertBranchToMilestone([string]$BranchName) {
 
 function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Major) {
     <# Finds the earliest release branch containing a commit.
-       Checks GA branch first, then SR/preview/RC branches in order.
+       Checks in chronological order: previews → RCs → GA → SRs.
        Returns @{ Branch; Milestone } or $null. #>
 
     # Fetch all release branches for this major version
@@ -363,7 +363,7 @@ function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Ma
     foreach ($branch in $sorted) {
         # Make sure we have the branch ref locally
         $null = git -C $Repo fetch origin $branch --quiet 2>&1
-        $isAncestor = git -C $Repo merge-base --is-ancestor $CommitSha "origin/$branch" 2>&1
+        $null = git -C $Repo merge-base --is-ancestor $CommitSha "origin/$branch" 2>&1
         if ($LASTEXITCODE -eq 0) {
             $milestone = ConvertBranchToMilestone $branch
             if ($milestone) {
@@ -524,8 +524,8 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
     Write-Host "$('═' * 70)`n"
 
     $expectedMs = $null
-    $script:_preLabel = $null
-    $script:_preIter = $null
+    $preLabel = $null
+    $preIter = 0
 
     # Fetch PR info first — we need merge_commit_sha for version detection
     $pr = Get-PrInfo $PrNum
@@ -556,13 +556,14 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         $releaseBranch = Find-ReleaseBranchForCommit $pr.MergeCommitSha $Repo $detectedMajor
         if ($releaseBranch) {
             $expectedMs = $releaseBranch.Milestone
+            $ReleaseTag = $versionInfo.Tag
             Write-Host "  Found in release branch: $($releaseBranch.Branch) → $expectedMs"
         } else {
             # Step 2: Fall back to Versions.props at the merge commit
             if ($versionInfo) {
                 $ReleaseTag = $versionInfo.Tag
-                $script:_preLabel = $versionInfo.PreLabel
-                $script:_preIter = $versionInfo.PreIter
+                $preLabel = $versionInfo.PreLabel
+                $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
                 $preDisplay = if ($versionInfo.PreLabel) { " ($($versionInfo.PreLabel)$($versionInfo.PreIter))" } else { "" }
                 Write-Host "  Version from Versions.props at merge commit: $ReleaseTag$preDisplay"
             }
@@ -582,8 +583,6 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
             Write-Host "  Found in: $prevDisplay..$ReleaseTag"
         }
 
-        $preLabel = if ($script:_preLabel) { $script:_preLabel } else { $null }
-        $preIter = if ($script:_preIter) { $script:_preIter } else { 0 }
         $expectedMs = ConvertTo-Milestone $ReleaseTag $preLabel $preIter
     }
     if (-not $expectedMs) { throw "Cannot determine milestone for PR #$PrNum" }
