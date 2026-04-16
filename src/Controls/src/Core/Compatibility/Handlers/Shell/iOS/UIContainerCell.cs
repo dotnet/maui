@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IPlatformViewHandler _renderer;
 		object _bindingContext;
-		IElementDefinition _bindingContextResource;
 		IElementDefinition _viewResource;
 
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
@@ -82,8 +81,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View.MeasureInvalidated -= MeasureInvalidated;
 			_viewResource?.RemoveResourcesChangedListener(OnResourcesChanged);
 			_viewResource = null;
-			_bindingContextResource?.RemoveResourcesChangedListener(OnResourcesChanged);
-			_bindingContextResource = null;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
@@ -117,13 +114,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 					baseShell.PropertyChanged -= OnElementPropertyChanged;
 
-				_bindingContextResource?.RemoveResourcesChangedListener(OnResourcesChanged);
-				_bindingContextResource = null;
-
 				_bindingContext = value;
 				View.BindingContext = value;
-				_bindingContextResource = value as IElementDefinition;
-				_bindingContextResource?.AddResourcesChangedListener(OnResourcesChanged);
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell2)
 				{
