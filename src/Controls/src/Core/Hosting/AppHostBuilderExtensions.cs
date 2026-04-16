@@ -246,13 +246,17 @@ public static partial class AppHostBuilderExtensions
 		return handlersCollection;
 	}
 
-	// Private static method (NOT a local function) so ILC sees a real method boundary.
-	// Local functions compile to <EnclosingMethod>g__Name|N_M which newer ILC versions
-	// trace back to the caller, defeating the [FeatureGuard] suppression.
+	// Suppress IL3050 inside the helper rather than annotating with [RequiresDynamicCode],
+	// which would propagate the warning to AddControlsHandlers. The feature switch
+	// (MauiHybridWebViewSupported=false under PublishAot/TrimMode=full) substitutes
+	// IsHybridWebViewSupported to false, making this branch dead code in AOT builds.
+	// See: https://github.com/dotnet/linker/issues/2715
 	const string HybridWebViewDynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
 
 #if !NETSTANDARD
-	[RequiresDynamicCode(HybridWebViewDynamicFeatures)]
+	[UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
+		Justification = "HybridWebView is disabled via MauiHybridWebViewSupported feature switch " +
+						"in NativeAOT/full-trim builds, so this code path is unreachable.")]
 #endif
 	[RequiresUnreferencedCode(HybridWebViewDynamicFeatures)]
 	private static void AddHybridWebViewHandler(IMauiHandlersCollection handlersCollection)
