@@ -98,9 +98,10 @@ function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
 }
 
 function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
-    <# Reads MajorVersion and PatchVersion from eng/Versions.props at a specific
-       git ref (commit SHA, branch, tag). Returns a synthetic release tag string
-       like "10.0.60" that can be passed to ConvertTo-Milestone.
+    <# Reads version info from eng/Versions.props at a specific git ref.
+       Returns a hashtable with Tag (synthetic release tag like "10.0.60"),
+       PreReleaseLabel (e.g. "preview", "rc", or $null for stable),
+       and PreReleaseIteration (e.g. 3).
        Fetches the commit if not available locally (e.g. PRs merged to inflight). #>
     $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
     if ($LASTEXITCODE -ne 0) {
@@ -126,13 +127,43 @@ function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
         Write-Warning "Could not parse PatchVersion from Versions.props at $GitRef"
         return $null
     }
-    return "$major.0.$patch"
+
+    # Detect pre-release label (preview, rc) and iteration
+    $preLabel = $null
+    $preIter = $null
+    if ($joined -match '<PreReleaseVersionLabel[^>]*>([^<]+)</PreReleaseVersionLabel>') {
+        $rawLabel = $Matches[1]
+        # Only treat "preview" and "rc" as pre-release; "ci.main", "ci.inflight", "servicing" are stable builds
+        if ($rawLabel -match '^(preview|rc)$') {
+            $preLabel = $rawLabel
+            if ($joined -match '<PreReleaseVersionIteration>(\d+)</PreReleaseVersionIteration>') {
+                $preIter = [int]$Matches[1]
+            }
+        }
+    }
+
+    return @{
+        Tag       = "$major.0.$patch"
+        PreLabel  = $preLabel
+        PreIter   = $preIter
+    }
 }
 
-function ConvertTo-Milestone([string]$ReleaseTag) {
-    <# Converts "10.0.50" → ".NET 10 SR5", "10.0.41" → ".NET 10 SR4.1", "10.0.0" → ".NET 10.0 GA" #>
+function ConvertTo-Milestone([string]$ReleaseTag, [string]$PreLabel, [int]$PreIter) {
+    <# Converts version info to a milestone name:
+       "10.0.50"                    → ".NET 10 SR5"
+       "10.0.41"                    → ".NET 10 SR4.1"
+       "10.0.0"                     → ".NET 10.0 GA"
+       "11.0.0" + preview + 3       → ".NET 11.0-preview3"
+       "11.0.0" + rc + 1            → ".NET 11.0-rc1" #>
     if ($ReleaseTag -notmatch '^(\d+)\.0\.(\d+)$') { return $null }
     $major = [int]$Matches[1]; $patch = [int]$Matches[2]
+
+    # Pre-release: preview/rc milestones
+    if ($PreLabel -and $PreIter -gt 0) {
+        return ".NET $major.0-$PreLabel$PreIter"
+    }
+
     if ($patch -eq 0)  { return ".NET $major.0 GA" }
     if ($patch -lt 10) { return ".NET $major.0 SR1" }
     $sr = [math]::Floor($patch / 10)
@@ -460,10 +491,13 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
     } elseif ($pr.MergeCommitSha) {
         # No tag — read Versions.props at the merge commit to determine
         # the version the branch was building when this PR merged.
-        $versionAtMerge = Get-VersionFromGitRef $pr.MergeCommitSha $Repo
-        if ($versionAtMerge) {
-            $ReleaseTag = $versionAtMerge
-            Write-Host "  Version from Versions.props at merge commit: $ReleaseTag"
+        $versionInfo = Get-VersionFromGitRef $pr.MergeCommitSha $Repo
+        if ($versionInfo) {
+            $ReleaseTag = $versionInfo.Tag
+            $script:_preLabel = $versionInfo.PreLabel
+            $script:_preIter = $versionInfo.PreIter
+            $preDisplay = if ($versionInfo.PreLabel) { " ($($versionInfo.PreLabel)$($versionInfo.PreIter))" } else { "" }
+            Write-Host "  Version from Versions.props at merge commit: $ReleaseTag$preDisplay"
         }
     }
 
@@ -478,7 +512,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         Write-Host "  Found in: $prevDisplay..$ReleaseTag"
     }
 
-    $expectedMs = ConvertTo-Milestone $ReleaseTag
+    $preLabel = if ($script:_preLabel) { $script:_preLabel } else { $null }
+    $preIter = if ($script:_preIter) { $script:_preIter } else { 0 }
+    $expectedMs = ConvertTo-Milestone $ReleaseTag $preLabel $preIter
     if (-not $expectedMs) { throw "Cannot determine milestone for tag $ReleaseTag" }
 
     # Derive MajorVersion from the tag

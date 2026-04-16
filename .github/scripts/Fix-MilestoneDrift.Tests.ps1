@@ -54,6 +54,21 @@ Describe 'ConvertTo-Milestone' {
     ) {
         ConvertTo-Milestone $Tag | Should -BeNullOrEmpty
     }
+
+    It 'maps preview "<Tag>" with label "<Label>" iter <Iter> to "<Expected>"' -ForEach @(
+        @{ Tag = '11.0.0'; Label = 'preview'; Iter = 1; Expected = '.NET 11.0-preview1' }
+        @{ Tag = '11.0.0'; Label = 'preview'; Iter = 3; Expected = '.NET 11.0-preview3' }
+        @{ Tag = '11.0.0'; Label = 'preview'; Iter = 7; Expected = '.NET 11.0-preview7' }
+        @{ Tag = '12.0.0'; Label = 'rc';      Iter = 1; Expected = '.NET 12.0-rc1' }
+        @{ Tag = '12.0.0'; Label = 'rc';      Iter = 2; Expected = '.NET 12.0-rc2' }
+    ) {
+        ConvertTo-Milestone $Tag $Label $Iter | Should -Be $Expected
+    }
+
+    It 'maps to GA when no pre-release label' {
+        ConvertTo-Milestone '11.0.0' $null 0 | Should -Be '.NET 11.0 GA'
+        ConvertTo-Milestone '11.0.0' | Should -Be '.NET 11.0 GA'
+    }
 }
 
 Describe 'Test-MilestoneMatch' {
