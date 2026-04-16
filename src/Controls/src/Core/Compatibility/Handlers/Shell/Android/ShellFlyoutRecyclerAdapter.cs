@@ -314,16 +314,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (Element is BaseShellItem baseShellItem)
 				{
-					if (baseShellItem.IsChecked)
-					{
-						VisualStateManager.GoToState(View, "Normal");
-						VisualStateManager.GoToState(View, "Selected");
-					}
-					else
-					{
-						VisualStateManager.GoToState(View, "Selected");
-						VisualStateManager.GoToState(View, "Normal");
-					}
+					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 				}
 			}
 

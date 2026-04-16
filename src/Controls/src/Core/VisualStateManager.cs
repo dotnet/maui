@@ -78,6 +78,9 @@ namespace Microsoft.Maui.Controls
 		/// <param name="name">The name of the visual state to transition to.</param>
 		/// <returns><see langword="true"/> if the transition was successful; otherwise, <see langword="false"/>.</returns>
 		public static bool GoToState(VisualElement visualElement, string name)
+			=> GoToState(visualElement, name, force: false);
+
+		internal static bool GoToState(VisualElement visualElement, string name, bool force)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
 			if (context is null)
@@ -99,14 +102,18 @@ namespace Microsoft.Maui.Controls
 
 			foreach (VisualStateGroup group in groups)
 			{
-				if (group.CurrentState?.Name == name)
+				// See if this group contains the new state
+				var target = group.GetState(name);
+				if (target == null)
+				{
+					continue;
+				}
+
+				if (group.CurrentState?.Name == name && !force)
 				{
 					// We're already in the target state; nothing else to do
 					return true;
 				}
-
-				// See if this group contains the new state
-				var target = group.GetState(name);
 				if (target == null)
 				{
 					continue;
