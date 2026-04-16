@@ -105,17 +105,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return modal;
 		}
 
-		static void DisconnectHandlersForModalPop(Page modal)
-		{
-			if (modal is null)
-			{
-				return;
-			}
-
-			// Disconnect the popped page's handler to break native wrapper retention chains
-			modal.Handler?.DisconnectHandler();
-		}
-
 		Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			EndEditing();
