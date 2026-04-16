@@ -206,7 +206,17 @@ steps:
         # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
         if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
           DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
+        elif [[ "${MAJOR}" -ge "26" ]]; then
+          # Pin the simulator version to match the selected Xcode version.
+          # Without -buildVersion, xcodebuild downloads the LATEST available simulator
+          # runtime, which may not match the selected Xcode's SDK (e.g., Xcode 26.2
+          # ships iphonesimulator SDK 23C53 but -downloadPlatform iOS may install
+          # iOS 26.3.1 which is incompatible, causing actool/ibtool failures).
+          # Include -architectureVariant universal (carried forward from the 26.0
+          # block) for x64 simulator support on Apple Silicon CI agents.
+          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
         else
+          # For Xcode < 26, iOS simulator version != Xcode version; download latest compatible
           DOWNLOAD_ARGS="-downloadPlatform iOS"
         fi
 
@@ -240,6 +250,14 @@ steps:
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
+
+    - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+      displayName: Show simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
 
     # Also install iOS 18.5 simulator for integration tests that require it
     - script: |
