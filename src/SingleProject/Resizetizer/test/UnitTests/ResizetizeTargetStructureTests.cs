@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public ResizetizeTargetStructureTests(ITestOutputHelper output)
 			: base(output)
 		{
-			_repoRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
+			_repoRoot = FindRepoRoot(Directory.GetCurrentDirectory());
 			_targetsFilePath = Path.Combine(_repoRoot, "src", "SingleProject", "Resizetizer", "src", "nuget", "buildTransitive", "Microsoft.Maui.Resizetizer.After.targets");
 			_taskAssemblyPath = Path.Combine(_repoRoot, ".buildtasks", "Microsoft.Maui.Resizetizer.dll");
 
@@ -51,11 +51,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		string CreateProject(bool includeSplashScreen)
 		{
-			var projectDir = Path.Combine(DestinationDirectory, Guid.NewGuid().ToString("N"));
+			var projectDirName = includeSplashScreen
+				? $"splash-{DateTime.UtcNow.Ticks}"
+				: $"fonts-{DateTime.UtcNow.Ticks}";
+			var projectDir = Path.Combine(DestinationDirectory, projectDirName);
 			Directory.CreateDirectory(projectDir);
 
 			var fontPath = Path.Combine(projectDir, "font.ttf");
-			File.WriteAllText(fontPath, "dummy-font", System.Text.Encoding.UTF8);
+			// ProcessMauiFonts copies files without validating font internals, so a placeholder file is sufficient.
+			File.WriteAllBytes(fontPath, Array.Empty<byte>());
 
 			var splashItem = string.Empty;
 			if (includeSplashScreen)
@@ -67,7 +71,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			var projectContents =
-$@"<Project DefaultTargets=""_ComputeAndroidAssetsPaths"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+$@"<Project DefaultTargets=""VerifyAssets"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <AndroidApplication>True</AndroidApplication>
@@ -85,6 +89,7 @@ $@"<Project DefaultTargets=""_ComputeAndroidAssetsPaths"" xmlns=""http://schemas
   <Target Name=""CheckSplashAssets"" DependsOnTargets=""_CollectMauiSplashScreens"">
     <WriteLinesToFile File=""$(IntermediateOutputPath)splash-count.txt"" Lines=""@(LibraryResourceDirectories->Count())"" Overwrite=""true"" />
   </Target>
+  <Target Name=""VerifyAssets"" DependsOnTargets=""_ComputeAndroidAssetsPaths;CheckSplashAssets"" />
 </Project>";
 
 			File.WriteAllText(Path.Combine(projectDir, "Test.proj"), projectContents, System.Text.Encoding.UTF8);
@@ -132,6 +137,22 @@ $@"<Project DefaultTargets=""_ComputeAndroidAssetsPaths"" xmlns=""http://schemas
 			var outputFile = Path.Combine(projectDir, "obj", fileName);
 			Assert.True(File.Exists(outputFile), $"Expected output file not found: {outputFile}");
 			return File.ReadAllText(outputFile).Trim();
+		}
+
+		static string FindRepoRoot(string startDirectory)
+		{
+			var current = new DirectoryInfo(startDirectory);
+
+			while (current is not null)
+			{
+				var marker = Path.Combine(current.FullName, "src", "SingleProject", "Resizetizer");
+				if (Directory.Exists(marker))
+					return current.FullName;
+
+				current = current.Parent;
+			}
+
+			throw new DirectoryNotFoundException($"Unable to locate repository root from: {startDirectory}");
 		}
 	}
 }

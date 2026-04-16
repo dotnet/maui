@@ -84,6 +84,8 @@
         <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
         <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
         <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
+        <_MauiIntermediateSplashStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateSplashStoryboard>
+        <_MauiIntermediateSplashPList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediateSplashPList>
         <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
@@ -450,15 +452,11 @@
             MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
-        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
-            <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
-            <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
-        </PropertyGroup>
         <CreatePartialInfoPlistTask
             Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             PlistName="MauiInfo.plist"
-            Storyboard="$(_MauiIntermediateStoryboard)"
+            Storyboard="$(_MauiIntermediateSplashStoryboard)"
         />
         <!-- Windows App SDK -->
         <GenerateSplashAssets
@@ -492,8 +490,8 @@
         </ItemGroup>
 
         <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
-            <_MauiSplashStoryboard Include="$(_MauiIntermediateSplashScreen)MauiSplash.storyboard" Condition="Exists('$(_MauiIntermediateSplashScreen)MauiSplash.storyboard')" />
-            <_MauiSplashPList Include="$(_MauiIntermediateSplashScreen)MauiInfo.plist" Condition="Exists('$(_MauiIntermediateSplashScreen)MauiInfo.plist')" />
+            <_MauiSplashStoryboard Include="$(_MauiIntermediateSplashStoryboard)" />
+            <_MauiSplashPList Include="$(_MauiIntermediateSplashPList)" />
             <_MauiSplashImages Include="@(_MauiSplashAssets)" Exclude="@(_MauiSplashStoryboard);@(_MauiSplashPList)" />
             <!-- Add the launch storyboard file -->
             <InterfaceDefinition Include="@(_MauiSplashStoryboard)" Link="%(Filename)%(Extension)" />
