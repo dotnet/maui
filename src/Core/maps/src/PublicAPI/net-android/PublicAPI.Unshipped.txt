@@ -1,1 +1,34 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.Maps.IMap.ClusterClicked(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> bool
+Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
+Microsoft.Maui.Maps.IMap.IsClusteringEnabled.get -> bool
+Microsoft.Maui.Maps.IMap.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
+Microsoft.Maui.Maps.IMap.LongClicked(Microsoft.Maui.Devices.Sensors.Location! position) -> void
+Microsoft.Maui.Maps.IMap.MapStyle.get -> string?
+Microsoft.Maui.Maps.IMap.MoveToRegion(Microsoft.Maui.Maps.MapSpan! region, bool animated) -> void
+Microsoft.Maui.Maps.IMap.ShowInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
+Microsoft.Maui.Maps.IMap.UserLocationUpdated(Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Maps.IMapElement.Clicked() -> void
+Microsoft.Maui.Maps.IMapElement.IsVisible.get -> bool
+Microsoft.Maui.Maps.IMapElement.ZIndex.get -> int
+Microsoft.Maui.Maps.IMapPin.ClusteringIdentifier.get -> string!
+Microsoft.Maui.Maps.IMapPin.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Maps.MapSpanTypeConverter
+Microsoft.Maui.Maps.MapSpanTypeConverter.MapSpanTypeConverter() -> void
+Microsoft.Maui.Maps.MoveToRegionRequest
+Microsoft.Maui.Maps.MoveToRegionRequest.Animated.get -> bool
+Microsoft.Maui.Maps.MoveToRegionRequest.MoveToRegionRequest(Microsoft.Maui.Maps.MapSpan? region, bool animated) -> void
+Microsoft.Maui.Maps.MoveToRegionRequest.Region.get -> Microsoft.Maui.Maps.MapSpan?
+override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapIsVisible(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapElementHandler.MapZIndex(Microsoft.Maui.Maps.Handlers.IMapElementHandler! handler, Microsoft.Maui.Maps.IMapElement! mapElement) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapHideInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapIsClusteringEnabled(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapMapStyle(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map) -> void
+static Microsoft.Maui.Maps.Handlers.MapHandler.MapShowInfoWindow(Microsoft.Maui.Maps.Handlers.IMapHandler! handler, Microsoft.Maui.Maps.IMap! map, object? arg) -> void
+static Microsoft.Maui.Maps.Handlers.MapPinHandler.MapImageSource(Microsoft.Maui.Maps.Handlers.IMapPinHandler! handler, Microsoft.Maui.Maps.IMapPin! mapPin) -> void
+static Microsoft.Maui.Maps.MapSpan.FromLocations(System.Collections.Generic.IEnumerable<Microsoft.Maui.Devices.Sensors.Location!>! locations) -> Microsoft.Maui.Maps.MapSpan!
+static Microsoft.Maui.Maps.Platform.MapExtensions.UpdateMapStyle(this Android.Gms.Maps.GoogleMap! googleMap, Microsoft.Maui.Maps.IMap! map) -> void

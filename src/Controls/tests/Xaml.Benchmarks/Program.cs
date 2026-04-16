@@ -18,6 +18,12 @@ public class LayoutBenchmark
 		var page = new UnitTests.Benchmark(XamlInflator.SourceGen);
 	}
 	[Benchmark]
+	public void SourceGen_NoLazyRD()
+	{
+		var page = new UnitTests.BenchmarkNoLazy(XamlInflator.SourceGen);
+	}
+
+	[Benchmark]
 	public void Runtime()
 	{
 		var page = new UnitTests.Benchmark(XamlInflator.Runtime);
