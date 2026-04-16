@@ -22,7 +22,7 @@ public class Issue34830 : _IssuesUITest
         VerifyScreenshot();
     }
 
-    [Test, Order(1)]
+    [Test, Order(2)]
     [Category(UITestCategories.FlyoutPage)]
     public void FlyoutPageWithLTRDirection()
     {
