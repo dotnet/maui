@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IPlatformViewHandler _renderer;
 		object _bindingContext;
-		readonly Shell _shell;
 		IElementDefinition _bindingContextResource;
 		IElementDefinition _viewResource;
 
@@ -21,7 +20,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal UIContainerCell(string cellId, View view, Shell shell, object context) : base(UITableViewCellStyle.Default, cellId)
 		{
-			_shell = shell;
 			View = view;
 			_viewResource = view as IElementDefinition;
 			_viewResource?.AddResourcesChangedListener(OnResourcesChanged);
@@ -113,7 +111,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (value == _bindingContext)
 				{
-					UpdateVisualState();
 					return;
 				}
 
@@ -129,9 +126,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bindingContextResource?.AddResourcesChangedListener(OnResourcesChanged);
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell2)
+				{
 					baseShell2.PropertyChanged += OnElementPropertyChanged;
-
-				UpdateVisualState();
+					UpdateVisualState();
+				}
 			}
 		}
 
