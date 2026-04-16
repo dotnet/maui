@@ -438,7 +438,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (oldRenderer.PlatformView is not null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
-							oldRenderer.DisconnectHandler();
+							if (oldRenderer.VirtualView is IView view)
+								view.DisconnectHandlers();
+							else
+								oldRenderer.DisconnectHandler();
 						}
 					}
 				}
@@ -522,7 +525,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_renderers.Remove(oldItem);
 					oldRenderer.ViewController.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
-					oldRenderer.DisconnectHandler();
+					if (oldRenderer.VirtualView is IView view)
+						view.DisconnectHandlers();
+					else
+						oldRenderer.DisconnectHandler();
 				}
 			}
 
@@ -575,7 +581,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_previousFrameHeader = frame;
 					if (_header.ViewController is ShellSectionRootHeader rootHeader)
 					{
-						rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+    					rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
 					}
 				}
 #endif
