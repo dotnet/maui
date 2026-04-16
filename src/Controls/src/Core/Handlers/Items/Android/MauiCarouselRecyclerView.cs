@@ -545,9 +545,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
-			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition && _initialized)
+			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
-				_gotoPosition = carouselPosition;
+				if (_initialized)
+					_gotoPosition = carouselPosition;
 
 				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
 			}
