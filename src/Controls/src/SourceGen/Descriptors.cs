@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
-			id: "MAUIX2015",
+			id: "MAUIX2017",
 			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
