@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 				modalWrapper.PresentingViewController is not null)
 			{
 				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
-				DisconnectHandlersForModalPop(modal);
+				DisposeHelpers.DisposeModalAndChildHandlers(modal);
 				return modal;
 			}
 
