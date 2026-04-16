@@ -179,8 +179,8 @@ If the skill reports missing prerequisites, provision the local SDK:
 1. **Provision the local SDK and workloads** - The `.dotnet/` folder must contain a fully provisioned .NET SDK with MAUI workloads. Run:
 
    ```bash
-   # Restore .NET SDK and workloads to .dotnet/ folder (recommended, uses Arcade infrastructure)
-   ./build.sh -restore
+   # Restore .NET SDK, build MAUI, and pack into .dotnet/ folder
+   ./build.sh -restore -pack
    ```
 
    **Verification**: After provisioning, verify the setup:
