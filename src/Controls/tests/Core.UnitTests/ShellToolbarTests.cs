@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task BackButtonBehaviorAccessibilityLabelPropagesToToolbar()
+		public async Task BackButtonBehaviorAccessibilityLabelPropagatesToToolbar()
 		{
 			var page = new ContentPage();
 			TestShell testShell = new TestShell(new ContentPage());

@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task NavigationPageBackButtonAccessibilityLabelPropagesToToolbar()
+		public async Task NavigationPageBackButtonAccessibilityLabelPropagatesToToolbar()
 		{
 			var window = new TestWindow();
 			IToolbarElement toolbarElement = window;
