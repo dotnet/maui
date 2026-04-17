@@ -102,6 +102,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// if the presenting VC is null that means the modal window was already dismissed
 			// this will usually happen as a result of swapping out the content on the window
 			// which is what was acting as the PresentingViewController
+			DisposeHelpers.DisposeModalAndChildHandlers(modal);
 			return modal;
 		}
 
