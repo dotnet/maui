@@ -23,6 +23,15 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var item in ToolbarItems)
 					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+
+				// Disconnect TitleView handler and clear native reference to break the
+				// reference chain that prevents the page from being garbage collected
+				// when Shell.TitleView and x:Name are used together.
+				if (TitleView?.Handler != null)
+					TitleView.Handler.DisconnectHandler();
+
+				if (oldHandler?.PlatformView is MauiToolbar mauiToolbar)
+					mauiToolbar.TitleView = null;
 			}
 		}
 

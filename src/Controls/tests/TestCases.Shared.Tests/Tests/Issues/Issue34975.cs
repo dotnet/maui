@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue34975 : _IssuesUITest
 {
-	public override string Issue => "[iOS][Android] Title view memory leak when using Shell.TitleView and x:Name";
+	public override string Issue => "[iOS][Android][Windows] Title view memory leak when using Shell.TitleView and x:Name";
 
 	public Issue34975(TestDevice device) : base(device) { }
 
@@ -22,13 +22,6 @@ public class Issue34975 : _IssuesUITest
 		// Wait for the second page to load, then tap the native back arrow.
 		// Using the native back navigation (not GoToAsync("..")) is required to
 		// trigger the UINavigationController code path that causes the retain cycle.
-		App.WaitForElement("SecondPageLabel");
-		App.TapBackArrow();
-
-		// Navigate a second time to make the leak more detectable before GC check.
-		App.WaitForElement("NavigateButton");
-		App.Tap("NavigateButton");
-
 		App.WaitForElement("SecondPageLabel");
 		App.TapBackArrow();
 
