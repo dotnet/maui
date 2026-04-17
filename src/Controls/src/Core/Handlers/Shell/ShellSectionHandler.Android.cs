@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers
         ShellContentFragmentAdapter? _adapter;
         TabbedViewManager? _tabbedViewManager;
         ShellSectionTabbedViewAdapter? _shellSectionAdapter;
+        ViewPagerPageChangeCallback? _pageChangedCallback;
 
         /// <summary>
         /// Gets the toolbar tracker from the parent ShellItemHandler.
@@ -229,9 +230,9 @@ namespace Microsoft.Maui.Controls.Handlers
             };
             _tabbedViewManager.SetElement(_shellSectionAdapter);
 
-            // Register page change callback
-            var pageChangedCallback = new ViewPagerPageChangeCallback(this);
-            _viewPager.RegisterOnPageChangeCallback(pageChangedCallback);
+            // Register page change callback (stored in field for cleanup in DisconnectHandler)
+            _pageChangedCallback = new ViewPagerPageChangeCallback(this);
+            _viewPager.RegisterOnPageChangeCallback(_pageChangedCallback);
 
             // Update TabLayout visibility based on item count
             UpdateTabLayoutVisibility();
@@ -409,6 +410,13 @@ namespace Microsoft.Maui.Controls.Handlers
             _tabbedViewManager = null;
             _shellSectionAdapter = null;
 
+            // Unregister page change callback
+            if (_pageChangedCallback is not null && _viewPager is not null)
+            {
+                _viewPager.UnregisterOnPageChangeCallback(_pageChangedCallback);
+                _pageChangedCallback = null;
+            }
+
             // Cleanup adapter
             _adapter = null;
             _viewPager?.Adapter = null;
@@ -459,7 +467,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (_adapter is null)
+            if (_adapter is null || _viewPager is null || _parentFragment is null || VirtualView is null || MauiContext is null)
             {
                 return;
             }
@@ -477,7 +485,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Replace with a fresh adapter to avoid stale state restoration
                 _viewPager?.Adapter = null;
 
-                _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment!, MauiContext!.MakeScoped(fragmentManager: _parentFragment!.ChildFragmentManager))
+                _adapter = new ShellContentFragmentAdapter(VirtualView, _parentFragment, MauiContext.MakeScoped(fragmentManager: _parentFragment.ChildFragmentManager))
                 {
                     Handler = this
                 };
@@ -657,6 +665,8 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly ShellSection _shellSection;
         readonly IMauiContext _mauiContext;
         IList<ShellContent>? _visibleItems;
+        long _itemIdCounter;
+        readonly Dictionary<ShellContent, long> _contentIds = new Dictionary<ShellContent, long>();
         IShellSectionController SectionController => (IShellSectionController)_shellSection;
 
         public ShellContentFragmentAdapter(ShellSection shellSection, Fragment parentFragment, IMauiContext mauiContext)
@@ -673,10 +683,24 @@ namespace Microsoft.Maui.Controls.Handlers
 
         /// <summary>
         /// Refreshes the visible items list. Called when items collection changes (add/remove/visibility).
+        /// Removes stale IDs for items no longer present so ContainsItem returns false,
+        /// causing FragmentStateAdapter to remove their fragments.
         /// </summary>
         public void OnItemsCollectionChanged()
         {
-            _visibleItems = SectionController.GetItems();
+            var newItems = SectionController.GetItems();
+
+            // Remove IDs for items that are no longer visible
+            var toRemove = new List<ShellContent>();
+            foreach (var kvp in _contentIds)
+            {
+                if (!newItems.Contains(kvp.Key))
+                    toRemove.Add(kvp.Key);
+            }
+            foreach (var item in toRemove)
+                _contentIds.Remove(item);
+
+            _visibleItems = newItems;
         }
 
         public override Fragment CreateFragment(int position)
@@ -690,13 +714,24 @@ namespace Microsoft.Maui.Controls.Handlers
             return new ShellContentNavigationFragment(shellContent, _mauiContext, Handler);
         }
 
+        /// <summary>
+        /// Returns a stable ID for each ShellContent. Uses an incrementing counter
+        /// with a dictionary to avoid hash collisions (GetHashCode is not guaranteed unique).
+        /// Same pattern as ShellSectionFragmentAdapter.GetItemId.
+        /// </summary>
         public override long GetItemId(int position)
         {
             if (_visibleItems is null || position >= _visibleItems.Count)
             {
                 return -1;
             }
-            return _visibleItems[position].GetHashCode();
+            var content = _visibleItems[position];
+            if (!_contentIds.TryGetValue(content, out var id))
+            {
+                id = ++_itemIdCounter;
+                _contentIds[content] = id;
+            }
+            return id;
         }
 
         public override bool ContainsItem(long itemId)
@@ -705,12 +740,10 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 return false;
             }
-            foreach (var item in _visibleItems)
+            foreach (var kvp in _contentIds)
             {
-                if (item.GetHashCode() == itemId)
-                {
+                if (kvp.Value == itemId && _visibleItems.Contains(kvp.Key))
                     return true;
-                }
             }
             return false;
         }
@@ -853,7 +886,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _rootPage = ((IShellContentController)_shellContent)?.GetOrCreateContent();
             if (_rootPage is null)
             {
-                return null!;
+                return new FrameLayout(inflater.Context!);
             }
 
             // Subscribe to navigation events EARLY - before anything else
