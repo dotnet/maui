@@ -303,5 +303,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(toolbar.IsVisible);
 		}
+		[Fact]
+		public void BackButtonBehaviorAccessibilityLabelSet()
+		{
+			var backButtonBehavior = new BackButtonBehavior()
+			{
+				AccessibilityLabel = "Navigate Back"
+			};
+
+			Assert.Equal("Navigate Back", backButtonBehavior.AccessibilityLabel);
+		}
+
+		[Fact]
+		public void BackButtonBehaviorAccessibilityLabelDefaultIsNull()
+		{
+			var backButtonBehavior = new BackButtonBehavior();
+			Assert.Null(backButtonBehavior.AccessibilityLabel);
+		}
+
+		[Fact]
+		public async Task BackButtonBehaviorAccessibilityLabelPropagesToToolbar()
+		{
+			var page = new ContentPage();
+			TestShell testShell = new TestShell(new ContentPage());
+			await testShell.Navigation.PushAsync(page);
+
+			var backButtonBehavior = new BackButtonBehavior()
+			{
+				AccessibilityLabel = "Return to Home"
+			};
+
+			Shell.SetBackButtonBehavior(page, backButtonBehavior);
+			Assert.Equal("Return to Home", testShell.Toolbar.BackButtonAccessibilityLabel);
+		}
+
+		[Fact]
+		public async Task BackButtonBehaviorAccessibilityLabelUpdatesOnPropertyChanged()
+		{
+			var page = new ContentPage();
+			TestShell testShell = new TestShell(new ContentPage());
+			var backButtonBehavior = new BackButtonBehavior()
+			{
+				AccessibilityLabel = "Initial"
+			};
+
+			Shell.SetBackButtonBehavior(page, backButtonBehavior);
+			await testShell.Navigation.PushAsync(page);
+
+			Assert.Equal("Initial", testShell.Toolbar.BackButtonAccessibilityLabel);
+
+			backButtonBehavior.AccessibilityLabel = "Updated";
+			Assert.Equal("Updated", testShell.Toolbar.BackButtonAccessibilityLabel);
+		}
 	}
 }
