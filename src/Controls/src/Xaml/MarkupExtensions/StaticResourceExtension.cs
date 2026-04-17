@@ -36,8 +36,12 @@ namespace Microsoft.Maui.Controls.Xaml
 					var rootObjectProvider = (IRootObjectProvider)serviceProvider.GetService(typeof(IRootObjectProvider));
 					var root = rootObjectProvider.RootObject;
 					ehandler.Invoke((ex, XamlFilePathAttribute.GetFilePathForObject(root)));
+					// During Hot Reload the IDE sets ExceptionHandler2 to collect errors.
+					// Return null so the page loads with degraded styling instead of crashing.
+					// On iOS, throwing here propagates through UIKit lifecycle callbacks during
+					// Shell item setup, corrupting Shell state (#35018).
+					return null;
 				}
-				// Throw an exception when the key is not found
 				throw ex;
 			}
 
