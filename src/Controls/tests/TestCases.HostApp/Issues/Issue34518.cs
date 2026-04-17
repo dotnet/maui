@@ -12,7 +12,6 @@ public class Issue34518 : ContentPage
 
 		var webViewGreen = new WebView
 		{
-			AutomationId = "WebViewGreen",
 			Source = htmlSource,
 			BackgroundColor = Colors.Green,
 			HeightRequest = 150,
@@ -26,7 +25,7 @@ public class Issue34518 : ContentPage
 			Spacing = 0,
 			Children =
 			{
-				new Label { Text = "WebView Background should be Green:", Margin = new Thickness(4) },
+				new Label { AutomationId = "WebViewGreen", Text = "WebView Background should be Green:", Margin = new Thickness(4) },
 				webViewGreen
 			}
 		};
