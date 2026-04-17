@@ -145,6 +145,11 @@
             
             <!-- Two-way binding: Entry.Text (string) to decimal property via C# expression -->
             <Entry x:Name="twoWayDecimalEntry" Text="{Price}" />
+            
+            <!-- Nested struct property binding: Thickness.Top via C# expression.
+                 Source gen emits null setter (one-way) because Thickness is a value type,
+                 avoiding CS1612 from `source.Margin.Top = value`. -->
+            <Grid x:Name="thicknessSubGrid" HeightRequest="{Margin.Top}" />
         </VerticalStackLayout>
         
         <!-- CDATA EXPRESSION TESTS -->
