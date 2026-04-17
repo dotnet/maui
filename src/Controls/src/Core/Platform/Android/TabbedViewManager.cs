@@ -36,7 +36,7 @@ internal class TabbedViewManager
 {
     Fragment _tabLayoutFragment;
     ColorStateList _originalTabTextColors;
-    ColorStateList _orignalTabIconColors;
+    ColorStateList _originalTabIconColors;
     ColorStateList _newTabTextColors;
     ColorStateList _newTabIconColors;
     FragmentManager _fragmentManager;
@@ -481,6 +481,7 @@ internal class TabbedViewManager
 
                 UpdateTabIcons();
 #pragma warning disable CS0618 // Type or member is obsolete
+                tabs.RemoveOnTabSelectedListener(_listeners);
                 tabs.AddOnTabSelectedListener(_listeners);
 #pragma warning restore CS0618 // Type or member is obsolete
             }
@@ -986,9 +987,9 @@ internal class TabbedViewManager
             return null;
         }
 
-        if (_orignalTabIconColors is null)
+        if (_originalTabIconColors is null)
         {
-            _orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
+            _originalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
         }
 
         Color barItemColor = BarItemColor;
@@ -996,7 +997,7 @@ internal class TabbedViewManager
 
         if (barItemColor is null && barSelectedItemColor is null)
         {
-            return _orignalTabIconColors;
+            return _originalTabIconColors;
         }
 
         if (_newTabIconColors is not null)

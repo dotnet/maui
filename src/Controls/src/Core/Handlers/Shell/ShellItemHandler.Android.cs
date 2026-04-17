@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Android.OS;
 using Android.Views;
 using AndroidX.CoordinatorLayout.Widget;
@@ -298,10 +297,15 @@ namespace Microsoft.Maui.Controls.Handlers
             // That causes SetSelectedTab on the old BNV, firing OnNavigationItemSelected which
             // poisons the old ShellItem's CurrentItem via ProposeSection.
             _switchingShellItem = true;
-            SetVirtualView(newItem);
-            _switchingShellItem = false;
-
-            _preserveFragmentResources = false;
+            try
+            {
+                SetVirtualView(newItem);
+            }
+            finally
+            {
+                _switchingShellItem = false;
+                _preserveFragmentResources = false;
+            }
 
             // Rebuild ViewPager2 adapter for new ShellItem's sections
             SetupViewPagerAdapter();
@@ -638,37 +642,15 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Handles the back button press. Returns true if navigation was handled, false otherwise.
-        /// Back navigation is delegated to the current section's StackNavigationManager.
+        /// Handles the back button press by delegating to Shell's full navigation pipeline.
+        /// Shell.SendBackButtonPressed() handles BackButtonBehavior commands, page overrides,
+        /// navigation stack pops, modal dismissal, and ShellNavigatingEventArgs cancellation.
+        /// Returns true if Shell handled it, false if system should handle (app exit).
         /// </summary>
         internal bool OnBackButtonPressed()
         {
-            if (_shellSection is null)
-            {
-                return false;
-            }
-
-            var stack = _shellSection.Stack;
-
-            // If we're at the root page, don't handle back - let the system handle it
-            if (stack.Count <= 1)
-            {
-                return false;
-            }
-
-            // We have pages in the stack, so we can pop
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _shellSection.Navigation.PopAsync();
-                }
-                catch (Exception)
-                {
-                }
-            });
-
-            return true; // We handled the back press
+            var shell = VirtualView?.FindParentOfType<Shell>();
+            return shell?.SendBackButtonPressed() ?? false;
         }
 
         #endregion Navigation Support
@@ -1156,9 +1138,16 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         class ShellItemWrapperFragment : Fragment
         {
-            readonly ShellItemHandler _handler;
+            readonly ShellItemHandler? _handler;
             CoordinatorLayout? _rootLayout;
             ShellBackPressedCallback? _backPressedCallback;
+
+            // Default constructor required by Android's FragmentManager for fragment restoration.
+            // Without this, FragmentManager.instantiate() crashes on process-death restoration.
+            public ShellItemWrapperFragment()
+            {
+                _handler = null;
+            }
 
             public ShellItemWrapperFragment(ShellItemHandler handler)
             {
@@ -1169,6 +1158,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
             {
+                // If restored without proper handler reference, return empty view.
+                // The Shell infrastructure will recreate proper fragments after reconnecting.
+                if (_handler is null)
+                {
+                    return new global::Android.Widget.FrameLayout(inflater.Context!);
+                }
+
                 // Inflate from XML layout — consistent with NavigationViewHandler/FlyoutViewHandler pattern
                 var rootView = inflater.Inflate(Resource.Layout.shellitemlayout, container, false)
                     ?? throw new InvalidOperationException("shellitemlayout inflation failed");
@@ -1195,8 +1191,14 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 base.OnViewCreated(view, savedInstanceState);
 
+                // Skip setup if restored without handler (parameterless constructor path)
+                if (_handler is null)
+                {
+                    return;
+                }
+
                 // Setup back button handling
-                _backPressedCallback = new ShellBackPressedCallback(_handler);
+                _backPressedCallback = new ShellBackPressedCallback(_handler, this);
                 RequireActivity().OnBackPressedDispatcher.AddCallback(ViewLifecycleOwner, _backPressedCallback);
 
                 // Setup the shared toolbar
@@ -1255,20 +1257,33 @@ namespace Microsoft.Maui.Controls.Handlers
             sealed class ShellBackPressedCallback : AndroidX.Activity.OnBackPressedCallback
             {
                 readonly ShellItemHandler _handler;
+                readonly Fragment _fragment;
 
-                public ShellBackPressedCallback(ShellItemHandler handler) : base(true)
+                public ShellBackPressedCallback(ShellItemHandler handler, Fragment fragment) : base(true)
                 {
                     _handler = handler;
+                    _fragment = fragment;
                 }
 
                 public override void HandleOnBackPressed()
                 {
-                    // Let the handler try to handle the back press
+                    // Route through Shell's full back navigation pipeline.
+                    // Shell.SendBackButtonPressed() handles:
+                    //   - BackButtonBehavior.Command execution
+                    //   - Page.OnBackButtonPressed() overrides
+                    //   - Navigation stack pops (via Shell.OnBackButtonPressed)
+                    //   - Modal stack dismissal
+                    //   - ShellNavigatingEventArgs cancellation
+                    // This matches the old renderer behavior where the lifecycle chain
+                    // (Activity → Window → Shell) naturally invoked the full pipeline.
                     if (!_handler.OnBackButtonPressed())
                     {
-                        // Handler didn't handle it (we're at root), let system handle it
+                        // Shell didn't handle it (at root, no stack to pop, not cancelled).
+                        // Forward to system by temporarily disabling this callback so the
+                        // dispatcher falls through to the next handler in the chain
+                        // (e.g., the Activity's default that finishes the app).
                         this.Enabled = false;
-                        // The system will handle app exit
+                        _fragment.RequireActivity().OnBackPressedDispatcher.OnBackPressed();
                         this.Enabled = true;
                     }
                 }
@@ -1389,7 +1404,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return observableFragment.Fragment;
             }
 
-            throw new InvalidOperationException($"ShellSectionRenderer for {section.Title} is not an IShellObservableFragment");
+            throw new InvalidOperationException($"ShellSectionHandler for {section.Title} is not an IShellObservableFragment");
         }
 
         public IShellSectionRenderer? GetRenderer(int position)
