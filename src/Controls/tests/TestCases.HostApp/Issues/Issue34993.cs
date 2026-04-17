@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34993, "RadioButton background remains visible after being set to null",
+[Issue(IssueTracker.Github, 34993, "RadioButton still shows gradient after background changed to solid color brush",
     PlatformAffected.Android | PlatformAffected.UWP)]
 public class Issue34993 : ContentPage
 {
@@ -27,12 +27,12 @@ public class Issue34993 : ContentPage
 
         var resetButton = new Button
         {
-            Text = "Set Background to null",
-            AutomationId = "ResetBackgroundButton",
+            Text = "Set Background to Blue",
+            AutomationId = "ChangeBackgroundButton",
         };
         resetButton.Clicked += (s, e) =>
         {
-            radioButton.Background = null;
+            radioButton.Background = new SolidColorBrush(Colors.Blue);
         };
 
         Content = new VerticalStackLayout

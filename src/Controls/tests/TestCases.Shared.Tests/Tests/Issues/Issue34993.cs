@@ -8,14 +8,14 @@ public class Issue34993 : _IssuesUITest
 {
     public Issue34993(TestDevice testDevice) : base(testDevice) { }
 
-    public override string Issue => "RadioButton background remains visible after being set to null";
+    public override string Issue => "RadioButton still shows gradient after background changed to solid color brush";
 
     [Test]
     [Category(UITestCategories.RadioButton)]
-    public void RadioButtonBackgroundClearsWhenSetToNull()
+    public void VerifyRadioButtonBackgroundUpdatesFromGradientToSolidColor()
     {
-        App.WaitForElement("BackgroundRadioButton");
-        App.Tap("ResetBackgroundButton");
+        App.WaitForElement("ChangeBackgroundButton");
+        App.Tap("ChangeBackgroundButton");
         VerifyScreenshot();
     }
 }
