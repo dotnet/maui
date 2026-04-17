@@ -1,0 +1,123 @@
+name: PR Review Queue
+
+on:
+  schedule:
+    - cron: "0 8 * * 1-5"  # Weekdays at 8:00 UTC
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '.github/workflows/pr-review-queue.yml'
+      - '.github/skills/find-reviewable-pr/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-review-queue-${{ github.event_name }}-${{ github.event.pull_request.number || 'scheduled' }}
+  cancel-in-progress: true
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      repository-projects: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate PR review queue
+        id: generate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 \
+            -Category all \
+            -OutputFormat markdown \
+            > pr-review-queue-raw.md 2>pr-query-errors.txt
+          rc=$?
+          set -e
+
+          if [ $rc -ne 0 ]; then
+            echo "::error::Query script failed"
+            cat pr-query-errors.txt
+            exit 1
+          fi
+
+          # Strip Write-Host progress lines — keep only markdown
+          sed -n '/^<!-- PR_REVIEW_QUEUE_BEGIN -->/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
+
+          if [ ! -s pr-review-queue-body.md ]; then
+            echo "::error::Query produced empty output"
+            cat pr-query-errors.txt
+            exit 1
+          fi
+
+          echo "Generated report:"
+          head -20 pr-review-queue-body.md
+
+      - name: Close previous queue issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list \
+            --repo ${{ github.repository }} \
+            --search '"[PR Review Queue]" in:title' \
+            --state open \
+            --json number \
+            --jq '.[].number' | \
+          xargs -I{} gh issue close {} --repo ${{ github.repository }} --reason "not planned" 2>/dev/null || true
+
+      - name: Create queue issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo ${{ github.repository }} \
+            --title "[PR Review Queue] $(date -u '+%Y-%m-%d')" \
+            --body-file pr-review-queue-body.md \
+            --label "report" \
+            --label "s/triaged"
+
+  # Dry-run on PRs: validate the script works without creating issues
+  validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PR review queue script
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          pwsh .github/skills/find-reviewable-pr/scripts/query-reviewable-prs.ps1 \
+            -Category all \
+            -OutputFormat markdown \
+            > pr-review-queue-raw.md 2>pr-query-errors.txt
+          rc=$?
+          set -e
+
+          if [ $rc -ne 0 ]; then
+            echo "::error::Query script failed"
+            cat pr-query-errors.txt
+            exit 1
+          fi
+
+          sed -n '/^<!-- PR_REVIEW_QUEUE_BEGIN -->/,$p' pr-review-queue-raw.md > pr-review-queue-body.md
+
+          if [ ! -s pr-review-queue-body.md ]; then
+            echo "::error::Query produced empty output"
+            cat pr-query-errors.txt
+            exit 1
+          fi
+
+          echo "✅ Validation passed — report preview:"
+          cat pr-review-queue-body.md
