@@ -124,7 +124,7 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 			await InvokeOnMainThreadAsync(() =>
 			{
 #if ANDROID
-				// Note: handler.DatePickerDialog may be null if ResetDialog() was called
+				// Note: handler.DatePickerDialog may be null if DestroyDialog() was called
 				// during the initial mapper pass (PR #33687), but setting VirtualView.Date
 				// fires the DateSelected event regardless of dialog state.
 				handler.VirtualView.Date = newDate;
