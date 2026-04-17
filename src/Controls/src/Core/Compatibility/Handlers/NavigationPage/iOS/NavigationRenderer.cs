@@ -1123,6 +1123,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
+			var currentPage = NavPage?.CurrentPage;
+			if (currentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
 			_uiRequestedPop = true;
 			return true;
 		}
