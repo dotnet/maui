@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue99999 : _IssuesUITest
+public class Issue35005 : _IssuesUITest
 {
-	public Issue99999(TestDevice device) : base(device) { }
+	public Issue35005(TestDevice device) : base(device) { }
 
 	public override string Issue => "SearchHandler Query not shown on iOS/MacCatalyst at load time";
 
@@ -15,7 +15,7 @@ public class Issue99999 : _IssuesUITest
 	public void SearchHandlerQueryShouldBeVisibleOnLoad()
 	{
 		// Wait for the page to load
-		App.WaitForElement("Issue99999StatusLabel");
+		App.WaitForElement("Issue35005StatusLabel");
 
 		// Get the search bar element
 		var searchHandler = App.GetShellSearchHandler();

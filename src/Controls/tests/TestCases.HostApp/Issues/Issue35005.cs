@@ -1,11 +1,11 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 99999, "SearchHandler Query not shown on iOS/MacCatalyst at load time", PlatformAffected.iOS)]
-public class Issue99999 : Shell
+[Issue(IssueTracker.Github, 35005, "SearchHandler Query not shown on iOS/MacCatalyst at load time", PlatformAffected.iOS)]
+public class Issue35005 : Shell
 {
-	public Issue99999()
+	public Issue35005()
 	{
-		var contentPage = new _99999SearchPage();
+		var contentPage = new Issue35005SearchPage();
 		Items.Add(new ShellContent
 		{
 			Title = "Search Test",
@@ -13,11 +13,11 @@ public class Issue99999 : Shell
 		});
 	}
 
-	public class _99999SearchPage : ContentPage
+	public class Issue35005SearchPage : ContentPage
 	{
 		public const string PreSetQuery = "InitialQuery";
 
-		public _99999SearchPage()
+		public Issue35005SearchPage()
 		{
 			Title = "Search Test";
 
@@ -25,14 +25,14 @@ public class Issue99999 : Shell
 			{
 				Placeholder = "Search...",
 				Query = PreSetQuery,
-				AutomationId = "Issue99999SearchHandler"
+				AutomationId = "Issue35005SearchHandler"
 			};
 
 			Shell.SetSearchHandler(this, searchHandler);
 
 			var statusLabel = new Label
 			{
-				AutomationId = "Issue99999StatusLabel",
+				AutomationId = "Issue35005StatusLabel",
 				Text = "Page Loaded"
 			};
 
