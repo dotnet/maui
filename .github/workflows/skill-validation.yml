@@ -165,8 +165,9 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          PR_NUMBER=${{ github.event.issue.number }}
+          PR_NUMBER="$ISSUE_NUMBER"
           PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}")
           HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
           HEAD_REPO=$(echo "$PR_DATA" | jq -r '.head.repo.full_name')
@@ -417,9 +418,10 @@ jobs:
         shell: pwsh
         env:
           SKILL_DIRS: ${{ steps.changed.outputs.skill_dirs }}
+          EVAL_ALL: ${{ steps.changed.outputs.eval_all }}
         run: |
           $entries = @()
-          $evalAll = "${{ steps.changed.outputs.eval_all }}" -eq "true"
+          $evalAll = $env:EVAL_ALL -eq "true"
 
           if ($evalAll) {
             Write-Host "Workflow changes detected - evaluating all skills with tests"
@@ -880,7 +882,8 @@ jobs:
                 for (const verdict of allVerdicts) {
                   const icon = verdict.passed ? '✅' : '❌';
                   const reason = (verdict.reason || '').replace(/\|/g, '\\|');
-                  lines.push(`${icon} **${verdict.skillName}**: ${reason}`);
+                  const safeSkillNameSummary = (verdict.skillName || '').replace(/\|/g, '\\|');
+                  lines.push(`${icon} **${safeSkillNameSummary}**: ${reason}`);
                   lines.push('');
                 }
 
@@ -948,7 +951,7 @@ jobs:
                       lines.push(`<details>`);
                       lines.push(`<summary>📊 ${skillName} / ${scenarioName}</summary>`);
                       lines.push('');
-                      lines.push(mdContent);
+                      lines.push(mdContent.replace(/```/g, '` ` `').replace(/<\/details>/gi, '&lt;/details&gt;'));
                       lines.push('');
                       lines.push('</details>');
                       lines.push('');
