@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(reference.IsAlive, "RadioButton should not be alive");
 
 		}
-		
+
 		[Fact]
 		public void GroupNullSelectionClearsAnySelection()
 		{
@@ -408,6 +408,88 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(radioButton1.IsChecked);
 			Assert.False(radioButton2.IsChecked);
 			Assert.True(radioButton3.IsChecked);
+		}
+
+		[Fact]
+		public void RadioButtonGroupWorksWithContentViewControlTemplate()
+		{
+			// ContentView with ControlTemplate containing RadioButton
+			// The ControlTemplate is applied inline (before ContentView is added to parent layout)
+			var groupName = "Test1";
+			var layout = new VerticalStackLayout();
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
+
+			// Create ContentView with inline ControlTemplate (RadioButton inside Border)
+			// This mimics how XAML inline ControlTemplate works - template is applied
+			// before ContentView is added to the parent layout
+			var radioButton1 = new RadioButton { Content = "Option 1", Value = "opt1", GroupName = groupName };
+			var radioButton2 = new RadioButton { Content = "Option 2", Value = "opt2", GroupName = groupName };
+
+			var border1 = new Border { Content = radioButton1 };
+			var border2 = new Border { Content = radioButton2 };
+
+			var contentView1 = new ContentView();
+			var contentView2 = new ContentView();
+
+			// Apply ControlTemplate by simulating: template root added as logical child BEFORE parent is set
+			((IControlTemplated)contentView1).AddLogicalChild(border1);
+			((IControlTemplated)contentView2).AddLogicalChild(border2);
+
+			// Now add ContentViews to layout (parent set AFTER template already applied)
+			layout.Add(contentView1);
+			layout.Add(contentView2);
+
+			// Initially, neither button should be checked (no IsChecked="True" was set)
+			Assert.False(radioButton1.IsChecked);
+			Assert.False(radioButton2.IsChecked);
+			Assert.Null(layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			// Check radio button 1 - only rb1 should be checked and SelectedValue updated
+			radioButton1.IsChecked = true;
+			Assert.True(radioButton1.IsChecked);
+			Assert.False(radioButton2.IsChecked);
+			Assert.Equal("opt1", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+
+			// Check radio button 2 - radio button 1 should be unchecked and SelectedValue updated
+			radioButton2.IsChecked = true;
+			Assert.False(radioButton1.IsChecked);
+			Assert.True(radioButton2.IsChecked);
+			Assert.Equal("opt2", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
+		}
+
+		[Fact]
+		public void RadioButtonGroupAutoChecksMatchingButtonInContentViewWhenSelectedValuePreset()
+		{
+			// Verifies the positive auto-check path for the ContentView/ControlTemplate scenario
+			// when SelectedValue IS explicitly set on the group, a RadioButton
+			// added through a ContentView ControlTemplate with a matching Value must be auto-checked.
+			var groupName = "Test2";
+			var layout = new VerticalStackLayout();
+			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
+
+			// Pre-set SelectedValue BEFORE adding buttons (simulates binding from ViewModel)
+			layout.SetValue(RadioButtonGroup.SelectedValueProperty, "opt2");
+
+			var radioButton1 = new RadioButton { Content = "Option 1", Value = "opt1", GroupName = groupName };
+			var radioButton2 = new RadioButton { Content = "Option 2", Value = "opt2", GroupName = groupName };
+
+			var border1 = new Border { Content = radioButton1 };
+			var border2 = new Border { Content = radioButton2 };
+
+			var contentView1 = new ContentView();
+			var contentView2 = new ContentView();
+
+			// Apply ControlTemplate before adding to layout
+			((IControlTemplated)contentView1).AddLogicalChild(border1);
+			((IControlTemplated)contentView2).AddLogicalChild(border2);
+
+			layout.Add(contentView1);
+			layout.Add(contentView2);
+
+			// RadioButton whose Value matches the pre-set SelectedValue must be auto-checked
+			Assert.False(radioButton1.IsChecked);
+			Assert.True(radioButton2.IsChecked);
+			Assert.Equal("opt2", layout.GetValue(RadioButtonGroup.SelectedValueProperty));
 		}
 	}
 }

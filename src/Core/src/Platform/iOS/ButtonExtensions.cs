@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -31,7 +32,19 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
 			if (button.TextColor is null)
+			{
+				// Only clear explicit overrides when attached to a window.
+				// Skipping during initial render prevents clearing Appearance-proxy colors.
+				if (platformButton.Window is UIWindow window)
+				{
+					platformButton.SetTitleColor(null, UIControlState.Normal);
+					platformButton.SetTitleColor(null, UIControlState.Highlighted);
+					platformButton.SetTitleColor(null, UIControlState.Disabled);
+					platformButton.TintColor = window.TintColor;
+				}
+
 				return;
+			}
 
 			var color = button.TextColor.ToPlatform();
 
@@ -40,6 +53,24 @@ namespace Microsoft.Maui.Platform
 			platformButton.SetTitleColor(color, UIControlState.Disabled);
 
 			platformButton.TintColor = color;
+		}
+
+		// TODO: Make this public in .NET 11
+		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+		{
+			// Remove previous background gradient layer if any
+			platformButton.RemoveBackgroundLayer();
+
+			if (paint.IsNullOrEmpty())
+			{
+				// Reset to clear background for buttons when paint is null.
+				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
+				platformButton.BackgroundColor = UIColor.Clear;
+				return;
+			}
+
+			// Delegate to the standard view background update
+			ViewExtensions.UpdateBackground(platformButton, paint);
 		}
 
 		public static void UpdateCharacterSpacing(this UIButton platformButton, ITextStyle textStyle)

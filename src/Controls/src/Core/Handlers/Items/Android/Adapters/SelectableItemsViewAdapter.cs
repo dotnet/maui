@@ -192,9 +192,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SelectableClicked(object sender, int adapterPosition)
 		{
 			if (adapterPosition >= 0 && adapterPosition < ItemsSource?.Count)
-			{
-				UpdateMauiSelection(adapterPosition);
-			}
+    		{
+        		UpdateMauiSelection(adapterPosition);
+        		// Unconditionally sync visual state for Single mode.
+        		// Handles value-equal items where PropertyChanged is suppressed.
+        		if (ItemsView.SelectionMode == SelectionMode.Single && sender is SelectableViewHolder clickedHolder)
+        		{
+            		ClearPlatformSelection();
+            		clickedHolder.IsSelected = true;
+        		}
+    		}
 		}
 
 		void UpdateMauiSelection(int adapterPosition)
