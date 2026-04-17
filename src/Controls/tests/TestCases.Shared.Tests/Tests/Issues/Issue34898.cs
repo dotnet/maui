@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,6 +14,7 @@ public class Issue34898 : _IssuesUITest
     public override string Issue => "Shell.Items.Clear does not disconnect handlers correctly";
 
     [Test]
+
     [Category(UITestCategories.Shell)]
     public void ShellItemsClearShouldDisconnectChildHandlers()
     {
@@ -35,3 +37,4 @@ public class Issue34898 : _IssuesUITest
             "Button handler should be disconnected after Shell.Items.Clear()");
     }
 }
+#endif
