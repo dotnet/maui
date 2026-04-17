@@ -306,6 +306,21 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(item));
 			}
 
+			// If a group with the same name already exists (e.g., set by an implicit style),
+			// remove it so the explicitly-added group takes precedence.
+			if (!string.IsNullOrEmpty(item.Name))
+			{
+				for (int i = _internalList.Count - 1; i >= 0; i--)
+				{
+					if (string.Equals(_internalList[i].Name, item.Name, StringComparison.Ordinal))
+					{
+						_internalList[i].StatesChanged -= ValidateAndNotify;
+						_internalList.Remove(_internalList[i]);
+						break;
+					}
+				}
+			}
+
 			_internalList.Add(item);
 
 			item.StatesChanged += ValidateAndNotify;
