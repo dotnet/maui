@@ -577,7 +577,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateUseLargeTitles();
 			}
-			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 			{
 				var pack = (ParentingViewController)TopViewController;
 				pack?.UpdateTitleArea(pack.Child);
@@ -1637,7 +1637,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
-				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
@@ -1801,10 +1801,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
 					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
-					if (!string.IsNullOrEmpty(backButtonTitle))
-					{
-						barButtonItem.Title = backButtonTitle;
-					}
+					barButtonItem.Title = backButtonTitle ?? title;
 					if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
 					{
 						barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;

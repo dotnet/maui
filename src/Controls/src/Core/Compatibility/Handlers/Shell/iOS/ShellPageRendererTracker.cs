@@ -616,6 +616,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							{
 								NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
 							}
+							else
+							{
+								NavigationItem.LeftBarButtonItem.AccessibilityLabel = null;
+							}
 						}
 					}
 					else
@@ -677,9 +681,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 								{
 									barButtonItem.AccessibilityLabel = accessibilityLabel;
 								}
+								else
+								{
+									barButtonItem.AccessibilityLabel = null;
+								}
 							}
 							else if (previousNavItem.BackBarButtonItem != null)
 							{
+								previousNavItem.BackBarButtonItem.AccessibilityLabel = null;
 								previousNavItem.BackBarButtonItem = null;
 							}
 						}
