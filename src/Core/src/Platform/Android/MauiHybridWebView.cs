@@ -34,16 +34,16 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnSizeChanged(width, height, oldWidth, oldHeight);
 
-			// Update clip bounds to match the actual size once layout is complete.
 			if (width > 0 && height > 0)
 			{
-				_clipRect.Set(0, 0, width, height);
-				ClipBounds = _clipRect;
+				// Remove clip bounds once layout is complete and the view has its
+				// correct size. Setting null instead of exact bounds allows visual
+				// effects like shadows to render outside the view area.
+				ClipBounds = null;
 			}
 			else
 			{
-				// Reset to empty rect when the view becomes zero-sized or hidden,
-				// to avoid stale non-zero clip bounds.
+				// Re-apply empty clip bounds when the view becomes zero-sized or hidden.
 				_clipRect.Set(0, 0, 0, 0);
 				ClipBounds = _clipRect;
 			}
