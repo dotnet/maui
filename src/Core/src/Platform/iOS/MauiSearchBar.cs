@@ -16,12 +16,10 @@ namespace Microsoft.Maui.Platform
 
 		public MauiSearchBar(NSCoder coder) : base(coder)
 		{
-			InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		public MauiSearchBar(CGRect frame) : base(frame)
 		{
-			InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		protected MauiSearchBar(NSObjectFlag t) : base(t)

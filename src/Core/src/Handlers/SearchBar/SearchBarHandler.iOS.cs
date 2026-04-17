@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Connect(this, VirtualView, platformView);
 
 			base.ConnectHandler(platformView);
+
+			// Prevent UIKit double safe-area inset (#34551)
+			platformView.InsetsLayoutMarginsFromSafeArea = false;
 		}
 
 		protected override void DisconnectHandler(MauiSearchBar platformView)
