@@ -36,5 +36,18 @@ public class Issue34271 : _IssuesUITest
 		Assert.That(rectAfterPicker.Y, Is.EqualTo(rectBeforePicker.Y).Within(5),
 			$"CollectionView scroll position reset after Picker dismiss. " +
 			$"Before: Y={rectBeforePicker.Y}, After: Y={rectAfterPicker.Y}");
+
+		// Trigger layout recomputation via InvalidateMeasure — forces UIKit to
+		// recompute contentSize using estimated item sizes, which can silently
+		// clamp contentOffset when varying-height items cause a large estimated/actual gap.
+		App.Tap("TriggerLayoutButton");
+
+		// Verify scroll position is still preserved after layout recomputation
+		App.WaitForElement("Proboscis Monkey");
+		var rectAfterLayout = App.WaitForElement("Proboscis Monkey").GetRect();
+
+		Assert.That(rectAfterLayout.Y, Is.EqualTo(rectBeforePicker.Y).Within(5),
+			$"CollectionView scroll position reset after layout recomputation. " +
+			$"Before: Y={rectBeforePicker.Y}, After: Y={rectAfterLayout.Y}");
 	}
 }
