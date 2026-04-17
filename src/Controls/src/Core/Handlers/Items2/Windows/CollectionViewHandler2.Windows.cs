@@ -161,14 +161,11 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
-		var oldListViewBase = platformView;
-
-		if (oldListViewBase is not null)
+		if (platformView is not null)
 		{
-			oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
-			oldListViewBase.Loaded -= OnPlatformViewLoaded;
-			oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
-			oldListViewBase.Loaded -= OnPlatformViewLoaded;
+			platformView.SelectionChanged -= PlatformSelectionChanged;
+			platformView.Loaded -= OnPlatformViewLoaded;
+			platformView.ClearValue(WItemsView.SelectionModeProperty);
 		}
 
 		if (ItemsView is not null)
@@ -241,9 +238,9 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 
-		foreach (var itemcontainer in PlatformView.GetChildren<ItemContainer>())
+		foreach (var itemContainer in PlatformView.GetChildren<ItemContainer>())
 		{
-			if (itemcontainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
+			if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
 				var actualItem = visualElement.BindingContext;
 				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
@@ -256,13 +253,13 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 				// keep the default WinUI selection border.
 				if (visualElement.HasVisualState(VisualStateManager.CommonStates.Selected))
 				{
-					itemcontainer.Resources["ItemContainerSelectedBorderBrush"] = transparent;
-					itemcontainer.Resources["ItemContainerSelectedPointerOverBorderBrush"] = transparent;
-					itemcontainer.Resources["ItemContainerSelectedPressedBorderBrush"] = transparent;
-					itemcontainer.Resources["ItemContainerSelectionVisualBackground"] = transparent;
-					itemcontainer.Resources["ItemContainerSelectionVisualPointerOverBackground"] = transparent;
-					itemcontainer.Resources["ItemContainerSelectionVisualPressedBackground"] = transparent;
-					itemcontainer.Resources["ItemContainerSelectedInnerBorderBrush"] = transparent;
+					itemContainer.Resources["ItemContainerSelectedBorderBrush"] = transparent;
+					itemContainer.Resources["ItemContainerSelectedPointerOverBorderBrush"] = transparent;
+					itemContainer.Resources["ItemContainerSelectedPressedBorderBrush"] = transparent;
+					itemContainer.Resources["ItemContainerSelectionVisualBackground"] = transparent;
+					itemContainer.Resources["ItemContainerSelectionVisualPointerOverBackground"] = transparent;
+					itemContainer.Resources["ItemContainerSelectionVisualPressedBackground"] = transparent;
+					itemContainer.Resources["ItemContainerSelectedInnerBorderBrush"] = transparent;
 				}
 			}
 		}
@@ -466,33 +463,24 @@ partial class SelectionModeConverter : UI.Xaml.Data.IValueConverter
 	public object Convert(object value, Type targetType, object parameter, string language)
 	{
 		var selectionMode = (SelectionMode)value;
-		switch (selectionMode)
+		return selectionMode switch
 		{
-			case SelectionMode.Single:
-				return ItemsViewSelectionMode.Single;
-			case SelectionMode.Multiple:
-				return ItemsViewSelectionMode.Multiple;
-			default:
-				return ItemsViewSelectionMode.None;
-		}
+			SelectionMode.Single => ItemsViewSelectionMode.Single,
+			SelectionMode.Multiple => ItemsViewSelectionMode.Multiple,
+			_ => ItemsViewSelectionMode.None,
+		};
 	}
 
 	/// <inheritdoc />
 	public object ConvertBack(object value, Type targetType, object parameter, string language)
 	{
 		var winUISelectionMode = (ItemsViewSelectionMode)value;
-		switch (winUISelectionMode)
+		return winUISelectionMode switch
 		{
-			case ItemsViewSelectionMode.None:
-				return SelectionMode.None;
-			case ItemsViewSelectionMode.Single:
-				return SelectionMode.Single;
-			case ItemsViewSelectionMode.Multiple:
-				return SelectionMode.Multiple;
-			case ItemsViewSelectionMode.Extended:
-				return SelectionMode.None;
-			default:
-				return SelectionMode.None;
-		}
+			ItemsViewSelectionMode.None => SelectionMode.None,
+			ItemsViewSelectionMode.Single => SelectionMode.Single,
+			ItemsViewSelectionMode.Multiple => SelectionMode.Multiple,
+			_ => SelectionMode.None,
+		};
 	}
 }

@@ -44,10 +44,10 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
-		
+
 		// Set the control's CornerRadius property directly
 		CornerRadius = zeroCornerRadius;
-		
+
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
@@ -263,11 +263,5 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		return base.MeasureOverride(availableSize);
 	}
-
-	//protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
-	//{
-	//	_mauiEmptyView?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-	//	return base.ArrangeOverride(finalSize);
-	//}
 
 }
