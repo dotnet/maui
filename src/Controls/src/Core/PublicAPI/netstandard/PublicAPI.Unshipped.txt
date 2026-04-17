@@ -12,5 +12,6 @@ Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnAlertRequested(Micr
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
