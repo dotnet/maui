@@ -23,7 +23,8 @@ public class Issue34892 : _IssuesUITest
 		App.WaitForElement("ForceGCButton");
 		App.Tap("ForceGCButton");
 		App.WaitForElement("StatusLabel");
-		Assert.That(App.WaitForElement("StatusLabel"), Is.EqualTo("Still alive: 0"));
+		Thread.Sleep(1000); // Allow some time for the GC to finalize objects
+		Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Still alive: 0"));
 
 		App.WaitForElement("PushLeakPageModalButton");
 		App.Tap("PushLeakPageModalButton");
@@ -32,6 +33,7 @@ public class Issue34892 : _IssuesUITest
 		App.WaitForElement("ForceGCButton");
 		App.Tap("ForceGCButton");
 		App.WaitForElement("StatusLabel");
-		Assert.That(App.WaitForElement("StatusLabel"), Is.EqualTo("Still alive: 0"));
+		Thread.Sleep(1000); // Allow some time for the GC to finalize objects
+		Assert.That(App.WaitForElement("StatusLabel").GetText(), Is.EqualTo("Still alive: 0"));
 	}
 }
