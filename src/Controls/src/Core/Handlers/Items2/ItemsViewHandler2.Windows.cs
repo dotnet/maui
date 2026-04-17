@@ -234,6 +234,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			_scrollViewer.ViewChanged -= ScrollViewChanged;
 			_scrollViewer.ViewChanging -= OnScrollViewerViewChanging;
+			_scrollViewer.BringIntoViewRequested -= OnScrollViewerBringIntoViewRequested;
 			_scrollViewer = null;
 		}
 
@@ -831,6 +832,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		_scrollViewer = scrollViewer;
 		_scrollViewer.ViewChanged += ScrollViewChanged;
 		_scrollViewer.ViewChanging += OnScrollViewerViewChanging;
+		_scrollViewer.BringIntoViewRequested += OnScrollViewerBringIntoViewRequested;
 
 		UpdateVerticalScrollBarVisibility();
 		UpdateHorizontalScrollBarVisibility();
@@ -1676,6 +1678,53 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			platformView.Loaded += OnPlatformViewLoaded;
 		}
 
+	}
+
+	/// <summary>
+	/// Intercepts <see cref="UIElement.BringIntoViewRequested"/> on the <see cref="ScrollViewer"/>
+	/// to ensure animated scrolls work correctly.
+	/// WinUI's <see cref="ScrollViewer"/> ignores <see cref="BringIntoViewOptions.AnimationDesired"/>
+	/// when handling this event — it always jumps instantly. We mark the event handled and call
+	/// <see cref="ScrollViewer.ChangeView"/> with <c>disableAnimation: false</c> ourselves,
+	/// matching how CV1's <c>ScrollHelpers.AnimateToOffsetAsync</c> drives animation.
+	/// Non-animated scrolls are left to the ScrollViewer's default handling.
+	/// </summary>
+	void OnScrollViewerBringIntoViewRequested(UIElement sender, BringIntoViewRequestedEventArgs e)
+	{
+		if (!e.AnimationDesired || _scrollViewer is null)
+			return;
+
+		if (e.TargetElement is not UIElement target || _scrollViewer.Content is not UIElement content)
+			return;
+
+		// Guard: both elements must share the same XamlRoot before calling TransformToVisual,
+		// otherwise it would throw an invalid cross-tree transform exception.
+		if (target.XamlRoot is null || target.XamlRoot != content.XamlRoot)
+			return;
+
+		// Transform the requested rect from the target element's coordinate space
+		// into the scrollable content's coordinate space.
+		var transform = target.TransformToVisual(content);
+		var absRect = transform.TransformBounds(e.TargetRect);
+
+		bool isHorizontal = IsLayoutHorizontal;
+		double itemPos = isHorizontal ? absRect.X : absRect.Y;
+		double itemSize = isHorizontal ? absRect.Width : absRect.Height;
+		double viewportSize = isHorizontal ? _scrollViewer.ViewportWidth : _scrollViewer.ViewportHeight;
+		double scrollableExtent = isHorizontal ? _scrollViewer.ScrollableWidth : _scrollViewer.ScrollableHeight;
+		double alignmentRatio = isHorizontal ? e.HorizontalAlignmentRatio : e.VerticalAlignmentRatio;
+
+		double scrollTarget = Math.Clamp(
+			itemPos - alignmentRatio * (viewportSize - itemSize),
+			0, scrollableExtent);
+
+		// Mark handled so ScrollViewer doesn't apply its own instant scroll on top.
+		e.Handled = true;
+
+		if (isHorizontal)
+			_scrollViewer.ChangeView(scrollTarget, null, null, disableAnimation: false);
+		else
+			_scrollViewer.ChangeView(null, scrollTarget, null, disableAnimation: false);
 	}
 
 	void PerformScrollTo(WItemsView platformView, int index, double offset, bool animated)
