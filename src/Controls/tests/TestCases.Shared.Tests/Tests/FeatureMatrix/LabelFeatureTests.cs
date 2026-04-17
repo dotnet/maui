@@ -53,8 +53,6 @@ public class LabelFeatureTests : _GalleryUITest
 	public const string ShadowFalse = "ShadowFalse";
 	public const string FlowDirectionLTR = "FlowDirectionLTR";
 	public const string FlowDirectionRTL = "FlowDirectionRTL";
-	public const string FontAttributesBoldItalic = "FontAttributesBoldItalic";
-
 	public override string GalleryPageName => LabelFeatureMatrix;
 
 	public LabelFeatureTests(TestDevice device)
@@ -1259,7 +1257,7 @@ public class LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 	
-    [Test, Order(66)]
+    [Test, Order(69)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentStart()
 	{
@@ -1279,7 +1277,7 @@ public class LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(67)]
+	[Test, Order(70)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentCenter()
 	{
@@ -1299,7 +1297,7 @@ public class LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(68)]
+	[Test, Order(71)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeWhenVerticalAndHorizontalAlignmentEnd()
 	{
@@ -1320,7 +1318,7 @@ public class LabelFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(69)]
+	[Test, Order(72)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWhenIsVisibleFalse()
 	{
@@ -1336,7 +1334,7 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForNoElement(MainLabel);
 	}
 
-	[Test, Order(70)]
+	[Test, Order(73)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithShadow()
 	{
@@ -1353,7 +1351,7 @@ public class LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(71)]
+	[Test, Order(74)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWhenIsEnabledFalse()
 	{
@@ -1371,7 +1369,7 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForNoElement("TapResultLabel");
 	}
 
-	[Test, Order(72)]
+	[Test, Order(75)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWhenIsEnabledTrue()
 	{
@@ -1394,7 +1392,7 @@ public class LabelFeatureTests : _GalleryUITest
 		Assert.That(tapResult, Is.EqualTo("Tapped"));
 	}
 
-	[Test, Order(73)]
+	[Test, Order(76)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFlowDirectionRTL()
 	{

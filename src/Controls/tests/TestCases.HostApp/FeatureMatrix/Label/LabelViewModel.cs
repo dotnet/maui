@@ -8,7 +8,6 @@ public class LabelViewModel : INotifyPropertyChanged
 
 	public LabelViewModel()
 	{
-
 		FormattedText = new FormattedString
 		{
 			Spans =
@@ -16,6 +15,11 @@ public class LabelViewModel : INotifyPropertyChanged
 			   new Span { Text = "This is a Basic Label"},
 		   }
 		};
+
+		TapCommand = new Command(() =>
+		{
+			TapResult = "Tapped";
+		}, () => LabelHeightRequest == -1);
 	}
 	private string _text;
 	public string Text
@@ -244,10 +248,7 @@ public class LabelViewModel : INotifyPropertyChanged
 
 	public bool IsTapResultVisible => !string.IsNullOrEmpty(TapResult);
 
-	public Command TapCommand => new Command(() =>
-	{
-		TapResult = "Tapped";
-	}, () => LabelHeightRequest == -1);
+	public Command TapCommand { get; }
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
