@@ -51,7 +51,7 @@ partial class TestPage : ContentPage
 		var warnings = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Warning).ToArray();
 		Assert.True(warnings.Length > 0, "Expected at least one warning diagnostic");
 		
-		var multipleChildrenWarning = warnings.FirstOrDefault(d => d.Id == "MAUIX2015");
+		var multipleChildrenWarning = warnings.FirstOrDefault(d => d.Id == "MAUIX2017");
 		Assert.NotNull(multipleChildrenWarning);
 		Assert.Contains("Border.Content", multipleChildrenWarning.GetMessage(), StringComparison.Ordinal);
 		Assert.Contains("multiple times", multipleChildrenWarning.GetMessage(), StringComparison.Ordinal);
@@ -98,7 +98,7 @@ partial class TestPage : ContentPage
 		var warnings = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Warning).ToArray();
 		Assert.True(warnings.Length > 0, "Expected at least one warning diagnostic");
 		
-		var multipleChildrenWarning = warnings.FirstOrDefault(d => d.Id == "MAUIX2015");
+		var multipleChildrenWarning = warnings.FirstOrDefault(d => d.Id == "MAUIX2017");
 		Assert.NotNull(multipleChildrenWarning);
 		Assert.Contains("ContentPage.Content", multipleChildrenWarning.GetMessage(), StringComparison.Ordinal);
 	}
@@ -142,7 +142,7 @@ partial class TestPage : ContentPage
 		var (result, generated) = RunGenerator(xaml, code);
 		
 		// Verify that NO warning diagnostic was emitted for single child
-		var multipleChildrenWarning = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2015");
+		var multipleChildrenWarning = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2017");
 		Assert.Null(multipleChildrenWarning);
 	}
 
@@ -187,7 +187,7 @@ partial class TestPage : ContentPage
 		var (result, generated) = RunGenerator(xaml, code);
 		
 		// VerticalStackLayout is a collection type, so multiple children are valid
-		var multipleChildrenWarning = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2015");
+		var multipleChildrenWarning = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIX2017");
 		Assert.Null(multipleChildrenWarning);
 	}
 }

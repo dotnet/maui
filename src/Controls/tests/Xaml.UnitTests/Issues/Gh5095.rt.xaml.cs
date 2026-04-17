@@ -37,7 +37,7 @@ public partial class Gh5095 : ContentPage
 					.RunMauiSourceGenerator(typeof(Gh5095));
 
 				Assert.Contains(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
-				Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2015");
+				Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2017");
 			}
 		}
 	}
