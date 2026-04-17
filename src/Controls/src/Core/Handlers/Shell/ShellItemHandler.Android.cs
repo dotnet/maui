@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Controls.Handlers
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
         ShellSection? _shellSection;
         Page? _displayedPage;
-        bool _isNavigating; // Prevent recursive navigation
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
 
@@ -138,13 +137,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             else
             {
-                // First time: create adapter and register callback
-                if (_pageChangeCallback is not null)
-                {
-                    _viewPager.UnregisterOnPageChangeCallback(_pageChangeCallback);
-                    _pageChangeCallback = null;
-                }
-
                 _adapter = new ShellSectionFragmentAdapter(
                     _parentFragment.ChildFragmentManager,
                     _parentFragment.Lifecycle,
@@ -152,9 +144,6 @@ namespace Microsoft.Maui.Controls.Handlers
                     _shellContext);
 
                 _viewPager.Adapter = _adapter;
-
-                _pageChangeCallback = new ShellItemPageChangeCallback(this);
-                _viewPager.RegisterOnPageChangeCallback(_pageChangeCallback);
             }
 
             // Keep ViewPager2 configuration up to date.
@@ -163,6 +152,16 @@ namespace Microsoft.Maui.Controls.Handlers
             ((AView)_viewPager).SaveEnabled = false;
             _viewPager.UserInputEnabled = false;
             _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
+
+            // Register page change callback for VP2 settle notifications.
+            // When VP2 finishes settling on a page, OnPageSelected re-syncs toolbar
+            // and top tabs. This covers cases where the initial SwitchToSection runs
+            // before section fragments are fully created.
+            if (_pageChangeCallback is null)
+            {
+                _pageChangeCallback = new ShellItemPageChangeCallback(this);
+                _viewPager.RegisterOnPageChangeCallback(_pageChangeCallback);
+            }
         }
 
         /// <summary>
@@ -187,9 +186,11 @@ namespace Microsoft.Maui.Controls.Handlers
             // Create the adapter that presents ShellItem as ITabbedView
             _shellItemAdapter = new ShellItemTabbedViewAdapter(VirtualView);
 
-            // Create TabbedViewManager with Shell's ViewPager2 (external VP2 mode)
+            // Create TabbedViewManager with Shell's ViewPager2 (external VP2 mode).
+            // No OnTabSelected callback needed — TabbedViewManager sets Element.CurrentTab
+            // which calls ProposeSection via ShellItemTabbedViewAdapter, triggering
+            // MapCurrentItem → SwitchToSection for all tracking work.
             _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager);
-            _tabbedViewManager.OnTabSelected = OnTabbedViewTabSelected;
 
             // SetElement creates BNV and populates tabs
             _tabbedViewManager.SetElement(_shellItemAdapter);
@@ -215,96 +216,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Update BNV reference (SetElement creates a new BNV)
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
-        }
-
-        /// <summary>
-        /// Callback from TabbedViewManager when a bottom tab is selected.
-        /// Routes to Shell section switching via ProposeSection.
-        /// </summary>
-        void OnTabbedViewTabSelected(int index)
-        {
-            if (VirtualView is null || _isNavigating)
-            {
-                return;
-            }
-
-            var items = ((IShellItemController)VirtualView).GetItems();
-
-            if (items is null || index < 0 || index >= items.Count)
-            {
-                return;
-            }
-
-            // Update ViewPager2 position
-            if (_viewPager is not null && _viewPager.CurrentItem != index)
-            {
-                _isNavigating = true;
-                _viewPager.SetCurrentItem(index, true);
-                _isNavigating = false;
-            }
-
-            var selectedSection = items[index];
-
-            if (selectedSection != VirtualView.CurrentItem)
-            {
-                ((IShellItemController)VirtualView).ProposeSection(selectedSection);
-            }
-        }
-
-        /// <summary>
-        /// Called when ViewPager2 page changes.
-        /// </summary>
-        internal void OnPageSelected(int position)
-        {
-            if (VirtualView is null)
-            {
-                return;
-            }
-
-            var items = ((IShellItemController)VirtualView).GetItems();
-
-            if (items is null || position < 0 || position >= items.Count)
-            {
-                return;
-            }
-
-            var selectedSection = items[position];
-
-            // Skip the rest if we're already navigating programmatically
-            if (_isNavigating)
-            {
-                return;
-            }
-
-            _isNavigating = true;
-
-            // Remember previous section for top tab cleanup
-            var previousSection = _shellSection;
-
-            // Update bottom navigation selection
-            _tabbedViewManager?.SetSelectedTab(position);
-
-            // Use ProposeSection instead of direct property set to fire Shell.Navigating event
-            // and support navigation cancellation (matches old ShellItemRenderer.ChangeSection behavior)
-            if (selectedSection != VirtualView.CurrentItem)
-            {
-                ((IShellItemController)VirtualView).ProposeSection(selectedSection);
-            }
-
-            // Track the current section
-            _shellSection = selectedSection;
-
-            // Update top tabs: remove old section's tabs and evaluate new section's
-            NotifyTopTabsForSectionSwitch(previousSection, selectedSection);
-
-            // Track displayed page changes
-            ((IShellSectionController)selectedSection).AddDisplayedPageObserver(this, UpdateDisplayedPage);
-
-            _isNavigating = false;
-
-            // Update toolbar title/items for the new section AFTER CurrentItem is set
-            // This handles title updates - appearance is updated via the observer pattern
-            UpdateToolbarForSection(selectedSection);
         }
 
         /// <summary>
@@ -335,9 +246,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Switch ViewPager2 to the new section
             if (_viewPager.CurrentItem != index)
             {
-                _isNavigating = true;
                 _viewPager.SetCurrentItem(index, animate);
-                _isNavigating = false;
             }
 
             // Update top tabs: remove old section's tabs and evaluate new section's
@@ -399,6 +308,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
             RebuildBottomNavigation();
+
+            // Apply badges to the rebuilt bottom navigation
+            UpdateAllBadges();
 
             // Update tab visibility for new ShellItem (may need to show/hide bottom tabs)
             var showTabs = ((IShellItemController)newItem).ShowTabs;
@@ -504,6 +416,103 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
+        /// Updates a specific bottom tab's badge. Called from ShellSectionHandler mapper.
+        /// </summary>
+        internal void UpdateBottomTabBadge(ShellSection? section)
+        {
+            if (_bottomNavigationView is null || section is null)
+            {
+                return;
+            }
+
+            var index = ((IShellItemController)VirtualView).GetItems().IndexOf(section);
+            if (index >= 0)
+            {
+                UpdateBadgeForTab(section, index);
+            }
+        }
+
+        /// <summary>
+        /// Applies all badges to the bottom navigation after initial setup or rebuild.
+        /// </summary>
+        internal void UpdateAllBadges()
+        {
+            if (_bottomNavigationView is null || VirtualView is null)
+            {
+                return;
+            }
+
+            var items = ((IShellItemController)VirtualView).GetItems();
+            var maxItems = _bottomNavigationView.MaxItemCount;
+
+            if (items.Count == 0 || maxItems <= 0)
+            {
+                return;
+            }
+
+            var hasOverflow = items.Count > maxItems;
+            var lastIndexToUpdate = hasOverflow ? maxItems - 2 : Math.Min(items.Count, maxItems) - 1;
+
+            for (int i = 0; i <= lastIndexToUpdate; i++)
+            {
+                UpdateBadgeForTab(items[i], i);
+            }
+
+            if (hasOverflow)
+            {
+                _bottomNavigationView.RemoveBadge(maxItems - 1);
+            }
+        }
+
+        /// <summary>
+        /// Applies badge text/color to a single bottom navigation tab.
+        /// </summary>
+        void UpdateBadgeForTab(ShellSection section, int index)
+        {
+            if (_bottomNavigationView is null)
+            {
+                return;
+            }
+
+            var badgeText = section.BadgeText;
+
+            if (badgeText is null)
+            {
+                _bottomNavigationView.RemoveBadge(index);
+                return;
+            }
+
+            var badgeColor = section.BadgeColor;
+
+            // Remove and recreate badge when clearing color to reset to platform default
+            if (badgeColor is null)
+            {
+                _bottomNavigationView.RemoveBadge(index);
+            }
+
+            var badge = _bottomNavigationView.GetOrCreateBadge(index);
+            if (badgeText.Length > 0)
+            {
+                badge.Text = badgeText;
+            }
+            else
+            {
+                badge.ClearNumber(); // Empty string shows as dot indicator
+            }
+
+            if (badgeColor is not null)
+            {
+                badge.BackgroundColor = badgeColor.ToPlatform();
+            }
+
+            var badgeTextColor = section.BadgeTextColor;
+            if (badgeTextColor is not null)
+            {
+                badge.BadgeTextColor = badgeTextColor.ToPlatform();
+            }
+        }
+
+        /// <summary>
         /// Helper method to count non-null pages and get the top page from a stack.
         /// Returns (topPage, canNavigateBack).
         /// </summary>
@@ -578,6 +587,28 @@ namespace Microsoft.Maui.Controls.Handlers
         static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
         {
             handler.UpdateTabBarVisibility();
+        }
+
+        /// <summary>
+        /// Called when ViewPager2 settles on a page (section).
+        /// Re-applies toolbar properties (title, back button behavior, custom icons)
+        /// after VP2 settles — critical for BackButtonBehavior.IconOverride.
+        /// </summary>
+        internal void OnPageSelected(int position)
+        {
+            if (VirtualView is null || _viewPager is null)
+            {
+                return;
+            }
+
+            var items = ((IShellItemController)VirtualView).GetItems();
+            if (items is null || position >= items.Count)
+            {
+                return;
+            }
+
+            var newSection = items[position];
+            UpdateToolbarForSection(newSection);
         }
 
         /// <summary>
@@ -763,6 +794,13 @@ namespace Microsoft.Maui.Controls.Handlers
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
 
+            // Unregister page change callback
+            if (_pageChangeCallback is not null && _viewPager is not null)
+            {
+                _viewPager.UnregisterOnPageChangeCallback(_pageChangeCallback);
+                _pageChangeCallback = null;
+            }
+
             if (!_preserveFragmentResources)
             {
                 // Full disconnect: fragment is being destroyed — clean everything
@@ -787,12 +825,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 _toolbar = null;
                 _shellToolbar = null;
                 _appBarLayout = null;
-
-                if (_pageChangeCallback is not null)
-                {
-                    platformView.UnregisterOnPageChangeCallback(_pageChangeCallback);
-                    _pageChangeCallback = null;
-                }
 
                 platformView.Adapter = null;
                 _adapter = null;
@@ -1028,9 +1060,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 shellToolbar.ApplyChanges();
             }
 
-            // Force back button visibility update
-            _shellToolbar?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
-
             // Trigger appearance update (observers handle the rest)
             ((IShellController)shell).AppearanceChanged(page, false);
         }
@@ -1180,6 +1209,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 // Place bottom tabs into navigationlayout_bottomtabs via TabbedViewManager
                 _handler._tabbedViewManager?.SetTabLayout();
 
+                // Apply initial badges to bottom navigation tabs
+                _handler.UpdateAllBadges();
+
                 // Now that the fragment is attached, setup the ViewPager2 adapter
                 _handler.SetupViewPagerAdapter();
 
@@ -1245,7 +1277,8 @@ namespace Microsoft.Maui.Controls.Handlers
     }
 
     /// <summary>
-    /// ViewPager2 page change callback for ShellItemHandler.
+    /// ViewPager2 page change callback for ShellItem's section ViewPager2.
+    /// Notifies the handler when VP2 settles on a section page.
     /// </summary>
     internal class ShellItemPageChangeCallback : ViewPager2.OnPageChangeCallback
     {
@@ -1253,11 +1286,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public ShellItemPageChangeCallback(ShellItemHandler handler)
         {
-            _handler = handler;
+            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
         public override void OnPageSelected(int position)
         {
+            base.OnPageSelected(position);
             _handler.OnPageSelected(position);
         }
     }

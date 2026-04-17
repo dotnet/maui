@@ -79,6 +79,9 @@ namespace Microsoft.Maui.Controls.Handlers
             [nameof(BaseShellItem.Title)] = MapTitle,
             [nameof(BaseShellItem.Icon)] = MapIcon,
             [nameof(BaseShellItem.IsEnabled)] = MapIsEnabled,
+            [nameof(BaseShellItem.BadgeText)] = MapBadge,
+            [nameof(BaseShellItem.BadgeColor)] = MapBadge,
+            [nameof(BaseShellItem.BadgeTextColor)] = MapBadge,
         };
 
         /// <summary>
@@ -290,6 +293,16 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
+            // Only manage the shared top-tabs container for the currently active section.
+            // ViewPager2 creates ALL section fragments (offscreenPageLimit = sectionCount),
+            // so without this guard, inactive sections with ≤1 content call RemoveTopTabs()
+            // which hides the shared navigationlayout_toptabs container — overriding the
+            // active section's PlaceTopTabs() and making top tabs invisible.
+            if (VirtualView?.Parent is ShellItem parentItem && parentItem.CurrentItem != VirtualView)
+            {
+                return;
+            }
+
             // Hide TabLayout when 0 or 1 visible content
             var visibleCount = SectionController.GetItems().Count;
             bool showTabs = visibleCount > 1;
@@ -381,8 +394,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
-            // Remove top tabs via TabbedViewManager
-            RemoveTopTabs();
+            // Only remove top tabs from the shared container if this is the active section.
+            // When inactive sections are disconnected (e.g., VP2 adapter updates recreate
+            // fragments for bottom tabs that reappeared), their DisconnectHandler must NOT
+            // hide the shared navigationlayout_toptabs container — it would override the
+            // active section's PlaceTopTabs() that already made it visible.
+            if (IsCurrentlyActiveSection())
+            {
+                RemoveTopTabs();
+            }
 
             // Cleanup TabbedViewManager
             _tabbedViewManager?.SetElement(null);
@@ -542,6 +562,24 @@ namespace Microsoft.Maui.Controls.Handlers
             if (shellItem?.Handler is ShellItemHandler itemHandler)
             {
                 itemHandler.UpdateBottomTabEnabled(section);
+            }
+        }
+
+        /// <summary>
+        /// Maps BadgeText, BadgeColor, BadgeTextColor property changes.
+        /// Notifies the parent ShellItemHandler to update the bottom tab badge.
+        /// </summary>
+        static void MapBadge(ShellSectionHandler handler, ShellSection section)
+        {
+            if (handler.IsConnectingHandler())
+            {
+                return;
+            }
+
+            var shellItem = section?.FindParentOfType<ShellItem>();
+            if (shellItem?.Handler is ShellItemHandler itemHandler)
+            {
+                itemHandler.UpdateBottomTabBadge(section);
             }
         }
 
