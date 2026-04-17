@@ -1107,5 +1107,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// The span should be small (around 2-3 degrees), not 358 degrees
 			Assert.True(span.LongitudeDegrees < 10, $"Expected small longitude span for antimeridian crossing, got {span.LongitudeDegrees}");
 		}
+
+		[Fact]
+		public void ClickedDoesNotThrowWithNoElements()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/34910
+			// When tapping a Map with no MapElements (overlays), the iOS handler
+			// would throw NullReferenceException because MKMapView.Overlays returns null
+			var map = new Map();
+
+			var exception = Record.Exception(() => ((IMap)map).Clicked(new Location(37.7749, -122.4194)));
+
+			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void ClickedFiresEventWithNoElements()
+		{
+			// Verify MapClicked event fires correctly even with no map elements
+			var map = new Map();
+			var location = new Location(37.7749, -122.4194);
+			MapClickedEventArgs eventArgs = null!;
+			map.MapClicked += (s, e) => eventArgs = e;
+
+			((IMap)map).Clicked(location);
+
+			Assert.NotNull(eventArgs);
+			Assert.Equal(location.Latitude, eventArgs.Location.Latitude);
+			Assert.Equal(location.Longitude, eventArgs.Location.Longitude);
+		}
 	}
 }
