@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Platform
 			var diffY = interceptPoint.Y - _initialPoint.Y;
 
 			if (diffX == 0 && diffY == 0)
-				return _isOpen;
+			{
+				return _isOpen && TouchInsideContent(new APointF((float)interceptPoint.X, (float)interceptPoint.Y));
+			}
 
 			SwipeDirection swipeDirection;
 
