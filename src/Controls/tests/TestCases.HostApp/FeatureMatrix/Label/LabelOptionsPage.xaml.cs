@@ -60,20 +60,15 @@ public partial class LabelOptionsPage : ContentPage
 		if (string.IsNullOrWhiteSpace(PaddingEntry?.Text))
 			return;
 
-		try
+		string[] parts = PaddingEntry.Text.Split(',');
+		if (parts.Length == 4 &&
+			double.TryParse(parts[0].Trim(), out double left) &&
+			double.TryParse(parts[1].Trim(), out double top) &&
+			double.TryParse(parts[2].Trim(), out double right) &&
+			double.TryParse(parts[3].Trim(), out double bottom))
 		{
-			string[] parts = PaddingEntry.Text.Split(',');
-			if (parts.Length == 4 &&
-				double.TryParse(parts[0], out double left) &&
-				double.TryParse(parts[1], out double top) &&
-				double.TryParse(parts[2], out double right) &&
-				double.TryParse(parts[3], out double bottom))
-			{
-				_viewModel.Padding = new Thickness(left, top, right, bottom);
-			}
+			_viewModel.Padding = new Thickness(left, top, right, bottom);
 		}
-		catch { }
-
 	}
 
 	private void OnFontAttributesChanged(object sender, CheckedChangedEventArgs e)
@@ -103,7 +98,7 @@ public partial class LabelOptionsPage : ContentPage
 	}
 	private void OnFontAutoScalingChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (sender is RadioButton rb && e.Value)
+		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
 		{
 			string valueStr = rb.Value?.ToString();
 			if (bool.TryParse(valueStr, out bool result))
@@ -115,13 +110,6 @@ public partial class LabelOptionsPage : ContentPage
 
 
 
-	private void OnTextChanged(object sender, TextChangedEventArgs e)
-	{
-		if (BindingContext is LabelViewModel viewModel)
-		{
-			viewModel.Text = e.NewTextValue;
-		}
-	}
 
 	private void OnTextColorChanged(object sender, CheckedChangedEventArgs e)
 	{
@@ -259,7 +247,19 @@ public partial class LabelOptionsPage : ContentPage
 	{
 		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
 		{
-			_viewModel.HasShadow = rb.Value.ToString() == "1";
+			_viewModel.HasShadow = rb.Value.ToString() == "True";
+		}
+	}
+
+	private void OnBackgroundColorChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked && rb.Value != null)
+		{
+			_viewModel.LabelBackgroundColor = rb.Value.ToString() switch
+			{
+				"LightBlue" => Colors.LightBlue,
+				_ => Colors.LightGray
+			};
 		}
 	}
 

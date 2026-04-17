@@ -49,10 +49,9 @@ public class LabelFeatureTests : _GalleryUITest
 	public const string IsEnabledFalse = "IsEnabledFalse";
 	public const string IsVisibleTrue = "IsVisibleTrue";
 	public const string IsVisibleFalse = "IsVisibleFalse";
-	public const string ShadowTrue = "ShadowTrue";
-	public const string ShadowFalse = "ShadowFalse";
-	public const string FlowDirectionLTR = "FlowDirectionLTR";
+	public const string ShadowTrue = "ShadowTrue"; 
 	public const string FlowDirectionRTL = "FlowDirectionRTL";
+	public const string BackgroundColorLightBlue = "BackgroundColorLightBlue";
 	public override string GalleryPageName => LabelFeatureMatrix;
 
 	public LabelFeatureTests(TestDevice device)
@@ -1405,6 +1404,23 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(HorizontalTextStart);
 		App.WaitForElement(FlowDirectionRTL);
 		App.Tap(FlowDirectionRTL);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(77)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithBackgroundColorLightBlue()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "This is a Label");
+		App.WaitForElement(BackgroundColorLightBlue);
+		App.Tap(BackgroundColorLightBlue);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
