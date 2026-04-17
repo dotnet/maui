@@ -74,6 +74,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 			// Extract expression code - single quotes are always transformed to double quotes
 			var expressionCode = CSharpExpressionHelpers.GetExpressionCode(trimmed);
+			// Resolve xmlns prefixes (e.g., local:Helper → fully qualified) and ABP syntax (e.g., target.(Grid.Row) → Grid.GetRow(target))
+			expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
+			expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, node.NamespaceResolver, Context);
 			node.Value = new Expression(expressionCode);
 		}
 	}
@@ -140,6 +143,9 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 			{
 				// Extract expression code - single quotes are always transformed to double quotes
 				var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
+				// Resolve xmlns prefixes and ABP syntax
+				expressionCode = CSharpExpressionHelpers.TransformAttachedProperties(expressionCode);
+				expressionCode = CSharpExpressionHelpers.ResolveXmlnsPrefixes(expressionCode, markupnode.NamespaceResolver, Context);
 				node = new ValueNode(new Expression(expressionCode), markupnode.NamespaceResolver, markupnode.LineNumber, markupnode.LinePosition);
 			}
 		}
