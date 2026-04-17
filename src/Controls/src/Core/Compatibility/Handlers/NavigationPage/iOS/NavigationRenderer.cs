@@ -1797,7 +1797,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationItem.Title = title;
 				}
 
-				if (!string.IsNullOrEmpty(backButtonTitle) || !string.IsNullOrEmpty(backButtonAccessibilityLabel))
+				if (backButtonTitle is not null || !string.IsNullOrEmpty(backButtonAccessibilityLabel))
 				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
 					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
