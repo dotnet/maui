@@ -23,6 +23,13 @@
     <FileSignInfo Include="OpenSans-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
     <FileSignInfo Include="FluentSystemIcons-Regular.ttf" CertificateName="3PartyScriptsSHA2" />
     <FileSignInfo Include="SegoeUI-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
+
+    <FileSignInfo Include="ReconnectModal.razor.js" CertificateName="Microsoft400" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Sign cab files embedded inside MSI workload packs -->
+    <FileExtensionSignInfo Include=".cab" CertificateName="Microsoft400" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,4 +39,4 @@
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)\**\*.zip" Condition="'$(PostBuildSign)' != 'true'" />
     <ItemsToSignPostBuild Include="$(ArtifactsShippingPackagesDir)\**\*.zip" Condition="'$(PostBuildSign)' == 'true'" />
   </ItemGroup>
-</Project>   
+</Project>
