@@ -1,8 +1,10 @@
-# Drift tracking manifest for gh-aw-workflows.instructions.md
+# Drift tracking manifest for gh-aw-guide skill
 # Used by the instruction-drift skill to detect when upstream sources change.
 # See .github/skills/instruction-drift/SKILL.md for details.
 
-target: gh-aw-workflows.instructions.md
+target: ../skills/gh-aw-guide/SKILL.md
+secondary_targets:
+  - ../skills/gh-aw-guide/references/architecture.md
 
 # Sections containing our own operational knowledge (not from upstream).
 # The instruction-drift skill will never suggest removing these.
