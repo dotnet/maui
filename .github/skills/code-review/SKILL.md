@@ -97,12 +97,14 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 Check for prior reviews on the same PR — from the Copilot PR reviewer bot, other agents, or human reviewers:
 
 ```bash
-# Get all reviews
-gh api "repos/dotnet/maui/pulls/<PR_NUMBER>/reviews" --jq '.[] | "Reviewer: \(.user.login) | State: \(.state)\n\(.body[0:300])\n---"'
+# Get all reviews (use repo-context-aware command; bump truncation to 2000 chars to capture structured findings)
+gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:2000])\n---"'
 
-# Search PR comments for prior critical findings
-gh pr view <PR_NUMBER> --json comments --jq '.comments[] | select(.body | contains("Critical") or contains("🔴") or contains("must be fixed")) | .body[0:500]'
+# Search PR comments for prior critical findings (case-insensitive — reviewers use "Critical", "critical", "[CRITICAL]")
+gh pr view <PR_NUMBER> --json comments --jq '.comments[] | select(.body | ascii_downcase | (contains("critical") or contains("must be fixed") or contains("🔴"))) | .body[0:2000]'
 ```
+
+**Trust scoping:** The comment scan is intentionally broad to catch agent and bot reviews. To avoid spoofing by arbitrary commenters, weight findings from formal reviews (`reviews[].state == "CHANGES_REQUESTED"`) and known reviewer bots (`copilot-pull-request-reviewer`, `PureWeen`, etc.) more heavily than free-form comments. A drive-by comment containing the word "critical" is not, by itself, a blocker — but a `CHANGES_REQUESTED` review is.
 
 **If prior reviews flagged critical issues, you MUST produce a reconciliation table:**
 
@@ -123,12 +125,19 @@ gh pr view <PR_NUMBER> --json comments --jq '.comments[] | select(.body | contai
 ### Step 5: Check CI Status
 
 ```bash
+# Full context — all checks (required + optional)
 gh pr checks <PR_NUMBER>
-# Or for programmatic analysis:
-gh pr checks <PR_NUMBER> --json name,state,conclusion
+
+# Hard-gate decision — required checks only (use this for the verdict gate below)
+gh pr checks <PR_NUMBER> --required
+
+# Programmatic analysis — valid --json fields are: bucket, completedAt, description,
+# event, link, name, startedAt, state, workflow. (`conclusion` is NOT a valid field.)
+# `bucket` categorizes `state` into pass/fail/pending/skipping/cancel.
+gh pr checks <PR_NUMBER> --json name,state,bucket,workflow
 ```
 
-Review CI results. **🚨 HARD GATE: Never give `LGTM` if any required CI check is failing or pending.**
+Review CI results. **🚨 HARD GATE: Never give `LGTM` if any required CI check is failing or pending.** Use `--required` to scope the gate decision so optional/informational check failures don't force a false `NEEDS_CHANGES`.
 
 | CI State | Allowed Verdict |
 |----------|----------------|
@@ -168,7 +177,7 @@ Answer these questions explicitly in the review:
 - What happens if referenced resources (images, fonts) don't exist in the project?
 - Can multiple subscriptions accumulate across handler lifecycle (missing unsubscribe)?
 - Does static state survive page disposal and get stale?
-- What happens if the platform API is unavailable (e.g., iOS 26+ API on iOS 18)?
+- What happens if the platform API is unavailable (e.g., a newer iOS API used without an `OperatingSystem.IsIOSVersionAtLeast(...)` guard)?
 
 **Anti-pattern (from PR #34669 review):** The reviewer asked "Should BadgeText be int?" and "Could static dictionaries cause memory pressure?" — these are softballs with obvious "no" answers. Meanwhile the ACTUAL crash (toolbar code running for all items at startup) was never probed.
 
@@ -193,6 +202,8 @@ Answer these questions explicitly in the review:
 | Prior critical findings unresolved | **NEEDS_CHANGES** (no LGTM) |
 
 **NEVER give "Confidence: high" on PRs that modify platform infrastructure with >500 lines unless CI is fully green AND UITests have been verified.**
+
+> **Note — high confidence is intentionally unreachable at PR-review time for this category.** UITests do not run on PR builds (see Step 5), so the "UITests verified" precondition cannot be satisfied during review. This is deliberate after PR #34669: large infrastructure PRs are capped at `medium` until post-merge verification. Do **not** hallucinate UITest verification to satisfy this rule — if the rule cannot be satisfied, the cap stands.
 
 #### Deliver Verdict
 

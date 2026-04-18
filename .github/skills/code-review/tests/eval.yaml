@@ -19,7 +19,7 @@ scenarios:
     prompt: "code review PR #34669 in dotnet/maui"
     assertions:
       - type: "output_matches"
-        pattern: "(gh pr checks|CI Status|CI.*fail)"
+        pattern: "(gh pr checks|maui-pr.*(pass|fail|success|failure|pending|cancelled|red|green|❌|✅|⏳))"
     rubric:
       - "The agent runs 'gh pr checks' or equivalent to verify CI status before delivering a verdict"
       - "The agent does NOT claim 'clean build' or 'no CI failures' without evidence from gh pr checks"
@@ -31,7 +31,7 @@ scenarios:
     prompt: "code review PR #34669 in dotnet/maui - note there were prior reviews on this PR"
     assertions:
       - type: "output_matches"
-        pattern: "(Prior.*Finding|Reconciliation|earlier.*review|prior.*critical)"
+        pattern: "(gh pr view .*--json reviews|gh api .*/reviews|Reviewer:\\s*@?[A-Za-z0-9_.-]+|No prior critical findings)"
     rubric:
       - "The agent checks for prior reviews on the PR and acknowledges any critical findings"
       - "The agent does NOT silently contradict prior critical findings without explicit reconciliation"
@@ -42,7 +42,7 @@ scenarios:
     prompt: "code review PR #34669 in dotnet/maui — this PR adds new BindableProperties to ToolbarItem and modifies platform toolbar extensions"
     assertions:
       - type: "output_matches"
-        pattern: "(blast radius|all instances|startup|global|static)"
+        pattern: "(?is)Blast Radius Assessment.*Runs for all instances:\\s*(yes|no)"
     rubric:
       - "The agent assesses whether the code changes affect ALL toolbar items or only badge-enabled items"
       - "The agent asks failure-mode questions about startup behavior and null/default property values"
@@ -58,6 +58,8 @@ scenarios:
         value: "NEEDS_DISCUSSION"
       - type: "output_not_contains"
         value: "Devil's Advocate"
+      - type: "output_not_contains"
+        value: "Failure-Mode Probing"
     rubric:
       - "The agent provides a plain summary without launching a structured multi-step review workflow"
       - "The agent does NOT load review-rules.md or walk through MAUI-specific review checklists"
