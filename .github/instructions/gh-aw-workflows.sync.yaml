@@ -1,0 +1,55 @@
+# Drift tracking manifest for gh-aw-workflows.instructions.md
+# Used by the instruction-drift skill to detect when upstream sources change.
+# See .github/skills/instruction-drift/SKILL.md for details.
+
+target: gh-aw-workflows.instructions.md
+
+# Sections containing our own operational knowledge (not from upstream).
+# The instruction-drift skill will never suggest removing these.
+divergence:
+  - section: "Security Boundaries"
+    reason: "Our defense-in-depth assessment and workflow author rules"
+  - section: "Safe Pattern: Checkout + Restore"
+    reason: "Documents our custom Checkout-GhAwPr.ps1 script"
+  - section: "Common Patterns"
+    reason: "Our specific usage patterns for pre-agent data prep, concurrency, noise reduction"
+
+sources:
+  # Reference documentation pages — check for content changes
+  - url: https://github.github.com/gh-aw/reference/triggers/
+    sections: ["Anti-Patterns", "Common Patterns", "Limitations"]
+  - url: https://github.github.com/gh-aw/reference/frontmatter/
+    sections: ["Anti-Patterns", "Architecture", "Additional Frontmatter Features"]
+  - url: https://github.github.com/gh-aw/reference/safe-outputs/
+    sections: ["Anti-Patterns", "Safe Outputs Quick Reference"]
+  - url: https://github.github.com/gh-aw/reference/safe-outputs-pull-requests/
+    sections: ["Safe Outputs Quick Reference"]
+  - url: https://github.github.com/gh-aw/reference/integrity/
+    sections: ["Security Boundaries"]
+  - url: https://github.github.com/gh-aw/reference/custom-safe-outputs/
+    sections: ["Anti-Patterns", "Safe Outputs Quick Reference"]
+  - url: https://github.github.com/gh-aw/reference/triggering-ci/
+    sections: ["Limitations", "Troubleshooting"]
+  - url: https://github.github.com/gh-aw/reference/command-triggers/
+    sections: ["Anti-Patterns"]
+
+  # Tracked GitHub issues — check open/closed state
+  - issue: github/gh-aw#18481
+    resolution_expected: true
+  - issue: github/gh-aw#18518
+    resolution_expected: true
+  - issue: github/gh-aw#18521
+    resolution_expected: true
+  - issue: github/gh-aw#23769
+    resolution_expected: true
+  - issue: github/gh-aw#25439
+    resolution_expected: true
+
+  # GitHub releases — check for new versions
+  - releases: github/gh-aw
+
+style: |
+  Match existing section structure. Use tables for feature comparisons.
+  Include code examples for common patterns. Mark items as anti-patterns
+  when a manual reimplementation should use a built-in feature instead.
+  Keep security guidance precise — never simplify away nuance.
