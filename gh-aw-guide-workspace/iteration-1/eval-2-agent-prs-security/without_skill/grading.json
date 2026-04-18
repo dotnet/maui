@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "run_type": "without_skill",
+  "expectations": [
+    {"text": "ci-triggering-mechanism", "passed": false, "evidence": "Uses GitHub App token approach (generic GitHub knowledge) instead of gh-aw's github-token-for-extra-empty-commit feature"},
+    {"text": "explains-why-ci-doesnt-trigger", "passed": true, "evidence": "Correctly explains GITHUB_TOKEN pushes don't trigger workflows"},
+    {"text": "protected-files-config", "passed": false, "evidence": "Uses generic repo rulesets/CODEOWNERS instead of gh-aw's protected-files: safe output feature"},
+    {"text": "blocks-pr-approval", "passed": false, "evidence": "Uses branch protection rules instead of gh-aw's allowed-events: [COMMENT, REQUEST_CHANGES] feature"},
+    {"text": "includes-yaml-example", "passed": true, "evidence": "Provides YAML but uses generic GitHub Actions patterns, not gh-aw safe-output configuration"}
+  ]
+}

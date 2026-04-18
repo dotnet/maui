@@ -1,0 +1,32 @@
+{
+  "eval_id": 2,
+  "eval_name": "agent-prs-security",
+  "prompt": "I'm writing a gh-aw workflow that creates PRs from agent output. The PRs need to trigger CI, and the agent shouldn't be able to modify our .github/ directory or approve its own PRs. What's the right configuration?",
+  "assertions": [
+    {
+      "id": "ci-triggering-mechanism",
+      "text": "Explains github-token-for-extra-empty-commit with PAT or GitHub App token to trigger CI on agent-created PRs",
+      "type": "content_check"
+    },
+    {
+      "id": "explains-why-ci-doesnt-trigger",
+      "text": "Explains WHY agent-created PRs don't trigger CI (GITHUB_TOKEN pushes are ignored by Actions)",
+      "type": "content_check"
+    },
+    {
+      "id": "protected-files-config",
+      "text": "Recommends protected-files on create-pull-request to block .github/ modifications",
+      "type": "content_check"
+    },
+    {
+      "id": "blocks-pr-approval",
+      "text": "Recommends allowed-events: [COMMENT, REQUEST_CHANGES] on submit-pull-request-review to block agent approvals",
+      "type": "content_check"
+    },
+    {
+      "id": "includes-yaml-example",
+      "text": "Provides concrete YAML safe-outputs configuration example",
+      "type": "content_check"
+    }
+  ]
+}

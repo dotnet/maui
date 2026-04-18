@@ -59,6 +59,7 @@ gh aw compile .github/workflows/<name>.md
 | Custom post-processing jobs for agent output | `safe-outputs.jobs:` custom jobs with MCP tool access | [Custom Safe Outputs](https://github.github.com/gh-aw/reference/custom-safe-outputs/) |
 | Wrapping GitHub Actions as agent-callable tools | `safe-outputs.actions:` action wrappers | [Custom Safe Outputs](https://github.github.com/gh-aw/reference/custom-safe-outputs/) |
 | Triggering CI on agent-created PRs | `github-token-for-extra-empty-commit:` on `create-pull-request` | [Triggering CI](https://github.github.com/gh-aw/reference/triggering-ci/) |
+| No guard against agent approving PRs | `allowed-events: [COMMENT, REQUEST_CHANGES]` on `submit-pull-request-review` | [Safe Outputs](https://github.github.com/gh-aw/reference/safe-outputs/) |
 
 **Note:** gh-aw is actively developed. If a capability feels like something a framework would provide natively, check the reference docs — it probably exists even if it's not in this table yet.
 
@@ -119,6 +120,62 @@ steps:
 ```
 
 Manual triggers (`workflow_dispatch`, `issue_comment`) should bypass the gate. Note: `exit 1` causes a red ❌ on non-matching PRs — this is intentional (no built-in "skip" mechanism in gh-aw steps).
+
+### Fork PR Checkout (workflow_dispatch)
+
+For `workflow_dispatch` workflows that need to evaluate a PR branch: use the shared `Checkout-GhAwPr.ps1` script. It (1) verifies the PR author has write access and rejects fork PRs, (2) checks out the PR branch, and (3) restores `.github/skills/`, `.github/instructions/`, and `.github/copilot-instructions.md` from the base branch SHA — defense-in-depth even though the platform also does this restore automatically.
+
+```yaml
+steps:
+  - name: Checkout PR and restore agent infrastructure
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+```
+
+For `pull_request` + fork support (not `workflow_dispatch`): add `forks: ["*"]` to the trigger frontmatter. The platform automatically preserves `.github/` and `.agents/` as a base-branch artifact in the activation job, then restores them after `checkout_pr_branch.cjs` — fork PRs cannot overwrite agent infrastructure (gh-aw#23769, resolved).
+
+### Security-Critical Patterns
+
+These four patterns are the most commonly missed when building secure workflows. Use all where applicable:
+
+**1. Prevent accidental PR approvals** — always restrict review workflows; otherwise the agent can approve PRs and bypass branch protection rules (gh-aw#25439):
+
+```yaml
+safe-outputs:
+  submit-pull-request-review:
+    allowed-events: [COMMENT, REQUEST_CHANGES]  # Blocks APPROVE at infrastructure level
+```
+
+**2. CI triggering + protected file safety** for agent-created PRs — `GITHUB_TOKEN` pushes don't trigger CI; a PAT/App token is required. `protected-files` controls what happens when the agent modifies package manifests or `.github/`:
+
+```yaml
+safe-outputs:
+  create-pull-request:
+    github-token-for-extra-empty-commit: ${{ secrets.PAT_OR_APP_TOKEN }}  # Required to trigger CI
+    protected-files: fallback-to-issue   # Create issue instead of failing if agent touches .github/ or package manifests
+    # protected-files: blocked (default) | allowed (disables protection)
+```
+
+**3. Filter untrusted content before the agent sees it** — prevents prompt injection from issue comments or PR descriptions authored by first-timers or contributors:
+
+```yaml
+tools:
+  github:
+    min-integrity: approved   # Filters FIRST_TIMER / CONTRIBUTOR content; use on workflows that process external PR content
+```
+
+**4. Fork PR checkout for `workflow_dispatch`** — the platform's `checkout_pr_branch.cjs` is skipped for `workflow_dispatch`, so you **must** use `.github/scripts/Checkout-GhAwPr.ps1` to check out the PR branch, verify write access, reject fork PRs, and restore trusted `.github/` from the base branch. Without it, the agent evaluates the workflow branch instead of the PR:
+
+```yaml
+steps:
+  - name: Checkout PR and restore agent infrastructure
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+```
 
 ### Frontmatter Features
 

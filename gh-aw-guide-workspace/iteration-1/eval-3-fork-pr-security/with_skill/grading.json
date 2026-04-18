@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "run_type": "with_skill",
+  "expectations": [
+    {"text": "forks-frontmatter", "passed": true, "evidence": "Explains forks: [\"*\"] with compiler guard removal, 6 mentions"},
+    {"text": "platform-restore-23769", "passed": true, "evidence": "Detailed explanation of .github/ auto-restore from base branch artifact, cites gh-aw#23769"},
+    {"text": "checkout-restore-script", "passed": false, "evidence": "Does not mention Checkout-GhAwPr.ps1 by name, though covers the platform restore mechanism"},
+    {"text": "integrity-filtering", "passed": true, "evidence": "Recommends min-integrity: approved with full hierarchy table, 4 mentions"},
+    {"text": "passive-data-principle", "passed": true, "evidence": "Explicitly states treat PR contents as passive data with detailed explanation"},
+    {"text": "pwn-request-threat-model", "passed": true, "evidence": "Full pwn-request explanation with checkout+execution model"},
+    {"text": "no-execute-untrusted", "passed": true, "evidence": "Explicit anti-patterns for dotnet build, npm install with code examples"}
+  ]
+}

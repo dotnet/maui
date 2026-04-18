@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "run_type": "without_skill",
+  "expectations": [
+    {"text": "forks-frontmatter", "passed": true, "evidence": "Correctly recommends forks: [\"*\"]"},
+    {"text": "platform-restore-23769", "passed": false, "evidence": "Does not mention the platform auto-restore of .github/ or gh-aw#23769"},
+    {"text": "checkout-restore-script", "passed": true, "evidence": "References Checkout-GhAwPr.ps1 with 5 mentions"},
+    {"text": "integrity-filtering", "passed": false, "evidence": "Does not mention integrity filtering or min-integrity"},
+    {"text": "passive-data-principle", "passed": true, "evidence": "Emphasizes passive data principle clearly"},
+    {"text": "pwn-request-threat-model", "passed": true, "evidence": "Full pwn-request explanation with GitHub Security Lab reference"},
+    {"text": "no-execute-untrusted", "passed": true, "evidence": "Warns against dotnet build, npm install with code examples"}
+  ]
+}

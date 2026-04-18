@@ -1,0 +1,23 @@
+{
+  "skill_name": "gh-aw-guide",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to create a new gh-aw workflow that reviews PRs when someone comments /review on them. The workflow should post a comment with the review results and add a reaction to the triggering comment. How should I set this up?",
+      "expected_output": "Should recommend slash_command trigger (not manual issue_comment parsing), reaction: field in frontmatter, add-comment safe output with hide-older-comments. Should reference compilation step.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I'm writing a gh-aw workflow that creates PRs from agent output. The PRs need to trigger CI, and the agent shouldn't be able to modify our .github/ directory or approve its own PRs. What's the right configuration?",
+      "expected_output": "Should cover: github-token-for-extra-empty-commit with PAT/GitHub App, protected-files on create-pull-request, allowed-events: [COMMENT, REQUEST_CHANGES] on submit-pull-request-review. Should explain WHY agent-created PRs don't trigger CI.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Our gh-aw workflow needs to run on fork PRs from external contributors. I'm worried about security — what's the right way to handle this? We need to read their code but never execute it.",
+      "expected_output": "Should explain: forks: [\"*\"] in frontmatter, platform auto-restores .github/ from base branch (gh-aw#23769), Checkout-GhAwPr.ps1 for defense-in-depth, integrity filtering with min-integrity: approved, the pwn-request threat model, and the rule about never executing PR code with elevated credentials.",
+      "files": []
+    }
+  ]
+}

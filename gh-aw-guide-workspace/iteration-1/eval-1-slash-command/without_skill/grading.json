@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "run_type": "without_skill",
+  "expectations": [
+    {"text": "uses-slash-command-trigger", "passed": true, "evidence": "Correctly uses slash_command: trigger"},
+    {"text": "uses-reaction-field", "passed": true, "evidence": "Includes reaction: eyes in frontmatter"},
+    {"text": "uses-add-comment-safe-output", "passed": true, "evidence": "Shows add-comment with max:1, hide-older-comments:true, target:*"},
+    {"text": "includes-compilation-step", "passed": true, "evidence": "Mentions gh aw compile in deployment section"},
+    {"text": "includes-yaml-example", "passed": true, "evidence": "Full YAML workflow example provided"},
+    {"text": "no-manual-issue-comment-antipattern", "passed": true, "evidence": "Uses slash_command directly, doesn't recommend manual parsing"}
+  ]
+}

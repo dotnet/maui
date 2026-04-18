@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "run_type": "with_skill",
+  "expectations": [
+    {"text": "ci-triggering-mechanism", "passed": true, "evidence": "Explains github-token-for-extra-empty-commit with PAT/GitHub App, 8 mentions"},
+    {"text": "explains-why-ci-doesnt-trigger", "passed": true, "evidence": "Explains GITHUB_TOKEN pushes are ignored by Actions to prevent loops"},
+    {"text": "protected-files-config", "passed": true, "evidence": "Documents protected-files auto-enforcement, blocked/fallback-to-issue/allowed options"},
+    {"text": "blocks-pr-approval", "passed": true, "evidence": "Recommends allowed-events: [COMMENT, REQUEST_CHANGES], cites gh-aw#25439"},
+    {"text": "includes-yaml-example", "passed": true, "evidence": "Complete safe-outputs YAML configuration with all three protections"}
+  ]
+}
