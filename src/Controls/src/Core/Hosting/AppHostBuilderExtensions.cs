@@ -122,10 +122,8 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
-			// Keep the RequiresDynamicCode path isolated under the HybridWebView feature switch
-			// so NativeAOT/full-trim apps don't pick up HybridWebView warnings just by
-			// evaluating the default handler registration list.
-			AddHybridWebViewHandler(handlersCollection);
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
 
 #if ANDROID
@@ -244,24 +242,6 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 		return handlersCollection;
-	}
-
-	// Suppress IL3050 inside the helper rather than annotating with [RequiresDynamicCode],
-	// which would propagate the warning to AddControlsHandlers. The feature switch
-	// (MauiHybridWebViewSupported=false under PublishAot/TrimMode=full) substitutes
-	// IsHybridWebViewSupported to false, making this branch dead code in AOT builds.
-	// See: https://github.com/dotnet/linker/issues/2715
-	const string HybridWebViewDynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
-
-#if !NETSTANDARD
-	[UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
-		Justification = "HybridWebView is disabled via MauiHybridWebViewSupported feature switch " +
-						"in NativeAOT/full-trim builds, so this code path is unreachable.")]
-#endif
-	[RequiresUnreferencedCode(HybridWebViewDynamicFeatures)]
-	private static void AddHybridWebViewHandler(IMauiHandlersCollection handlersCollection)
-	{
-		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 	}
 
 	static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
