@@ -82,8 +82,6 @@ namespace Microsoft.Maui.Controls
 
 			if (titleView == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
 				_platformTitleView?.RemoveFromParent();
 				return;
 			}
