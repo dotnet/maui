@@ -58,66 +58,25 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 			yield break;
 		}
 
-		var tools = options.Tools.OfType<AIFunction>().ToList();
-		if (tools.Count == 0)
+		// When tools are present, use the non-streaming path for reliability.
+		// PhiSilicaChatClient.GetResponseAsync delegates to streaming internally anyway,
+		// so there's no latency penalty. The non-streaming path through PromptBasedSchemaClient
+		// strips code fences and produces cleaner JSON for parsing.
+		var response = await GetResponseAsync(messages, options, cancellationToken);
+
+		foreach (var message in response.Messages)
 		{
-			await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
-				yield return update;
-			yield break;
-		}
-
-		// For streaming with tools: buffer the full response, then parse
-		// (We need the complete JSON to parse the tool call decision)
-		var (rewrittenMessages, rewrittenOptions) = RewriteAsStructuredOutput(messages, options, tools);
-
-		var fullText = new StringBuilder();
-		var lastUpdate = default(ChatResponseUpdate);
-
-		await foreach (var update in base.GetStreamingResponseAsync(rewrittenMessages, rewrittenOptions, cancellationToken))
-		{
-			lastUpdate = update;
-			foreach (var content in update.Contents)
+			var update = new ChatResponseUpdate
 			{
-				if (content is TextContent tc && tc.Text is not null)
-					fullText.Append(tc.Text);
+				Role = message.Role,
+			};
+
+			foreach (var content in message.Contents)
+			{
+				update.Contents.Add(content);
 			}
-		}
 
-		// Parse the assembled text
-		var parsed = TryParseToolCallDecision(fullText.ToString());
-
-		if (parsed is ToolCallDecision toolCall)
-		{
-			// Yield a FunctionCallContent update
-			yield return new ChatResponseUpdate
-			{
-				Role = ChatRole.Assistant,
-				Contents = [new FunctionCallContent(
-					callId: Guid.NewGuid().ToString("N")[..16],
-					name: toolCall.ToolName!,
-#pragma warning disable IL3050, IL2026
-					arguments: toolCall.Arguments != null
-						? JsonSerializer.Deserialize<Dictionary<string, object?>>(toolCall.Arguments.Value.GetRawText())
-						: null)]
-#pragma warning restore IL3050, IL2026
-			};
-		}
-		else if (parsed is TextResponseDecision textResp)
-		{
-			yield return new ChatResponseUpdate
-			{
-				Role = ChatRole.Assistant,
-				Contents = [new TextContent(textResp.Text)]
-			};
-		}
-		else
-		{
-			// Couldn't parse — yield the raw text as-is
-			yield return new ChatResponseUpdate
-			{
-				Role = ChatRole.Assistant,
-				Contents = [new TextContent(fullText.ToString())]
-			};
+			yield return update;
 		}
 	}
 
