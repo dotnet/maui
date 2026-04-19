@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title>URL Resolution Tests</title>
+	<link rel="icon" href="data:,">
+	<script src="_framework/hybridwebview.js"></script>
+
+	<script>
+
+		// Tests URL-to-resource resolution by fetching a URL and returning the result.
+		// path: the path or URL fragment to fetch
+		// mode: "relative" to use the path as-is, "origin" to prefix with window.location.origin
+		async function TestUrlResolution(path, mode) {
+			let url;
+			if (mode === "origin") {
+				url = window.location.origin + path;
+			} else {
+				url = path;
+			}
+
+			try {
+				const response = await fetch(url);
+				const body = await response.text();
+				return {
+					status: response.status,
+					bodyLength: body.length,
+					bodyPreview: body.substring(0, 200),
+					url: url
+				};
+			} catch (e) {
+				return {
+					status: -1,
+					bodyLength: 0,
+					bodyPreview: e.toString(),
+					url: url
+				};
+			}
+		}
+
+	</script>
+</head>
+<body>
+	<h1>URL Resolution Test Page</h1>
+	<div id="htmlLoaded"></div>
+</body>
+</html>

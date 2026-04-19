@@ -242,9 +242,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(() => _uiRequestedPop = true);
+
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
+		}
+
+		class GestureDelegate : UIGestureRecognizerDelegate
+		{
+			readonly Func<bool> _shouldPop;
+
+			public GestureDelegate(Func<bool> shouldPop)
+			{
+				_shouldPop = shouldPop;
+			}
+
+			public override bool ShouldBegin(UIGestureRecognizer recognizer)
+			{
+				return _shouldPop();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -265,6 +282,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_secondaryToolbar.RemoveFromSuperview();
 				_secondaryToolbar.Dispose();
 				_secondaryToolbar = null;
+				InteractivePopGestureRecognizer.Delegate = null;
 
 				if (_currentBarBackgroundBrush is GradientBrush gb)
 					gb.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
@@ -332,6 +350,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			UpdateToolBarVisible();
+			UpdateFlyoutMenuButton();
 			return success;
 		}
 
@@ -363,6 +382,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				poppedViewController?.Dispose();
 
 			UpdateToolBarVisible();
+			UpdateFlyoutMenuButton();
 			return actuallyRemoved;
 		}
 
@@ -441,6 +461,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_parentFlyoutPage = flyoutDetail;
 		}
 
+		void UpdateFlyoutMenuButton(Page pageBeingRemoved = null)
+		{
+			var parentingViewController = GetParentingViewController();
+			parentingViewController?.UpdateLeftBarButtonItem(pageBeingRemoved);
+		}
+
 		TaskCompletionSource<bool> _pendingNavigationRequest;
 		ActionDisposable _removeLifecycleEvents;
 
@@ -470,6 +496,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_ = page.ToPlatform(MauiContext);
 			var renderer = (IPlatformViewHandler)page.Handler;
+			// renderer or ViewController can be null if a rapid push/pop causes the handler
+			// to be torn down before this navigation completes (mirrors fix for ShellSectionRenderer #32426)
+			if (renderer?.ViewController == null)
+			{
+				var pendingTask = _pendingNavigationRequest.Task;
+				CompletePendingNavigation(false);
+				return pendingTask;
+			}
+
 			var parentViewController = renderer.ViewController.ParentViewController as ParentingViewController;
 			if (parentViewController == null)
 				throw new NotSupportedException("ParentingViewController parent could not be found. Please file a bug.");
@@ -728,8 +763,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ViewControllers = _removeControllers;
 			}
 			target.Dispose();
-			var parentingViewController = GetParentingViewController();
-			parentingViewController?.UpdateLeftBarButtonItem(page);
+			UpdateFlyoutMenuButton(page);
 		}
 
 		void RemoveViewControllers(bool animated)
@@ -748,8 +782,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Also worth noting this task returns on the main thread
 				if (t.Result)
 					return;
-				// because we skip the normal pop process we need to dispose ourselves
-				controller?.Dispose();
+
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					// Only dispose if the controller was actually removed from the navigation stack.
+					// On iOS 26, interrupted transitions and subsequent navigations can complete
+					// this task with false even when the controller is still visible.
+					if (controller is not null && !ViewControllers.Contains(controller))
+						controller.Dispose();
+				}
+				else
+				{
+					// because we skip the normal pop process we need to dispose ourselves
+					controller?.Dispose();
+				}
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
@@ -1061,6 +1107,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
 			{
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
+				UpdateFlyoutMenuButton();
+
 				if (_uiRequestedPop)
 				{
 					NavPage?.SendNavigatedFromHandler(pageBeingRemoved, NavigationType.Pop);
@@ -1459,8 +1507,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidLoad();
 
-				_tracker.Target = Child;
-				_tracker.AdditionalTargets = Child.GetParentPages();
+				var parentPages = Child.GetParentPages();
+				var flyoutPageWithToolbarItems = FindFlyoutPageWithToolbarItems(parentPages);
+				if (flyoutPageWithToolbarItems != null)
+				{
+					_tracker.Target = flyoutPageWithToolbarItems.Flyout;
+					var additionalTargets = new List<Page>(parentPages);
+					additionalTargets.Add(Child);
+					_tracker.AdditionalTargets = additionalTargets;
+				}
+				else
+				{
+					_tracker.Target = Child;
+					_tracker.AdditionalTargets = parentPages;
+				}
 				_tracker.CollectionChanged += TrackerOnCollectionChanged;
 
 				UpdateToolbarItems();
@@ -1777,6 +1837,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateTitleImage(titleViewContainer, titleIcon);
 					NavigationItem.TitleView = titleViewContainer;
 				}
+			}
+
+			FlyoutPage FindFlyoutPageWithToolbarItems(IEnumerable<Page> parentPages)
+			{
+				foreach (var page in parentPages)
+				{
+					if (page is FlyoutPage flyoutPage && flyoutPage.Flyout?.ToolbarItems?.Count > 0)
+					{
+						return flyoutPage;
+					}
+				}
+				return null;
 			}
 
 			/// <summary>

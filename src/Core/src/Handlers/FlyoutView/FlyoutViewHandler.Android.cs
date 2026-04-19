@@ -251,6 +251,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
+
+			// Apply drawer lock mode during layout so IsGestureEnabled is respected
+			// even before the detail platform view is ready
+			DrawerLayout.SetDrawerLockMode(
+				VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && VirtualView.IsGestureEnabled
+					? DrawerLayout.LockModeUnlocked
+					: DrawerLayout.LockModeLockedClosed);
 		}
 
 		void UpdateIsPresented()

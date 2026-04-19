@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34712">
+    <x:Code><![CDATA[
+        using System;
+        using System.Globalization;
+
+        public string GetMessage() => "Hello from x:Code";
+
+        public string GetFormattedDate()
+            => DateTime.Now.ToString("d", CultureInfo.InvariantCulture);
+    ]]></x:Code>
+    <Label x:Name="testLabel" Text="Test" />
+</ContentPage>
