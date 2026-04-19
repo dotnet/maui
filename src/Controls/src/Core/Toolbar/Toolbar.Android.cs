@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Toolbar
 	{
+		IViewHandler? _platformTitleViewHandler;
 		Container? _platformTitleView;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
@@ -81,11 +82,14 @@ namespace Microsoft.Maui.Controls
 
 			if (titleView == null)
 			{
+				if (_platformTitleView != null)
+					_platformTitleView.Child = null;
 				_platformTitleView?.RemoveFromParent();
 				return;
 			}
 
 			titleView.ToPlatform(MauiContext);
+			_platformTitleViewHandler = titleView.Handler;
 
 			if (_platformTitleView == null || _platformTitleView.Context != MauiContext.Context)
 			{
@@ -115,7 +119,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			_platformTitleView.Child = titleView.Handler as IPlatformViewHandler;
+			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
 		}
 
 		void UpdateBarBackground()
