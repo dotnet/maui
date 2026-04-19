@@ -296,8 +296,18 @@ try {
             $buildArgs += "/p:AndroidPackageFormat=apk"
         }
         "windows" {
+            # NOTE: WindowsAppSDKSelfContained MUST NOT be passed via command line because it
+            # propagates to ALL referenced projects (including library dependencies like
+            # Graphics.csproj) and breaks them with:
+            #   "WindowsAppSDKSelfContained requires a supported Windows architecture"
+            # Instead, pass _MauiDeviceTestUnpackaged=true. The
+            # Microsoft.Maui.TestUtils.DeviceTests.Runners.props file (imported from each
+            # device test csproj) converts that signal into WindowsAppSDKSelfContained=true
+            # ONLY on the device test project itself. See eng/devices/windows.cake (buildOnly task)
+            # for the canonical CI pattern.
             $buildArgs += "/p:WindowsPackageType=None"
-            $buildArgs += "/p:WindowsAppSDKSelfContained=true"
+            $buildArgs += "/p:SelfContained=true"
+            $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
             $buildArgs += "/p:UseMonoRuntime=false"
         }
     }
