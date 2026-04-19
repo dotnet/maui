@@ -30,10 +30,21 @@ public class PhiSilicaToolCallingClient : DelegatingChatClient
 	public PhiSilicaToolCallingClient() : base(new PromptBasedToolCallingClient(new PhiSilicaChatClient())) { }
 }
 
-[Category("PhiSilicaChatClient")]
-public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCallingTestsBase<PhiSilicaToolCallingClient>
+/// <summary>
+/// Wraps PhiSilicaChatClient with StructuredToolCallingClient → PromptBasedSchemaClient
+/// so tool calls are expressed as structured JSON output (more reliable than tag-based parsing).
+/// Pipeline: FICC → StructuredToolCallingClient → PromptBasedSchemaClient → PhiSilicaChatClient
+/// </summary>
+public class PhiSilicaStructuredToolCallingClient : DelegatingChatClient
 {
-	protected override IChatClient EnableFunctionCalling(PhiSilicaToolCallingClient client)
+	public PhiSilicaStructuredToolCallingClient()
+		: base(new StructuredToolCallingClient(new PromptBasedSchemaClient(new PhiSilicaChatClient()))) { }
+}
+
+[Category("PhiSilicaChatClient")]
+public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCallingTestsBase<PhiSilicaStructuredToolCallingClient>
+{
+	protected override IChatClient EnableFunctionCalling(PhiSilicaStructuredToolCallingClient client)
 	{
 		return client.AsBuilder()
 			.UseFunctionInvocation()
