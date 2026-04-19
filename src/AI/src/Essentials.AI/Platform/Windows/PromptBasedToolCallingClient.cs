@@ -179,7 +179,7 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 			"- Call only ONE tool at a time. After receiving the result, you may call another tool if needed.\n" +
 			"- Use the exact function name and parameter names from the tool definitions.\n" +
 			"- The arguments must be valid JSON matching the parameter schema.\n" +
-			"- For enum parameters, use EXACTLY one of the allowed values from the schema.\n" +
+			"- For enum parameters, use EXACTLY one of the allowed values listed in the description.\n" +
 			"- If a tool has no required parameters, use an empty arguments object: {}\n" +
 			"- If you need information from one tool to call another (e.g., get the date first, then get weather for that date), call the first tool and wait for its result before calling the second.\n" +
 			"- After receiving a tool result, use it to formulate your final response OR call another tool if needed.\n" +
@@ -353,5 +353,48 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 			.Replace("\n", "\\n", StringComparison.Ordinal)
 			.Replace("\r", "\\r", StringComparison.Ordinal)
 			.Replace("\t", "\\t", StringComparison.Ordinal);
+	}
+
+	/// <summary>
+	/// Builds example arguments JSON for a tool, using the first enum value for enum params
+	/// and placeholder values for other types. Used in the few-shot example.
+	/// </summary>
+	private static string BuildExampleArgs(AIFunction tool)
+	{
+		try
+		{
+			using var schemaDoc = JsonDocument.Parse(tool.JsonSchema.GetRawText());
+			if (!schemaDoc.RootElement.TryGetProperty("properties", out var props))
+				return "{}";
+
+			var args = new Dictionary<string, string>();
+			foreach (var prop in props.EnumerateObject())
+			{
+				if (prop.Value.TryGetProperty("enum", out var enumValues))
+				{
+					// Use the first enum value
+					var first = enumValues.EnumerateArray().FirstOrDefault();
+					args[prop.Name] = first.ValueKind == JsonValueKind.String
+						? $"\"{first.GetString()}\""
+						: first.GetRawText();
+				}
+				else
+				{
+					var type = prop.Value.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : "string";
+					args[prop.Name] = type switch
+					{
+						"integer" or "number" => "0",
+						"boolean" => "true",
+						_ => "\"example\""
+					};
+				}
+			}
+
+			return "{" + string.Join(",", args.Select(kv => $"\"{kv.Key}\":{kv.Value}")) + "}";
+		}
+		catch
+		{
+			return "{}";
+		}
 	}
 }

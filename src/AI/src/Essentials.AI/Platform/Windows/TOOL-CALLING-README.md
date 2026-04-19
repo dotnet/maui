@@ -173,6 +173,9 @@ Final results: **89/95 tests passing** including **24/27 function calling tests*
 | Round 5 | 90/95 | Improved prompt for chained calls + enum hints | 24/28 (chained calls now pass!) |
 | Round 6-8 | NO RESULTS | Enum schema parsing + bare JSON fallback | FICC infinite loops — "ALWAYS use tools" prompt + bare JSON fallback = model keeps calling tools on follow-ups |
 | Round 11 | 89/95 | Restored round 4 prompt, removed bare JSON fallback | Stable at 89/95 |
+| Round 12 | 95/102 | Inline enum values, InformationalOnly skip, experiment tests | 7 new experiment tests all pass |
+| Round 13 | 94/102 | Few-shot example from first tool | Helped enum but broke chained calls — reverted |
+| Final | 95/102 | Reverted few-shot, kept enum inline + experiments | Stable at 95/102 (93%) |
 
 ## Issue 8: FICC Infinite Loop with Aggressive Prompts
 
@@ -188,6 +191,50 @@ Final results: **89/95 tests passing** including **24/27 function calling tests*
 
 **Decision**: Do NOT parse bare JSON as tool calls. Only parse text within explicit `<tool_call>` tags. Accept that some model outputs won't be detected as tool calls.
 
+## Issue 10: Enum Parameters Work in Structured Output but Not Tool Calling
+
+**Discovery**: Experiment tests prove that Phi Silica correctly handles enum values in structured output (via `PromptBasedSchemaClient`). A test asking for "Banana" from `{Apple, Banana, Cherry}` correctly returns `Banana`. A test asking for "Bread" correctly returns `null`.
+
+However, when enum parameters are part of tool calling (via `PromptBasedToolCallingClient`), the model doesn't reliably generate `<tool_call>` blocks with the correct enum values. The function is simply never called.
+
+**Analysis**: The JSON schema for enum parameters is complex (nested `properties` → `enum` arrays). The model can follow enum constraints when it's the primary output focus (structured output), but when it also has to decide whether to call a tool and format the `<tool_call>` wrapper, the added complexity overwhelms the small model.
+
+**Attempted fixes**:
+1. Inline enum values into tool description text — marginal improvement
+2. Few-shot example with enum values — helped enum but broke other tests (chained calls regressed)
+
+**Status**: Known SLM limitation. Would likely work with a larger model or constrained decoding.
+
+## Issue 11: Few-Shot Examples Are a Double-Edged Sword
+
+**Discovery**: Adding a dynamic few-shot example from the first tool to the system prompt helped some tests (NoNullTextBeforeToolCalls started passing) but hurt others (chained calls regressed). The few-shot example from the first tool biased the model toward that tool's format and away from the general pattern.
+
+**Decision**: Don't use few-shot examples in the system prompt. The static example in the rules section (`<tool_call>{"name": "ToolName", ...}`) is sufficient for general-purpose tool calling.
+
+## Issue 12: Streaming JSON Schema Code Fences
+
+**Discovery**: When `PromptBasedSchemaClient` handles streaming, it doesn't strip markdown code fences (`` ```json ... ``` ``). The non-streaming path strips them correctly. An attempt to buffer streaming output and strip code fences caused deadlocks.
+
+**Status**: Known limitation. The test `GetStreamingResponseAsync_WithJsonSchemaFormat_StreamsValidJson` fails because the model wraps JSON in code fences during streaming.
+
+## Opus 4.7 Architecture Review (Key Findings)
+
+An external review by Claude Opus 4.7 validated the DelegatingChatClient architecture and identified several improvements:
+
+**Applied**:
+- Inline enum values into parameter descriptions (Issue 10)
+- Promote fallback regex to static (`ToolCallFallbackRegex`)
+- Use 16-char callIds (was 8 — collision risk)
+- Make `InformationalOnly` test virtual for platform-specific skip
+- Set FICC iteration cap as defense-in-depth
+
+**Noted for future**:
+- Add unit tests for `PromptBasedToolCallingClient` against mock `IChatClient` (tighter dev loop)
+- Switch tool marker to rarer string (e.g., `[[TOOLCALL]]`) to avoid user-content collisions
+- Add "args contain tool call syntax" injection test
+- Streaming loses metadata (Role, AuthorName) on synthesized updates
+- Greedy regex could collapse multiple tool calls in one response (masked by "one tool at a time" rule)
+
 ## Decision Log
 
 | Decision | Alternatives Considered | Why This Choice |
@@ -195,10 +242,12 @@ Final results: **89/95 tests passing** including **24/27 function calling tests*
 | Use `<tool_call>` plain tags (not `<\|tool_call\|>`) | Native Phi-4 tokens, JSON-only format | WinRT LanguageModel API strips special tokens. Plain tags survive as text. |
 | Prompt-based approach (not native API) | Wait for WinRT tool calling API | No WinRT tool calling API exists. Prompt approach works with any text-in/text-out model. |
 | Buffer streaming then parse | Parse incrementally as chunks arrive | Chunks split across `<tool_call>` boundaries. Buffering is simpler and more reliable. |
-| Separate `PromptBasedToolCallingClient` (not in `PhiSilicaChatClient`) | Merge tool logic into main client | Separation of concerns. Can be reused with other text-only models. Matches `PromptBasedSchemaClient` pattern. |
+| Separate `PromptBasedToolCallingClient` (not in `PhiSilicaChatClient`) | Merge tool logic into main client | Separation of concerns. Can be reused with other text-only models. Matches `PromptBasedSchemaClient` pattern. (Validated by Opus 4.7 review) |
 | `FunctionInvokingChatClient` handles invocation | PromptBasedToolCallingClient invokes directly | FICC is the standard M.E.AI middleware. Handles retry loops, error handling, InformationalOnly. Less code for us. |
 | Include "respond normally" escape clause | "ALWAYS use tools" | Prevents FICC infinite loops. Model needs an exit condition for the tool-calling loop. |
 | Don't parse bare JSON as tool calls | Parse any JSON with name+arguments | Bare JSON fallback causes FICC infinite loops because model's normal responses can resemble tool call JSON. |
+| No few-shot examples in system prompt | Dynamic few-shot from first tool | Few-shot helps some tests but breaks others (biases toward first tool's format). Static example in rules is sufficient. |
+| Inline enum values in description | Schema-only, separate enum listing | Cheapest approach with measurable improvement for small models. Doesn't hurt non-enum tools. |
 
 ## References
 
@@ -207,4 +256,6 @@ Final results: **89/95 tests passing** including **24/27 function calling tests*
 - [Microsoft.Extensions.AI FunctionInvokingChatClient](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.functioninvokingchatclient) — how FICC detects and invokes tool calls
 - [Phi Silica documentation](https://learn.microsoft.com/windows/ai/apis/phi-silica) — Windows AI API overview
 - [LanguageModel API reference](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.ai.text.languagemodel) — WinRT API details
-- GPT-5.4 review (session) — suggested enum plain-text values, few-shot examples, low temperature for tools
+- [PhiCookbook Function Calling](https://github.com/microsoft/PhiCookBook/blob/main/md/02.Application/07.FunctionCalling/Phi4/FunctionCallingBasic/README.md) — official Phi-4 function calling example
+- GPT-5.4 review — suggested enum plain-text values, few-shot examples, low temperature for tools
+- Claude Opus 4.7 review — architecture validation, test gap analysis, FICC iteration cap, streaming metadata gaps
