@@ -36,6 +36,12 @@
     <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
+  <!-- Bundle .NET runtime and Windows App SDK into the MSIX to prevent dependency issues -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
@@ -87,6 +93,7 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.props" />
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

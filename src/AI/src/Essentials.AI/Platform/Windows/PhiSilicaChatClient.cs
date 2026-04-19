@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.AI;
@@ -195,6 +196,29 @@ public sealed class PhiSilicaChatClient : IChatClient
 				{
 					promptParts.Add(textContent.Text);
 				}
+				else if (content is FunctionCallContent functionCall)
+				{
+#pragma warning disable IL3050, IL2026
+					// Include tool call history so the model has context for multi-turn conversations
+					var argsJson = functionCall.Arguments is not null
+						? System.Text.Json.JsonSerializer.Serialize(functionCall.Arguments)
+						: "{}";
+					promptParts.Add($"<|tool_call|>{{\"name\":\"{functionCall.Name}\",\"arguments\":{argsJson}}}<|/tool_call|>");
+#pragma warning restore IL3050, IL2026
+				}
+				else if (content is FunctionResultContent functionResult)
+				{
+#pragma warning disable IL3050, IL2026
+					// Include tool result history for multi-turn context
+					var resultStr = functionResult.Result switch
+					{
+						string s => s,
+						not null => System.Text.Json.JsonSerializer.Serialize(functionResult.Result),
+						_ => "{}"
+					};
+#pragma warning restore IL3050, IL2026
+					promptParts.Add($"<|tool_response|>{resultStr}<|end|>");
+				}
 				else if (content is not TextContent)
 				{
 					throw new ArgumentException($"Unsupported content type: {content.GetType().Name}", nameof(history));
@@ -231,5 +255,17 @@ public sealed class PhiSilicaChatClient : IChatClient
 
 		if (options.MaxOutputTokens is <= 0)
 			throw new ArgumentOutOfRangeException(nameof(options), "MaxOutputTokens must be greater than zero.");
+
+		// Validate tool types — only AIFunction tools are supported
+		if (options.Tools is { Count: > 0 })
+		{
+			var unsupportedTools = options.Tools.Where(t => t is not AIFunction).ToList();
+			if (unsupportedTools.Count > 0)
+			{
+				throw new NotSupportedException(
+					$"Only AIFunction tools are supported by Phi Silica. " +
+					$"Unsupported tools: {string.Join(", ", unsupportedTools.Select(t => t.GetType().Name))}");
+			}
+		}
 	}
 }

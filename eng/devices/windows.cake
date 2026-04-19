@@ -588,9 +588,13 @@ Task("SetupTestPaths")
 			{
 				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
-			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests") && !PROJECT.FullPath.Contains("Essentials.AI.DeviceTests"))
 			{
 				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.AI.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.AI.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
 			Information("Looking for .exe in arcade binDir {0}", binDir);

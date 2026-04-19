@@ -300,8 +300,11 @@ try {
             # the test project csproj (not transitive dependencies like Graphics.csproj).
             # See eng/devices/windows.cake for the canonical approach.
             $buildArgs += "/p:WindowsPackageType=None"
-            $buildArgs += "/p:WindowsAppSDKSelfContained=true"
-            $buildArgs += "/p:UseMonoRuntime=false"
+            # Use _MauiDeviceTestUnpackaged instead of WindowsAppSDKSelfContained directly.
+            # WindowsAppSDKSelfContained propagates to ALL referenced projects (Graphics, etc.)
+            # causing architecture errors. _MauiDeviceTestUnpackaged is read by
+            # Microsoft.Maui.TestUtils.DeviceTests.Runners.props to set it only on the test project.
+            $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
         }
     }
 

@@ -20,9 +20,25 @@ public class PhiSilicaChatClientCancellationTests : ChatClientCancellationTestsB
 {
 }
 
-[Category("PhiSilicaChatClient")]
-public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCallingTestsBase<PhiSilicaChatClient>
+/// <summary>
+/// Wraps PhiSilicaChatClient with PromptBasedToolCallingClient so the model can
+/// do tool calling via prompt engineering. The test base class wraps with
+/// FunctionInvokingChatClient via EnableFunctionCalling().
+/// </summary>
+public class PhiSilicaToolCallingClient : DelegatingChatClient
 {
+	public PhiSilicaToolCallingClient() : base(new PromptBasedToolCallingClient(new PhiSilicaChatClient())) { }
+}
+
+[Category("PhiSilicaChatClient")]
+public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCallingTestsBase<PhiSilicaToolCallingClient>
+{
+	protected override IChatClient EnableFunctionCalling(PhiSilicaToolCallingClient client)
+	{
+		return client.AsBuilder()
+			.UseFunctionInvocation()
+			.Build();
+	}
 }
 
 [Category("PhiSilicaChatClient")]

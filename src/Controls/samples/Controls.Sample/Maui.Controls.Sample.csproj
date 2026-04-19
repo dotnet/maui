@@ -25,7 +25,7 @@
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
-    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsPackageType>MSIX</WindowsPackageType>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
