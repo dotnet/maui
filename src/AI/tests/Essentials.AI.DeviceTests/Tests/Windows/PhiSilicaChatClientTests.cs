@@ -39,6 +39,15 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 			.UseFunctionInvocation()
 			.Build();
 	}
+
+	/// <summary>
+	/// Skip: InformationalOnly is for native tool callers (Apple Intelligence) where the model
+	/// invokes tools itself. Phi Silica uses prompt-based tool calling — FICC handles invocation,
+	/// so InformationalOnly is never set by our client.
+	/// </summary>
+	[Fact(Skip = "Phi Silica uses prompt-based tool calling. InformationalOnly applies only to native tool callers like Apple Intelligence.")]
+	public override Task GetStreamingResponseAsync_InformationalOnlyFunctionCalls_NotInvokedByFICC()
+		=> Task.CompletedTask;
 }
 
 [Category("PhiSilicaChatClient")]

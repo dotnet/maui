@@ -28,6 +28,11 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 		@"<\|?tool_call\|?>\s*(\{.*\})\s*<\|?/?tool_call\|?>",
 		RegexOptions.Singleline | RegexOptions.Compiled);
 
+	// Fallback regex for tool calls without closing tags
+	private static readonly Regex ToolCallFallbackRegex = new(
+		@"<\|?tool_call\|?>\s*(\{.*)",
+		RegexOptions.Singleline | RegexOptions.Compiled);
+
 	public PromptBasedToolCallingClient(IChatClient inner) : base(inner) { }
 
 	public override async Task<ChatResponse> GetResponseAsync(
@@ -92,7 +97,7 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 			foreach (var (name, args) in toolCalls)
 			{
 				toolUpdate.Contents.Add(new FunctionCallContent(
-					callId: Guid.NewGuid().ToString("N")[..8],
+					callId: Guid.NewGuid().ToString("N")[..16],
 					name: name,
 #pragma warning disable IL3050, IL2026
 					arguments: args != null ? JsonSerializer.Deserialize<Dictionary<string, object?>>(args) : null));
@@ -121,15 +126,41 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 		if (tools.Count == 0)
 			return (messages, options);
 
-		// Build tool definitions as JSON array
+		// Build tool definitions as JSON array, with enum values inlined into descriptions
+		// (Opus 4.7 review: small models don't reliably read deep into JSON Schema "enum" fields,
+		// but readily follow plain-text constraints in descriptions)
 		var toolDefs = new StringBuilder();
 		toolDefs.Append('[');
 		for (int i = 0; i < tools.Count; i++)
 		{
 			if (i > 0) toolDefs.Append(',');
+			var desc = tools[i].Description;
+
+			// Extract enum values from schema and append to description
+			try
+			{
+				using var schemaDoc = JsonDocument.Parse(tools[i].JsonSchema.GetRawText());
+				if (schemaDoc.RootElement.TryGetProperty("properties", out var props))
+				{
+					var enumHints = new List<string>();
+					foreach (var prop in props.EnumerateObject())
+					{
+						if (prop.Value.TryGetProperty("enum", out var enumValues))
+						{
+							var values = string.Join(", ", enumValues.EnumerateArray()
+								.Select(v => v.GetString()));
+							enumHints.Add($"{prop.Name} must be one of: {values}");
+						}
+					}
+					if (enumHints.Count > 0)
+						desc += ". " + string.Join(". ", enumHints);
+				}
+			}
+			catch { /* Schema parsing failed — continue without enum hints */ }
+
 			toolDefs.Append('{');
 			toolDefs.Append($"\"name\":\"{tools[i].Name}\"");
-			toolDefs.Append($",\"description\":\"{EscapeJson(tools[i].Description)}\"");
+			toolDefs.Append($",\"description\":\"{EscapeJson(desc)}\"");
 			toolDefs.Append($",\"parameters\":{tools[i].JsonSchema}");
 			toolDefs.Append('}');
 		}
@@ -206,7 +237,7 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 				foreach (var (name, args) in toolCalls)
 				{
 					message.Contents.Add(new FunctionCallContent(
-						callId: Guid.NewGuid().ToString("N")[..8],
+						callId: Guid.NewGuid().ToString("N")[..16],
 						name: name,
 #pragma warning disable IL3050, IL2026
 						arguments: args != null ? JsonSerializer.Deserialize<Dictionary<string, object?>>(args) : null));
@@ -229,8 +260,7 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 		// Fallback: if no matches with closing tag, try finding JSON after <tool_call> without closing tag
 		if (results.Count == 0)
 		{
-			var fallbackRegex = new Regex(@"<\|?tool_call\|?>\s*(\{.*)", RegexOptions.Singleline);
-			foreach (Match match in fallbackRegex.Matches(text))
+			foreach (Match match in ToolCallFallbackRegex.Matches(text))
 			{
 				var jsonCandidate = match.Groups[1].Value.Trim();
 				// Try to extract a balanced JSON object
