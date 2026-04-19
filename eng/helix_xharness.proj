@@ -32,17 +32,6 @@
         <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;Shell;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
     </PropertyGroup>
 
-    <!--
-        DeviceTestCategoryFilter: When set (semicolon-separated category names),
-        all work items are filtered to only run the specified categories.
-        Passed from ci-device-tests.yml via extraHelixArguments.
-        This overrides the default iOS category splitting behavior.
-    -->
-    <PropertyGroup Condition="'$(DeviceTestCategoryFilter)' != ''">
-        <!-- When filtering, disable iOS category splitting — run everything in one filtered work item -->
-        <ControlsTestCategoriesToSkipForRestOfTests></ControlsTestCategoriesToSkipForRestOfTests>
-    </PropertyGroup>
-
     <!-- AI test categories to skip on CI (Apple Intelligence models are not available on Helix machines) -->
     <PropertyGroup Condition="'$(TargetOS)' == 'ios' or '$(TargetOS)' == 'maccatalyst'">
         <AITestCategoriesToSkipOnCI>AppleIntelligenceChatClient</AITestCategoriesToSkipOnCI>
@@ -263,26 +252,6 @@
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />
-
-        <!--
-            DeviceTestCategoryFilter override:
-            When set, replace CustomCommands on ALL Apple work items to only run
-            the specified categories. This lets ci-device-tests.yml pass targeted
-            category filters via extraHelixArguments.
-            Format: semicolon-separated category names, e.g. "Button;Label;Shell"
-        -->
-        <ItemGroup Condition="'$(DeviceTestCategoryFilter)' != '' and ('$(TargetOS)' == 'ios' or '$(TargetOS)' == 'maccatalyst')">
-            <XHarnessAppBundleToTest>
-                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=Category=$(DeviceTestCategoryFilter)"</CustomCommands>
-            </XHarnessAppBundleToTest>
-        </ItemGroup>
-        <ItemGroup Condition="'$(DeviceTestCategoryFilter)' != '' and '$(TargetOS)' == 'android'">
-            <XHarnessApkToTest>
-                <AndroidInstrumentationArguments>TestFilter=Category=$(DeviceTestCategoryFilter)</AndroidInstrumentationArguments>
-            </XHarnessApkToTest>
-        </ItemGroup>
-
-        <Message Text="DeviceTestCategoryFilter applied: $(DeviceTestCategoryFilter)" Importance="high" Condition="'$(DeviceTestCategoryFilter)' != ''" />
     </Target>
 
 

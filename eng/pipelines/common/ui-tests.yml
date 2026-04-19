@@ -12,7 +12,6 @@ parameters:
   defaultiOSVersion: '26.0'
   timeoutInMinutes: 180
   skipProvisioning: true
-  prNumber: '' # When set, checks out the PR branch before building
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
   categoryGroupsToTest:
@@ -64,14 +63,6 @@ stages:
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
-          - ${{ if ne(parameters.prNumber, '') }}:
-            - script: |
-                echo "Checking out PR #${{ parameters.prNumber }}..."
-                git fetch origin pull/${{ parameters.prNumber }}/head:pr-${{ parameters.prNumber }}
-                git checkout pr-${{ parameters.prNumber }}
-                echo "Checked out PR #${{ parameters.prNumber }}"
-                git log --oneline -1
-              displayName: 'Checkout PR #${{ parameters.prNumber }}'
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "Mono"
@@ -88,14 +79,6 @@ stages:
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
-          - ${{ if ne(parameters.prNumber, '') }}:
-            - script: |
-                echo "Checking out PR #${{ parameters.prNumber }}..."
-                git fetch origin pull/${{ parameters.prNumber }}/head:pr-${{ parameters.prNumber }}
-                git checkout pr-${{ parameters.prNumber }}
-                echo "Checked out PR #${{ parameters.prNumber }}"
-                git log --oneline -1
-              displayName: 'Checkout PR #${{ parameters.prNumber }}'
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "CoreCLR"

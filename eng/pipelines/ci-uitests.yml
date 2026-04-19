@@ -64,16 +64,6 @@ parameters:
     type: boolean
     default: false
 
-  - name: uiTestCategories
-    displayName: 'UI Test Categories to run (comma-separated, e.g. Button,Label,Shell). Empty = all categories.'
-    type: string
-    default: ''
-
-  - name: prNumber
-    displayName: 'PR number to test (checks out the PR branch). Leave empty for current branch.'
-    type: string
-    default: ''
-
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -160,13 +150,6 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
-      # When uiTestCategories is specified, run only those categories (single matrix entry).
-      # When empty (default), the full categoryGroupsToTest list from ui-tests.yml is used.
-      ${{ if ne(parameters.uiTestCategories, '') }}:
-        categoryGroupsToTest:
-          - '${{ parameters.uiTestCategories }}'
-      # When prNumber is specified, checkout that PR branch before building.
-      prNumber: ${{ parameters.prNumber }}
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         androidPool: ${{ parameters.androidPoolInternal }}
