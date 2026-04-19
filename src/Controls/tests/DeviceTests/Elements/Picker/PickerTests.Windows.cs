@@ -56,6 +56,27 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => Assert.Equal(UI.Xaml.VerticalAlignment.Bottom, GetPlatformVerticalOptions(handler.PlatformView)));
 		}
 
+		[Fact(DisplayName = "Title maps to PlaceholderText")]
+		public async Task TitleMapsToPlaceholderText()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal("Select Option", handler.PlatformView.PlaceholderText);
+			});
+		}
+
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
 		{
 			return InvokeOnMainThreadAsync(() =>
