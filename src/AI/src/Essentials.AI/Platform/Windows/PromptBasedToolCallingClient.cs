@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -135,7 +136,7 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 		toolDefs.Append(']');
 
 		// Create system prompt with tool definitions.
-		// We use plain-text markers (<tool_call>/<tool_call>) because the Windows
+		// We use plain-text markers (<tool_call>) because the Windows
 		// LanguageModel API strips Phi-4 special tokens (<|tool_call|>) from output.
 		var toolSystemPrompt = new ChatMessage(ChatRole.System,
 			"You are a helpful assistant with access to the following tools:\n\n" +
@@ -144,9 +145,13 @@ public sealed class PromptBasedToolCallingClient : DelegatingChatClient
 			"<tool_call>{\"name\": \"ToolName\", \"arguments\": {\"param\": \"value\"}}</tool_call>\n\n" +
 			"Rules:\n" +
 			"- Respond with ONLY the <tool_call> block when calling a tool, no other text before or after.\n" +
+			"- Call only ONE tool at a time. After receiving the result, you may call another tool if needed.\n" +
 			"- Use the exact function name and parameter names from the tool definitions.\n" +
 			"- The arguments must be valid JSON matching the parameter schema.\n" +
-			"- After receiving a tool result, use it to formulate your final response to the user.\n" +
+			"- For enum parameters, use EXACTLY one of the allowed values from the schema.\n" +
+			"- If a tool has no required parameters, use an empty arguments object: {}\n" +
+			"- If you need information from one tool to call another (e.g., get the date first, then get weather for that date), call the first tool and wait for its result before calling the second.\n" +
+			"- After receiving a tool result, use it to formulate your final response OR call another tool if needed.\n" +
 			"- If the user's question can be answered without tools, respond normally.");
 
 		// Prepend tool system message
