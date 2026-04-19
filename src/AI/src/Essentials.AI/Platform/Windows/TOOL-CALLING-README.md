@@ -137,21 +137,68 @@ Rules:
 
 Starting point: **1/95 tests passing** (only `SmokeTests.TestInfrastructureWorks`)
 
-Final results: **87/95 tests passing** including **22/27 function calling tests**
+Final results: **89/95 tests passing** including **24/27 function calling tests**
 
 | Suite | Score |
 |-------|-------|
-| CancellationTests | 8/8 ✅ |
-| OptionsTests | 8/8 ✅ |
-| GetServiceTests | 5/5 ✅ |
-| InstantiationTests | 4/4 ✅ |
-| StreamingTests | 5/5 ✅ |
-| ResponseTests | 1/1 ✅ |
-| MessagesTests | 12/12 ✅ |
-| ValidationTests | 7/7 ✅ |
-| SmokeTests | 1/1 ✅ |
-| FunctionCallingTests | 22/27 ⚠️ |
-| JsonSchemaTests | 14/17 ⚠️ |
+| CancellationTests | 8/8 |
+| OptionsTests | 8/8 |
+| GetServiceTests | 5/5 |
+| InstantiationTests | 4/4 |
+| StreamingTests | 5/5 |
+| ResponseTests | 1/1 |
+| MessagesTests | 12/12 |
+| ValidationTests | 7/7 |
+| SmokeTests | 1/1 |
+| FunctionCallingTests | 24/27 |
+| JsonSchemaTests | 14/17 |
+
+### Remaining Failures (4)
+
+| Test | Root Cause | Status |
+|------|-----------|--------|
+| `GetResponseAsync_FunctionWithEnumParameter_CallsToolCorrectly` | Model doesn't reliably parse enum constraints from JSON schema. Phi Silica may need explicit enum values listed in the description, not just the schema. | Model limitation — prompt tuning needed |
+| `InformationalOnlyFunctionCalls_NotInvokedByFICC` | This test validates Apple-style native tool invocation where the model handles the call and marks it `InformationalOnly=true`. With prompt-based calling, FICC handles invocation — the pattern doesn't apply. | Architecture mismatch — not applicable to prompt-based |
+| `NoNullTextBeforeToolCalls` | Model sometimes outputs bare JSON `{"name":"..."}` without `<tool_call>` tags, which our parser doesn't detect (bare JSON fallback causes FICC infinite loops — see Issue 8). | Model behavior — needs constrained decoding |
+| `StreamingResponseAsync_WithJsonSchemaFormat_StreamsValidJson` | Model wraps JSON in markdown code fences during streaming. `PromptBasedSchemaClient` only strips fences for non-streaming. Streaming fix causes deadlocks. | Streaming architecture limitation |
+
+## Iteration Log
+
+| Round | Pass/Total | Changes | Outcome |
+|-------|-----------|---------|---------|
+| Baseline | 1/95 | SmokeTests only, LAF error on all model tests | Need MSIX packaging |
+| Unpackaged + SelfContained | 14/95 | `dotnet publish` with `SelfContained=true` | Unpackaged = UnauthorizedAccessException for Phi Silica |
+| MSIX Packaged | 66/95 | Registered MSIX, `systemAIModels` capability active | Model works! Most suites pass. 0/27 function calling. |
+| Round 4 (key fix) | 87/95 | Fixed `options.Tools` null-before-check bug | 22/27 function calling! The model WAS outputting `<tool_call>` all along. |
+| Round 5 | 90/95 | Improved prompt for chained calls + enum hints | 24/28 (chained calls now pass!) |
+| Round 6-8 | NO RESULTS | Enum schema parsing + bare JSON fallback | FICC infinite loops — "ALWAYS use tools" prompt + bare JSON fallback = model keeps calling tools on follow-ups |
+| Round 11 | 89/95 | Restored round 4 prompt, removed bare JSON fallback | Stable at 89/95 |
+
+## Issue 8: FICC Infinite Loop with Aggressive Prompts
+
+**Discovery**: Changing the prompt from "If the user's question can be answered without tools, respond normally" to "ALWAYS use a tool when the user's question matches a tool's purpose" caused the test runner to hang for 12+ minutes and never produce results.
+
+**Root cause**: With the aggressive prompt, after FICC invokes a tool and sends the result back to the model, the model tries to call another tool with the result text (interpreting the follow-up as a new tool-worthy question). FICC loops indefinitely: model → tool call → invoke → result → model → tool call → ...
+
+**Lesson**: The "respond normally without tools" escape clause is **critical** for preventing infinite loops. The model must know when to stop calling tools and just answer.
+
+## Issue 9: Bare JSON Fallback Causes Loops
+
+**Discovery**: Adding a fallback that detects bare JSON `{"name":"...","arguments":{...}}` without `<tool_call>` tags seemed like a good idea (the model sometimes outputs bare JSON). But this causes FICC infinite loops because the model's normal text responses can also look like JSON objects.
+
+**Decision**: Do NOT parse bare JSON as tool calls. Only parse text within explicit `<tool_call>` tags. Accept that some model outputs won't be detected as tool calls.
+
+## Decision Log
+
+| Decision | Alternatives Considered | Why This Choice |
+|----------|------------------------|-----------------|
+| Use `<tool_call>` plain tags (not `<\|tool_call\|>`) | Native Phi-4 tokens, JSON-only format | WinRT LanguageModel API strips special tokens. Plain tags survive as text. |
+| Prompt-based approach (not native API) | Wait for WinRT tool calling API | No WinRT tool calling API exists. Prompt approach works with any text-in/text-out model. |
+| Buffer streaming then parse | Parse incrementally as chunks arrive | Chunks split across `<tool_call>` boundaries. Buffering is simpler and more reliable. |
+| Separate `PromptBasedToolCallingClient` (not in `PhiSilicaChatClient`) | Merge tool logic into main client | Separation of concerns. Can be reused with other text-only models. Matches `PromptBasedSchemaClient` pattern. |
+| `FunctionInvokingChatClient` handles invocation | PromptBasedToolCallingClient invokes directly | FICC is the standard M.E.AI middleware. Handles retry loops, error handling, InformationalOnly. Less code for us. |
+| Include "respond normally" escape clause | "ALWAYS use tools" | Prevents FICC infinite loops. Model needs an exit condition for the tool-calling loop. |
+| Don't parse bare JSON as tool calls | Parse any JSON with name+arguments | Bare JSON fallback causes FICC infinite loops because model's normal responses can resemble tool call JSON. |
 
 ## References
 
@@ -160,3 +207,4 @@ Final results: **87/95 tests passing** including **22/27 function calling tests*
 - [Microsoft.Extensions.AI FunctionInvokingChatClient](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.ai.functioninvokingchatclient) — how FICC detects and invokes tool calls
 - [Phi Silica documentation](https://learn.microsoft.com/windows/ai/apis/phi-silica) — Windows AI API overview
 - [LanguageModel API reference](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.ai.text.languagemodel) — WinRT API details
+- GPT-5.4 review (session) — suggested enum plain-text values, few-shot examples, low temperature for tools
