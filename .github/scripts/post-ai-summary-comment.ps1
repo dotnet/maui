@@ -752,7 +752,7 @@ if ($existingComment) {
     $body = $existingComment.body
     
     # Extract all non-PR-REVIEW sections
-    $sectionTypes = @("TRY-FIX", "WRITE-TESTS", "PR-FINALIZE")
+    $sectionTypes = @("TRY-FIX", "WRITE-TESTS", "PR-FINALIZE", "TEST-CATEGORIES")
     foreach ($sectionType in $sectionTypes) {
         $sStart = [regex]::Escape("<!-- SECTION:$sectionType -->")
         $sEnd = [regex]::Escape("<!-- /SECTION:$sectionType -->")

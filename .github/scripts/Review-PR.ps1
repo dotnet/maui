@@ -8,7 +8,7 @@
     Step 0: Branch setup        - Create review branch from main, merge PR squashed
     Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
     Step 2: pr-finalize skill   - Verify PR title/description match implementation
-    Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize)
+    Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize + categories)
     Step 4: Apply labels        - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
@@ -519,6 +519,24 @@ if (Test-Path $finalizeScript) {
     }
 } else {
     Write-Host "  ⚠️ post-pr-finalize-comment.ps1 not found — skipping finalize summary" -ForegroundColor Yellow
+}
+
+# 3c: Post UI / device test category detection (deterministic — no LLM)
+$categoriesScript = Join-Path $summaryScriptsDir "post-test-categories-comment.ps1"
+if (Test-Path $categoriesScript) {
+    try {
+        Write-Host "  📝 Posting test categories summary..." -ForegroundColor Cyan
+        $categoriesArgs = @('-PRNumber', $PRNumber) + $dryRunFlag
+        if ($aiSummaryCommentId) {
+            $categoriesArgs += @('-ExistingCommentId', $aiSummaryCommentId)
+        }
+        & $categoriesScript @categoriesArgs
+        Write-Host "  ✅ Test categories summary posted" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ Test categories summary posting failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-test-categories-comment.ps1 not found — skipping categories summary" -ForegroundColor Yellow
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
