@@ -274,7 +274,11 @@ try {
     )
 
     # Add RuntimeIdentifier if specified
-    if ($platformConfig.RuntimeIdentifier) {
+    # NOTE: For Windows we deliberately do NOT pass `-r` here; RuntimeIdentifierOverride
+    # is set in the windows-specific block below to ensure the RID propagates to ALL
+    # referenced projects (e.g. TestUtils.DeviceTests). Plain `-r` is suppressed on
+    # non-leaf project references and causes PRI/asset file resolution failures.
+    if ($platformConfig.RuntimeIdentifier -and $Platform -ne "windows") {
         $buildArgs += "-r", $platformConfig.RuntimeIdentifier
     }
 
@@ -303,8 +307,17 @@ try {
             # Instead, pass _MauiDeviceTestUnpackaged=true. The
             # Microsoft.Maui.TestUtils.DeviceTests.Runners.props file (imported from each
             # device test csproj) converts that signal into WindowsAppSDKSelfContained=true
-            # ONLY on the device test project itself. See eng/devices/windows.cake (buildOnly task)
-            # for the canonical CI pattern.
+            # ONLY on the device test project itself.
+            #
+            # Also: use RuntimeIdentifierOverride (NOT `-r`/RuntimeIdentifier) so the RID
+            # propagates to every ProjectReference (e.g. TestUtils.DeviceTests). Plain
+            # RuntimeIdentifier is auto-suppressed on non-leaf project references, which
+            # leaves dependency PRI/asset files in the non-RID output folder while the
+            # test app itself is built at the RID-specific path, producing PRI175 errors.
+            #
+            # See eng/devices/windows.cake (buildOnly task, lines 145-188) for the
+            # canonical CI pattern.
+            $buildArgs += "/p:RuntimeIdentifierOverride=$($platformConfig.RuntimeIdentifier)"
             $buildArgs += "/p:WindowsPackageType=None"
             $buildArgs += "/p:SelfContained=true"
             $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
