@@ -55,6 +55,16 @@ variables:
 
 parameters:
 
+- name: deviceTestCategories
+  displayName: 'Device Test Categories to run (semicolon-separated, e.g. Button;Label;Shell). Empty = all categories.'
+  type: string
+  default: ''
+
+- name: prNumber
+  displayName: 'PR number to test (checks out the PR branch). Leave empty for current branch.'
+  type: string
+  default: ''
+
 # Internal pools (dnceng)
 - name: windowsPoolInternal
   type: object
@@ -129,7 +139,19 @@ stages:
         runAsPublic: true
       runWindowsTests: true
       TargetFrameworkVersion: ${{ targetFrameworkVersion.tfm }}
+      # When deviceTestCategories is specified, pass it to helix_xharness.proj
+      # which will apply it as a TestFilter on all work items.
+      ${{ if ne(parameters.deviceTestCategories, '') }}:
+        extraHelixArguments: '/p:DeviceTestCategoryFilter=${{ parameters.deviceTestCategories }}'
       prepareSteps:
+      - ${{ if ne(parameters.prNumber, '') }}:
+        - script: |
+            echo "Checking out PR #${{ parameters.prNumber }}..."
+            git fetch origin pull/${{ parameters.prNumber }}/head:pr-${{ parameters.prNumber }}
+            git checkout pr-${{ parameters.prNumber }}
+            echo "Checked out PR #${{ parameters.prNumber }}"
+            git log --oneline -1
+          displayName: 'Checkout PR #${{ parameters.prNumber }}'
       - template: /eng/pipelines/common/provision.yml@self
         parameters:
           checkoutDirectory: '$(System.DefaultWorkingDirectory)'

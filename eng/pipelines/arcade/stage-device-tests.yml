@@ -182,9 +182,9 @@ stages:
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=False
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=False ${{ parameters.extraHelixArguments }}
             ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=True
+              HelixProjectArguments: /p:TargetOS=ios /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsIOS_ /p:HelixInternal=True ${{ parameters.extraHelixArguments }}
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
@@ -236,9 +236,9 @@ stages:
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=False
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=False ${{ parameters.extraHelixArguments }}
             ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=True
+              HelixProjectArguments: /p:TargetOS=maccatalyst /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsMacCatalyst_ /p:HelixInternal=True ${{ parameters.extraHelixArguments }}
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
@@ -288,9 +288,9 @@ stages:
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=False
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=False ${{ parameters.extraHelixArguments }}
             ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=True
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsAndroid_ /p:HelixInternal=True ${{ parameters.extraHelixArguments }}
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
@@ -395,9 +395,9 @@ stages:
           parameters:
             HelixProjectPath: ${{ parameters.helixProject }}
             ${{ if eq(parameters.runAsPublic, true) }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=False ${{ parameters.extraHelixArguments }}
             ${{ else }}:
-              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True
+              HelixProjectArguments: /p:TargetOS=android /p:TestRunNameSuffix=_$(_BuildConfig)_CoreCLR /p:TestRunNamePrefix=DeviceTestsAndroid_CoreCLR_ /p:HelixInternal=True ${{ parameters.extraHelixArguments }}
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
             HelixConfiguration: $(_BuildConfig)
             IncludeDotNetCli: true
@@ -625,9 +625,9 @@ stages:
             parameters:
               HelixProjectPath: ${{ parameters.helixProject }}
               ${{ if eq(parameters.runAsPublic, true) }}:
-                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=False
+                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=False ${{ parameters.extraHelixArguments }}
               ${{ else }}:
-                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=True
+                HelixProjectArguments: /p:TargetOS=windows /p:TestRunNameSuffix=_$(_BuildConfig) /p:TestRunNamePrefix=DeviceTestsWindows_ /p:HelixInternal=True ${{ parameters.extraHelixArguments }}
               HelixAccessToken: ${{ parameters.HelixAccessToken }}
               HelixConfiguration: $(_BuildConfig)
               IncludeDotNetCli: true
