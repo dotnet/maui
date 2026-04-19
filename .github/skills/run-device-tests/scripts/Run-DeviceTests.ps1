@@ -178,7 +178,7 @@ $PlatformConfigs = @{
     }
     "windows" = @{
         Tfm = "net10.0-windows10.0.19041.0"
-        RuntimeIdentifier = "win10-x64"
+        RuntimeIdentifier = "win-x64"
         AppExtension = ".exe"
         XHarnessTarget = $null
         UsesXHarness = $false
@@ -298,6 +298,7 @@ try {
         "windows" {
             $buildArgs += "/p:WindowsPackageType=None"
             $buildArgs += "/p:WindowsAppSDKSelfContained=true"
+            $buildArgs += "/p:UseMonoRuntime=false"
         }
     }
 
@@ -350,7 +351,13 @@ try {
             }
         }
         "windows" {
-            $appPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder/$appName.exe"
+            $exeSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
+            $exeFile = Get-ChildItem -Path $exeSearchPath -Filter "$appName.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exeFile) {
+                $appPath = $exeFile.FullName
+            } else {
+                $appPath = "$exeSearchPath/$ridFolder/$appName.exe"
+            }
         }
     }
     
@@ -590,9 +597,10 @@ try {
         $passCount = ([regex]::Matches($logContent, '\[PASS\]')).Count
         $failCount = ([regex]::Matches($logContent, '\[FAIL\]')).Count
         
+        # Use Write-Output for results so they're captured by callers (not just Write-Host)
         Write-Host ""
-        Write-Host "  Passed: $passCount" -ForegroundColor Green
-        Write-Host "  Failed: $failCount" -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
+        Write-Output "  Passed: $passCount"
+        Write-Output "  Failed: $failCount"
         Write-Host ""
         Write-Host "  Log file: $($logFile.FullName)" -ForegroundColor Gray
         
@@ -609,11 +617,11 @@ try {
     Write-Host ""
     if ($testExitCode -eq 0) {
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
-        Write-Host "  Tests completed successfully" -ForegroundColor Green
+        Write-Output "  Tests completed successfully"
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
     } else {
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
-        Write-Host "  Tests completed with exit code: $testExitCode" -ForegroundColor Yellow
+        Write-Output "  Tests completed with exit code: $testExitCode"
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     }
 

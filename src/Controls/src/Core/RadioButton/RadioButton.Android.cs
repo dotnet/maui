@@ -1,4 +1,7 @@
 ﻿using AView = Android.Views.View;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Controls.Internals;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,6 +27,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			RadioButtonHandler.MapContent(handler, radioButton);
+			if ((radioButton.TextTransform is TextTransform.Lowercase or TextTransform.Uppercase) && !string.IsNullOrEmpty(radioButton.Content?.ToString()))
+			{
+				var platformRadioButton = RadioButtonHandler.GetPlatformRadioButton(handler);
+				if (platformRadioButton is not null)
+				{
+					var transformedText = TextTransformUtilities.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
+					platformRadioButton.Text = transformedText;
+				}
+			}
 		}
 
 		static AView? CreatePlatformView(ViewHandler<IRadioButton, AView> radioButton)

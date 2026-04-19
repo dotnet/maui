@@ -76,7 +76,12 @@ namespace Microsoft.Maui.Platform
 
 			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
-			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString();
+			var relativePath = WebUtils.ResolveRelativePath(HybridWebViewHandler.AppOriginUri, uri);
+			if (relativePath is null)
+			{
+				logger?.LogDebug("Request for {Url} resolved to an invalid path.", fullUrl);
+				return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), new MemoryStream());
+			}
 
 			// 1.a. Try the special "_framework/hybridwebview.js" path
 			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
@@ -138,8 +143,8 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
-			var contentStream = PlatformOpenAppPackageFile(assetPath);
+			var assetPath = FileSystemUtils.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
+			var contentStream = assetPath is not null ? PlatformOpenAppPackageFile(assetPath) : null;
 
 			if (contentStream is not null)
 			{
