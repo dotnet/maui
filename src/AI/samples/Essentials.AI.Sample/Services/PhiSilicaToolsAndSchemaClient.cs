@@ -213,9 +213,9 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 
 		if (pendingPlan != null && sawResult)
 		{
-			allMessages.Add(new ChatMessage(ChatRole.System,
-				$"REMINDER: Your earlier plan was: \"{pendingPlan}\". " +
-				"The tool result is above. Now call the next tool using data from the result."));
+			allMessages.Add(new ChatMessage(ChatRole.Assistant,
+				$"I still need to: {pendingPlan}. " +
+				"I have the tool result above. I will now call the next tool using that data."));
 		}
 
 		// Clone options: remove tools AND ResponseFormat (we handle both via prompt)

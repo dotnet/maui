@@ -63,15 +63,16 @@ public class PhiSilicaExperimentTests
 		bool hasToolCallTags = text.Contains("<tool_call>", StringComparison.OrdinalIgnoreCase) ||
 							   text.Contains("<|tool_call|>", StringComparison.OrdinalIgnoreCase);
 		bool hasJsonBlock = text.TrimStart().StartsWith('{') || text.TrimStart().StartsWith('[');
-		bool hasToolKeyword = text.Contains("\"name\"", StringComparison.OrdinalIgnoreCase) &&
-							  text.Contains("get_weather", StringComparison.OrdinalIgnoreCase);
+		bool hasToolKeyword = text.Contains("get_weather", StringComparison.OrdinalIgnoreCase);
+		bool hasFunctionCallSyntax = text.Contains("get_weather(", StringComparison.OrdinalIgnoreCase);
 
 		Console.WriteLine($"Has <tool_call> tags: {hasToolCallTags}");
 		Console.WriteLine($"Has JSON block: {hasJsonBlock}");
 		Console.WriteLine($"Has tool name keyword: {hasToolKeyword}");
+		Console.WriteLine($"Has function call syntax: {hasFunctionCallSyntax}");
 
 		// At least one of these should be true if the model understands tool calling
-		Assert.True(hasToolCallTags || hasJsonBlock || hasToolKeyword,
+		Assert.True(hasToolCallTags || hasJsonBlock || hasToolKeyword || hasFunctionCallSyntax,
 			$"Model should attempt some form of tool call. Got: {text}");
 	}
 

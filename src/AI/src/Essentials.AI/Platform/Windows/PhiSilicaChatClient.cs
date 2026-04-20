@@ -190,11 +190,19 @@ public sealed class PhiSilicaChatClient : IChatClient
 
 		foreach (var message in history)
 		{
+			// Add role prefix so the model can distinguish speakers in multi-turn conversations.
+			// System messages after the first (which becomes the context system prompt) are
+			// injected as instructions. User/Assistant labels help the model track the conversation.
+			var rolePrefix = message.Role == ChatRole.User ? "User: "
+				: message.Role == ChatRole.Assistant ? "Assistant: "
+				: message.Role == ChatRole.System ? "System: "
+				: "";
+
 			foreach (var content in message.Contents)
 			{
 				if (content is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
 				{
-					promptParts.Add(textContent.Text);
+					promptParts.Add($"{rolePrefix}{textContent.Text}");
 				}
 				else if (content is FunctionCallContent functionCall)
 				{
@@ -202,7 +210,7 @@ public sealed class PhiSilicaChatClient : IChatClient
 					var argsJson = functionCall.Arguments is not null
 						? System.Text.Json.JsonSerializer.Serialize(functionCall.Arguments)
 						: "{}";
-					promptParts.Add($"[Tool call: {functionCall.Name}({argsJson})]");
+					promptParts.Add($"{rolePrefix}[Tool call: {functionCall.Name}({argsJson})]");
 #pragma warning restore IL3050, IL2026
 				}
 				else if (content is FunctionResultContent functionResult)
