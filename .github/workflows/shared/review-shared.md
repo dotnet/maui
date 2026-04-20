@@ -14,6 +14,7 @@ permissions:
 tools:
   github:
     toolsets: [pull_requests, repos]
+    min-integrity: approved
 
 safe-outputs:
   create-pull-request-review-comment:
@@ -24,6 +25,7 @@ safe-outputs:
   add-comment:
     max: 5
     hide-older-comments: true
+    target: "*"
 ---
 
 # Expert Code Review
@@ -38,13 +40,12 @@ You are the orchestrator. Your job is to dispatch **3 parallel expert-reviewer s
 
 ### Step 1: Gather Context
 
-Fetch the PR diff and save it — you will pass it to each sub-agent:
+Fetch the PR data using the GitHub MCP tools (not `gh` CLI — credentials are scrubbed inside the agent container). The `tools.github` configuration provides `pull_requests` and `repos` toolsets:
 
-```
-gh pr diff <number>
-gh pr view <number> --json title,body
-gh pr checks <number>
-```
+- Use `get_pull_request` to read the PR title, body, and metadata
+- Use `list_pull_request_files` to get the list of changed files
+- Use `get_pull_request_diff` to read the full diff
+- Use `get_pull_request_reviews` to check existing reviews
 
 ### Step 2: Dispatch 3 Parallel Expert Reviewers
 

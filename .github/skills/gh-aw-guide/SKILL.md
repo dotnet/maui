@@ -59,7 +59,7 @@ gh aw compile .github/workflows/<name>.md
 | Custom post-processing jobs for agent output | `safe-outputs.jobs:` custom jobs with MCP tool access | [Custom Safe Outputs](https://github.github.com/gh-aw/reference/custom-safe-outputs/) |
 | Wrapping GitHub Actions as agent-callable tools | `safe-outputs.actions:` action wrappers | [Custom Safe Outputs](https://github.github.com/gh-aw/reference/custom-safe-outputs/) |
 | Triggering CI on agent-created PRs | `github-token-for-extra-empty-commit:` on `create-pull-request` | [Triggering CI](https://github.github.com/gh-aw/reference/triggering-ci/) |
-| No guard against agent approving PRs | `allowed-events: [COMMENT, REQUEST_CHANGES]` on `submit-pull-request-review` | [Safe Outputs](https://github.github.com/gh-aw/reference/safe-outputs/) |
+| No guard against agent approving PRs | `allowed-events: [COMMENT]` on `submit-pull-request-review` (prefer over `[COMMENT, REQUEST_CHANGES]` to avoid stale blocking reviews) | [Safe Outputs](https://github.github.com/gh-aw/reference/safe-outputs/) |
 | `slash_command:` without `events:` filter (subscribes to ALL comment events) | `events: [pull_request_comment]` or `events: [issue_comment]` | [Command Triggers](https://github.github.com/gh-aw/reference/command-triggers/) |
 | `cancel-in-progress: true` on `slash_command:` workflows | `cancel-in-progress: false` — non-matching events cancel in-progress agent runs | [Concurrency](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/using-concurrency) |
 | Using `pull_request` trigger for agentic workflows | `slash_command:` or `schedule` — `pull_request` causes the "Approve and run" gate for ALL workflows | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |

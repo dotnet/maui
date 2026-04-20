@@ -38,6 +38,14 @@ concurrency:
   group: "expert-review-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number || github.run_id }}"
   cancel-in-progress: false
 
+steps:
+  - name: Checkout PR and restore agent infrastructure
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+
 timeout-minutes: 90
 ---
 

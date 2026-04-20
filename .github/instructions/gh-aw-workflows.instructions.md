@@ -15,7 +15,7 @@ When working on gh-aw workflow files, use the **`gh-aw-guide`** skill for the co
 3. **Always commit the lock file** alongside the source `.md`
 4. **Prefer built-in gh-aw features** over manual reimplementations — invoke the `gh-aw-guide` skill for the complete anti-patterns table before implementing triggers, outputs, or scheduling manually
 5. **Never execute untrusted PR code** with elevated credentials — treat PR contents as passive data only
-6. **Never approve PRs from workflows** — use `allowed-events: [COMMENT, REQUEST_CHANGES]` on `submit-pull-request-review` (gh-aw#25439)
+6. **Never approve PRs from workflows** — use `allowed-events: [COMMENT]` on `submit-pull-request-review` to block approvals. Prefer `[COMMENT]` over `[COMMENT, REQUEST_CHANGES]` — `REQUEST_CHANGES` reviews from `github-actions[bot]` cannot be dismissed by the agent (no `dismiss-pull-request-review` safe output), causing stale blocking reviews (gh-aw#25439)
 7. **Always use `github-token-for-extra-empty-commit:`** (PAT/App token) on `create-pull-request` — `GITHUB_TOKEN` pushes do not trigger CI
 8. **Set `protected-files: fallback-to-issue`** on `create-pull-request` when the agent may touch package manifests or `.github/` — prevents PR creation from failing silently
 9. **Use `Checkout-GhAwPr.ps1`** for `workflow_dispatch` workflows that check out a PR — it verifies write access and restores trusted `.github/` from base branch
@@ -29,7 +29,7 @@ These are the most commonly missed built-in replacements. **Invoke the `gh-aw-gu
 |---------------------------------|--------------------------|
 | `issue_comment` + `startsWith(comment.body, '/cmd')` | `slash_command:` trigger |
 | Triggering CI on agent-created PRs manually | `github-token-for-extra-empty-commit:` on `create-pull-request` |
-| No guard against agent approving PRs | `allowed-events: [COMMENT, REQUEST_CHANGES]` on `submit-pull-request-review` |
+| No guard against agent approving PRs | `allowed-events: [COMMENT]` on `submit-pull-request-review` (avoids stale blocking reviews) |
 | Manual role/bot filtering with `if:` conditions | `skip-bots:`, `skip-roles:` under `on:` |
 | Manual approval gating before workflow runs | `manual-approval:` under `on:` |
 | `slash_command:` without `events:` filter | `events: [pull_request_comment]` — default subscribes to ALL comment events |

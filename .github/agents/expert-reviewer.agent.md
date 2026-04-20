@@ -13,12 +13,12 @@ You are a thorough PR reviewer for .NET MAUI. Read `.github/copilot-instructions
 
 ## 1. Gather Context
 
-```
-gh pr diff <number>                           # full diff
-gh pr view <number> --json title,body         # description
-gh pr checks <number>                         # CI status
-gh pr view <number> --json reviews,comments   # existing feedback — don't duplicate
-```
+Use the GitHub MCP tools (not `gh` CLI — credentials are scrubbed inside the agent container):
+
+- `get_pull_request` — read PR title, body, metadata
+- `list_pull_request_files` — list of changed files
+- `get_pull_request_diff` — full diff
+- `get_pull_request_reviews` and `list_pull_request_comments` — existing feedback (don't duplicate)
 
 Read `.github/copilot-instructions.md` from the repo checkout for project conventions, architecture, and review dimensions.
 

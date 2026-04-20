@@ -67,16 +67,14 @@ sources:
     sections: ["Common Patterns"]
 
   # Tracked GitHub issues — check open/closed state
+  # NOTE: Only set resolution_expected: true for issues whose closure
+  # has NOT yet been incorporated into our docs. All 5 below are already
+  # documented as resolved — no need to flag them on every run.
   - issue: github/gh-aw#18481
-    resolution_expected: true
   - issue: github/gh-aw#18518
-    resolution_expected: true
   - issue: github/gh-aw#18521
-    resolution_expected: true
   - issue: github/gh-aw#23769
-    resolution_expected: true
   - issue: github/gh-aw#25439
-    resolution_expected: true
 
   # GitHub releases — check for new versions
   - releases: github/gh-aw

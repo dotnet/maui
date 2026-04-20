@@ -33,7 +33,13 @@ $ErrorActionPreference = 'Stop'
 function Get-ContentHash {
     param([string]$Content)
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($Content)
-    $hash = [System.Security.Cryptography.SHA256]::Create().ComputeHash($bytes)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha.ComputeHash($bytes)
+    }
+    finally {
+        $sha.Dispose()
+    }
     return [System.BitConverter]::ToString($hash).Replace('-', '').ToLower().Substring(0, 16)
 }
 
@@ -170,13 +176,9 @@ function Get-IndexPageLinks {
             if ($href -match '^(https?://|mailto:|#|/assets/|/images/)') { continue }
             if ($href -match '\.(css|js|png|jpg|svg|ico|xml|json)$') { continue }
 
-            # Resolve relative to base URL
-            $resolvedUrl = if ($href.StartsWith('/')) {
-                $uri = [System.Uri]::new($BaseUrl)
-                "$($uri.Scheme)://$($uri.Host)$href"
-            } else {
-                $IndexUrl.TrimEnd('/') + '/' + $href.TrimStart('./')
-            }
+            # Resolve relative to index URL using System.Uri for correct path handling
+            $resolvedUri = [System.Uri]::new([System.Uri]::new($IndexUrl), $href)
+            $resolvedUrl = $resolvedUri.AbsoluteUri
 
             # Normalize: remove trailing slashes for comparison, then add back
             $resolvedUrl = $resolvedUrl.TrimEnd('/') + '/'
@@ -256,7 +258,7 @@ function Get-RecentClosedIssues {
 
     try {
         $since = (Get-Date).AddDays(-$DaysBack).ToString('yyyy-MM-ddTHH:mm:ssZ')
-        $json = gh api "repos/$Repo/issues?state=closed&since=$since&per_page=50&sort=updated&direction=desc" --jq '[.[] | select(.pull_request == null) | {number: .number, title: .title, closed_at: .closed_at, labels: [.labels[].name]}]' 2>&1
+        $json = gh api --paginate "repos/$Repo/issues?state=closed&since=$since&per_page=100&sort=updated&direction=desc" --jq '[.[] | select(.pull_request == null) | {number: .number, title: .title, closed_at: .closed_at, labels: [.labels[].name]}]' 2>&1
         if ($LASTEXITCODE -ne 0) {
             return @{
                 status = 'error'
@@ -288,10 +290,11 @@ function ConvertFrom-SyncManifest {
     # Simple YAML parser for our specific manifest format
     $content = Get-Content $Path -Raw
     $manifest = @{
-        target     = ''
-        sources    = @()
-        divergence = @()
-        path       = $Path
+        target            = ''
+        secondary_targets = @()
+        sources           = @()
+        divergence        = @()
+        path              = $Path
     }
 
     $lines = $content -split "`n"
@@ -306,6 +309,22 @@ function ConvertFrom-SyncManifest {
 
         if ($trimmed -match '^target:\s*(.+)$') {
             $manifest.target = $Matches[1].Trim()
+        }
+        elseif ($trimmed -eq 'secondary_targets:') {
+            $currentSection = 'secondary_targets'
+        }
+        elseif ($currentSection -eq 'secondary_targets') {
+            if ($trimmed -match '^-\s*(.+)$') {
+                $manifest.secondary_targets += $Matches[1].Trim()
+            }
+            else {
+                # Not a list item — fall through to other section checks below
+                $currentSection = ''
+                # Re-check this line against section headers
+                if ($trimmed -eq 'sources:') { $currentSection = 'sources' }
+                elseif ($trimmed -eq 'divergence:') { $currentSection = 'divergence' }
+                elseif ($trimmed -eq 'style: |') { $currentSection = 'style' }
+            }
         }
         elseif ($trimmed -eq 'sources:') {
             $currentSection = 'sources'
@@ -352,12 +371,9 @@ function ConvertFrom-SyncManifest {
             }
         }
         elseif ($currentSection -eq 'coverage_gaps') {
-            if ($trimmed -match '^-\s*"?(.+?)"?$') {
-                if ($currentItem -and $currentItem.ContainsKey('coverage_gaps')) {
-                    $currentItem.coverage_gaps += $Matches[1]
-                }
-            }
-            elseif ($trimmed -match '^-\s*(url|issue|releases):' -or $trimmed -eq '' -or (-not $trimmed.StartsWith('-') -and -not $trimmed.StartsWith(' '))) {
+            # IMPORTANT: Check for source-entry patterns FIRST — the generic gap
+            # regex (^-\s*"?(.+?)"?$) would match "- url: ..." and swallow it.
+            if ($trimmed -match '^-\s*(url|issue|releases):' -or (-not $trimmed.StartsWith('-') -and -not $trimmed.StartsWith(' ') -and $trimmed -ne '')) {
                 # Left coverage_gaps block — re-enter sources parsing
                 $currentSection = 'sources'
                 # Re-process this line in sources context
@@ -375,6 +391,11 @@ function ConvertFrom-SyncManifest {
                 elseif ($trimmed -match '^-\s*releases:\s*(.+)$') {
                     $currentItem = @{ type = 'releases'; repo = $Matches[1].Trim() }
                     $manifest.sources += $currentItem
+                }
+            }
+            elseif ($trimmed -match '^-\s*"?(.+?)"?$') {
+                if ($currentItem -and $currentItem.ContainsKey('coverage_gaps')) {
+                    $currentItem.coverage_gaps += $Matches[1]
                 }
             }
         }
@@ -518,6 +539,8 @@ foreach ($manifestPath in $manifests) {
     $trackedUrls = @($manifest.sources | Where-Object { $_.type -eq 'web' } | ForEach-Object { $_.url })
     $trackedIssueNumbers = @($manifest.sources | Where-Object { $_.type -eq 'issue' } | ForEach-Object { $_.number })
     $releaseRepos = @($manifest.sources | Where-Object { $_.type -eq 'releases' } | ForEach-Object { $_.repo })
+    $issueRepos = @($manifest.sources | Where-Object { $_.type -eq 'issue' } | ForEach-Object { $_.repo } | Sort-Object -Unique)
+    $allRepos = @($releaseRepos + $issueRepos | Sort-Object -Unique)
 
     # Discover base URL from tracked URLs and crawl index pages
     $baseUrls = $trackedUrls | ForEach-Object {
@@ -549,7 +572,7 @@ foreach ($manifestPath in $manifests) {
     }
 
     # Discover recently closed issues not in the manifest
-    foreach ($repo in $releaseRepos) {
+    foreach ($repo in $allRepos) {
         Write-Host "`n🔍 Checking recently closed issues in $repo" -ForegroundColor Cyan
         $closedResult = Get-RecentClosedIssues -Repo $repo -TrackedIssueNumbers $trackedIssueNumbers
         if ($closedResult.status -eq 'ok') {
