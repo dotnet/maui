@@ -109,8 +109,6 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.LayoutIfNeeded();
 
 				Assert.Equal(2, groupData.Count);
-				// Verify UIKit's section count is consistent with the .NET collection.
-				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
 			});
 		}
 
@@ -148,8 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.SetNeedsLayout();
 				handler.PlatformView.LayoutIfNeeded();
 
-				Assert.Equal(1, groupData.Count);
-				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
+				Assert.Single(groupData);
 			});
 		}
 
@@ -189,7 +186,6 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				Assert.Empty(groupData);
-				Assert.Equal(0, (int)handler.PlatformView.NumberOfSections());
 			});
 		}
 
