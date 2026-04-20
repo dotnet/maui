@@ -17,6 +17,9 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// KVO-based scroll restore for Mac Catalyst silent contentOffset reset (Issue #34271)
 	// This bug is Mac Catalyst-only: UIKit silently shifts contentOffset during any
 	// window state change (Picker dismiss, window minimize/maximize, window resize).
+	//
+	// NOTE: Current tracking is Y-axis only, so it won't affect existing X-axis
+	// (horizontal CollectionView) behavior.
 
 	// True while we're watching for a silent UIKit contentOffset reset after a programmatic scroll.
 	// Cleared by DraggingStarted (user intent) or after a restore fires.
@@ -81,7 +84,18 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 		DispatchQueue.MainQueue.DispatchAsync(() =>
 		{
+			if (Handle == IntPtr.Zero || Window is null)
+			{
+				return;
+			}
+
 			using var indexPath = NSIndexPath.Create(section, item);
+
+			if (!IsIndexPathValidForRestore(indexPath))
+			{
+				return;
+			}
+
 			ScrollToItem(indexPath, scrollPosition, false);
 		});
 	}
@@ -100,6 +114,23 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	{
 		_contentOffsetObserver?.Dispose();
 		_contentOffsetObserver = null;
+	}
+
+	/// <summary>
+	/// Validates that the index path is within the current data source bounds
+	/// before attempting a scroll restore. This prevents NSInternalInconsistencyException
+	/// if the data source changed after the restore was armed.
+	/// </summary>
+	bool IsIndexPathValidForRestore(NSIndexPath indexPath)
+	{
+		var sectionCount = NumberOfSections();
+		if (indexPath.Section < 0 || indexPath.Section >= sectionCount)
+		{
+			return false;
+		}
+
+		var itemCount = NumberOfItemsInSection(indexPath.Section);
+		return indexPath.Item >= 0 && indexPath.Item < itemCount;
 	}
 #endif
 
