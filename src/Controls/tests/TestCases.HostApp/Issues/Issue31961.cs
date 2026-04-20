@@ -33,7 +33,7 @@ public class Issue31961 : Shell
 
 	protected override void OnNavigated(ShellNavigatedEventArgs args)
 	{
-		if (Current.CurrentPage?.BindingContext is INavigationAware bindingContext)
+		if (Current?.CurrentPage?.BindingContext is INavigationAware bindingContext)
 		{
 			bindingContext.OnShellNavigated(args);
 		}

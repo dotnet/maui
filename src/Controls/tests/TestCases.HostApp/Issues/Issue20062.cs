@@ -12,7 +12,7 @@ public class Issue20062 : TestContentPage
 	protected override void Init()
 	{
 
-		_collectionView = new CollectionView
+		_collectionView = new CollectionView2
 		{
 			SelectionMode = SelectionMode.Single,
 			ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical)

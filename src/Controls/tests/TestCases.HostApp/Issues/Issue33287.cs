@@ -66,7 +66,11 @@ public class Issue33287SecondPage : ContentPage
 		base.OnAppearing();
 
 		// Wait long enough for the user/test to navigate back
+#if MACCATALYST
+		await Task.Delay(4000);
+#else
 		await Task.Delay(2000);
+#endif
 
 		// Without the fix this throws NullReferenceException and crashes the app
 		await DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
