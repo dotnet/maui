@@ -12,6 +12,14 @@ namespace Microsoft.Maui.Platform
 			nativeComboBox.PlaceholderText = picker.Title ?? string.Empty;
 		}
 
+		public static void UpdateTitleColor(this ComboBox nativeComboBox, IPicker picker)
+		{
+			if (picker.TitleColor is null)
+				nativeComboBox.ClearValue(ComboBox.PlaceholderForegroundProperty);
+			else
+				nativeComboBox.PlaceholderForeground = picker.TitleColor.ToPlatform();
+		}
+
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
 		{
 			var platformBrush = picker.Background?.ToPlatform();
