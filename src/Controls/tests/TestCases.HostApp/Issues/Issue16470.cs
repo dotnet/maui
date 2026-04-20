@@ -11,37 +11,38 @@ public class Issue16470 : TabbedPage
 
         Children.Add(new ContentPage
         {
-            Title = "New Tab 1",
+            Title = "Home",
             Content = new Label { Text = "Content 1", AutomationId = "Tab1Content" }
         });
         Children.Add(new ContentPage
         {
-            Title = "New Tab 2",
+            Title = "Settings",
             Content = new Label { Text = "Content 2", AutomationId = "Tab2Content" }
         });
         Children.Add(new ContentPage
         {
-            Title = "New Tab 3",
+            Title = "Profile",
             Content = new Label { Text = "Content 3", AutomationId = "Tab3Content" }
         });
         Children.Add(new ContentPage
         {
-            Title = "New Tab 4",
+            Title = "Notifications",
             Content = new Label { Text = "Content 4", AutomationId = "Tab4Content" }
         });
         Children.Add(new ContentPage
         {
-            Title = "New Tab 5",
+            Title = "Messages",
+            
             Content = new Label { Text = "Content 5", AutomationId = "Tab5Content" }
         });
         Children.Add(new ContentPage
         {
-            Title = "New Tab 6",
+            Title = "Login",
             Content = new Label { Text = "Content 6", AutomationId = "Tab6Content" }
         });
         Children.Add(new ContentPage
         {
-            Title = "New Tab 7",
+            Title = "Help",
             Content = new Label { Text = "Content 7", AutomationId = "Tab7Content" }
         });
     }
