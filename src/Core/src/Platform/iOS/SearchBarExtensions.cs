@@ -99,6 +99,24 @@ namespace Microsoft.Maui.Platform
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
+		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, bool hasText)
+		{
+			if (OperatingSystem.IsMacCatalyst())
+			{
+				var clearButton = uiSearchBar.GetClearButton();
+
+				if (clearButton != null)
+				{
+					var shouldHide = !hasText;
+
+					if (clearButton.Hidden != shouldHide)
+					{
+						clearButton.Hidden = shouldHide;
+					}
+				}
+			}
+		}
+
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UpdateVerticalTextAlignment(searchBar, null);
