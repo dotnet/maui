@@ -18,17 +18,30 @@ public class Issue34975 : Shell
 		{
 			Text = "Check Memory",
 			AutomationId = "CheckMemoryButton",
+			IsVisible = false,
 		};
 
 		var statusLabel = new Label
 		{
-			Text = "",
+			Text = "1. Tap Navigate, then Tap Check Memory",
+			FontSize = 14,
+			HorizontalOptions = LayoutOptions.Center,
 			AutomationId = "StatusLabel",
 		};
 
 		navigateButton.Clicked += async (s, e) =>
 		{
+			Issue34975SecondPage.Instances.Clear();
+
 			await Shell.Current.GoToAsync("Issue34975_second");
+
+			await Shell.Current.GoToAsync("..");
+
+			// A small delay lets that continuation run before we expose CheckMemoryButton.
+			await Task.Delay(500);
+
+			checkButton.IsVisible = true;
+			statusLabel.Text = "Now tap Check Memory";
 		};
 
 		checkButton.Clicked += async (s, e) =>
@@ -40,29 +53,16 @@ public class Issue34975 : Shell
 				return;
 			}
 
-			// Give the platform disposal pipeline time to complete before collecting.
-			// On Android, UpdateTitleView(null) runs asynchronously after back-navigation.
-			await Task.Delay(500);
-
-			for (int i = 0; i < 3; i++)
+			statusLabel.Text = "Checking...";
+			try
 			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.Collect();
+				await GarbageCollectionHelper.WaitForGC(5000, instances.ToArray());
+				statusLabel.Text = "Test passed";
 			}
-
-			int alive = 0;
-			int collected = 0;
-			foreach (var wr in instances)
+			catch
 			{
-				if (wr.IsAlive)
-					alive++;
-				else
-					collected++;
+				statusLabel.Text = "Memory Leak Detected";
 			}
-
-			statusLabel.Text = $"Total: {instances.Count}, Alive: {alive}, Collected: {collected}. " +
-				(alive > 0 ? "LEAK: instances NOT collected!" : "Success");
 		};
 
 		var mainPage = new ContentPage
@@ -74,15 +74,9 @@ public class Issue34975 : Shell
 				VerticalOptions = LayoutOptions.Center,
 				Children =
 				{
-					new Label
-					{
-						Text = "1. Tap Navigate\n2. Tap native Back button\n3. Tap Check Memory",
-						FontSize = 14,
-						HorizontalOptions = LayoutOptions.Center,
-					},
+					statusLabel,
 					navigateButton,
 					checkButton,
-					statusLabel,
 				}
 			}
 		};

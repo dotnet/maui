@@ -17,14 +17,11 @@ public class Issue34975 : _IssuesUITest
 		App.WaitForElement("NavigateButton");
 		App.Tap("NavigateButton");
 
-		App.WaitForElement("SecondPageLabel");
-		App.TapBackArrow();
-
 		App.WaitForElement("CheckMemoryButton");
 		App.Tap("CheckMemoryButton");
 
-		App.WaitForTextToBePresentInElement("StatusLabel", "Success", timeout: TimeSpan.FromSeconds(15));
-		Assert.That(App.FindElement("StatusLabel").GetText(), Does.Contain("Success"),
-			"Expected all SecondPage instances to be garbage collected, but a memory leak was detected.");
+		App.WaitForTextToBePresentInElement("StatusLabel", "Test passed", timeout: TimeSpan.FromSeconds(15));
+		Assert.That(App.FindElement("StatusLabel").GetText(), Does.Contain("Test passed"),
+			"Memory leak detected: SecondPage instances were not garbage collected.");
 	}
 }
