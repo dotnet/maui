@@ -29,12 +29,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
-    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
-    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
-    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
-    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
+    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" TargetPlatformIdentifiers="android" />
+    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" TargetPlatformIdentifiers="ios" />
+    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" TargetPlatformIdentifiers="maccatalyst" />
+    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" TargetPlatformIdentifiers="windows" />
+    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" TargetPlatformIdentifiers="tizen" />
   </ItemGroup>
+
+  <Target Name="_MauiNormalizePlatformSpecificFolders"
+          BeforeTargets="_MauiCollectPlatformSpecificCompileItems;_MauiRemovePlatformCompileItems"
+          Condition=" '$(SingleProject)' == 'true' ">
+    <ItemGroup>
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)' != '' ">
+        <TargetPlatformIdentifiers>%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)</TargetPlatformIdentifiers>
+      </MauiPlatformSpecificFolder>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
