@@ -42,7 +42,7 @@
     <ItemGroup>
       <_MauiPlatformSpecificCompileItems
           Include="%(MauiPlatformSpecificFolder.Identity)**/*$(DefaultLanguageSourceExtension)"
-          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' or ('$(TargetPlatformIdentifier)' != '' and $([System.String]::new(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());')) )" />
+          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' or ('$(TargetPlatformIdentifier)' != '' and $([System.String]::new(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);').Replace(' ', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());')) )" />
     </ItemGroup>
   </Target>
 

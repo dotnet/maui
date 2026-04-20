@@ -612,10 +612,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		[Theory]
-		[InlineData("ios", true)]
-		[InlineData("maccatalyst", true)]
-		[InlineData("android", false)]
-		public void SingleProject_SharedPlatformFolderMappingsAreRespected(string targetPlatformIdentifier, bool shouldIncludeAppleSharedFile)
+		[InlineData("ios", "ios;maccatalyst", true)]
+		[InlineData("maccatalyst", "ios;maccatalyst", true)]
+		[InlineData("android", "ios;maccatalyst", false)]
+		[InlineData("ios", "ios; maccatalyst", true)]
+		[InlineData("maccatalyst", "ios; maccatalyst", true)]
+		[InlineData("android", "ios; maccatalyst", false)]
+		public void SingleProject_SharedPlatformFolderMappingsAreRespected(string targetPlatformIdentifier, string targetPlatformIdentifiers, bool shouldIncludeAppleSharedFile)
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -629,7 +632,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var customMappings = NewElement("ItemGroup");
 			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
 				.WithAttribute("Include", "Platforms\\Apple\\")
-				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
+				.WithAttribute("TargetPlatformIdentifiers", targetPlatformIdentifiers));
 			project.Add(customMappings);
 
 			WriteFile("Entry.cs", @"
