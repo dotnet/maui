@@ -92,8 +92,11 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 		ChatOptions options,
 		List<AIFunction> tools)
 	{
-		// Build a dynamic JSON schema for the tool call decision
-		var schema = BuildToolCallSchema(tools);
+		// Build a dynamic JSON schema for the tool call decision.
+		// If the user also requested structured output (ResponseFormat), embed their
+		// schema as the "response" field instead of a plain "text" string.
+		var userSchema = options.ResponseFormat is ChatResponseFormatJson { Schema: { } s } ? s : (JsonElement?)null;
+		var schema = BuildToolCallSchema(tools, userSchema);
 
 		// Build system prompt explaining the tools and the structured output format
 		var toolDescriptions = new StringBuilder();
@@ -121,12 +124,16 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 			catch { /* Schema parsing failed — continue without enum hints */ }
 		}
 
+		var responseHint = userSchema != null
+			? "If you can answer directly, set type to \"response\" and fill in the response object matching the schema."
+			: "If you can answer directly without a tool, set type to \"text\" and put your answer in the text field.";
+
 		var systemPrompt = new ChatMessage(ChatRole.System,
 			"You are a helpful assistant with access to tools.\n\n" +
 			$"Available tools:\n{toolDescriptions}\n" +
 			"Your response MUST be a JSON object matching the provided schema.\n" +
 			"If the user's question requires a tool, set type to \"tool_call\", set tool_name, and provide arguments.\n" +
-			"If you can answer directly without a tool, set type to \"text\" and put your answer in the text field.\n" +
+			$"{responseHint}\n" +
 			"Call only ONE tool at a time. After receiving the result, you may call another.\n" +
 			"For enum parameters, use EXACTLY one of the allowed values listed above.\n" +
 			"If a tool has no required parameters, use an empty arguments object {}.\n" +
@@ -170,20 +177,10 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 		return (allMessages, newOptions);
 	}
 
-	private static JsonElement BuildToolCallSchema(List<AIFunction> tools)
+	private static JsonElement BuildToolCallSchema(List<AIFunction> tools, JsonElement? userSchema = null)
 	{
-		// Build a discriminated union schema with planning support:
-		// - type: "tool_call" or "text"  
-		// - tool_name: which tool to call now
-		// - arguments: tool parameters
-		// - text: response text (when type=text)
-		// - next_step: (optional) plain-English plan for what to do AFTER this tool returns.
-		//   We stash this on the synthesized FunctionCallContent and re-inject it as a
-		//   system reminder once FICC sends the tool result back, so the 3.8B model
-		//   reliably follows through with the second call.
 		var toolNames = tools.Select(t => $"\"{t.Name}\"").ToList();
 
-		// Only include next_step field when there are 2+ tools (no planning needed for single tool)
 		var nextStepProperty = tools.Count >= 2
 			? """
 				,"next_step": {
@@ -193,14 +190,37 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 			"""
 			: "";
 
+		// When the user requested structured output, embed their schema as the
+		// "response" field. When type="response", the model fills in this object.
+		// When no user schema, use a plain "text" string field.
+		string responseField;
+		string typeEnum;
+		if (userSchema != null)
+		{
+			responseField = $"""
+				,"response": {userSchema.Value.GetRawText()}
+			""";
+			typeEnum = "[\"tool_call\", \"response\"]";
+		}
+		else
+		{
+			responseField = """
+				,"text": {
+					"type": "string",
+					"description": "Your text response (only when type is text)"
+				}
+			""";
+			typeEnum = "[\"tool_call\", \"text\"]";
+		}
+
 		var schemaJson = $$"""
 		{
 			"type": "object",
 			"properties": {
 				"type": {
 					"type": "string",
-					"enum": ["tool_call", "text"],
-					"description": "Whether this is a tool call or a text response"
+					"enum": {{typeEnum}},
+					"description": "Whether this is a tool call or a direct response"
 				},
 				"tool_name": {
 					"type": "string",
@@ -210,11 +230,7 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 				"arguments": {
 					"type": "object",
 					"description": "Arguments for the tool call"
-				},
-				"text": {
-					"type": "string",
-					"description": "Your text response (only when type is text)"
-				}{{nextStepProperty}}
+				}{{responseField}}{{nextStepProperty}}
 			},
 			"required": ["type"]
 		}
@@ -303,6 +319,14 @@ public sealed class StructuredToolCallingClient : DelegatingChatClient
 			{
 				var textVal = root.TryGetProperty("text", out var textProp) ? textProp.GetString() : null;
 				return new TextResponseDecision(textVal ?? "");
+			}
+			else if (type == "response")
+			{
+				// Structured response — extract the "response" object as raw JSON text
+				if (root.TryGetProperty("response", out var responseProp))
+				{
+					return new TextResponseDecision(responseProp.GetRawText());
+				}
 			}
 		}
 		catch (JsonException)

@@ -406,6 +406,62 @@ public class PhiSilicaExperimentTests
 	}
 
 	// ═══════════════════════════════════════════════════════════
+	// TOOLS + STRUCTURED OUTPUT COMBINED
+	// ═══════════════════════════════════════════════════════════
+
+	public record WeatherReport
+	{
+		public string? City { get; init; }
+		public int Temperature { get; init; }
+		public string? Condition { get; init; }
+		public string? Summary { get; init; }
+	}
+
+	/// <summary>
+	/// Tests using BOTH tools AND structured output together.
+	/// The tool gathers data, then the final response should be in the structured format.
+	/// This is a very common real-world pattern.
+	/// </summary>
+	[Fact]
+	public async Task ToolsAndStructuredOutput_GetWeatherAsSchema()
+	{
+		int weatherCallCount = 0;
+
+		var weatherTool = AIFunctionFactory.Create(
+			(string city) =>
+			{
+				weatherCallCount++;
+				return $"{{\"temp\": 25, \"condition\": \"Sunny\", \"city\": \"{city}\"}}";
+			},
+			name: "GetWeather",
+			description: "Gets current weather for a city. Returns JSON with temp, condition, city.");
+
+		var inner = new PhiSilicaStructuredToolCallingClient();
+		var client = inner.AsBuilder().UseFunctionInvocation().Build();
+
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.User, "Get the weather in Cape Town and give me a weather report.")
+		};
+		var options = new ChatOptions
+		{
+			Tools = [weatherTool],
+			// User also wants structured output for the FINAL response
+			ResponseFormat = ChatResponseFormat.ForJsonSchema<WeatherReport>()
+		};
+
+		var response = await client.GetResponseAsync(messages, options);
+
+		Assert.NotNull(response);
+		Assert.True(weatherCallCount > 0, $"GetWeather should be called. Got: {weatherCallCount}");
+
+		// The response should contain weather data (from the tool)
+		var text = response.Text;
+		Assert.False(string.IsNullOrEmpty(text), "Should have a text response after tool invocation");
+		Console.WriteLine($"TOOLS+SCHEMA RESPONSE: {text}");
+	}
+
+	// ═══════════════════════════════════════════════════════════
 	// MANY-TOOLS STRESS TEST
 	// ═══════════════════════════════════════════════════════════
 
