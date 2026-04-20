@@ -23,7 +23,7 @@ When working on gh-aw workflow files, use the **`gh-aw-guide`** skill for the co
 
 ## Quick Anti-Pattern Check (Critical Subset)
 
-These are the most commonly missed built-in replacements. **Invoke the `gh-aw-guide` skill for the complete 14-row table** — this list covers only the highest-impact items:
+These are the most commonly missed built-in replacements. **Invoke the `gh-aw-guide` skill for the complete 17-row table** — this list covers only the highest-impact items:
 
 | If you're about to implement... | Use this built-in instead |
 |---------------------------------|--------------------------|
@@ -32,5 +32,7 @@ These are the most commonly missed built-in replacements. **Invoke the `gh-aw-gu
 | No guard against agent approving PRs | `allowed-events: [COMMENT, REQUEST_CHANGES]` on `submit-pull-request-review` |
 | Manual role/bot filtering with `if:` conditions | `skip-bots:`, `skip-roles:` under `on:` |
 | Manual approval gating before workflow runs | `manual-approval:` under `on:` |
+| `slash_command:` without `events:` filter | `events: [pull_request_comment]` — default subscribes to ALL comment events |
+| `cancel-in-progress: true` on `slash_command:` workflows | `cancel-in-progress: false` — prevents non-matching events from killing agent runs |
 
 For the complete anti-patterns table, architecture, security model, fork handling, and all safe output options, invoke the **`gh-aw-guide`** skill.

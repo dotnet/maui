@@ -60,6 +60,9 @@ gh aw compile .github/workflows/<name>.md
 | Wrapping GitHub Actions as agent-callable tools | `safe-outputs.actions:` action wrappers | [Custom Safe Outputs](https://github.github.com/gh-aw/reference/custom-safe-outputs/) |
 | Triggering CI on agent-created PRs | `github-token-for-extra-empty-commit:` on `create-pull-request` | [Triggering CI](https://github.github.com/gh-aw/reference/triggering-ci/) |
 | No guard against agent approving PRs | `allowed-events: [COMMENT, REQUEST_CHANGES]` on `submit-pull-request-review` | [Safe Outputs](https://github.github.com/gh-aw/reference/safe-outputs/) |
+| `slash_command:` without `events:` filter (subscribes to ALL comment events) | `events: [pull_request_comment]` or `events: [issue_comment]` | [Command Triggers](https://github.github.com/gh-aw/reference/command-triggers/) |
+| `cancel-in-progress: true` on `slash_command:` workflows | `cancel-in-progress: false` — non-matching events cancel in-progress agent runs | [Concurrency](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/using-concurrency) |
+| Using `pull_request` trigger for agentic workflows | `slash_command:` or `schedule` — `pull_request` causes the "Approve and run" gate for ALL workflows | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
 
 **Note:** gh-aw is actively developed. If a capability feels like something a framework would provide natively, check the reference docs — it probably exists even if it's not in this table yet.
 
@@ -93,13 +96,46 @@ safe-outputs:
 
 ### Concurrency
 
-Include all trigger-specific PR number sources:
+Include all trigger-specific PR number sources. **Use `cancel-in-progress: false` for `slash_command:` workflows** — a non-matching event (ordinary comment) in the same concurrency group can cancel an in-progress matching run (the actual `/command`), killing the agent mid-execution:
 
 ```yaml
+# For slash_command workflows — never cancel in-progress
 concurrency:
   group: "my-workflow-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number || github.run_id }}"
+  cancel-in-progress: false
+
+# For schedule/workflow_dispatch only — safe to cancel
+concurrency:
+  group: "my-workflow-${{ github.ref || github.run_id }}"
   cancel-in-progress: true
 ```
+
+### `slash_command:` Event Subscription
+
+`slash_command:` compiles to broad event subscriptions — by default it listens to **all** comment-related events (issue open/edit, PR open/edit, every comment, every review comment, every discussion comment), then filters post-activation. This means:
+
+- **Runner cost**: The pre-activation job runs on every matching event (~5-30s each), even when skipped. On busy repos this can be hundreds of skipped runs per day.
+- **Actions UI noise**: Operators learn to ignore "skipped" runs and may miss real failures.
+- **Concurrency collisions**: Non-matching events in the same concurrency group can cancel matching ones (see above).
+
+**Always narrow `events:`** to the minimum needed:
+
+```yaml
+on:
+  slash_command:
+    name: review
+    events: [pull_request_comment]  # Only PR comments, not issues/discussions
+```
+
+### The "Approve and Run Workflows" Gate
+
+The `pull_request` trigger causes an "Approve and run workflows" button for first-time fork contributors. **This gate is dangerous, not protective**:
+
+1. **Alert fatigue** — After clicking through dozens of legitimate first-time PRs, the click becomes muscle memory
+2. **No per-workflow granularity** — A single click approves ALL gated workflows, including any `pull_request_target` workflows with full secrets
+3. **No diff preview** — The UI shows no preview of what will execute or which secrets are exposed
+
+**Design rule**: Assume the approval gate will always be clicked. The only safe workflows are ones that produce the same outcome whether the actor is trusted or untrusted. Prefer `issue_comment`/`slash_command:` (not subject to the gate) or `schedule`/`workflow_dispatch` over `pull_request` when possible.
 
 ### Noise Reduction
 

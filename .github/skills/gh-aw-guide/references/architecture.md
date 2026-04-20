@@ -131,9 +131,23 @@ Configure behavior with `protected-files:` on the safe output:
 - ✅ **DO** treat PR contents as passive data (read, analyze, diff)
 - ✅ **DO** run data-gathering scripts in `steps:` (pre-agent, trusted context) not inside the agent
 - ✅ **DO** use `Checkout-GhAwPr.ps1` for `workflow_dispatch` to restore trusted `.github/` from base
+- ✅ **DO** narrow `slash_command: events:` to the minimum needed (e.g., `[pull_request_comment]`)
+- ✅ **DO** use `cancel-in-progress: false` for `slash_command:` workflows to prevent non-matching events from killing in-progress agent runs
+- ✅ **DO** prefer `slash_command:` or `schedule` over `pull_request` trigger — `pull_request` causes the "Approve and run" gate that approves ALL workflows with a single click
 - ❌ **DO NOT** run `dotnet build`, `npm install`, or any build command on untrusted PR code inside the agent — build tool hooks (MSBuild targets, postinstall scripts) can read `COPILOT_TOKEN` from the environment
 - ❌ **DO NOT** execute workspace scripts (`.ps1`, `.sh`, `.py`) after checking out a fork PR in `steps:` — those run with `GITHUB_TOKEN`
-- ❌ **DO NOT** set `roles: all` on workflows that process PR content — this allows any user to trigger the workflow
+- ❌ **DO NOT** set `roles: all` on workflows that process PR content — the agent's `permissions:` and `safe-outputs:` determine what actions are taken, NOT the actor's role. Setting `roles: all` gives any read-only user bot-level write access to anything the workflow grants.
+
+### Authorization Model (`on.roles:`)
+
+**What the agent can do is determined by the workflow's `permissions:` and `safe-outputs:` — NOT by the actor who fired it.** When a workflow accepts a read-only contributor as the trigger (via `roles: all`), that contributor effectively gets bot-level write access to anything the workflow grants.
+
+`on.roles:` defaults to `[admin, maintainer, write]`. This deny-by-default gate prevents read-only users from inducing the bot to act with elevated permissions. Available roles: `admin`, `maintainer`/`maintain`, `write`, `triage`, `read`, `all`.
+
+**Key interactions:**
+- A `read` user can fire any `slash_command:`, `issues`, `issue_comment`, or `discussion` trigger — they just can't pass the default `roles:` check
+- A `read` user **cannot** fire `label_command:` (requires `triage` to apply label) or `workflow_dispatch` (requires `write`)
+- `triage` users can apply labels but are excluded from the default `roles:` allowlist — `label_command:` workflows need `roles: [admin, maintainer, write, triage]` to work for triagers
 
 ---
 
@@ -258,6 +272,9 @@ Safe outputs enforce security through separation: agents run read-only and reque
 |------|----------|------------|
 | Agent-created PRs don't trigger CI | GitHub Actions ignores pushes from `GITHUB_TOKEN` | Use `github-token-for-extra-empty-commit:` with a PAT or GitHub App token on `create-pull-request`. See [Triggering CI](https://github.github.com/gh-aw/reference/triggering-ci/) |
 | Stale `REQUEST_CHANGES` reviews | Agent reviews with `REQUEST_CHANGES` block PRs and can't be dismissed (no `dismiss-pull-request-review` safe output) | Use `allowed-events: [COMMENT]` — communicate severity via markers in the review body instead |
+| `slash_command:` runs on every comment event | Default subscription listens to all comment-related events, not just the `/command` | Always narrow `events:` (e.g., `events: [pull_request_comment]`). Each skipped run costs ~5-30s of runner time. |
+| Non-matching event cancels matching run | With `cancel-in-progress: true`, a non-matching comment in the same concurrency group cancels an in-progress `/command` run | Use `cancel-in-progress: false` for `slash_command:` workflows |
+| `pull_request` trigger causes "Approve and run" gate | The button approves ALL gated workflows with a single click — no per-workflow granularity, no diff preview | Prefer `slash_command:` or `schedule` over `pull_request`; assume the gate will always be clicked |
 | `--allow-all-tools` in lock.yml | Emitted by `gh aw compile` | Cannot override from `.md` source |
 | `gh` CLI inside agent | Credentials scrubbed | Use `steps:` for API calls, or MCP tools |
 | `issue_comment` trigger | Requires workflow on default branch | Must merge to `main` before `/slash-commands` work |
@@ -293,3 +310,7 @@ These issues are now **all closed** — documented here for historical context:
 | Agent sees stale issue/PR content | Integrity filtering removed it | Check `min-integrity` level; content from `FIRST_TIMER` is filtered at `approved` |
 | Protected file error on PR creation | Agent modified `.github/` or package manifests | Set `protected-files: fallback-to-issue` or `allowed` if intentional |
 | Stale blocking review after fixes | Agent posted `REQUEST_CHANGES` but can't dismiss it | Switch to `allowed-events: [COMMENT]`; use severity markers in body instead |
+| Agent run killed by unrelated comment | `cancel-in-progress: true` + `slash_command:` with broad event subscription | Use `cancel-in-progress: false`; narrow `events:` to reduce concurrency group collisions |
+| Hundreds of "skipped" runs per day | `slash_command:` default subscribes to ALL comment events | Narrow `events:` field; accept remaining noise as cost of low-latency invocation |
+| `label_command:` denies triage users | `triage` role not in default `on.roles:` allowlist | Add `roles: [admin, maintainer, write, triage]` |
+| Forked workflows fire unexpectedly in forks | Workflows copied to fork run on routine events inside the fork | Add job-level guard: `if: github.event.repository.fork == false \|\| github.event_name == 'workflow_dispatch'` |

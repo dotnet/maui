@@ -36,7 +36,7 @@ imports:
 
 concurrency:
   group: "expert-review-${{ github.event.issue.number || github.event.pull_request.number || inputs.pr_number || github.run_id }}"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 timeout-minutes: 90
 ---
