@@ -23,13 +23,42 @@ public sealed class PromptBasedSchemaClient : DelegatingChatClient
 		return response;
 	}
 
-	public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+	public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
 		IEnumerable<ChatMessage> messages,
 		ChatOptions? options = null,
-		CancellationToken cancellationToken = default)
+		[System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
+		bool hadSchema = options?.ResponseFormat is ChatResponseFormatJson;
 		(messages, options) = RewriteIfNeeded(messages, options);
-		return base.GetStreamingResponseAsync(messages, options, cancellationToken);
+
+		if (!hadSchema)
+		{
+			// No schema rewrite — pass through
+			await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
+				yield return update;
+			yield break;
+		}
+
+		// Schema was rewritten — buffer and strip code fences from assembled text
+		var fullText = new System.Text.StringBuilder();
+		ChatRole? lastRole = null;
+
+		await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
+		{
+			lastRole ??= update.Role;
+			foreach (var content in update.Contents)
+			{
+				if (content is TextContent tc && tc.Text is not null)
+					fullText.Append(tc.Text);
+			}
+		}
+
+		var stripped = StripCodeFencesFromText(fullText.ToString());
+		yield return new ChatResponseUpdate
+		{
+			Role = lastRole ?? ChatRole.Assistant,
+			Contents = [new TextContent(stripped)]
+		};
 	}
 
 	static (IEnumerable<ChatMessage>, ChatOptions?) RewriteIfNeeded(
@@ -70,20 +99,25 @@ public sealed class PromptBasedSchemaClient : DelegatingChatClient
 			{
 				if (content is TextContent tc && tc.Text is { } text)
 				{
-					var trimmed = text.Trim();
-					// Strip ```json ... ``` or ``` ... ```
-					if (trimmed.StartsWith("```", StringComparison.Ordinal))
-					{
-						var firstNewline = trimmed.IndexOf('\n', StringComparison.Ordinal);
-						if (firstNewline > 0)
-							trimmed = trimmed[(firstNewline + 1)..];
-					}
-					if (trimmed.EndsWith("```", StringComparison.Ordinal))
-						trimmed = trimmed[..^3];
-
-					tc.Text = trimmed.Trim();
+					tc.Text = StripCodeFencesFromText(text);
 				}
 			}
 		}
+	}
+
+	internal static string StripCodeFencesFromText(string text)
+	{
+		var trimmed = text.Trim();
+		// Strip ```json ... ``` or ``` ... ```
+		if (trimmed.StartsWith("```", StringComparison.Ordinal))
+		{
+			var firstNewline = trimmed.IndexOf('\n', StringComparison.Ordinal);
+			if (firstNewline > 0)
+				trimmed = trimmed[(firstNewline + 1)..];
+		}
+		if (trimmed.EndsWith("```", StringComparison.Ordinal))
+			trimmed = trimmed[..^3];
+
+		return trimmed.Trim();
 	}
 }
