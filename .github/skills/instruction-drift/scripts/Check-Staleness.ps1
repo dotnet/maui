@@ -6,7 +6,9 @@
     Reads .sync.yaml manifest files and checks each configured source for changes:
     - GitHub issues: checks open/closed state via gh CLI
     - Web pages: fetches and computes content hash
-    - GitHub releases: checks latest release tag
+    - GitHub releases: checks latest release tag and release notes
+    - Index pages: crawls doc site indexes to discover new/untracked pages
+    - Recently closed issues: discovers closed issues not yet in the manifest
 
     Outputs a JSON report to stdout describing what changed.
 
@@ -103,7 +105,7 @@ function Get-GitHubLatestRelease {
     param([string]$Repo)
 
     try {
-        $json = gh api "repos/$Repo/releases?per_page=1" --jq '.[0] | {tag_name: .tag_name, name: .name, published_at: .published_at}' 2>&1
+        $json = gh api "repos/$Repo/releases?per_page=1" --jq '.[0] | {tag_name: .tag_name, name: .name, published_at: .published_at, body: .body}' 2>&1
         if ($LASTEXITCODE -ne 0) {
             return @{
                 status = 'error'
@@ -119,6 +121,8 @@ function Get-GitHubLatestRelease {
             }
         }
         $release = $json | ConvertFrom-Json
+        # Truncate release notes to first 2000 chars to keep report manageable
+        $body = if ($release.body.Length -gt 2000) { $release.body.Substring(0, 2000) + '...' } else { $release.body }
         return @{
             status = 'ok'
             repo   = $Repo
@@ -126,7 +130,147 @@ function Get-GitHubLatestRelease {
                 tag          = $release.tag_name
                 name         = $release.name
                 published_at = $release.published_at
+                release_notes = $body
             }
+        }
+    }
+    catch {
+        return @{
+            status = 'error'
+            repo   = $Repo
+            error  = $_.Exception.Message
+        }
+    }
+}
+
+function Get-IndexPageLinks {
+    <#
+    .SYNOPSIS
+        Crawls an index page and extracts all documentation links.
+    .DESCRIPTION
+        Fetches an index/section page from a docs site and extracts relative
+        links to child pages. Used to discover new pages not yet in the manifest.
+    #>
+    param(
+        [string]$IndexUrl,
+        [string]$BaseUrl
+    )
+
+    try {
+        $response = Invoke-WebRequest -Uri $IndexUrl -UseBasicParsing -TimeoutSec 30 -ErrorAction Stop
+        $content = $response.Content
+
+        # Extract href links that are relative paths (not external, not anchors)
+        $links = @()
+        $hrefPattern = 'href="([^"#]+)"'
+        $matches_ = [regex]::Matches($content, $hrefPattern)
+        foreach ($m in $matches_) {
+            $href = $m.Groups[1].Value
+            # Skip external links, assets, anchors, and non-doc paths
+            if ($href -match '^(https?://|mailto:|#|/assets/|/images/)') { continue }
+            if ($href -match '\.(css|js|png|jpg|svg|ico|xml|json)$') { continue }
+
+            # Resolve relative to base URL
+            $resolvedUrl = if ($href.StartsWith('/')) {
+                $uri = [System.Uri]::new($BaseUrl)
+                "$($uri.Scheme)://$($uri.Host)$href"
+            } else {
+                $IndexUrl.TrimEnd('/') + '/' + $href.TrimStart('./')
+            }
+
+            # Normalize: remove trailing slashes for comparison, then add back
+            $resolvedUrl = $resolvedUrl.TrimEnd('/') + '/'
+            if ($resolvedUrl -ne $IndexUrl -and $resolvedUrl.StartsWith($BaseUrl)) {
+                $links += $resolvedUrl
+            }
+        }
+
+        return @{
+            status = 'ok'
+            url    = $IndexUrl
+            links  = ($links | Sort-Object -Unique)
+        }
+    }
+    catch {
+        return @{
+            status = 'error'
+            url    = $IndexUrl
+            error  = $_.Exception.Message
+        }
+    }
+}
+
+function Find-UntrackedPages {
+    <#
+    .SYNOPSIS
+        Compares discovered index links against tracked URLs in the manifest.
+    .DESCRIPTION
+        Crawls doc site index pages and identifies pages not yet tracked
+        in any manifest source. Returns a list of untracked URLs.
+    #>
+    param(
+        [string[]]$IndexUrls,
+        [string]$BaseUrl,
+        [string[]]$TrackedUrls
+    )
+
+    $allDiscovered = @()
+    foreach ($indexUrl in $IndexUrls) {
+        Write-Host "   🔎 Crawling index: $indexUrl..." -NoNewline
+        $result = Get-IndexPageLinks -IndexUrl $indexUrl -BaseUrl $BaseUrl
+        if ($result.status -eq 'ok') {
+            Write-Host " found $($result.links.Count) links" -ForegroundColor Green
+            $allDiscovered += $result.links
+        }
+        else {
+            Write-Host " ❌ $($result.error)" -ForegroundColor Red
+        }
+    }
+
+    $allDiscovered = $allDiscovered | Sort-Object -Unique
+
+    # Normalize tracked URLs for comparison
+    $normalizedTracked = $TrackedUrls | ForEach-Object { $_.TrimEnd('/') + '/' }
+
+    $untracked = $allDiscovered | Where-Object {
+        $normalized = $_.TrimEnd('/') + '/'
+        $normalized -notin $normalizedTracked
+    }
+
+    return $untracked
+}
+
+function Get-RecentClosedIssues {
+    <#
+    .SYNOPSIS
+        Discovers recently closed issues in a repo not yet tracked in the manifest.
+    .DESCRIPTION
+        Fetches issues closed in the last 90 days and identifies ones
+        not already in the manifest's tracked issues list.
+    #>
+    param(
+        [string]$Repo,
+        [int[]]$TrackedIssueNumbers,
+        [int]$DaysBack = 90
+    )
+
+    try {
+        $since = (Get-Date).AddDays(-$DaysBack).ToString('yyyy-MM-ddTHH:mm:ssZ')
+        $json = gh api "repos/$Repo/issues?state=closed&since=$since&per_page=50&sort=updated&direction=desc" --jq '[.[] | select(.pull_request == null) | {number: .number, title: .title, closed_at: .closed_at, labels: [.labels[].name]}]' 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            return @{
+                status = 'error'
+                repo   = $Repo
+                error  = "Failed to fetch issues: $json"
+            }
+        }
+        $issues = $json | ConvertFrom-Json
+        $untracked = $issues | Where-Object { $_.number -notin $TrackedIssueNumbers }
+        return @{
+            status    = 'ok'
+            repo      = $Repo
+            untracked = @($untracked)
+            total_checked = ($issues | Measure-Object).Count
         }
     }
     catch {
@@ -367,21 +511,83 @@ foreach ($manifestPath in $manifests) {
         target   = $manifest.target
         sources  = $sourceResults
     }
+
+    # --- Discovery: find untracked pages and recently closed issues ---
+
+    # Collect tracked URLs and issue numbers from this manifest
+    $trackedUrls = @($manifest.sources | Where-Object { $_.type -eq 'web' } | ForEach-Object { $_.url })
+    $trackedIssueNumbers = @($manifest.sources | Where-Object { $_.type -eq 'issue' } | ForEach-Object { $_.number })
+    $releaseRepos = @($manifest.sources | Where-Object { $_.type -eq 'releases' } | ForEach-Object { $_.repo })
+
+    # Discover base URL from tracked URLs and crawl index pages
+    $baseUrls = $trackedUrls | ForEach-Object {
+        if ($_ -match '^(https://[^/]+/[^/]+/)') { $Matches[1] }
+    } | Sort-Object -Unique
+
+    foreach ($baseUrl in $baseUrls) {
+        Write-Host "`n🔍 Discovering new pages under $baseUrl" -ForegroundColor Cyan
+
+        # Common doc site section indexes to crawl
+        $indexUrls = @(
+            "${baseUrl}reference/"
+            "${baseUrl}patterns/"
+            "${baseUrl}guides/"
+        )
+
+        $untrackedPages = Find-UntrackedPages -IndexUrls $indexUrls -BaseUrl $baseUrl -TrackedUrls $trackedUrls
+        if ($untrackedPages.Count -gt 0) {
+            Write-Host "   ⚠️ Found $($untrackedPages.Count) untracked page(s):" -ForegroundColor Yellow
+            foreach ($page in $untrackedPages) {
+                Write-Host "      📄 $page" -ForegroundColor Yellow
+            }
+            # Add to results
+            $results[-1].untracked_pages = @($untrackedPages)
+        }
+        else {
+            Write-Host "   ✅ All discovered pages are tracked" -ForegroundColor Green
+        }
+    }
+
+    # Discover recently closed issues not in the manifest
+    foreach ($repo in $releaseRepos) {
+        Write-Host "`n🔍 Checking recently closed issues in $repo" -ForegroundColor Cyan
+        $closedResult = Get-RecentClosedIssues -Repo $repo -TrackedIssueNumbers $trackedIssueNumbers
+        if ($closedResult.status -eq 'ok') {
+            $untrackedCount = ($closedResult.untracked | Measure-Object).Count
+            if ($untrackedCount -gt 0) {
+                Write-Host "   ⚠️ Found $untrackedCount recently closed issue(s) not in manifest:" -ForegroundColor Yellow
+                foreach ($issue in $closedResult.untracked) {
+                    $labels = if ($issue.labels) { " [$($issue.labels -join ', ')]" } else { '' }
+                    Write-Host "      #$($issue.number): $($issue.title)$labels" -ForegroundColor Yellow
+                }
+                $results[-1].untracked_closed_issues = @($closedResult.untracked)
+            }
+            else {
+                Write-Host "   ✅ No new closed issues (checked $($closedResult.total_checked) in last 90 days)" -ForegroundColor Green
+            }
+        }
+        else {
+            Write-Host "   ❌ $($closedResult.error)" -ForegroundColor Red
+        }
+    }
 }
 
 # Output JSON report
 # changes_detected flags sources that need attention:
 #   - fetch errors (source may have moved)
 #   - closed issues where resolution_expected is true (instruction may reference outdated workarounds)
-#   - open issues where resolution_expected is true (expected resolution hasn't happened yet)
+#   - untracked pages discovered via index crawling
+#   - untracked recently closed issues
 $actionableChanges = $results | ForEach-Object { $_.sources } | Where-Object {
     $_.result.status -eq 'error' -or
     ($_.type -eq 'issue' -and $_.resolution_expected -and $_.result.status -eq 'ok' -and $_.result.state -eq 'closed')
 }
+$hasUntrackedPages = ($results | Where-Object { $_.untracked_pages.Count -gt 0 } | Measure-Object).Count -gt 0
+$hasUntrackedIssues = ($results | Where-Object { $_.untracked_closed_issues.Count -gt 0 } | Measure-Object).Count -gt 0
 $report = @{
     checked_at       = (Get-Date -Format 'o')
     manifests        = $results
-    changes_detected = ($actionableChanges | Measure-Object).Count -gt 0
+    changes_detected = (($actionableChanges | Measure-Object).Count -gt 0) -or $hasUntrackedPages -or $hasUntrackedIssues
 }
 
 Write-Host "`n📊 Report:" -ForegroundColor Cyan

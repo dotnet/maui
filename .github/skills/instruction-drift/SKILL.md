@@ -24,9 +24,11 @@ Detect when instruction files or skills have drifted from their upstream documen
 ## How It Works
 
 1. **Discover targets** — Find all `.sync.yaml` manifest files in the repository
-2. **Snapshot sources** — Run `Check-Staleness.ps1` to capture current source status (issue states, page content hashes, latest releases)
-3. **Flag drift signals** — Identify issues that closed (when `resolution_expected: true`), fetch errors, and content hash changes
-4. **Report** — Present a prioritized drift report for human review
+2. **Snapshot sources** — Run `Check-Staleness.ps1` to capture current source status (issue states, page content hashes, latest releases with release notes)
+3. **Crawl indexes** — Fetch doc site index pages (reference/, patterns/, guides/) and identify pages not yet tracked in the manifest
+4. **Discover issues** — Find recently closed issues (last 90 days) in tracked repos that aren't in the manifest
+5. **Flag drift signals** — Identify closed issues, fetch errors, content hash changes, untracked pages, untracked issues, and coverage gaps
+6. **Report** — Present a prioritized drift report with actionable items for human review
 
 ## Running the Skill
 
@@ -36,21 +38,27 @@ Detect when instruction files or skills have drifted from their upstream documen
 pwsh .github/skills/instruction-drift/scripts/Check-Staleness.ps1
 ```
 
-The script outputs a JSON report to stdout with a point-in-time snapshot:
+The script outputs a JSON report to stdout with:
 - Current state of tracked issues (open/closed) and whether resolution was expected
 - Content hashes of reference pages (compare across runs to detect changes)
-- Latest release tag for tracked repos
+- Latest release tag and release notes (truncated to 2000 chars) for tracked repos
+- **Untracked pages** — new doc pages discovered by crawling index pages that aren't in the manifest
+- **Untracked closed issues** — recently closed issues (last 90 days) not yet tracked in the manifest
+- Coverage gaps declared in the manifest (features from a page not yet documented locally)
 - Whether any sources failed to fetch (404, timeout, etc.)
-- `changes_detected` flag — true when closed issues with `resolution_expected: true` need review, or when sources error
+- `changes_detected` flag — true when any actionable signal is found
 
 ### Step 2: Analyze the report
 
-Read the JSON output and the target instruction file. For each detected change:
+Read the JSON output and the target instruction/skill files. For each detected signal:
 
-1. **Issue state change** — Check if the instruction file references the issue. If the issue closed, look for workarounds or "upstream issue" references that may now be obsolete.
-2. **Page content change** — The page changed but we don't know what specifically. Fetch the page content and compare against what the instruction file documents.
-3. **New release** — Check release notes for features or breaking changes relevant to the instruction file.
-4. **Fetch failure** — A source URL returned 404 or timed out. The manifest may need updating (URL moved or docs restructured).
+1. **Untracked pages** (highest priority) — New doc pages the manifest doesn't track. Fetch each page, determine if it documents features relevant to our skill, and if so: (a) add the URL to the manifest, (b) extract the key features, (c) update the skill files.
+2. **Untracked closed issues** — Recently closed issues not in the manifest. Check if any represent feature ships or bug fixes that affect our documented guidance. Add relevant ones to the manifest with `resolution_expected: true`.
+3. **Coverage gaps** — Features from a tracked page that we know we haven't documented. Fetch the page, extract the missing features, and update the skill files.
+4. **Issue state change** — If a tracked issue closed, look for workarounds or "upstream issue" references that may now be obsolete.
+5. **Page content change** — A hash changed but we don't know what specifically. Fetch the page and compare against what we document. Check `coverage_gaps` first — the change may have added features we already know we're missing.
+6. **New release** — Read the release notes (included in the report) for features or breaking changes. Cross-reference against our anti-patterns table and feature documentation.
+7. **Fetch failure** — A source URL returned 404 or timed out. The manifest may need updating (URL moved or docs restructured).
 
 ### Step 3: Classify changes
 
