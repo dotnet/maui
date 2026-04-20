@@ -5,10 +5,10 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(
 		IssueTracker.Github,
 		27007,
-		"iOS IndicatorView dot tap only advances by plus/minus 1 instead of jumping directly to the tapped dot",
-		PlatformAffected.iOS
+		"IndicatorView dot tap only advances by plus/minus 1 instead of jumping directly to the tapped dot",
+		PlatformAffected.iOS | PlatformAffected.macOS
 	)]
-	public class IndicatorViewiOSTapDirectJump : ContentPage
+	public class IndicatorViewTapDirectJump : ContentPage
 	{
 		const string CarouselId = "jumpCarousel";
 		const string IndicatorId = "jumpIndicator";
@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Issues
 		readonly IndicatorView _indicator;
 		readonly Label _positionLabel;
 
-		public IndicatorViewiOSTapDirectJump()
+		public IndicatorViewTapDirectJump()
 		{
 			var items = new ObservableCollection<string>(
 				Enumerable.Range(0, 5).Select(i => $"Item {i}")
@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Issues
 					new Label
 					{
 						Text =
-							"Repro: tapping the rightmost indicator dot must jump directly to the last item, not advance by 1.",
+							"Tapping the rightmost indicator dot must jump directly to the last item. On iOS/Catalyst this currently advances by only 1 (bug #27007).",
 					},
 					_positionLabel,
 					_carousel,
