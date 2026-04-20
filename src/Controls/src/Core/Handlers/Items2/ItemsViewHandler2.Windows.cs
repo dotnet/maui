@@ -1400,16 +1400,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// so ScrollContentPresenter constrains content height to viewport
 		if (IsLayoutHorizontal)
 		{
-			_scrollViewer.VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
+			_scrollViewer.VerticalScrollBarVisibility = WASDKScrollBarVisibility.Disabled;
 			return;
 		}
 
 		// Vertical is the scroll axis — respect the user's MAUI setting
 		_scrollViewer.VerticalScrollBarVisibility = Element.VerticalScrollBarVisibility switch
 		{
-			ScrollBarVisibility.Always => UI.Xaml.Controls.ScrollBarVisibility.Visible,
-			ScrollBarVisibility.Never => UI.Xaml.Controls.ScrollBarVisibility.Hidden,
-			_ => UI.Xaml.Controls.ScrollBarVisibility.Auto,
+			ScrollBarVisibility.Always => WASDKScrollBarVisibility.Visible,
+			ScrollBarVisibility.Never => WASDKScrollBarVisibility.Hidden,
+			_ => WASDKScrollBarVisibility.Auto,
 		};
 	}
 
@@ -1422,16 +1422,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// so ScrollContentPresenter constrains content width to viewport
 		if (!IsLayoutHorizontal)
 		{
-			_scrollViewer.HorizontalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Disabled;
+			_scrollViewer.HorizontalScrollBarVisibility = WASDKScrollBarVisibility.Disabled;
 			return;
 		}
 
 		// Horizontal is the scroll axis — respect the user's MAUI setting
 		_scrollViewer.HorizontalScrollBarVisibility = Element.HorizontalScrollBarVisibility switch
 		{
-			ScrollBarVisibility.Always => UI.Xaml.Controls.ScrollBarVisibility.Visible,
-			ScrollBarVisibility.Never => UI.Xaml.Controls.ScrollBarVisibility.Hidden,
-			_ => UI.Xaml.Controls.ScrollBarVisibility.Auto,
+			ScrollBarVisibility.Always => WASDKScrollBarVisibility.Visible,
+			ScrollBarVisibility.Never => WASDKScrollBarVisibility.Hidden,
+			_ => WASDKScrollBarVisibility.Auto,
 		};
 	}
 

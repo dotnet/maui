@@ -219,7 +219,7 @@ internal partial class ElementWrapper : ContentControl
 {
 	/// <summary>The MAUI virtual view hosted by this wrapper.</summary>
 	public IView? VirtualView { get; private set; }
-	private IMauiContext _context;
+	IMauiContext _context;
 
 	/// <summary>Whether this wrapper hosts a group header or footer (excluded from size caching).</summary>
 	public bool IsHeaderOrFooter { get; set; }
