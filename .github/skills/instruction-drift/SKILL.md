@@ -85,15 +85,14 @@ sources:
   # Reference documentation pages
   - url: https://github.github.com/gh-aw/reference/triggers/
     sections: ["Anti-Patterns", "Common Patterns", "Limitations"]
-  - url: https://github.github.com/gh-aw/reference/frontmatter/
-    sections: ["Anti-Patterns", "Architecture", "Additional Frontmatter Features"]
-  - url: https://github.github.com/gh-aw/reference/safe-outputs/
-    sections: ["Anti-Patterns", "Safe Outputs Quick Reference"]
+  - url: https://github.github.com/gh-aw/reference/integrity/
+    sections: ["Security Boundaries"]
+    coverage_gaps:  # Features from this page NOT yet documented locally
+      - "endorsement-reactions (v0.68.2+)"
+      - "approval-labels for promoting items"
 
   # Tracked GitHub issues (check open/closed state)
   - issue: github/gh-aw#18481
-    resolution_expected: true
-  - issue: github/gh-aw#25439
     resolution_expected: true
 
   # GitHub releases (check for new versions)
@@ -101,10 +100,18 @@ sources:
 
 style: |
   Match existing section structure. Use tables for feature comparisons.
-  Include code examples for common patterns. Mark items as anti-patterns
-  when a manual reimplementation should use a built-in feature instead.
-  Keep security guidance precise — never simplify away nuance.
 ```
+
+### Source fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `url` | Yes (for web sources) | Reference page URL — script hashes content to detect changes |
+| `sections` | No | Which local sections this source informs — helps the agent scope updates |
+| `coverage_gaps` | No | Features from this page NOT yet documented locally — the agent should check these first when the page hash changes |
+| `issue` | Yes (for issue sources) | Format: `owner/repo#number` — script checks open/closed state |
+| `resolution_expected` | No | When `true` and issue closes, `changes_detected` is flagged |
+| `releases` | Yes (for release sources) | Format: `owner/repo` — script checks latest release tag |
 
 ## Important Constraints
 

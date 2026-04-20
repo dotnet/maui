@@ -197,8 +197,41 @@ function ConvertFrom-SyncManifest {
                     $currentItem.resolution_expected = $Matches[1].Trim() -eq 'true'
                 }
             }
+            elseif ($trimmed -match '^coverage_gaps:') {
+                if ($currentItem) {
+                    $currentItem.coverage_gaps = @()
+                    $currentSection = 'coverage_gaps'
+                }
+            }
             elseif ($trimmed -match '^sections:') {
-                # sections are informational, skip for now
+                # sections are informational, pass through
+            }
+        }
+        elseif ($currentSection -eq 'coverage_gaps') {
+            if ($trimmed -match '^-\s*"?(.+?)"?$') {
+                if ($currentItem -and $currentItem.ContainsKey('coverage_gaps')) {
+                    $currentItem.coverage_gaps += $Matches[1]
+                }
+            }
+            elseif ($trimmed -match '^-\s*(url|issue|releases):' -or $trimmed -eq '' -or (-not $trimmed.StartsWith('-') -and -not $trimmed.StartsWith(' '))) {
+                # Left coverage_gaps block — re-enter sources parsing
+                $currentSection = 'sources'
+                # Re-process this line in sources context
+                if ($trimmed -match '^-\s*url:\s*(.+)$') {
+                    $currentItem = @{ type = 'web'; url = $Matches[1].Trim() }
+                    $manifest.sources += $currentItem
+                }
+                elseif ($trimmed -match '^-\s*issue:\s*(.+)$') {
+                    $issueRef = $Matches[1].Trim()
+                    if ($issueRef -match '^(.+)#(\d+)$') {
+                        $currentItem = @{ type = 'issue'; repo = $Matches[1]; number = [int]$Matches[2] }
+                        $manifest.sources += $currentItem
+                    }
+                }
+                elseif ($trimmed -match '^-\s*releases:\s*(.+)$') {
+                    $currentItem = @{ type = 'releases'; repo = $Matches[1].Trim() }
+                    $manifest.sources += $currentItem
+                }
             }
         }
         elseif ($currentSection -eq 'divergence') {
@@ -288,17 +321,25 @@ foreach ($manifestPath in $manifests) {
             'web' {
                 Write-Host "   🌐 Checking $($source.url)..." -NoNewline
                 $result = Test-WebPage -Url $source.url
+                $gaps = if ($source.ContainsKey('coverage_gaps')) { $source.coverage_gaps } else { @() }
                 if ($result.status -eq 'ok') {
                     Write-Host " ✅ hash=$($result.content_hash)" -ForegroundColor Green
                 }
                 else {
                     Write-Host " ❌ Error: $($result.error)" -ForegroundColor Red
                 }
-                $sourceResults += @{
+                if ($gaps.Count -gt 0) {
+                    Write-Host "      ⚠️ $($gaps.Count) known coverage gap(s)" -ForegroundColor Yellow
+                }
+                $entry = @{
                     type   = 'web'
                     url    = $source.url
                     result = $result
                 }
+                if ($gaps.Count -gt 0) {
+                    $entry.coverage_gaps = $gaps
+                }
+                $sourceResults += $entry
             }
             'releases' {
                 Write-Host "   📦 Checking releases for $($source.repo)..." -NoNewline

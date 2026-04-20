@@ -18,6 +18,7 @@ divergence:
 
 sources:
   # Reference documentation pages — check for content changes
+  # Core reference (high-change frequency)
   - url: https://github.github.com/gh-aw/reference/triggers/
     sections: ["Anti-Patterns", "Common Patterns", "Limitations"]
   - url: https://github.github.com/gh-aw/reference/frontmatter/
@@ -28,12 +29,42 @@ sources:
     sections: ["Safe Outputs Quick Reference"]
   - url: https://github.github.com/gh-aw/reference/integrity/
     sections: ["Security Boundaries"]
+    coverage_gaps:
+      - "endorsement-reactions / disapproval-reactions (v0.68.2+)"
+      - "approval-labels for promoting items"
+      - "allowed-repos scoping"
+      - "integrity-proxy: false opt-out"
+      - "centralized management via GH_AW_GITHUB_* variables"
+      - "effective integrity computation order"
+      - "DIFC_FILTERED logging and gh aw logs --filtered-integrity"
+      - "public repos auto-apply min-integrity: approved when unconfigured"
+      - "GitHub Actions expressions for blocked-users/trusted-users/approval-labels"
   - url: https://github.github.com/gh-aw/reference/custom-safe-outputs/
     sections: ["Anti-Patterns", "Safe Outputs Quick Reference"]
   - url: https://github.github.com/gh-aw/reference/triggering-ci/
     sections: ["Limitations", "Troubleshooting"]
   - url: https://github.github.com/gh-aw/reference/command-triggers/
     sections: ["Anti-Patterns"]
+
+  # Extended reference (lower change frequency, but contain important context)
+  - url: https://github.github.com/gh-aw/reference/engines/
+    sections: ["Additional Frontmatter Features"]
+  - url: https://github.github.com/gh-aw/reference/network/
+    sections: ["Security Boundaries"]
+  - url: https://github.github.com/gh-aw/reference/github-tools/
+    sections: ["Security Boundaries"]
+  - url: https://github.github.com/gh-aw/reference/imports/
+    sections: ["Common Patterns"]
+  - url: https://github.github.com/gh-aw/reference/workflow-structure/
+    sections: ["Architecture"]
+
+  # Patterns (best practices that inform our anti-patterns table)
+  - url: https://github.github.com/gh-aw/patterns/trial-ops/
+    sections: ["Common Patterns"]
+  - url: https://github.github.com/gh-aw/patterns/chat-ops/
+    sections: ["Common Patterns", "Anti-Patterns"]
+  - url: https://github.github.com/gh-aw/patterns/label-ops/
+    sections: ["Common Patterns"]
 
   # Tracked GitHub issues — check open/closed state
   - issue: github/gh-aw#18481
