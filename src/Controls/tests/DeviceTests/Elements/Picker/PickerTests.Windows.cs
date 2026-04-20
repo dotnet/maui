@@ -8,6 +8,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -77,6 +78,70 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Null title maps to empty PlaceholderText")]
+		public async Task NullTitleMapsToEmptyPlaceholderText()
+		{
+			var picker = new Picker()
+			{
+				Title = null,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(string.Empty, handler.PlatformView.PlaceholderText);
+			});
+		}
+
+		[Fact(DisplayName = "Empty title maps to empty PlaceholderText")]
+		public async Task EmptyTitleMapsToEmptyPlaceholderText()
+		{
+			var picker = new Picker()
+			{
+				Title = string.Empty,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(string.Empty, handler.PlatformView.PlaceholderText);
+			});
+		}
+
+		[Fact(DisplayName = "TitleColor maps to PlaceholderForeground")]
+		public async Task TitleColorMapsToPlaceholderForeground()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				TitleColor = Colors.Red,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var placeholderBrush = Assert.IsType<WSolidColorBrush>(handler.PlatformView.PlaceholderForeground);
+				Assert.Equal(Colors.Red, placeholderBrush.Color.ToColor());
+			});
+		}
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
 		{
 			return InvokeOnMainThreadAsync(() =>
