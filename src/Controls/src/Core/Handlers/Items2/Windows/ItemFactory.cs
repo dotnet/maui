@@ -110,7 +110,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// before the platform handler is created during the deferred ToPlatform() call.
 				// Without this, items display with default property values instead of the
 				// values defined in VisualState setters. (Fixes #27086)
-				if (view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
+				if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
 					!= SelectionMode.None)
 				{
 					bool isSelected = false;
@@ -204,6 +204,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				{
 					_view.RemoveLogicalChild(wrapperView);
 				}
+				wrapper?.CleanUp();
 			}
 		}
 
@@ -348,6 +349,21 @@ internal partial class ElementWrapper : ContentControl
 		if (e.PropertyName == View.MarginProperty.PropertyName)
 		{
 			SyncMargin();
+		}
+	}
+
+	/// <summary>
+	/// Unsubscribes all event handlers to allow clean garbage collection.
+	/// Called from <see cref="ItemFactory.CleanUp"/> when the handler disconnects.
+	/// </summary>
+	internal void CleanUp()
+	{
+		PointerEntered -= OnPointerStateChanged;
+		PointerExited -= OnPointerStateChanged;
+
+		if (VirtualView is View mauiView)
+		{
+			mauiView.PropertyChanged -= OnVirtualViewPropertyChanged;
 		}
 	}
 
