@@ -41,7 +41,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			{
 				File.WriteAllText(filePath, "test content");
 				using var javaFile = new Java.IO.File(filePath);
-				javaFile.SetReadable(false);
+				if (!javaFile.SetReadable(false))
+				{
+					return; // Permission change not supported on this device/config — skip test
+				}
 
 				Assert.False(FileSystemUtils.IsFileReadable(filePath));
 			}
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			{
 				if (File.Exists(filePath))
 				{
-					// Restore permission so cleanup can delete it
+					// Restore readability before cleanup to return the file to a normal state
 					using var javaFile = new Java.IO.File(filePath);
 					javaFile.SetReadable(true);
 					File.Delete(filePath);

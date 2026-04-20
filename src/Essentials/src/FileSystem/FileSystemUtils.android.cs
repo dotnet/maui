@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Storage
 			// On API 28 and below, ResolvePhysicalPath may return a raw filesystem path that passes
 			// File.Exists() but lacks read permission, causing UnauthorizedAccessException.
 			// IsFileReadable uses Java.IO.File.canRead() to verify actual read access before using the path.
-			// On API 29+, ResolvePhysicalPath skips document resolution for content URIs, so this is not needed.
+			// On API 29+, ResolvePhysicalPath typically returns null for content URIs, so the fallback path is used instead.
 			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute) && IsFileReadable(absolute))
 				return absolute;
 
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Storage
 		internal static bool IsFileReadable(string path)
 		{
 			using var file = new Java.IO.File(path);
-			return file.Exists() && file.CanRead();
+			return file.IsFile && file.CanRead();
 		}
 
 		static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
