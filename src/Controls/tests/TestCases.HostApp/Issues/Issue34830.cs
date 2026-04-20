@@ -5,6 +5,7 @@ public class Issue34830 : TestFlyoutPage
 {
 	protected override void Init()
 	{
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 		FlowDirection = FlowDirection.RightToLeft;
 
 		Flyout = new ContentPage
