@@ -625,6 +625,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
+						if (hasCustomLabel)
+						{
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
+						}
 					}
 
 					if (image != null)
@@ -676,6 +680,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 								if (text is not null)
 								{
 									barButtonItem.Title = text;
+								}
+								else if (barButtonItem.Title is null)
+								{
+									// Preserve default back button title when only accessibility label is set
+									barButtonItem.Title = previousNavItem.Title;
 								}
 								if (!string.IsNullOrEmpty(accessibilityLabel))
 								{
