@@ -385,7 +385,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetResponseAsync_ChainedFunctionCalls_TimeAndWeather()
+	public virtual async Task GetResponseAsync_ChainedFunctionCalls_TimeAndWeather()
 	{
 		int timeCallCount = 0;
 		int weatherCallCount = 0;
@@ -457,7 +457,7 @@ public abstract class ChatClientFunctionCallingTestsBase<T>
 	}
 
 	[Fact]
-	public async Task GetStreamingResponseAsync_ChainedFunctionCalls_TimeAndWeather()
+	public virtual async Task GetStreamingResponseAsync_ChainedFunctionCalls_TimeAndWeather()
 	{
 		int timeCallCount = 0;
 		int weatherCallCount = 0;
