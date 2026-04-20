@@ -50,19 +50,13 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 		=> Task.CompletedTask;
 
 	/// <summary>
-	/// SLM Best Practice: For dependent tool chains, help the model by adding a system message
-	/// that describes the dependency. The 3.8B model doesn't infer that "today" requires
-	/// resolving via GetCurrentTime — explicitly state the relationship.
-	///
-	/// Known limitation: Without the system hint, the model calls GetWeather directly.
-	/// This override adds dependency guidance which a developer would also add in their app.
+	/// SLM Best Practice: For dependent tool chains, add a generic system message
+	/// that teaches the model to check tool parameter requirements before calling.
+	/// This is a reusable pattern — not specific to any particular tool.
 	/// </summary>
 	[Fact]
 	public override async Task GetResponseAsync_ChainedFunctionCalls_TimeAndWeather()
 	{
-		// The base test asks "What's the weather like today?" with GetCurrentTime + GetWeather.
-		// For a 3.8B SLM, we need a system hint about the dependency.
-		// This is a documented best practice, not a workaround.
 		int timeCallCount = 0;
 		int weatherCallCount = 0;
 		string? capturedDate = null;
@@ -85,9 +79,11 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 		var client = EnableFunctionCalling(new PhiSilicaStructuredToolCallingClient());
 		var messages = new List<ChatMessage>
 		{
-			// SLM Best Practice: Add dependency hint in the system message
-			new(ChatRole.System, "GetWeather requires a date in YYYY-MM-DD format. " +
-				"If the user says 'today' or 'now', you must call GetCurrentTime first to get the date."),
+			// SLM Best Practice: For tool chains, describe dependencies in the system message.
+			// This tells the model which tool provides data another tool needs.
+			new(ChatRole.System,
+				"GetWeather requires a date parameter. If the user does not provide a specific date, " +
+				"call GetCurrentTime first to get the current date."),
 			new(ChatRole.User, "What's the weather like today?")
 		};
 		var options = new ChatOptions { Tools = [timeTool, weatherTool] };
@@ -102,7 +98,7 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 	}
 
 	/// <summary>
-	/// Streaming version of the chained calls test with SLM dependency guidance.
+	/// Streaming version with generic SLM dependency guidance.
 	/// </summary>
 	[Fact]
 	public override async Task GetStreamingResponseAsync_ChainedFunctionCalls_TimeAndWeather()
@@ -127,8 +123,9 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 		var client = EnableFunctionCalling(new PhiSilicaStructuredToolCallingClient());
 		var messages = new List<ChatMessage>
 		{
-			new(ChatRole.System, "GetWeather requires a date in YYYY-MM-DD format. " +
-				"If the user says 'today' or 'now', you must call GetCurrentTime first to get the date."),
+			new(ChatRole.System,
+				"GetWeather requires a date parameter. If the user does not provide a specific date, " +
+				"call GetCurrentTime first to get the current date."),
 			new(ChatRole.User, "What's the weather like today?")
 		};
 		var options = new ChatOptions { Tools = [timeTool, weatherTool] };

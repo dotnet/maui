@@ -317,12 +317,12 @@ public class PhiSilicaExperimentTests
 	}
 
 	/// <summary>
-	/// SLM Best Practice: With dependency guidance in the system message,
-	/// A→B chaining works. This proves the infrastructure supports chaining;
-	/// developers just need to add hints for the 3.8B model.
+	/// SLM Best Practice: Describe tool dependencies in system message.
+	/// The hint is specific to the tools but follows a reusable pattern:
+	/// "[Tool] requires [param]. If not provided, call [other tool] first."
 	/// </summary>
 	[Fact]
-	public async Task ChainedTools_WithDependencyGuidance_CallsBoth()
+	public async Task ChainedTools_DependencyHint_TimeToWeather()
 	{
 		int timeCallCount = 0;
 		int weatherCallCount = 0;
@@ -346,9 +346,10 @@ public class PhiSilicaExperimentTests
 
 		var messages = new List<ChatMessage>
 		{
-			// SLM Best Practice: describe tool dependencies in the system message
-			new(ChatRole.System, "GetWeather requires a date in YYYY-MM-DD format. " +
-				"If the user says 'today', call GetCurrentTime first to get the date."),
+			// Pattern: "[Tool] requires [param]. If not provided, call [provider] first."
+			new(ChatRole.System,
+				"GetWeather requires a date parameter. If the user does not provide a specific date, " +
+				"call GetCurrentTime first to get the current date."),
 			new(ChatRole.User, "What's the weather like today?")
 		};
 		var options = new ChatOptions { Tools = [timeTool, weatherTool] };
@@ -357,6 +358,51 @@ public class PhiSilicaExperimentTests
 		Assert.NotNull(response);
 		Assert.True(timeCallCount > 0, $"GetCurrentTime should be called. Got: {timeCallCount}");
 		Assert.True(weatherCallCount > 0, $"GetWeather should be called. Got: {weatherCallCount}");
+	}
+
+	/// <summary>
+	/// Chain: Get user profile → Get order history.
+	/// Demonstrates the dependency hint pattern with a different domain.
+	/// </summary>
+	[Fact]
+	public async Task ChainedTools_DependencyHint_ProfileToOrders()
+	{
+		int profileCallCount = 0;
+		int ordersCallCount = 0;
+
+		var profileTool = AIFunctionFactory.Create(
+			(string username) =>
+			{
+				profileCallCount++;
+				return "{\"userId\": \"U12345\", \"name\": \"John Doe\"}";
+			},
+			name: "GetUserProfile",
+			description: "Looks up a user profile by username. Returns userId and name.");
+
+		var ordersTool = AIFunctionFactory.Create(
+			(string userId) =>
+			{
+				ordersCallCount++;
+				return "[{\"orderId\": \"ORD-001\", \"item\": \"Widget\"}]";
+			},
+			name: "GetOrderHistory",
+			description: "Gets order history for a user. Requires the userId.");
+
+		var inner = new PhiSilicaStructuredToolCallingClient();
+		var client = inner.AsBuilder().UseFunctionInvocation().Build();
+
+		var messages = new List<ChatMessage>
+		{
+			// Pattern: "[Tool] requires [param]. Call [provider] to get it."
+			new(ChatRole.System,
+				"GetOrderHistory requires a userId. Call GetUserProfile with the username to get the userId first."),
+			new(ChatRole.User, "What are the recent orders for username 'johndoe'?")
+		};
+		var options = new ChatOptions { Tools = [profileTool, ordersTool] };
+
+		var response = await client.GetResponseAsync(messages, options);
+		Assert.NotNull(response);
+		Assert.True(profileCallCount > 0, $"GetUserProfile should be called. Got: {profileCallCount}");
 	}
 
 	// ═══════════════════════════════════════════════════════════
