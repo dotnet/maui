@@ -252,7 +252,7 @@ public class PhiSilicaExperimentTests
 			name: "GenerateWeatherReport",
 			description: "Generates a consolidated weather report from weather data for multiple cities. Pass all weather data as a JSON string.");
 
-		var inner = new PromptBasedToolCallingClient(new PhiSilicaChatClient());
+		var inner = new PhiSilicaStructuredToolCallingClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		var messages = new List<ChatMessage>
