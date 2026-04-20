@@ -64,9 +64,9 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <!-- File-link PromptBasedSchemaClient from the sample for Windows JSON schema tests -->
+  <!-- File-link PhiSilicaToolsAndSchemaClient from the sample for Windows tests -->
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <Compile Include="..\..\samples\Essentials.AI.Sample\Services\PromptBasedSchemaClient.cs" Link="Services\PromptBasedSchemaClient.cs" />
+    <Compile Include="..\..\samples\Essentials.AI.Sample\Services\PhiSilicaToolsAndSchemaClient.cs" Link="Services\PhiSilicaToolsAndSchemaClient.cs" />
   </ItemGroup>
 
   <ItemGroup>

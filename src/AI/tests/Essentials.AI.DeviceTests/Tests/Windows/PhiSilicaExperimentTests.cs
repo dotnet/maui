@@ -91,7 +91,7 @@ public class PhiSilicaExperimentTests
 	public async Task Enum_StructuredOutput_ValidValue_ReturnsCorrectEnum()
 	{
 		// Test: Ask about a fruit that IS in the enum
-		var client = new PhiSilicaSchemaClient();
+		var client = new PhiSilicaWrappedClient();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "The user wants a banana. Select the matching fruit.")
@@ -129,7 +129,7 @@ public class PhiSilicaExperimentTests
 	public async Task Enum_StructuredOutput_InvalidValue_HandlesGracefully()
 	{
 		// Test: Ask about something NOT in the enum (Bread is not a fruit)
-		var client = new PhiSilicaSchemaClient();
+		var client = new PhiSilicaWrappedClient();
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.User, "The user wants bread. Select the matching fruit from the enum. If none match, set SelectedFruit to null.")
@@ -252,7 +252,7 @@ public class PhiSilicaExperimentTests
 			name: "GenerateWeatherReport",
 			description: "Generates a consolidated weather report from weather data for multiple cities. Pass all weather data as a JSON string.");
 
-		var inner = new PhiSilicaStructuredToolCallingClient();
+		var inner = new PhiSilicaWrappedClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		var messages = new List<ChatMessage>
@@ -300,7 +300,7 @@ public class PhiSilicaExperimentTests
 			(string timezone) => { timeCallCount++; return $"10:30 AM in {timezone}"; },
 			name: "GetTime", description: "Gets the current time for a timezone");
 
-		var inner = new PhiSilicaStructuredToolCallingClient();
+		var inner = new PhiSilicaWrappedClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		// Use "Seattle+PST" which the model handles reliably
@@ -341,7 +341,7 @@ public class PhiSilicaExperimentTests
 			name: "GetWeather",
 			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
 
-		var inner = new PhiSilicaStructuredToolCallingClient();
+		var inner = new PhiSilicaWrappedClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		var messages = new List<ChatMessage>
@@ -388,7 +388,7 @@ public class PhiSilicaExperimentTests
 			name: "GetOrderHistory",
 			description: "Gets order history for a user. Requires the userId.");
 
-		var inner = new PhiSilicaStructuredToolCallingClient();
+		var inner = new PhiSilicaWrappedClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		var messages = new List<ChatMessage>
@@ -436,7 +436,7 @@ public class PhiSilicaExperimentTests
 			name: "GetWeather",
 			description: "Gets current weather for a city. Returns JSON with temp, condition, city.");
 
-		var inner = new PhiSilicaStructuredToolCallingClient();
+		var inner = new PhiSilicaWrappedClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		var messages = new List<ChatMessage>
@@ -484,7 +484,7 @@ public class PhiSilicaExperimentTests
 				description: $"Tool number {i}. Processes text input and returns a result."));
 		}
 
-		var inner = new PhiSilicaStructuredToolCallingClient();
+		var inner = new PhiSilicaWrappedClient();
 		var client = inner.AsBuilder().UseFunctionInvocation().Build();
 
 		var messages = new List<ChatMessage>

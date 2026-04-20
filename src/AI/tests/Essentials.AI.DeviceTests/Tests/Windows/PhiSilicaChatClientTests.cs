@@ -6,24 +6,12 @@ using Xunit;
 namespace Microsoft.Maui.Essentials.AI.DeviceTests;
 
 /// <summary>
-/// Wraps PhiSilicaChatClient with PromptBasedSchemaClient so that JSON schema
-/// requests are converted to prompt instructions (Phi Silica has no native
-/// structured output support).
+/// Single wrapper for all Phi Silica tests — handles both structured output and tool calling.
+/// Pipeline: PhiSilicaToolsAndSchemaClient → PhiSilicaChatClient
 /// </summary>
-public class PhiSilicaSchemaClient : DelegatingChatClient
+public class PhiSilicaWrappedClient : DelegatingChatClient
 {
-	public PhiSilicaSchemaClient() : base(new PromptBasedSchemaClient(new PhiSilicaChatClient())) { }
-}
-
-/// <summary>
-/// Wraps PhiSilicaChatClient with StructuredToolCallingClient → PromptBasedSchemaClient
-/// so tool calls are expressed as structured JSON output.
-/// Pipeline: FICC → StructuredToolCallingClient → PromptBasedSchemaClient → PhiSilicaChatClient
-/// </summary>
-public class PhiSilicaStructuredToolCallingClient : DelegatingChatClient
-{
-	public PhiSilicaStructuredToolCallingClient()
-		: base(new StructuredToolCallingClient(new PromptBasedSchemaClient(new PhiSilicaChatClient()))) { }
+public PhiSilicaWrappedClient() : base(new PhiSilicaToolsAndSchemaClient(new PhiSilicaChatClient())) { }
 }
 
 [Category("PhiSilicaChatClient")]
@@ -32,9 +20,9 @@ public class PhiSilicaChatClientCancellationTests : ChatClientCancellationTestsB
 }
 
 [Category("PhiSilicaChatClient")]
-public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCallingTestsBase<PhiSilicaStructuredToolCallingClient>
+public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCallingTestsBase<PhiSilicaWrappedClient>
 {
-	protected override IChatClient EnableFunctionCalling(PhiSilicaStructuredToolCallingClient client)
+	protected override IChatClient EnableFunctionCalling(PhiSilicaWrappedClient client)
 	{
 		return client.AsBuilder()
 			.UseFunctionInvocation()
@@ -76,7 +64,7 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 			name: "GetWeather",
 			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
 
-		var client = EnableFunctionCalling(new PhiSilicaStructuredToolCallingClient());
+		var client = EnableFunctionCalling(new PhiSilicaWrappedClient());
 		var messages = new List<ChatMessage>
 		{
 			// SLM Best Practice: For tool chains, describe dependencies in the system message.
@@ -120,7 +108,7 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 			name: "GetWeather",
 			description: "Gets the weather forecast for a specific date. Requires the date in YYYY-MM-DD format.");
 
-		var client = EnableFunctionCalling(new PhiSilicaStructuredToolCallingClient());
+		var client = EnableFunctionCalling(new PhiSilicaWrappedClient());
 		var messages = new List<ChatMessage>
 		{
 			new(ChatRole.System,
@@ -175,13 +163,13 @@ public class PhiSilicaChatClientStreamingTests : ChatClientStreamingTestsBase<Ph
 }
 
 [Category("PhiSilicaChatClient")]
-public class PhiSilicaChatClientJsonSchemaTests : ChatClientJsonSchemaTestsBase<PhiSilicaSchemaClient>
+public class PhiSilicaChatClientJsonSchemaTests : ChatClientJsonSchemaTestsBase<PhiSilicaWrappedClient>
 {
-	[Fact(Skip = "Phi Silica does not support JSON format without a schema — PromptBasedSchemaClient requires a schema to rewrite.")]
+	[Fact(Skip = "Phi Silica does not support JSON format without a schema — PhiSilicaToolsAndSchemaClient requires a schema to rewrite.")]
 	public override Task GetResponseAsync_WithJsonFormatWithoutSchema_DoesNotThrow()
 		=> base.GetResponseAsync_WithJsonFormatWithoutSchema_DoesNotThrow();
 
-	[Fact(Skip = "Phi Silica does not support JSON format without a schema — PromptBasedSchemaClient requires a schema to rewrite.")]
+	[Fact(Skip = "Phi Silica does not support JSON format without a schema — PhiSilicaToolsAndSchemaClient requires a schema to rewrite.")]
 	public override Task GetStreamingResponseAsync_WithJsonFormatWithoutSchema_DoesNotThrow()
 		=> base.GetStreamingResponseAsync_WithJsonFormatWithoutSchema_DoesNotThrow();
 }

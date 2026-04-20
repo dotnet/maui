@@ -171,7 +171,7 @@ public static class MauiProgram
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
 				.AsBuilder()
-				.Use(cc => new PromptBasedSchemaClient(cc))
+				.Use(cc => new PhiSilicaToolsAndSchemaClient(cc))
 				.UseLogging(loggerFactory)
 				.Build();
 		});
@@ -183,7 +183,7 @@ public static class MauiProgram
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
 				.AsBuilder()
-				.Use(cc => new PromptBasedSchemaClient(cc))
+				.Use(cc => new PhiSilicaToolsAndSchemaClient(cc))
 				.UseLogging(loggerFactory)
 				.Build();
 		});
@@ -195,7 +195,7 @@ public static class MauiProgram
 			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 			return phiClient
 				.AsBuilder()
-				.Use(cc => new PromptBasedSchemaClient(cc))
+				.Use(cc => new PhiSilicaToolsAndSchemaClient(cc))
 				.Use(cc => new BufferedChatClient(cc))
 				.UseLogging(loggerFactory)
 				.Build();
