@@ -3,14 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.ImageOptionsPage"
-             Title="SliderFeature">
+             Title="ImageFeature">
         <ContentPage.ToolbarItems>
                 <ToolbarItem Text="Apply"
                              Clicked="ApplyButton_Clicked"
                              AutomationId="Apply"/>
         </ContentPage.ToolbarItems>
-        <VerticalStackLayout Padding="10"
-                             Spacing="4">
+        <VerticalStackLayout Padding="5" >
                 <Label Text="Aspect"
                        FontAttributes="Bold"
                        FontSize="14"/>
@@ -88,12 +87,15 @@
                        FontSize="14"/>
                 <HorizontalStackLayout>
                         <RadioButton Content="Red"
+                                     GroupName="FontColorGroup"
                                      CheckedChanged="FontColorRadio_CheckedChanged"
                                      AutomationId="FontColorRed"/>
                         <RadioButton Content="Green"
+                                     GroupName="FontColorGroup"
                                      CheckedChanged="FontColorRadio_CheckedChanged"
                                      AutomationId="FontColorGreen"/>
                         <RadioButton Content="Blue"
+                                     GroupName="FontColorGroup"
                                      CheckedChanged="FontColorRadio_CheckedChanged"
                                      AutomationId="FontColorBlue"/>
                 </HorizontalStackLayout>
@@ -147,6 +149,59 @@
                         <CheckBox IsChecked="{Binding HasShadow}"
                                         AutomationId="ShadowCheckBox"
                                         VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+                <Label Text="IsEnabled"
+                       FontAttributes="Bold"
+                       FontSize="14"/>
+                <HorizontalStackLayout>
+                        <RadioButton Content="True"
+                                     GroupName="IsEnabled"
+                                     IsChecked="True"
+                                     CheckedChanged="OnIsEnabledChanged"
+                                     AutomationId="IsEnabledTrue"/>
+                        <RadioButton Content="False"
+                                     GroupName="IsEnabled"
+                                     CheckedChanged="OnIsEnabledChanged"
+                                     AutomationId="IsEnabledFalse"/>
+                </HorizontalStackLayout>
+
+                <Label Text="BackgroundColor"
+                       FontAttributes="Bold"
+                       FontSize="14"/>
+                <HorizontalStackLayout>
+                        <RadioButton Content="None"
+                                     GroupName="BackgroundColor"
+                                     IsChecked="True"
+                                     CheckedChanged="OnBackgroundColorChanged"
+                                     AutomationId="BackgroundColorNone"/>
+                        <RadioButton Content="Red"
+                                     GroupName="BackgroundColor"
+                                     CheckedChanged="OnBackgroundColorChanged"
+                                     AutomationId="BackgroundColorRed"/>
+                        <RadioButton Content="Yellow"
+                                     GroupName="BackgroundColor"
+                                     CheckedChanged="OnBackgroundColorChanged"
+                                     AutomationId="BackgroundColorYellow"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Opacity"
+                       FontAttributes="Bold"
+                       FontSize="14"/>
+                <HorizontalStackLayout>
+                        <RadioButton Content="1.0"
+                                     GroupName="Opacity"
+                                     IsChecked="True"
+                                     CheckedChanged="OnOpacityChanged"
+                                     AutomationId="OpacityFull"/>
+                        <RadioButton Content="0.5"
+                                     GroupName="Opacity"
+                                     CheckedChanged="OnOpacityChanged"
+                                     AutomationId="OpacityHalf"/>
+                        <RadioButton Content="0.0"
+                                     GroupName="Opacity"
+                                     CheckedChanged="OnOpacityChanged"
+                                     AutomationId="OpacityNone"/>
                 </HorizontalStackLayout>
 
         </VerticalStackLayout>

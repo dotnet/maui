@@ -23,6 +23,10 @@ public class ImageFeatureTests : _GalleryUITest
 	public const string ShadowCheckBox = "ShadowCheckBox";
 	public const string IsAnimationTrue = "IsAnimationTrue";
 	public const string IsAnimationFalse = "IsAnimationFalse";
+	public const string IsEnabledTrue = "IsEnabledTrue";
+	public const string IsEnabledFalse = "IsEnabledFalse";
+	public const string BackgroundColorYellow = "BackgroundColorYellow";
+	public const string OpacityHalf = "OpacityHalf";
 
 	public override string GalleryPageName => ImageFeatureMatrix;
 
@@ -399,5 +403,75 @@ public class ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
+	}
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWithBackgroundColorYellow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(BackgroundColorYellow);
+		App.Tap(BackgroundColorYellow);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWithOpacityHalf()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(OpacityHalf);
+		App.Tap(OpacityHalf);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWhenIsEnabledFalse()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(IsEnabledFalse);
+		App.Tap(IsEnabledFalse);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		App.Tap("ImageControl");
+		App.WaitForNoElement("TapResultLabel");
+	}
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWhenIsEnabledTrue()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(IsEnabledFalse);
+		App.Tap(IsEnabledFalse);
+		App.WaitForElement(IsEnabledTrue);
+		App.Tap(IsEnabledTrue);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		App.Tap("ImageControl");
+		App.WaitForElement("TapResultLabel");
+		var tapResult = App.FindElement("TapResultLabel").GetText();
+		Assert.That(tapResult, Is.EqualTo("Tapped"));
 	}
 }

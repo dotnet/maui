@@ -143,4 +143,38 @@ public partial class ImageOptionsPage : ContentPage
 		_viewModel.FlowDirection = FlowDirectionLTR.IsChecked ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 	}
 
+	private void OnIsEnabledChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked)
+		{
+			_viewModel.IsEnabled = rb.Content?.ToString() == "True";
+		}
+	}
+
+	private void OnBackgroundColorChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked)
+		{
+			_viewModel.BackgroundColor = rb.Content?.ToString() switch
+			{
+				"Red" => Colors.Red,
+				"Yellow" => Colors.Yellow,
+				_ => null
+			};
+		}
+	}
+
+	private void OnOpacityChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (sender is RadioButton rb && rb.IsChecked)
+		{
+			_viewModel.ImageOpacity = rb.Content?.ToString() switch
+			{
+				"0.5" => 0.5,
+				"0.0" => 0.0,
+				_ => 1.0
+			};
+		}
+	}
+
 }
