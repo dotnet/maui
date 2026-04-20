@@ -33,32 +33,73 @@ public sealed class PromptBasedSchemaClient : DelegatingChatClient
 
 		if (!hadSchema)
 		{
-			// No schema rewrite — pass through
 			await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
 				yield return update;
 			yield break;
 		}
 
-		// Schema was rewritten — buffer and strip code fences from assembled text
-		var fullText = new System.Text.StringBuilder();
-		ChatRole? lastRole = null;
+		// Smart buffering: peek at initial tokens to detect code fences.
+		// If no fences, flush buffer and stream the rest through directly.
+		// If fences, buffer everything and strip at the end.
+		var buffer = new List<ChatResponseUpdate>();
+		var initialText = new System.Text.StringBuilder();
+		bool fenceDetected = false;
+		bool decisionMade = false;
 
 		await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
 		{
-			lastRole ??= update.Role;
-			foreach (var content in update.Contents)
+			if (!decisionMade)
 			{
-				if (content is TextContent tc && tc.Text is not null)
-					fullText.Append(tc.Text);
+				buffer.Add(update);
+				foreach (var c in update.Contents)
+					if (c is TextContent tc && tc.Text is not null)
+						initialText.Append(tc.Text);
+
+				var soFar = initialText.ToString().TrimStart();
+				if (soFar.Length >= 3)
+				{
+					decisionMade = true;
+					if (soFar.StartsWith("```", StringComparison.Ordinal))
+					{
+						fenceDetected = true;
+					}
+					else
+					{
+						foreach (var b in buffer) yield return b;
+						buffer.Clear();
+					}
+				}
+			}
+			else if (fenceDetected)
+			{
+				buffer.Add(update);
+				foreach (var c in update.Contents)
+					if (c is TextContent tc && tc.Text is not null)
+						initialText.Append(tc.Text);
+			}
+			else
+			{
+				yield return update;
 			}
 		}
 
-		var stripped = StripCodeFencesFromText(fullText.ToString());
-		yield return new ChatResponseUpdate
+		if (fenceDetected || !decisionMade)
 		{
-			Role = lastRole ?? ChatRole.Assistant,
-			Contents = [new TextContent(stripped)]
-		};
+			var fullText = new System.Text.StringBuilder();
+			ChatRole? role = null;
+			foreach (var u in buffer)
+			{
+				role ??= u.Role;
+				foreach (var c in u.Contents)
+					if (c is TextContent tc && tc.Text is not null)
+						fullText.Append(tc.Text);
+			}
+			yield return new ChatResponseUpdate
+			{
+				Role = role ?? ChatRole.Assistant,
+				Contents = [new TextContent(StripCodeFencesFromText(fullText.ToString()))]
+			};
+		}
 	}
 
 	static (IEnumerable<ChatMessage>, ChatOptions?) RewriteIfNeeded(

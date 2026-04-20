@@ -199,17 +199,15 @@ public sealed class PhiSilicaChatClient : IChatClient
 				else if (content is FunctionCallContent functionCall)
 				{
 #pragma warning disable IL3050, IL2026
-					// Include tool call history so the model has context for multi-turn conversations
 					var argsJson = functionCall.Arguments is not null
 						? System.Text.Json.JsonSerializer.Serialize(functionCall.Arguments)
 						: "{}";
-					promptParts.Add($"<|tool_call|>{{\"name\":\"{functionCall.Name}\",\"arguments\":{argsJson}}}<|/tool_call|>");
+					promptParts.Add($"[Tool call: {functionCall.Name}({argsJson})]");
 #pragma warning restore IL3050, IL2026
 				}
 				else if (content is FunctionResultContent functionResult)
 				{
 #pragma warning disable IL3050, IL2026
-					// Include tool result history for multi-turn context
 					var resultStr = functionResult.Result switch
 					{
 						string s => s,
@@ -217,7 +215,7 @@ public sealed class PhiSilicaChatClient : IChatClient
 						_ => "{}"
 					};
 #pragma warning restore IL3050, IL2026
-					promptParts.Add($"<|tool_response|>{resultStr}<|end|>");
+					promptParts.Add($"[Tool result: {resultStr}]");
 				}
 				else if (content is not TextContent)
 				{
