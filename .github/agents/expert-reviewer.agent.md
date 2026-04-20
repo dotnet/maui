@@ -60,11 +60,11 @@ If a model is unavailable, proceed with the remaining models.
 ## 4. Post Results
 
 Before posting inline comments, validate **both** the file path AND line number:
-- **Path**: must be a file that appears in `gh pr diff --name-only`. Comments on files not in the diff cause the entire review to fail with "Path could not be resolved".
+- **Path**: must be a file that appears in the diff. Use `list_pull_request_files` MCP tool to get valid paths. Comments on files not in the diff cause the entire review to fail with "Path could not be resolved".
 - **Line**: must fall within a `@@` diff hunk for that file. Lines outside any hunk cause "Line could not be resolved".
 - **If either fails**: post the finding via `add_comment` as a design-level concern instead.
 
-Run `gh pr diff <number> --name-only` to get the list of valid paths before posting.
+Use `list_pull_request_files` to get the list of valid paths before posting.
 
 1. **Inline comments** — `create_pull_request_review_comment` for findings where BOTH path and line are valid
 2. **Design-level concerns** — `add_comment` for findings outside the diff (wrong path, wrong line, or design-level). One comment, multiple bullets.

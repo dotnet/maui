@@ -85,8 +85,8 @@ Collect findings from all 3 sub-agents and apply consensus:
 ### Step 4: Validate Paths and Line Numbers
 
 Before posting inline comments, validate **both**:
-1. **Path**: Run `gh pr diff <number> --name-only` to get the list of files in the diff. Only files in this list can receive inline comments. Comments on other files fail with "Path could not be resolved".
-2. **Line**: Parse `@@ -old,len +new,len @@` — the line must be in `[new, new+len)`. Lines outside any hunk fail with "Line could not be resolved".
+1. **Path**: Use `list_pull_request_files` MCP tool to get the list of files in the diff. Only files in this list can receive inline comments. Comments on other files fail with "Path could not be resolved".
+2. **Line**: Parse `@@ -old,len +new,len @@` from the diff — the line must be in `[new, new+len)`. Lines outside any hunk fail with "Line could not be resolved".
 
 **If either path or line is invalid**, move the finding to `add_comment` (design-level) instead. A single invalid inline comment causes the entire `submit_pull_request_review` to fail and ALL inline comments are lost.
 

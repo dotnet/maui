@@ -176,12 +176,14 @@ For `pull_request` + fork support (not `workflow_dispatch`): add `forks: ["*"]` 
 
 These four patterns are the most commonly missed when building secure workflows. Use all where applicable:
 
-**1. Prevent accidental PR approvals** — always restrict review workflows; otherwise the agent can approve PRs and bypass branch protection rules (gh-aw#25439):
+**1. Prevent accidental PR approvals** — always restrict review workflows; otherwise the agent can approve PRs and bypass branch protection rules (gh-aw#25439). Prefer `[COMMENT]` to avoid stale blocking reviews that can't be dismissed:
 
 ```yaml
 safe-outputs:
   submit-pull-request-review:
-    allowed-events: [COMMENT, REQUEST_CHANGES]  # Blocks APPROVE at infrastructure level
+    allowed-events: [COMMENT]  # Blocks APPROVE; avoids un-dismissable REQUEST_CHANGES
+    # Use [COMMENT, REQUEST_CHANGES] only if you need the "Changes requested" badge
+    # and accept that stale reviews require manual dismissal
 ```
 
 **2. CI triggering + protected file safety** for agent-created PRs — `GITHUB_TOKEN` pushes don't trigger CI; a PAT/App token is required. `protected-files` controls what happens when the agent modifies package manifests or `.github/`:

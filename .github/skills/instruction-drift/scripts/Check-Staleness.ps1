@@ -258,15 +258,25 @@ function Get-RecentClosedIssues {
 
     try {
         $since = (Get-Date).AddDays(-$DaysBack).ToString('yyyy-MM-ddTHH:mm:ssZ')
-        $json = gh api --paginate "repos/$Repo/issues?state=closed&since=$since&per_page=100&sort=updated&direction=desc" --jq '[.[] | select(.pull_request == null) | {number: .number, title: .title, closed_at: .closed_at, labels: [.labels[].name]}]' 2>&1
+        # --paginate feeds each page through jq separately, so emit objects
+        # (not wrapped in array) to allow clean concatenation across pages.
+        # Wrap the entire output in [...] for ConvertFrom-Json.
+        $raw = gh api --paginate "repos/$Repo/issues?state=closed&since=$since&per_page=100&sort=updated&direction=desc" --jq '.[] | select(.pull_request == null) | {number: .number, title: .title, closed_at: .closed_at, labels: [.labels[].name]}' 2>&1
         if ($LASTEXITCODE -ne 0) {
             return @{
                 status = 'error'
                 repo   = $Repo
-                error  = "Failed to fetch issues: $json"
+                error  = "Failed to fetch issues: $raw"
             }
         }
-        $issues = $json | ConvertFrom-Json
+        if (-not $raw -or $raw.Trim() -eq '') {
+            $issues = @()
+        }
+        else {
+            # Each line is a JSON object — wrap in array for parsing
+            $jsonArray = "[$($raw -replace "`n", ',')]"
+            $issues = $jsonArray | ConvertFrom-Json
+        }
         $untracked = $issues | Where-Object { $_.number -notin $TrackedIssueNumbers }
         return @{
             status    = 'ok'
@@ -371,26 +381,35 @@ function ConvertFrom-SyncManifest {
             }
         }
         elseif ($currentSection -eq 'coverage_gaps') {
-            # IMPORTANT: Check for source-entry patterns FIRST — the generic gap
-            # regex (^-\s*"?(.+?)"?$) would match "- url: ..." and swallow it.
-            if ($trimmed -match '^-\s*(url|issue|releases):' -or (-not $trimmed.StartsWith('-') -and -not $trimmed.StartsWith(' ') -and $trimmed -ne '')) {
-                # Left coverage_gaps block — re-enter sources parsing
-                $currentSection = 'sources'
-                # Re-process this line in sources context
-                if ($trimmed -match '^-\s*url:\s*(.+)$') {
-                    $currentItem = @{ type = 'web'; url = $Matches[1].Trim() }
-                    $manifest.sources += $currentItem
+            # Source-entry patterns or section transition — exit coverage_gaps
+            if ($trimmed -match '^-\s*(url|issue|releases):' -or
+                $trimmed -eq 'divergence:' -or $trimmed -eq 'style: |' -or
+                ($trimmed -ne '' -and -not $trimmed.StartsWith('-'))) {
+                # Left coverage_gaps block — determine correct section
+                if ($trimmed -eq 'divergence:') {
+                    $currentSection = 'divergence'
                 }
-                elseif ($trimmed -match '^-\s*issue:\s*(.+)$') {
-                    $issueRef = $Matches[1].Trim()
-                    if ($issueRef -match '^(.+)#(\d+)$') {
-                        $currentItem = @{ type = 'issue'; repo = $Matches[1]; number = [int]$Matches[2] }
+                elseif ($trimmed -eq 'style: |') {
+                    $currentSection = 'style'
+                }
+                else {
+                    $currentSection = 'sources'
+                    # Re-process this line in sources context
+                    if ($trimmed -match '^-\s*url:\s*(.+)$') {
+                        $currentItem = @{ type = 'web'; url = $Matches[1].Trim() }
                         $manifest.sources += $currentItem
                     }
-                }
-                elseif ($trimmed -match '^-\s*releases:\s*(.+)$') {
-                    $currentItem = @{ type = 'releases'; repo = $Matches[1].Trim() }
-                    $manifest.sources += $currentItem
+                    elseif ($trimmed -match '^-\s*issue:\s*(.+)$') {
+                        $issueRef = $Matches[1].Trim()
+                        if ($issueRef -match '^(.+)#(\d+)$') {
+                            $currentItem = @{ type = 'issue'; repo = $Matches[1]; number = [int]$Matches[2] }
+                            $manifest.sources += $currentItem
+                        }
+                    }
+                    elseif ($trimmed -match '^-\s*releases:\s*(.+)$') {
+                        $currentItem = @{ type = 'releases'; repo = $Matches[1].Trim() }
+                        $manifest.sources += $currentItem
+                    }
                 }
             }
             elseif ($trimmed -match '^-\s*"?(.+?)"?$') {
@@ -527,11 +546,15 @@ foreach ($manifestPath in $manifests) {
         }
     }
 
-    $results += @{
-        manifest = [System.IO.Path]::GetRelativePath($RepoRoot, $manifestPath)
-        target   = $manifest.target
-        sources  = $sourceResults
+    $resultEntry = @{
+        manifest          = [System.IO.Path]::GetRelativePath($RepoRoot, $manifestPath)
+        target            = $manifest.target
+        sources           = $sourceResults
     }
+    if ($manifest.secondary_targets.Count -gt 0) {
+        $resultEntry.secondary_targets = $manifest.secondary_targets
+    }
+    $results += $resultEntry
 
     # --- Discovery: find untracked pages and recently closed issues ---
 
@@ -574,7 +597,9 @@ foreach ($manifestPath in $manifests) {
     # Discover recently closed issues not in the manifest
     foreach ($repo in $allRepos) {
         Write-Host "`n🔍 Checking recently closed issues in $repo" -ForegroundColor Cyan
-        $closedResult = Get-RecentClosedIssues -Repo $repo -TrackedIssueNumbers $trackedIssueNumbers
+        # Filter tracked issue numbers to THIS repo to avoid cross-repo collisions
+        $repoTrackedNumbers = @($manifest.sources | Where-Object { $_.type -eq 'issue' -and $_.repo -eq $repo } | ForEach-Object { $_.number })
+        $closedResult = Get-RecentClosedIssues -Repo $repo -TrackedIssueNumbers $repoTrackedNumbers
         if ($closedResult.status -eq 'ok') {
             $untrackedCount = ($closedResult.untracked | Measure-Object).Count
             if ($untrackedCount -gt 0) {
