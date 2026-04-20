@@ -1,9 +1,6 @@
-using System.Numerics.Tensors;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using Maui.Controls.Sample.Models;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 namespace Maui.Controls.Sample.Services;
@@ -17,30 +14,36 @@ public partial class DataService
 		Converters = { new JsonStringEnumConverter() },
 	};
 
-	private readonly IEmbeddingGenerator<string, Embedding<float>> _generator;
+	private readonly ISemanticSearchService _searchService;
 	private readonly ILogger<DataService> _logger;
-	private readonly Task _initializationTask;
-	private Task? _embeddingsTask;
+	private readonly Task _readyTask;
+	private readonly TaskCompletionSource _dataLoaded = new();
 
 	private List<Landmark>? _landmarks;
 	private List<PointOfInterest>? _pointsOfInterest;
 
 	private Dictionary<string, List<Landmark>>? _landmarksByContinent;
 	private Dictionary<int, Landmark>? _landmarksById;
+	private Dictionary<string, PointOfInterest>? _poisByName;
 	private Landmark? _featuredLandmark;
 
 	/// <summary>
-	/// Raised on each embedding generated. Args: (current, total).
+	/// Raised on each item indexed. Args: (current, total).
 	/// </summary>
 	public event Action<int, int>? EmbeddingProgressChanged;
 
-	public DataService(IEmbeddingGenerator<string, Embedding<float>> generator, ILogger<DataService> logger)
+	public DataService(ILogger<DataService> logger, ISemanticSearchService searchService)
 	{
-		_generator = generator;
+		_searchService = searchService;
 		_logger = logger;
+		_readyTask = Task.Run(InitializeAsync);
 
-		_initializationTask = Task.Run(LoadLandmarksAsync);
-		_initializationTask.ContinueWith(_ => _embeddingsTask = Task.Run(GenerateEmbeddingsAsync));
+		async Task InitializeAsync()
+		{
+			await LoadLandmarksAsync();
+			_dataLoaded.TrySetResult();
+			await IndexContentAsync();
+		}
 	}
 
 	/// <summary>
@@ -55,55 +58,57 @@ public partial class DataService
 
 	public async Task<IReadOnlyList<Landmark>> GetLandmarksAsync()
 	{
-		await _initializationTask;
+		await _dataLoaded.Task;
 		return _landmarks ?? [];
 	}
 
 	public async Task<IReadOnlyDictionary<string, List<Landmark>>> GetLandmarksByContinentAsync()
 	{
-		await _initializationTask;
+		await _dataLoaded.Task;
 		return _landmarksByContinent ?? [];
 	}
 
 	public async Task<Landmark?> GetFeaturedLandmarkAsync()
 	{
-		await _initializationTask;
+		await _dataLoaded.Task;
 		return _featuredLandmark;
 	}
 
 	/// <summary>
-	/// Waits for both data loading and embedding generation to complete.
+	/// Waits for both data loading and content indexing to complete.
 	/// Subscribe to <see cref="EmbeddingProgressChanged"/> before calling to receive progress updates.
 	/// </summary>
 	public async Task WaitUntilReadyAsync()
 	{
-		await _initializationTask;
-		if (_embeddingsTask is not null)
-			await _embeddingsTask;
+		await _readyTask;
 	}
 
 	public async Task<IReadOnlyList<Landmark>> SearchLandmarksAsync(string query, int maxResults = 5)
 	{
-		await _initializationTask;
+		await _readyTask;
 
-		var candidates = _landmarks ?? [];
+		var results = await _searchService.SearchAsync("landmarks", query, maxResults);
 
-		return await SearchAsync(candidates, query,
-			l => l.Embeddings, maxResults,
-			l => $"{l.Name} {l.ShortDescription} {l.Description}");
+		return results
+			.Select(r => int.TryParse(r.Id, out var id) ? _landmarksById?.GetValueOrDefault(id) : null)
+			.Where(l => l is not null)
+			.Cast<Landmark>()
+			.ToList();
 	}
 
 	public async Task<IReadOnlyList<PointOfInterest>> SearchPointsOfInterestAsync(PointOfInterestCategory category, string query, int maxResults = 3)
 	{
-		await _initializationTask;
+		await _readyTask;
 
-		var candidates = category == PointOfInterestCategory.None
-			? _pointsOfInterest ?? []
-			: _pointsOfInterest?.Where(p => p.Category == category).ToList() ?? [];
+		var searchQuery = category == PointOfInterestCategory.None ? query : $"{category}: {query}";
+		var results = await _searchService.SearchAsync("pois", searchQuery, maxResults * 2);
 
-		return await SearchAsync(candidates, $"{category}: {query}",
-			p => p.Embeddings, maxResults,
-			p => $"{p.Name} {p.Description}");
+		return results
+			.Select(r => _poisByName?.GetValueOrDefault(r.Id))
+			.Where(p => p is not null && (category == PointOfInterestCategory.None || p.Category == category))
+			.Cast<PointOfInterest>()
+			.Take(maxResults)
+			.ToList();
 	}
 
 	private async Task LoadLandmarksAsync()
@@ -121,6 +126,7 @@ public partial class DataService
 			_featuredLandmark = _landmarksById.GetValueOrDefault(1020);
 
 			_pointsOfInterest = await LoadDataAsync<PointOfInterest>("pointsOfInterestData.json");
+			_poisByName = _pointsOfInterest.ToDictionary(p => p.Name);
 
 			_logger.LogInformation("Successfully loaded {LandmarkCount} landmarks and {POICount} points of interest.", _landmarks.Count, _pointsOfInterest.Count);
 		}
@@ -135,116 +141,39 @@ public partial class DataService
 		}
 	}
 
-	private async Task GenerateEmbeddingsAsync()
+	private async Task IndexContentAsync()
 	{
 		try
 		{
-			var totalItems = (_landmarks?.Count ?? 0) + (_pointsOfInterest?.Count ?? 0);
+			if (_landmarks is not { } landmarks || _pointsOfInterest is not { } pois)
+				return;
+
+			var totalItems = landmarks.Count + pois.Count;
 			var completed = 0;
 
-			foreach (var landmark in _landmarks!)
+			foreach (var landmark in landmarks)
 			{
-				IEnumerable<string> chunks = [
-					landmark.Name.ToLowerInvariant(),
-					$"{landmark.Name}. {landmark.ShortDescription}".ToLowerInvariant(),
-					.. SplitSentences(landmark.Description.ToLowerInvariant())];
-
-				landmark.Embeddings = await _generator.GenerateAsync(chunks);
-
+				var text = $"{landmark.Name}. {landmark.ShortDescription}. {landmark.Description}";
+				await _searchService.IndexAsync("landmarks", landmark.Id.ToString(), text);
 				EmbeddingProgressChanged?.Invoke(++completed, totalItems);
 			}
 
-			foreach (var poi in _pointsOfInterest!)
+			foreach (var poi in pois)
 			{
-				IEnumerable<string> chunks = [
-					poi.Name.ToLowerInvariant(),
-					$"{poi.Name}. {poi.Description}".ToLowerInvariant()];
-
-				poi.Embeddings = await _generator.GenerateAsync(chunks);
-
+				var text = $"{poi.Name}. {poi.Description}";
+				await _searchService.IndexAsync("pois", poi.Name, text);
 				EmbeddingProgressChanged?.Invoke(++completed, totalItems);
 			}
 
-			_logger.LogInformation("Successfully generated embeddings for {LandmarkCount} landmarks and {POICount} points of interest.", _landmarks?.Count ?? 0, _pointsOfInterest?.Count ?? 0);
+			await _searchService.WaitUntilReadyAsync();
+
+			_logger.LogInformation("Successfully indexed {LandmarkCount} landmarks and {POICount} points of interest.",
+				landmarks.Count, pois.Count);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error generating embeddings: {Error}", ex.Message);
+			_logger.LogError(ex, "Error indexing content: {Error}", ex.Message);
 		}
-	}
-
-	[GeneratedRegex(@"(?<=[.!?])\s+", RegexOptions.Compiled)]
-	private static partial Regex SentenceBoundaryRegex();
-
-	private static IEnumerable<string> SplitSentences(string text)
-	{
-		if (string.IsNullOrWhiteSpace(text))
-			yield break;
-
-		foreach (var sentence in SentenceBoundaryRegex().Split(text))
-		{
-			var trimmed = sentence.Trim();
-			if (trimmed.Length > 0)
-				yield return trimmed;
-		}
-	}
-
-	private async Task<IReadOnlyList<T>> SearchAsync<T>(
-		IEnumerable<T> candidates,
-		string query,
-		Func<T, IEnumerable<Embedding<float>>?> embeddingsSelector,
-		int maxResults,
-		Func<T, string>? textSelector = null)
-	{
-		var items = candidates as ICollection<T> ?? [.. candidates];
-		if (items.Count == 0)
-		{
-			return [];
-		}
-
-		var queryLower = query.ToLowerInvariant();
-		var searchEmbedding = await _generator.GenerateAsync(queryLower);
-
-		return items
-			.Select(item => Similarity(item, queryLower, embeddingsSelector, textSelector, searchEmbedding))
-			.OrderByDescending(x => x.Score)
-			.Take(maxResults)
-			.Select(x => x.Item)
-			.ToList();
-	}
-
-	private static (T Item, float Score) Similarity<T>(
-		T item,
-		string query,
-		Func<T, IEnumerable<Embedding<float>>?> embeddingsSelector,
-		Func<T, string>? textSelector,
-		Embedding<float> searchEmbedding)
-	{
-		var embeddings = embeddingsSelector(item);
-		var score = -1f;
-
-		if (embeddings is not null)
-		{
-			foreach (var emb in embeddings)
-			{
-				var similarity = TensorPrimitives.CosineSimilarity(searchEmbedding.Vector.Span, emb.Vector.Span);
-				if (similarity > score)
-				{
-					score = similarity;
-				}
-			}
-		}
-
-		// Hybrid keyword boost: if the raw text contains the query as a
-		// substring, add a bonus to the embedding score. This follows the
-		// hybrid search pattern (keyword + vector) recommended by Azure AI
-		// Search — both signals contribute additively to the final rank.
-		if (textSelector is not null && textSelector(item).Contains(query, StringComparison.OrdinalIgnoreCase))
-		{
-			score += 0.5f;
-		}
-
-		return (Item: item, Score: score);
 	}
 
 	private static async Task<List<T>> LoadDataAsync<T>(string filename)

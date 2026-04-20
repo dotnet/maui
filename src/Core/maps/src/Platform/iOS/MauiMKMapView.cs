@@ -565,7 +565,11 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 
 			// Hit-test overlays in order: Circle > Polygon > Polyline (first match wins)
-			foreach (var overlay in mauiMkMapView.Overlays)
+			var overlays = mauiMkMapView.Overlays;
+			if (overlays is null)
+				return;
+
+			foreach (var overlay in overlays)
 			{
 				if (overlay is MKCircle circle)
 				{

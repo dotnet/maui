@@ -95,7 +95,5 @@ steps:
     arguments: restore
 
 # Set LogDirectory so integration test binlogs are written to the artifact publish location
-- pwsh: |
-    Write-Host "Setting LogDirectory to ${{ parameters.repoLogPath }}"
-    Write-Host "##vso[task.setvariable variable=LogDirectory]${{ parameters.repoLogPath }}"
+- bash: echo "##vso[task.setvariable variable=LogDirectory]${{ parameters.repoLogPath }}"
   displayName: Set LogDirectory for binlog artifacts
