@@ -56,13 +56,6 @@ public class Issue34892MainPage : ContentPage
 		};
 	}
 
-	async void OnPushLeakPage(object sender, EventArgs e)
-	{
-		var page = new Issue34892LeakPage();
-		_pageRefs.Add(new WeakReference(page));
-		await Navigation.PushAsync(page);
-	}
-
 	async void OnPushLeakPageModal(object sender, EventArgs e)
 	{
 		var page = new Issue34892LeakPage();
@@ -72,31 +65,14 @@ public class Issue34892MainPage : ContentPage
 
 	async void OnForceGC(object sender, EventArgs e)
 	{
-		for (var i = 0; i < 10; i++)
+		try
 		{
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-			await Task.Delay(100);
+			await GarbageCollectionHelper.WaitForGC(2000, _pageRefs.ToArray());
 		}
+		catch { }
 
-		var alive = 0;
-		var collected = 0;
-
-		foreach (var wr in _pageRefs)
-		{
-			if (wr.IsAlive)
-			{
-				alive++;
-			}
-			else
-			{
-				collected++;
-			}
-		}
-
-		var message = $"Still alive: {alive}";
-		_statusLabel.Text = message;
+		var alive = _pageRefs.Count(wr => wr.IsAlive);
+		_statusLabel.Text = $"Still alive: {alive}";
 	}
 }
 
@@ -162,7 +138,4 @@ public class Issue34892LeakPage : ContentPage
 		}
 	}
 
-	~Issue34892LeakPage()
-	{
-	}
 }
