@@ -243,6 +243,7 @@ Safe outputs enforce security through separation: agents run read-only and reque
 - `base-branch: "vnext"` — Target non-default branch
 - `auto-close-issue: false` — Don't add `Fixes #N` to PR description
 - `allowed-events: [COMMENT, REQUEST_CHANGES]` — On `submit-pull-request-review`, blocks agent from approving PRs (bypasses branch protection). **Always use this** for review workflows.
+- **Stale review limitation**: Prefer `allowed-events: [COMMENT]` unless you need the "Changes requested" badge. `REQUEST_CHANGES` reviews from `github-actions[bot]` cannot be dismissed by the agent (no `dismiss-pull-request-review` safe output, `pull-requests: write` rejected by compiler). A stale blocking review persists until a human dismisses it manually.
 
 **`add-comment` notable options:**
 - `hide-older-comments: true` — Collapse previous comments from same workflow
@@ -256,6 +257,7 @@ Safe outputs enforce security through separation: agents run read-only and reque
 | What | Behavior | Workaround |
 |------|----------|------------|
 | Agent-created PRs don't trigger CI | GitHub Actions ignores pushes from `GITHUB_TOKEN` | Use `github-token-for-extra-empty-commit:` with a PAT or GitHub App token on `create-pull-request`. See [Triggering CI](https://github.github.com/gh-aw/reference/triggering-ci/) |
+| Stale `REQUEST_CHANGES` reviews | Agent reviews with `REQUEST_CHANGES` block PRs and can't be dismissed (no `dismiss-pull-request-review` safe output) | Use `allowed-events: [COMMENT]` — communicate severity via markers in the review body instead |
 | `--allow-all-tools` in lock.yml | Emitted by `gh aw compile` | Cannot override from `.md` source |
 | `gh` CLI inside agent | Credentials scrubbed | Use `steps:` for API calls, or MCP tools |
 | `issue_comment` trigger | Requires workflow on default branch | Must merge to `main` before `/slash-commands` work |
@@ -290,3 +292,4 @@ These issues are now **all closed** — documented here for historical context:
 | `/slash-command` doesn't trigger | Workflow not on default branch | Merge to `main` first |
 | Agent sees stale issue/PR content | Integrity filtering removed it | Check `min-integrity` level; content from `FIRST_TIMER` is filtered at `approved` |
 | Protected file error on PR creation | Agent modified `.github/` or package manifests | Set `protected-files: fallback-to-issue` or `allowed` if intentional |
+| Stale blocking review after fixes | Agent posted `REQUEST_CHANGES` but can't dismiss it | Switch to `allowed-events: [COMMENT]`; use severity markers in body instead |

@@ -24,9 +24,9 @@ Detect when instruction files or skills have drifted from their upstream documen
 ## How It Works
 
 1. **Discover targets** — Find all `.sync.yaml` manifest files in the repository
-2. **Check sources** — Run `Check-Staleness.ps1` to fetch source status (issue states, page hashes, releases)
-3. **Compare** — Identify what changed since last check
-4. **Report** — Present a prioritized staleness report
+2. **Snapshot sources** — Run `Check-Staleness.ps1` to capture current source status (issue states, page content hashes, latest releases)
+3. **Flag drift signals** — Identify issues that closed (when `resolution_expected: true`), fetch errors, and content hash changes
+4. **Report** — Present a prioritized drift report for human review
 
 ## Running the Skill
 
@@ -36,11 +36,12 @@ Detect when instruction files or skills have drifted from their upstream documen
 pwsh .github/skills/instruction-drift/scripts/Check-Staleness.ps1
 ```
 
-The script outputs a JSON report to stdout with:
-- Which tracked issues changed state (open → closed or vice versa)
-- Which reference page content hashes changed
-- Which tracked repos have new releases
+The script outputs a JSON report to stdout with a point-in-time snapshot:
+- Current state of tracked issues (open/closed) and whether resolution was expected
+- Content hashes of reference pages (compare across runs to detect changes)
+- Latest release tag for tracked repos
 - Whether any sources failed to fetch (404, timeout, etc.)
+- `changes_detected` flag — true when closed issues with `resolution_expected: true` need review, or when sources error
 
 ### Step 2: Analyze the report
 

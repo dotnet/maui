@@ -20,7 +20,7 @@ safe-outputs:
     max: 30
   submit-pull-request-review:
     max: 1
-    allowed-events: [COMMENT, REQUEST_CHANGES]
+    allowed-events: [COMMENT]
   add-comment:
     max: 5
     hide-older-comments: true
@@ -98,5 +98,9 @@ Before posting inline comments, validate **both**:
    - Methodology note: "3 independent reviewers with adversarial consensus"
    - CI status, test coverage assessment, prior review status
    - Never mention specific model names — use "Reviewer 1/2/3"
-   - `event: "REQUEST_CHANGES"` if any CRITICAL or MODERATE; `event: "COMMENT"` otherwise
+   - `event: "COMMENT"` always — severity is communicated via emoji markers in the body, not the review event type. (Using `REQUEST_CHANGES` causes stale blocking reviews that can't be dismissed — see Known Limitations below.)
    - **Never use APPROVE**
+
+### Known Limitation: Stale Blocking Reviews
+
+gh-aw does not support `dismiss-pull-request-review` as a safe output, and workflows run with `pull-requests: read` (write is rejected by the compiler). If `REQUEST_CHANGES` were used, a stale blocking review from `github-actions[bot]` would persist even after findings are fixed, requiring manual dismissal. For this reason, all reviews use `COMMENT` event type — severity is expressed via markers in the review body, not the GitHub review state.

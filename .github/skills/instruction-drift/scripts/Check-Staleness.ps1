@@ -35,7 +35,7 @@ function Get-ContentHash {
     return [System.BitConverter]::ToString($hash).Replace('-', '').ToLower().Substring(0, 16)
 }
 
-function Check-GitHubIssue {
+function Test-GitHubIssue {
     param(
         [string]$Repo,
         [int]$Number
@@ -72,7 +72,7 @@ function Check-GitHubIssue {
     }
 }
 
-function Check-WebPage {
+function Test-WebPage {
     param([string]$Url)
 
     try {
@@ -99,7 +99,7 @@ function Check-WebPage {
     }
 }
 
-function Check-GitHubReleases {
+function Get-GitHubLatestRelease {
     param([string]$Repo)
 
     try {
@@ -138,7 +138,7 @@ function Check-GitHubReleases {
     }
 }
 
-function Parse-SyncManifest {
+function ConvertFrom-SyncManifest {
     param([string]$Path)
 
     # Simple YAML parser for our specific manifest format
@@ -259,7 +259,7 @@ $results = @()
 foreach ($manifestPath in $manifests) {
     Write-Host "`n📋 Processing: $manifestPath" -ForegroundColor Cyan
 
-    $manifest = Parse-SyncManifest -Path $manifestPath
+    $manifest = ConvertFrom-SyncManifest -Path $manifestPath
     Write-Host "   Target: $($manifest.target)"
     Write-Host "   Sources: $($manifest.sources.Count)"
 
@@ -269,7 +269,8 @@ foreach ($manifestPath in $manifests) {
         switch ($source.type) {
             'issue' {
                 Write-Host "   🔗 Checking issue $($source.repo)#$($source.number)..." -NoNewline
-                $result = Check-GitHubIssue -Repo $source.repo -Number $source.number
+                $result = Test-GitHubIssue -Repo $source.repo -Number $source.number
+                $resExpected = if ($source.ContainsKey('resolution_expected')) { $source.resolution_expected } else { $false }
                 if ($result.status -eq 'ok') {
                     $stateEmoji = if ($result.state -eq 'closed') { '✅' } else { '🟡' }
                     Write-Host " $stateEmoji $($result.state)" -ForegroundColor $(if ($result.state -eq 'closed') { 'Green' } else { 'Yellow' })
@@ -278,14 +279,15 @@ foreach ($manifestPath in $manifests) {
                     Write-Host " ❌ Error: $($result.error)" -ForegroundColor Red
                 }
                 $sourceResults += @{
-                    type   = 'issue'
-                    ref    = "$($source.repo)#$($source.number)"
-                    result = $result
+                    type                = 'issue'
+                    ref                 = "$($source.repo)#$($source.number)"
+                    resolution_expected = $resExpected
+                    result              = $result
                 }
             }
             'web' {
                 Write-Host "   🌐 Checking $($source.url)..." -NoNewline
-                $result = Check-WebPage -Url $source.url
+                $result = Test-WebPage -Url $source.url
                 if ($result.status -eq 'ok') {
                     Write-Host " ✅ hash=$($result.content_hash)" -ForegroundColor Green
                 }
@@ -300,7 +302,7 @@ foreach ($manifestPath in $manifests) {
             }
             'releases' {
                 Write-Host "   📦 Checking releases for $($source.repo)..." -NoNewline
-                $result = Check-GitHubReleases -Repo $source.repo
+                $result = Get-GitHubLatestRelease -Repo $source.repo
                 if ($result.status -eq 'ok' -and $result.latest) {
                     Write-Host " ✅ latest=$($result.latest.tag)" -ForegroundColor Green
                 }
@@ -320,17 +322,25 @@ foreach ($manifestPath in $manifests) {
     }
 
     $results += @{
-        manifest = (Resolve-Path $manifestPath -Relative 2>$null) ?? $manifestPath
+        manifest = [System.IO.Path]::GetRelativePath($RepoRoot, $manifestPath)
         target   = $manifest.target
         sources  = $sourceResults
     }
 }
 
 # Output JSON report
+# changes_detected flags sources that need attention:
+#   - fetch errors (source may have moved)
+#   - closed issues where resolution_expected is true (instruction may reference outdated workarounds)
+#   - open issues where resolution_expected is true (expected resolution hasn't happened yet)
+$actionableChanges = $results | ForEach-Object { $_.sources } | Where-Object {
+    $_.result.status -eq 'error' -or
+    ($_.type -eq 'issue' -and $_.resolution_expected -and $_.result.status -eq 'ok' -and $_.result.state -eq 'closed')
+}
 $report = @{
-    checked_at      = (Get-Date -Format 'o')
-    manifests       = $results
-    changes_detected = ($results | ForEach-Object { $_.sources } | Where-Object { $_.result.status -eq 'error' -or ($_.type -eq 'issue' -and $_.result.state -eq 'closed') }).Count -gt 0
+    checked_at       = (Get-Date -Format 'o')
+    manifests        = $results
+    changes_detected = ($actionableChanges | Measure-Object).Count -gt 0
 }
 
 Write-Host "`n📊 Report:" -ForegroundColor Cyan

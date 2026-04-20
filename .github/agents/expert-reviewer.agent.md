@@ -72,5 +72,5 @@ Run `gh pr diff <number> --name-only` to get the list of valid paths before post
    - Findings ranked by severity with consensus markers (e.g., "3/3 reviewers")
    - CI status, test coverage assessment, prior review status
    - Never mention specific model names — use "Reviewer 1/2/3"
-   - `event: "REQUEST_CHANGES"` if any CRITICAL/MODERATE; `event: "COMMENT"` otherwise
+   - `event: "COMMENT"` always — severity is communicated via markers in the body. (Using `REQUEST_CHANGES` causes stale blocking reviews that can't be dismissed by the agent.)
    - **Never use APPROVE**
