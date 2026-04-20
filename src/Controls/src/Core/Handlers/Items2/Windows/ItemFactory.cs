@@ -110,19 +110,20 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// before the platform handler is created during the deferred ToPlatform() call.
 				// Without this, items display with default property values instead of the
 				// values defined in VisualState setters. (Fixes #27086)
-				if (view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
-					!= SelectionMode.None)
+				if (view is VisualElement visualElement)
 				{
 					bool isSelected = false;
-					if (selectableItemsView.SelectionMode == SelectionMode.Single)
-						isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
-					else
-						isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
-
-					if (isSelected && view is VisualElement visualElement)
+					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
 					{
-						VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
+						if (selectableItemsView.SelectionMode == SelectionMode.Single)
+							isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
+						else
+							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
 					}
+
+					VisualStateManager.GoToState(visualElement, isSelected
+						? VisualStateManager.CommonStates.Selected
+						: VisualStateManager.CommonStates.Normal);
 				}
 
 			}
@@ -219,7 +220,7 @@ internal partial class ElementWrapper : ContentControl
 {
 	/// <summary>The MAUI virtual view hosted by this wrapper.</summary>
 	public IView? VirtualView { get; private set; }
-	IMauiContext _context;
+	private IMauiContext _context;
 
 	/// <summary>Whether this wrapper hosts a group header or footer (excluded from size caching).</summary>
 	public bool IsHeaderOrFooter { get; set; }
@@ -308,7 +309,8 @@ internal partial class ElementWrapper : ContentControl
 
 	void OnLoadedCreatePlatformView(object sender, RoutedEventArgs e)
 	{
-		Loaded -= OnLoadedCreatePlatformView;
+		Lo
+			EnsureContainersForPointerOverViews(VirtualView); aded -= OnLoadVirtualView.ToPlatform()formView;
 		EnsurePlatformViewCreated();
 	}
 
@@ -319,7 +321,32 @@ internal partial class ElementWrapper : ContentControl
 	/// (ComputeDesiredSize/ComputeFrame) in the MAUI parent's layout pass. But in
 	/// CollectionView2, the root template view's layout is managed by WinUI's
 	/// ItemsRepeater, not a MAUI parent — so margin is never applied. This method
-	/// bridges the gap by setting the WinUI Margin directly on the platform view.
+	/// bridges the gap by setti
+	/// n	/// <summary>
+	/// Walks the MAUI view tree and triggers <see cref="VisualElement.ChangeVisualState"/>
+	/// on each <see cref="View"/> so that <see cref="PointerGestureRecognizer.SetupForPointerOverVSM"/>
+	/// can wire up the pointer gesture recognizer for views with a PointerOver visual state.
+	/// In CollectionView item templates the handler is created outside the normal lifecycle,
+	/// so the recognizer would not be registered without this explicit walk.
+	/// </summary>
+	static void EnsureContainersForPointerOverViews(IView view)
+	{
+		if (view is View mauiView)
+		{
+			mauiView.ChangeVisualState();
+		}
+		if (view is IVisualTreeElement visualTreeElement)
+		{
+			foreach (var child in visualTreeElement.GetVisualChildren())
+			{
+				if (child is IView childView)
+				{
+					EnsureContainersForPointerOverViews(childView);
+				}
+			}
+		}
+	}
+	g the WinUI Margin directly on the platform view.
 	/// </para>
 	/// </summary>
 	void SyncMargin()
