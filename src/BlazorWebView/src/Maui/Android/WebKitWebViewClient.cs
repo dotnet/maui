@@ -20,6 +20,53 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private static readonly Uri AppOriginUri = new(AppOrigin);
 
+		// Single startup script that:
+		//  - Is idempotent (guarded by window.__BlazorStarting) so duplicate OnPageFinished calls are safe.
+		//  - Sets up window.external.sendMessage/receiveMessage for the Blazor interop bridge.
+		//  - Listens for the native 'capturePort' message that delivers the native WebMessagePort.
+		//  - Calls Blazor.start() only after the native port is captured, ensuring window.external.sendMessage
+		//    has a live port before Blazor sends any messages.
+		//  - Sets window.__BlazorStarted after the Blazor.start() Promise resolves (used by test helpers as a readiness signal).
+		//  - Dispatches native→JS messages (arriving via PostWebMessage) directly to window.external.__callback.
+		//  - Validates message origin: only processes messages from the native PostWebMessage API
+		//    (event.source === null), skipping messages from subframes or other JS contexts.
+		private const string BlazorInitScript = """
+			(function () {
+				if (window.__BlazorStarting) { return 'false'; }
+				window.__BlazorStarting = true;
+
+				window.external = window.external || {};
+				window.external.sendMessage = function (message) {
+					if (window.__nativePort) {
+						window.__nativePort.postMessage(message);
+					}
+				};
+				window.external.receiveMessage = function (callback) {
+					window.external.__callback = callback;
+				};
+
+				window.addEventListener('message', function (event) {
+					// Only process messages from the native PostWebMessage API.
+					// Native messages have event.source === null; messages from subframes
+					// or other JS contexts have event.source set to the sending window.
+					if (event.source !== null) { return; }
+
+					if (event.data === 'capturePort') {
+						if (event.ports && event.ports[0] && !window.__nativePort) {
+							window.__nativePort = event.ports[0];
+							Promise.resolve(Blazor.start()).then(function () {
+								window.__BlazorStarted = true;
+							});
+						}
+					} else if (window.external.__callback) {
+						window.external.__callback(event.data);
+					}
+				}, false);
+
+				return 'true';
+			})();
+			""";
+
 		private readonly BlazorWebViewHandler? _webViewHandler;
 
 		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
@@ -155,69 +202,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			_webViewHandler?.Logger.RunningBlazorStartupScripts();
 
-			// Confirm Blazor hasn't already initialized
-			view.EvaluateJavascript(@"
-				(function() { return typeof(window.__BlazorStarted); })();
-			", new JavaScriptValueCallback(blazorStarted =>
+			view.EvaluateJavascript(BlazorInitScript, new JavaScriptValueCallback(result =>
 			{
-				if (blazorStarted?.ToString() != "\"undefined\"")
+				// The init script returns 'true' if it performed first-time setup, or
+				// 'false' if it was a no-op (duplicate OnPageFinished). Only create the
+				// native MessageChannel when setup actually ran.
+				if (result?.ToString() == "\"true\"")
 				{
-					// Blazor has already started, we can just abort startup process
-					return;
+					_webViewHandler?.WebviewManager?.SetUpMessageChannel();
 				}
-
-				// Set up JS ports
-				view.EvaluateJavascript(@"
-
-		const channel = new MessageChannel();
-		var nativeJsPortOne = channel.port1;
-		var nativeJsPortTwo = channel.port2;
-		window.addEventListener('message', function (event) {
-			if (event.data != 'capturePort') {
-				nativeJsPortOne.postMessage(event.data)
-			}
-			else if (event.data == 'capturePort') {
-				if (event.ports[0] != null) {
-					nativeJsPortTwo = event.ports[0]
-				}
-			}
-		}, false);
-
-		nativeJsPortOne.addEventListener('message', function (event) {
-		}, false);
-
-		nativeJsPortTwo.addEventListener('message', function (event) {
-			// data from native code to JS
-			if (window.external.__callback) {
-				window.external.__callback(event.data);
-			}
-		}, false);
-		nativeJsPortOne.start();
-		nativeJsPortTwo.start();
-
-		window.external.sendMessage = function (message) {
-			// data from JS to native code
-			nativeJsPortTwo.postMessage(message);
-		};
-
-		window.external.receiveMessage = function (callback) {
-			window.external.__callback = callback;
-		}
-				", new JavaScriptValueCallback(_ =>
-					{
-						// Set up Server ports
-						_webViewHandler?.WebviewManager?.SetUpMessageChannel();
-
-						// Start Blazor
-						view.EvaluateJavascript(@"
-							Blazor.start();
-							window.__BlazorStarted = true;
-						", new JavaScriptValueCallback(_ =>
-						{
-							// Done; no more action required
-							_webViewHandler?.Logger.BlazorStartupScriptsFinished();
-						}));
-					}));
+				_webViewHandler?.Logger.BlazorStartupScriptsFinished();
 			}));
 		}
 
