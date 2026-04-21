@@ -110,7 +110,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// before the platform handler is created during the deferred ToPlatform() call.
 				// Without this, items display with default property values instead of the
 				// values defined in VisualState setters. (Fixes #27086)
-				if (view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
+				if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
 					!= SelectionMode.None)
 				{
 					bool isSelected = false;
@@ -227,42 +227,6 @@ internal partial class ElementWrapper : ContentControl
 	public ElementWrapper(IMauiContext context)
 	{
 		_context = context;
-		PointerEntered += OnPointerStateChanged;
-		PointerExited += OnPointerStateChanged;
-	}
-
-	/// <summary>
-	/// Re-applies the Selected visual state after pointer enter/exit on a selected CollectionView item.
-	/// <para>
-	/// On Windows, <see cref="VisualElement.ChangeVisualState"/> runs on pointer enter/exit and applies
-	/// PointerOver or Normal state respectively. It has no awareness of CollectionView selection, so:
-	/// <list type="bullet">
-	///   <item>On pointer enter: GoToState("PointerOver") unapplies Normal-state setters (e.g., Background),
-	///     causing Border items to become invisible when PointerOver state lacks matching setters. (Fixes #13197)</item>
-	///   <item>On pointer exit: GoToState("Normal") overwrites the Selected state, causing the selection
-	///     color to disappear when the mouse moves away. (Fixes #27086)</item>
-	/// </list>
-	/// This handler fires after MAUI's gesture system has processed the event, re-applying Selected
-	/// to preserve the correct visual state.
-	/// </para>
-	/// </summary>
-	void OnPointerStateChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-	{
-		if (VirtualView is not VisualElement ve || ve is not View { Parent: SelectableItemsView siv })
-			return;
-
-		if (siv.SelectionMode == SelectionMode.None)
-			return;
-
-		var item = ve.BindingContext;
-		bool isSelected = siv.SelectionMode == SelectionMode.Single
-			? Equals(siv.SelectedItem, item)
-			: siv.SelectedItems?.Contains(item) == true;
-
-		if (isSelected)
-		{
-			VisualStateManager.GoToState(ve, VisualStateManager.CommonStates.Selected);
-		}
 	}
 
 	/// <summary>
@@ -300,9 +264,6 @@ internal partial class ElementWrapper : ContentControl
 
 			var platformView = VirtualView.ToPlatform(_context);
 			Content = platformView;
-
-			SyncMargin();
-			SubscribeToMarginChanges();
 		}
 	}
 
@@ -310,45 +271,6 @@ internal partial class ElementWrapper : ContentControl
 	{
 		Loaded -= OnLoadedCreatePlatformView;
 		EnsurePlatformViewCreated();
-	}
-
-	/// <summary>
-	/// Synchronizes the MAUI <see cref="View.Margin"/> to the WinUI platform view's Margin.
-	/// <para>
-	/// In MAUI, View.Margin is normally handled by the cross-platform layout system
-	/// (ComputeDesiredSize/ComputeFrame) in the MAUI parent's layout pass. But in
-	/// CollectionView2, the root template view's layout is managed by WinUI's
-	/// ItemsRepeater, not a MAUI parent — so margin is never applied. This method
-	/// bridges the gap by setting the WinUI Margin directly on the platform view.
-	/// </para>
-	/// </summary>
-	void SyncMargin()
-	{
-		if (VirtualView is View mauiView && Content is FrameworkElement fe)
-		{
-			var margin = mauiView.Margin;
-			fe.Margin = new Microsoft.UI.Xaml.Thickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
-		}
-	}
-
-	/// <summary>
-	/// Subscribes to the MAUI view's PropertyChanged to reactively update the
-	/// platform margin when it changes via bindings, styles, or triggers.
-	/// </summary>
-	void SubscribeToMarginChanges()
-	{
-		if (VirtualView is View mauiView)
-		{
-			mauiView.PropertyChanged += OnVirtualViewPropertyChanged;
-		}
-	}
-
-	void OnVirtualViewPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == View.MarginProperty.PropertyName)
-		{
-			SyncMargin();
-		}
 	}
 
 	CollectionViewHandler2? GetCollectionViewHandler()

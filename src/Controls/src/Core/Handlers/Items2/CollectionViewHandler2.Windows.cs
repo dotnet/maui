@@ -161,12 +161,14 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
-		if (platformView is not null)
+		if (platformView is null)
 		{
-			platformView.SelectionChanged -= PlatformSelectionChanged;
-			platformView.Loaded -= OnPlatformViewLoaded;
-			platformView.ClearValue(WItemsView.SelectionModeProperty);
+			return;
 		}
+
+		platformView.SelectionChanged -= PlatformSelectionChanged;
+		platformView.Loaded -= OnPlatformViewLoaded;
+		platformView.ClearValue(WItemsView.SelectionModeProperty);
 
 		if (ItemsView is not null)
 		{

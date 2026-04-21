@@ -321,19 +321,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped
 				&& IsItemsSourceGrouped(itemsSource))
 			{
-				// When there's no ItemTemplate, use the raw ItemsSource directly (no wrapping)
-				// This allows default ToString() rendering without ItemTemplateContext2 wrapper
-				if (itemTemplate is null)
-				{
-					return new CollectionViewSource
-					{
-						Source = itemsSource,
-						IsSourceGrouped = true
-
-
-					};
-				}
-
 				return new CollectionViewSource
 				{
 					Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
@@ -484,6 +471,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// Remove all children inside the ItemsSource
 		if (VirtualView is not null && PlatformView is not null)
 		{
+			// CV2 uses ItemContainer + ElementWrapper, not ItemContentControl.
+			// Check both types to handle CV1 and CV2 handlers correctly.
+			foreach (var itemContainer in PlatformView.GetChildren<ItemContainer>())
+			{
+				if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is View mauiView)
+				{
+					VirtualView.RemoveLogicalChild(mauiView);
+				}
+			}
+
 			foreach (var item in PlatformView.GetChildren<ItemContentControl>())
 			{
 				if (item is not null)
@@ -1288,7 +1285,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (PlatformView is MauiItemsView platformItemsView && _header is not null)
 		{
-			platformItemsView.SetHeader(_header, _mauiHeader);
+			platformItemsView.SetHeader(_header);
 			platformItemsView.HeaderVisibility = WVisibility.Visible;
 		}
 
@@ -1373,7 +1370,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
 		{
-			platformItemsView.SetFooter(_footer, _mauiFooter);
+			platformItemsView.SetFooter(_footer);
 			platformItemsView.FooterVisibility = WVisibility.Visible;
 		}
 
