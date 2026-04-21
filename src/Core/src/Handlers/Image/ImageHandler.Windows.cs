@@ -172,9 +172,12 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			// Reset platform caps so we don't keep stale values between sources
+			// Reset platform caps and the size cache so we don't keep stale values between sources.
+			// Clearing the cache here ensures a failed subsequent load (where OnImageOpened never fires)
+			// does not cap GetDesiredSize to the previous image's dimensions.
 			if (handler is ImageHandler ih && ih.PlatformView is not null)
 			{
+				ih._cachedImageSize = Graphics.Size.Zero;
 				ih.PlatformView.MaxWidth = double.PositiveInfinity;
 				ih.PlatformView.MaxHeight = double.PositiveInfinity;
 			}
