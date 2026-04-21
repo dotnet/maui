@@ -26,27 +26,34 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>
 		/// Sets a custom implementation for <see cref="MainThread"/> operations.
 		/// This is intended for custom platform backends (e.g. Linux/GTK) that do not have a built-in MainThread implementation.
+		/// Pass <see langword="null"/> for both parameters to clear a previously registered custom implementation.
 		/// </summary>
 		/// <remarks>
 		/// On standard platform TFMs (Android, iOS, MacCatalyst, Windows, Tizen), the built-in platform-specific
 		/// implementations are always used and this method throws <see cref="PlatformNotSupportedException"/>.
 		/// This method only changes behavior on non-platform TFMs (for example, <c>netstandard</c> or bare <c>net</c>),
 		/// where the default implementation throws <see cref="NotImplementedInReferenceAssemblyException"/>.
+		/// Calling this method again replaces the previously registered custom implementation.
+		/// Exceptions thrown by the provided delegates propagate to callers of <see cref="IsMainThread"/>,
+		/// <see cref="BeginInvokeOnMainThread(Action)"/>, and the <c>InvokeOnMainThreadAsync</c> overloads.
 		/// </remarks>
-		/// <param name="isMainThread">A function that returns <see langword="true"/> if the current thread is the main/UI thread.</param>
-		/// <param name="beginInvokeOnMainThread">An action that dispatches the given <see cref="Action"/> to the main/UI thread.</param>
-		/// <exception cref="ArgumentNullException">Thrown when <paramref name="isMainThread"/> or <paramref name="beginInvokeOnMainThread"/> is <see langword="null"/>.</exception>
+		/// <param name="isMainThread">A function that returns <see langword="true"/> if the current thread is the main/UI thread, or <see langword="null"/> to clear the custom implementation when both parameters are <see langword="null"/>.</param>
+		/// <param name="beginInvokeOnMainThread">An action that dispatches the given <see cref="Action"/> to the main/UI thread, or <see langword="null"/> to clear the custom implementation when both parameters are <see langword="null"/>.</param>
+		/// <exception cref="ArgumentNullException">Thrown on supported non-platform TFMs when exactly one argument is <see langword="null"/>.</exception>
 		public static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
 		{
-			if (isMainThread is null)
-				throw new ArgumentNullException(nameof(isMainThread));
-
-			if (beginInvokeOnMainThread is null)
-				throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
-
 #if ANDROID || IOS || MACCATALYST || TVOS || WATCHOS || WINDOWS || TIZEN
 			throw new PlatformNotSupportedException("SetCustomImplementation is only supported on non-platform TFMs.");
 #else
+			if (isMainThread is null && beginInvokeOnMainThread is null)
+			{
+				customImplementation = null;
+				return;
+			}
+
+			ArgumentNullException.ThrowIfNull(isMainThread);
+			ArgumentNullException.ThrowIfNull(beginInvokeOnMainThread);
+
 			customImplementation = new CustomMainThreadCallbacks(isMainThread, beginInvokeOnMainThread);
 #endif
 		}

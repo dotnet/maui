@@ -16,7 +16,13 @@ namespace Microsoft.Maui.ApplicationModel
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 
-		static bool PlatformIsMainThread =>
-			customImplementation?.IsMainThread() ?? throw ExceptionUtils.NotSupportedOrImplementedException;
+		static bool PlatformIsMainThread
+		{
+			get
+			{
+				var impl = customImplementation;
+				return impl?.IsMainThread() ?? throw ExceptionUtils.NotSupportedOrImplementedException;
+			}
+		}
 	}
 }
