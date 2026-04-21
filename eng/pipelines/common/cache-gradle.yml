@@ -38,5 +38,4 @@ steps:
     restoreKeys: |
       "gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
       "gradle" | "v1" | "$(Agent.OS)"
-      "gradle" | "v1"
     path: $(GRADLE_USER_HOME)
