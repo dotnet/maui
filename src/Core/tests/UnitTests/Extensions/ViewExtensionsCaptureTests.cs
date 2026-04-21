@@ -126,6 +126,7 @@ namespace Microsoft.Maui.UnitTests.Extensions
 			var result = await view.CaptureAsync();
 
 			Assert.Same(expectedResult, result);
+			await ((IViewScreenshot)screenshot).Received(1).CaptureViewAsync(platformView);
 		}
 
 		[Fact]
@@ -133,6 +134,24 @@ namespace Microsoft.Maui.UnitTests.Extensions
 		{
 			var window = Substitute.For<IWindow>();
 			window.Handler.Returns((IElementHandler)null);
+
+			var result = await window.CaptureAsync();
+
+			Assert.Null(result);
+		}
+
+		[Fact]
+		public async Task CaptureAsync_Window_ReturnsNull_WhenScreenshotServiceNotRegistered()
+		{
+			var services = new ServiceCollection().BuildServiceProvider();
+			var mauiContext = new MauiContext(services);
+
+			var handler = Substitute.For<IElementHandler>();
+			handler.PlatformView.Returns(new object());
+			handler.MauiContext.Returns(mauiContext);
+
+			var window = Substitute.For<IWindow>();
+			window.Handler.Returns(handler);
 
 			var result = await window.CaptureAsync();
 
@@ -188,6 +207,7 @@ namespace Microsoft.Maui.UnitTests.Extensions
 			var result = await window.CaptureAsync();
 
 			Assert.Same(expectedResult, result);
+			await ((IViewScreenshot)screenshot).Received(1).CaptureViewAsync(platformView);
 		}
 	}
 }
