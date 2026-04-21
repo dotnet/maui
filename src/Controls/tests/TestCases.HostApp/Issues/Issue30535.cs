@@ -59,12 +59,6 @@ class Issue30535MainPage : ContentPage
             AutomationId = "BoxContent"
         };
 
-        var clickButton = new Button
-        {
-            Text = "Click"
-        };
-        clickButton.Clicked += Button_Clicked;
-
         var stackLayout = new StackLayout
         {
             Spacing = 20,
@@ -96,20 +90,6 @@ class Issue30535MainPage : ContentPage
     {
         BindingContext = _viewModel = new Issue30535MainViewModel();
         await Navigation.PushAsync(new RefreshControlPage(_viewModel));
-    }
-
-    void Button_Clicked(object sender, EventArgs e)
-    {
-        Navigation.PushAsync(new ContentPage
-        {
-            Content = new StackLayout
-            {
-                Children =
-                {
-                    new Label { Text = "This is a new page!" }
-                }
-            }
-        });
     }
 }
 
