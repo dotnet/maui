@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (args.IsAnimated)
 			{
-				if (_gotoPosition == -1)
+				if (_gotoPosition == -1 && _initialized)
 					_gotoPosition = args.Index;
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
 			}
