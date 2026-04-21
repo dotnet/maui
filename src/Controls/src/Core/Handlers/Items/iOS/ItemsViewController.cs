@@ -448,6 +448,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					foreach (var child in ItemsView.LogicalChildrenInternal)
 					{
+						// Skip the empty view element — its flow direction is handled
+						// separately in AlignEmptyView to avoid double application
+						if (child == _emptyViewFormsElement)
+						{
+							continue;
+						}
+
 						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 						{
 							view.UpdateFlowDirection(ve);
@@ -777,7 +784,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_emptyViewFormsElement is not null)
 			{
-				// Update FlowDirection for View - based or DataTemplate - based EmptyView
+				// Update FlowDirection for View-based or DataTemplate-based EmptyView
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
@@ -787,6 +794,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
 				label.TextAlignment = UITextAlignment.Center;
+				label.SemanticContentAttribute = ItemsView.FlowDirection == FlowDirection.RightToLeft
+					? UISemanticContentAttribute.ForceRightToLeft
+					: UISemanticContentAttribute.ForceLeftToRight;
 			}
 		}
 
