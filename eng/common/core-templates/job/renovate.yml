@@ -135,7 +135,7 @@ jobs:
       condition: succeededOrFailed()
       targetPath: $(Build.ArtifactStagingDirectory)
       artifactName: $(Agent.JobName)_Logs_Attempt$(System.JobAttempt)
-      isProduction: false # logs are non-production artifacts
+      sbomEnabled: false
 
   steps:
   - checkout: self
