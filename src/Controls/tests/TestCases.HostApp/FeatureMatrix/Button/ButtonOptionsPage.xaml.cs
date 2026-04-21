@@ -20,12 +20,11 @@ public partial class ButtonOptionsPage : ContentPage
 		await Navigation.PopAsync();
 	}
 
-	private void OnBorderColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void BorderColorButton_Clicked(object sender, EventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		if (sender is Button button)
 		{
-			_viewModel.BorderColor = radioButton.Content.ToString() switch
+			_viewModel.BorderColor = button.Text switch
 			{
 				"Red" => Colors.Red,
 				"Green" => Colors.Green,
@@ -43,13 +42,14 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void OnFontAttributesRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void FontAttributesCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
-		{
-			_viewModel.FontAttributes = radioButton.Content.ToString() == "Italic" ? FontAttributes.Italic : radioButton.Content.ToString() == "Bold" ? FontAttributes.Bold : FontAttributes.None;
-		}
+		var attrs = FontAttributes.None;
+		if (FontAttributesBoldCheckBox.IsChecked)
+			attrs |= FontAttributes.Bold;
+		if (FontAttributesItalicCheckBox.IsChecked)
+			attrs |= FontAttributes.Italic;
+		_viewModel.FontAttributes = attrs;
 	}
 
 	private void OnFontFamilyRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -79,32 +79,19 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void OnLineBreakModeRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void LineBreakModeButton_Clicked(object sender, EventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		if (sender is Button button)
 		{
-			switch (radioButton.Content.ToString())
+			_viewModel.LineBreakMode = button.Text switch
 			{
-				case "CharacterWrap":
-					_viewModel.LineBreakMode = LineBreakMode.CharacterWrap;
-					break;
-				case "HeadTruncation":
-					_viewModel.LineBreakMode = LineBreakMode.HeadTruncation;
-					break;
-				case "MiddleTruncation":
-					_viewModel.LineBreakMode = LineBreakMode.MiddleTruncation;
-					break;
-				case "TailTruncation":
-					_viewModel.LineBreakMode = LineBreakMode.TailTruncation;
-					break;
-				case "WordWrap":
-					_viewModel.LineBreakMode = LineBreakMode.WordWrap;
-					break;
-				default:
-					_viewModel.LineBreakMode = LineBreakMode.NoWrap;
-					break;
-			}
+				"CharacterWrap" => LineBreakMode.CharacterWrap,
+				"HeadTruncation" => LineBreakMode.HeadTruncation,
+				"MiddleTruncation" => LineBreakMode.MiddleTruncation,
+				"TailTruncation" => LineBreakMode.TailTruncation,
+				"WordWrap" => LineBreakMode.WordWrap,
+				_ => LineBreakMode.NoWrap,
+			};
 		}
 	}
 
@@ -117,12 +104,11 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void OnTextColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void TextColorButton_Clicked(object sender, EventArgs e)
 	{
-		var radioButton = sender as RadioButton;
-		if (radioButton.IsChecked)
+		if (sender is Button button)
 		{
-			_viewModel.TextColor = radioButton.Content.ToString() switch
+			_viewModel.TextColor = button.Text switch
 			{
 				"Red" => Colors.Red,
 				"Green" => Colors.Green,
