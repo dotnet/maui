@@ -64,8 +64,8 @@ namespace Microsoft.Maui.Media
 			}
 
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			// StorageWrite no longer exists starting from Android API 33
-			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+			// Only request storage write permission when saving to gallery on older Android versions
+			if (options?.SaveToGallery == true && !OperatingSystem.IsAndroidVersionAtLeast(29))
 				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
 			var captureIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
@@ -118,6 +118,12 @@ namespace Microsoft.Maui.Media
 				else
 				{
 					captureResult = await CaptureVideoAsync(captureIntent);
+				}
+
+				// Save to gallery if requested
+				if (captureResult is not null && options?.SaveToGallery == true)
+				{
+					await SaveToGalleryAsync(captureResult, photo);
 				}
 
 				// Return the file that we just captured
@@ -413,6 +419,86 @@ namespace Microsoft.Maui.Media
 			await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
 
 			return path;
+		}
+
+		/// <summary>
+		/// Saves the captured media file to the device's gallery using MediaStore.
+		/// On API 29+, uses scoped storage with IsPending flag. On older versions, uses direct file copy.
+		/// </summary>
+		static async Task SaveToGalleryAsync(string filePath, bool isPhoto)
+		{
+			try
+			{
+				var context = Application.Context;
+				var contentResolver = context.ContentResolver;
+				if (contentResolver is null)
+					return;
+
+				var fileName = System.IO.Path.GetFileName(filePath);
+				var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+				var mimeType = GetMimeType(extension, isPhoto);
+
+				var contentValues = new ContentValues();
+				contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
+				contentValues.Put(MediaStore.IMediaColumns.MimeType, mimeType);
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					contentValues.Put(MediaStore.IMediaColumns.RelativePath,
+						isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+					contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+				}
+
+				var collection = isPhoto
+					? MediaStore.Images.Media.ExternalContentUri
+					: MediaStore.Video.Media.ExternalContentUri;
+
+				var insertUri = contentResolver.Insert(collection, contentValues);
+
+				if (insertUri is not null)
+				{
+					using var outputStream = contentResolver.OpenOutputStream(insertUri);
+					if (outputStream is not null)
+					{
+						using var inputStream = File.OpenRead(filePath);
+						await inputStream.CopyToAsync(outputStream);
+					}
+					else
+					{
+						// Clean up the pending entry if we couldn't write to it
+						contentResolver.Delete(insertUri, null, null);
+						return;
+					}
+
+					if (OperatingSystem.IsAndroidVersionAtLeast(29))
+					{
+						contentValues.Clear();
+						contentValues.Put(MediaStore.IMediaColumns.IsPending, 0);
+						contentResolver.Update(insertUri, contentValues, null, null);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to save to gallery: {ex.Message}");
+			}
+		}
+
+		static string GetMimeType(string extension, bool isPhoto)
+		{
+			return extension switch
+			{
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".heic" or ".heif" => "image/heif",
+				".webp" => "image/webp",
+				".gif" => "image/gif",
+				".mp4" => "video/mp4",
+				".3gp" => "video/3gpp",
+				".mkv" => "video/x-matroska",
+				".webm" => "video/webm",
+				_ => isPhoto ? "image/jpeg" : "video/mp4",
+			};
 		}
 
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)

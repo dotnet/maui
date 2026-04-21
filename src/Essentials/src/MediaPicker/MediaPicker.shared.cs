@@ -229,5 +229,27 @@ namespace Microsoft.Maui.Media
 		/// <para>Currently not supported on Windows.</para>
 		/// </remarks>
 		public bool PreserveMetaData { get; set; } = true;
+
+		/// <summary>
+		/// Gets or sets whether the captured image or video should be saved to the device's photo gallery/library.
+		/// Default value is <see langword="false"/>.
+		/// </summary>
+		/// <remarks>
+		/// <para>This property only applies to capture operations (<see cref="IMediaPicker.CapturePhotoAsync"/> and
+		/// <see cref="IMediaPicker.CaptureVideoAsync"/>). It has no effect on pick operations.</para>
+		/// <para>When set to <see langword="true"/>, the necessary platform permissions will be requested automatically:</para>
+		/// <list type="bullet">
+		///   <item><description><b>iOS</b>: The <c>NSPhotoLibraryAddUsageDescription</c> key must be present in <c>Info.plist</c>.
+		///   The <c>PhotosAddOnly</c> permission will be requested.</description></item>
+		///   <item><description><b>Android</b>: On API &lt; 29, <c>WRITE_EXTERNAL_STORAGE</c> permission is required.
+		///   On API 29+, <c>MediaStore</c> is used and no additional permission is needed.</description></item>
+		///   <item><description><b>macOS (Mac Catalyst)</b>: The <c>NSPhotoLibraryAddUsageDescription</c> key must be present in <c>Info.plist</c>.
+		///   The <c>PhotosAddOnly</c> permission will be requested.</description></item>
+		///   <item><description><b>Windows</b>: Not supported. This property is ignored on Windows. The captured media is saved to a
+		///   temporary cache folder and the user can save it manually.</description></item>
+		///   <item><description><b>Tizen</b>: Not supported. This property is ignored on Tizen.</description></item>
+		/// </list>
+		/// </remarks>
+		public bool SaveToGallery { get; set; } = false;
 	}
 }

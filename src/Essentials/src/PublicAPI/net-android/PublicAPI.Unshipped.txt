@@ -9,3 +9,5 @@ override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.CanConvertTo(Syste
 override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Devices.Sensors.LocationTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!
+Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.get -> bool
+Microsoft.Maui.Media.MediaPickerOptions.SaveToGallery.set -> void

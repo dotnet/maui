@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Media
 			}
 			else
 			{
-				if (!pickExisting)
+				if (!pickExisting && options?.SaveToGallery == true)
 				{
 					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
 				}
@@ -168,6 +168,12 @@ namespace Microsoft.Maui.Media
 
 			PickerRef?.Dispose();
 			PickerRef = null;
+
+			// Save captured media to the photo gallery if requested
+			if (!pickExisting && result is not null && options?.SaveToGallery == true)
+			{
+				await SaveToPhotoLibraryAsync(result);
+			}
 
 			return result;
 		}
@@ -481,6 +487,44 @@ namespace Microsoft.Maui.Media
 			}
 		}
 		
+		/// <summary>
+		/// Saves the captured media file to the device's photo library using PHPhotoLibrary.
+		/// </summary>
+		static async Task SaveToPhotoLibraryAsync(FileResult fileResult)
+		{
+			try
+			{
+				using var stream = await fileResult.OpenReadAsync();
+				var extension = System.IO.Path.GetExtension(fileResult.FileName);
+				var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
+				using (var fileStream = File.Create(tempPath))
+				{
+					stream.Position = 0;
+					await stream.CopyToAsync(fileStream);
+				}
+
+				var url = NSUrl.FromFilename(tempPath);
+
+				await PHPhotoLibrary.SharedPhotoLibrary.PerformChangesAsync(() =>
+				{
+					if (IsImageFile(fileResult.FileName))
+					{
+						PHAssetChangeRequest.FromImage(url);
+					}
+					else
+					{
+						PHAssetChangeRequest.FromVideo(url);
+					}
+				});
+
+				try { File.Delete(tempPath); } catch (IOException) { }
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to save to photo library: {ex.Message}");
+			}
+		}
+
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }
