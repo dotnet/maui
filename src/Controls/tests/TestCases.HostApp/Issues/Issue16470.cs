@@ -11,39 +11,38 @@ public class Issue16470 : TabbedPage
 
         Children.Add(new ContentPage
         {
-            Title = "Home",
-            Content = new Label { Text = "Content 1", AutomationId = "Tab1Content" }
+            Title = "Home Dashboard",
+            Content = new Label { Text = "This is the Home Dashboard page", AutomationId = "Tab1Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
         Children.Add(new ContentPage
         {
             Title = "Settings",
-            Content = new Label { Text = "Content 2", AutomationId = "Tab2Content" }
+            Content = new Label { Text = "This is the Settings page", AutomationId = "Tab2Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
         Children.Add(new ContentPage
         {
             Title = "Profile",
-            Content = new Label { Text = "Content 3", AutomationId = "Tab3Content" }
+            Content = new Label { Text = "This is the Profile page", AutomationId = "Tab3Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
         Children.Add(new ContentPage
         {
             Title = "Notifications",
-            Content = new Label { Text = "Content 4", AutomationId = "Tab4Content" }
+            Content = new Label { Text = "This is the Notifications page", AutomationId = "Tab4Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
         Children.Add(new ContentPage
         {
             Title = "Messages",
-            
-            Content = new Label { Text = "Content 5", AutomationId = "Tab5Content" }
+            Content = new Label { Text = "This is the Messages page", AutomationId = "Tab5Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
         Children.Add(new ContentPage
         {
             Title = "Login",
-            Content = new Label { Text = "Content 6", AutomationId = "Tab6Content" }
+            Content = new Label { Text = "This is the Login page", AutomationId = "Tab6Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
         Children.Add(new ContentPage
         {
             Title = "Help",
-            Content = new Label { Text = "Content 7", AutomationId = "Tab7Content" }
+            Content = new Label { Text = "This is the Help page", AutomationId = "Tab7Content", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center }
         });
     }
 }
