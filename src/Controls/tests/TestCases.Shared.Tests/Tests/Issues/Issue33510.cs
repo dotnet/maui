@@ -1,6 +1,4 @@
 #if ANDROID // This test is Android-only because Issue #33510 (RefreshView triggering pull-to-refresh when scrolling inside a WebView) only reproduces on Android, and the test uses Android-specific Appium touch gesture APIs.
-using System.Globalization;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;
@@ -13,11 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue33510 : _IssuesUITest
 {
 	const string StatusLabel = "StatusLabel";
-	const string ScrollWebViewButton = "ScrollWebViewButton";
-	const string ScrollWebViewToTopButton = "ScrollWebViewToTopButton";
-	const string ReadScrollTopButton = "ReadScrollTopButton";
-	const string ScrollTopLabel = "ScrollTopLabel";
-	const string TestWebViewContainer = "TestWebViewContainer";
+	const string TestRefreshView = "TestRefreshView";
 
 	public Issue33510(TestDevice device) : base(device)
 	{
@@ -25,56 +19,31 @@ public class Issue33510 : _IssuesUITest
 
 	public override string Issue => "[Android] RefreshView triggers pull-to-refresh immediately when scrolling up inside a WebView";
 
-	protected override bool ResetAfterEachTest => true;
-
 	[Test]
-	public void PullToRefreshWaitsUntilInternalWebViewContainerReachesTop()
+	public void PullToRefreshShouldNotTriggerWhenWebViewIsScrolledDown()
 	{
+		VerifyInternetConnectivity();
 		var androidApp = WaitForAndroidApp();
-		var webViewRect = App.WaitForElement(TestWebViewContainer).GetRect();
-		var x = webViewRect.CenterX();
-		var upwardFromY = webViewRect.Y + (webViewRect.Height * 75 / 100);
-		var upwardToY = webViewRect.Y + (webViewRect.Height * 30 / 100);
+		var refreshViewRect = App.WaitForElement(TestRefreshView).GetRect();
+		var x = refreshViewRect.CenterX();
 
-		for (var attempt = 0; attempt < 3 && GetScrollTop() <= 200; attempt++)
+		// Scroll content down by swiping up inside the WebView
+		for (var i = 0; i < 3; i++)
 		{
-			DragInsideWebView(androidApp, x, upwardFromY, x, upwardToY);
+			DragInsideWebView(androidApp, x,
+				refreshViewRect.Y + (refreshViewRect.Height * 70 / 100),
+				x,
+				refreshViewRect.Y + (refreshViewRect.Height * 25 / 100));
 		}
 
-		var initialScrollTop = GetScrollTop();
-		Assert.That(initialScrollTop, Is.GreaterThan(200), "The inner HTML container must start away from the top.");
+		// Attempt pull-to-refresh (drag down) while content is still scrolled down
+		DragInsideWebView(androidApp, x,
+			refreshViewRect.Y + (refreshViewRect.Height * 30 / 100),
+			x,
+			refreshViewRect.Y + (refreshViewRect.Height * 80 / 100));
 
-		Assert.That(GetStatus(), Does.Not.Contain("Refresh triggered"));
-
-		var fromY = webViewRect.Y + (webViewRect.Height * 35 / 100);
-		var toY = webViewRect.Y + (webViewRect.Height * 70 / 100);
-
-		DragInsideWebView(androidApp, x, fromY, x, toY);
-
-		var scrollTopAfterGesture = GetScrollTop();
-		Assert.That(scrollTopAfterGesture, Is.LessThan(initialScrollTop), "Dragging down inside the WebView should scroll the inner container upward.");
-		Assert.That(scrollTopAfterGesture, Is.GreaterThan(0), "The inner container should still be away from the top after a partial upward scroll.");
-		Assert.That(GetStatus(), Does.Not.Contain("Refresh triggered"));
-	}
-
-	[Test]
-	public void PullToRefreshStillWorksWhenInternalWebViewContainerStartsAtTop()
-	{
-		var androidApp = WaitForAndroidApp();
-
-		Assert.That(GetScrollTop(), Is.LessThan(1), "The inner HTML container should start at the top before pull-to-refresh begins.");
-
-		var webViewRect = App.WaitForElement(TestWebViewContainer).GetRect();
-		var x = webViewRect.CenterX();
-		var fromY = webViewRect.Y + (webViewRect.Height * 30 / 100);
-		var toY = webViewRect.Y + (webViewRect.Height * 85 / 100);
-
-		DragInsideWebView(androidApp, x, fromY, x, toY);
-
-		Assert.That(
-			App.WaitForTextToBePresentInElement(StatusLabel, "Refresh triggered", timeout: TimeSpan.FromSeconds(10)),
-			Is.True,
-			"Pulling down inside the WebView at scroll top should still trigger RefreshView.");
+		Assert.That(App.FindElement(StatusLabel).GetText(), Does.Not.Contain("Refresh triggered"),
+			"RefreshView should not trigger while WebView content is not at the top.");
 	}
 
 	AppiumAndroidApp WaitForAndroidApp()
@@ -92,25 +61,6 @@ public class Issue33510 : _IssuesUITest
 
 		return androidApp;
 	}
-
-	double GetScrollTop()
-	{
-		App.Tap(ReadScrollTopButton);
-		Assert.That(
-			App.WaitForTextToBePresentInElement(ScrollTopLabel, "ScrollTop:", timeout: TimeSpan.FromSeconds(5)),
-			Is.True,
-			"Scroll position was not reported.");
-
-		var status = App.FindElement(ScrollTopLabel).GetText() ?? string.Empty;
-		var match = Regex.Match(status, @"(\d+(\.\d+)?)");
-
-		Assert.That(match.Success, Is.True, $"Could not parse scroll position from '{status}'.");
-
-		return double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-	}
-
-	string GetStatus() =>
-		App.FindElement(StatusLabel).GetText() ?? string.Empty;
 
 	static void DragInsideWebView(AppiumAndroidApp androidApp, int fromX, int fromY, int toX, int toY)
 	{

@@ -146,23 +146,28 @@ internal static class RefreshViewWebViewScrollCapture
 
 	sealed class ScrollCaptureState : Java.Lang.Object
 	{
-		internal bool CanScrollUp { get; private set; }
+		// These fields are written from the JavaBridge thread (via [JavascriptInterface])
+		// and read from the UI thread, so they must be volatile to ensure visibility on ARM.
+		volatile bool _canScrollUp;
+		volatile bool _hasReportedState;
 
-		internal bool HasReportedState { get; private set; }
+		internal bool CanScrollUp => _canScrollUp;
+
+		internal bool HasReportedState => _hasReportedState;
 
 		[JavascriptInterface]
 		[RequiresUnreferencedCode("Java.Interop.Export uses dynamic features.")]
 		[Export("setCanScrollUp")]
 		public void SetCanScrollUp(bool canScrollUp)
 		{
-			CanScrollUp = canScrollUp;
-			HasReportedState = true;
+			_canScrollUp = canScrollUp;
+			_hasReportedState = true;
 		}
 
 		internal void Reset()
 		{
-			CanScrollUp = false;
-			HasReportedState = false;
+			_canScrollUp = false;
+			_hasReportedState = false;
 		}
 	}
 }
