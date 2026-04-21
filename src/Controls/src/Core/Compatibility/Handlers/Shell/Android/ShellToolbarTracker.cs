@@ -426,8 +426,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 			var backButtonVisibleFromBehavior = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true);
 			bool isEnabled = _shell.Toolbar.BackButtonEnabled;
-			//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
-			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : null;
+			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : backButtonHandler.GetPropertyIfSet<ImageSource>(BackButtonBehavior.IconOverrideProperty, null);
 			var backButtonVisible = _toolbar.BackButtonVisible;
 
 			DrawerArrowDrawable icon = null;
@@ -682,6 +681,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_searchView.View.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 					_searchView.SearchConfirmed += OnSearchConfirmed;
 				}
+				// If the existing _searchView is present but its SearchHandler doesn't match the current page SearchHandler,
+				// first collapse and reset the active search UI state, then apply the existing handler swap + reload
+				// so Shell tab navigation does not carry the previous page's interaction state into the next page.
+				else if (_searchView.SearchHandler != SearchHandler)
+				{
+					menu.FindItem(_placeholderMenuItemId)?.CollapseActionView();
+					ClearSearchViewState(_searchView.View);
+					_searchView.SearchHandler = SearchHandler;
+					_searchView.LoadView();
+				}
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
@@ -732,6 +741,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			menu.Dispose();
+		}
+
+		static void ClearSearchViewState(AView view)
+		{
+			view.ClearFocus();
+
+			if (view is AppCompatAutoCompleteTextView autoCompleteTextView)
+			{
+				autoCompleteTextView.DismissDropDown();
+				autoCompleteTextView.ClearComposingText();
+
+				var text = autoCompleteTextView.Text;
+				if (!string.IsNullOrEmpty(text))
+					autoCompleteTextView.SetSelection(text.Length);
+			}
+
+			if (view is ViewGroup viewGroup)
+			{
+				for (int i = 0; i < viewGroup.ChildCount; i++)
+					ClearSearchViewState(viewGroup.GetChildAt(i));
+			}
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)

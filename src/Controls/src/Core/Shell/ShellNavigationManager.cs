@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls
 			if (AccumulateNavigatedEvents)
 				return true;
 
-			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack);
+			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack, isNavigateThroughTab: true);
 			var navArgs = ProposeNavigation(source, proposedState, canCancel, isAnimated);
 
 			if (navArgs.DeferralCount > 0)
@@ -536,7 +536,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)
+		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack, bool isNavigateThroughTab = false)
 		{
 			List<string> routeStack = new List<string>();
 
@@ -589,7 +589,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 #if IOS || MACCATALYST
-			if (Shell.Current?.CurrentState?.Location is not null)
+			// This fix addresses #25599 (Navigating event showing same Current and Target when
+			// re-tapping a tab on iOS). It only applies when called from the Navigating event
+			// context (ProposeNavigationOutsideGotoAsync), not when updating Shell.CurrentState.
+			// Applying it in UpdateCurrentState would cause Shell.CurrentState to be stale
+			// after a GoToAsync deep-navigation (#34662).
+			if (isNavigateThroughTab && Shell.Current?.CurrentState?.Location is not null)
 			{
 				var currentRoute = Shell.Current?.CurrentState?.Location?.ToString();
 				if (!string.IsNullOrEmpty(currentRoute))

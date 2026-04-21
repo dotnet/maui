@@ -141,12 +141,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GroupNamesMustBeUniqueWithinGroupList()
+		public void GroupWithDuplicateNameReplacesExisting()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
 			var secondGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			secondGroup.States.Add(new VisualState { Name = NormalStateName });
 
-			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
+			// Adding a group with the same name should replace the existing one, not throw
+			vsgs.Add(secondGroup);
+			Assert.Single(vsgs);
+			Assert.Same(secondGroup, vsgs[0]);
 		}
 
 		[Fact]
@@ -533,6 +537,118 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Debug.WriteLine($">>>>> VisualStateManagerTests ValidatePerformance: {watch.ElapsedMilliseconds}ms over {iterations} iterations; average of {average}ms");
 
+		}
+
+		[Fact]
+		// Regression test for https://github.com/dotnet/maui/issues/34363
+		// Button with locally-set BackgroundColor and TextColor should show the Disabled visual state
+		// when IsEnabled=false, even when the VSM originates from an implicit style.
+		public void ImplicitStyleDisabledVSMOverridesLocalValue()
+		{
+			var disabledColor = Colors.Gray;
+			var normalColor = Colors.Blue;
+			var localColor = Colors.Red;
+
+			var disabledTextColor = Colors.LightGray;
+			var normalTextColor = Colors.White;
+			var localTextColor = Colors.Green;
+
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = normalColor });
+			normalState.Setters.Add(new Setter { Property = Button.TextColorProperty, Value = normalTextColor });
+
+			var disabledState = new VisualState { Name = DisabledStateName };
+			disabledState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = disabledColor });
+			disabledState.Setters.Add(new Setter { Property = Button.TextColorProperty, Value = disabledTextColor });
+
+			var vsgList = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States = { normalState, disabledState }
+				}
+			};
+
+			var implicitStyle = new Style(typeof(Button))
+			{
+				Setters =
+				{
+					new Setter
+					{
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = vsgList
+					}
+				}
+			};
+
+			var button = new Button();
+
+			// Apply the implicit style (StyleImplicit = 0x080, below StyleBasedOn threshold — triggers implicit VSM downgrade)
+			((IStyle)implicitStyle).Apply(button, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+
+			// Locally set BackgroundColor and TextColor — ManualValueSetter wins over implicit VSM in Normal state
+			button.BackgroundColor = localColor;
+			button.TextColor = localTextColor;
+			Assert.Equal(localColor, button.BackgroundColor);
+			Assert.Equal(localTextColor, button.TextColor);
+
+			// Disable the button — the Disabled VSM state should override both locally-set values
+			button.IsEnabled = false;
+			Assert.Equal(disabledColor, button.BackgroundColor);
+			Assert.Equal(disabledTextColor, button.TextColor);
+
+			// Re-enable — Normal state does NOT override the local values (preserves #18103 behavior)
+			button.IsEnabled = true;
+			Assert.Equal(localColor, button.BackgroundColor);
+			Assert.Equal(localTextColor, button.TextColor);
+		}
+
+		[Fact]
+		// Custom (non-system) VSM states defined in an implicit style should NOT be promoted to full
+		// VSM priority. Only built-in MAUI system-driven states (Disabled, Focused, etc.) get promoted.
+		// This prevents implicit-style custom states from unexpectedly overriding manually-set values.
+		public void CustomImplicitStyleVSMStateDoesNotOverrideLocalValue()
+		{
+			const string customStateName = "Highlighted";
+			var highlightedColor = Colors.Yellow;
+			var localColor = Colors.Red;
+
+			var normalState = new VisualState { Name = NormalStateName };
+			var highlightedState = new VisualState { Name = customStateName };
+			highlightedState.Setters.Add(new Setter { Property = Button.BackgroundColorProperty, Value = highlightedColor });
+
+			var vsgList = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States = { normalState, highlightedState }
+				}
+			};
+
+			var implicitStyle = new Style(typeof(Button))
+			{
+				Setters =
+				{
+					new Setter
+					{
+						Property = VisualStateManager.VisualStateGroupsProperty,
+						Value = vsgList
+					}
+				}
+			};
+
+			var button = new Button();
+			((IStyle)implicitStyle).Apply(button, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+
+			// Locally set BackgroundColor — ManualValueSetter wins over the implicit-style VSM in Normal state
+			button.BackgroundColor = localColor;
+			Assert.Equal(localColor, button.BackgroundColor);
+
+			// Transition to the custom state — custom state is NOT promoted, so ManualValueSetter still wins
+			VisualStateManager.GoToState(button, customStateName);
+			Assert.Equal(localColor, button.BackgroundColor);
 		}
 	}
 }
