@@ -23,12 +23,19 @@ public class Issue31799 : _IssuesUITest
         App.WaitForElement("CreateTabbedPageButton");
         App.Tap("CreateTabbedPageButton");
 
+        Exception? exception = null;
+
         App.WaitForElement("NewSelectedTabLabel");
-        VerifyScreenshot();
+        VerifyScreenshotOrSetException(ref exception);
 
         App.Tap("GoBackButton");
         App.WaitForElement("CreateTabbedPageButton");
-        VerifyScreenshot("VerifyOriginalTabbedPageDoesNotHaveMultipleTabsSelected");
+        VerifyScreenshotOrSetException(ref exception, "VerifyOriginalTabbedPageDoesNotHaveMultipleTabsSelected");
+
+        if (exception is not null)
+        {
+            throw exception;
+        }
     }
 }
 #endif
