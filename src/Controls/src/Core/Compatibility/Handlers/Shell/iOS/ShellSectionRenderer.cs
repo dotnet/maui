@@ -184,7 +184,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
-						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
