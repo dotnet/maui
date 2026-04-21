@@ -14,6 +14,8 @@ public class Issue34993 : _IssuesUITest
     [Category(UITestCategories.RadioButton)]
     public void VerifyRadioButtonBackgroundUpdatesFromGradientToSolidColor()
     {
+        App.WaitForElement("BackgroundRadioButton");
+        VerifyScreenshot("GradientBackgroundRadioButton");
         App.WaitForElement("ChangeBackgroundButton");
         App.Tap("ChangeBackgroundButton");
         VerifyScreenshot();
