@@ -30,6 +30,7 @@ on:
     paths:
       - '.github/skills/**'
       - '.github/agents/**'
+      - '.github/plugin.json'
       - '.github/workflows/skill-validation.yml'
 
   issue_comment:
@@ -790,11 +791,13 @@ jobs:
                     const data = JSON.parse(
                       fs.readFileSync(path.join(dirPath, jsonFile), 'utf8')
                     );
-                    if (data.verdicts) {
+                    if (data.verdicts && data.verdicts.length > 0) {
                       allVerdicts.push(...data.verdicts);
                       for (const v of data.verdicts) {
                         if (!v.passed) evalPassed = false;
                       }
+                    } else {
+                      evalPassed = false; // no verdicts = not passed
                     }
                   }
                 }
@@ -1044,7 +1047,11 @@ jobs:
   report-status:
     name: Report status
     needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, comment]
-    if: always() && !cancelled()
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success'
+      )
     runs-on: ubuntu-latest
     permissions:
       statuses: write
