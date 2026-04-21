@@ -124,7 +124,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		{
 			var newItem = args.NewItems[index] as ItemTemplateContext2;
 			if (newItem is not null)
-				_itemsSource.Insert(startIndex, newItem.Item);
+				_itemsSource.Insert(startIndex + index, newItem.Item);
 		}
 	}
 
@@ -204,7 +204,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 			if (item is null)
 				continue;
 
-			Insert(startIndex, new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
+			Insert(startIndex + index, new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
 				false, false, _mauiContext));
 		}
 	}

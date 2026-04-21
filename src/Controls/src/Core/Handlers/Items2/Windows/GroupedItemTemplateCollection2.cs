@@ -283,7 +283,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 			return;
 
 		int removeIndex = flatIndex + (e.OldStartingIndex >= 0 ? e.OldStartingIndex : 0);
-		if (removeIndex < 0 || removeIndex + e.OldItems.Count >= Items.Count)
+		if (removeIndex < 0 || removeIndex + e.OldItems.Count > Items.Count)
 		{
 			ResetWithoutResubscribe();
 			return;
