@@ -26,13 +26,35 @@ namespace Microsoft.Maui.Platform
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
 		{
 			base.OnSizeChanged(width, height, oldWidth, oldHeight);
+			UpdateClipBounds(width, height);
+		}
 
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+
+			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
+			UpdateClipBounds(Width, Height);
+		}
+
+		void UpdateClipBounds(int width, int height)
+		{
 			if (width > 0 && height > 0)
 			{
-				// Remove clip bounds once layout is complete and the view has its
-				// correct size. Setting null instead of exact bounds allows visual
-				// effects like shadows to render outside the view area.
-				ClipBounds = null;
+				if (Parent is WrapperView)
+				{
+					// Parent is WrapperView (shadow/border/clip applied).
+					// Remove ClipBounds to allow visual effects like shadows
+					// to render outside the view area.
+					ClipBounds = null;
+				}
+				else
+				{
+					// No WrapperView — apply exact bounds to prevent the WebView
+					// from briefly rendering at full screen size before layout.
+					_clipRect.Set(0, 0, width, height);
+					ClipBounds = _clipRect;
+				}
 			}
 			else
 			{
