@@ -985,15 +985,13 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					// Snapshot visible items before executing any commands.
-					// Executing a command may change visibility of other SwipeItems
-					// (e.g., toggling IsCompleted), which would cause the foreach
-					// to also execute newly-visible items. See #7580.
-					var visibleItems = swipeItems.Where(GetIsVisible).ToList();
-					foreach (var swipeItem in visibleItems)
-					{
-						ExecuteSwipeItem(swipeItem);
-					}
+					// Execute only the first visible item. In Execute mode, a swipe
+					// triggers a single action — matching WinUI behavior. Executing
+					// multiple items would cause side effects (e.g., visibility changes)
+					// that could trigger unintended additional executions. See #7580.
+					var itemToExecute = swipeItems.FirstOrDefault(GetIsVisible);
+					if (itemToExecute != null)
+						ExecuteSwipeItem(itemToExecute);
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 						ResetSwipe();
