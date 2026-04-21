@@ -3,10 +3,19 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.Communication;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Authentication;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Networking;
+using Microsoft.Maui.Storage;
 #if ANDROID
 using Android.App;
 #endif
@@ -28,6 +37,10 @@ namespace Microsoft.Maui.Hosting
 	{
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
+			// Ensure the initializer runs so DI-registered Essentials implementations
+			// are bridged to the static facades during app startup.
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+
 			builder.ConfigureLifecycleEvents(life =>
 			{
 #if ANDROID
@@ -163,6 +176,8 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 
+				BridgeEssentialsFromDI(services);
+
 #if WINDOWS
 				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
@@ -178,6 +193,63 @@ namespace Microsoft.Maui.Hosting
 
 				if (_essentialsBuilder.TrackVersions)
 					VersionTracking.Track();
+			}
+
+			/// <summary>
+			/// Bridges DI-registered Essentials implementations to the static facades.
+			/// If a service is registered in DI, it becomes the backing implementation for
+			/// the corresponding static API. If not registered, the existing lazy platform
+			/// default behavior is preserved.
+			/// </summary>
+			static void BridgeEssentialsFromDI(IServiceProvider services)
+			{
+				// SetDefault pattern types
+				BridgeIfRegistered<IAccelerometer>(services, Accelerometer.SetDefault);
+				BridgeIfRegistered<IBarometer>(services, Barometer.SetDefault);
+				BridgeIfRegistered<IBattery>(services, Battery.SetDefault);
+				BridgeIfRegistered<IBrowser>(services, Browser.SetDefault);
+				BridgeIfRegistered<IClipboard>(services, Clipboard.SetDefault);
+				BridgeIfRegistered<ICompass>(services, Compass.SetDefault);
+				BridgeIfRegistered<IContacts>(services, Contacts.SetDefault);
+				BridgeIfRegistered<IEmail>(services, Email.SetDefault);
+				BridgeIfRegistered<IFilePicker>(services, FilePicker.SetDefault);
+				BridgeIfRegistered<IFlashlight>(services, Flashlight.SetDefault);
+				BridgeIfRegistered<IGeolocation>(services, Geolocation.SetDefault);
+				BridgeIfRegistered<IGyroscope>(services, Gyroscope.SetDefault);
+				BridgeIfRegistered<IHapticFeedback>(services, HapticFeedback.SetDefault);
+				BridgeIfRegistered<ILauncher>(services, Launcher.SetDefault);
+				BridgeIfRegistered<IMagnetometer>(services, Magnetometer.SetDefault);
+				BridgeIfRegistered<IMap>(services, Map.SetDefault);
+				BridgeIfRegistered<IMediaPicker>(services, MediaPicker.SetDefault);
+				BridgeIfRegistered<IOrientationSensor>(services, OrientationSensor.SetDefault);
+				BridgeIfRegistered<IPhoneDialer>(services, PhoneDialer.SetDefault);
+				BridgeIfRegistered<IPreferences>(services, Preferences.SetDefault);
+				BridgeIfRegistered<IScreenshot>(services, Screenshot.SetDefault);
+				BridgeIfRegistered<ISecureStorage>(services, SecureStorage.SetDefault);
+				BridgeIfRegistered<ISemanticScreenReader>(services, SemanticScreenReader.SetDefault);
+				BridgeIfRegistered<IShare>(services, Share.SetDefault);
+				BridgeIfRegistered<ISms>(services, Sms.SetDefault);
+				BridgeIfRegistered<ITextToSpeech>(services, TextToSpeech.SetDefault);
+				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
+				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
+				BridgeIfRegistered<IWebAuthenticator>(services, WebAuthenticator.SetDefault);
+				BridgeIfRegistered<IAppleSignInAuthenticator>(services, AppleSignInAuthenticator.SetDefault);
+
+				// SetCurrent pattern types
+				BridgeIfRegistered<IAppActions>(services, AppActions.SetCurrent);
+				BridgeIfRegistered<IAppInfo>(services, AppInfo.SetCurrent);
+				BridgeIfRegistered<IConnectivity>(services, Connectivity.SetCurrent);
+				BridgeIfRegistered<IDeviceDisplay>(services, DeviceDisplay.SetCurrent);
+				BridgeIfRegistered<IDeviceInfo>(services, DeviceInfo.SetCurrent);
+				BridgeIfRegistered<IFileSystem>(services, FileSystem.SetCurrent);
+				BridgeIfRegistered<IGeocoding>(services, Geocoding.SetCurrent);
+			}
+
+			static void BridgeIfRegistered<T>(IServiceProvider services, Action<T?> setter) where T : class
+			{
+				var impl = services.GetService<T>();
+				if (impl is not null)
+					setter(impl);
 			}
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
