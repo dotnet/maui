@@ -166,12 +166,6 @@
       "displayName": "_Include sample pages",
       "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
     },
-    "Empty": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
-    },
     "empty": {
       "type": "parameter",
       "datatype": "bool",
@@ -180,7 +174,7 @@
     },
     "SampleContent": {
       "type": "computed",
-      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")) && (!empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || (!empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")))"
     }
   },
   "forms": {

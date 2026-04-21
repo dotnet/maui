@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 			mutableAttributedString.AddAttribute
 			(
 				UIStringAttributeKey.KerningAdjustment,
-				NSObject.FromObject(characterSpacing),
+				NSObject.FromObject(characterSpacing)!,
 				new NSRange(0, mutableAttributedString.Length)
 			);
 			return mutableAttributedString;
