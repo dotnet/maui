@@ -120,20 +120,9 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		const string hybridWebViewDynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
-			// Keep the RequiresDynamicCode path isolated under the HybridWebView feature switch
-			// so NativeAOT/full-trim apps don't pick up HybridWebView warnings just by
-			// evaluating the default handler registration list.
-			AddHybridWebViewHandler(handlersCollection);
-		}
-#if !NETSTANDARD
-		[RequiresDynamicCode(hybridWebViewDynamicFeatures)]
-#endif
-		[RequiresUnreferencedCode(hybridWebViewDynamicFeatures)]
-		static void AddHybridWebViewHandler(IMauiHandlersCollection handlersCollection)
-		{
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		}
 
