@@ -105,12 +105,14 @@ function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
        Fetches the commit if not available locally (e.g. PRs merged to inflight). #>
     $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
     if ($LASTEXITCODE -ne 0) {
-        # Commit not in local history — fetch it
-        Write-Verbose "  Fetching commit $GitRef..."
-        $null = git -C $Repo fetch origin $GitRef --quiet 2>&1
+        # Ref not in local history — fetch it.
+        # Strip "origin/" prefix for the fetch refspec (git fetch origin <branch>, not origin/origin/<branch>)
+        $fetchRef = $GitRef -replace '^origin/', ''
+        Write-Verbose "  Fetching ref $fetchRef..."
+        $null = git -C $Repo fetch origin $fetchRef --quiet 2>&1
         $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Could not read Versions.props at commit $GitRef (even after fetch)"
+            Write-Warning "Could not read Versions.props at $GitRef (even after fetch)"
             return $null
         }
     }
@@ -585,13 +587,29 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
             if ($versionInfo) { $ReleaseTag = $versionInfo.Tag }
             Write-Host "  Found in release branch: $($releaseBranch.Branch) → $expectedMs"
         } else {
-            # Step 2: Fall back to Versions.props at the merge commit
-            if ($versionInfo) {
-                $ReleaseTag = $versionInfo.Tag
-                $preLabel = $versionInfo.PreLabel
-                $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
-                $preDisplay = if ($versionInfo.PreLabel) { " ($($versionInfo.PreLabel)$($versionInfo.PreIter))" } else { "" }
-                Write-Host "  Version from Versions.props at merge commit: $ReleaseTag$preDisplay"
+            # Step 2: Fall back to Versions.props on the target branch HEAD.
+            # The merge commit's Versions.props may be stale (e.g. inflight/current
+            # was at PatchVersion=60 when the PR merged, but has since moved to 70).
+            # Read from the branch the PR targeted — whatever it is.
+            if ($pr.BaseRef) {
+                $devBranch = "origin/$($pr.BaseRef)"
+                $branchVersionInfo = Get-VersionFromGitRef $devBranch $Repo
+                if ($branchVersionInfo) {
+                    $versionInfo = $branchVersionInfo
+                    $ReleaseTag = $branchVersionInfo.Tag
+                    $preLabel = $branchVersionInfo.PreLabel
+                    $preIter = if ($branchVersionInfo.PreIter) { $branchVersionInfo.PreIter } else { 0 }
+                    $preDisplay = if ($branchVersionInfo.PreLabel) { " ($($branchVersionInfo.PreLabel)$($branchVersionInfo.PreIter))" } else { "" }
+                    Write-Host "  Version from Versions.props on $devBranch`: $ReleaseTag$preDisplay"
+                } elseif ($versionInfo) {
+                    # Branch read failed; fall back to merge commit's version info
+                    Write-Verbose "  Could not read from $devBranch — using merge commit Versions.props"
+                    $ReleaseTag = $versionInfo.Tag
+                    $preLabel = $versionInfo.PreLabel
+                    $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
+                }
+            } else {
+                Write-Warning "PR #$PrNum has no BaseRef — cannot read Versions.props from target branch"
             }
         }
     }
