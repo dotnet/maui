@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 #if ANDROID
@@ -135,6 +136,8 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 
+				BridgeMainThreadFromDispatcher(services);
+
 #if WINDOWS
 				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
@@ -150,6 +153,26 @@ namespace Microsoft.Maui.Hosting
 
 				if (_essentialsBuilder.TrackVersions)
 					VersionTracking.Track();
+			}
+
+			/// <summary>
+			/// Bridges the MAUI application dispatcher to MainThread so that
+			/// MainThread.BeginInvokeOnMainThread and MainThread.IsMainThread work
+			/// on custom platform backends / external TFMs where no native
+			/// MainThread implementation exists.
+			/// On supported platforms the Platform* methods take precedence and
+			/// the backing delegates are never consulted.
+			/// </summary>
+			static void BridgeMainThreadFromDispatcher(IServiceProvider services)
+			{
+				var dispatcherProvider = services.GetService<IDispatcherProvider>();
+				var dispatcher = dispatcherProvider?.GetForCurrentThread();
+				if (dispatcher is null)
+					return;
+
+				MainThread.SetCustomImplementation(
+					isMainThread: () => !dispatcher.IsDispatchRequired,
+					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
 			}
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)

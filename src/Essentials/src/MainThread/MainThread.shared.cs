@@ -9,6 +9,24 @@ namespace Microsoft.Maui.ApplicationModel
 	/// </summary>
 	public static partial class MainThread
 	{
+		// Internal backing for custom platform backends and dispatcher fallback.
+		// On supported platforms (Android, iOS, Windows), the Platform* methods are used directly.
+		// On netstandard/external TFMs, these delegates provide the implementation.
+		static Func<bool> s_isMainThreadImpl;
+		static Action<Action> s_beginInvokeOnMainThreadImpl;
+
+		internal static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
+		{
+			s_isMainThreadImpl = isMainThread ?? throw new ArgumentNullException(nameof(isMainThread));
+			s_beginInvokeOnMainThreadImpl = beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
+		}
+
+		internal static void ClearCustomImplementation()
+		{
+			s_isMainThreadImpl = null;
+			s_beginInvokeOnMainThreadImpl = null;
+		}
+
 		/// <summary>
 		/// True if the current thread is the UI thread.
 		/// </summary>
