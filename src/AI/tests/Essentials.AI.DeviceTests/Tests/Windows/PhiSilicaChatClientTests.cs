@@ -128,6 +128,50 @@ public class PhiSilicaChatClientFunctionCallingTests : ChatClientFunctionCalling
 		Assert.True(timeCallCount > 0, "GetCurrentTime should have been called");
 		Assert.True(weatherCallCount > 0, "GetWeather should have been called");
 	}
+
+	/// <summary>
+	/// Chain: GetUserProfile(username) → GetOrderHistory(userId).
+	/// Different domain from TimeAndWeather — tests that chaining works
+	/// when the dependency is data-based (userId from profile result).
+	/// </summary>
+	[Fact]
+	public async Task GetResponseAsync_ChainedFunctionCalls_ProfileToOrders()
+	{
+		int profileCallCount = 0;
+		int ordersCallCount = 0;
+
+		var profileTool = AIFunctionFactory.Create(
+			(string username) =>
+			{
+				profileCallCount++;
+				return "{\"userId\": \"U12345\", \"name\": \"John Doe\"}";
+			},
+			name: "GetUserProfile",
+			description: "Looks up a user profile by username. Returns userId and name.");
+
+		var ordersTool = AIFunctionFactory.Create(
+			(string userId) =>
+			{
+				ordersCallCount++;
+				return "[{\"orderId\": \"ORD-001\", \"item\": \"Widget\"}]";
+			},
+			name: "GetOrderHistory",
+			description: "Gets order history for a user. Requires the userId.");
+
+		var client = EnableFunctionCalling(new PhiSilicaWrappedClient());
+		var messages = new List<ChatMessage>
+		{
+			new(ChatRole.System,
+				"GetOrderHistory requires a userId. Call GetUserProfile with the username to get the userId first."),
+			new(ChatRole.User, "What are the recent orders for username 'johndoe'?")
+		};
+		var options = new ChatOptions { Tools = [profileTool, ordersTool] };
+
+		var response = await client.GetResponseAsync(messages, options);
+		Assert.NotNull(response);
+		Assert.True(profileCallCount > 0, $"GetUserProfile should be called. Got: {profileCallCount}");
+		Assert.True(ordersCallCount > 0, $"GetOrderHistory should be called. Got: {ordersCallCount}");
+	}
 }
 
 [Category("PhiSilicaChatClient")]

@@ -20,7 +20,8 @@ namespace Maui.Controls.Sample.Services;
 /// </summary>
 public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 {
-	private const string PendingToolKey = "__pending_next_step";
+	private const string MoreStepsKey = "__more_steps";
+	private const string CalledToolsKey = "__called_tools";
 
 	public PhiSilicaToolsAndSchemaClient(IChatClient inner) : base(inner) { }
 
@@ -155,9 +156,42 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 	private (IEnumerable<ChatMessage>, ChatOptions) RewriteForTools(
 		IEnumerable<ChatMessage> messages, ChatOptions options, List<AIFunction> tools)
 	{
-		// Build tool descriptions with enum hints
+		// Detect follow-up state: which tools were already called, and does the model want more?
+		bool isFollowUp = false;
+		var calledToolNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+		foreach (var msg in messages)
+			foreach (var c in msg.Contents)
+			{
+				if (c is FunctionCallContent fcc)
+				{
+					if (!string.IsNullOrEmpty(fcc.Name))
+						calledToolNames.Add(fcc.Name);
+					// Check if prior call signaled more_steps
+					if (fcc.AdditionalProperties?.TryGetValue(MoreStepsKey, out var ms) == true && ms is true)
+						isFollowUp = true;
+					// Also collect called tools list from prior rounds
+					if (fcc.AdditionalProperties?.TryGetValue(CalledToolsKey, out var ct) == true && ct is string ctStr)
+						foreach (var tn in ctStr.Split(',', StringSplitOptions.RemoveEmptyEntries))
+							calledToolNames.Add(tn.Trim());
+				}
+				if (c is FunctionResultContent)
+				{
+					// A result after more_steps confirms we're in follow-up
+				}
+			}
+
+		// Narrow the tool list: remove already-called tools (for follow-up)
+		var availableTools = isFollowUp && calledToolNames.Count > 0
+			? tools.Where(t => !calledToolNames.Contains(t.Name)).ToList()
+			: tools;
+		// If all tools were called, fall back to full list (re-call is allowed)
+		if (availableTools.Count == 0)
+			availableTools = tools;
+
+		// Build tool descriptions
 		var toolDesc = new StringBuilder();
-		foreach (var tool in tools)
+		foreach (var tool in availableTools)
 		{
 			toolDesc.AppendLine($"- {tool.Name}: {tool.Description}");
 			toolDesc.AppendLine($"  Parameters: {tool.JsonSchema}");
@@ -172,50 +206,50 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 			catch { }
 		}
 
-		// Build the tool call decision schema directly as text (no ResponseFormat)
+		// Build schema and prompt based on whether this is first call or follow-up
 		var userSchema = options.ResponseFormat is ChatResponseFormatJson { Schema: { } s } ? s : (JsonElement?)null;
-		var schema = BuildToolCallSchema(tools, userSchema);
+		var schema = BuildToolCallSchema(availableTools, userSchema, isFollowUp);
 
-		var responseHint = userSchema != null
-			? "If you can answer directly, set type to \"response\" and fill in the response object matching the schema."
-			: "If you can answer directly without a tool, set type to \"text\" and put your answer in the text field.";
-
-		// Build the FULL prompt including both tool instructions AND schema instructions
-		var systemPrompt = new ChatMessage(ChatRole.System,
-			"You are a helpful assistant with access to tools.\n\n" +
-			$"Available tools:\n{toolDesc}\n" +
-			$"Your response MUST be a single valid JSON object matching this schema:\n{schema}\n\n" +
-			"Do NOT wrap the response in markdown code fences or backticks.\n" +
-			"If the user's question requires a tool, set type to \"tool_call\", set tool_name, and provide arguments.\n" +
-			$"{responseHint}\n" +
-			"Call only ONE tool at a time. After receiving the result, you may call another.\n" +
-			"For enum parameters, use EXACTLY one of the allowed values listed above.\n" +
-			"If a tool has no required parameters, use an empty arguments object {}.\n" +
-			"If you will need to call another tool AFTER this one, set next_step to describe the plan.\n" +
-			"When you see a tool result in the conversation, check if you still need to call another tool.");
-
-		// Build message list with pending plan detection
-		var allMessages = new List<ChatMessage> { systemPrompt };
-		string? pendingPlan = null;
-		bool sawResult = false;
-
-		foreach (var msg in messages)
+		ChatMessage systemPrompt;
+		if (isFollowUp)
 		{
-			allMessages.Add(msg);
-			foreach (var c in msg.Contents)
-			{
-				if (c is FunctionCallContent fcc && fcc.AdditionalProperties?.TryGetValue(PendingToolKey, out var pt) == true && pt is string ps)
-				{ pendingPlan = ps; sawResult = false; }
-				else if (c is FunctionResultContent && pendingPlan != null)
-					sawResult = true;
-			}
+			// Simplified follow-up prompt: stripped down, tool_call only (no text escape hatch)
+			systemPrompt = new ChatMessage(ChatRole.System,
+				$"Available tools:\n{toolDesc}\n" +
+				$"Respond with a JSON object matching this schema:\n{schema}\n\n" +
+				"Do NOT wrap in code fences. Call the next tool using data from the tool result above.\n" +
+				"For enum parameters, use EXACTLY one of the allowed values.\n" +
+				"If a tool has no required parameters, use an empty arguments object {}.");
+		}
+		else
+		{
+			var responseHint = userSchema != null
+				? "If you can answer directly, set type to \"response\" and fill in the response object matching the schema."
+				: "If you can answer directly without a tool, set type to \"text\" and put your answer in the text field.";
+
+			systemPrompt = new ChatMessage(ChatRole.System,
+				"You are a helpful assistant with access to tools.\n\n" +
+				$"Available tools:\n{toolDesc}\n" +
+				$"Your response MUST be a single valid JSON object matching this schema:\n{schema}\n\n" +
+				"Do NOT wrap the response in markdown code fences or backticks.\n" +
+				"If the user's question requires a tool, set type to \"tool_call\", set tool_name, and provide arguments.\n" +
+				$"{responseHint}\n" +
+				"Call only ONE tool at a time. After receiving the result, you may call another.\n" +
+				"For enum parameters, use EXACTLY one of the allowed values listed above.\n" +
+				"If a tool has no required parameters, use an empty arguments object {}.\n" +
+				"If you will need to call another tool AFTER this one, set more_steps to true.");
 		}
 
-		if (pendingPlan != null && sawResult)
+		// Build message list
+		var allMessages = new List<ChatMessage> { systemPrompt };
+		foreach (var msg in messages)
+			allMessages.Add(msg);
+
+		// On follow-up, add a simple assistant nudge
+		if (isFollowUp)
 		{
 			allMessages.Add(new ChatMessage(ChatRole.Assistant,
-				$"I still need to: {pendingPlan}. " +
-				"I have the tool result above. I will now call the next tool using that data."));
+				"I have the tool result above. I need to make another tool call."));
 		}
 
 		// Clone options: remove tools AND ResponseFormat (we handle both via prompt)
@@ -226,11 +260,20 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 		return (allMessages, newOptions);
 	}
 
-	private static JsonElement BuildToolCallSchema(List<AIFunction> tools, JsonElement? userSchema)
+	private static JsonElement BuildToolCallSchema(List<AIFunction> tools, JsonElement? userSchema, bool followUp)
 	{
 		var toolNames = tools.Select(t => $"\"{t.Name}\"").ToList();
-		var nextStep = tools.Count >= 2
-			? ",\"next_step\":{\"type\":\"string\",\"description\":\"Optional plan for the next tool call\"}"
+
+		if (followUp)
+		{
+			// Follow-up schema: tool_call only, no text escape, no more_steps
+			var json = "{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"tool_call\"]},\"tool_name\":{\"type\":\"string\",\"enum\":[" + string.Join(",", toolNames) + "]},\"arguments\":{\"type\":\"object\"}},\"required\":[\"type\",\"tool_name\"]}";
+			return JsonDocument.Parse(json).RootElement.Clone();
+		}
+
+		// First call schema: tool_call or text/response, with more_steps bool
+		var moreSteps = tools.Count >= 2
+			? ",\"more_steps\":{\"type\":\"boolean\",\"description\":\"Set true if you need to call another tool after this one\"}"
 			: "";
 
 		string responseField;
@@ -246,8 +289,8 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 			typeEnum = "[\"tool_call\",\"text\"]";
 		}
 
-		var json = $$"""{"type":"object","properties":{"type":{"type":"string","enum":{{typeEnum}}},"tool_name":{"type":"string","enum":[{{string.Join(",", toolNames)}}]},"arguments":{"type":"object"}{{responseField}}{{nextStep}}},"required":["type"]}""";
-		return JsonDocument.Parse(json).RootElement.Clone();
+		var jsonStr = $$"""{"type":"object","properties":{"type":{"type":"string","enum":{{typeEnum}}},"tool_name":{"type":"string","enum":[{{string.Join(",", toolNames)}}]},"arguments":{"type":"object"}{{responseField}}{{moreSteps}}},"required":["type"]}""";
+		return JsonDocument.Parse(jsonStr).RootElement.Clone();
 	}
 
 	// ═══════════════════════════════════════════════════════════
@@ -265,13 +308,17 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 			if (parsed is ToolCall tc2)
 			{
 				message.Contents.Clear();
-				var fcc = new FunctionCallContent(
-					Guid.NewGuid().ToString("N")[..16], tc2.Name,
 #pragma warning disable IL3050, IL2026
-					tc2.Args != null ? JsonSerializer.Deserialize<Dictionary<string, object?>>(tc2.Args.Value.GetRawText()) : null);
+				Dictionary<string, object?>? args = null;
+				if (tc2.Args is { } argsEl && argsEl.ValueKind == JsonValueKind.Object)
+					args = JsonSerializer.Deserialize<Dictionary<string, object?>>(argsEl.GetRawText());
+				var fcc = new FunctionCallContent(
+					Guid.NewGuid().ToString("N")[..16], tc2.Name, args);
 #pragma warning restore IL3050, IL2026
-				if (!string.IsNullOrWhiteSpace(tc2.NextStep))
-					(fcc.AdditionalProperties ??= new AdditionalPropertiesDictionary())[PendingToolKey] = tc2.NextStep;
+				if (tc2.MoreSteps)
+					(fcc.AdditionalProperties ??= new AdditionalPropertiesDictionary())[MoreStepsKey] = true;
+				// Track which tools have been called so follow-up can narrow the enum
+				(fcc.AdditionalProperties ??= new AdditionalPropertiesDictionary())[CalledToolsKey] = tc2.Name;
 				message.Contents.Add(fcc);
 			}
 			else if (parsed is TextResp tr)
@@ -289,21 +336,23 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 		{
 			using var doc = JsonDocument.Parse(t);
 			var r = doc.RootElement;
+			if (r.ValueKind != JsonValueKind.Object)
+				return null;
 			var type = r.TryGetProperty("type", out var tp) ? tp.GetString() : null;
 
 			if (type == "tool_call")
 			{
 				var name = r.TryGetProperty("tool_name", out var np) ? np.GetString() : null;
 				var args = r.TryGetProperty("arguments", out var ap) ? ap.Clone() : (JsonElement?)null;
-				var next = r.TryGetProperty("next_step", out var ns) && ns.ValueKind == JsonValueKind.String ? ns.GetString() : null;
-				if (!string.IsNullOrEmpty(name)) return new ToolCall(name!, args, next);
+				var moreSteps = r.TryGetProperty("more_steps", out var ms) && ms.ValueKind == JsonValueKind.True;
+				if (!string.IsNullOrEmpty(name)) return new ToolCall(name!, args, moreSteps);
 			}
 			else if (type == "text")
 				return new TextResp(r.TryGetProperty("text", out var tp2) ? tp2.GetString() ?? "" : "");
 			else if (type == "response" && r.TryGetProperty("response", out var rp))
 				return new TextResp(rp.GetRawText());
 		}
-		catch (JsonException) { }
+		catch (Exception) { }
 		return null;
 	}
 
@@ -328,6 +377,6 @@ public sealed class PhiSilicaToolsAndSchemaClient : DelegatingChatClient
 		return s.Trim();
 	}
 
-	private record ToolCall(string Name, JsonElement? Args, string? NextStep);
+	private record ToolCall(string Name, JsonElement? Args, bool MoreSteps);
 	private record TextResp(string Text);
 }
