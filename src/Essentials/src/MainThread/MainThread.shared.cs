@@ -11,20 +11,35 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		// Internal backing for custom platform backends and dispatcher fallback.
 		// On supported platforms (Android, iOS, Windows), the Platform* methods are used directly.
-		// On netstandard/external TFMs, these delegates provide the implementation.
-		static Func<bool> s_isMainThreadImpl;
-		static Action<Action> s_beginInvokeOnMainThreadImpl;
+		// On netstandard/external TFMs, this provides the implementation as a single atomic state object.
+		static volatile MainThreadImplementation s_mainThreadImplementation;
+
+		sealed class MainThreadImplementation
+		{
+			readonly Func<bool> _isMainThread;
+			readonly Action<Action> _beginInvokeOnMainThread;
+
+			public MainThreadImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
+			{
+				_isMainThread = isMainThread;
+				_beginInvokeOnMainThread = beginInvokeOnMainThread;
+			}
+
+			public bool IsMainThread() => _isMainThread();
+
+			public void BeginInvokeOnMainThread(Action action) => _beginInvokeOnMainThread(action);
+		}
 
 		internal static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
 		{
-			s_isMainThreadImpl = isMainThread ?? throw new ArgumentNullException(nameof(isMainThread));
-			s_beginInvokeOnMainThreadImpl = beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread));
+			s_mainThreadImplementation = new MainThreadImplementation(
+				isMainThread ?? throw new ArgumentNullException(nameof(isMainThread)),
+				beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread)));
 		}
 
 		internal static void ClearCustomImplementation()
 		{
-			s_isMainThreadImpl = null;
-			s_beginInvokeOnMainThreadImpl = null;
+			s_mainThreadImplementation = null;
 		}
 
 		/// <summary>

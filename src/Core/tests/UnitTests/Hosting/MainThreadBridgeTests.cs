@@ -135,7 +135,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			try
 			{
 				var builder = MauiApp.CreateBuilder();
-				builder.ConfigureEssentials();
 				using var app = builder.Build();
 
 				// After MauiApp.Build(), the bridge should have connected MainThread
@@ -162,7 +161,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			try
 			{
 				var builder = MauiApp.CreateBuilder();
-				builder.ConfigureEssentials();
 				using var app = builder.Build();
 
 				var actionExecuted = false;

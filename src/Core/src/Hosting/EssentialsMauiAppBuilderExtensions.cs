@@ -83,6 +83,8 @@ namespace Microsoft.Maui.Hosting
 #endif
 			});
 
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+
 			return builder;
 		}
 
@@ -92,6 +94,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
 			}
+
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 
 			return builder;

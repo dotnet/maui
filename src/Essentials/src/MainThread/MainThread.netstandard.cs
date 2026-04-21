@@ -5,17 +5,15 @@ namespace Microsoft.Maui.ApplicationModel
 	public static partial class MainThread
 	{
 		static bool PlatformIsMainThread =>
-			s_isMainThreadImpl != null ? s_isMainThreadImpl.Invoke() : throw ExceptionUtils.NotSupportedOrImplementedException;
+			s_mainThreadImplementation?.IsMainThread() ?? throw ExceptionUtils.NotSupportedOrImplementedException;
 
 		static void PlatformBeginInvokeOnMainThread(Action action)
 		{
-			if (s_beginInvokeOnMainThreadImpl != null)
-			{
-				s_beginInvokeOnMainThreadImpl(action);
-				return;
-			}
-
-			throw ExceptionUtils.NotSupportedOrImplementedException;
+			var implementation = s_mainThreadImplementation;
+			if (implementation is not null)
+				implementation.BeginInvokeOnMainThread(action);
+			else
+				throw ExceptionUtils.NotSupportedOrImplementedException;
 		}
 	}
 }
