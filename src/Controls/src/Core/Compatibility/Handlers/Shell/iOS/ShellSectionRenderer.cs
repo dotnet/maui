@@ -184,6 +184,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
+						// Reset the iOS 26+ guard so subsequent back presses are not blocked.
+						_sendPopPending = false;
 						return false;
 					}
 

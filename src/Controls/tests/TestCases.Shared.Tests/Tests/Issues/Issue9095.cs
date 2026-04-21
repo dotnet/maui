@@ -1,4 +1,3 @@
-#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,7 +30,7 @@ public class Issue9095 : _IssuesUITest
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			App.TapBackArrow(); // iOS 26+ doesn't show the previous page title in the back button
 		else
-			App.TapBackArrow(Device is TestDevice.iOS or TestDevice.Mac ? "Main Page" : "");
+			App.TapBackArrow(Device is TestDevice.iOS or TestDevice.Mac ? "HomePage" : "");
 
 		// Shell.OnBackButtonPressed should have been called, updating the label.
 		// The second page remains visible because Shell.OnBackButtonPressed returns true.
@@ -40,4 +39,3 @@ public class Issue9095 : _IssuesUITest
 			"Shell.OnBackButtonPressed should be invoked when pressing the Shell toolbar back button.");
 	}
 }
-#endif
