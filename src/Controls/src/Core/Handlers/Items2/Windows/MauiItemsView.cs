@@ -116,8 +116,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 	}
 
-	/// <summary>Sets the header content and its MAUI view counterpart.</summary>
-	internal void SetHeader(FrameworkElement header, View? mauiHeader)
+	/// <summary>Sets the header content.</summary>
+	internal void SetHeader(FrameworkElement header)
 	{
 		_header = header;
 
@@ -127,8 +127,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 	}
 
-	/// <summary>Sets the footer content and its MAUI view counterpart.</summary>
-	internal void SetFooter(FrameworkElement footer, View? mauiFooter)
+	/// <summary>Sets the footer content.</summary>
+	internal void SetFooter(FrameworkElement footer)
 	{
 		_footer = footer;
 

@@ -1285,7 +1285,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (PlatformView is MauiItemsView platformItemsView && _header is not null)
 		{
-			platformItemsView.SetHeader(_header, _mauiHeader);
+			platformItemsView.SetHeader(_header);
 			platformItemsView.HeaderVisibility = WVisibility.Visible;
 		}
 
@@ -1370,7 +1370,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (PlatformView is MauiItemsView platformItemsView && _footer is not null)
 		{
-			platformItemsView.SetFooter(_footer, _mauiFooter);
+			platformItemsView.SetFooter(_footer);
 			platformItemsView.FooterVisibility = WVisibility.Visible;
 		}
 
