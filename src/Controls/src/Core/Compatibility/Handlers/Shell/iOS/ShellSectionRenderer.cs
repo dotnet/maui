@@ -188,9 +188,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						return false;
 					}
 
-					// Allow the page to intercept back navigation via OnBackButtonPressed
-					if (tracker.Value.Page?.SendBackButtonPressed() == true)
+					// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
+					// are invoked consistently for both the navigation bar back button and the
+					// hardware/system back button.
+					if (_context.Shell?.SendBackButtonPressed() == true)
 					{
+						_sendPopPending = false;
 						return false;
 					}
 
