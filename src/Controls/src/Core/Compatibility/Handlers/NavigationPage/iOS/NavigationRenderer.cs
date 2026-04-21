@@ -1127,7 +1127,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// subclass overrides are invoked consistently across all platforms.
 			// NavigationPage.OnBackButtonPressed delegates to CurrentPage.SendBackButtonPressed
 			// internally, so the content page override still fires.
-			if (NavPage?.SendBackButtonPressed() == true)
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
 			{
 				_uiRequestedPop = false;
 				return false;

@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 8296,
 		"ContentPage.OnBackButtonPressed is not invoked on iOS and MacCatalyst with NavigationPage",
-		PlatformAffected.iOS)]
+		PlatformAffected.iOS | PlatformAffected.macOS)]
 	public class Issue8296 : NavigationPage
 	{
 		public Issue8296() : base(new MainPage())
