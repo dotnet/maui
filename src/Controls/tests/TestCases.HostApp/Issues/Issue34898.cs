@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34898, "Shell.Items.Clear does not disconnect handlers correctly", PlatformAffected.iOS | PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 34898, "Shell.Items.Clear does not disconnect handlers correctly", PlatformAffected.iOS | PlatformAffected.Android | PlatformAffected.macOS)]
 public class Issue34898 : TestShell
 {
     static Label _trackedLabel;
