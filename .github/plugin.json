@@ -1,0 +1,6 @@
+{
+  "name": "dotnet-maui-repo",
+  "version": "0.1.0",
+  "description": "Skills and agents for the dotnet/maui repository.",
+  "skills": ["./skills/"]
+}
