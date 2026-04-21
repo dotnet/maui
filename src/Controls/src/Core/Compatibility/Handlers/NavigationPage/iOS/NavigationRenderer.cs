@@ -1123,8 +1123,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			var currentPage = NavPage?.CurrentPage;
-			if (currentPage?.SendBackButtonPressed() == true)
+			// Route through NavigationPage.OnBackButtonPressed so that NavigationPage
+			// subclass overrides are invoked consistently across all platforms.
+			// NavigationPage.OnBackButtonPressed delegates to CurrentPage.SendBackButtonPressed
+			// internally, so the content page override still fires.
+			if (NavPage?.SendBackButtonPressed() == true)
 			{
 				_uiRequestedPop = false;
 				return false;
