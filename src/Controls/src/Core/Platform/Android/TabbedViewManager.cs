@@ -225,6 +225,7 @@ internal class TabbedViewManager
 
             if (_managesViewPager)
             {
+                _viewPager.UnregisterOnPageChangeCallback(_listeners);
                 _viewPager.Adapter = null;
             }
         }
@@ -722,8 +723,9 @@ internal class TabbedViewManager
             return;
         }
 
-        // Hide bottom navigation if only one tab
-        if (tabs.Count == 1)
+        // Hide bottom navigation if only one tab — but only for Shell.
+        // TabbedPage has historically shown the tab bar even with a single tab.
+        if (tabs.Count == 1 && Element?.Owner is not TabbedPage)
         {
             _bottomNavigationView.Visibility = ViewStates.Gone;
             return;

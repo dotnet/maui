@@ -999,10 +999,16 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _stackNavigationManager.RequestNavigation(new NavigationRequest(initialStack, false));
 
-            // Clear any pending navigation requests — they are already reflected in
-            // the shellSection.Stack that we used to build the initial stack above.
-            // Processing them would re-apply pushes that are already in the stack,
-            // corrupting the navigation state (e.g., duplicate pages).
+            // Intentionally clearing (not replaying) pending navigation requests.
+            //
+            // When HasNavHost is false, navigation requests are queued into _pendingNavigationRequests.
+            // However, ConnectAndInitialize() builds the initial navigation stack directly from
+            // shellSection.Stack (see above), which already includes any pages pushed while queued.
+            //
+            // Replaying the queue would cause duplicate page pushes because those pages are already
+            // in the stack. Additionally, queued requests have e.Task == null (the TCS is only created
+            // after the HasNavHost check at line ~1043), so there is no hanging Task to worry about —
+            // the caller (ShellSection.OnPushAsync) safely handles null Task.
             _pendingNavigationRequests.Clear();
         }
 
