@@ -26,6 +26,10 @@ public class Issue9095 : _IssuesUITest
 		Assert.That(initialText, Is.EqualTo("OnBackButtonPressed Not Called"),
 			"Label should show 'Not Called' before pressing back.");
 
+		var initialContentPageText = App.FindElement("ContentPageBackButtonLabel").GetText();
+		Assert.That(initialContentPageText, Is.EqualTo("ContentPage OnBackButtonPressed Not Called"),
+			"ContentPage label should show 'Not Called' before pressing back.");
+
 		// Tap the Shell toolbar back button
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			App.TapBackArrow(); // iOS 26+ doesn't show the previous page title in the back button
@@ -37,5 +41,39 @@ public class Issue9095 : _IssuesUITest
 		var updatedText = App.WaitForElement("BackButtonPressedLabel").GetText();
 		Assert.That(updatedText, Is.EqualTo("OnBackButtonPressed Called"),
 			"Shell.OnBackButtonPressed should be invoked when pressing the Shell toolbar back button.");
+
+		// ContentPage.OnBackButtonPressed should also have been called.
+		var contentPageText = App.FindElement("ContentPageBackButtonLabel").GetText();
+		Assert.That(contentPageText, Is.EqualTo("ContentPage OnBackButtonPressed Called"),
+			"ContentPage.OnBackButtonPressed should be invoked when pressing the Shell toolbar back button.");
+	}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void ShellOnBackButtonPressedReturnFalseShouldNavigateBack()
+	{
+		// Navigate to the return-false page
+		App.WaitForElement("NavigateReturnFalseButton");
+		App.Tap("NavigateReturnFalseButton");
+
+		// Wait for the return-false page to appear
+		App.WaitForElement("ReturnFalsePageLabel");
+
+		// Tap the Shell toolbar back button
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			App.TapBackArrow();
+		else
+			App.TapBackArrow(Device is TestDevice.iOS or TestDevice.Mac ? "HomePage" : "");
+
+		// Shell.OnBackButtonPressed returned false, so navigation should proceed back to root.
+		// The labels on the root page confirm both Shell and ContentPage OnBackButtonPressed were called.
+		App.WaitForElement("ReturnFalseStatusLabel");
+		var shellStatusText = App.FindElement("ReturnFalseStatusLabel").GetText();
+		Assert.That(shellStatusText, Is.EqualTo("OnBackButtonPressed Called And Returned False"),
+			"Shell.OnBackButtonPressed should have been called even when returning false.");
+
+		var contentPageStatusText = App.FindElement("ContentPageReturnFalseStatusLabel").GetText();
+		Assert.That(contentPageStatusText, Is.EqualTo("ContentPage OnBackButtonPressed Called And Returned False"),
+			"ContentPage.OnBackButtonPressed should have been called even when returning false.");
 	}
 }
