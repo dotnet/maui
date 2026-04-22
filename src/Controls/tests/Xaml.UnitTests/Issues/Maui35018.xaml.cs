@@ -37,6 +37,8 @@ public partial class Maui35018 : ContentPage
 		}
 
 #if DEBUG
+		// XamlC is excluded: it generates IL at compile time and doesn't participate in
+		// runtime Hot Reload re-inflation, so it cannot exercise this scenario.
 		[Theory]
 		[InlineData(XamlInflator.Runtime)]
 		[InlineData(XamlInflator.SourceGen)]
@@ -63,9 +65,10 @@ public partial class Maui35018 : ContentPage
 			// StaticResource should be reported to the handler but the page should still load
 			// gracefully (with degraded styling), not throw and crash the app.
 
-			// Step 1: Initial load succeeds
+			// Step 1: Initial load succeeds with the style applied
 			var page = new Maui35018(inflator);
 			Assert.NotNull(page);
+			Assert.Equal(32.0, page.headlineLabel.FontSize);
 
 			// Step 2: Simulate Hot Reload resource rename ("Headline" → "Headline2")
 			Application.Current.Resources.Remove("Headline");
@@ -78,15 +81,19 @@ public partial class Maui35018 : ContentPage
 			bool handlerInvoked = false;
 			Controls.Internals.ResourceLoader.ExceptionHandler2 = (ex) =>
 			{
+				var (exception, _) = ex;
+				Assert.Contains("StaticResource not found for key Headline", exception.Message, System.StringComparison.Ordinal);
 				handlerInvoked = true;
 			};
 
 			// Step 4: Rebuild the page — should load without throwing.
-			// REGRESSION: Currently throws XamlParseException despite handler being set,
-			// which on iOS crashes the app via UIKit callback propagation.
+			// The missing Style means the label reverts to default font size.
 			var reloadedPage = new Maui35018(inflator);
 			Assert.NotNull(reloadedPage);
 			Assert.True(handlerInvoked, "ExceptionHandler2 should be invoked for the missing resource");
+
+			// Verify degraded styling: the 32pt style is gone, label has default font size
+			Assert.NotEqual(32.0, reloadedPage.headlineLabel.FontSize);
 		}
 #else
 		[Fact(Skip = "Hot Reload tests run only in DEBUG")]
