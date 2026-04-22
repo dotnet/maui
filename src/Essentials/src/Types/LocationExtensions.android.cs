@@ -19,12 +19,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal static IEnumerable<Location> ToLocations(this IEnumerable<AndroidAddress> addresses) =>
 			addresses?.Select(a => a.ToLocation());
 
-		internal static Location ToLocation(this AndroidLocation location) =>
-			new Location
+		internal static Location ToLocation(this AndroidLocation location)
+		{
+			var (altitude, altitudeReference) = GetAltitude(location);
+
+			return new Location
 			{
 				Latitude = location.Latitude,
 				Longitude = location.Longitude,
-				Altitude = location.HasAltitude ? location.Altitude : default(double?),
+				Altitude = altitude,
 				Timestamp = location.GetTimestamp().ToUniversalTime(),
 				Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
 				VerticalAccuracy =
@@ -40,8 +43,22 @@ namespace Microsoft.Maui.Devices.Sensors
 #pragma warning disable CS0618 // Type or member is obsolete
 						: location.IsFromMockProvider,
 #pragma warning restore CS0618 // Type or member is obsolete
-				AltitudeReferenceSystem = AltitudeReferenceSystem.Ellipsoid
+				AltitudeReferenceSystem = altitudeReference
 			};
+		}
+
+		// Prefer mean sea level altitude (Android API 34+) when available so altitude
+		// values are consistent across platforms without manual geoid correction.
+		static (double? Altitude, AltitudeReferenceSystem Reference) GetAltitude(AndroidLocation location)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(34) && location.HasMslAltitude)
+				return (location.MslAltitudeMeters, AltitudeReferenceSystem.Geoid);
+
+			if (location.HasAltitude)
+				return (location.Altitude, AltitudeReferenceSystem.Ellipsoid);
+
+			return (null, AltitudeReferenceSystem.Unspecified);
+		}
 
 		static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
