@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -203,6 +204,100 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			continueTask.Wait();
 			sub.Received().OnActionSheetRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
+		}
+
+		[Fact]
+		public async Task DelegateFuncInterceptsDisplayAlert()
+		{
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
+			{
+				args.SetResult(true);
+				return Task.CompletedTask;
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			// No explicit IAlertManagerSubscription -> delegate convention kicks in.
+			Assert.NotNull(window.AlertManager.Subscription);
+
+			var result = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			Assert.True(result);
+		}
+
+		[Fact]
+		public async Task DelegateFuncFallsThroughForUnregisteredOperation()
+		{
+			// Register ONLY the alert delegate. Prompt requests should fall through to the platform
+			// default (which, in the test environment, is the Standard no-op AlertRequestHelper).
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
+			{
+				args.SetResult(true);
+				return Task.CompletedTask;
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var alertResult = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+			Assert.True(alertResult);
+
+			// Prompt has no delegate registered; the test's Standard fallback is a no-op so the
+			// task should simply never complete. Verify that by racing it against a short delay.
+			var promptTask = page.DisplayPromptAsync("Title", "Message");
+			var winner = await Task.WhenAny(promptTask, Task.Delay(100));
+			Assert.NotSame(promptTask, winner);
+		}
+
+		[Fact]
+		public void ExplicitSubscriptionWinsOverDelegateFuncs()
+		{
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
+			{
+				args.SetResult(true);
+				return Task.CompletedTask;
+			};
+
+			var stub = Substitute.For<AlertManager.IAlertManagerSubscription>();
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription))).Returns(stub);
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			Assert.Same(stub, window.AlertManager.Subscription);
+
+			page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			stub.Received().OnAlertRequested(Arg.Is(page), Arg.Any<AlertArguments>());
+		}
+
+		[Fact]
+		public async Task DelegateFuncExceptionPropagatesToCaller()
+		{
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) => throw new InvalidOperationException("boom");
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Equal("boom", ex.Message);
 		}
 	}
 }

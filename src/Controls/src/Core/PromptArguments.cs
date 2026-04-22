@@ -5,6 +5,13 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <summary>Arguments for a prompt dialog.</summary>
+	/// <remarks>
+	/// Third-party platform backends may supply a custom prompt implementation by registering a
+	/// <see cref="System.Func{T1, T2, TResult}"/> of
+	/// <c>Func&lt;Microsoft.Maui.Controls.Page, PromptArguments, System.Threading.Tasks.Task&gt;</c>
+	/// in the application's <see cref="System.IServiceProvider"/>. The delegate is expected to call
+	/// <see cref="SetResult(string)"/> when the user has submitted or cancelled the prompt.
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class PromptArguments
 	{
