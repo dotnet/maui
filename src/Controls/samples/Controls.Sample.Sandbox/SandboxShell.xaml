@@ -3,63 +3,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
-    Title="Sandbox"
-    FlyoutBehavior="Flyout"
-    FlyoutBackgroundColor="{DynamicResource Gray100}">
-
-    <Shell.ItemTemplate>
-        <DataTemplate>
-            <Grid HeightRequest="50" Padding="10,0">
-                <Border x:Name="Border"
-                        BackgroundColor="Transparent"
-                        StrokeThickness="0"
-                        StrokeShape="RoundRectangle 8">
-                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center" Padding="10,0">
-                        <Label x:Name="FlyoutItemIconLabel"
-                               Text="&#x25CF;"
-                               FontSize="12"
-                               TextColor="{DynamicResource Primary}"
-                               VerticalOptions="Center" />
-                        <Label x:Name="FlyoutItemLabel"
-                               Text="{Binding Title}"
-                               FontSize="16"
-                               TextColor="{DynamicResource Primary}"
-                               VerticalOptions="Center" />
-                    </HorizontalStackLayout>
-                </Border>
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroupList>
-                        <VisualStateGroup x:Name="CommonStates">
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter TargetName="Border" Property="BackgroundColor" Value="Transparent" />
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{DynamicResource Primary}" />
-                                    <Setter TargetName="FlyoutItemIconLabel" Property="Label.TextColor" Value="{DynamicResource Primary}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                            <VisualState x:Name="Selected">
-                                <VisualState.Setters>
-                                    <Setter TargetName="Border" Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Primary}, Dark={DynamicResource Primary}}" />
-                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="White" />
-                                    <Setter TargetName="FlyoutItemIconLabel" Property="Label.TextColor" Value="White" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateGroupList>
-                </VisualStateManager.VisualStateGroups>
-            </Grid>
-        </DataTemplate>
-    </Shell.ItemTemplate>
-
-    <FlyoutItem Title="Home" Route="MainPage">
-        <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Second" Route="SecondPage">
-        <ShellContent ContentTemplate="{DataTemplate local:SecondPage}" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Third" Route="ThirdPage">
-        <ShellContent ContentTemplate="{DataTemplate local:ThirdPage}" />
-    </FlyoutItem>
+    x:Name="shell">
+    <TabBar Shell.TabBarForegroundColor="Green"
+        Shell.TabBarUnselectedColor="Red">
+        <Tab Title="MainPage1" Icon="groceries.png">
+            <ShellContent Icon="groceries.png"
+            Title="Home"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage" />
+        </Tab>
+        <Tab Title="MainPage2" Icon="dotnet_bot.png">
+            <ShellContent Icon="dotnet_bot.png"
+            Title="Home"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage2" />
+        </Tab>
+    </TabBar>
 </Shell>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:TestShell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                 xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
+                 xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+                 x:Class="Maui.Controls.Sample.Issues.Issue34931"
+                 Title="Issue34931"
+                 FlyoutBehavior="Flyout"
+                 FlyoutBackgroundColor="#F5F5F5">
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid HeightRequest="50" Padding="10,0">
+                <Border x:Name="Border"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8">
+                    <HorizontalStackLayout Padding="10,0"
+                                           Spacing="12"
+                                           VerticalOptions="Center">
+                        <Label x:Name="FlyoutItemIconLabel"
+                               Text="&#x25CF;"
+                               FontSize="12"
+                               TextColor="{DynamicResource Primary}"
+                               VerticalOptions="Center" />
+                        <Label x:Name="FlyoutItemLabel"
+                               Text="{Binding Title}"
+                               FontSize="16"
+                               TextColor="{DynamicResource Primary}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter TargetName="Border" Property="BackgroundColor" Value="Transparent" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="{DynamicResource Primary}" />
+                                    <Setter TargetName="FlyoutItemIconLabel" Property="Label.TextColor" Value="{DynamicResource Primary}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter TargetName="Border" Property="BackgroundColor" Value="{AppThemeBinding Light={DynamicResource Primary}, Dark={DynamicResource Primary}}" />
+                                    <Setter TargetName="FlyoutItemLabel" Property="Label.TextColor" Value="White" />
+                                    <Setter TargetName="FlyoutItemIconLabel" Property="Label.TextColor" Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <FlyoutItem Title="Home" Route="Issue34931Home">
+        <ShellContent Title="Home"
+                      ContentTemplate="{DataTemplate issues:Issue34931MainPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Second" Route="Issue34931Second">
+        <ShellContent Title="Second"
+                      ContentTemplate="{DataTemplate issues:Issue34931SecondPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Third" Route="Issue34931Third">
+        <ShellContent Title="Third"
+                      ContentTemplate="{DataTemplate issues:Issue34931ThirdPage}" />
+    </FlyoutItem>
+</local:TestShell>

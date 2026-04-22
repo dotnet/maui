@@ -1,41 +1,5 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample"
-             Title="Home">
-
-    <ScrollView>
-        <VerticalStackLayout
-            Padding="30,0"
-            Spacing="25"
-            VerticalOptions="Center">
-
-            <Label
-                Text="Flyout DynamicResource Issue"
-                FontSize="24"
-                FontAttributes="Bold"
-                HorizontalOptions="Center"
-                SemanticProperties.HeadingLevel="Level1" />
-
-            <Label
-                Text="1. Tap 'Change Theme Color' to update the Primary DynamicResource at runtime.&#10;2. Open the flyout menu and switch between pages repeatedly.&#10;3. After several switches, the flyout items will display incorrectly."
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                SemanticProperties.HeadingLevel="Level2" />
-
-            <Button
-                x:Name="ChangeColorBtn"
-                Text="Change Theme Color"
-                Clicked="OnChangeColorClicked"
-                HorizontalOptions="Fill" />
-
-            <Label
-                x:Name="CurrentColorLabel"
-                Text="Current Primary: #512BD4"
-                HorizontalOptions="Center"
-                FontSize="14"
-                TextColor="{DynamicResource Primary}" />
-
-        </VerticalStackLayout>
-    </ScrollView>
+             xmlns:local="clr-namespace:Maui.Controls.Sample">
 </ContentPage>
