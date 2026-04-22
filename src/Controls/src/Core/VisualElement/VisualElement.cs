@@ -2258,7 +2258,9 @@ namespace Microsoft.Maui.Controls
 				_shadowProxy?.Unsubscribe();
 
 				if (shadow.Parent == this)
+				{
 					shadow.Parent = null;
+				}
 			}
 		}
 
