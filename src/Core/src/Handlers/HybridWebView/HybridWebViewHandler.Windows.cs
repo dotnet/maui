@@ -314,12 +314,12 @@ namespace Microsoft.Maui.Handlers
 				// data folder to use compatible environments. When no customizations are needed,
 				// use EnsureCoreWebView2Async() so this control joins the default shared environment.
 				bool hasCustomSettings =
-					initializingArgs.BrowserExecutableFolder != null ||
-					initializingArgs.UserDataFolder != null ||
-					initializingArgs.EnvironmentOptions != null ||
-					initializingArgs.ScriptLocale != null ||
+					!string.IsNullOrEmpty(initializingArgs.BrowserExecutableFolder) ||
+					!string.IsNullOrEmpty(initializingArgs.UserDataFolder) ||
+					!string.IsNullOrEmpty(initializingArgs.EnvironmentOptions) ||
+					!string.IsNullOrEmpty(initializingArgs.ScriptLocale) ||
 					initializingArgs.IsInPrivateModeEnabled ||
-					initializingArgs.ProfileName != null;
+					!string.IsNullOrEmpty(initializingArgs.ProfileName);
 
 				if (hasCustomSettings)
 				{
