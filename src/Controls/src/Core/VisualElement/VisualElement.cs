@@ -2235,6 +2235,7 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
+				shadow.Parent = this;
 				SetInheritedBindingContext(shadow, BindingContext);
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
@@ -2255,6 +2256,9 @@ namespace Microsoft.Maui.Controls
 
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
+
+				if (shadow.Parent == this)
+					shadow.Parent = null;
 			}
 		}
 
