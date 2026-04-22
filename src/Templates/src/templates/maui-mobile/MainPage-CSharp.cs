@@ -1,4 +1,10 @@
-﻿namespace MauiApp._1;
+﻿//-:cnd:noEmit
+#if DEBUG
+[assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(MauiApp._1.MainPage.HotReloadHandler))]
+#endif
+//+:cnd:noEmit
+
+namespace MauiApp._1;
 
 // Pattern:
 //   * Keep the constructor small — it sets the page title and calls Build().
@@ -11,8 +17,9 @@
 //   * Event handler bodies (like OnCounterClicked) are patched live by
 //     standard .NET Hot Reload — no extra plumbing needed for those.
 //   * Edits inside Build() (layout, properties, adding views) require a
-//     rebuild. MAUI calls OnHotReload() below after applying a Hot Reload
-//     delta; it rebuilds every live page instance on the UI thread.
+//     rebuild. Both the .NET [MetadataUpdateHandler] and MAUI's
+//     [OnHotReload] hooks below call back into RebuildAllLiveInstances()
+//     so the UI refreshes on whichever runtime is active.
 public class MainPage : ContentPage
 {
 	Button _counterButton = null!;
@@ -110,18 +117,35 @@ public class MainPage : ContentPage
 
 //-:cnd:noEmit
 #if DEBUG
-	// MAUI Hot Reload calls every [OnHotReload] static method on a type after
-	// a delta is applied to it. We rebuild each live MainPage on the UI thread
-	// so changes inside Build() (labels, layout, new views) show immediately.
-	// The page instance and its fields (e.g. _count) are preserved.
+	// Two hooks into the same rebuild so this works on both runtimes:
 	//
-	// To use this pattern on another page, copy the s_liveInstances field, the
-	// registration block in the constructor, and this OnHotReload method —
-	// then rename MainPage to your page type.
+	//   * [OnHotReload] is invoked by MAUI's MauiHotReloadHelper when the
+	//     Visual Studio / VS Code MAUI agent applies a delta (mono on
+	//     iOS/MacCatalyst, Android).
+	//   * [MetadataUpdateHandler] (the assembly attribute at the top of the
+	//     file) is invoked by CoreCLR's built-in Hot Reload — e.g.
+	//     CoreCLR-on-Apple (.NET 10 preview / .NET 11), Windows, and
+	//     `dotnet watch` when StartupHookSupport is enabled.
+	//
+	// To use this pattern on another page, copy the assembly attribute at
+	// the top of this file, the s_liveInstances field, the registration
+	// block in the constructor, and the two hook methods below — then
+	// rename MainPage/HotReloadHandler to your page type.
 	[Microsoft.Maui.HotReload.OnHotReload]
-	static void OnHotReload()
+	static void OnHotReload() => RebuildAllLiveInstances("OnHotReload");
+
+	internal static class HotReloadHandler
 	{
-		System.Diagnostics.Debug.WriteLine("[HotReload] MainPage.OnHotReload");
+		public static void UpdateApplication(System.Type[]? types) =>
+			RebuildAllLiveInstances("UpdateApplication");
+
+		public static void ClearCache(System.Type[]? types) =>
+			RebuildAllLiveInstances("ClearCache");
+	}
+
+	static void RebuildAllLiveInstances(string source)
+	{
+		System.Diagnostics.Debug.WriteLine($"[HotReload] MainPage rebuild via {source}");
 		lock (s_liveInstances)
 		{
 			s_liveInstances.RemoveAll(static wr => !wr.TryGetTarget(out _));
