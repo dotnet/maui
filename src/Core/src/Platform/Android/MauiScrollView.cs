@@ -92,6 +92,25 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		protected override void OnVisibilityChanged(View changedView, ViewStates visibility)
+		{
+			base.OnVisibilityChanged(changedView, visibility);
+
+			if (!RuntimeFeature.IsMaterial3Enabled)
+			{
+				return;
+			}
+
+			if (visibility == ViewStates.Visible)
+			{
+				TrySetAppBarLiftTarget();
+			}
+			else
+			{
+				ClearAppBarLiftTarget();
+			}
+		}
+
 		void TrySetAppBarLiftTarget()
 		{
 			// If another MauiScrollView already sits between us and the AppBarLayout, let it own
@@ -131,6 +150,10 @@ namespace Microsoft.Maui.Platform
 			if (_liftOnScrollAppBar.LiftOnScrollTargetViewId == Id)
 			{
 				_liftOnScrollAppBar.LiftOnScrollTargetViewId = NoId;
+				// Force the AppBar to re-evaluate its lifted state now that the
+				// scrollable target is gone; otherwise it stays stuck in whatever
+				// state it was last in.
+				_liftOnScrollAppBar.SetLifted(false);
 			}
 
 			_liftOnScrollAppBar = null;
