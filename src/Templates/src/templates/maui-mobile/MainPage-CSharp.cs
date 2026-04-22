@@ -1,3 +1,9 @@
+//-:cnd:noEmit
+#if DEBUG
+[assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(MauiApp._1.HotReloadHandler))]
+#endif
+//+:cnd:noEmit
+
 namespace MauiApp._1;
 
 // Pattern for a C# MAUI page:
@@ -7,19 +13,19 @@ namespace MauiApp._1;
 //     in one method makes the page shape easy to scan and gives you a clean
 //     seam to extract helpers (BuildHeader(), BuildFooter(), ...) as the
 //     page grows.
-//   * State that should survive a rebuild (e.g. _count) lives on the
-//     instance; Build() reads it so the rebuilt tree reflects current state.
+//   * State that should survive the page being reconstructed (persistent
+//     data, services) belongs in a ViewModel or service — not on the page —
+//     because Hot Reload replaces the whole page instance (see below).
 //   * Controls the class talks to after construction (e.g. _counterButton)
 //     are assigned inside Build() so they always reference the live tree.
 //
-// Hot Reload today:
-//   * Method-body edits — e.g. changing OnCounterClicked — are patched live
-//     by standard .NET Hot Reload. No extra plumbing needed.
-//   * Edits inside Build() (layout, properties, adding views) are applied
-//     the next time the page is constructed: navigate away and back, or
-//     relaunch. Live re-invocation of Build() on iOS/MacCatalyst/Android
-//     needs CoreCLR-based Hot Reload, which is coming to Apple platforms
-//     in a future .NET release.
+// Hot Reload:
+//   * Method-body edits (e.g. changing OnCounterClicked) are patched live
+//     by standard .NET Hot Reload. No extra work needed.
+//   * When you edit the Build() method, the HotReloadHandler below replaces
+//     the current root Page with a fresh MainPage instance so your layout
+//     changes render immediately. Press the 🔥 "Apply Code Changes" button
+//     in VS / VS Code to trigger it.
 public class MainPage : ContentPage
 {
 	Button _counterButton = null!;
@@ -100,3 +106,58 @@ public class MainPage : ContentPage
 		_ => $"Clicked {count} times"
 	};
 }
+
+//-:cnd:noEmit
+#if DEBUG
+// Hot Reload handler for C# UI edits.
+//
+// .NET Hot Reload patches the running IL when you press 🔥 "Apply Code
+// Changes", but it does not tell MAUI to redraw. This handler listens for
+// the update notification and replaces each window's Page with a fresh
+// instance of the same type, so edits inside Build() take effect
+// immediately.
+//
+// State held on the Page instance (like the counter value in MainPage) is
+// reset by this because the whole page is reconstructed. Move anything
+// that should outlive a Hot Reload into a ViewModel or service.
+//
+// To use this pattern on another page, add the page's type to the
+// 'if' check in UpdateApplication (or compare against a common base class).
+// Pattern adapted from CommunityToolkit.Maui.Markup's HotReloadHandler:
+// https://learn.microsoft.com/dotnet/communitytoolkit/maui/markup/dotnet-hot-reload
+internal static class HotReloadHandler
+{
+	public static void UpdateApplication(System.Type[]? types)
+	{
+		if (types is null || Application.Current?.Windows is null)
+		{
+			return;
+		}
+
+		Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
+		{
+			foreach (var window in Application.Current.Windows)
+			{
+				if (window.Page is null)
+				{
+					continue;
+				}
+
+				var currentPageType = window.Page.GetType();
+				foreach (var type in types)
+				{
+					if (type == currentPageType || currentPageType.IsSubclassOf(type))
+					{
+						if (System.Activator.CreateInstance(currentPageType) is Page fresh)
+						{
+							window.Page = fresh;
+						}
+						break;
+					}
+				}
+			}
+		});
+	}
+}
+#endif
+//+:cnd:noEmit
