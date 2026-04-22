@@ -73,7 +73,10 @@ namespace Microsoft.Maui.Platform
 				// container (which is always 0), causing the lifted state to flip on every layout pass
 				// triggered by sibling views (e.g. CheckBox/Switch state animations) and producing a
 				// visible scrolledContainerColor flicker.
-				TrySetAppBarLiftTarget();
+				// Use Post() to defer until layout is complete — when this ScrollView is inside
+				// a CarouselView, adjacent off-screen pages also attach and we need to verify
+				// the view is actually on-screen before claiming the lift target.
+				Post(TrySetAppBarLiftTargetIfOnScreen);
 			}
 		}
 
@@ -103,12 +106,33 @@ namespace Microsoft.Maui.Platform
 
 			if (visibility == ViewStates.Visible)
 			{
-				TrySetAppBarLiftTarget();
+				Post(TrySetAppBarLiftTargetIfOnScreen);
 			}
 			else
 			{
 				ClearAppBarLiftTarget();
 			}
+		}
+
+		void TrySetAppBarLiftTargetIfOnScreen()
+		{
+			// Guard: the view may have detached or been hidden between Post() and execution.
+			if (!IsAttachedToWindow || Visibility != ViewStates.Visible)
+			{
+				return;
+			}
+
+			// When inside a CarouselView, ViewPager2 pre-loads adjacent off-screen pages,
+			// so their ScrollViews also attach. Only the on-screen page's ScrollView should
+			// claim the lift target. GetGlobalVisibleRect returns false if the view is
+			// entirely outside the clipped viewport (e.g. a pre-loaded carousel page).
+			if (!GetGlobalVisibleRect(new Rect()))
+			{
+				System.Diagnostics.Debug.WriteLine($"MauiScrollView [{Id}]: SKIPPED — not on screen (CarouselView off-screen page?)");
+				return;
+			}
+
+			TrySetAppBarLiftTarget();
 		}
 
 		void TrySetAppBarLiftTarget()
@@ -189,22 +213,29 @@ namespace Microsoft.Maui.Platform
 			// NavigationPage uses Resource.Id.navigationlayout_appbar, but Shell creates
 			// its AppBarLayout programmatically without an ID, so we match any AppBarLayout.
 			var parent = Parent;
+			int depth = 0;
 			while (parent is View parentView)
 			{
+				System.Diagnostics.Debug.WriteLine($"  FindAppBar depth={depth}: {parentView.GetType().Name} (Id={parentView.Id})");
 				if (parentView is ViewGroup group)
 				{
 					for (int i = 0; i < group.ChildCount; i++)
 					{
-						if (group.GetChildAt(i) is AppBarLayout appBar)
+						var child = group.GetChildAt(i);
+						System.Diagnostics.Debug.WriteLine($"    sibling[{i}]: {child?.GetType().Name} (Id={child?.Id})");
+						if (child is AppBarLayout appBar)
 						{
+							System.Diagnostics.Debug.WriteLine($"    FOUND AppBarLayout at depth={depth}");
 							return appBar;
 						}
 					}
 				}
 
 				parent = parentView.Parent;
+				depth++;
 			}
 
+			System.Diagnostics.Debug.WriteLine($"  FindAppBar: NONE found after {depth} levels");
 			return null;
 		}
 

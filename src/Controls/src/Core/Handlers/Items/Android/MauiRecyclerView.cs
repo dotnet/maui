@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				TrySetAppBarLiftTarget();
+				Post(TrySetAppBarLiftTargetIfOnScreen);
 			}
 		}
 
@@ -94,12 +94,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (visibility == ViewStates.Visible)
 			{
-				TrySetAppBarLiftTarget();
+				Post(TrySetAppBarLiftTargetIfOnScreen);
 			}
 			else
 			{
 				ClearAppBarLiftTarget();
 			}
+		}
+
+		void TrySetAppBarLiftTargetIfOnScreen()
+		{
+			if (!IsAttachedToWindow || Visibility != ViewStates.Visible)
+			{
+				return;
+			}
+
+			if (!GetGlobalVisibleRect(new ARect()))
+			{
+				return;
+			}
+
+			TrySetAppBarLiftTarget();
 		}
 
 		void TrySetAppBarLiftTarget()
