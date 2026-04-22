@@ -1,6 +1,6 @@
+#nullable enable
+
 using System;
-using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		public void WithCustomImpl_BeginInvoke_CallsBackingImpl()
 		{
 			var invoked = false;
-			Action capturedAction = null;
+			Action? capturedAction = null;
 
 			MainThread.SetCustomImplementation(
 				isMainThread: () => false,
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			// The custom impl captured the action; execute it
 			Assert.NotNull(capturedAction);
-			capturedAction();
+			capturedAction!();
 			Assert.True(invoked);
 		}
 
@@ -111,14 +111,14 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		public void SetCustomImpl_NullIsMainThread_Throws()
 		{
 			Assert.Throws<ArgumentNullException>(
-				() => MainThread.SetCustomImplementation(null, _ => { }));
+				() => MainThread.SetCustomImplementation(null!, _ => { }));
 		}
 
 		[Fact]
 		public void SetCustomImpl_NullBeginInvoke_Throws()
 		{
 			Assert.Throws<ArgumentNullException>(
-				() => MainThread.SetCustomImplementation(() => true, null));
+				() => MainThread.SetCustomImplementation(() => true, null!));
 		}
 
 		[Fact]
@@ -175,6 +175,29 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Fact]
+		public void MauiAppBuild_UsesCachedApplicationDispatcherForBridge()
+		{
+			var dispatcherStub = new DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: action => action());
+
+			var dispatcherProvider = new SequencedDispatcherProvider(dispatcherStub, null);
+			DispatcherProvider.SetCurrent(dispatcherProvider);
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				using var app = builder.Build();
+
+				Assert.True(MainThread.IsMainThread);
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
 		class TestDispatcherProvider : IDispatcherProvider
 		{
 			readonly IDispatcher _dispatcher;
@@ -184,7 +207,27 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				_dispatcher = dispatcher;
 			}
 
-			public IDispatcher GetForCurrentThread() => _dispatcher;
+			public IDispatcher? GetForCurrentThread() => _dispatcher;
+		}
+
+		class SequencedDispatcherProvider : IDispatcherProvider
+		{
+			readonly IDispatcher?[] _dispatchers;
+			int _index;
+
+			public SequencedDispatcherProvider(params IDispatcher?[] dispatchers)
+			{
+				_dispatchers = dispatchers;
+			}
+
+			public IDispatcher? GetForCurrentThread()
+			{
+				var index = _index++;
+				if (index >= _dispatchers.Length)
+					index = _dispatchers.Length - 1;
+
+				return index >= 0 ? _dispatchers[index] : null;
+			}
 		}
 	}
 }

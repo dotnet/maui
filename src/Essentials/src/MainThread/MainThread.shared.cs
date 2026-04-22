@@ -12,7 +12,7 @@ namespace Microsoft.Maui.ApplicationModel
 		// Internal backing for custom platform backends and dispatcher fallback.
 		// On supported platforms (Android, iOS, Windows), the Platform* methods are used directly.
 		// On netstandard/external TFMs, this provides the implementation as a single atomic state object.
-		static volatile MainThreadImplementation s_mainThreadImplementation;
+		static MainThreadImplementation s_mainThreadImplementation;
 
 		sealed class MainThreadImplementation
 		{
@@ -32,14 +32,14 @@ namespace Microsoft.Maui.ApplicationModel
 
 		internal static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
 		{
-			s_mainThreadImplementation = new MainThreadImplementation(
+			Volatile.Write(ref s_mainThreadImplementation, new MainThreadImplementation(
 				isMainThread ?? throw new ArgumentNullException(nameof(isMainThread)),
-				beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread)));
+				beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread))));
 		}
 
 		internal static void ClearCustomImplementation()
 		{
-			s_mainThreadImplementation = null;
+			Volatile.Write(ref s_mainThreadImplementation, null);
 		}
 
 		/// <summary>

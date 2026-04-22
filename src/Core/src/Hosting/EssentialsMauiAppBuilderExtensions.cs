@@ -139,7 +139,9 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 				BridgeMainThreadFromDispatcher(services);
+#endif
 
 #if WINDOWS
 				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
@@ -163,13 +165,11 @@ namespace Microsoft.Maui.Hosting
 			/// MainThread.BeginInvokeOnMainThread and MainThread.IsMainThread work
 			/// on custom platform backends / external TFMs where no native
 			/// MainThread implementation exists.
-			/// On supported platforms the Platform* methods take precedence and
-			/// the backing delegates are never consulted.
 			/// </summary>
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 			static void BridgeMainThreadFromDispatcher(IServiceProvider services)
 			{
-				var dispatcherProvider = services.GetService<IDispatcherProvider>();
-				var dispatcher = dispatcherProvider?.GetForCurrentThread();
+				var dispatcher = services.GetOptionalApplicationDispatcher();
 				if (dispatcher is null)
 					return;
 
@@ -177,6 +177,7 @@ namespace Microsoft.Maui.Hosting
 					isMainThread: () => !dispatcher.IsDispatchRequired,
 					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
 			}
+#endif
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
 			{
