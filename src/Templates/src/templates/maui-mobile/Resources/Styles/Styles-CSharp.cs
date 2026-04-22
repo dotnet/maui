@@ -1,10 +1,16 @@
 namespace MauiApp._1.Resources.Styles;
 
+using System.Reflection;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Controls.Xaml;
 
 public class AppStyles : ResourceDictionary
 {
+	// AppThemeBinding is internal; reflect once to construct it from code.
+	private static readonly Type s_appThemeBindingType =
+		typeof(Application).Assembly.GetType("Microsoft.Maui.Controls.AppThemeBinding", throwOnError: true)!;
+	private static readonly PropertyInfo s_lightProperty = s_appThemeBindingType.GetProperty("Light")!;
+	private static readonly PropertyInfo s_darkProperty = s_appThemeBindingType.GetProperty("Dark")!;
+
 	public AppStyles() : this(new AppColors())
 	{
 	}
@@ -30,8 +36,13 @@ public class AppStyles : ResourceDictionary
 		var gray900 = (Color)colors["Gray900"];
 		var gray950 = (Color)colors["Gray950"];
 
-		static object Theme(object light, object dark) =>
-			new AppThemeBindingExtension { Light = light, Dark = dark }.ProvideValue(null!);
+		static BindingBase Theme(object light, object dark)
+		{
+			var binding = (BindingBase)Activator.CreateInstance(s_appThemeBindingType, nonPublic: true)!;
+			s_lightProperty.SetValue(binding, light);
+			s_darkProperty.SetValue(binding, dark);
+			return binding;
+		}
 
 		static Setter Set(BindableProperty property, object value) => new() { Property = property, Value = value };
 
