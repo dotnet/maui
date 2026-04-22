@@ -42,5 +42,34 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(updatedText, Is.EqualTo("OnBackButtonPressed Called"),
 				"OnBackButtonPressed should have been invoked when pressing the back button.");
 		}
+
+		[Test]
+		[Category(UITestCategories.Navigation)]
+		public void OnBackButtonPressedReturnFalseShouldNavigateBack()
+		{
+			// Navigate to the return-false page
+			App.WaitForElement("NavigateReturnFalseButton");
+			App.Tap("NavigateReturnFalseButton");
+
+			// Wait for the return-false page to appear
+			App.WaitForElement("ReturnFalsePageLabel");
+
+			// Press the native back button
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				App.TapBackArrow();
+			}
+			else
+			{
+				App.TapBackArrow(Device is TestDevice.iOS or TestDevice.Mac ? "HomePage" : "");
+			}
+
+			// OnBackButtonPressed returned false, so navigation should proceed back to MainPage.
+			// The label on MainPage confirms OnBackButtonPressed was still called.
+			App.WaitForElement("ReturnFalseStatusLabel");
+			var statusText = App.FindElement("ReturnFalseStatusLabel").GetText();
+			Assert.That(statusText, Is.EqualTo("OnBackButtonPressed Called And Returned False"),
+				"OnBackButtonPressed should have been called even when returning false.");
+		}
 	}
 }

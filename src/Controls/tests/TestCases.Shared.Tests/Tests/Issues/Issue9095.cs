@@ -32,6 +32,10 @@ public class Issue9095 : _IssuesUITest
 		Assert.That(initialContentPageText, Is.EqualTo("ContentPage OnBackButtonPressed Not Called"),
 		 "ContentPage label should show 'Not Called' before pressing back.");
 
+		var initialContentPageText = App.FindElement("ContentPageBackButtonLabel").GetText();
+		Assert.That(initialContentPageText, Is.EqualTo("ContentPage OnBackButtonPressed Not Called"),
+			"ContentPage label should show 'Not Called' before pressing back.");
+
 		// Tap the Shell toolbar back button
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
 			App.TapBackArrow(); // iOS 26+ doesn't show the previous page title in the back button
