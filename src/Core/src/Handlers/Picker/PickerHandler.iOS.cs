@@ -220,19 +220,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
-			if (handler.PlatformView is not MauiPicker platformView)
-			{
-				return;
-			}
-
-			if (platformView.IsLoaded())
-			{
-				platformView.UpdateCharacterSpacing(picker);
-			}
-			else
-			{
-				platformView.OnLoaded(() => platformView.UpdateCharacterSpacing(picker));
-			}
+			handler.PlatformView?.UpdateCharacterSpacing(picker);
 		}
 
 		public static void MapFont(IPickerHandler handler, IPicker picker)
