@@ -137,12 +137,16 @@
                         "AppShell.xaml",
                         "AppShell.xaml.cs",
                         "MainPage.xaml",
-                        "MainPage.xaml.cs"
+                        "MainPage.xaml.cs",
+                        "Resources/Styles/Colors.xaml",
+                        "Resources/Styles/Styles.xaml"
                     ],
                     "rename": {
                         "App-CSharp.cs": "App.cs",
                         "AppShell-CSharp.cs": "AppShell.cs",
-                        "MainPage-CSharp.cs": "MainPage.cs"
+                        "MainPage-CSharp.cs": "MainPage.cs",
+                        "Resources/Styles/Colors-CSharp.cs": "Resources/Styles/Colors.cs",
+                        "Resources/Styles/Styles-CSharp.cs": "Resources/Styles/Styles.cs"
                     }
                 },
                 {
@@ -150,7 +154,9 @@
                     "exclude": [
                         "App-CSharp.cs",
                         "AppShell-CSharp.cs",
-                        "MainPage-CSharp.cs"
+                        "MainPage-CSharp.cs",
+                        "Resources/Styles/Colors-CSharp.cs",
+                        "Resources/Styles/Styles-CSharp.cs"
                     ]
                 }
             ]
