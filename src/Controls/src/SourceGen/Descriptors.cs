@@ -317,6 +317,31 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
+			id: "MAUIX2017",
+			title: "Lambda body is a method group reference",
+			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation. Did you mean '{0}({1})'?",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		// x:Code diagnostics
+		public static DiagnosticDescriptor XCodeNotChildOfRoot = new DiagnosticDescriptor(
+			id: "MAUIX2015",
+			title: "x:Code must be an immediate child of the root element",
+			messageFormat: "x:Code must be an immediate child of the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor XCodeRequiresXClass = new DiagnosticDescriptor(
+			id: "MAUIX2016",
+			title: "x:Code requires x:Class on the root element",
+			messageFormat: "x:Code requires x:Class to be specified on the root element.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor MissingEventHandler = new DiagnosticDescriptor(
 			id: "MAUIX2014",
 			title: new LocalizableResourceString(nameof(MauiGResources.MissingEventHandlerTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),

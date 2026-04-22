@@ -231,6 +231,16 @@ static class SetPropertyHelpers
 		// Handle lambda expressions
 		if (vn.Value is Expression expression)
 		{
+			// Check for method group reference in lambda body (missing parentheses)
+			var methodGroupRef = CSharpExpressionHelpers.DetectLambdaMethodGroupReference(expression.Code);
+			if (methodGroupRef != null)
+			{
+				var (methodGroup, lambdaParams) = methodGroupRef.Value;
+				var location = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.LambdaMethodGroupReference, location, methodGroup, lambdaParams));
+				return;
+			}
+
 			if (treeOrder && icWriter != null && inflatorVar != null)
 			{
 				writer = icWriter;
@@ -703,6 +713,22 @@ static class SetPropertyHelpers
 			var neitherLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, neitherLocation, resolution.RootIdentifier, context.RootType?.Name ?? "this", dataTypeSymbol.Name));
 			return true; // Handled (with error)
+		}
+
+		// Validate identifiers inside interpolated string holes
+		if (expression.Code.StartsWith("$\"", StringComparison.Ordinal) || expression.Code.StartsWith("$@\"", StringComparison.Ordinal))
+		{
+			var interpolatedIds = CSharpExpressionHelpers.ExtractInterpolatedStringIdentifiers(expression.Code);
+			foreach (var id in interpolatedIds)
+			{
+				var idResolution = MemberResolver.Resolve(id, context.RootType, dataTypeSymbol, context.Compilation);
+				if (idResolution.Location == MemberLocation.Neither)
+				{
+					var idLocation = LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)valueNode, expression.Code);
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberNotFound, idLocation, id, context.RootType?.Name ?? "this", dataTypeSymbol.Name));
+					return true; // Handled (with error)
+				}
+			}
 		}
 
 		// If we have binding handlers, this needs a TypedBinding
