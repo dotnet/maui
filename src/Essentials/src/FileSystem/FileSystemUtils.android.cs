@@ -224,10 +224,9 @@ namespace Microsoft.Maui.Storage
 				return null;
 
 			// resolve or generate a valid destination path
-			var filename = GetColumnValue(uri, MediaStore.IMediaColumns.DisplayName) ?? Guid.NewGuid().ToString("N");
-
-			if (!Path.HasExtension(filename) && !string.IsNullOrEmpty(extension))
-				filename = Path.ChangeExtension(filename, extension);
+			var filename = EnsureFileName(
+				GetColumnValue(uri, MediaStore.IMediaColumns.DisplayName),
+				extension);
 
 			// create a temporary file
 			var hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);
