@@ -277,7 +277,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Theory]
@@ -358,7 +359,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC target is the subject under test — opt in via MauiXamlInflator=XamlC. NoWarn=MAUI1001 silences the deprecation warning (TWAE=true repo-wide would otherwise error). The SourceGen+XamlC combo would emit a duplicate InitializeComponent for these synthesised projects, so we use the bare form instead.
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 			AssertExists(xamlCStamp);
@@ -366,7 +368,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
 
 			//Build again
-			Build(projectFile);
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
@@ -384,7 +386,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC target is the subject under test — opt in via MauiXamlInflator=XamlC. NoWarn=MAUI1001 silences the deprecation warning (TWAE=true repo-wide would otherwise error). The SourceGen+XamlC combo would emit a duplicate InitializeComponent for these synthesised projects, so we use the bare form instead.
+			// Clean keys off <FileWrites> recorded during this build, so the Clean invocation below does not need it.
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
 			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
@@ -417,7 +421,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
@@ -437,7 +442,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				System.IO.File.Delete(xamlCStamp);
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
+			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True -p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 
 
 			//The assembly should not be compiled
@@ -445,7 +450,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
 			//Build again, a full build
-			Build(projectFile);
+			// XamlC target is the subject under test — opt in via MauiXamlInflator=XamlC. NoWarn=MAUI1001 silences the deprecation warning (TWAE=true repo-wide would otherwise error). The SourceGen+XamlC combo would emit a duplicate InitializeComponent for these synthesised projects, so we use the bare form instead.
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 			AssertExists(assembly, nonEmpty: true);
 			AssertExists(xamlCStamp);
 
@@ -459,7 +465,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC target is the subject under test — opt in via MauiXamlInflator=XamlC. NoWarn=MAUI1001 silences the deprecation warning (TWAE=true repo-wide would otherwise error). The SourceGen+XamlC combo would emit a duplicate InitializeComponent for these synthesised projects, so we use the bare form instead.
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 			AssertExists(xamlCStamp);
@@ -469,7 +476,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			//Build again, after adding a file, this triggers a full XamlG and XamlC -- *not* CssG
 			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
 			project.Save(projectFile);
-			Build(projectFile);
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:NoWarn=MAUI1001");
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
@@ -515,7 +522,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		// [Fact]
@@ -542,7 +550,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
 			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "MainPage.txt.g.cs"));
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Fact]
