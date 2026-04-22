@@ -128,7 +128,6 @@ namespace Microsoft.Maui.Platform
 			// entirely outside the clipped viewport (e.g. a pre-loaded carousel page).
 			if (!GetGlobalVisibleRect(new Rect()))
 			{
-				System.Diagnostics.Debug.WriteLine($"MauiScrollView [{Id}]: SKIPPED — not on screen (CarouselView off-screen page?)");
 				return;
 			}
 
@@ -142,7 +141,6 @@ namespace Microsoft.Maui.Platform
 			// offset should drive the AppBar's lifted state.
 			if (HasAncestorMauiScrollView())
 			{
-				System.Diagnostics.Debug.WriteLine($"MauiScrollView [{Id}]: SKIPPED — ancestor MauiScrollView exists");
 				return;
 			}
 
@@ -159,7 +157,6 @@ namespace Microsoft.Maui.Platform
 
 			_liftOnScrollAppBar = appBar;
 			appBar.LiftOnScrollTargetViewId = Id;
-			System.Diagnostics.Debug.WriteLine($"MauiScrollView [{Id}]: CLAIMED lift target on AppBar");
 		}
 
 		void ClearAppBarLiftTarget()
@@ -213,29 +210,22 @@ namespace Microsoft.Maui.Platform
 			// NavigationPage uses Resource.Id.navigationlayout_appbar, but Shell creates
 			// its AppBarLayout programmatically without an ID, so we match any AppBarLayout.
 			var parent = Parent;
-			int depth = 0;
 			while (parent is View parentView)
 			{
-				System.Diagnostics.Debug.WriteLine($"  FindAppBar depth={depth}: {parentView.GetType().Name} (Id={parentView.Id})");
 				if (parentView is ViewGroup group)
 				{
 					for (int i = 0; i < group.ChildCount; i++)
 					{
-						var child = group.GetChildAt(i);
-						System.Diagnostics.Debug.WriteLine($"    sibling[{i}]: {child?.GetType().Name} (Id={child?.Id})");
-						if (child is AppBarLayout appBar)
+						if (group.GetChildAt(i) is AppBarLayout appBar)
 						{
-							System.Diagnostics.Debug.WriteLine($"    FOUND AppBarLayout at depth={depth}");
 							return appBar;
 						}
 					}
 				}
 
 				parent = parentView.Parent;
-				depth++;
 			}
 
-			System.Diagnostics.Debug.WriteLine($"  FindAppBar: NONE found after {depth} levels");
 			return null;
 		}
 
