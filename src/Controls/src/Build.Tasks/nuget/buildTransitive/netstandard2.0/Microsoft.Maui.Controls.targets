@@ -286,76 +286,90 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
+  <!--
+    Feature switch property defaults and RuntimeHostConfigurationOption items.
+    These are defined statically (outside of a target) so they are visible at
+    evaluation time, before _PrepareTrimConfiguration snapshots RHCO items into
+    _TrimmerFeatureSettings. Previously these lived inside _MauiPrepareForILLink
+    (BeforeTargets="PrepareForILLink"), but that fires after _PrepareTrimConfiguration
+    runs, so ILC never received - -feature flags for MAUI switches on Android NativeAOT.
+    See https://github.com/dotnet/runtime/issues/127017
+  -->
+  <PropertyGroup>
+    <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
+    <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
+    <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
+    <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
+    <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
+    <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
+    <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
+    <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
+                                    Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
+                                    Value="$(MauiEnableIVisualAssemblyScanning)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
+                                    Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
+                                    Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
+                                    Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
+                                    Value="$(MauiQueryPropertyAttributeSupport)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
+                                    Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
+                                    Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
+                                    Condition="'$(_MauiBindingInterceptorsSupport)' != ''"
+                                    Value="$(_MauiBindingInterceptorsSupport)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
+                                    Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' != ''"
+                                    Value="$(MauiEnableXamlCBindingWithSourceCompilation)"
+                                    Trim="false" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
+                                    Condition="'$(MauiHybridWebViewSupported)' != ''"
+                                    Value="$(MauiHybridWebViewSupported)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
+                                    Condition="'$(MauiNamescopesSupported)' != ''"
+                                    Value="$(MauiNamescopesSupported)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
+                                    Condition="'$(EnableDiagnostics)' != ''"
+                                    Value="$(EnableDiagnostics)"
+                                    Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled"
+                                    Condition="'$(UseMaterial3)' != ''"
+                                    Value="$(UseMaterial3)"
+                                    Trim="true" />
+  </ItemGroup>
+
   <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
-    <PropertyGroup>
-      <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
+    <!-- _EnableMauiAspire depends on $(Optimize) which may not be resolved at static
+         evaluation time, so it must remain inside a target. -->
+    <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
+      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
     </PropertyGroup>
-    
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
+                                      Condition="'$(_EnableMauiAspire)' != ''"
+                                      Value="$(_EnableMauiAspire)"
+                                      Trim="true" />
+    </ItemGroup>
     <!-- Validate _EnableMauiAspire usage - warn when user manually sets it in optimized builds where it conflicts with intended behavior -->
     <Warning
       Code="MA002"
       Text="The _EnableMauiAspire property should not be set manually. Using Aspire outside the Debug configuration may introduce performance and security risks in production. This property is automatically configured based on build configuration."
       Condition="'$(_EnableMauiAspire)' != '' and '$(Optimize)' == 'true' and '$(MauiDisableAspireValidation)' != 'True'"/>
-    
-    <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
-      <MauiShellSearchResultsRendererDisplayMemberNameSupported Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' == ''">false</MauiShellSearchResultsRendererDisplayMemberNameSupported>
-      <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
-      <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
-      <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
-      <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
-      <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
-      <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
-      
-      <!-- Set _EnableMauiAspire based on whether optimizations are enabled when not already set -->
-      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == '' and '$(Optimize)' != 'true'">true</_EnableMauiAspire>
-      <_EnableMauiAspire Condition="'$(_EnableMauiAspire)' == ''">false</_EnableMauiAspire>
-    </PropertyGroup>
-    <ItemGroup>
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
-                                      Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
-                                      Value="$(MauiEnableIVisualAssemblyScanning)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported"
-                                      Condition="'$(MauiShellSearchResultsRendererDisplayMemberNameSupported)' != ''"
-                                      Value="$(MauiShellSearchResultsRendererDisplayMemberNameSupported)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported"
-                                      Condition="'$(MauiQueryPropertyAttributeSupport)' != ''"
-                                      Value="$(MauiQueryPropertyAttributeSupport)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
-                                      Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
-                                      Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
-                                      Condition="'$(_MauiBindingInterceptorsSupport)' != ''"
-                                      Value="$(_MauiBindingInterceptorsSupport)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
-                                      Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' != ''"
-                                      Value="$(MauiEnableXamlCBindingWithSourceCompilation)"
-                                      Trim="false" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
-                                      Condition="'$(MauiHybridWebViewSupported)' != ''"
-                                      Value="$(MauiHybridWebViewSupported)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
-                                      Condition="'$(MauiNamescopesSupported)' != ''"
-                                      Value="$(MauiNamescopesSupported)"
-                                      Trim="true" />      
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
-                                      Condition="'$(EnableDiagnostics)' != ''"
-                                      Value="$(EnableDiagnostics)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableMauiAspire"
-                                      Condition="'$(_EnableMauiAspire)' != ''"
-                                      Value="$(_EnableMauiAspire)"
-                                      Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled"
-                                      Condition="'$(UseMaterial3)' != ''"
-                                      Value="$(UseMaterial3)"
-                                      Trim="true" />
-    </ItemGroup>
   </Target>
 
   <!--
