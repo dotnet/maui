@@ -136,7 +136,7 @@ namespace Microsoft.Maui.UnitTests.Extensions
 		}
 
 		[Fact]
-		public async Task ViewCaptureAsync_HookReturnsNullTask_ReturnsNull()
+		public async Task ViewCaptureAsync_HookReturnsNullResult_ReturnsNull()
 		{
 			var services = new ServiceCollection();
 			services.AddKeyedSingleton<Func<object, Task<IScreenshotResult?>>>(

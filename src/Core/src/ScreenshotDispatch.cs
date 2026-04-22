@@ -14,10 +14,13 @@ namespace Microsoft.Maui
 	/// <remarks>
 	/// Third-party platform backends (e.g. macOS AppKit, Linux/GTK) register a
 	/// <see cref="Func{T, TResult}"/> of <see cref="object"/> to
-	/// <see cref="Task{TResult}"/> of <see cref="IScreenshotResult"/> under one of
+	/// <see cref="Task{TResult}"/> of nullable <see cref="IScreenshotResult"/>
+	/// (i.e. <c>Func&lt;object, Task&lt;IScreenshotResult?&gt;&gt;</c>) under one of
 	/// the well-known keys defined on this type. The lambda receives the handler's
-	/// <see cref="IElementHandler.PlatformView"/> object and returns a screenshot
-	/// result (or <see langword="null"/> if capture is not supported for that view).
+	/// <see cref="IElementHandler.PlatformView"/> object and returns a task whose
+	/// result is the screenshot (or <see langword="null"/> if capture is not
+	/// supported for that view). The returned <see cref="Task{TResult}"/> itself
+	/// is expected to be non-null.
 	/// This contract intentionally uses only BCL types so it can ship without any
 	/// MAUI public API addition.
 	/// </remarks>
@@ -49,7 +52,7 @@ namespace Microsoft.Maui
 			if (capture is null)
 				return Task.FromResult<IScreenshotResult?>(null);
 
-			return capture(platformView) ?? Task.FromResult<IScreenshotResult?>(null);
+			return capture(platformView);
 		}
 	}
 }
