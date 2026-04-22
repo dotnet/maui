@@ -140,6 +140,9 @@ namespace Microsoft.Maui.Controls.Handlers
         /// to map tab selection back to ShellItem.CurrentItem.
         /// </summary>
         internal ShellSection Section => _section;
+
+        public override bool Equals(object? obj) => obj is ShellSectionTab other && _section == other._section;
+        public override int GetHashCode() => _section.GetHashCode();
     }
 
     /// <summary>
@@ -166,5 +169,8 @@ namespace Microsoft.Maui.Controls.Handlers
         /// to map tab selection back to ShellSection.CurrentItem.
         /// </summary>
         internal ShellContent Content => _content;
+
+        public override bool Equals(object? obj) => obj is ShellContentTab other && _content == other._content;
+        public override int GetHashCode() => _content.GetHashCode();
     }
 }
