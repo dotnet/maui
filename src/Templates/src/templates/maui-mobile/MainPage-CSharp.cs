@@ -1,25 +1,28 @@
-﻿//-:cnd:noEmit
-#if DEBUG
-[assembly: System.Reflection.Metadata.MetadataUpdateHandler(typeof(MauiApp._1.MainPageHotReloadHandler))]
-#endif
-//+:cnd:noEmit
-
-namespace MauiApp._1;
+﻿namespace MauiApp._1;
 
 // Pattern:
 //   * Keep the constructor small — it sets the page title and calls Build().
 //   * Build() composes the visual tree and assigns Content. It can be called
-//     again to rebuild the page (used by the Hot Reload handler below).
+//     again to rebuild the page (used by the Hot Reload hook below).
 //   * State that should survive a rebuild (e.g. _count) lives on the instance;
 //     Build() reads it so the new tree reflects current state.
 //   * Controls the class talks to after construction (e.g. _counterButton)
 //     are assigned inside Build() so they always reference the live tree.
 //   * Event handler bodies (like OnCounterClicked) are patched live by
 //     standard .NET Hot Reload — no extra plumbing needed for those.
+//   * Edits inside Build() (layout, properties, adding views) require a
+//     rebuild. MAUI calls OnHotReload() below after applying a Hot Reload
+//     delta; it rebuilds every live page instance on the UI thread.
 public class MainPage : ContentPage
 {
 	Button _counterButton = null!;
 	int _count;
+
+//-:cnd:noEmit
+#if DEBUG
+	static readonly List<WeakReference<MainPage>> s_liveInstances = new();
+#endif
+//+:cnd:noEmit
 
 	public MainPage()
 	{
@@ -27,7 +30,11 @@ public class MainPage : ContentPage
 		Build();
 //-:cnd:noEmit
 #if DEBUG
-		MainPageHotReloadHandler.Register(this);
+		lock (s_liveInstances)
+		{
+			s_liveInstances.RemoveAll(static wr => !wr.TryGetTarget(out _));
+			s_liveInstances.Add(new WeakReference<MainPage>(this));
+		}
 #endif
 //+:cnd:noEmit
 	}
@@ -103,53 +110,30 @@ public class MainPage : ContentPage
 
 //-:cnd:noEmit
 #if DEBUG
-	internal void HotReloadRebuild() =>
-		Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(Build);
-#endif
-//+:cnd:noEmit
-}
-
-//-:cnd:noEmit
-#if DEBUG
-// Hot Reload wiring (DEBUG only — compiled out of Release builds).
-//
-// .NET Hot Reload calls UpdateApplication/ClearCache whenever types in the
-// app are updated. For C#-only UI we rebuild the page by calling Build()
-// again, which re-creates the visual tree in place. The page instance,
-// BindingContext, and fields are preserved — so per-page state (e.g. the
-// click counter) survives the rebuild.
-//
-// To use this pattern on another page, copy the [assembly: ...] attribute
-// at the top of this file, the handler class below, and the Register call
-// in the constructor, adjusting the type names.
-static class MainPageHotReloadHandler
-{
-	static readonly List<WeakReference<MainPage>> s_pages = new();
-
-	public static void Register(MainPage page)
+	// MAUI Hot Reload calls every [OnHotReload] static method on a type after
+	// a delta is applied to it. We rebuild each live MainPage on the UI thread
+	// so changes inside Build() (labels, layout, new views) show immediately.
+	// The page instance and its fields (e.g. _count) are preserved.
+	//
+	// To use this pattern on another page, copy the s_liveInstances field, the
+	// registration block in the constructor, and this OnHotReload method —
+	// then rename MainPage to your page type.
+	[Microsoft.Maui.HotReload.OnHotReload]
+	static void OnHotReload()
 	{
-		lock (s_pages)
+		System.Diagnostics.Debug.WriteLine("[HotReload] MainPage.OnHotReload");
+		lock (s_liveInstances)
 		{
-			s_pages.RemoveAll(static wr => !wr.TryGetTarget(out _));
-			s_pages.Add(new WeakReference<MainPage>(page));
-		}
-	}
-
-	public static void UpdateApplication(Type[]? types)
-	{
-		if (types is not null && Array.IndexOf(types, typeof(MainPage)) < 0)
-			return;
-
-		lock (s_pages)
-		{
-			s_pages.RemoveAll(static wr => !wr.TryGetTarget(out _));
-			foreach (var wr in s_pages)
+			s_liveInstances.RemoveAll(static wr => !wr.TryGetTarget(out _));
+			foreach (var wr in s_liveInstances)
+			{
 				if (wr.TryGetTarget(out var page))
-					page.HotReloadRebuild();
+				{
+					Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(page.Build);
+				}
+			}
 		}
 	}
-
-	public static void ClearCache(Type[]? types) => UpdateApplication(types);
-}
 #endif
 //+:cnd:noEmit
+}
