@@ -47,8 +47,9 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler is not null && _pendingScrollToRequested is not null)
 			{
-				OnScrollToRequested(_pendingScrollToRequested);
+				var pending = _pendingScrollToRequested;
 				_pendingScrollToRequested = null;
+				OnScrollToRequested(pending);
 			}
 		}
 
@@ -424,9 +425,30 @@ namespace Microsoft.Maui.Controls
 			{
 				_pendingScrollToRequested = e;
 			}
+			else if (!IsLoaded)
+			{
+				// The handler is connected but the view has not entered the window yet
+				// (e.g. ScrollToAsync called during Page.OnAppearing before the first layout pass).
+				// Defer until the Loaded event fires.
+				_pendingScrollToRequested = e;
+				Loaded -= OnPendingScrollToLoaded;
+				Loaded += OnPendingScrollToLoaded;
+			}
 			else
 			{
 				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+			}
+		}
+
+		void OnPendingScrollToLoaded(object sender, EventArgs e)
+		{
+			Loaded -= OnPendingScrollToLoaded;
+
+			if (_pendingScrollToRequested is not null && Handler is not null)
+			{
+				var pending = _pendingScrollToRequested;
+				_pendingScrollToRequested = null;
+				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());
 			}
 		}
 
