@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
@@ -36,15 +37,40 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_subscription =
-				// try use services
+				// try use services - an explicitly-registered subscription wins over everything else
 				context.Services.GetService<IAlertManagerSubscription>() ??
-				// fall back to the platform implementation and a "null implementation" on non-platforms
+				// then check for the delegate-based extensibility convention (see DelegateAlertSubscription)
+				TryCreateDelegateSubscription(context) ??
+				// finally fall back to the platform implementation (or a no-op on non-platforms)
 				CreateSubscription(context);
 
 			if (_subscription is null)
 			{
 				context.CreateLogger<AlertManager>()?.LogWarning("Warning - Unable to create alert manager subscription.");
 			}
+		}
+
+		// Looks for per-operation dialog delegates registered in DI using ONLY already-public types:
+		//   Func<Page, AlertArguments, Task>
+		//   Func<Page, ActionSheetArguments, Task>
+		//   Func<Page, PromptArguments, Task>
+		// This lets third-party backends supply alert/dialog implementations without MAUI having to
+		// expose IAlertManagerSubscription publicly. Any delegate that isn't registered falls through
+		// to the platform default (so backends can override only what they care about).
+		IAlertManagerSubscription? TryCreateDelegateSubscription(IMauiContext context)
+		{
+			var services = context.Services;
+
+			var alertHandler = services.GetService<Func<Page, AlertArguments, Task>>();
+			var actionSheetHandler = services.GetService<Func<Page, ActionSheetArguments, Task>>();
+			var promptHandler = services.GetService<Func<Page, PromptArguments, Task>>();
+
+			if (alertHandler is null && actionSheetHandler is null && promptHandler is null)
+			{
+				return null;
+			}
+
+			return new DelegateAlertSubscription(alertHandler, actionSheetHandler, promptHandler, CreateSubscription(context));
 		}
 
 		public void Unsubscribe() =>
