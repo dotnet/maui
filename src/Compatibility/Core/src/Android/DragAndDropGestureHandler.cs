@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void SetupHandlerForDrop()
 		{
-			if (HasAnyDropGestures())
+			if (HasAnyDropGestures() || HasAnyDragGestures())
 				GetControl()?.SetOnDragListener(this);
 			else
 				GetControl()?.SetOnDragListener(null);
