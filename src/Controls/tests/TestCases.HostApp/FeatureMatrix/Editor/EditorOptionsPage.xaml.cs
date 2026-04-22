@@ -56,7 +56,7 @@ public partial class EditorOptionsPage : ContentPage
 			{
 				"PlaceholderColorRed" => Colors.Red,
 				"PlaceholderColorBlue" => Colors.Blue,
-				_ => _viewModel.PlaceholderColor
+				_ => null
 			};
 		}
 	}
@@ -101,6 +101,8 @@ public partial class EditorOptionsPage : ContentPage
 	{
 		if (double.TryParse(HeightRequestEntry.Text, out double heightRequest))
 		{
+			// Clamp negative values to -1 (unset), otherwise non-negative
+			heightRequest = heightRequest < 0 ? -1 : heightRequest;
 			_viewModel.HeightRequest = heightRequest;
 		}
 	}
@@ -109,6 +111,8 @@ public partial class EditorOptionsPage : ContentPage
 	{
 		if (double.TryParse(WidthRequestEntry.Text, out double widthRequest))
 		{
+			// Clamp negative values to -1 (unset), otherwise non-negative
+			widthRequest = widthRequest < 0 ? -1 : widthRequest;
 			_viewModel.WidthRequest = widthRequest;
 		}
 	}

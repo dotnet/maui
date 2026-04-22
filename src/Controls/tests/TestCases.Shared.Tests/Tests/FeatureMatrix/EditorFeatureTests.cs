@@ -823,8 +823,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("HeightRequestEntry", "100");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.EqualTo(100).Within(2));
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(49)]
@@ -837,8 +837,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("WidthRequestEntry", "100");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var width = GetElementWidthInDip("TestEditor");
-		Assert.That(width, Is.EqualTo(100).Within(2));
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(50)]
@@ -853,10 +853,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("WidthRequestEntry", "80");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var width = GetElementWidthInDip("TestEditor");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(width, Is.EqualTo(80).Within(2));
-		Assert.That(height, Is.EqualTo(100).Within(2));
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30571 and the placeholder is not visible because its text alignment is reset to default values when navigating to the page. This issue occurs only in the Host App on windows.
@@ -873,8 +871,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.LessThan(45));
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.ClearText("TestEditor");
 	}
 #endif
 
@@ -888,8 +886,9 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.LessThan(45));
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.ClearText("TestEditor");
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30571 and the placeholder is not visible because its text alignment is reset to default values when navigating to the page. This issue occurs only in the Host App on windows.
@@ -908,8 +907,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.GreaterThan(45));
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.ClearText("TestEditor");
 	}
 #endif
 
@@ -925,15 +924,14 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.GreaterThan(45));
+		VerifyScreenshot(cropBottom: CropBottomValue);
 		App.ClearText("TestEditor");
 	}
 
 	[Test, Order(55)]
-
 	public void VerifyEditorTextWhenAutoSizeTextChangesSetWithShortShrinkText()
 	{
+		Exception? exception = null;
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("AutoSizeTextChanges");
@@ -943,13 +941,15 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("TextEntryChanged", "When auto-resizing is enabled, the height of the Editor will increase when the user fills it with text, and the height will decrease as the user deletes text. This can be used to ensure that Editor objects in a DataTemplate.");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.GreaterThan(55));
 		App.WaitForElement("TestEditor");
+		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "VerifyEditorTextWhenAutoSizeTextChangesSetWithShortShrinkText_LongText");
 		App.ClearText("TestEditor");
 		App.EnterText("TestEditor", "Short text");
-		height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.LessThan(55));
+		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "VerifyEditorTextWhenAutoSizeTextChangesSetWithShortShrinkText_ShortText");
+		if (exception != null)
+		{
+			throw exception;
+		}
 	}
 
 	[Test, Order(56)]
@@ -964,10 +964,9 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("AutoSizeTextChanges");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		var height = GetElementHeightInDip("TestEditor");
-		Assert.That(height, Is.LessThan(50).Within(5));
+		App.WaitForElement("TestEditor");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
-
 
 	[Test, Order(57)]
 	public void VerifyEditorTextWhenFontAttributesBoldAndItalicSet()
@@ -1050,8 +1049,8 @@ public class EditorFeatureTests : _GalleryUITest
 		App.EnterText("OpacityEntry", "0");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		// Verify element is not visible (opacity = 0)
-		App.WaitForNoElement("TestEditor");
+		App.WaitForElement("EditorControlTitleLabel");
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 	[Test, Order(62)]
@@ -1140,21 +1139,18 @@ public class EditorFeatureTests : _GalleryUITest
 			VerifyScreenshot(screenshotName, cropBottom: CropBottomValue);
 	}
 
-	private double GetElementHeightInDip(string automationId)
-		=> GetElementSizeInDip(automationId).Height;
-
-	private double GetElementWidthInDip(string automationId)
-		=> GetElementSizeInDip(automationId).Width;
-
-	private (double Width, double Height) GetElementSizeInDip(string automationId)
+	/// <summary>
+	/// Helper method to handle keyboard visibility and set exception if screenshot verification fails
+	/// </summary>
+	/// <param name="exception">Reference to exception variable</param>
+	/// <param name="screenshotName">Name for the screenshot</param>
+	private void VerifyScreenshotWithKeyboardHandlingOrSetException(ref Exception? exception, string screenshotName)
 	{
-		var rect = App.WaitForElement(automationId).GetRect();
-#if ANDROID || WINDOWS
-		var density = App.GetDisplayDensity();
-		if (density > 0)
-			return (rect.Width / density, rect.Height / density);
+#if ANDROID
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
 #endif
-		return (rect.Width, rect.Height);
+		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
+
 	}
 }
-
