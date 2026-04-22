@@ -327,12 +327,6 @@ internal static class SafeAreaExtensions
 				// Return keyboard insets for any region that includes SoftInput
 				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
 					return keyBoardInsets.Bottom;
-
-				// Container/Default: preserve nav bar inset so content doesn't jump (All is handled above by IsSoftInput)
-				if (SafeAreaEdges.IsContainer(safeAreaRegion) || safeAreaRegion == SafeAreaRegions.Default)
-					return originalSafeArea;
-
-				return 0;
 			}
 		}
 
