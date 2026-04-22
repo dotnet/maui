@@ -205,6 +205,38 @@ namespace Microsoft.Maui.Handlers
 			return (VirtualView as ICrossPlatformLayout)?.CrossPlatformArrange(bounds) ?? Size.Zero;
 		}
 
+		// Executes a scroll-to request that was deferred because ContentSize was empty
+		// (e.g., ScrollToAsync called from OnAppearing before layout). Called from
+		// MauiScrollView.LayoutSubviews() after ContentSize is set for the first time.
+		internal void ExecutePendingScrollToRequest()
+		{
+			if (PendingScrollToRequest is not { } request)
+				return;
+
+			PendingScrollToRequest = null;
+
+			var uiScrollView = PlatformView;
+			if (uiScrollView is null || uiScrollView.ContentSize == CGSize.Empty)
+				return;
+
+			var availableScrollHeight = Math.Max(uiScrollView.ContentSize.Height - uiScrollView.Frame.Height, 0);
+			var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
+			var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
+			var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
+
+			bool alreadyAtTarget = uiScrollView.ContentOffset.Y == minScrollVertical && uiScrollView.ContentOffset.X == minScrollHorizontal;
+
+			if (!alreadyAtTarget)
+			{
+				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+			}
+
+			if (request.Instant || alreadyAtTarget)
+			{
+				VirtualView?.ScrollFinished();
+			}
+		}
+
 		class ScrollEventProxy
 		{
 			WeakReference<IScrollView>? _virtualView;
