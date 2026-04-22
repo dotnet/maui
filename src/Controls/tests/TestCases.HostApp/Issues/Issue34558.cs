@@ -1,4 +1,4 @@
-namespace TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 34558, "[Windows] WebView renders blank when HybridWebView and WebView coexist in same app", PlatformAffected.UWP)]
 public partial class Issue34558 : ContentPage
@@ -29,7 +29,15 @@ public partial class Issue34558 : ContentPage
 			Source = new HtmlWebViewSource { Html = "<html><body><h1>WebView should load here</h1><p>If you see this, the WebView is working.</p></body></html>" },
 		};
 
-		Content = new VerticalStackLayout
+		// This label is added to the layout only after the WebView successfully navigates,
+		// so the UI test can wait for it to appear as proof the WebView rendered content.
+		var webViewNavigatedLabel = new Label
+		{
+			AutomationId = "WebViewNavigatedLabel",
+			Text = "WebView successfully navigated and rendered content!",
+		};
+
+		var layout = new VerticalStackLayout
 		{
 			Spacing = 10,
 			Padding = new Thickness(16),
@@ -40,5 +48,15 @@ public partial class Issue34558 : ContentPage
 				webView,
 			}
 		};
+
+		webView.Navigated += (s, e) =>
+		{
+			if (e.Result == WebNavigationResult.Success)
+			{
+				layout.Children.Add(webViewNavigatedLabel);
+			}
+		};
+
+		Content = layout;
 	}
 }

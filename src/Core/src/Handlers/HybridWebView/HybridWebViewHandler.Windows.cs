@@ -317,9 +317,9 @@ namespace Microsoft.Maui.Handlers
 					initializingArgs.BrowserExecutableFolder != null ||
 					initializingArgs.UserDataFolder != null ||
 					initializingArgs.EnvironmentOptions != null ||
-					initializingArgs.ScriptLocale != null ||
+					!string.IsNullOrEmpty(initializingArgs.ScriptLocale) ||
 					initializingArgs.IsInPrivateModeEnabled ||
-					initializingArgs.ProfileName != null;
+					!string.IsNullOrEmpty(initializingArgs.ProfileName);
 
 				if (hasCustomSettings)
 				{

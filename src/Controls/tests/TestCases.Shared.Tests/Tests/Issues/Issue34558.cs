@@ -15,5 +15,13 @@ public class Issue34558 : _IssuesUITest
 	public void WebViewLoadsWhenCoexistingWithHybridWebView()
 	{
 		App.WaitForElement("HybridStatusLabel");
+		App.WaitForElement("RegularWebView");
+
+		var rect = App.WaitForElement("RegularWebView").GetRect();
+		Assert.That(rect.Height, Is.GreaterThan(0), "WebView should render with non-zero height");
+
+		// "WebViewNavigatedLabel" is only added to the layout after the WebView successfully
+		// navigates. Waiting for it confirms the WebView rendered content and was not blank.
+		App.WaitForElement("WebViewNavigatedLabel");
 	}
 }
