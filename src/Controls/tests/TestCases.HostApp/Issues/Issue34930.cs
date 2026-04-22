@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 22151, "SearchHandler keyboard does not show on programmatic focus", PlatformAffected.UWP)]
-public class Issue22151 : Shell
+[Issue(IssueTracker.Github, 34930, "SearchHandler.ShowSoftInputAsync() does not focus the SearchHandler", PlatformAffected.UWP)]
+public class Issue34930 : Shell
 {
-	public Issue22151()
+	public Issue34930()
 	{
 		var flyoutItem = new FlyoutItem
 		{
@@ -21,7 +21,7 @@ public class Issue22151 : Shell
 				{
 					Title = "Home",
 					Route = "homepage",
-					ContentTemplate = new DataTemplate(typeof(_22151TestPage))
+					ContentTemplate = new DataTemplate(typeof(_34930TestPage))
 				}
 			}
 		});
@@ -29,9 +29,9 @@ public class Issue22151 : Shell
 		Items.Add(flyoutItem);
 	}
 
-	public class _22151TestPage : ContentPage
+	public class _34930TestPage : ContentPage
 	{
-		public _22151TestPage()
+		public _34930TestPage()
 		{
 			Title = "Home";
 
@@ -62,7 +62,7 @@ public class Issue22151 : Shell
 
 			var showKeyboardButton = new Button
 			{
-				Text = "Show Keyboard",
+				Text = "Show Soft Input",
 				AutomationId = "ShowKeyboardButton"
 			};
 
@@ -75,7 +75,7 @@ public class Issue22151 : Shell
 
 			var hideKeyboardButton = new Button
 			{
-				Text = "Hide Keyboard",
+				Text = "Hide Soft Input",
 				AutomationId = "HideKeyboardButton"
 			};
 

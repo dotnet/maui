@@ -4,17 +4,17 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue22151 : _IssuesUITest
+	public class Issue34930 : _IssuesUITest
 	{
-		public override string Issue => "SearchHandler keyboard does not show on programmatic focus";
+		public override string Issue => "SearchHandler.ShowSoftInputAsync() does not focus the SearchHandler on Windows";
 
-		public Issue22151(TestDevice testDevice) : base(testDevice)
+		public Issue34930(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
-		public void SearchHandlerShowSoftInputShouldFocusAndFireEvent()
+		public void SearchHandlerShowSoftInputShouldFocusSearchHandlerOnWindows()
 		{
 			App.WaitForElement("ShowKeyboardButton");
 			App.Tap("ShowKeyboardButton");
