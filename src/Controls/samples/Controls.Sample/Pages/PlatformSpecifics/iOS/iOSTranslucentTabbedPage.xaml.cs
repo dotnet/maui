@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnToggleButtonClicked(object sender, EventArgs e)
+		void OnToggleButtonClicked(object? sender, EventArgs e)
 		{
 			switch (On<iOS>().GetTranslucencyMode())
 			{
@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnReturnButtonClicked(object sender, EventArgs e)
+		void OnReturnButtonClicked(object? sender, EventArgs e)
 		{
 			Navigation.PopAsync();
 		}

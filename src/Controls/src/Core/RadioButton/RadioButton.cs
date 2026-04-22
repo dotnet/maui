@@ -705,7 +705,7 @@ namespace Microsoft.Maui.Controls
 			// When ControlTemplate is set, View content IS supported (per documentation)
 			if (content is View && ResolveControlTemplate() == null)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Platform, ContentProperty.PropertyName);
+				MauiLogger<RadioButton>.Log(LogLevel.Warning, $"Warning - {DeviceInfo.Platform} does not support View as the {ContentProperty.PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.");
 			}
 
 			return content?.ToString();

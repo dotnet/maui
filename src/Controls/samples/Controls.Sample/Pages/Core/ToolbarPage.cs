@@ -22,7 +22,7 @@ public partial class ToolbarPage
 		BindingContext = this;
 	}
 
-	void ItemClicked(object sender, EventArgs e)
+	void ItemClicked(object? sender, EventArgs e)
 	{
 		if (sender is ToolbarItem tbi)
 		{
@@ -30,17 +30,17 @@ public partial class ToolbarPage
 		}
 	}
 
-	void Button_Clicked(object sender, EventArgs e)
+	void Button_Clicked(object? sender, EventArgs e)
 	{
 		secondary4.IsEnabled = !secondary4.IsEnabled;
 	}
 
-	void Button_Clicked1(object sender, EventArgs e)
+	void Button_Clicked1(object? sender, EventArgs e)
 	{
 		primary1.IsEnabled = !primary1.IsEnabled;
 	}
 
-	void Button_Clicked2(object sender, EventArgs e)
+	void Button_Clicked2(object? sender, EventArgs e)
 	{
 		// 5 second delay so you can have the menu open and see the change.
 		// However, the menu will close if change happens. There is no way around this.
@@ -53,12 +53,12 @@ public partial class ToolbarPage
 		});
 	}
 
-	void Button_Clicked3(object sender, EventArgs e)
+	void Button_Clicked3(object? sender, EventArgs e)
 	{
 		secondary1.Text = secondary1.Text == "Test Secondary (1)" ? "Changed Text" : "Test Secondary (1)";
 	}
 
-	void Button_Clicked4(object sender, EventArgs e)
+	void Button_Clicked4(object? sender, EventArgs e)
 	{
 		_cachedSecondary3 ??= secondary3;
 
@@ -72,7 +72,7 @@ public partial class ToolbarPage
 		}
 	}
 
-	void Button_Clicked5(object sender, EventArgs e)
+	void Button_Clicked5(object? sender, EventArgs e)
 	{
 		secondary3.Command = new Command(() =>
 		{

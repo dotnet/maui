@@ -3,16 +3,6 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
   <PropertyGroup>
-    <!-- 
-      Keep backward compatibility with XamlC, XamlCompilationAttribute, and xaml-comp processing instruction
-      When we're ready to turn this off, we can remove all code depending on this condition, and drop this property group
-      -->
-
-    <_MauiXamlSourceGenBackCompat>true</_MauiXamlSourceGenBackCompat>
-    <DefineConstants Condition=" '$(_MauiXamlSourceGenBackCompat)' == 'true' ">$(DefineConstants);_MAUIXAML_SOURCEGEN_BACKCOMPAT</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Detailed trimmer warnings, if present -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
@@ -59,12 +49,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">10</_MauiDotNetVersionMajor>
+    <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">11</_MauiDotNetVersionMajor>
     <_MauiDotNetVersionMinor Condition="'$(_MauiDotNetVersionMinor)' == ''">0</_MauiDotNetVersionMinor>
     <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">$(_MauiDotNetVersionMajor).$(_MauiDotNetVersionMinor)</_MauiDotNetVersion>
     <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
 
-    <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">9</_MauiPreviousDotNetVersionMajor>
+    <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">10</_MauiPreviousDotNetVersionMajor>
     <_MauiPreviousDotNetVersionMinor Condition="'$(_MauiPreviousDotNetVersionMinor)' == ''">0</_MauiPreviousDotNetVersionMinor>
     <_MauiPreviousDotNetVersion Condition="'$(_MauiPreviousDotNetVersion)' == ''">$(_MauiPreviousDotNetVersionMajor).$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersion>
     <_MauiPreviousDotNetVersionNoDot Condition="'$(_MauiPreviousDotNetVersionNoDot)' == ''">$(_MauiPreviousDotNetVersionMajor)$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersionNoDot>
@@ -168,17 +158,17 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>26.0</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>26.0</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>26.0</MacCatalystTargetFrameworkVersionSdkDefault>
-    <MacosTargetFrameworkVersionSdkDefault>26.0</MacosTargetFrameworkVersionSdkDefault>
-    <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>26.2</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>26.2</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>26.2</MacCatalystTargetFrameworkVersionSdkDefault>
+    <MacosTargetFrameworkVersionSdkDefault>26.2</MacosTargetFrameworkVersionSdkDefault>
+    <AndroidTargetFrameworkVersionSdkDefault>36.1</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
-    <IosTargetFrameworkVersion>26.0</IosTargetFrameworkVersion>
-    <TvosTargetFrameworkVersion>26.0</TvosTargetFrameworkVersion>
-    <MacCatalystTargetFrameworkVersion>26.0</MacCatalystTargetFrameworkVersion>
-    <MacosTargetFrameworkVersion>26.0</MacosTargetFrameworkVersion>
-    <AndroidTargetFrameworkVersion>36.0</AndroidTargetFrameworkVersion>
+    <IosTargetFrameworkVersion>26.2</IosTargetFrameworkVersion>
+    <TvosTargetFrameworkVersion>26.2</TvosTargetFrameworkVersion>
+    <MacCatalystTargetFrameworkVersion>26.2</MacCatalystTargetFrameworkVersion>
+    <MacosTargetFrameworkVersion>26.2</MacosTargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion>36.1</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>
@@ -283,6 +273,8 @@
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     <ProduceReferenceAssemblyInOutDir>True</ProduceReferenceAssemblyInOutDir>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+    <!-- Xcode 26.2 and 26.3 are interchangeable as far as we're concerned, so ask the iOS/Mac Catalyst workloads to not validate the Xcode version (we have Xcode 26.2 on the bots, while the latest workloads require Xcode 26.3) -->
+    <ValidateXcodeVersion Condition="'$(ValidateXcodeVersion)' == ''">false</ValidateXcodeVersion>
   </PropertyGroup>
 
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
@@ -299,5 +291,11 @@
    <!-- Workaround for EmitCompilerGeneratedFiles issue https://microsoft.visualstudio.com/OS/_workitems/edit/57204991 -->
   <PropertyGroup>
     <CoreCompileDependsOn>$(CoreCompileDependsOn);CreateCompilerGeneratedFilesOutputPath</CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+  	<!-- Setting TargetsCurrent=true is necessary until we get https://github.com/dotnet/sdk/pull/52031 -->
+		<!-- Ref: https://github.com/dotnet/macios/issues/24418 -->
+		<TargetsCurrent>true</TargetsCurrent>
   </PropertyGroup>
 </Project>
