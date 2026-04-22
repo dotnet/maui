@@ -67,11 +67,5 @@ public class Issue9095 : TestShell
 		{
 			_statusLabel.Text = text;
 		}
-
-		protected override void OnDisappearing()
-		{
-			base.OnDisappearing();
-		}
-
 	}
 }
