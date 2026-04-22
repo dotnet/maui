@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextFieldExtensions
 	{
+		static readonly ConditionalWeakTable<UITextField, UIImage> s_defaultClearButtonImages = new();
+
 		public static void UpdateText(this UITextField textField, IEntry entry)
 		{
 			textField.Text = entry.Text;
@@ -227,22 +230,46 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				UIImage defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
+				var defaultClearImage = GetDefaultClearButtonImage(textField, clearButton);
+
+				if (defaultClearImage is null)
+				{
+					return;
+				}
 
 				if (entry.TextColor is null)
 				{
 					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
 					clearButton.TintColor = null;
+					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
+					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
 				}
 				else
 				{
-					clearButton.TintColor = entry.TextColor.ToPlatform();
+					var textColor = entry.TextColor.ToPlatform();
+					clearButton.TintColor = textColor;
 
-					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
+					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, textColor);
 					clearButton.SetImage(tintedClearImage, UIControlState.Normal);
 					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
 				}
 			}
+		}
+
+		static UIImage? GetDefaultClearButtonImage(UITextField textField, UIButton clearButton)
+		{
+			if (s_defaultClearButtonImages.TryGetValue(textField, out var defaultImage))
+			{
+				return defaultImage;
+			}
+
+			defaultImage = clearButton.ImageForState(UIControlState.Normal)
+				?? clearButton.ImageForState(UIControlState.Highlighted);
+
+			if (defaultImage is not null)
+				s_defaultClearButtonImages.Add(textField, defaultImage);
+
+			return defaultImage;
 		}
 
 		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)

@@ -93,6 +93,61 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Clear button image resets when TextColor is null")]
+		public async Task ClearButtonImageResetsWhenTextColorIsNull()
+		{
+			EntryStub entry = new EntryStub
+			{
+				Text = "MAUI",
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
+				TextColor = null
+			};
+
+			await AttachAndRun(entry, async (handler) =>
+			{
+				await AssertEventually(() => handler.PlatformView.IsLoaded());
+				handler.PlatformView.BecomeFirstResponder();
+
+				var clearButton = GetNativeClearButton(handler);
+				Assert.NotNull(clearButton);
+
+				// Use ImageView.Image — reflects the actual displayed image (SetImage calls),
+				// unlike ImageForState which returns UIKit's internal cached value for this private button.
+				var defaultImage = clearButton.ImageView is not null
+					? clearButton.ImageView.Image
+					: clearButton.ImageForState(UIControlState.Highlighted);
+				Assert.NotNull(defaultImage);
+
+				// Apply purple text color — clear button should switch to the tinted (baked-in) image.
+				entry.TextColor = Colors.Purple;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+
+				var tintedImage = clearButton.ImageView is not null
+					? clearButton.ImageView.Image
+					: clearButton.ImageForState(UIControlState.Highlighted);
+				Assert.NotNull(tintedImage);
+
+				// Guard: tinting must have changed the underlying bitmap, otherwise the final assertion would
+				// be vacuously true.  CGImage.Handle compares the native Core Graphics object pointer, which
+				// is stable even when UIKit wraps the same native image in different managed objects.
+				Assert.NotEqual(defaultImage.CGImage?.Handle, tintedImage.CGImage?.Handle);
+
+				// Reset TextColor to null — without the fix the tinted image stays; with the fix it restores.
+				entry.TextColor = null;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+				
+				var resetImage = clearButton.ImageView is not null
+					? clearButton.ImageView.Image
+					: clearButton.ImageForState(UIControlState.Highlighted);
+				Assert.NotNull(resetImage);
+
+				// Core assertion: the original default image's underlying CGImage must be restored.
+				// UIImage pointer identity (Handle) is unreliable after SetImage()/ImageView.Image
+				// round-trips — UIKit may vend a different managed wrapper for the same native object.
+				Assert.Equal(defaultImage.CGImage?.Handle, resetImage.CGImage?.Handle);
+			});
+		}
+
 		[Fact]
 		public async Task NextMovesToNextEntry()
 		{
@@ -831,6 +886,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ClearButtonMode == UITextFieldViewMode.WhileEditing;
+
+		static UIButton GetNativeClearButton(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).ValueForKey(new NSString("clearButton")) as UIButton;
 
 		UITextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
