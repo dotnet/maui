@@ -157,7 +157,6 @@ public partial class ImageOptionsPage : ContentPage
 		{
 			_viewModel.BackgroundColor = rb.Content?.ToString() switch
 			{
-				"Red" => Colors.Red,
 				"Yellow" => Colors.Yellow,
 				_ => null
 			};

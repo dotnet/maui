@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls.Shapes;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,6 +26,15 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	public const string IsVisibleFalse = "IsVisibleFalse";
 	public const string IsEnabledFalse = "IsEnabledFalse";
 	public const string PaddingEntry = "PaddingEntry";
+	public const string BackgroundColorNone = "BackgroundColorNone";
+	public const string BackgroundColorYellow = "BackgroundColorYellow";
+	public const string OpacityHalf = "OpacityHalf";
+	public const string InputTransparentTrue = "InputTransparentTrue";
+	public const string RotationEntry = "RotationEntry";
+	public const string ScaleEntry = "ScaleEntry";
+
+	// IsPressed and IsLoading are readonly properties (BindableProperty.CreateReadOnly),
+	// so they cannot be set from the UI and are not testable via UI tests.
 
 	public override string GalleryPageName => ImageButtonFeatureMatrix;
 
@@ -51,7 +59,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFitWithImageSourceFromUri()
 	{
@@ -67,7 +75,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
-	[Test]
+	[Test, Order(3)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFitWithImageSourceFromStream()
 	{
@@ -83,7 +91,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(4)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_FillWithImageSourceFromStream()
 	{
@@ -99,7 +107,8 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
-	[Test]
+
+	[Test, Order(5)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFitWithImageSourceFromFontImage()
 	{
@@ -116,7 +125,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
-	[Test]
+	[Test, Order(6)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromUri()
 	{
@@ -133,7 +142,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(7)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_FillWithImageSourceFromFile()
 	{
@@ -149,7 +158,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(8)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_FillWithImageSourceFromUri()
 	{
@@ -165,7 +174,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(9)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromFile()
 	{
@@ -181,11 +190,8 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29959
-
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
-	[Test]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/30576 , Issue Link: https://github.com/dotnet/maui/issues/29959
+	[Test, Order(10)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromStream()
 	{
@@ -201,7 +207,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(11)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromStream()
 	{
@@ -218,7 +224,8 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+#if TEST_FAILS_ON_WINDOWS  // Issue Link: https://github.com/dotnet/maui/issues/29959
+	[Test, Order(12)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFontImage()
 	{
@@ -234,7 +241,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(13)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_FillWithImageSourceFromFontImage()
 	{
@@ -250,7 +257,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(14)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromFontImage()
 	{
@@ -265,9 +272,10 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
-    [Test]
+#if TEST_FAILS_ON_ANDROID  && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29956 , // Issue Link: https://github.com/dotnet/maui/issues/29959
+    [Test, Order(15)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_AspectFillWithImageSourceFromFile()
 	{
@@ -283,7 +291,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 	
-	[Test]
+	[Test, Order(16)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonAspect_CenterWithImageSourceFromUri()
 	{
@@ -299,9 +307,8 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
-#endif
 
-	[Test]
+	[Test, Order(17)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithIsVisibleFalse()
 	{
@@ -314,7 +321,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForNoElement("ImageButtonControl");
 	}
 
-	[Test]
+	[Test, Order(18)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithIsEnabledFalse()
 	{
@@ -330,7 +337,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
-	[Test]
+	[Test, Order(19)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithShadow()
 	{
@@ -345,7 +352,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(20)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonFlowDirectionRTL()
 	{
@@ -359,7 +366,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(21)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithClickedEvent()
 	{
@@ -374,7 +381,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButton Clicked: 1");
 	}
 
-	[Test]
+	[Test, Order(22)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithPressedEvent()
 	{
@@ -389,7 +396,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButton Pressed: 1");
 	}
 
-	[Test]
+	[Test, Order(23)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithReleasedEvent()
 	{
@@ -404,7 +411,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButton Released: 1");
 	}
 
-	[Test]
+	[Test, Order(24)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithCommandParameter()
 	{
@@ -419,7 +426,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButton: CommandParameter");
 	}
 
-	[Test]
+	[Test, Order(25)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithPadding()
 	{
@@ -434,7 +441,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(26)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithCornerRadius()
 	{
@@ -442,14 +449,14 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.Tap(Options);
 		App.WaitForElement(CornerRadiusEntry);
 		App.ClearText(CornerRadiusEntry);
-		App.EnterText(CornerRadiusEntry, "50,50,50,50");
+		App.EnterText(CornerRadiusEntry, "50");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(27)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithBorderColor()
 	{
@@ -463,7 +470,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(28)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithBorderWidth()
 	{
@@ -478,7 +485,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(29)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithBorderColorAndWidth()
 	{
@@ -495,7 +502,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(30)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithBorderWidthAndCornerRadius()
 	{
@@ -506,7 +513,7 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.EnterText(BorderWidthEntry, "10");
 		App.WaitForElement(CornerRadiusEntry);
 		App.ClearText(CornerRadiusEntry);
-		App.EnterText(CornerRadiusEntry, "30,30,30,30");
+		App.EnterText(CornerRadiusEntry, "30");
 		App.WaitForElement(SourceTypeFile);
 		App.Tap(SourceTypeFile);
 		App.WaitForElement(Apply);
@@ -514,4 +521,101 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+
+	[Test, Order(31)]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonWithOpacityHalf()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(OpacityHalf);
+		App.Tap(OpacityHalf);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(32)]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonWithInputTransparent()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(InputTransparentTrue);
+		App.Tap(InputTransparentTrue);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		App.Tap("ImageButtonControl");
+		App.WaitForNoElement("ImageButton Clicked: 1");
+	}
+
+	[Test, Order(33)]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonWithRotation()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(RotationEntry);
+		App.ClearText(RotationEntry);
+		App.EnterText(RotationEntry, "180");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(34)]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonWithScale()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ScaleEntry);
+		App.ClearText(ScaleEntry);
+		App.EnterText(ScaleEntry, "0.5");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+#if TEST_FAILS_ON_WINDOWS
+	[Test, Order(35)]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonWithBackgroundColorYellow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(BackgroundColorYellow);
+		App.Tap(BackgroundColorYellow);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+#endif 
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
+	[Test, Order(36)]
+	[Category(UITestCategories.ImageButton)]
+	public void VerifyImageButtonWithBackgroundColorNone()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(BackgroundColorNone);
+		App.Tap(BackgroundColorNone);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+#endif
 }

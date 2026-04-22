@@ -175,10 +175,6 @@
                                      IsChecked="True"
                                      CheckedChanged="OnBackgroundColorChanged"
                                      AutomationId="BackgroundColorNone"/>
-                        <RadioButton Content="Red"
-                                     GroupName="BackgroundColor"
-                                     CheckedChanged="OnBackgroundColorChanged"
-                                     AutomationId="BackgroundColorRed"/>
                         <RadioButton Content="Yellow"
                                      GroupName="BackgroundColor"
                                      CheckedChanged="OnBackgroundColorChanged"

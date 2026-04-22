@@ -338,7 +338,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         App.Tap(Options);
         App.WaitForElement(CornerRadiusEntry);
         App.ClearText(CornerRadiusEntry);
-        App.EnterText(CornerRadiusEntry, "50,50,50,50");
+        App.EnterText(CornerRadiusEntry, "50");
         App.WaitForElement(Apply);
         App.Tap(Apply);
         App.WaitForElement("ImageButtonControl");
@@ -402,7 +402,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         App.EnterText(BorderWidthEntry, "10");
         App.WaitForElement(CornerRadiusEntry);
         App.ClearText(CornerRadiusEntry);
-        App.EnterText(CornerRadiusEntry, "30,30,30,30");
+        App.EnterText(CornerRadiusEntry, "30");
         App.WaitForElement(SourceTypeFile);
         App.Tap(SourceTypeFile);
         App.WaitForElement(Apply);
