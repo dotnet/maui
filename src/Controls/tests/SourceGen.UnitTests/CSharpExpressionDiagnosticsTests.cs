@@ -809,4 +809,90 @@ public partial class OperatorAliasPage : ContentPage
 		Assert.Contains(" <= ", output, StringComparison.Ordinal);
 		Assert.Contains(" >= ", output, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void InterpolatedString_NonExistentMember_ShouldReportDiagnostic()
+	{
+		// When an interpolated string references a member that doesn't exist,
+		// the source generator should report MAUIX2009 instead of letting it
+		// fall through to a C# compilation error.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterpolatedNotFoundPage"
+             x:DataType="local:InterpolatedNotFoundViewModel">
+    <Label Text="{$'Hello, {Name1}!'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class InterpolatedNotFoundViewModel : INotifyPropertyChanged
+{
+	public string Name { get; set; } = "World";
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterpolatedNotFoundPage : ContentPage
+{
+	public InterpolatedNotFoundPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		// Currently: Name1 doesn't exist on either the page or the ViewModel.
+		// The source gen emits $"Hello, {__source.Name1}!" which fails at C# compilation.
+		// Ideally, MAUIX2009 should be reported at source generation time.
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2009");
+	}
+
+	[Fact]
+	public void LambdaEventHandler_MethodGroupWithoutInvocation_ShouldReportDiagnostic()
+	{
+		// When a lambda event handler references a method without calling it (missing parentheses),
+		// the source generator should detect this and report a diagnostic instead of
+		// letting it fall through to a C# compilation error.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.MethodGroupLambdaPage">
+    <Button Clicked="{(s, e) => this.OnCounterClicked}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class MethodGroupLambdaPage : ContentPage
+{
+	public int ClickCount { get; set; }
+	public void OnCounterClicked(object? sender, EventArgs e) => ClickCount++;
+	public MethodGroupLambdaPage() => InitializeComponent();
+}
+""";
+
+		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		// The source gen should detect the method group reference and emit MAUIX2017.
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2017");
+	}
 }

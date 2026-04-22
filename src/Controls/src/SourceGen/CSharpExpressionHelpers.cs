@@ -889,4 +889,94 @@ static class CSharpExpressionHelpers
 		// Use same extraction as expressions
 		return GetExpressionCode(value);
 	}
+
+	/// <summary>
+	/// Extracts identifiers from interpolated string holes.
+	/// E.g., for <c>$"Hello, {Name1}!"</c> returns ["Name1"].
+	/// For <c>$"Hello, {User.Name}!"</c> returns ["User"].
+	/// Only returns root identifiers (first segment before any dot).
+	/// </summary>
+	public static List<string> ExtractInterpolatedStringIdentifiers(string expressionCode)
+	{
+		var identifiers = new List<string>();
+
+		// Try parsing as a C# expression to extract interpolation holes
+		var tree = CSharpSyntaxTree.ParseText(expressionCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+
+		foreach (var interpolation in root.DescendantNodes().OfType<InterpolationSyntax>())
+		{
+			// Get the expression inside the interpolation hole
+			var expr = interpolation.Expression;
+			if (expr == null)
+				continue;
+
+			// Extract the root identifier from the interpolation expression
+			string rootIdentifier;
+			if (expr is IdentifierNameSyntax idName)
+			{
+				rootIdentifier = idName.Identifier.Text;
+			}
+			else if (expr is MemberAccessExpressionSyntax memberAccess)
+			{
+				// Walk to the leftmost identifier
+				var current = memberAccess.Expression;
+				while (current is MemberAccessExpressionSyntax nested)
+					current = nested.Expression;
+				if (current is IdentifierNameSyntax leftId)
+					rootIdentifier = leftId.Identifier.Text;
+				else
+					continue;
+			}
+			else
+			{
+				continue;
+			}
+
+			if (!string.IsNullOrEmpty(rootIdentifier) && !identifiers.Contains(rootIdentifier))
+				identifiers.Add(rootIdentifier);
+		}
+
+		return identifiers;
+	}
+
+	/// <summary>
+	/// Checks if a lambda expression body is a method group reference (member access without invocation).
+	/// E.g., <c>(s, e) => this.OnClicked</c> is a method group (missing parentheses).
+	/// Returns the method group expression and the lambda parameters if detected, null otherwise.
+	/// </summary>
+	public static (string methodGroup, string lambdaParams)? DetectLambdaMethodGroupReference(string expressionCode)
+	{
+		// Parse the expression as C#
+		var tree = CSharpSyntaxTree.ParseText(expressionCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+
+		// Find lambda expressions
+		var lambda = root.DescendantNodes().OfType<ParenthesizedLambdaExpressionSyntax>().FirstOrDefault();
+		if (lambda == null)
+			return null;
+
+		// Get the lambda body - should be an expression (not a block)
+		var body = lambda.ExpressionBody;
+		if (body == null)
+			return null;
+
+		// Check if the body is a member access (this.Method or just Method) without invocation
+		if (body is MemberAccessExpressionSyntax memberAccess)
+		{
+			// Check that the parent is NOT an InvocationExpression
+			// (If it were "this.Method()", the body would be InvocationExpressionSyntax, not MemberAccessExpressionSyntax)
+			var parameters = string.Join(", ", lambda.ParameterList.Parameters.Select(p => p.Identifier.Text));
+			return (memberAccess.ToString(), parameters);
+		}
+
+		// Also check for bare identifier (e.g., (s, e) => OnClicked)
+		if (body is IdentifierNameSyntax identifier)
+		{
+			var parameters = string.Join(", ", lambda.ParameterList.Parameters.Select(p => p.Identifier.Text));
+			return (identifier.Identifier.Text, parameters);
+		}
+
+		return null;
+	}
 }
