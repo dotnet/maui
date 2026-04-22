@@ -662,7 +662,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         sealed class ScrimBrushDrawable : ADrawable
         {
-            readonly APaint _paint = new APaint();
+            readonly APaint _paint = new APaint { AntiAlias = true };
             readonly Brush _brush;
             int _alpha;
             int _cachedWidth;

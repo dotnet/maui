@@ -475,6 +475,9 @@ namespace Microsoft.Maui.Platform
                 return;
             }
 
+            // Same pattern as legacy ShellFlyoutRenderer: when the drawer settles to idle,
+            // sync the presented state to match the actual drawer position. This acts as a
+            // safety net ensuring state is correct after the animation completes.
             if (StateIdle == e.NewState)
             {
                 var isOpen = IsDrawerOpen(_flyoutView);
@@ -484,11 +487,15 @@ namespace Microsoft.Maui.Platform
 
         void OnDrawerOpened(object? sender, DrawerOpenedEventArgs e)
         {
+            // Follows the same pattern as the legacy ShellFlyoutRenderer:
+            // set IsPresented directly from DrawerOpened/DrawerClosed callbacks.
             OnPresentedChanged?.Invoke(true);
         }
 
         void OnDrawerClosed(object? sender, DrawerClosedEventArgs e)
         {
+            // Follows the same pattern as the legacy ShellFlyoutRenderer:
+            // set IsPresented directly from DrawerOpened/DrawerClosed callbacks.
             OnPresentedChanged?.Invoke(false);
         }
 

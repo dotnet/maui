@@ -717,6 +717,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
                 _adapter.UpdateSections(shellSections);
             }
+            else if (_adapter is null && _viewPager is not null)
+            {
+                // 0→N transition: adapter/manager were not created during initial setup
+                // because there were no sections. Now that sections exist, create them.
+                SetupViewPagerAdapter();
+                SetupTabbedViewManager();
+            }
 
             // Rebuild the bottom navigation menu for the updated sections via TabbedViewManager
             _tabbedViewManager?.RefreshTabs();
@@ -1379,8 +1386,26 @@ namespace Microsoft.Maui.Controls.Handlers
             foreach (var section in toRemove)
                 _sectionIds.Remove(section);
 
-            // Clear position-based renderers (positions may differ for new sections)
+            // Only dispose renderers for sections that are being removed.
+            // Renderers for surviving sections must NOT be disposed — their fragments
+            // are still active in ViewPager2. Position mappings are invalidated anyway
+            // since indices shift, so we clear the dict and let CreateFragment re-cache.
+            var removedRenderers = new List<IShellSectionRenderer>();
+
+            foreach (var kvp in _renderers)
+            {
+                if (!newSections.Contains(kvp.Value.ShellSection))
+                {
+                    removedRenderers.Add(kvp.Value);
+                }
+            }
+
             _renderers.Clear();
+
+            foreach (var renderer in removedRenderers)
+            {
+                renderer.Dispose();
+            }
 
             _sections = newSections;
             NotifyDataSetChanged();

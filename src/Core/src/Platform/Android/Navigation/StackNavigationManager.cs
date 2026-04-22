@@ -351,7 +351,10 @@ namespace Microsoft.Maui.Platform
 			_fragmentManager = null;
 		}
 
-		internal virtual void Connect(IView navigationView, FragmentContainerView? fragmentContainerView = null)
+		// Extended to accept an optional FragmentContainerView for Shell sections that
+		// create their own container externally. The default (null) preserves backward
+		// compatibility — callers using the original Connect(IView) signature still work.
+		public virtual void Connect(IView navigationView, FragmentContainerView? fragmentContainerView = null)
 		{
 			VirtualView = navigationView;
 			NavigationView = (IStackNavigation)navigationView;
