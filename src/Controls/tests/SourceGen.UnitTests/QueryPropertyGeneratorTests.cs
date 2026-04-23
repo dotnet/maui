@@ -55,11 +55,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}
@@ -69,12 +69,12 @@ namespace MyApp
 				Name = default;
 			}
 
-			if (query.TryGetValue(""age"", out var ageValue))
+			if (query.TryGetValue(""age"", out var Age__value))
 			{
 				__queryPropertyKeys.Add(""age"");
-				if (ageValue != null)
+				if (Age__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(ageValue, typeof(int));
+					var convertedValue = global::System.Convert.ChangeType(Age__value, typeof(int));
 					Age = (int)convertedValue;
 				}
 			}
@@ -133,11 +133,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}
@@ -204,11 +204,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}
@@ -218,11 +218,11 @@ namespace MyApp
 				Name = default;
 			}
 
-			if (query.TryGetValue(""location"", out var locationValue))
+			if (query.TryGetValue(""location"", out var Location__value))
 			{
 				__queryPropertyKeys.Add(""location"");
-				if (locationValue != null)
-					Location = global::System.Net.WebUtility.UrlDecode(locationValue.ToString());
+				if (Location__value != null)
+					Location = global::System.Net.WebUtility.UrlDecode(Location__value.ToString());
 				else
 					Location = null;
 			}
@@ -287,12 +287,12 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""count"", out var countValue))
+			if (query.TryGetValue(""count"", out var Count__value))
 			{
 				__queryPropertyKeys.Add(""count"");
-				if (countValue != null)
+				if (Count__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(countValue, typeof(int));
+					var convertedValue = global::System.Convert.ChangeType(Count__value, typeof(int));
 					Count = (int)convertedValue;
 				}
 			}
@@ -353,12 +353,12 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""price"", out var priceValue))
+			if (query.TryGetValue(""price"", out var Price__value))
 			{
 				__queryPropertyKeys.Add(""price"");
-				if (priceValue != null)
+				if (Price__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(priceValue, typeof(double));
+					var convertedValue = global::System.Convert.ChangeType(Price__value, typeof(double));
 					Price = (double)convertedValue;
 				}
 			}
@@ -419,12 +419,12 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""active"", out var activeValue))
+			if (query.TryGetValue(""active"", out var IsActive__value))
 			{
 				__queryPropertyKeys.Add(""active"");
-				if (activeValue != null)
+				if (IsActive__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(activeValue, typeof(bool));
+					var convertedValue = global::System.Convert.ChangeType(IsActive__value, typeof(bool));
 					IsActive = (bool)convertedValue;
 				}
 			}
@@ -489,11 +489,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}
@@ -503,23 +503,23 @@ namespace MyApp
 				Name = default;
 			}
 
-			if (query.TryGetValue(""age"", out var ageValue))
+			if (query.TryGetValue(""age"", out var Age__value))
 			{
 				__queryPropertyKeys.Add(""age"");
-				if (ageValue != null)
+				if (Age__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(ageValue, typeof(int));
+					var convertedValue = global::System.Convert.ChangeType(Age__value, typeof(int));
 					Age = (int)convertedValue;
 				}
 			}
 
 
-			if (query.TryGetValue(""price"", out var priceValue))
+			if (query.TryGetValue(""price"", out var Price__value))
 			{
 				__queryPropertyKeys.Add(""price"");
-				if (priceValue != null)
+				if (Price__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(priceValue, typeof(double));
+					var convertedValue = global::System.Convert.ChangeType(Price__value, typeof(double));
 					Price = (double)convertedValue;
 				}
 			}
@@ -607,12 +607,12 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""Bear"", out var BearValue))
+			if (query.TryGetValue(""Bear"", out var Bear__value))
 			{
 				__queryPropertyKeys.Add(""Bear"");
-				if (BearValue != null)
+				if (Bear__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(BearValue, typeof(global::MyApp.Animal));
+					var convertedValue = global::System.Convert.ChangeType(Bear__value, typeof(global::MyApp.Animal));
 					Bear = (global::MyApp.Animal)convertedValue;
 				}
 			}
@@ -701,11 +701,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}
@@ -715,11 +715,11 @@ namespace MyApp
 				Name = default;
 			}
 
-			if (query.TryGetValue(""location"", out var locationValue))
+			if (query.TryGetValue(""location"", out var Location__value))
 			{
 				__queryPropertyKeys.Add(""location"");
-				if (locationValue != null)
-					Location = global::System.Net.WebUtility.UrlDecode(locationValue.ToString());
+				if (Location__value != null)
+					Location = global::System.Net.WebUtility.UrlDecode(Location__value.ToString());
 				else
 					Location = null;
 			}
@@ -785,11 +785,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}
@@ -854,12 +854,12 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""count"", out var countValue))
+			if (query.TryGetValue(""count"", out var Count__value))
 			{
 				__queryPropertyKeys.Add(""count"");
-				if (countValue != null)
+				if (Count__value != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(countValue, typeof(int));
+					var convertedValue = global::System.Convert.ChangeType(Count__value, typeof(int));
 					Count = (int)convertedValue;
 				}
 			}
@@ -919,11 +919,11 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 		// Track which properties were set in previous navigation
 		var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 		__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-		if (query.TryGetValue(""name"", out var nameValue))
+		if (query.TryGetValue(""name"", out var Name__value))
 		{
 			__queryPropertyKeys.Add(""name"");
-			if (nameValue != null)
-				Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+			if (Name__value != null)
+				Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 			else
 				Name = null;
 		}
@@ -987,11 +987,11 @@ namespace MyApp
 			// Track which properties were set in previous navigation
 			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-			if (query.TryGetValue(""name"", out var nameValue))
+			if (query.TryGetValue(""name"", out var Name__value))
 			{
 				__queryPropertyKeys.Add(""name"");
-				if (nameValue != null)
-					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
+				if (Name__value != null)
+					Name = global::System.Net.WebUtility.UrlDecode(Name__value.ToString());
 				else
 					Name = null;
 			}

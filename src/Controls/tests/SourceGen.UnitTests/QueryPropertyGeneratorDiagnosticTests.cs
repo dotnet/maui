@@ -190,11 +190,10 @@ namespace MyApp
 		Assert.Single(result.GeneratedTrees);
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		// The query string key "my-name" should be used as-is in TryGetValue,
-		// but the variable name should be sanitized
+		// The query string key "my-name" should be used as-is in TryGetValue
 		Assert.Contains(@"query.TryGetValue(""my-name""", generatedSource, StringComparison.Ordinal);
-		Assert.DoesNotContain("my-nameValue", generatedSource, StringComparison.Ordinal);
-		Assert.Contains("my_nameValue", generatedSource, StringComparison.Ordinal);
+		// Variable name uses the property name (Name), not the sanitized query ID
+		Assert.Contains("Name__value", generatedSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
