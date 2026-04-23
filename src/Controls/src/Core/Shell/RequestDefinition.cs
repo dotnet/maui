@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 			Section = theWinningRoute.Section ?? Item?.CurrentItem;
 			Content = theWinningRoute.Content ?? Section?.CurrentItem;
 			GlobalRoutes = theWinningRoute.GlobalRouteMatches;
+			PathParameters = theWinningRoute.PathParameters;
 
 			List<String> builder = new List<string>();
 			if (Item?.Route != null)
@@ -47,5 +48,9 @@ namespace Microsoft.Maui.Controls
 		public ShellSection Section { get; }
 		public ShellContent Content { get; }
 		public List<string> GlobalRoutes { get; }
+		// Path parameters captured from "{param}" segments in templated
+		// global routes (e.g. "product/{sku}"). Empty when no templated route
+		// participated in the match.
+		public IReadOnlyDictionary<string, string> PathParameters { get; }
 	}
 }
