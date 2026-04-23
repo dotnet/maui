@@ -392,12 +392,12 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			// Skip reflection-based property setting if the content already implements IQueryAttributable.
-			// The source generator for [QueryProperty] emits an IQueryAttributable implementation,
-			// so the interface call above already handled the property mapping.
-			// The reflection path is only needed for classes that have [QueryProperty] without a
-			// source-generated (or manually written) IQueryAttributable implementation.
-			if (RuntimeFeature.IsQueryPropertyAttributeSupported && content is not IQueryAttributable)
+			// Skip reflection-based property setting when the source generator handled it.
+			// The generator emits [GeneratedCode("QueryPropertyGenerator", ...)] on the partial class,
+			// so we can detect it and avoid double-applying query properties.
+			// Manual IQueryAttributable implementations (without this attribute) still get both
+			// the interface call above AND the reflection path below, preserving existing behavior.
+			if (RuntimeFeature.IsQueryPropertyAttributeSupported && !IsQueryPropertySourceGenerated(content.GetType()))
 			{
 				var type = content.GetType();
 				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
@@ -459,6 +459,15 @@ namespace Microsoft.Maui.Controls
 					query.ResetToQueryParameters();
 			}
 		}
+
+		static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, bool> s_queryPropertySourceGenCache = new();
+
+		static bool IsQueryPropertySourceGenerated(Type type) =>
+			s_queryPropertySourceGenCache.GetOrAdd(type, static t =>
+			{
+				var attr = t.GetCustomAttribute<System.CodeDom.Compiler.GeneratedCodeAttribute>(inherit: false);
+				return attr?.Tool == "QueryPropertyGenerator";
+			});
 
 		private sealed class ShellContentConverter : TypeConverter
 		{
