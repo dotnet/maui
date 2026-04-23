@@ -196,4 +196,72 @@ namespace MyApp
 		Assert.DoesNotContain("my-nameValue", generatedSource, StringComparison.Ordinal);
 		Assert.Contains("my_nameValue", generatedSource, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void NonPartialClass_IsWarning_NotError()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		var diagnostic = result.Diagnostics.Single(d => d.Id == "MAUI1200");
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+	}
+
+	[Fact]
+	public void NonPartialClass_ReflectionDisabled_ReportsError()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGeneratorWithGlobalOptions(sourceCode,
+			("build_property.MauiQueryPropertyAttributeSupport", "false"));
+
+		Assert.NotEmpty(result.Diagnostics);
+		var diagnostic = result.Diagnostics.Single(d => d.Id == "MAUI1204");
+		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void NonPartialClass_ReflectionEnabled_ReportsWarning()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGeneratorWithGlobalOptions(sourceCode,
+			("build_property.MauiQueryPropertyAttributeSupport", "true"));
+
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1200"));
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUI1204");
+	}
 }
