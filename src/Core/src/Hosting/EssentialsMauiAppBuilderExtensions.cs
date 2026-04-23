@@ -7,6 +7,7 @@ using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Devices.Sensors;
@@ -37,8 +38,10 @@ namespace Microsoft.Maui.Hosting
 	{
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
-			// Ensure the initializer runs so DI-registered Essentials implementations
-			// are bridged to the static facades during app startup.
+			// Register the EssentialsInitializer unconditionally so DI-registered Essentials
+			// implementations are bridged to the static facades during app startup, even when
+			// ConfigureEssentials() is not called. The initializer's AppActions event handler
+			// is a no-op when no AppActionHandlers are configured.
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 
 			builder.ConfigureLifecycleEvents(life =>
@@ -205,12 +208,15 @@ namespace Microsoft.Maui.Hosting
 			{
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, Accelerometer.SetDefault);
+#if ANDROID
+				BridgeIfRegistered<IActivityStateManager>(services, ActivityStateManager.SetDefault);
+#endif
 				BridgeIfRegistered<IBarometer>(services, Barometer.SetDefault);
 				BridgeIfRegistered<IBattery>(services, Battery.SetDefault);
 				BridgeIfRegistered<IBrowser>(services, Browser.SetDefault);
 				BridgeIfRegistered<IClipboard>(services, Clipboard.SetDefault);
 				BridgeIfRegistered<ICompass>(services, Compass.SetDefault);
-				BridgeIfRegistered<IContacts>(services, Contacts.SetDefault);
+				BridgeIfRegistered<IContacts>(services, MauiContacts.SetDefault);
 				BridgeIfRegistered<IEmail>(services, Email.SetDefault);
 				BridgeIfRegistered<IFilePicker>(services, FilePicker.SetDefault);
 				BridgeIfRegistered<IFlashlight>(services, Flashlight.SetDefault);
@@ -233,6 +239,9 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
 				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
 				BridgeIfRegistered<IWebAuthenticator>(services, WebAuthenticator.SetDefault);
+#if WINDOWS || __IOS__
+				BridgeIfRegistered<IWindowStateManager>(services, WindowStateManager.SetDefault);
+#endif
 				BridgeIfRegistered<IAppleSignInAuthenticator>(services, AppleSignInAuthenticator.SetDefault);
 
 				// SetCurrent pattern types
@@ -245,6 +254,12 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IGeocoding>(services, Geocoding.SetCurrent);
 			}
 
+			/// <summary>
+			/// Resolves a DI-registered implementation and assigns it to the corresponding static facade.
+			/// Note: The resolved instance is stored in a static field for the app lifetime, effectively
+			/// promoting it to singleton scope regardless of its DI registration lifetime. Services bridged
+			/// here should be registered as Singleton for correct behavior.
+			/// </summary>
 			static void BridgeIfRegistered<T>(IServiceProvider services, Action<T?> setter) where T : class
 			{
 				var impl = services.GetService<T>();
