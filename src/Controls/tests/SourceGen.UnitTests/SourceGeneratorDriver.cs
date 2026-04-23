@@ -136,7 +136,17 @@ public static class SourceGeneratorDriver
 			_additionalFiles = additionalFiles.ToImmutableDictionary(f => f.Text.Path, f => f);
 		}
 
-		public override AnalyzerConfigOptions GlobalOptions => throw new System.NotImplementedException();
+		public override AnalyzerConfigOptions GlobalOptions => EmptyAnalyzerConfigOptions.Instance;
+
+		private sealed class EmptyAnalyzerConfigOptions : AnalyzerConfigOptions
+		{
+			public static readonly EmptyAnalyzerConfigOptions Instance = new();
+			public override bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value)
+			{
+				value = null;
+				return false;
+			}
+		}
 
 		public override AnalyzerConfigOptions GetOptions(SyntaxTree tree)
 		{

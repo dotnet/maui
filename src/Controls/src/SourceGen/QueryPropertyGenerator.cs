@@ -49,13 +49,38 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				predicate: static (node, _) => node is ClassDeclarationSyntax,
 				transform: static (ctx, ct) => GetClassInfo(ctx, ct));
 
+		// Combine with global options to check if reflection fallback is available
+		var classesWithOptions = classesWithQueryProperty
+			.Combine(context.AnalyzerConfigOptionsProvider);
+
 		// Generate source for each class
-		context.RegisterSourceOutput(classesWithQueryProperty, static (spc, classInfo) =>
+		context.RegisterSourceOutput(classesWithOptions, static (spc, pair) =>
 		{
-			// Report diagnostics
+			var classInfo = pair.Left;
+			var options = pair.Right;
+
+			// Check if the reflection fallback is disabled (trimmed/AOT apps)
+			bool reflectionFallbackDisabled = options.GlobalOptions.IsFalse("build_property.MauiQueryPropertyAttributeSupport");
+
+			// Report diagnostics — escalate non-partial warning to error if reflection is off
 			foreach (var diagnostic in classInfo.Diagnostics)
 			{
-				spc.ReportDiagnostic(diagnostic);
+				if (reflectionFallbackDisabled
+					&& diagnostic.Id == Descriptors.QueryPropertyClassMustBePartial.Id
+					&& diagnostic.Severity < DiagnosticSeverity.Error)
+				{
+					// Re-create as error when reflection is disabled
+					spc.ReportDiagnostic(Diagnostic.Create(
+						Descriptors.QueryPropertyClassMustBePartialNoFallback,
+						diagnostic.Location,
+						diagnostic.AdditionalLocations,
+						diagnostic.Properties,
+						classInfo.ClassName));
+				}
+				else
+				{
+					spc.ReportDiagnostic(diagnostic);
+				}
 			}
 
 			// Only generate if there are valid properties
