@@ -460,14 +460,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, bool> s_queryPropertySourceGenCache = new();
-
 		static bool IsQueryPropertySourceGenerated(Type type) =>
-			s_queryPropertySourceGenCache.GetOrAdd(type, static t =>
-			{
-				var attr = t.GetCustomAttribute<System.CodeDom.Compiler.GeneratedCodeAttribute>(inherit: false);
-				return attr?.Tool == "QueryPropertyGenerator";
-			});
+			type.GetCustomAttribute<System.CodeDom.Compiler.GeneratedCodeAttribute>(inherit: false)?.Tool == "QueryPropertyGenerator";
 
 		private sealed class ShellContentConverter : TypeConverter
 		{
