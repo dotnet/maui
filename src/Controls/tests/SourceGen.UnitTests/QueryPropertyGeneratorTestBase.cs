@@ -44,4 +44,49 @@ public abstract class QueryPropertyGeneratorTestBase
 		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
 		return SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation, Array.Empty<SourceGeneratorDriver.AdditionalFile>(), assertNoCompilationErrors: false);
 	}
+
+	protected static GeneratorDriverRunResult RunQueryPropertyGeneratorWithGlobalOptions(string sourceCode, params (string key, string value)[] globalOptions)
+	{
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
+
+		ISourceGenerator generator = new QueryPropertyGenerator().AsSourceGenerator();
+		var driverOptions = new Microsoft.CodeAnalysis.GeneratorDriverOptions(
+			disabledOutputs: Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		var optionsProvider = new GlobalOptionsAnalyzerConfigOptionsProvider(globalOptions);
+
+		Microsoft.CodeAnalysis.GeneratorDriver driver = Microsoft.CodeAnalysis.CSharp.CSharpGeneratorDriver
+			.Create([generator], driverOptions: driverOptions)
+			.WithUpdatedAnalyzerConfigOptions(optionsProvider);
+
+		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out _);
+		return driver.GetRunResult();
+	}
+
+	private sealed class GlobalOptionsAnalyzerConfigOptionsProvider : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider
+	{
+		private readonly DictAnalyzerConfigOptions _globalOptions;
+
+		public GlobalOptionsAnalyzerConfigOptionsProvider((string key, string value)[] options)
+		{
+			var dict = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+			foreach (var (key, value) in options)
+				dict[key] = value;
+			_globalOptions = new DictAnalyzerConfigOptions(dict);
+		}
+
+		public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GlobalOptions => _globalOptions;
+		public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GetOptions(Microsoft.CodeAnalysis.SyntaxTree tree) => DictAnalyzerConfigOptions.Empty;
+		public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GetOptions(Microsoft.CodeAnalysis.AdditionalText textFile) => DictAnalyzerConfigOptions.Empty;
+
+		private sealed class DictAnalyzerConfigOptions : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions
+		{
+			public static readonly DictAnalyzerConfigOptions Empty = new(new System.Collections.Generic.Dictionary<string, string>());
+			private readonly System.Collections.Generic.Dictionary<string, string> _dict;
+			public DictAnalyzerConfigOptions(System.Collections.Generic.Dictionary<string, string> dict) => _dict = dict;
+			public override bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value) => _dict.TryGetValue(key, out value);
+		}
+	}
 }
