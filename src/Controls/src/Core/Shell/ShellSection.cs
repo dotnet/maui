@@ -514,13 +514,14 @@ namespace Microsoft.Maui.Controls
 				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
 			}
 
-			// For template routes (e.g. "product/{sku}"), override the page's
-			// route with the resolved value (e.g. "product/seed-tomato") so that
-			// Shell.CurrentState.Location shows the actual URI, not template tokens.
+			// For template routes (e.g. "product/{sku}"), store the resolved value
+			// (e.g. "product/seed-tomato") in a separate attached property. The
+			// page's Route stays as the registered template key so factory
+			// lookups and stack-reuse comparisons still work.
 			if (content != null && resolvedRoute != null && resolvedRoute != route
 				&& Routing.IsTemplateRoute(route))
 			{
-				Routing.SetRoute(content, resolvedRoute);
+				Routing.SetResolvedRoute(content, resolvedRoute);
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);

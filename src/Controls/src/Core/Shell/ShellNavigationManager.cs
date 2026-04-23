@@ -582,7 +582,7 @@ namespace Microsoft.Maui.Controls
 						for (int i = 1; i < sectionStack.Count; i++)
 						{
 							var page = sectionStack[i];
-							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
+							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetResolvedRoute(page) ?? Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
 						}
 					}
 
@@ -592,11 +592,11 @@ namespace Microsoft.Maui.Controls
 						{
 							var topPage = modalStack[i];
 
-							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
+							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetResolvedRoute(topPage) ?? Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
 
 							for (int j = 1; j < topPage.Navigation.NavigationStack.Count; j++)
 							{
-								routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
+								routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetResolvedRoute(topPage.Navigation.NavigationStack[j]) ?? Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
 							}
 						}
 					}

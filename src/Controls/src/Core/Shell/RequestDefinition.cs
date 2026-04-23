@@ -27,8 +27,20 @@ namespace Microsoft.Maui.Controls
 			if (Content?.Route != null)
 				builder.Add(Content?.Route);
 
+			// Use resolved global routes for URI construction when available,
+			// falling back to template keys for entries without a resolved form.
+			// This prevents template tokens like "{sku}" from leaking into FullUri.
 			if (GlobalRoutes != null)
-				builder.AddRange(GlobalRoutes);
+			{
+				for (int i = 0; i < GlobalRoutes.Count; i++)
+				{
+					if (ResolvedGlobalRoutes != null && i < ResolvedGlobalRoutes.Count
+						&& ResolvedGlobalRoutes[i] != GlobalRoutes[i])
+						builder.Add(ResolvedGlobalRoutes[i]);
+					else
+						builder.Add(GlobalRoutes[i]);
+				}
+			}
 
 			var uriPath = MakeUriString(builder);
 			var uri = ShellUriHandler.CreateUri(uriPath);
