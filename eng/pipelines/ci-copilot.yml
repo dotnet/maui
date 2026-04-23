@@ -62,6 +62,43 @@ stages:
   - stage: ReviewPR
     displayName: 'Review Pull Request'
     jobs:
+      # Lightweight job: detect UI test categories and trigger maui-pr-uitests ASAP
+      - job: TriggerUITests
+        displayName: 'Detect & Trigger UI Tests'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 10
+        steps:
+          - checkout: self
+            fetchDepth: 1
+
+          - bash: |
+              if [ -z "${{ parameters.PRNumber }}" ]; then
+                echo "##vso[task.logissue type=error]PRNumber parameter is required"
+                exit 1
+              fi
+            displayName: 'Validate Parameters'
+
+          - bash: |
+              echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
+            displayName: 'Setup gh CLI'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - bash: |
+              set +e
+              echo "Running trigger-uitest-pipeline.ps1 (SkipMonitor)..."
+              pwsh -NoProfile .github/scripts/trigger-uitest-pipeline.ps1 \
+                -PRNumber ${{ parameters.PRNumber }} \
+                -SkipMonitor
+              echo "Exit code: $?"
+              exit 0
+            displayName: 'Detect Categories & Queue UI Tests'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              AZURE_DEVOPS_EXT_PAT: $(DNCENG_PUBLIC_PAT)
+
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
         ${{ if eq(parameters.Platform, 'android') }}:
