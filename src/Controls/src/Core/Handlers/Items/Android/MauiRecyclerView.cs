@@ -9,6 +9,7 @@ using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
-		AppBarLayout _liftOnScrollAppBar;
+		AppBarLiftTargetHelper _appBarLiftTargetHelper;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -69,7 +70,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				Post(TrySetAppBarLiftTargetIfOnScreen);
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
 			}
 		}
 
@@ -79,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				ClearAppBarLiftTarget();
+				_appBarLiftTargetHelper?.Clear();
 			}
 		}
 
@@ -94,109 +96,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (visibility == ViewStates.Visible)
 			{
-				Post(TrySetAppBarLiftTargetIfOnScreen);
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
 			}
 			else
 			{
-				ClearAppBarLiftTarget();
+				_appBarLiftTargetHelper?.Clear();
 			}
-		}
-
-		void TrySetAppBarLiftTargetIfOnScreen()
-		{
-			if (!IsAttachedToWindow || Visibility != ViewStates.Visible)
-			{
-				return;
-			}
-
-			if (!GetGlobalVisibleRect(new ARect()))
-			{
-				return;
-			}
-
-			TrySetAppBarLiftTarget();
-		}
-
-		void TrySetAppBarLiftTarget()
-		{
-			// If a MauiScrollView ancestor exists, it should own the lift target instead.
-			if (HasAncestorScrollView())
-			{
-				return;
-			}
-
-			var appBar = FindAppBarLayout();
-			if (appBar is null)
-			{
-				return;
-			}
-
-			if (Id == NoId)
-			{
-				Id = GenerateViewId();
-			}
-
-			_liftOnScrollAppBar = appBar;
-			appBar.LiftOnScrollTargetViewId = Id;
-		}
-
-		void ClearAppBarLiftTarget()
-		{
-			if (_liftOnScrollAppBar is null)
-			{
-				return;
-			}
-
-			if (_liftOnScrollAppBar.LiftOnScrollTargetViewId == Id)
-			{
-				_liftOnScrollAppBar.LiftOnScrollTargetViewId = (int)NoId;
-				_liftOnScrollAppBar.SetLifted(false);
-			}
-
-			_liftOnScrollAppBar = null;
-		}
-
-		bool HasAncestorScrollView()
-		{
-			var parent = (this as AView).Parent;
-			while (parent is AView parentView)
-			{
-				if (parentView is Microsoft.Maui.Platform.MauiScrollView)
-				{
-					return true;
-				}
-
-				if (parentView is AppBarLayout)
-				{
-					return false;
-				}
-
-				parent = parentView.Parent;
-			}
-
-			return false;
-		}
-
-		AppBarLayout FindAppBarLayout()
-		{
-			var parent = (this as AView).Parent;
-			while (parent is AView parentView)
-			{
-				if (parentView is AViewGroup group)
-				{
-					for (int i = 0; i < group.ChildCount; i++)
-					{
-						if (group.GetChildAt(i) is AppBarLayout appBar)
-						{
-							return appBar;
-						}
-					}
-				}
-
-				parent = parentView.Parent;
-			}
-
-			return null;
 		}
 
 		public virtual void TearDownOldElement(TItemsView oldElement)

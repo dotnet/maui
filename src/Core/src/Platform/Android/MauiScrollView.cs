@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
-		AppBarLayout? _liftOnScrollAppBar;
+		AppBarLiftTargetHelper? _appBarLiftTargetHelper;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -76,7 +76,8 @@ namespace Microsoft.Maui.Platform
 				// Use Post() to defer until layout is complete — when this ScrollView is inside
 				// a CarouselView, adjacent off-screen pages also attach and we need to verify
 				// the view is actually on-screen before claiming the lift target.
-				Post(TrySetAppBarLiftTargetIfOnScreen);
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
 			}
 		}
 
@@ -90,8 +91,7 @@ namespace Microsoft.Maui.Platform
 			_didSafeAreaEdgeConfigurationChange = true;
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-
-				ClearAppBarLiftTarget();
+				_appBarLiftTargetHelper?.Clear();
 			}
 		}
 
@@ -106,127 +106,13 @@ namespace Microsoft.Maui.Platform
 
 			if (visibility == ViewStates.Visible)
 			{
-				Post(TrySetAppBarLiftTargetIfOnScreen);
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
 			}
 			else
 			{
-				ClearAppBarLiftTarget();
+				_appBarLiftTargetHelper?.Clear();
 			}
-		}
-
-		void TrySetAppBarLiftTargetIfOnScreen()
-		{
-			// Guard: the view may have detached or been hidden between Post() and execution.
-			if (!IsAttachedToWindow || Visibility != ViewStates.Visible)
-			{
-				return;
-			}
-
-			// When inside a CarouselView, ViewPager2 pre-loads adjacent off-screen pages,
-			// so their ScrollViews also attach. Only the on-screen page's ScrollView should
-			// claim the lift target. GetGlobalVisibleRect returns false if the view is
-			// entirely outside the clipped viewport (e.g. a pre-loaded carousel page).
-			if (!GetGlobalVisibleRect(new Rect()))
-			{
-				return;
-			}
-
-			TrySetAppBarLiftTarget();
-		}
-
-		void TrySetAppBarLiftTarget()
-		{
-			// If another MauiScrollView already sits between us and the AppBarLayout, let it own
-			// the lift target. The outermost scroll view in the page is the one whose scroll
-			// offset should drive the AppBar's lifted state.
-			if (HasAncestorMauiScrollView())
-			{
-				return;
-			}
-
-			var appBar = FindNavigationAppBarLayout();
-			if (appBar is null)
-			{
-				return;
-			}
-
-			if (Id == NoId)
-			{
-				Id = GenerateViewId();
-			}
-
-			_liftOnScrollAppBar = appBar;
-			appBar.LiftOnScrollTargetViewId = Id;
-		}
-
-		void ClearAppBarLiftTarget()
-		{
-			if (_liftOnScrollAppBar is null)
-			{
-				return;
-			}
-
-			// Only clear if we're still the current target; avoid stomping on another scroll view
-			// that may have been set as the target after us.
-			if (_liftOnScrollAppBar.LiftOnScrollTargetViewId == Id)
-			{
-				_liftOnScrollAppBar.LiftOnScrollTargetViewId = NoId;
-				// Force the AppBar to re-evaluate its lifted state now that the
-				// scrollable target is gone; otherwise it stays stuck in whatever
-				// state it was last in.
-				_liftOnScrollAppBar.SetLifted(false);
-			}
-
-			_liftOnScrollAppBar = null;
-		}
-
-		bool HasAncestorMauiScrollView()
-		{
-			var parent = Parent;
-			while (parent is View parentView)
-			{
-				if (parentView is MauiScrollView)
-				{
-					return true;
-				}
-
-				// Stop once we reach the AppBarLayout level — anything above that isn't "inside the page".
-				if (parentView is AppBarLayout ||
-					(parentView.Id != NoId && parentView.Id == Resource.Id.navigationlayout_appbar))
-				{
-					return false;
-				}
-
-				parent = parentView.Parent;
-			}
-
-			return false;
-		}
-
-		AppBarLayout? FindNavigationAppBarLayout()
-		{
-			// Walk up the ancestry looking for an AppBarLayout that is a sibling
-			// of the content view hosting this scroll view.
-			// NavigationPage uses Resource.Id.navigationlayout_appbar, but Shell creates
-			// its AppBarLayout programmatically without an ID, so we match any AppBarLayout.
-			var parent = Parent;
-			while (parent is View parentView)
-			{
-				if (parentView is ViewGroup group)
-				{
-					for (int i = 0; i < group.ChildCount; i++)
-					{
-						if (group.GetChildAt(i) is AppBarLayout appBar)
-						{
-							return appBar;
-						}
-					}
-				}
-
-				parent = parentView.Parent;
-			}
-
-			return null;
 		}
 
 		#region IHandleWindowInsets Implementation
