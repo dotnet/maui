@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(route))
 				return false;
 
-			return route.IndexOf('{', StringComparison.Ordinal) >= 0;
+			return route.IndexOf("{", StringComparison.Ordinal) >= 0;
 		}
 
 		public static bool IsTemplateSegment(string segment)
@@ -88,8 +88,8 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < raw.Length; i++)
 			{
 				var s = raw[i];
-				bool startsWithBrace = s.IndexOf('{', StringComparison.Ordinal) >= 0;
-				bool endsWithBrace = s.IndexOf('}', StringComparison.Ordinal) >= 0;
+				bool startsWithBrace = s.IndexOf("{", StringComparison.Ordinal) >= 0;
+				bool endsWithBrace = s.IndexOf("}", StringComparison.Ordinal) >= 0;
 
 				if (!startsWithBrace && !endsWithBrace)
 				{
@@ -107,6 +107,19 @@ namespace Microsoft.Maui.Controls
 				if (string.IsNullOrEmpty(name))
 				{
 					error = $"Route template segment \"{s}\" has no parameter name.";
+					return null;
+				}
+
+				// Reject optional and catch-all syntax — not yet implemented.
+				var inner = s.Substring(1, s.Length - 2);
+				if (inner.Length > 0 && inner[0] == '*')
+				{
+					error = $"Catch-all route parameters (\"{{*{name}}}\") are not yet supported.";
+					return null;
+				}
+				if (inner.Length > 0 && inner[inner.Length - 1] == '?')
+				{
+					error = $"Optional route parameters (\"{{{name}?}}\") are not yet supported.";
 					return null;
 				}
 

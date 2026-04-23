@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 			Section = theWinningRoute.Section ?? Item?.CurrentItem;
 			Content = theWinningRoute.Content ?? Section?.CurrentItem;
 			GlobalRoutes = theWinningRoute.GlobalRouteMatches;
+			ResolvedGlobalRoutes = theWinningRoute.ResolvedGlobalRoutes;
 			PathParameters = theWinningRoute.PathParameters;
 
 			List<String> builder = new List<string>();
@@ -48,6 +49,10 @@ namespace Microsoft.Maui.Controls
 		public ShellSection Section { get; }
 		public ShellContent Content { get; }
 		public List<string> GlobalRoutes { get; }
+		// Resolved global routes with actual parameter values substituted
+		// (e.g. "product/seed-tomato" instead of "product/{sku}"). Used for
+		// URI construction so Shell.CurrentState.Location is accurate.
+		public List<string> ResolvedGlobalRoutes { get; }
 		// Path parameters captured from "{param}" segments in templated
 		// global routes (e.g. "product/{sku}"). Empty when no templated route
 		// participated in the match.

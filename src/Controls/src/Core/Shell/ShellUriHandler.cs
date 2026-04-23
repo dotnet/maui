@@ -296,6 +296,7 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				var globalRouteMatch = globalRouteMatches[0];
+				bool pathParamsForwarded = false;
 
 				while (possibleRoutePath.NextSegment != null)
 				{
@@ -306,6 +307,13 @@ namespace Microsoft.Maui.Controls
 					possibleRoutePath.AddGlobalRoute(
 						globalRouteMatch.GlobalRouteMatches[matchIndex],
 						globalRouteMatch.SegmentsMatched[matchIndex]);
+
+					// Forward captured path parameters once
+					if (!pathParamsForwarded)
+					{
+						possibleRoutePath.MergePathParameters(globalRouteMatch.PathParameters);
+						pathParamsForwarded = true;
+					}
 				}
 			}
 
@@ -463,6 +471,10 @@ namespace Microsoft.Maui.Controls
 				var additionalRouteMatches = routeRequestBuilder.GlobalRouteMatches;
 				for (int i = existingGlobalRoutes.Count; i < additionalRouteMatches.Count; i++)
 					requestBuilderWithNewSegments.AddGlobalRoute(additionalRouteMatches[i], segments[i - existingGlobalRoutes.Count]);
+
+				// Transfer path parameters captured during ExpandOutGlobalRoutes
+				// so template routes still deliver values through this code path.
+				requestBuilderWithNewSegments.MergePathParameters(routeRequestBuilder.PathParameters);
 
 				pureGlobalRoutesMatch.Add(requestBuilderWithNewSegments);
 			}
