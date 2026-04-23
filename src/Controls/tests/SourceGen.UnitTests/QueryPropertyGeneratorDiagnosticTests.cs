@@ -266,7 +266,7 @@ namespace MyApp
 	}
 
 	[Fact]
-	public void NestedClass_SkipsGeneration()
+	public void NestedClass_GeneratesNestedPartialChain()
 	{
 		var sourceCode = @"
 using Microsoft.Maui.Controls;
@@ -285,8 +285,14 @@ namespace MyApp
 
 		var result = RunQueryPropertyGenerator(sourceCode);
 
-		// Nested classes are silently skipped — fall back to reflection
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
+
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		// Should emit nested partial chain: partial class OuterPage { partial class InnerPage : IQueryAttributable { ... } }
+		Assert.Contains("partial class OuterPage", generatedSource, StringComparison.Ordinal);
+		Assert.Contains("partial class InnerPage", generatedSource, StringComparison.Ordinal);
+		Assert.Contains(@"query.TryGetValue(""name""", generatedSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
