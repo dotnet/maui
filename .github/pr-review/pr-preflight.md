@@ -76,7 +76,7 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 - Blast radius assessment summary
 - The overall verdict and confidence level
 
-> 🔥 **FIREWALL:** Code-review findings go to **Report only**. They are NOT passed to Try-Fix models as hints, conclusions, or structured findings. Try-Fix models receive domain knowledge through ambient `.instructions.md` files instead (see Phase 2 in `pr-review/SKILL.md`).
+> 🔥 **FIREWALL:** Code-review findings go to **Report only**. They are NOT passed to Try-Fix models as hints, conclusions, or structured findings. Try-Fix models receive domain knowledge through `review-rules.md` and ambient `.instructions.md` files instead (see Phase 2 in `pr-review/SKILL.md`).
 
 ---
 

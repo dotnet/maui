@@ -26,11 +26,16 @@
    | 1 | Gate failed (tests fail with fix) | `⚠️ REQUEST CHANGES` — fix doesn't work |
    | 2 | Alternative fix found via Try-Fix that is simpler/better | `⚠️ REQUEST CHANGES` — suggest alternative |
    | 3 | Code review verdict is `NEEDS_CHANGES` AND try-fix models independently flagged same concerns | `⚠️ REQUEST CHANGES` — corroborated code quality issues |
-   | 4 | Code review verdict is `NEEDS_CHANGES` but try-fix models did NOT flag same concerns | `⚠️ REQUEST CHANGES` — include code review concerns, note they are uncorroborated |
-   | 5 | Code review verdict is `NEEDS_DISCUSSION` | `⚠️ REQUEST CHANGES` — include code review concerns for human judgment |
-   | 6 | PR's fix selected AND Gate passed AND code review LGTM or SKIPPED | `✅ APPROVE` |
+   | 4 | Code review verdict is `NEEDS_CHANGES` but concerns are uncorroborated AND findings are significant (safety, correctness, memory leaks) | `⚠️ REQUEST CHANGES` — include code review concerns, note they are uncorroborated |
+   | 5 | Code review verdict is `NEEDS_CHANGES` but concerns are uncorroborated AND findings are minor (style, naming, suggestions) | `✅ APPROVE with notes` — surface code review concerns but do not block |
+   | 6 | Code review verdict is `NEEDS_DISCUSSION` | `⚠️ REQUEST CHANGES` — include code review concerns for human judgment |
+   | 7 | PR's fix selected AND Gate passed AND code review LGTM or SKIPPED | `✅ APPROVE` |
 
-   **Code review is advisory, not a hard gate.** Code-review findings are a strong signal that should be surfaced and explained, but they do not automatically override passing tests + try-fix results. The Report should explain the code-review concerns and let human reviewers decide.
+   **Code review is advisory, not a hard gate.** Code-review findings are a strong signal that should be surfaced and explained, but they do not automatically override passing tests + try-fix results. Rows 4 and 5 distinguish between significant uncorroborated findings (safety, correctness — still block) and minor uncorroborated findings (style, naming — approve with notes). The Report should always explain the code-review concerns and let human reviewers decide.
+
+   **Corroboration** = a try-fix model's fix or failure analysis addresses the same code location AND concern type as a code-review finding, arrived at without seeing that finding. Uncorroborated findings are expected to be common (try-fix explores fixes, not code quality) and are still valuable signals.
+
+   **Even when Rows 1–2 fire**, always populate the Convergence Analysis and Code Review Impact sections if code review has findings.
 
    **Code review SKIPPED:** If the code-review sub-agent failed or timed out (verdict = `SKIPPED`), proceed as if code review was not available — base the recommendation on Gate and Try-Fix results only. Note in the report that code review was unavailable.
 

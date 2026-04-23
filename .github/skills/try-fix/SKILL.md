@@ -55,7 +55,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Test command | Yes | **Repository-specific script** to build and test. Use `BuildAndRunHostApp.ps1` for UI tests, `Run-DeviceTests.ps1` for device tests, or `dotnet test` for unit tests. The correct command is determined by the test type detected in the PR. **ALWAYS use the appropriate script - NEVER manually build/compile.** |
 | Target files | Yes | Files to investigate for the fix |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
-| Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
+| Hints | Optional | Suggested approaches, prior attempts, or areas to focus on. ⚠️ When invoked from `pr-review`, hints must NOT contain code-review verdict or error findings — domain knowledge only (firewall constraint; see `pr-review/SKILL.md`). |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
 
 ## Outputs

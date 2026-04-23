@@ -78,7 +78,7 @@ Pre-Flight has two parts:
 - **Part A (Steps 1–6):** Context gathering — read issue, PR, comments, classify files
 - **Part B (Step 7):** Code review — independence-first code analysis using `.github/skills/code-review/SKILL.md`
 
-**Part B can run in parallel with Phase 2** — code-review evaluates the PR's fix while try-fix explores alternatives. Neither needs the other's output. Report is the only phase that needs both.
+**Execution sequencing:** Part A must complete first — Phase 2 needs its output (`{bug description}`, `{platform}`, `{target_files}`). After Part A completes, Part B and Phase 2 can run in parallel: launch Part B as `mode: "background"`, then start Phase 2 (try-fix) immediately. Await Part B completion before starting Phase 3 (Report), which needs both outputs. Individual try-fix attempts within Phase 2 remain sequential.
 
 **Outputs:**
 - `pre-flight/content.md` — Context + code review summary
