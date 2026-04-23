@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
@@ -234,9 +235,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task DelegateFuncFallsThroughForUnregisteredOperation()
 		{
 			// Register ONLY the alert delegate. Prompt requests should fall through to the platform
-			// default (which, in the test environment, is the Standard no-op AlertRequestHelper).
+			// default (the Standard no-op AlertRequestHelper in the test environment) and must NOT
+			// invoke the alert delegate. We assert that deterministically by tracking invocation
+			// of the alert delegate rather than racing a wall-clock timer against the prompt task.
+			bool alertDelegateInvoked = false;
 			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
 			{
+				alertDelegateInvoked = true;
 				args.SetResult(true);
 				return Task.CompletedTask;
 			};
@@ -248,14 +253,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
 
+			// Sanity: the alert delegate IS invoked for alert requests.
 			var alertResult = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
 			Assert.True(alertResult);
+			Assert.True(alertDelegateInvoked);
 
-			// Prompt has no delegate registered; the test's Standard fallback is a no-op so the
-			// task should simply never complete. Verify that by racing it against a short delay.
-			var promptTask = page.DisplayPromptAsync("Title", "Message");
-			var winner = await Task.WhenAny(promptTask, Task.Delay(100));
-			Assert.NotSame(promptTask, winner);
+			alertDelegateInvoked = false;
+
+			// Prompt has no delegate registered, so the alert delegate must NOT fire when a prompt
+			// is requested. The platform default no-op fallback is invoked instead, leaving the
+			// returned task pending forever (we don't await it).
+			_ = page.DisplayPromptAsync("Title", "Message");
+			Assert.False(alertDelegateInvoked);
+		}
+
+		[Fact]
+		public async Task DelegateFuncInterceptsDisplayActionSheet()
+		{
+			Func<Page, ActionSheetArguments, Task> actionSheetFunc = (page, args) =>
+			{
+				args.SetResult("Other 1");
+				return Task.CompletedTask;
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, ActionSheetArguments, Task>))).Returns(actionSheetFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			Assert.NotNull(window.AlertManager.Subscription);
+
+			var result = await page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
+
+			Assert.Equal("Other 1", result);
+		}
+
+		[Fact]
+		public async Task DelegateFuncInterceptsDisplayPrompt()
+		{
+			Func<Page, PromptArguments, Task> promptFunc = (page, args) =>
+			{
+				args.SetResult("user input");
+				return Task.CompletedTask;
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, PromptArguments, Task>))).Returns(promptFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			Assert.NotNull(window.AlertManager.Subscription);
+
+			var result = await page.DisplayPromptAsync("Title", "Message");
+
+			Assert.Equal("user input", result);
 		}
 
 		[Fact]
@@ -298,6 +353,85 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
 				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
 			Assert.Equal("boom", ex.Message);
+		}
+
+		[Fact]
+		public async Task DelegateFuncAsynchronousFaultPropagatesToCaller()
+		{
+			// Delegate returns a Task that faults asynchronously (after a yield), exercising the
+			// ContinueWith path in DelegateAlertSubscription.Invoke rather than the synchronous
+			// throw path covered by DelegateFuncExceptionPropagatesToCaller.
+			Func<Page, AlertArguments, Task> alertFunc = async (page, args) =>
+			{
+				await Task.Yield();
+				throw new InvalidOperationException("async boom");
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Equal("async boom", ex.Message);
+		}
+
+		[Fact]
+		public async Task DelegateFuncCancellationPropagatesToCaller()
+		{
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) => Task.FromCanceled(new CancellationToken(canceled: true));
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			await Assert.ThrowsAsync<TaskCanceledException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+		}
+
+		[Fact]
+		public async Task DelegateFuncReturningNullTaskFaultsTheCaller()
+		{
+			// A delegate that returns null is a contract violation; the caller must observe it as
+			// an InvalidOperationException rather than hang forever waiting on the TCS.
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) => null;
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Contains("null Task", ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public async Task DelegateFuncCompletingWithoutSetResultFaultsTheCaller()
+		{
+			// A delegate whose Task completes successfully without ever calling SetResult is also
+			// a contract violation; the caller must observe an InvalidOperationException rather
+			// than hang forever waiting on the TCS.
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) => Task.CompletedTask;
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Contains("SetResult", ex.Message, StringComparison.Ordinal);
 		}
 	}
 }
