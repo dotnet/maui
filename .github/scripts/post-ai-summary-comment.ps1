@@ -71,6 +71,7 @@ $phases = [ordered]@{
     "code-review" = @{ File = "pre-flight/code-review.md"; Icon = "🔬"; Title = "Code Review — Deep Analysis" }
     "try-fix"     = @{ File = "try-fix/content.md";        Icon = "🔧"; Title = "Fix — Analysis & Comparison" }
     "report"      = @{ File = "report/content.md";         Icon = "📋"; Title = "Report — Final Recommendation" }
+    "uitests"     = @{ File = "uitests/content.md";        Icon = "🧪"; Title = "UI Tests — Category Detection & Results" }
 }
 
 # ─── Gate content (rendered first, always open) ───

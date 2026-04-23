@@ -649,6 +649,7 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
+              AZURE_DEVOPS_EXT_PAT: $(DNCENG_PUBLIC_PAT)
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1

@@ -50,6 +50,9 @@ param(
     [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
+    [switch]$SkipUITests,
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
@@ -438,6 +441,52 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  STEP 0.5: TRIGGER UI Test Pipeline (non-blocking — runs in parallel)
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  STEP 0.5: TRIGGER UI TESTS (non-blocking)                 ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+$uitestResult = "SKIPPED"
+$uitestCategories = ""
+$uitestBuildId = ""
+
+if ($SkipUITests) {
+    Write-Host "  ⏭️ Skipped (SkipUITests flag)" -ForegroundColor Yellow
+} else {
+    $triggerScript = Join-Path $PSScriptRoot "trigger-uitest-pipeline.ps1"
+    if (Test-Path $triggerScript) {
+        try {
+            # SkipMonitor: queue the build but don't wait — gate + PR review run in parallel
+            $triggerArgs = @{ PRNumber = $PRNumber; SkipMonitor = $true }
+            if ($DryRun) { $triggerArgs['DryRun'] = $true }
+
+            $triggerOutput = & $triggerScript @triggerArgs 2>&1
+            $triggerOutput | ForEach-Object { Write-Host "  $_" }
+
+            foreach ($line in $triggerOutput) {
+                $lineStr = $line.ToString()
+                if ($lineStr -match '^UITEST_RESULT=(.+)$') { $uitestResult = $Matches[1] }
+                if ($lineStr -match '^UITEST_BUILD_ID=(.+)$') { $uitestBuildId = $Matches[1] }
+                if ($lineStr -match '^UITEST_CATEGORIES=(.+)$') { $uitestCategories = $Matches[1] }
+            }
+
+            if ($uitestBuildId) {
+                Write-Host "  🚀 UI tests running in background (build #$uitestBuildId)" -ForegroundColor Green
+                Write-Host "  ⏩ Continuing with gate + review while tests run..." -ForegroundColor Cyan
+            }
+        } catch {
+            Write-Host "  ⚠️ UI test trigger failed (non-fatal): $_" -ForegroundColor Yellow
+            $uitestResult = "ERROR"
+        }
+    } else {
+        Write-Host "  ⚠️ trigger-uitest-pipeline.ps1 not found — skipping" -ForegroundColor Yellow
+    }
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
@@ -574,6 +623,69 @@ Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 2.5: COLLECT UI Test Results (wait for build triggered in Step 0.5)
+# ═════════════════════════════════════════════════════════════════════════════
+
+if ($uitestBuildId -and $uitestResult -eq 'QUEUED' -and -not $SkipUITests -and -not $DryRun) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║  STEP 2.5: COLLECT UI TEST RESULTS                        ║" -ForegroundColor Cyan
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+    $AzdoOrg = "dnceng-public"
+    $AzdoProject = "public"
+    $PollInterval = 300  # 5 minutes
+    $Timeout = 10800     # 3 hours
+    $startWait = Get-Date
+
+    Write-Host "  ⏳ Checking UI test build #$uitestBuildId..." -ForegroundColor Cyan
+
+    while ($true) {
+        $elapsed = (Get-Date) - $startWait
+        if ($elapsed.TotalSeconds -gt $Timeout) {
+            Write-Host "  ⚠️ Timeout waiting for UI tests ($([math]::Round($elapsed.TotalMinutes))m)" -ForegroundColor Yellow
+            $uitestResult = "TIMEOUT"
+            break
+        }
+
+        try {
+            $buildStatus = Invoke-RestMethod -Uri "https://dev.azure.com/$AzdoOrg/$AzdoProject/_apis/build/builds/${uitestBuildId}?api-version=7.1"
+            if ($buildStatus.status -eq 'completed') {
+                $uitestResult = $buildStatus.result
+                Write-Host "  ✅ UI tests completed: $uitestResult ($([math]::Round($elapsed.TotalMinutes, 1))m)" -ForegroundColor $(if ($uitestResult -eq 'succeeded') { 'Green' } else { 'Yellow' })
+                break
+            }
+            Write-Host "  ⏳ [$($elapsed.ToString('hh\:mm\:ss'))] Still running... (next check in 5m)" -ForegroundColor DarkGray
+        } catch {
+            Write-Host "  ⚠️ Poll error: $($_.Exception.Message)" -ForegroundColor DarkGray
+        }
+
+        Start-Sleep -Seconds $PollInterval
+    }
+
+    # Write UI test results to content.md for AI summary (no separate comment)
+    Write-Host "  📝 Generating UI test results for AI summary..." -ForegroundColor Cyan
+    $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+    $uitestContentFile = Join-Path $uitestOutputDir "content.md"
+    $commentScript = Join-Path $PSScriptRoot "post-uitest-categories-comment.ps1"
+    if (Test-Path $commentScript) {
+        try {
+            & $commentScript -PRNumber $PRNumber -BuildId $uitestBuildId -OutputFile $uitestContentFile 2>&1 | ForEach-Object { Write-Host "    $_" }
+        } catch {
+            Write-Host "  ⚠️ Failed to generate UI test content (non-fatal): $_" -ForegroundColor Yellow
+            # Write minimal fallback content
+            New-Item -ItemType Directory -Force -Path $uitestOutputDir | Out-Null
+            $resultIcon = switch ($uitestResult) { "succeeded" { "✅" } "failed" { "❌" } "TIMEOUT" { "⏱️" } default { "⚠️" } }
+            $buildUrl = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=$uitestBuildId"
+            "**Build:** [#$uitestBuildId]($buildUrl) | $resultIcon $uitestResult`n**Categories:** ``$uitestCategories``" |
+                Set-Content $uitestContentFile -Encoding UTF8
+        }
+    }
+
+    Write-Host "  📊 UI Test final result: $uitestResult" -ForegroundColor $(if ($uitestResult -eq 'succeeded') { 'Green' } else { 'Yellow' })
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 3: Post AI Summary Comment (direct script invocation)
