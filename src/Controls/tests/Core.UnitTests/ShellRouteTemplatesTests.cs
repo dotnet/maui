@@ -738,7 +738,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task OptionalWithRequired_BothPresent()
+		public void OptionalWithRequired_MiddleOptionalRejected()
+		{
+			// Optional parameters must be the last segment (same as ASP.NET Core)
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("shop/{cat}/{id?}/details", typeof(TwoParamPage)));
+		}
+
+		[Fact]
+		public async Task OptionalWithRequired_OptionalAtEnd()
 		{
 			Routing.RegisterRoute("shop/{cat}/{id?}", typeof(TwoParamPage));
 
@@ -751,22 +759,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(page);
 			Assert.Equal("tools", page.Category);
 			Assert.Equal("99", page.ItemId);
-		}
-
-		[Fact]
-		public async Task OptionalWithRequired_OptionalAbsent()
-		{
-			Routing.RegisterRoute("shop/{cat}/{id?}", typeof(TwoParamPage));
-
-			var shell = new Shell();
-			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
-
-			await shell.GoToAsync("//main/home/shop/tools");
-
-			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as TwoParamPage;
-			Assert.NotNull(page);
-			Assert.Equal("tools", page.Category);
-			Assert.Null(page.ItemId);
 		}
 
 		[Fact]
@@ -957,6 +949,66 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Routing.UnRegisterRoute("product/{sku}");
 			Assert.False(Routing.IsTemplateRoute("product/{sku}"));
+		}
+
+		// ===== Review-round fixes: parser validation =====
+
+		[Fact]
+		public void Parse_ConstraintOptionalAndDefault_Combo()
+		{
+			// {num:int?=5} — constraint + optional + default
+			var t = RouteTemplate.Parse("page/{num:int?=5}", out var error);
+			Assert.Null(error);
+			Assert.NotNull(t);
+			Assert.True(t.Segments[1].IsOptional);
+			Assert.Equal("int", t.Segments[1].Constraint);
+			Assert.Equal("5", t.Segments[1].DefaultValue);
+			Assert.Equal("num", t.Segments[1].Value);
+		}
+
+		[Fact]
+		public void RegisterRoute_RejectsDefaultThatViolatesConstraint()
+		{
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("page/{id:int=hello}", typeof(ProductPage)));
+		}
+
+		[Fact]
+		public void RegisterRoute_RejectsOptionalInMiddle()
+		{
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("a/{b?}/c", typeof(ProductPage)));
+		}
+
+		[Fact]
+		public void RegisterRoute_RejectsMultipleParamsInMixedSegment()
+		{
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("item-{x}-{y}", typeof(ProductPage)));
+		}
+
+		[Fact]
+		public void Parse_MalformedBraces_Rejected()
+		{
+			var t = RouteTemplate.Parse("{}", out var error);
+			Assert.NotNull(error);
+			Assert.Null(t);
+		}
+
+		[Fact]
+		public void Parse_EmptyParameterName_Rejected()
+		{
+			var t = RouteTemplate.Parse("a/{}", out var error);
+			Assert.NotNull(error);
+			Assert.Null(t);
+		}
+
+		[Fact]
+		public void Parse_ConstraintWithNoName_Rejected()
+		{
+			var t = RouteTemplate.Parse("a/{:int}", out var error);
+			Assert.NotNull(error);
+			Assert.Null(t);
 		}
 	}
 }

@@ -55,8 +55,10 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			// Mixed segment: contains { but doesn't start with it (e.g. product-{sku})
-			if (segment.IndexOf("{", StringComparison.Ordinal) >= 0
-				&& segment.IndexOf("}", StringComparison.Ordinal) >= 0)
+			// Require { appears before } to reject malformed strings like "foo}bar{"
+			int openIdx = segment.IndexOf("{", StringComparison.Ordinal);
+			int closeIdx = segment.IndexOf("}", StringComparison.Ordinal);
+			if (openIdx >= 0 && closeIdx > openIdx)
 				return true;
 
 			return false;
@@ -162,6 +164,15 @@ namespace Microsoft.Maui.Controls
 
 					var prefix = s.Substring(0, openIdx);
 					var suffix = closeIdx + 1 < s.Length ? s.Substring(closeIdx + 1) : "";
+
+					// Reject multiple parameter tokens in one segment (e.g. "a-{x}-{y}")
+					if (suffix.IndexOf("{", StringComparison.Ordinal) >= 0
+						|| suffix.IndexOf("}", StringComparison.Ordinal) >= 0)
+					{
+						error = $"Route template segment \"{s}\" contains multiple parameter tokens. Only one parameter per segment is supported.";
+						return null;
+					}
+
 					var token = s.Substring(openIdx + 1, closeIdx - openIdx - 1);
 
 					// Parse constraint from token
@@ -205,6 +216,7 @@ namespace Microsoft.Maui.Controls
 
 				// Parse constraint
 				string paramConstraint = null;
+				bool optionalFromConstraint = false;
 				var cIdx = inner.IndexOf(":", StringComparison.Ordinal);
 				if (cIdx >= 0)
 				{
@@ -229,8 +241,7 @@ namespace Microsoft.Maui.Controls
 					if (paramConstraint.Length > 0 && paramConstraint[paramConstraint.Length - 1] == '?')
 					{
 						paramConstraint = paramConstraint.Substring(0, paramConstraint.Length - 1);
-						// Mark as optional since ? was on the constraint
-						inner = inner + "?";
+						optionalFromConstraint = true;
 					}
 				}
 
@@ -243,8 +254,9 @@ namespace Microsoft.Maui.Controls
 					inner = inner.Substring(0, eIdx);
 				}
 
-				bool isOptional = inner.Length > 0 && inner[inner.Length - 1] == '?';
-				if (isOptional)
+				bool isOptional = optionalFromConstraint
+					|| (inner.Length > 0 && inner[inner.Length - 1] == '?');
+				if (!optionalFromConstraint && isOptional)
 					inner = inner.Substring(0, inner.Length - 1);
 
 				var name = inner;
@@ -281,6 +293,23 @@ namespace Microsoft.Maui.Controls
 				// Default value implies optional
 				if (defaultValue != null)
 					isOptional = true;
+
+				// Optional/default parameters must be the last segment
+				// (same as ASP.NET Core). Middle-optional is unmatchable
+				// because the greedy matcher would consume the wrong segment.
+				if (isOptional && i != raw.Length - 1)
+				{
+					error = $"Optional parameter \"{{{name}}}\" must be the last segment in the route. Optional parameters in the middle are not supported.";
+					return null;
+				}
+
+				// Validate default value against constraint at registration time
+				if (defaultValue != null && paramConstraint != null
+					&& !SatisfiesConstraint(paramConstraint, defaultValue))
+				{
+					error = $"Default value \"{defaultValue}\" for parameter \"{name}\" does not satisfy the :{paramConstraint} constraint.";
+					return null;
+				}
 
 				segments[i] = TemplateSegment.Parameter(name, isOptional, isCatchAll, paramConstraint, defaultValue);
 				hasParameters = true;
