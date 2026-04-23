@@ -6,14 +6,12 @@ using System.Text;
 using Android.Content;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
-using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
