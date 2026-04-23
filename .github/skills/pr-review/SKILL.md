@@ -74,17 +74,19 @@ Phase 2 uses these 4 AI models (run SEQUENTIALLY — they modify the same files)
 
 Gather context from the issue, PR, comments, classify changed files, and **perform a deep code review** using the `code-review` skill.
 
-Pre-Flight now has two parts:
+Pre-Flight has two parts:
 - **Part A (Steps 1–6):** Context gathering — read issue, PR, comments, classify files
-- **Part B (Step 7):** Code review — independence-first code analysis using `.github/skills/code-review/SKILL.md` and `.github/skills/code-review/references/review-rules.md`
+- **Part B (Step 7):** Code review — independence-first code analysis using `.github/skills/code-review/SKILL.md`
+
+**Part B can run in parallel with Phase 2** — code-review evaluates the PR's fix while try-fix explores alternatives. Neither needs the other's output. Report is the only phase that needs both.
 
 **Outputs:**
 - `pre-flight/content.md` — Context + code review summary
-- `pre-flight/code-review.md` — Full code-review output (findings, blast radius, failure-mode probes, verdict)
+- `pre-flight/code-review.md` — Full code-review output (findings, blast radius, verdict)
+
+> 🔥 **FIREWALL:** Code-review findings flow to **Report only**. They are NOT passed to Try-Fix models. Try-Fix models receive domain knowledge through ambient `.instructions.md` files and `review-rules.md`, not through code-review's PR-specific conclusions.
 
 **Gate:** None — always runs.
-
-**Why code review runs here:** The code-review findings (❌ Errors, ⚠️ Warnings, failure-mode probes, blast radius) become **structured hints for Phase 2 (Try-Fix)**. Instead of each model starting from scratch, they receive concrete code concerns to address, leading to higher-quality fix exploration.
 
 ---
 
@@ -98,7 +100,7 @@ Even if the PR's fix looks correct and Gate passed, you MUST still run all 4 mod
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
-"Independent" means each model explores a **different fix approach** from the PR's fix — not that models are isolated from code-review context. Code-review findings are provided as advisory background to improve fix quality.
+"Independent" means each model explores a **different fix approach** from the PR's fix. Models are NOT isolated from domain knowledge — they load `.instructions.md` files and `review-rules.md` for MAUI-specific patterns. But they do NOT receive code-review's PR-specific conclusions (verdict, error findings, etc.) — that would anchor all 4 models identically.
 
 The purpose is NOT to re-test the PR's fix, but to:
 1. **Generate independent fix ideas** — What would YOU do to fix this bug?
@@ -132,26 +134,16 @@ prompt: |
   - target_files:
     - src/{area}/{file1}.cs
     - src/{area}/{file2}.cs
-  - hints: |
-      Code review found the following concerns (advisory — use to inform your approach, not as a checklist):
-      Errors:
-        - {❌ Error finding 1 with file:line reference}
-      # Include warnings ONLY if relevant to the root cause:
-      # Warnings:
-      #   - {⚠️ Warning — omit if unrelated to root cause}
-      Failure modes:
-        - {Failure mode 1}: {What happens in this scenario}
-      Blast radius: {Summary — e.g., "Runs for ALL toolbar items at startup, not just badged ones"}
-      Code review verdict: {LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION} (confidence: {high/medium/low})
+
+  Before designing your fix, load the MAUI domain knowledge from
+  .github/skills/code-review/references/review-rules.md — apply relevant rules
+  to ensure your fix follows established MAUI patterns (handler lifecycle,
+  memory management, threading, platform conventions, etc.).
 
   Generate ONE independent fix idea. Review the PR's fix first to ensure your approach is DIFFERENT.
-  "Independent" means exploring a different fix approach — the code review context above is background
-  information to help you make better decisions, not a constraint on your exploration.
 ```
 
-**Include code review context in the `hints` field** (try-fix's documented optional input). If Pre-Flight code review found no issues, use `hints: "Code review found no issues (verdict: LGTM)"`. If code review was SKIPPED, omit the `hints` field entirely.
-
-**Selectivity:** Only include ❌ Error findings and failure-mode probes that are relevant to the bug being fixed. Omit 💡 Suggestions. Include ⚠️ Warnings only if directly related to the root cause.
+**🚫 Do NOT include code-review findings, verdict, or error details in try-fix prompts.** Each model must independently analyze the code and apply domain rules. Code-review's PR-specific conclusions are firewalled to Report only.
 
 **Wait for each to complete before starting the next.**
 
@@ -260,8 +252,8 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 |-------|--------------|------------|------------|
 | Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
 | 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
-| 2. Try-Fix | `try-fix` skill (×4) | **4-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
-| 3. Report | `pr-report.md` | Write review recommendation | Never skip |
+| 2. Try-Fix | `try-fix` skill (×4) | **4-model exploration with domain knowledge (MANDATORY)** | Skip failing models, continue |
+| 3. Report | `pr-report.md` | Write review recommendation (advisory, not hard gate) | Never skip |
 
 ---
 

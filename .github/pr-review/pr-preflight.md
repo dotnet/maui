@@ -37,7 +37,7 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 
 ## Part B: Code Review (Step 7)
 
-> **Purpose:** Perform deep code analysis using the `code-review` skill to surface correctness issues, safety concerns, and MAUI convention violations BEFORE Try-Fix explores alternatives. These findings guide Try-Fix models toward higher-quality fixes.
+> **Purpose:** Perform deep code analysis using the `code-review` skill to surface correctness issues, safety concerns, and MAUI convention violations. These findings are consumed by the Report phase for a richer recommendation — they are NOT passed to Try-Fix models (to preserve independent exploration).
 
 > **🚨 Independence-first requirement:** Step 7 MUST be invoked as a **separate sub-agent** (via the `task` tool with `agent_type: "general-purpose"`) so the code-review skill can form its assessment from the code BEFORE reading any PR narrative. The sub-agent receives ONLY the PR number — not the context gathered in Part A. This prevents anchoring bias.
 >
@@ -61,28 +61,22 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
    )
    ```
 
-   The sub-agent internally follows the code-review skill's 6-step workflow:
-   1. Gather code context (independence-first — reads code BEFORE PR description)
-   2. Load MAUI review rules from `.github/skills/code-review/references/review-rules.md`
-   3. Form independent assessment
-   4. Reconcile with PR narrative and prior reviews
-   5. Check CI status
-   6. Blast radius, failure-mode probing, and verdict
+   The sub-agent internally follows the code-review skill's 6-step workflow (see `.github/skills/code-review/SKILL.md` for details).
 
 **If Step 7 fails, times out, or returns malformed output:**
 - Write `pre-flight/code-review.md` with: `## Code Review: SKIPPED\n\nReason: {failure description}`
 - Set verdict to `SKIPPED` in the Code Review Summary section of `content.md`
-- Omit `hints` from Try-Fix prompts (the `hints` field becomes optional when code review is unavailable)
-- Do NOT apply the code-review hard gate in Phase 3 (Report) — treat as if code review was not run
+- Do NOT apply the code-review signal in Phase 3 (Report) — treat as if code review was not run
 
 **Store the sub-agent's full output** in `pre-flight/code-review.md` — use the exact output format from the code-review skill (do NOT reformat or summarize into a different template).
 
-**Extract key items for Try-Fix consumption** and add to `content.md`:
+**Extract key items for Report consumption** and add to `content.md`:
 - All ❌ Error findings (with file:line references)
 - All ⚠️ Warning findings (with file:line references)
-- Failure-mode probes and their answers
 - Blast radius assessment summary
 - The overall verdict and confidence level
+
+> 🔥 **FIREWALL:** Code-review findings go to **Report only**. They are NOT passed to Try-Fix models as hints, conclusions, or structured findings. Try-Fix models receive domain knowledge through ambient `.instructions.md` files instead (see Phase 2 in `pr-review/SKILL.md`).
 
 ---
 
@@ -125,7 +119,8 @@ Write `code-review.md` — the exact output from the code-review sub-agent, in t
 
 ## Common Mistakes
 
-- ❌ Skipping the code-review step — it provides critical findings for Try-Fix
+- ❌ Skipping the code-review step — it provides critical findings for Report
 - ❌ Reading the PR description before code in Step 7 — independence-first prevents anchoring bias
+- ❌ Passing code-review findings to Try-Fix — they go to Report ONLY (firewall)
 - ❌ Running tests — that's the Gate phase
 - ❌ Proposing fixes — save fix ideas for Try-Fix phase
