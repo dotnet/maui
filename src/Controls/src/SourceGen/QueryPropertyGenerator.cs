@@ -480,12 +480,25 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 	private static FieldDeclarationSyntax BuildQueryPropertyKeysField()
 	{
+		// Hide the generated field from IntelliSense and debugger since it's infrastructure
+		// that lives in the user's own partial class
+		var attributes = SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]
+		{
+			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.ComponentModel.EditorBrowsable"),
+				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+					SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression("global::System.ComponentModel.EditorBrowsableState.Never"))))),
+			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.Diagnostics.DebuggerBrowsable"),
+				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+					SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression("global::System.Diagnostics.DebuggerBrowsableState.Never")))))
+		}));
+
 		return SyntaxFactory.FieldDeclaration(
 			SyntaxFactory.VariableDeclaration(
 				SyntaxFactory.NullableType(
 					SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>")))
 			.AddVariables(
 				SyntaxFactory.VariableDeclarator("__queryPropertyKeys")))
+			.WithAttributeLists(SyntaxFactory.SingletonList(attributes))
 			.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword)));
 	}
 
