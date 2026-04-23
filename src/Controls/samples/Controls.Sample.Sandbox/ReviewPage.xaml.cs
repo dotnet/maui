@@ -1,6 +1,7 @@
 namespace Maui.Controls.Sample;
 
 [QueryProperty(nameof(Sku), "sku")]
+[QueryProperty(nameof(Stars), "stars")]
 public partial class ReviewPage : ContentPage
 {
 	public ReviewPage()
@@ -16,8 +17,24 @@ public partial class ReviewPage : ContentPage
 			_sku = value;
 			OnPropertyChanged();
 			if (SkuLabel is not null)
-				SkuLabel.Text = $"SKU: {value}";
+				SkuLabel.Text = $"Product: {value}";
 		}
 	}
 	string _sku;
+
+	public string Stars
+	{
+		get => _stars;
+		set
+		{
+			_stars = value;
+			OnPropertyChanged();
+			if (StarsLabel is not null)
+			{
+				var count = int.TryParse(value, out var n) ? n : 0;
+				StarsLabel.Text = $"Rating: {new string('⭐', count)} ({value})";
+			}
+		}
+	}
+	string _stars;
 }

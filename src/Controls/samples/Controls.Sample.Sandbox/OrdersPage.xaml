@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.OrdersPage"
+             Title="Orders">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="📦 Orders"
+                   FontSize="28"
+                   FontAttributes="Bold" />
+            <Label Text="Tap an order to navigate using {orderId:int} constrained path parameter."
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Button Text="Order #1001"
+                    AutomationId="Order1001"
+                    Clicked="OnOrderTapped"
+                    CommandParameter="1001" />
+
+            <Button Text="Order #1002"
+                    AutomationId="Order1002"
+                    Clicked="OnOrderTapped"
+                    CommandParameter="1002" />
+
+            <Button Text="Order #1003"
+                    AutomationId="Order1003"
+                    Clicked="OnOrderTapped"
+                    CommandParameter="1003" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
