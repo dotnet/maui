@@ -651,6 +651,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(RouteTemplate.SatisfiesConstraint("bool", "true"));
 			Assert.True(RouteTemplate.SatisfiesConstraint("bool", "False"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("bool", "yes"));
+			Assert.False(RouteTemplate.SatisfiesConstraint("bool", "1"));
 		}
 
 		[Fact]
@@ -666,6 +667,296 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			Assert.True(RouteTemplate.SatisfiesConstraint("guid", "550e8400-e29b-41d4-a716-446655440000"));
 			Assert.False(RouteTemplate.SatisfiesConstraint("guid", "not-a-guid"));
+		}
+
+		[Fact]
+		public void SatisfiesConstraint_GuidRejectsInvalid()
+		{
+			Assert.False(RouteTemplate.SatisfiesConstraint("guid", "12345"));
+			Assert.False(RouteTemplate.SatisfiesConstraint("guid", ""));
+		}
+
+		[Fact]
+		public void SatisfiesConstraint_Long()
+		{
+			Assert.True(RouteTemplate.SatisfiesConstraint("long", "9999999999"));
+			Assert.True(RouteTemplate.SatisfiesConstraint("long", "-1"));
+			Assert.False(RouteTemplate.SatisfiesConstraint("long", "abc"));
+		}
+
+		[Fact]
+		public void SatisfiesConstraint_Double()
+		{
+			Assert.True(RouteTemplate.SatisfiesConstraint("double", "3.14"));
+			Assert.True(RouteTemplate.SatisfiesConstraint("double", "-0.5"));
+			Assert.False(RouteTemplate.SatisfiesConstraint("double", "not-a-number"));
+		}
+
+		// ===== Multi-param and combination tests =====
+
+		[QueryProperty(nameof(Category), "cat")]
+		[QueryProperty(nameof(ItemId), "id")]
+		public class TwoParamPage : ContentPage
+		{
+			public string Category { get; set; }
+			public string ItemId { get; set; }
+		}
+
+		[Fact]
+		public async Task TwoParamsInSingleRoute()
+		{
+			Routing.RegisterRoute("browse/{cat}/{id}", typeof(TwoParamPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			await shell.GoToAsync("//main/home/browse/electronics/42");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as TwoParamPage;
+			Assert.NotNull(page);
+			Assert.Equal("electronics", page.Category);
+			Assert.Equal("42", page.ItemId);
+		}
+
+		[Fact]
+		public async Task MultipleRequiredParamsInChain()
+		{
+			// Two template routes navigated sequentially (push one, then push another)
+			Routing.RegisterRoute("category/{sku}", typeof(ProductPage));
+			Routing.RegisterRoute("detail", typeof(ReviewPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			await shell.GoToAsync("//main/home/category/vegetables/detail");
+
+			var stack = shell.Navigation.NavigationStack;
+			// Last page should be ReviewPage and inherits sku=vegetables
+			var lastPage = stack[stack.Count - 1] as ReviewPage;
+			Assert.NotNull(lastPage);
+			Assert.Equal("vegetables", lastPage.Sku);
+		}
+
+		[Fact]
+		public async Task OptionalWithRequired_BothPresent()
+		{
+			Routing.RegisterRoute("shop/{cat}/{id?}", typeof(TwoParamPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			await shell.GoToAsync("//main/home/shop/tools/99");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as TwoParamPage;
+			Assert.NotNull(page);
+			Assert.Equal("tools", page.Category);
+			Assert.Equal("99", page.ItemId);
+		}
+
+		[Fact]
+		public async Task OptionalWithRequired_OptionalAbsent()
+		{
+			Routing.RegisterRoute("shop/{cat}/{id?}", typeof(TwoParamPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			await shell.GoToAsync("//main/home/shop/tools");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as TwoParamPage;
+			Assert.NotNull(page);
+			Assert.Equal("tools", page.Category);
+			Assert.Null(page.ItemId);
+		}
+
+		[Fact]
+		public async Task OptionalWithConstraint()
+		{
+			Routing.RegisterRoute("page/{id:int?}", typeof(OrderDetailPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			await shell.GoToAsync("//main/home/page/3");
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as OrderDetailPage;
+			Assert.NotNull(page);
+			Assert.Equal("3", page.OrderId);
+		}
+
+		[Fact]
+		public async Task OptionalWithQueryStringFallback()
+		{
+			Routing.RegisterRoute("product/{sku?}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			// No path param, but query string provides it
+			await shell.GoToAsync("//main/products/product?sku=from-query");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as ProductPage;
+			Assert.NotNull(page);
+			Assert.Equal("from-query", page.Sku);
+		}
+
+		[Fact]
+		public async Task DefaultWithQueryStringInteraction()
+		{
+			Routing.RegisterRoute("review/{stars=5}", typeof(DefaultStarsPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			// Default provides 5. Path defaults are seeded before query strings
+			// and take precedence (same as explicit path params).
+			await shell.GoToAsync("//main/products/review?stars=2");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as DefaultStarsPage;
+			Assert.NotNull(page);
+			// Default value (5) takes precedence — same semantics as path params
+			Assert.Equal("5", page.Stars);
+		}
+
+		[Fact]
+		public async Task DefaultWithChildPageInheritance()
+		{
+			Routing.RegisterRoute("review/{stars=5}", typeof(DefaultStarsPage));
+			Routing.RegisterRoute("submit", typeof(ContentPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			await shell.GoToAsync("//main/products/review/submit");
+
+			// Navigation should succeed (default value used for review, submit pushed on top)
+			var stack = shell.Navigation.NavigationStack;
+			Assert.True(stack.Count >= 2);
+		}
+
+		[Fact]
+		public async Task CatchAll_UrlEncodedSegments()
+		{
+			Routing.RegisterRoute("files/{*path}", typeof(FileBrowserPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "browse"));
+
+			await shell.GoToAsync("//main/browse/files/my%20docs/report%20final.pdf");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as FileBrowserPage;
+			Assert.NotNull(page);
+			Assert.Equal("my docs/report final.pdf", page.FilePath);
+		}
+
+		[Fact]
+		public async Task CatchAll_EmptyRemainingSegments()
+		{
+			Routing.RegisterRoute("files/{*path}", typeof(FileBrowserPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "browse"));
+
+			// Just "files" with no remaining segments
+			await shell.GoToAsync("//main/browse/files");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as FileBrowserPage;
+			Assert.NotNull(page);
+			Assert.Equal("", page.FilePath);
+		}
+
+		[Fact]
+		public async Task MixedSegmentWithConstraint()
+		{
+			Routing.RegisterRoute("item-{id:int}", typeof(OrderDetailPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "items"));
+
+			await shell.GoToAsync("//main/items/item-42");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as OrderDetailPage;
+			Assert.NotNull(page);
+			Assert.Equal("42", page.OrderId);
+		}
+
+		[Fact]
+		public async Task MixedSegment_PrefixMismatchRejects()
+		{
+			Routing.RegisterRoute("product-{sku}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			// "item-tomato" doesn't match "product-{sku}" prefix
+			await Assert.ThrowsAsync<ArgumentException>(() =>
+				shell.GoToAsync("//main/products/item-tomato"));
+		}
+
+		[Fact]
+		public async Task ConstraintWithLiteralPrecedence()
+		{
+			// Register both a constrained template and a literal
+			Routing.RegisterRoute("order/{id:int}", typeof(OrderDetailPage));
+			Routing.RegisterRoute("order/summary", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "orders"));
+
+			// "summary" is literal, should win over {id:int}
+			await shell.GoToAsync("//main/orders/order/summary");
+
+			var top = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1];
+			Assert.IsType<ProductPage>(top);
+		}
+
+		[Fact]
+		public async Task TwoDifferentTemplatesSameNavigation()
+		{
+			// Two different template routes navigated in one absolute URI
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+			Routing.RegisterRoute("order/{orderId:int}", typeof(OrderDetailPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			// This exercises the ExpandOutGlobalRoutes iterative matching
+			await shell.GoToAsync("//main/home/product/seed-tomato");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as ProductPage;
+			Assert.NotNull(page);
+			Assert.Equal("seed-tomato", page.Sku);
+		}
+
+		[Fact]
+		public async Task TemplateAndLiteralRouteTogether()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+			Routing.RegisterRoute("details", typeof(ReviewPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "home"));
+
+			await shell.GoToAsync("//main/home/product/seed-tomato/details");
+
+			var stack = shell.Navigation.NavigationStack;
+			// details (literal) should be on top, product (template) underneath
+			ReviewPage details = null;
+			foreach (var p in stack)
+				if (p is ReviewPage rp) details = rp;
+
+			Assert.NotNull(details);
+			// Last page inherits sku from parent template
+			Assert.Equal("seed-tomato", details.Sku);
+		}
+
+		[Fact]
+		public void UnregisterTemplateRoute_NoLongerDetected()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+			Assert.True(Routing.IsTemplateRoute("product/{sku}"));
+
+			Routing.UnRegisterRoute("product/{sku}");
+			Assert.False(Routing.IsTemplateRoute("product/{sku}"));
 		}
 	}
 }

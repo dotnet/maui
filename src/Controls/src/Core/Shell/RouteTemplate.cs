@@ -224,6 +224,14 @@ namespace Microsoft.Maui.Controls
 					{
 						paramConstraint = constraintAndRest;
 					}
+
+					// Strip optional marker from constraint if present (e.g. "int?" → "int")
+					if (paramConstraint.Length > 0 && paramConstraint[paramConstraint.Length - 1] == '?')
+					{
+						paramConstraint = paramConstraint.Substring(0, paramConstraint.Length - 1);
+						// Mark as optional since ? was on the constraint
+						inner = inner + "?";
+					}
 				}
 
 				// Parse default value
