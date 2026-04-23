@@ -43,6 +43,29 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public void ToLocation_Api34WithoutMslAltitude_FallsBackToEllipsoid()
+		{
+			// On API 34+ without a reported MSL altitude (HasMslAltitude == false),
+			// we must fall back to the ellipsoidal altitude rather than silently
+			// returning nothing or mis-labelling it as Geoid.
+			if (!OperatingSystem.IsAndroidVersionAtLeast(34))
+				return;
+
+			var androidLocation = new AndroidLocation("test")
+			{
+				Altitude = 123.45,
+				VerticalAccuracyMeters = 5.0f,
+				// MslAltitudeMeters intentionally not set → HasMslAltitude == false
+			};
+
+			var location = androidLocation.ToLocation();
+
+			Assert.Equal(123.45, location.Altitude);
+			Assert.Equal(AltitudeReferenceSystem.Ellipsoid, location.AltitudeReferenceSystem);
+			Assert.Equal(5.0, location.VerticalAccuracy);
+		}
+
+		[Fact]
 		public void ToLocation_MslAltitude_UsesGeoidReferenceSystem()
 		{
 			// MSL altitude is only available on Android API 34+
