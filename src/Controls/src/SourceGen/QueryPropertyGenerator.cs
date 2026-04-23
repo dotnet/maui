@@ -87,7 +87,10 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			if (classInfo.PropertyMappings.Length > 0)
 			{
 				var source = GenerateSource(classInfo);
-				spc.AddSource($"{classInfo.ClassName}_QueryProperty.g.cs", source);
+				var hintName = classInfo.Namespace is not null
+					? $"{classInfo.Namespace}.{classInfo.ClassName}_QueryProperty.g.cs"
+					: $"{classInfo.ClassName}_QueryProperty.g.cs";
+				spc.AddSource(hintName, source);
 			}
 		});
 	}
@@ -108,6 +111,14 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				classDecl.Identifier.GetLocation(),
 				classSymbol.Name);
 			diagnostics.Add(diagnostic);
+			return new ClassInfo(classSymbol.Name, null, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
+		}
+
+		// Nested classes require nested partial declarations which we don't currently emit
+		if (classSymbol.ContainingType is not null)
+		{
+			// Skip silently — nested [QueryProperty] classes fall back to reflection.
+			// Nested partial class emission is not yet supported.
 			return new ClassInfo(classSymbol.Name, null, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
 		}
 
@@ -148,10 +159,8 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				continue;
 			}
 
-			// Find the property to get its type
-			var property = classSymbol.GetMembers(propertyName!)
-				.OfType<IPropertySymbol>()
-				.FirstOrDefault();
+			// Find the property — walk the type hierarchy since the property may be inherited
+			var property = FindPropertyInHierarchy(classSymbol, propertyName!);
 
 			if (property is null)
 			{
@@ -542,6 +551,23 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 		var sanitized = new string(chars);
 		return EscapeIdentifier(sanitized);
+	}
+
+	private static IPropertySymbol? FindPropertyInHierarchy(INamedTypeSymbol type, string propertyName)
+	{
+		var current = type;
+		while (current is not null)
+		{
+			var property = current.GetMembers(propertyName)
+				.OfType<IPropertySymbol>()
+				.FirstOrDefault();
+
+			if (property is not null)
+				return property;
+
+			current = current.BaseType;
+		}
+		return null;
 	}
 
 	private record struct PropertyMapping(string PropertyName, string QueryId, string PropertyType, string ConversionType, bool IsNullableValueType, bool CanBeNull);

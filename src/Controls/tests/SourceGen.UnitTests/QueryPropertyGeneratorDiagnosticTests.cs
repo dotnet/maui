@@ -264,4 +264,57 @@ namespace MyApp
 		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1200"));
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUI1204");
 	}
+
+	[Fact]
+	public void NestedClass_SkipsGeneration()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	public partial class OuterPage : ContentPage
+	{
+		[QueryProperty(nameof(Name), ""name"")]
+		public partial class InnerPage : ContentPage
+		{
+			public string Name { get; set; }
+		}
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		// Nested classes are silently skipped — fall back to reflection
+		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void InheritedProperty_IsFound()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	public class BasePage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+
+	[QueryProperty(nameof(Name), ""name"")]
+	public partial class DerivedPage : BasePage
+	{
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		// Should find the inherited property — no MAUI1201 warning
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
+
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		Assert.Contains(@"query.TryGetValue(""name""", generatedSource, StringComparison.Ordinal);
+	}
 }
