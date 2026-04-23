@@ -62,6 +62,8 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			ResetStaticField(typeof(DeviceDisplay), "currentImplementation");
 			ResetStaticField(typeof(DeviceInfo), "currentImplementation");
 			ResetStaticField(typeof(FileSystem), "currentImplementation");
+			ResetStaticField("Microsoft.Maui.ApplicationModel.ActivityStateManager", "defaultImplementation");
+			ResetStaticField("Microsoft.Maui.ApplicationModel.WindowStateManager", "defaultImplementation");
 			// Geocoding is a special case: uses SetCurrent but the backing field is defaultImplementation
 			ResetStaticField(typeof(Geocoding), "defaultImplementation");
 		}
@@ -69,8 +71,19 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		static void ResetStaticField(Type type, string fieldName)
 		{
 			var field = type.GetField(fieldName,
-				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-			field?.SetValue(null, null);
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+				?? throw new InvalidOperationException(
+					$"Field '{fieldName}' not found on '{type.Name}'. Was it renamed?");
+			field.SetValue(null, null);
+		}
+
+		static void ResetStaticField(string typeName, string fieldName)
+		{
+			var assemblyName = typeof(AppInfo).Assembly.GetName().Name;
+			var type = Type.GetType($"{typeName}, {assemblyName}", throwOnError: false);
+			// Platform-specific types may not exist in the current TFM (e.g. ActivityStateManager on non-Android)
+			if (type is not null)
+				ResetStaticField(type, fieldName);
 		}
 
 		[Fact]
@@ -200,13 +213,45 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[Fact]
 		public void TransientDIRegistration_StillBridged()
 		{
-			// Even with transient lifetime, the bridge resolves and sets the instance.
+			// Even with transient lifetime, the bridge resolves one instance and stores it
+			// in a static field — effectively promoting it to singleton scope. Services
+			// intended for bridging should be registered as Singleton.
 			var builder = MauiApp.CreateBuilder();
 			builder.Services.AddTransient<IPreferences, StubPreferences>();
 
 			using var app = builder.Build();
 
 			Assert.IsType<StubPreferences>(Preferences.Default);
+		}
+
+		[Fact]
+		public void DIRegisteredContacts_BridgedToStaticFacade()
+		{
+			// Validates the Contacts bridge specifically — this type has an Apple framework
+			// namespace collision on iOS/macCatalyst that caused CS0234 build failures.
+			var mock = new StubContacts();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IContacts>(mock);
+
+			using var app = builder.Build();
+
+			Assert.Same(mock, Contacts.Default);
+		}
+
+		[Fact]
+		public void DIRegistration_TakesPrecedenceOverConfigureEssentials()
+		{
+			// When both DI and ConfigureEssentials could set the same type,
+			// the DI bridge runs during Initialize and wins because it calls
+			// SetDefault/SetCurrent, overwriting the static field.
+			var diMock = new StubPreferences();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences>(diMock);
+			builder.ConfigureEssentials();
+
+			using var app = builder.Build();
+
+			Assert.Same(diMock, Preferences.Default);
 		}
 
 		// Stub implementations for testing
@@ -255,6 +300,14 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Task.FromResult<IEnumerable<Placemark>>(Array.Empty<Placemark>());
 			public Task<IEnumerable<Location>> GetLocationsAsync(string address) =>
 				Task.FromResult<IEnumerable<Location>>(Array.Empty<Location>());
+		}
+
+		class StubContacts : IContacts
+		{
+			public Task<Contact?> PickContactAsync() =>
+				Task.FromResult<Contact?>(null);
+			public Task<IEnumerable<Contact>> GetAllAsync(System.Threading.CancellationToken cancellationToken = default) =>
+				Task.FromResult<IEnumerable<Contact>>(Array.Empty<Contact>());
 		}
 	}
 }
