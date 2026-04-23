@@ -4,13 +4,16 @@
              x:Class="Maui.Controls.Sample.ReviewPage"
              Title="Review">
     <VerticalStackLayout Padding="20" Spacing="15">
-        <Label Text="Review Page"
+        <Label Text="📝 Write a Review"
                FontSize="24"
                FontAttributes="Bold" />
         <Label x:Name="SkuLabel"
-               Text="SKU: (waiting for inherited parameter)"
+               Text="Product: (inherited from parent route)"
                FontSize="18" />
-        <Label Text="This page inherited the {sku} path parameter from the parent product route."
+        <Label x:Name="StarsLabel"
+               Text="Rating: (from {stars=5} default)"
+               FontSize="18" />
+        <Label Text="The stars parameter uses {stars=5} — if you navigate without specifying stars, you get the default of 5."
                FontSize="14"
                TextColor="Gray" />
     </VerticalStackLayout>

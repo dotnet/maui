@@ -6,10 +6,16 @@
     x:Name="shell">
     <TabBar>
         <Tab Title="Products" Icon="groceries.png">
-            <ShellContent Icon="groceries.png"
-            Title="Products"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="products" />
+            <ShellContent
+                Title="Products"
+                ContentTemplate="{DataTemplate local:MainPage}"
+                Route="products" />
+        </Tab>
+        <Tab Title="Orders" Icon="dotnet_bot.png">
+            <ShellContent
+                Title="Orders"
+                ContentTemplate="{DataTemplate local:OrdersPage}"
+                Route="orders" />
         </Tab>
     </TabBar>
 </Shell>
