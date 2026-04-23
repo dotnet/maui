@@ -1,8 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <AnalysisMode>None</AnalysisMode>
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
-</Project>

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 		readonly List<string> _matchedSegments = new List<string>();
 		readonly List<string> _fullSegments = new List<string>();
 		readonly List<string> _allSegments = null;
+		readonly Dictionary<string, string> _pathParameters = new Dictionary<string, string>(StringComparer.Ordinal);
 		readonly static string _uriSeparator = "/";
 
 		public Shell Shell { get; private set; }
@@ -42,6 +43,8 @@ namespace Microsoft.Maui.Controls
 			_matchedSegments.AddRange(builder._matchedSegments);
 			_fullSegments.AddRange(builder._fullSegments);
 			_globalRouteMatches.AddRange(builder._globalRouteMatches);
+			foreach (var kvp in builder._pathParameters)
+				_pathParameters[kvp.Key] = kvp.Value;
 			Shell = builder.Shell;
 			Item = builder.Item;
 			Section = builder.Section;
@@ -50,12 +53,26 @@ namespace Microsoft.Maui.Controls
 
 		public void AddGlobalRoute(string routeName, string segment)
 		{
+			AddGlobalRoute(routeName, segment, null);
+		}
+
+		// Overload that records path parameters captured for this route.
+		// <paramref name="capturedParameters"/> may be null when the route had
+		// no template segments.
+		public void AddGlobalRoute(string routeName, string segment, IDictionary<string, string> capturedParameters)
+		{
 			_globalRouteMatches.Add(routeName);
 
 			foreach (string path in ShellUriHandler.RetrievePaths(segment))
 			{
 				_fullSegments.Add(path);
 				_matchedSegments.Add(path);
+			}
+
+			if (capturedParameters != null)
+			{
+				foreach (var kvp in capturedParameters)
+					_pathParameters[kvp.Key] = kvp.Value;
 			}
 		}
 
@@ -163,6 +180,15 @@ namespace Microsoft.Maui.Controls
 
 		public string GetNextSegmentMatch(string matchMe)
 		{
+			return GetNextSegmentMatch(matchMe, null);
+		}
+
+		// Template-aware overload. When the registered route key contains
+		// "{param}" segments, callers pass <paramref name="capturedParameters"/>
+		// to receive the resolved values. Literal-only routes leave the
+		// dictionary untouched.
+		public string GetNextSegmentMatch(string matchMe, IDictionary<string, string> capturedParameters)
+		{
 			var segmentsToMatch = ShellUriHandler.RetrievePaths(matchMe).ToList();
 			// if matchMe is an absolute route then we only match 
 			// if there are no routes already present
@@ -181,6 +207,7 @@ namespace Microsoft.Maui.Controls
 
 			List<string> matches = new List<string>();
 			List<string> currentSet = new List<string>(_matchedSegments);
+			Dictionary<string, string> localCaptures = null;
 
 			foreach (var split in segmentsToMatch)
 			{
@@ -190,10 +217,33 @@ namespace Microsoft.Maui.Controls
 					currentSet.Add(split);
 					matches.Add(split);
 				}
+				else if (next != null && RouteTemplate.IsTemplateSegment(split))
+				{
+					// Template segment: consume the actual URI segment as the
+					// captured value and remember it for later parameter
+					// delivery. The matched segment list keeps the resolved
+					// value (e.g. "seed-tomato") rather than the template
+					// token ("{sku}") so URI reconstruction stays accurate.
+					var paramName = RouteTemplate.GetSegmentParameterName(split);
+					if (string.IsNullOrEmpty(paramName))
+						return String.Empty;
+
+					currentSet.Add(next);
+					matches.Add(next);
+
+					localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+					localCaptures[paramName] = Uri.UnescapeDataString(next);
+				}
 				else
 				{
 					return String.Empty;
 				}
+			}
+
+			if (capturedParameters != null && localCaptures != null)
+			{
+				foreach (var kvp in localCaptures)
+					capturedParameters[kvp.Key] = kvp.Value;
 			}
 
 			return String.Join(_uriSeparator, matches);
@@ -270,6 +320,7 @@ namespace Microsoft.Maui.Controls
 		public List<string> GlobalRouteMatches => _globalRouteMatches;
 		public List<string> SegmentsMatched => _matchedSegments;
 		public IReadOnlyList<string> FullSegments => _fullSegments;
+		public IReadOnlyDictionary<string, string> PathParameters => _pathParameters;
 		public ShellUriHandler.NodeLocation GetNodeLocation()
 		{
 			ShellUriHandler.NodeLocation nodeLocation = new ShellUriHandler.NodeLocation();

@@ -14,6 +14,12 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
 
+		// Parsed templates for routes that contain "{param}" segments. The key
+		// here is the same key used in <see cref="s_routes"/> (e.g.
+		// "product/{sku}"); routes without templated segments are absent from
+		// this dictionary so the literal fast paths remain unaffected.
+		static Dictionary<string, RouteTemplate> s_routeTemplates = new(StringComparer.Ordinal);
+
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
 		internal const string PathSeparator = "/";
@@ -114,7 +120,24 @@ namespace Microsoft.Maui.Controls
 		{
 			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
+			s_routeTemplates.Clear();
 			s_routeKeys = null;
+		}
+
+		// Returns true when the supplied route key was registered with a
+		// template segment such as "product/{sku}". Used by the URI matcher
+		// to decide whether to capture path parameters for the route.
+		internal static bool IsTemplateRoute(string route)
+		{
+			if (string.IsNullOrEmpty(route))
+				return false;
+
+			return s_routeTemplates.ContainsKey(route);
+		}
+
+		internal static bool TryGetRouteTemplate(string route, out RouteTemplate template)
+		{
+			return s_routeTemplates.TryGetValue(route, out template);
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
@@ -218,6 +241,21 @@ namespace Microsoft.Maui.Controls
 			ValidateRoute(route, factory);
 
 			s_routes[route] = factory;
+
+			// Templates are an additive opt-in: any route that contains a
+			// "{param}" segment is parsed and remembered alongside the literal
+			// registration. Routes without templated segments never enter
+			// s_routeTemplates so existing literal fast paths are unaffected.
+			if (RouteTemplate.ContainsTemplateSyntax(route))
+			{
+				var template = RouteTemplate.Parse(route, out var error);
+				if (template == null)
+					throw new ArgumentException(error, nameof(route));
+
+				if (template.HasParameters)
+					s_routeTemplates[route] = template;
+			}
+
 			s_routeKeys = null;
 		}
 
@@ -227,6 +265,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (s_routes.Remove(route))
 			{
+				s_routeTemplates.Remove(route);
 				s_routeKeys = null;
 			}
 		}

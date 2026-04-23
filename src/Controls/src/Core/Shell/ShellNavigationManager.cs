@@ -92,6 +92,21 @@ namespace Microsoft.Maui.Controls
 
 			var uri = navigationRequest.Request.FullUri;
 			var queryString = navigationRequest.Query;
+
+			// Seed path parameters from templated route segments BEFORE the
+			// query string. SetQueryStringParameters only adds keys that are
+			// not already present, so path parameters win over a query-string
+			// parameter with the same name (matches ASP.NET Core / Blazor
+			// route-template precedence and lets templated routes override
+			// stale query-string values). For literal-only routes this
+			// dictionary is empty, so the existing behavior is preserved.
+			var pathParameters = navigationRequest.Request.PathParameters;
+			if (pathParameters != null && pathParameters.Count > 0)
+			{
+				foreach (var kvp in pathParameters)
+					parameters[kvp.Key] = kvp.Value;
+			}
+
 			parameters.SetQueryStringParameters(queryString);
 			ApplyQueryAttributes(_shell, parameters, false, false);
 
