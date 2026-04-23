@@ -345,10 +345,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 		//QueryPropertyGenerator
 		public static DiagnosticDescriptor QueryPropertyClassMustBePartial = new DiagnosticDescriptor(
 			id: "MAUI1200",
-			title: "Class with QueryProperty must be partial",
-			messageFormat: "Class '{0}' with QueryProperty attributes must be declared as partial to allow source generation",
+			title: "Class with QueryProperty should be partial",
+			messageFormat: "Class '{0}' with QueryProperty attributes should be declared as partial to enable source generation. Without partial, the reflection fallback is used which is not trim-safe.",
 			category: "QueryPropertyGenerator",
-			defaultSeverity: DiagnosticSeverity.Error,
+			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor QueryPropertyNotFound = new DiagnosticDescriptor(
