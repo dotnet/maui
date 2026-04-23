@@ -96,27 +96,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (task is null)
 			{
+				completion.TrySetException(new InvalidOperationException(
+					"Alert delegate returned a null Task. The delegate must return a non-null Task and call SetResult(...) on the provided arguments."));
 				return;
 			}
 
 			if (task.IsCompleted)
 			{
-				ForwardFaultOrCancellation(task, completion);
+				ForwardCompletion(task, completion);
 				return;
 			}
 
 			task.ContinueWith(
-				static (t, state) => ForwardFaultOrCancellation(t, (TaskCompletionSource<T>)state!),
+				static (t, state) => ForwardCompletion(t, (TaskCompletionSource<T>)state!),
 				completion,
 				CancellationToken.None,
 				TaskContinuationOptions.ExecuteSynchronously,
 				TaskScheduler.Default);
 		}
 
-		static void ForwardFaultOrCancellation<T>(Task task, TaskCompletionSource<T> completion)
+		static void ForwardCompletion<T>(Task task, TaskCompletionSource<T> completion)
 		{
 			// The delegate is responsible for calling SetResult(...) on successful completion.
-			// Only forward faults and cancellations so we don't overwrite the delegate's result.
+			// Forward faults and cancellations so the caller observes them. If the delegate's
+			// task completed successfully but never called SetResult, surface that as an
+			// InvalidOperationException instead of letting the caller hang forever.
+			// All paths use Try* so a delegate that did call SetResult is unaffected.
 			if (task.IsFaulted && task.Exception is not null)
 			{
 				completion.TrySetException(task.Exception.InnerExceptions);
@@ -124,6 +129,11 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (task.IsCanceled)
 			{
 				completion.TrySetCanceled();
+			}
+			else if (!completion.Task.IsCompleted)
+			{
+				completion.TrySetException(new InvalidOperationException(
+					"Alert delegate completed without calling SetResult(...) on the provided arguments. The delegate must call SetResult before its returned Task completes."));
 			}
 		}
 	}

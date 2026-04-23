@@ -14,6 +14,12 @@ namespace Microsoft.Maui.Controls.Internals
 	/// in the application's <see cref="System.IServiceProvider"/>. The delegate is expected to call
 	/// <see cref="SetResult(bool)"/> when the user has made a choice.
 	/// </para>
+	/// <para>
+	/// Note: this convention uses an open <see cref="System.Func{T1, T2, TResult}"/> shape as the
+	/// service key. Only register this delegate type for MAUI alert handling; registering the same
+	/// closed generic for any other purpose in the same service collection will cause it to be
+	/// consumed as an alert handler.
+	/// </para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class AlertArguments
