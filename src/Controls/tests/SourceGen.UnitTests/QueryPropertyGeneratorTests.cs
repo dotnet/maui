@@ -69,7 +69,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -154,7 +153,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -220,7 +218,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -286,7 +283,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -352,7 +348,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -447,7 +442,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -544,7 +538,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -651,7 +644,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -721,7 +713,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -791,7 +782,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
@@ -855,7 +845,6 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 
 	}
 
-	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 }
 ";
@@ -923,7 +912,6 @@ namespace MyApp
 
 		}
 
-		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
 	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
