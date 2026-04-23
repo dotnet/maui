@@ -21,9 +21,13 @@ using static GeneratorHelpers;
 /// </para>
 /// <para>
 /// For each partial class with <c>[QueryProperty]</c> attributes, the generator emits a partial class
-/// that explicitly implements <c>IQueryAttributable.ApplyQueryAttributes</c>. Shell's routing
-/// infrastructure calls this interface before the reflection fallback, so the generated code
-/// takes precedence when present.
+/// that explicitly implements <c>IQueryAttributable.ApplyQueryAttributes</c> and is marked with
+/// <c>[GeneratedCode("QueryPropertyGenerator", ...)]</c>. At runtime, <c>ShellContent</c> detects
+/// this attribute and skips the reflection-based property setting, avoiding double application.
+/// </para>
+/// <para>
+/// For non-partial classes, the generator emits a MAUI1200 warning and no code is generated.
+/// The existing reflection fallback continues to work for these classes.
 /// </para>
 /// <para>
 /// The generated code handles: URL decoding for string properties, <c>Convert.ChangeType</c>
