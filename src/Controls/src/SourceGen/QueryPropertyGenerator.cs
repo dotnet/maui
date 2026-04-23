@@ -9,6 +9,28 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 using static GeneratorHelpers;
 
+/// <summary>
+/// Incremental source generator that generates <see cref="IQueryAttributable"/> implementations
+/// for classes decorated with <c>[QueryProperty]</c> attributes.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The <c>[QueryProperty]</c> attribute is traditionally processed at runtime via reflection in
+/// <c>ShellContent.ApplyQueryAttributes</c>. This generator creates a compile-time implementation
+/// that is trim-safe, NativeAOT-compatible, and avoids reflection overhead.
+/// </para>
+/// <para>
+/// For each partial class with <c>[QueryProperty]</c> attributes, the generator emits a partial class
+/// that explicitly implements <c>IQueryAttributable.ApplyQueryAttributes</c>. Shell's routing
+/// infrastructure calls this interface before the reflection fallback, so the generated code
+/// takes precedence when present.
+/// </para>
+/// <para>
+/// The generated code handles: URL decoding for string properties, <c>Convert.ChangeType</c>
+/// for non-string properties (using the underlying type for <c>Nullable&lt;T&gt;</c>),
+/// and clearing properties that were set in a previous navigation but are absent in the current one.
+/// </para>
+/// </remarks>
 [Generator(LanguageNames.CSharp)]
 public class QueryPropertyGenerator : IIncrementalGenerator
 {
