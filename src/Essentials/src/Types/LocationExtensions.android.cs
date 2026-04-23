@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		internal static Location ToLocation(this AndroidLocation location)
 		{
-			var (altitude, altitudeReference) = GetAltitude(location);
+			var (altitude, altitudeReference, verticalAccuracy) = GetAltitude(location);
 
 			return new Location
 			{
@@ -30,10 +30,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				Altitude = altitude,
 				Timestamp = location.GetTimestamp().ToUniversalTime(),
 				Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
-				VerticalAccuracy =
-					OperatingSystem.IsAndroidVersionAtLeast(26) && location.HasVerticalAccuracy
-						? location.VerticalAccuracyMeters
-						: null,
+				VerticalAccuracy = verticalAccuracy,
 				ReducedAccuracy = false,
 				Course = location.HasBearing ? location.Bearing : default(double?),
 				Speed = location.HasSpeed ? location.Speed : default(double?),
@@ -49,15 +46,28 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		// Prefer mean sea level altitude (Android API 34+) when available so altitude
 		// values are consistent across platforms without manual geoid correction.
-		static (double? Altitude, AltitudeReferenceSystem Reference) GetAltitude(AndroidLocation location)
+		// Altitude and its accuracy are selected together so they always come from
+		// the same reference system (MSL/geoid vs WGS84/ellipsoid).
+		static (double? Altitude, AltitudeReferenceSystem Reference, double? VerticalAccuracy) GetAltitude(AndroidLocation location)
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(34) && location.HasMslAltitude)
-				return (location.MslAltitudeMeters, AltitudeReferenceSystem.Geoid);
+			{
+				double? mslAccuracy = location.HasMslAltitudeAccuracy
+					? location.MslAltitudeAccuracyMeters
+					: null;
+				return (location.MslAltitudeMeters, AltitudeReferenceSystem.Geoid, mslAccuracy);
+			}
 
 			if (location.HasAltitude)
-				return (location.Altitude, AltitudeReferenceSystem.Ellipsoid);
+			{
+				double? ellipsoidAccuracy =
+					OperatingSystem.IsAndroidVersionAtLeast(26) && location.HasVerticalAccuracy
+						? location.VerticalAccuracyMeters
+						: null;
+				return (location.Altitude, AltitudeReferenceSystem.Ellipsoid, ellipsoidAccuracy);
+			}
 
-			return (null, AltitudeReferenceSystem.Unspecified);
+			return (null, AltitudeReferenceSystem.Unspecified, null);
 		}
 
 		static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
