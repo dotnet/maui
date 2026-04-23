@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 		public static DiagnosticDescriptor QueryPropertyClassMustBePartial = new DiagnosticDescriptor(
 			id: "MAUI1200",
 			title: "Class with QueryProperty should be partial",
-			messageFormat: "Class '{0}' with QueryProperty attributes should be declared as partial to enable source generation. Without partial, the reflection fallback is used which is not trim-safe.",
+			messageFormat: "Class '{0}' with QueryProperty attributes should be declared as partial to enable source generation. Without partial, query properties require the reflection fallback which is not trim-safe and may be disabled.",
 			category: "QueryPropertyGenerator",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
@@ -373,6 +373,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			messageFormat: "QueryProperty attribute on class '{0}' has invalid arguments - property name and query id must not be null or empty",
 			category: "QueryPropertyGenerator",
 			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor QueryPropertyClassMustBePartialNoFallback = new DiagnosticDescriptor(
+			id: "MAUI1204",
+			title: "Class with QueryProperty must be partial (reflection disabled)",
+			messageFormat: "Class '{0}' with QueryProperty attributes must be declared as partial. The reflection fallback is disabled (trimming/NativeAOT) so query properties will not work without source generation.",
+			category: "QueryPropertyGenerator",
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
