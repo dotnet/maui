@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
@@ -176,13 +177,14 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void MauiAppBuild_UsesCachedApplicationDispatcherForBridge()
+		public async Task InvokeOnMainThreadAsync_Action_WorksThroughBridge()
 		{
+			var dispatched = false;
 			var dispatcherStub = new DispatcherStub(
-				isInvokeRequired: () => false,
-				invokeOnMainThread: action => action());
+				isInvokeRequired: () => true,
+				invokeOnMainThread: action => { dispatched = true; action(); });
 
-			var dispatcherProvider = new SequencedDispatcherProvider(dispatcherStub, null);
+			var dispatcherProvider = new TestDispatcherProvider(dispatcherStub);
 			DispatcherProvider.SetCurrent(dispatcherProvider);
 
 			try
@@ -190,6 +192,34 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				var builder = MauiApp.CreateBuilder();
 				using var app = builder.Build();
 
+				var actionExecuted = false;
+				await MainThread.InvokeOnMainThreadAsync(() => actionExecuted = true);
+
+				Assert.True(dispatched);
+				Assert.True(actionExecuted);
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
+		public void MauiAppBuild_BridgeUsesApplicationDispatcher()
+		{
+			var dispatcherStub = new DispatcherStub(
+				isInvokeRequired: () => false,
+				invokeOnMainThread: action => action());
+
+			var dispatcherProvider = new TestDispatcherProvider(dispatcherStub);
+			DispatcherProvider.SetCurrent(dispatcherProvider);
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				using var app = builder.Build();
+
+				// Verify the bridge connected the dispatcher's IsDispatchRequired to MainThread.IsMainThread
 				Assert.True(MainThread.IsMainThread);
 			}
 			finally
@@ -208,26 +238,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 
 			public IDispatcher? GetForCurrentThread() => _dispatcher;
-		}
-
-		class SequencedDispatcherProvider : IDispatcherProvider
-		{
-			readonly IDispatcher?[] _dispatchers;
-			int _index;
-
-			public SequencedDispatcherProvider(params IDispatcher?[] dispatchers)
-			{
-				_dispatchers = dispatchers;
-			}
-
-			public IDispatcher? GetForCurrentThread()
-			{
-				var index = _index++;
-				if (index >= _dispatchers.Length)
-					index = _dispatchers.Length - 1;
-
-				return index >= 0 ? _dispatchers[index] : null;
-			}
 		}
 	}
 }

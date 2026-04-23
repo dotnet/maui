@@ -83,7 +83,9 @@ namespace Microsoft.Maui.Hosting
 #endif
 			});
 
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
+#endif
 
 			return builder;
 		}
@@ -118,6 +120,28 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
+		/// <summary>
+		/// Lightweight initializer that bridges the MAUI application dispatcher to MainThread
+		/// so that MainThread.BeginInvokeOnMainThread and MainThread.IsMainThread work
+		/// on custom platform backends / external TFMs where no native
+		/// MainThread implementation exists.
+		/// </summary>
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+		class MainThreadBridgeInitializer : IMauiInitializeService
+		{
+			public void Initialize(IServiceProvider services)
+			{
+				var dispatcher = services.GetOptionalApplicationDispatcher();
+				if (dispatcher is null)
+					return;
+
+				MainThread.SetCustomImplementation(
+					isMainThread: () => !dispatcher.IsDispatchRequired,
+					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
+			}
+		}
+#endif
+
 		class EssentialsInitializer : IMauiInitializeService
 		{
 			private readonly IEnumerable<EssentialsRegistration> _essentialsRegistrations;
@@ -139,10 +163,6 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
-				BridgeMainThreadFromDispatcher(services);
-#endif
-
 #if WINDOWS
 				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
@@ -159,25 +179,6 @@ namespace Microsoft.Maui.Hosting
 				if (_essentialsBuilder.TrackVersions)
 					VersionTracking.Track();
 			}
-
-			/// <summary>
-			/// Bridges the MAUI application dispatcher to MainThread so that
-			/// MainThread.BeginInvokeOnMainThread and MainThread.IsMainThread work
-			/// on custom platform backends / external TFMs where no native
-			/// MainThread implementation exists.
-			/// </summary>
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
-			static void BridgeMainThreadFromDispatcher(IServiceProvider services)
-			{
-				var dispatcher = services.GetOptionalApplicationDispatcher();
-				if (dispatcher is null)
-					return;
-
-				MainThread.SetCustomImplementation(
-					isMainThread: () => !dispatcher.IsDispatchRequired,
-					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
-			}
-#endif
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
 			{
