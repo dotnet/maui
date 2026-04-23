@@ -15,7 +15,20 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	//This set of tests is for validating Microsoft.Maui.Controls.targets
+	// This set of tests is for validating Microsoft.Maui.Controls.targets.
+	//
+	// Contract under test: SourceGen is the net11.0 default XAML inflator, and the legacy
+	// `XamlC` MSBuild target must NOT run on a default, no-flag-passed build. Every
+	// surviving test here is a *negative* test that locks down that contract using one of
+	// two patterns:
+	//   1. AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"))
+	//      — proves the XamlC target was skipped (BuildAProject, LinkedFile, RandomXml,
+	//      RandomEmbeddedResource).
+	//   2. Diagnostic-verbosity log scrape asserting `Building target "XamlC"` is absent
+	//      — proves the target wasn't even scheduled (NoXamlFiles).
+	// Tests that forced `-p:MauiXamlInflator=XamlC` to exercise the legacy path were
+	// intentionally removed in dotnet/maui#34972 — do not reintroduce that opt-in.
+	// See ~/.copilot/lessons/dotnet/maui/xamlc-test-opt-in.md for rationale.
 	[Trait("Category", "LongRunning")]
 	public class MSBuildTests : IDisposable
 	{
