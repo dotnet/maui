@@ -1,9 +1,18 @@
 pluginManagement {
     repositories {
         maven {
+            url = 'https://pkgs.dev.azure.com/artifacts-public/PublicTools/_packaging/AzureArtifacts/maven/v1'
+            name = 'AzureArtifacts'
+        }
+        maven {
             url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+            name = 'dotnet-public-maven'
         }
     }
+}
+
+plugins {
+    id 'com.microsoft.azure.artifacts.credprovider' version '1.1.1'
 }
 
 dependencyResolutionManagement {
@@ -11,6 +20,7 @@ dependencyResolutionManagement {
     repositories {
         maven {
             url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+            name = 'dotnet-public-maven'
         }
     }
 }

@@ -3,6 +3,7 @@ buildscript {
     repositories {
         maven {
             url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+            name = 'dotnet-public-maven'
         }
     }
     dependencies {
