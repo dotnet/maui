@@ -87,9 +87,12 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			if (classInfo.PropertyMappings.Length > 0)
 			{
 				var source = GenerateSource(classInfo);
+				var typePath = classInfo.ContainingTypes.Length > 0
+					? string.Join(".", classInfo.ContainingTypes) + "." + classInfo.ClassName
+					: classInfo.ClassName;
 				var hintName = classInfo.Namespace is not null
-					? $"{classInfo.Namespace}.{classInfo.ClassName}_QueryProperty.g.cs"
-					: $"{classInfo.ClassName}_QueryProperty.g.cs";
+					? $"{classInfo.Namespace}.{typePath}_QueryProperty.g.cs"
+					: $"{typePath}_QueryProperty.g.cs";
 				spc.AddSource(hintName, source);
 			}
 		});
@@ -111,15 +114,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				classDecl.Identifier.GetLocation(),
 				classSymbol.Name);
 			diagnostics.Add(diagnostic);
-			return new ClassInfo(classSymbol.Name, null, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
-		}
-
-		// Nested classes require nested partial declarations which we don't currently emit
-		if (classSymbol.ContainingType is not null)
-		{
-			// Skip silently — nested [QueryProperty] classes fall back to reflection.
-			// Nested partial class emission is not yet supported.
-			return new ClassInfo(classSymbol.Name, null, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
+			return new ClassInfo(classSymbol.Name, null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
 		}
 
 		// Skip generation if the class already explicitly implements IQueryAttributable
@@ -129,7 +124,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			foreach (var iface in classSymbol.Interfaces)
 			{
 				if (SymbolEqualityComparer.Default.Equals(iface, iQueryAttributable))
-					return new ClassInfo(classSymbol.Name, null, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
+					return new ClassInfo(classSymbol.Name, null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
 			}
 		}
 
@@ -209,9 +204,19 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		if (string.IsNullOrEmpty(namespaceName) || namespaceName == "<global namespace>")
 			namespaceName = null;
 
+		// Collect containing type chain for nested classes (outermost first)
+		var containingTypes = ImmutableArray.CreateBuilder<string>();
+		var current = classSymbol.ContainingType;
+		while (current is not null)
+		{
+			containingTypes.Insert(0, current.Name);
+			current = current.ContainingType;
+		}
+
 		return new ClassInfo(
 			classSymbol.Name,
 			namespaceName,
+			containingTypes.ToImmutable(),
 			propertyMappingsArray,
 			diagnostics.ToImmutable());
 	}
@@ -263,6 +268,15 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("global::Microsoft.Maui.Controls.IQueryAttributable")))))
 			.WithMembers(SyntaxFactory.List(classMembers));
 
+		// Wrap in containing type chain for nested classes (innermost → outermost)
+		MemberDeclarationSyntax topMember = classDeclaration;
+		for (int i = classInfo.ContainingTypes.Length - 1; i >= 0; i--)
+		{
+			topMember = SyntaxFactory.ClassDeclaration(classInfo.ContainingTypes[i])
+				.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PartialKeyword)))
+				.AddMembers(topMember);
+		}
+
 		// Create compilation unit with nullable enable directive
 		var compilationUnit = SyntaxFactory.CompilationUnit()
 			.AddUsings(usingDirectives);
@@ -280,12 +294,12 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		if (classInfo.Namespace is not null)
 		{
 			var namespaceDeclaration = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(classInfo.Namespace))
-				.AddMembers(classDeclaration);
+				.AddMembers(topMember);
 			compilationUnit = compilationUnit.AddMembers(namespaceDeclaration);
 		}
 		else
 		{
-			compilationUnit = compilationUnit.AddMembers(classDeclaration);
+			compilationUnit = compilationUnit.AddMembers(topMember);
 		}
 
 		return compilationUnit;
@@ -575,6 +589,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 	private record struct ClassInfo(
 		string ClassName,
 		string? Namespace,
+		ImmutableArray<string> ContainingTypes,
 		ImmutableArray<PropertyMapping> PropertyMappings,
 		ImmutableArray<Diagnostic> Diagnostics);
 }
