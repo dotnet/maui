@@ -1010,5 +1010,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(error);
 			Assert.Null(t);
 		}
+
+		// ===== Review round 3 fixes =====
+
+		[Fact]
+		public async Task TemplateRoute_RenavigationPreservesPageInstance()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+			Routing.RegisterRoute("review", typeof(ReviewPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			await shell.GoToAsync("//main/products/product/seed-tomato");
+			var page1 = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1];
+
+			// Push review on top of the same product page
+			await shell.GoToAsync("//main/products/product/seed-tomato/review");
+
+			// page1 should still be the same instance (not recreated)
+			var page1After = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 2];
+			Assert.Same(page1, page1After);
+		}
+
+		[Fact]
+		public async Task Constraint_EnforcedWhenShellContentMatchesPrefix()
+		{
+			Routing.RegisterRoute("orders/{id:int}", typeof(OrderDetailPage));
+
+			var shell = new Shell();
+			// ShellContent named "orders" — same as first segment of template
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "orders"));
+
+			// "abc" violates :int and must be rejected even after CollapsePath
+			// strips the "orders" prefix
+			await Assert.ThrowsAsync<ArgumentException>(() =>
+				shell.GoToAsync("//main/orders/abc"));
+		}
+
+		[Fact]
+		public async Task Constraint_AcceptedWhenShellContentMatchesPrefix()
+		{
+			Routing.RegisterRoute("orders/{id:int}", typeof(OrderDetailPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "orders"));
+
+			await shell.GoToAsync("//main/orders/42");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as OrderDetailPage;
+			Assert.NotNull(page);
+			Assert.Equal("42", page.OrderId);
+		}
 	}
 }

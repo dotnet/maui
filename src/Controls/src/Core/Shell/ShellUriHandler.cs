@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 						if (page == null)
 							continue;
 
-						var route = Routing.GetRoute(page);
+						var route = Routing.GetResolvedRoute(page) ?? Routing.GetRoute(page);
 						buildUpPages.AddRange(CollapsePath(route, buildUpPages, false));
 					}
 
@@ -575,7 +575,14 @@ namespace Microsoft.Maui.Controls
 						? new Dictionary<string, string>(StringComparer.Ordinal)
 						: null;
 
-					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters);
+					// Look up template by original routeKey (not collapsed route)
+					// so constraints/defaults/catch-all are still applied after
+					// CollapsePath strips prefix segments.
+					RouteTemplate routeTemplate = null;
+					if (isTemplate)
+						Routing.TryGetRouteTemplate(routeKey, out routeTemplate);
+
+					string collapsedMatch = possibleRoutePath.GetNextSegmentMatch(collapsedRoute, capturedParameters, routeTemplate);
 					if (!String.IsNullOrWhiteSpace(collapsedMatch))
 					{
 						possibleRoutePath.AddGlobalRoute(routeKey, collapsedMatch, capturedParameters);
@@ -616,7 +623,7 @@ namespace Microsoft.Maui.Controls
 								? new Dictionary<string, string>(StringComparer.Ordinal)
 								: null;
 
-							string segmentMatch = leafSearch.GetNextSegmentMatch(collapsedLeafRoute, leafCaptured);
+							string segmentMatch = leafSearch.GetNextSegmentMatch(collapsedLeafRoute, leafCaptured, routeTemplate);
 							if (!String.IsNullOrWhiteSpace(segmentMatch))
 							{
 								possibleRoutePath.AddMatch(nextNode);

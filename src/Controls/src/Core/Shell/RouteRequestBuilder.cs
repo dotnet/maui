@@ -186,12 +186,17 @@ namespace Microsoft.Maui.Controls
 
 		public string GetNextSegmentMatch(string matchMe)
 		{
-			return GetNextSegmentMatch(matchMe, null);
+			return GetNextSegmentMatch(matchMe, null, null);
 		}
 
 // Template-aware overload. Handles optional params, catch-all,
 // constraints, mixed segments, and default values.
 public string GetNextSegmentMatch(string matchMe, IDictionary<string, string> capturedParameters)
+{
+	return GetNextSegmentMatch(matchMe, capturedParameters, null);
+}
+
+public string GetNextSegmentMatch(string matchMe, IDictionary<string, string> capturedParameters, RouteTemplate template)
 {
 var segmentsToMatch = ShellUriHandler.RetrievePaths(matchMe).ToList();
 if (matchMe.StartsWith("/", StringComparison.Ordinal) ||
@@ -211,8 +216,12 @@ List<string> matches = new List<string>();
 List<string> currentSet = new List<string>(_matchedSegments);
 Dictionary<string, string> localCaptures = null;
 
-// Try to get parsed template for richer matching (optional, catch-all, constraints, mixed)
-Routing.TryGetRouteTemplate(matchMe, out RouteTemplate template);
+// Use provided template, or fall back to lookup by matchMe key.
+// The caller should pass the template when available because
+// CollapsePath may have stripped prefix segments from matchMe,
+// making it different from the registered key.
+if (template == null)
+	Routing.TryGetRouteTemplate(matchMe, out template);
 int templateIdx = 0;
 
 // Template offset: when CollapsePath strips N prefix segments,

@@ -143,6 +143,21 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
 		public static readonly BindableProperty RouteProperty = CreateRouteProperty();
 
+		// Internal attached property storing the resolved route URI for pages
+		// created from template routes (e.g. "product/seed-tomato" for a page
+		// whose Route is "product/{sku}"). Used by GetNavigationState to build
+		// Shell.CurrentState.Location without leaking template tokens. The
+		// page's Route property always keeps the registered template key so
+		// that factory lookups and stack comparisons work correctly.
+		internal static readonly BindableProperty ResolvedRouteProperty =
+			BindableProperty.CreateAttached("ResolvedRoute", typeof(string), typeof(Routing), null);
+
+		internal static string GetResolvedRoute(BindableObject obj)
+			=> (string)obj.GetValue(ResolvedRouteProperty);
+
+		internal static void SetResolvedRoute(Element obj, string value)
+			=> obj.SetValue(ResolvedRouteProperty, value);
+
 		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
 			Justification = "The CreateAttached method has a DynamicallyAccessedMembers annotation for all public methods"
 			+ "on the declaring type. This includes the Routing.RegisterRoute(string, Type) method which also has a "
