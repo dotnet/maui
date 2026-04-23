@@ -26,8 +26,8 @@
    | 1 | Gate failed (tests fail with fix) | `⚠️ REQUEST CHANGES` — fix doesn't work |
    | 2 | Alternative fix found via Try-Fix that is simpler/better | `⚠️ REQUEST CHANGES` — suggest alternative |
    | 3 | Code review verdict is `NEEDS_CHANGES` AND try-fix models independently flagged same concerns | `⚠️ REQUEST CHANGES` — corroborated code quality issues |
-   | 4 | Code review verdict is `NEEDS_CHANGES` but concerns are uncorroborated AND findings are significant (safety, correctness, memory leaks) | `⚠️ REQUEST CHANGES` — include code review concerns, note they are uncorroborated |
-   | 5 | Code review verdict is `NEEDS_CHANGES` but concerns are uncorroborated AND findings are minor (style, naming, suggestions) | `✅ APPROVE with notes` — surface code review concerns but do not block |
+   | 4 | Code review verdict is `NEEDS_CHANGES` but concerns are uncorroborated AND findings are significant (any ❌ Error, or ⚠️ Warnings about safety/correctness/memory leaks) | `⚠️ REQUEST CHANGES` — include code review concerns, note they are uncorroborated |
+   | 5 | Code review verdict is `NEEDS_CHANGES` but concerns are uncorroborated AND findings are minor (⚠️ Warnings about style/naming, 💡 Suggestions only) | `✅ APPROVE with notes` — surface code review concerns but do not block |
    | 6 | Code review verdict is `NEEDS_DISCUSSION` | `⚠️ REQUEST CHANGES` — include code review concerns for human judgment |
    | 7 | PR's fix selected AND Gate passed AND code review LGTM or SKIPPED | `✅ APPROVE` |
 
@@ -55,7 +55,7 @@ mkdir -p CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/report
 
 Write `content.md`:
 ```markdown
-## {✅/⚠️} Final Recommendation: {APPROVE/REQUEST CHANGES}
+## {✅/⚠️} Final Recommendation: {APPROVE / APPROVE with notes / REQUEST CHANGES}
 
 ### Phase Status
 | Phase | Status | Notes |

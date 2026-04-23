@@ -220,7 +220,7 @@ Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 
 Read the target files to understand the code.
 
-**Load MAUI domain knowledge** from `.github/skills/code-review/references/review-rules.md` — this contains patterns distilled from 28k maintainer review comments across 142 high-discussion PRs. Apply relevant rules (handler lifecycle, memory management, threading, platform conventions) when analyzing the code and designing your fix. You don't need to check every rule — focus on the ones relevant to the files you're modifying.
+**Load MAUI domain knowledge** from `.github/skills/code-review/references/review-rules.md` — this contains patterns distilled from 28k maintainer review comments across 142 high-discussion PRs. Apply relevant rules (handler lifecycle, memory management, threading, platform conventions) when analyzing the code and designing your fix. You don't need to check every rule — focus on the ones relevant to the files you're modifying. If the file is unavailable, proceed using your general MAUI knowledge.
 
 **Verify the platform code path before implementing.** Check which platform-specific file actually executes for the target scenario:
 - Files named `.iOS.cs` compile for both iOS AND MacCatalyst

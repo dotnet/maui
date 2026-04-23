@@ -52,7 +52,7 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
      name="code-review",
      description="Code review for PR",
      agent_type="general-purpose",
-     mode="sync",
+     mode="background",
      prompt="""
        Run the code-review skill for PR #XXXXX.
        Follow the full 6-step workflow in .github/skills/code-review/SKILL.md.
