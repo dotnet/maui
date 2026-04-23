@@ -7,8 +7,8 @@ namespace Microsoft.Maui.Controls
 	/// <summary>Maps a query parameter from a URI to a property on the target page or view model during Shell navigation.</summary>
 	/// <remarks>
 	/// When applied to a partial class, a source generator automatically implements <see cref="IQueryAttributable"/>
-	/// at compile time, making this attribute trim-safe and NativeAOT-compatible. For non-partial classes,
-	/// the attribute falls back to reflection-based property setting at runtime.
+	/// at compile time, making this attribute trim-safe and NativeAOT-compatible. Classes using this attribute
+	/// must be declared as partial to enable source generation.
 	/// </remarks>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	[RequiresUnreferencedCode(TrimmerConstants.QueryPropertyAttributeWarning, Url = TrimmerConstants.QueryPropertyDocsUrl)]
