@@ -51,11 +51,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
-				_queryPropertyKeys.Add(""name"");
+				__queryPropertyKeys.Add(""name"");
 				if (nameValue != null)
 					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 				else
@@ -69,7 +69,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -121,11 +122,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
-				_queryPropertyKeys.Add(""name"");
+				__queryPropertyKeys.Add(""name"");
 				if (nameValue != null)
 					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 				else
@@ -139,7 +140,7 @@ namespace MyApp
 
 			if (query.TryGetValue(""location"", out var locationValue))
 			{
-				_queryPropertyKeys.Add(""location"");
+				__queryPropertyKeys.Add(""location"");
 				if (locationValue != null)
 					Location = global::System.Net.WebUtility.UrlDecode(locationValue.ToString());
 				else
@@ -153,7 +154,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -203,11 +205,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""count"", out var countValue))
 			{
-				_queryPropertyKeys.Add(""count"");
+				__queryPropertyKeys.Add(""count"");
 				if (countValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(countValue, typeof(int));
@@ -218,7 +220,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -268,11 +271,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""price"", out var priceValue))
 			{
-				_queryPropertyKeys.Add(""price"");
+				__queryPropertyKeys.Add(""price"");
 				if (priceValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(priceValue, typeof(double));
@@ -283,7 +286,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -333,11 +337,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""active"", out var activeValue))
 			{
-				_queryPropertyKeys.Add(""active"");
+				__queryPropertyKeys.Add(""active"");
 				if (activeValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(activeValue, typeof(bool));
@@ -348,7 +352,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -402,11 +407,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
-				_queryPropertyKeys.Add(""name"");
+				__queryPropertyKeys.Add(""name"");
 				if (nameValue != null)
 					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 				else
@@ -420,7 +425,7 @@ namespace MyApp
 
 			if (query.TryGetValue(""age"", out var ageValue))
 			{
-				_queryPropertyKeys.Add(""age"");
+				__queryPropertyKeys.Add(""age"");
 				if (ageValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(ageValue, typeof(int));
@@ -431,7 +436,7 @@ namespace MyApp
 
 			if (query.TryGetValue(""price"", out var priceValue))
 			{
-				_queryPropertyKeys.Add(""price"");
+				__queryPropertyKeys.Add(""price"");
 				if (priceValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(priceValue, typeof(double));
@@ -442,7 +447,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -519,11 +525,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""Bear"", out var BearValue))
 			{
-				_queryPropertyKeys.Add(""Bear"");
+				__queryPropertyKeys.Add(""Bear"");
 				if (BearValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(BearValue, typeof(global::MyApp.Animal));
@@ -538,7 +544,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -612,11 +619,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
-				_queryPropertyKeys.Add(""name"");
+				__queryPropertyKeys.Add(""name"");
 				if (nameValue != null)
 					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 				else
@@ -630,7 +637,7 @@ namespace MyApp
 
 			if (query.TryGetValue(""location"", out var locationValue))
 			{
-				_queryPropertyKeys.Add(""location"");
+				__queryPropertyKeys.Add(""location"");
 				if (locationValue != null)
 					Location = global::System.Net.WebUtility.UrlDecode(locationValue.ToString());
 				else
@@ -644,7 +651,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -695,11 +703,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
-				_queryPropertyKeys.Add(""name"");
+				__queryPropertyKeys.Add(""name"");
 				if (nameValue != null)
 					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 				else
@@ -713,7 +721,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -763,11 +772,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""count"", out var countValue))
 			{
-				_queryPropertyKeys.Add(""count"");
+				__queryPropertyKeys.Add(""count"");
 				if (countValue != null)
 				{
 					var convertedValue = global::System.Convert.ChangeType(countValue, typeof(int));
@@ -782,7 +791,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";
@@ -827,11 +837,11 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 		if (query == null)
 			return;
 		// Track which properties were set in previous navigation
-		var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-		_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+		var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+		__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 		if (query.TryGetValue(""name"", out var nameValue))
 		{
-			_queryPropertyKeys.Add(""name"");
+			__queryPropertyKeys.Add(""name"");
 			if (nameValue != null)
 				Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 			else
@@ -845,7 +855,8 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 
 	}
 
-	private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 }
 ";
 
@@ -894,11 +905,11 @@ namespace MyApp
 			if (query == null)
 				return;
 			// Track which properties were set in previous navigation
-			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
-			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
+			var previousKeys = __queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
+			__queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
-				_queryPropertyKeys.Add(""name"");
+				__queryPropertyKeys.Add(""name"");
 				if (nameValue != null)
 					Name = global::System.Net.WebUtility.UrlDecode(nameValue.ToString());
 				else
@@ -912,7 +923,8 @@ namespace MyApp
 
 		}
 
-		private global::System.Collections.Generic.HashSet<string>? _queryPropertyKeys;
+		[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never), global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never), global::System.Runtime.CompilerServices.CompilerGenerated]
+	private global::System.Collections.Generic.HashSet<string>? __queryPropertyKeys;
 	}
 }
 ";

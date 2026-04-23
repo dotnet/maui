@@ -25,17 +25,17 @@ public abstract class QueryPropertyGeneratorTestBase
 
 	protected static string NormalizeForComparison(string text)
 	{
-		// Normalize line endings, convert tabs to spaces, remove trailing whitespace per line,
-		// remove all blank lines (compare structural content only), and trim
+		// Normalize line endings, convert tabs to spaces, trim each line,
+		// remove all blank lines (compare structural content only)
 		var lines = text
 			.Replace("\r\n", "\n", StringComparison.Ordinal)
 			.Replace("\r", "\n", StringComparison.Ordinal)
 			.Replace("\t", "    ", StringComparison.Ordinal)
 			.Split('\n')
-			.Select(line => line.TrimEnd())
+			.Select(line => line.Trim())
 			.Where(line => !string.IsNullOrWhiteSpace(line));
 
-		return string.Join("\n", lines).Trim();
+		return string.Join("\n", lines);
 	}
 
 	protected static GeneratorDriverRunResult RunQueryPropertyGenerator(string sourceCode)
