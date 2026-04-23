@@ -373,8 +373,9 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 	private static IEnumerable<StatementSyntax> BuildPropertyMappingStatements(PropertyMapping mapping)
 	{
 		var statements = new List<StatementSyntax>();
-		var safeVarName = SanitizeIdentifier(mapping.QueryId);
-		var valueVarName = $"{safeVarName}Value";
+		// Use the property name as the variable prefix — it's already a valid C# identifier
+		// and unique per class, avoiding collisions from QueryIds that sanitize to the same name
+		var valueVarName = $"{EscapeIdentifier(mapping.PropertyName)}__value";
 
 		// if (query.TryGetValue("queryId", out var queryIdValue))
 		var tryGetValueCondition = SyntaxFactory.InvocationExpression(
