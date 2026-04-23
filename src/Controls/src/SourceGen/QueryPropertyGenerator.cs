@@ -269,7 +269,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)),
 			SyntaxFactory.ReturnStatement()));
 
-		// var previousKeys = _queryPropertyKeys ?? new HashSet<string>();
+		// var previousKeys = __queryPropertyKeys ?? new HashSet<string>();
 		var previousKeysStatement = SyntaxFactory.LocalDeclarationStatement(
 			SyntaxFactory.VariableDeclaration(
 				SyntaxFactory.IdentifierName("var"))
@@ -278,18 +278,18 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 					.WithInitializer(SyntaxFactory.EqualsValueClause(
 						SyntaxFactory.BinaryExpression(
 							SyntaxKind.CoalesceExpression,
-							SyntaxFactory.IdentifierName("_queryPropertyKeys"),
+							SyntaxFactory.IdentifierName("__queryPropertyKeys"),
 							SyntaxFactory.ObjectCreationExpression(
 								SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>"))
 								.WithArgumentList(SyntaxFactory.ArgumentList()))))))
 			.WithLeadingTrivia(SyntaxFactory.Comment("// Track which properties were set in previous navigation"), SyntaxFactory.CarriageReturnLineFeed);
 		statements.Add(previousKeysStatement);
 
-		// _queryPropertyKeys = new HashSet<string>();
+		// __queryPropertyKeys = new HashSet<string>();
 		statements.Add(SyntaxFactory.ExpressionStatement(
 			SyntaxFactory.AssignmentExpression(
 				SyntaxKind.SimpleAssignmentExpression,
-				SyntaxFactory.IdentifierName("_queryPropertyKeys"),
+				SyntaxFactory.IdentifierName("__queryPropertyKeys"),
 				SyntaxFactory.ObjectCreationExpression(
 					SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>"))
 					.WithArgumentList(SyntaxFactory.ArgumentList()))));
@@ -346,12 +346,12 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 		var ifTrueStatements = new List<StatementSyntax>();
 
-		// _queryPropertyKeys.Add("queryId");
+		// __queryPropertyKeys.Add("queryId");
 		ifTrueStatements.Add(SyntaxFactory.ExpressionStatement(
 			SyntaxFactory.InvocationExpression(
 				SyntaxFactory.MemberAccessExpression(
 					SyntaxKind.SimpleMemberAccessExpression,
-					SyntaxFactory.IdentifierName("_queryPropertyKeys"),
+					SyntaxFactory.IdentifierName("__queryPropertyKeys"),
 					SyntaxFactory.IdentifierName("Add")))
 				.AddArgumentListArguments(
 					SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
@@ -480,12 +480,24 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 	private static FieldDeclarationSyntax BuildQueryPropertyKeysField()
 	{
+		var attributes = SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]
+		{
+			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.ComponentModel.EditorBrowsable"),
+				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+					SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression("global::System.ComponentModel.EditorBrowsableState.Never"))))),
+			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.Diagnostics.DebuggerBrowsable"),
+				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
+					SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression("global::System.Diagnostics.DebuggerBrowsableState.Never"))))),
+			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.Runtime.CompilerServices.CompilerGenerated"))
+		}));
+
 		return SyntaxFactory.FieldDeclaration(
 			SyntaxFactory.VariableDeclaration(
 				SyntaxFactory.NullableType(
 					SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>")))
 			.AddVariables(
-				SyntaxFactory.VariableDeclarator("_queryPropertyKeys")))
+				SyntaxFactory.VariableDeclarator("__queryPropertyKeys")))
+			.WithAttributeLists(SyntaxFactory.SingletonList(attributes))
 			.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword)));
 	}
 
