@@ -63,17 +63,10 @@ partial class PersonDetailsPage : Microsoft.Maui.Controls.IQueryAttributable
         if (query.TryGetValue("age", out var ageValue))
         {
             _queryPropertyKeys.Add("age");
-            try
+            if (ageValue != null)
             {
-                if (ageValue != null)
-                {
-                    var convertedValue = Convert.ChangeType(ageValue, typeof(int));
-                    Age = (int)convertedValue;
-                }
-            }
-            catch
-            {
-                // Ignore conversion errors
+                var convertedValue = Convert.ChangeType(ageValue, typeof(int));
+                Age = (int)convertedValue;
             }
         }
         else if (previousKeys.Contains("age"))
@@ -94,8 +87,8 @@ partial class PersonDetailsPage : Microsoft.Maui.Controls.IQueryAttributable
 
 ### Non-String Property Handling
 - Uses `Convert.ChangeType` for type conversion
-- Wraps conversion in try-catch to handle invalid values gracefully
 - Supports all types that implement `IConvertible`
+- Properly handles `Nullable<T>` types by converting to the underlying type
 
 ### Property Clearing
 - Tracks properties set in previous navigation
