@@ -392,7 +392,12 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			if (RuntimeFeature.IsQueryPropertyAttributeSupported)
+			// Skip reflection-based property setting if the content already implements IQueryAttributable.
+			// The source generator for [QueryProperty] emits an IQueryAttributable implementation,
+			// so the interface call above already handled the property mapping.
+			// The reflection path is only needed for classes that have [QueryProperty] without a
+			// source-generated (or manually written) IQueryAttributable implementation.
+			if (RuntimeFeature.IsQueryPropertyAttributeSupported && content is not IQueryAttributable)
 			{
 				var type = content.GetType();
 				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
