@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 	internal class RouteRequestBuilder
 	{
 		readonly List<string> _globalRouteMatches = new List<string>();
+		readonly List<string> _resolvedGlobalRoutes = new List<string>();
 		readonly List<string> _matchedSegments = new List<string>();
 		readonly List<string> _fullSegments = new List<string>();
 		readonly List<string> _allSegments = null;
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Controls
 			_matchedSegments.AddRange(builder._matchedSegments);
 			_fullSegments.AddRange(builder._fullSegments);
 			_globalRouteMatches.AddRange(builder._globalRouteMatches);
+			_resolvedGlobalRoutes.AddRange(builder._resolvedGlobalRoutes);
 			foreach (var kvp in builder._pathParameters)
 				_pathParameters[kvp.Key] = kvp.Value;
 			Shell = builder.Shell;
@@ -62,6 +64,7 @@ namespace Microsoft.Maui.Controls
 		public void AddGlobalRoute(string routeName, string segment, IDictionary<string, string> capturedParameters)
 		{
 			_globalRouteMatches.Add(routeName);
+			_resolvedGlobalRoutes.Add(segment);
 
 			foreach (string path in ShellUriHandler.RetrievePaths(segment))
 			{
@@ -121,7 +124,10 @@ namespace Microsoft.Maui.Controls
 			{
 				case ShellUriHandler.GlobalRouteItem globalRoute:
 					if (globalRoute.IsFinished)
+					{
 						_globalRouteMatches.Add(globalRoute.SourceRoute);
+						_resolvedGlobalRoutes.Add(userSegment ?? shellSegment);
+					}
 					break;
 				case Shell shell:
 					if (shell == Shell)
@@ -318,9 +324,23 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsFullMatch => _matchedSegments.Count == _allSegments.Count;
 		public List<string> GlobalRouteMatches => _globalRouteMatches;
+		public List<string> ResolvedGlobalRoutes => _resolvedGlobalRoutes;
 		public List<string> SegmentsMatched => _matchedSegments;
 		public IReadOnlyList<string> FullSegments => _fullSegments;
 		public IReadOnlyDictionary<string, string> PathParameters => _pathParameters;
+
+		// Merges path parameters from another builder, keeping existing values.
+		public void MergePathParameters(IReadOnlyDictionary<string, string> other)
+		{
+			if (other == null)
+				return;
+			foreach (var kvp in other)
+			{
+				if (!_pathParameters.ContainsKey(kvp.Key))
+					_pathParameters[kvp.Key] = kvp.Value;
+			}
+		}
+
 		public ShellUriHandler.NodeLocation GetNodeLocation()
 		{
 			ShellUriHandler.NodeLocation nodeLocation = new ShellUriHandler.NodeLocation();

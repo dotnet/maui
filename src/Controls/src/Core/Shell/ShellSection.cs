@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, List<string> resolvedRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls
 							continue;
 						}
 
-						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, services, i == globalRoutes.Count - 1, false);
+						var page = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, i == globalRoutes.Count - 1, false);
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
@@ -506,12 +506,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
+		Page GetOrCreateFromRoute(string route, string resolvedRoute, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
 			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
+			}
+
+			// For template routes (e.g. "product/{sku}"), override the page's
+			// route with the resolved value (e.g. "product/seed-tomato") so that
+			// Shell.CurrentState.Location shows the actual URI, not template tokens.
+			if (content != null && resolvedRoute != null && resolvedRoute != route
+				&& Routing.IsTemplateRoute(route))
+			{
+				Routing.SetRoute(content, resolvedRoute);
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
@@ -521,6 +530,7 @@ namespace Microsoft.Maui.Controls
 		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
+			List<string> resolvedRoutes = request.Request.ResolvedGlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
@@ -531,7 +541,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, isRelativePopping);
+			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, resolvedRoutes, isRelativePopping);
 
 			List<Page> modalPageStacks = new List<Page>();
 			List<Page> nonModalPageStacks = new List<Page>();
@@ -549,7 +559,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
-				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, services, isLast, false);
+				var content = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, isLast, false);
 				if (content == null)
 				{
 					break;

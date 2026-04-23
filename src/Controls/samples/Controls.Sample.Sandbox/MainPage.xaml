@@ -1,5 +1,36 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="Products">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="Shell Route Templates Demo"
+                   FontSize="24"
+                   FontAttributes="Bold" />
+            <Label Text="Tap a product to navigate using path parameters."
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <Button Text="🍅 Seed Tomato"
+                    AutomationId="ProductSeedTomato"
+                    Clicked="OnProductTapped"
+                    CommandParameter="seed-tomato" />
+
+            <Button Text="🌿 Herb Basil"
+                    AutomationId="ProductHerbBasil"
+                    Clicked="OnProductTapped"
+                    CommandParameter="herb-basil" />
+
+            <Button Text="🥕 Root Carrot"
+                    AutomationId="ProductRootCarrot"
+                    Clicked="OnProductTapped"
+                    CommandParameter="root-carrot" />
+
+            <Button Text="🍅 Seed Tomato → Review (direct)"
+                    AutomationId="ProductSeedTomatoReview"
+                    Clicked="OnProductReviewTapped"
+                    CommandParameter="seed-tomato" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

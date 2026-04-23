@@ -140,5 +140,132 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(Routing.IsTemplateRoute("product/{sku}"));
 		}
+
+		[Fact]
+		public async Task CurrentStateLocation_ShowsResolvedValues()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			await shell.GoToAsync("//main/products/product/seed-tomato");
+
+			var location = shell.CurrentState.Location.ToString();
+			Assert.Contains("seed-tomato", location, StringComparison.Ordinal);
+			Assert.DoesNotContain("{sku}", location, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public async Task RelativeNavigation_WithTemplateRoute()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			// Known v1 limitation: relative navigation with template routes
+			// goes through SearchForGlobalRoutes which doesn't yet recognize
+			// template segments in the relative URI. Use absolute URIs for now.
+			// This test documents the limitation — when fixed, change to Assert.Equal.
+			await Assert.ThrowsAsync<ArgumentException>(() =>
+				shell.GoToAsync("product/seed-tomato"));
+		}
+
+		[Fact]
+		public async Task UrlEncodedPathParameter_IsDecoded()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			await shell.GoToAsync("//main/products/product/hello%20world");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as ProductPage;
+			Assert.NotNull(page);
+			Assert.Equal("hello world", page.Sku);
+		}
+
+		[Fact]
+		public async Task SecondNavigation_DifferentValue_DeliveredCorrectly()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			await shell.GoToAsync("//main/products/product/apple");
+			var page1 = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as ProductPage;
+			Assert.Equal("apple", page1.Sku);
+
+			await shell.GoToAsync("//main/products/product/banana");
+			var page2 = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as ProductPage;
+			Assert.Equal("banana", page2.Sku);
+		}
+
+		[Fact]
+		public void RegisterRoute_RejectsOptionalTemplateSyntax()
+		{
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("product/{sku?}", typeof(ProductPage)));
+		}
+
+		[Fact]
+		public void RegisterRoute_RejectsCatchAllTemplateSyntax()
+		{
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("files/{*rest}", typeof(ProductPage)));
+		}
+
+		[Fact]
+		public void RegisterRoute_RejectsDuplicateParameters()
+		{
+			Assert.Throws<ArgumentException>(() =>
+				Routing.RegisterRoute("product/{id}/{id}", typeof(ProductPage)));
+		}
+
+		public class QueryAttributablePage : ContentPage, IQueryAttributable
+		{
+			public IDictionary<string, object> ReceivedQuery { get; private set; }
+
+			public void ApplyQueryAttributes(IDictionary<string, object> query)
+			{
+				ReceivedQuery = new Dictionary<string, object>(query);
+			}
+		}
+
+		[Fact]
+		public async Task PathParameter_DeliveredViaIQueryAttributable()
+		{
+			Routing.RegisterRoute("product/{sku}", typeof(QueryAttributablePage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			await shell.GoToAsync("//main/products/product/seed-tomato");
+
+			var page = shell.Navigation.NavigationStack[shell.Navigation.NavigationStack.Count - 1] as QueryAttributablePage;
+			Assert.NotNull(page);
+			Assert.NotNull(page.ReceivedQuery);
+			Assert.True(page.ReceivedQuery.ContainsKey("sku"));
+			Assert.Equal("seed-tomato", page.ReceivedQuery["sku"]);
+		}
+
+		[Fact]
+		public async Task TemplateOnlyRoute_AmbiguousRouteIsDocumentedLimitation()
+		{
+			Routing.RegisterRoute("{category}", typeof(ProductPage));
+
+			var shell = new Shell();
+			shell.Items.Add(CreateShellItem(shellSectionRoute: "main", shellContentRoute: "products"));
+
+			// Known v1 limitation: an all-template route like "{category}" can
+			// match the same URI segment in both passes of the two-pass algorithm,
+			// producing ambiguous route errors. Template routes should include at
+			// least one literal segment prefix (e.g. "browse/{category}").
+			await Assert.ThrowsAsync<ArgumentException>(() =>
+				shell.GoToAsync("//main/products/vegetables"));
+		}
 	}
 }
