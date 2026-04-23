@@ -16,7 +16,6 @@ steps:
 - script: |
     mkdir -p "$HOME/.gradle"
     echo "##vso[task.setvariable variable=GRADLE_USER_HOME]$HOME/.gradle"
-    cp "${{ parameters.checkoutDirectory }}/eng/init.gradle" "$HOME/.gradle/init.gradle"
   displayName: prepare Gradle cache variables (Linux/macOS)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
 
@@ -24,7 +23,6 @@ steps:
     $gradleHome = Join-Path $env:USERPROFILE ".gradle"
     New-Item -ItemType Directory -Path $gradleHome -Force | Out-Null
     Write-Host "##vso[task.setvariable variable=GRADLE_USER_HOME]$gradleHome"
-    Copy-Item "${{ parameters.checkoutDirectory }}/eng/init.gradle" (Join-Path $gradleHome "init.gradle")
   displayName: prepare Gradle cache variables (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
@@ -41,3 +39,14 @@ steps:
       "gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
       "gradle" | "v1" | "$(Agent.OS)"
     path: $(GRADLE_USER_HOME)
+
+# Copy init.gradle AFTER cache restore so it is not overwritten by a stale cached copy
+- script: |
+    cp "${{ parameters.checkoutDirectory }}/eng/init.gradle" "$HOME/.gradle/init.gradle"
+  displayName: install Gradle init script (Linux/macOS)
+  condition: ne(variables['Agent.OS'], 'Windows_NT')
+
+- pwsh: |
+    Copy-Item "${{ parameters.checkoutDirectory }}/eng/init.gradle" (Join-Path $env:USERPROFILE ".gradle" "init.gradle")
+  displayName: install Gradle init script (Windows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
