@@ -101,6 +101,24 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 **⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
 
+### Investigating CI Failures
+
+**🚨 ALWAYS use the `ci-analysis` skill when investigating CI failures or assessing merge readiness.** Do NOT manually query AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+
+The `ci-analysis` skill provides:
+- **Helix log retrieval** — downloads and parses actual test failure messages from Helix work items
+- **Known issue matching** — automatically correlates failures against `Known Build Error` labeled issues
+- **Cross-build aggregation** — analyzes all pipeline runs (maui-pr, maui-pr-uitests, maui-pr-devicetests) in one pass
+- **Test result details** — reports actual failing test names and error messages, not just job-level pass/fail
+
+**When to use it:**
+- "How does CI look?" / "Is CI green?" / "Can we merge?"
+- "What's failing?" / "Are these known failures?"
+- "Is this PR safe to merge?" / "Any CI concerns?"
+- After any PR push to verify the build
+
+**Anti-pattern:** Manually running `curl` against AzDO APIs and `python3` scripts to parse timelines. This misses Helix work item details, doesn't cross-reference known issues, and doesn't aggregate test results across runs — leading to incomplete or incorrect CI assessments.
+
 ### Code Formatting
 
 Always format code before committing:

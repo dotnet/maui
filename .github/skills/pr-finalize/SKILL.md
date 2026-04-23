@@ -307,7 +307,23 @@ Fixed the issue mentioned in #30897
 
 ---
 
-## Phase 2: Code Review
+## Phase 2: CI Status Verification
+
+Before reviewing code, verify CI status using the `ci-analysis` skill:
+
+```
+Invoke the ci-analysis skill with the PR number
+```
+
+**🚨 Do NOT rely solely on `gh pr checks` pass/fail counts.** The `ci-analysis` skill retrieves actual Helix test failure messages, correlates with Known Build Error issues, and aggregates across all pipeline runs.
+
+- If all failures are known issues → proceed to Phase 3
+- If there are unknown failures → flag them and investigate before recommending merge
+- If CI hasn't run yet → note it and proceed, but do not recommend merge without CI
+
+---
+
+## Phase 3: Code Review
 
 After verifying title/description, perform a **code review** to catch best practice violations and potential issues before merge.
 
