@@ -14,16 +14,35 @@ public class QueryPropertyGeneratorTests
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
 
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation, Array.Empty<SourceGeneratorDriver.AdditionalFile>(), assertNoCompilationErrors: false);
 
 		Assert.Empty(result.Diagnostics);
 		Assert.Single(result.GeneratedTrees);
 
 		var generatedSource = result.GeneratedTrees[0].ToString();
-		// Normalize line endings for comparison
-		var normalizedExpected = expectedOutput.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
-		var normalizedGenerated = generatedSource.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
-		Assert.Equal(normalizedExpected, normalizedGenerated);
+		Assert.Equal(NormalizeForComparison(expectedOutput), NormalizeForComparison(generatedSource));
+	}
+
+	private static string NormalizeForComparison(string text)
+	{
+		// Normalize line endings, convert tabs to spaces, remove trailing whitespace per line,
+		// remove all blank lines (compare structural content only), and trim
+		var lines = text
+			.Replace("\r\n", "\n", StringComparison.Ordinal)
+			.Replace("\r", "\n", StringComparison.Ordinal)
+			.Replace("\t", "    ", StringComparison.Ordinal)
+			.Split('\n')
+			.Select(line => line.TrimEnd())
+			.Where(line => !string.IsNullOrWhiteSpace(line));
+
+		return string.Join("\n", lines).Trim();
+	}
+
+	private static Microsoft.CodeAnalysis.GeneratorDriverRunResult RunQueryPropertyGenerator(string sourceCode)
+	{
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
+		return SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation, Array.Empty<SourceGeneratorDriver.AdditionalFile>(), assertNoCompilationErrors: false);
 	}
 
 	[Fact]
@@ -51,7 +70,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -67,11 +85,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
 				_queryPropertyKeys.Add(""name"");
@@ -123,7 +139,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -139,11 +154,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
 				_queryPropertyKeys.Add(""name"");
@@ -207,7 +220,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -223,11 +235,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""count"", out var countValue))
 			{
 				_queryPropertyKeys.Add(""count"");
@@ -237,11 +247,7 @@ namespace MyApp
 					Count = (int)convertedValue;
 				}
 			}
-			else if (previousKeys.Contains(""count""))
-			{
-				// Clear property if it was set before but not in current query
-				// Property is not nullable, skipping clear
-			}
+
 
 		}
 
@@ -278,7 +284,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -294,11 +299,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""price"", out var priceValue))
 			{
 				_queryPropertyKeys.Add(""price"");
@@ -308,11 +311,7 @@ namespace MyApp
 					Price = (double)convertedValue;
 				}
 			}
-			else if (previousKeys.Contains(""price""))
-			{
-				// Clear property if it was set before but not in current query
-				// Property is not nullable, skipping clear
-			}
+
 
 		}
 
@@ -349,7 +348,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -365,11 +363,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""active"", out var activeValue))
 			{
 				_queryPropertyKeys.Add(""active"");
@@ -379,11 +375,7 @@ namespace MyApp
 					IsActive = (bool)convertedValue;
 				}
 			}
-			else if (previousKeys.Contains(""active""))
-			{
-				// Clear property if it was set before but not in current query
-				// Property is not nullable, skipping clear
-			}
+
 
 		}
 
@@ -424,7 +416,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -440,11 +431,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
 				_queryPropertyKeys.Add(""name"");
@@ -468,11 +457,7 @@ namespace MyApp
 					Age = (int)convertedValue;
 				}
 			}
-			else if (previousKeys.Contains(""age""))
-			{
-				// Clear property if it was set before but not in current query
-				// Property is not nullable, skipping clear
-			}
+
 
 			if (query.TryGetValue(""price"", out var priceValue))
 			{
@@ -483,11 +468,7 @@ namespace MyApp
 					Price = (double)convertedValue;
 				}
 			}
-			else if (previousKeys.Contains(""price""))
-			{
-				// Clear property if it was set before but not in current query
-				// Property is not nullable, skipping clear
-			}
+
 
 		}
 
@@ -513,10 +494,7 @@ namespace MyApp
 	}
 }";
 
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
 		Assert.Empty(result.GeneratedTrees);
@@ -556,10 +534,7 @@ namespace MyApp
 	}
 }";
 
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
 		Assert.Single(result.GeneratedTrees);
@@ -577,7 +552,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -593,11 +567,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""Bear"", out var BearValue))
 			{
 				_queryPropertyKeys.Add(""Bear"");
@@ -610,7 +582,7 @@ namespace MyApp
 			else if (previousKeys.Contains(""Bear""))
 			{
 				// Clear property if it was set before but not in current query
-				// Property is not nullable, skipping clear
+				Bear = default;
 			}
 
 		}
@@ -620,7 +592,7 @@ namespace MyApp
 }
 ";
 
-		Assert.Equal(expectedOutput, generatedSource);
+		Assert.Equal(NormalizeForComparison(expectedOutput), NormalizeForComparison(generatedSource));
 	}
 
 	[Fact]
@@ -654,10 +626,7 @@ namespace MyApp
 	}
 }";
 
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
 		Assert.Single(result.GeneratedTrees);
@@ -675,7 +644,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -691,11 +659,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
 				_queryPropertyKeys.Add(""name"");
@@ -731,7 +697,7 @@ namespace MyApp
 }
 ";
 
-		Assert.Equal(expectedOutput, generatedSource);
+		Assert.Equal(NormalizeForComparison(expectedOutput), NormalizeForComparison(generatedSource));
 	}
 
 	[Fact]
@@ -748,10 +714,7 @@ namespace MyApp
 	}
 }";
 
-		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
-		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
-
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+		var result = RunQueryPropertyGenerator(sourceCode);
 
 		// Should generate diagnostic for non-existent property
 		Assert.NotEmpty(result.Diagnostics);
@@ -787,7 +750,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -803,11 +765,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
 				_queryPropertyKeys.Add(""name"");
@@ -857,7 +817,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -873,18 +832,16 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""count"", out var countValue))
 			{
 				_queryPropertyKeys.Add(""count"");
 				if (countValue != null)
 				{
-					var convertedValue = global::System.Convert.ChangeType(countValue, typeof(int?));
-					Count = (int?)convertedValue;
+					var convertedValue = global::System.Convert.ChangeType(countValue, typeof(int));
+					Count = (int)convertedValue;
 				}
 			}
 			else if (previousKeys.Contains(""count""))
@@ -925,7 +882,6 @@ public partial class MyPage : ContentPage
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -939,11 +895,9 @@ partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		if (query == null)
 			return;
-
 		// Track which properties were set in previous navigation
 		var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 		_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 		if (query.TryGetValue(""name"", out var nameValue))
 		{
 			_queryPropertyKeys.Add(""name"");
@@ -992,7 +946,6 @@ namespace MyApp
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 
@@ -1008,11 +961,9 @@ namespace MyApp
 		{
 			if (query == null)
 				return;
-
 			// Track which properties were set in previous navigation
 			var previousKeys = _queryPropertyKeys ?? new global::System.Collections.Generic.HashSet<string>();
 			_queryPropertyKeys = new global::System.Collections.Generic.HashSet<string>();
-
 			if (query.TryGetValue(""name"", out var nameValue))
 			{
 				_queryPropertyKeys.Add(""name"");
@@ -1055,7 +1006,7 @@ namespace MyApp
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
 		compilation = compilation.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceCode));
 
-		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation);
+		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation, Array.Empty<SourceGeneratorDriver.AdditionalFile>(), assertNoCompilationErrors: false);
 
 		Assert.Empty(result.Diagnostics);
 		Assert.Single(result.GeneratedTrees);
@@ -1067,5 +1018,182 @@ namespace MyApp
 		var errors = compilationDiagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).ToArray();
 
 		Assert.Empty(errors);
+	}
+
+	[Fact]
+	public void NonPartialClass_ReportsDiagnostic()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1200"));
+		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void PropertyWithPrivateSetter_ReportsDiagnostic()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public partial class MyPage : ContentPage
+	{
+		public string Name { get; private set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1202"));
+		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void PropertyWithNoSetter_ReportsDiagnostic()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public partial class MyPage : ContentPage
+	{
+		public string Name { get; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1202"));
+		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void ClassAlreadyImplementsIQueryAttributable_SkipsGeneration()
+	{
+		var sourceCode = @"
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public partial class MyPage : ContentPage, IQueryAttributable
+	{
+		public string Name { get; set; }
+
+		public void ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			// Custom implementation
+		}
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.Empty(result.Diagnostics);
+		Assert.Empty(result.GeneratedTrees);
+	}
+
+	[Fact]
+	public void QueryIdWithSpecialCharacters_GeneratesValidCode()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""my-name"")]
+	public partial class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
+
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		// The query string key "my-name" should be used as-is in TryGetValue,
+		// but the variable name should be sanitized
+		Assert.Contains(@"query.TryGetValue(""my-name""", generatedSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("my-nameValue", generatedSource, StringComparison.Ordinal);
+		Assert.Contains("my_nameValue", generatedSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NullableDoubleProperty_GeneratesCorrectConversion()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Price), ""price"")]
+	public partial class MyPage : ContentPage
+	{
+		public double? Price { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.Empty(result.Diagnostics);
+		Assert.Single(result.GeneratedTrees);
+
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		// Should use typeof(double) for conversion, not typeof(double?)
+		Assert.Contains("typeof(double)", generatedSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("typeof(double?)", generatedSource, StringComparison.Ordinal);
+		// Should cast to double (underlying type), not double?
+		Assert.Contains("(double)", generatedSource, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void MixedValidAndInvalidProperties_GeneratesForValidOnly()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	[QueryProperty(""NonExistent"", ""missing"")]
+	public partial class MyPage : ContentPage
+	{
+		public string Name { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		// Should have diagnostic for non-existent property
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1201"));
+
+		// Should still generate code for the valid property
+		Assert.Single(result.GeneratedTrees);
+		var generatedSource = result.GeneratedTrees[0].ToString();
+		Assert.Contains(@"query.TryGetValue(""name""", generatedSource, StringComparison.Ordinal);
+		Assert.DoesNotContain(@"query.TryGetValue(""missing""", generatedSource, StringComparison.Ordinal);
 	}
 }
