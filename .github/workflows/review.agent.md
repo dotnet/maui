@@ -18,7 +18,7 @@ on:
 
 concurrency:
   group: "expert-review-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # slash_command compiles to issue_comment; workflow_dispatch is always allowed.
 if: >-
