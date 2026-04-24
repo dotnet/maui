@@ -9,7 +9,7 @@ public partial class ReviewPage : ContentPage
 		InitializeComponent();
 	}
 
-	public string Sku
+	public string? Sku
 	{
 		get => _sku;
 		set
@@ -20,9 +20,9 @@ public partial class ReviewPage : ContentPage
 				SkuLabel.Text = $"Product: {value}";
 		}
 	}
-	string _sku;
+	string? _sku;
 
-	public string Stars
+	public string? Stars
 	{
 		get => _stars;
 		set
@@ -36,5 +36,5 @@ public partial class ReviewPage : ContentPage
 			}
 		}
 	}
-	string _stars;
+	string? _stars;
 }

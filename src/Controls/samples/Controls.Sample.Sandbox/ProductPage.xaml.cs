@@ -8,7 +8,7 @@ public partial class ProductPage : ContentPage
 		InitializeComponent();
 	}
 
-	public string Sku
+	public string? Sku
 	{
 		get => _sku;
 		set
@@ -21,7 +21,7 @@ public partial class ProductPage : ContentPage
 				ReviewButton.IsVisible = !string.IsNullOrEmpty(value);
 		}
 	}
-	string _sku;
+	string? _sku;
 
 	async void OnGoToReview(object sender, EventArgs e)
 	{
