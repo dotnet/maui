@@ -1,13 +1,11 @@
 ﻿#nullable enable
 Microsoft.Maui.Maps.IMap.ClusterClicked(System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Maps.IMapPin!>! pins, Microsoft.Maui.Devices.Sensors.Location! location) -> bool
-Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin pin) -> void
 Microsoft.Maui.Maps.IMap.HideInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
 Microsoft.Maui.Maps.IMap.IsClusteringEnabled.get -> bool
 Microsoft.Maui.Maps.IMap.LastUserLocation.get -> Microsoft.Maui.Devices.Sensors.Location?
 Microsoft.Maui.Maps.IMap.LongClicked(Microsoft.Maui.Devices.Sensors.Location! position) -> void
 Microsoft.Maui.Maps.IMap.MapStyle.get -> string?
 Microsoft.Maui.Maps.IMap.MoveToRegion(Microsoft.Maui.Maps.MapSpan! region, bool animated) -> void
-Microsoft.Maui.Maps.IMap.ShowInfoWindow(Microsoft.Maui.Maps.IMapPin pin) -> void
 Microsoft.Maui.Maps.IMap.ShowInfoWindow(Microsoft.Maui.Maps.IMapPin! pin) -> void
 Microsoft.Maui.Maps.IMap.UserLocationUpdated(Microsoft.Maui.Devices.Sensors.Location! location) -> void
 Microsoft.Maui.Maps.IMapElement.Clicked() -> void
