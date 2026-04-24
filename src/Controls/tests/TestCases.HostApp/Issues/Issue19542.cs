@@ -12,6 +12,7 @@ public class Issue19542 : TestShell
 		{
 			var grid = new Grid
 			{
+				AutomationId = "FlyoutItemGrid",
 				ColumnDefinitions =
 				{
 					new ColumnDefinition { Width = GridLength.Auto },

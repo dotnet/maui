@@ -1,78 +1,32 @@
-﻿namespace Maui.Controls.Sample.Issues;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
-[Issue(IssueTracker.Github, 19542, "Flyout item didnt take full width", PlatformAffected.UWP)]
-public class Issue19542 : TestShell
+namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+public class Issue19542 : _IssuesUITest
 {
-	protected override void Init()
+	public Issue19542(TestDevice testDevice) : base(testDevice)
 	{
-		FlyoutBehavior = FlyoutBehavior.Locked;
+	}
 
-		// Set custom item template
-		ItemTemplate = new DataTemplate(() =>
-		{
-			var grid = new Grid
-			{
-				ColumnDefinitions =
-				{
-					new ColumnDefinition { Width = GridLength.Auto },
-					new ColumnDefinition { Width = GridLength.Star },
-					new ColumnDefinition { Width = GridLength.Auto }
-				},
-				BackgroundColor = Colors.LightGreen
-			};
+	public override string Issue => "Flyout item didn't take full width";
 
-			var leftImage = new Image
-			{
-				HeightRequest = 30,
-				BackgroundColor = Colors.Salmon
-			};
-			leftImage.SetBinding(Image.SourceProperty, "Icon");
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutItemShouldTakeFullWidth()
+	{
+		// Wait for the main page content to confirm navigation succeeded
+		App.WaitForElement("Label19542");
 
-			var titleLabel = new Label
-			{
-				FontAttributes = FontAttributes.Italic,
-				VerticalTextAlignment = TextAlignment.Center,
-				HorizontalTextAlignment = TextAlignment.Center,
-				BackgroundColor = Colors.Cyan
-			};
-			titleLabel.SetBinding(Label.TextProperty, "Title");
+		// Get the bounds of the flyout item's grid (LightGreen background)
+		// and verify it spans the full pane width by comparing to a known element
+		var itemRect = App.WaitForElement("FlyoutItemGrid").GetRect();
+		var labelRect = App.WaitForElement("Label19542").GetRect();
 
-			var rightImage = new Image
-			{
-				HeightRequest = 30,
-				BackgroundColor = Colors.Teal
-			};
-			rightImage.SetBinding(Image.SourceProperty, "Icon");
-
-			grid.Add(leftImage, 0, 0);
-			grid.Add(titleLabel, 1, 0);
-			grid.Add(rightImage, 2, 0);
-
-			return grid;
-		});
-
-		// Add only one FlyoutItem
-		var singleItem = new FlyoutItem
-		{
-			Title = "Flyout Item",
-			Icon = "dotnet_bot.png",
-		};
-
-		singleItem.Items.Add(new ShellContent
-		{
-			ContentTemplate = new DataTemplate(() =>
-			{
-				return new ContentPage
-				{
-					Content = new Label
-					{
-						AutomationId = "Label19542",
-						Text = "Test passes if flyout item takes full width",
-					}
-				};
-			})
-		});
-
-		Items.Add(singleItem);
+		// The flyout item grid must be at x=0 and have a non-trivial width
+		Assert.That(itemRect.X, Is.EqualTo(0).Within(5), "Flyout item grid should start at x=0");
+		Assert.That(itemRect.Width, Is.GreaterThan(labelRect.Width),
+			"Flyout item grid should be wider than the page content label (i.e. it fills the pane)");
 	}
 }
