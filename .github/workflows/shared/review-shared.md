@@ -26,11 +26,19 @@ safe-outputs:
     target: "*"
   noop:
     report-as-issue: false
+
+steps:
+  - name: Checkout target PR (for workflow_dispatch)
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
 # Expert Code Review
 
-Review pull request #${{ github.event.pull_request.number || github.event.issue.number }} using the code-review skill defined at `.github/skills/code-review/SKILL.md`.
+Review pull request #${{ github.event.issue.number || inputs.pr_number }} using the code-review skill defined at `.github/skills/code-review/SKILL.md`.
 
 > **🚨 No test messages.** Never call any safe-output tool with placeholder or test content. Every call posts permanently on the PR. This applies to you and all sub-agents.
 
