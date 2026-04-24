@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 
@@ -461,7 +462,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static bool IsQueryPropertySourceGenerated(Type type) =>
-			type.GetCustomAttribute<QueryPropertyGeneratedAttribute>(inherit: true) is not null;
+			type.GetCustomAttributes(inherit: true).Any(
+				a => a.GetType().FullName == "Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute");
 
 		private sealed class ShellContentConverter : TypeConverter
 		{
