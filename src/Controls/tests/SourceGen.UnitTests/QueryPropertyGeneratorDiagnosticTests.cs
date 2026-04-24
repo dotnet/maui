@@ -348,7 +348,7 @@ namespace MyApp
 
 		Assert.Empty(result.Diagnostics);
 
-		// Should produce 2 QueryProperty files + 1 attribute definition = 3 total generated trees
+		// Should produce 2 QueryProperty files (one per class)
 		var queryTrees = GetQueryPropertyTrees(result);
 		Assert.Equal(2, queryTrees.Length);
 

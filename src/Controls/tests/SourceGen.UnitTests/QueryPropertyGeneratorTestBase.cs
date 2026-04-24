@@ -18,10 +18,7 @@ public abstract class QueryPropertyGeneratorTestBase
 
 		Assert.Empty(result.Diagnostics);
 
-		// Filter out the marker attribute definition, keep only the QueryProperty generated code
-		var generatedTrees = result.GeneratedTrees
-			.Where(t => !t.FilePath.Contains("QueryPropertyGeneratedAttribute", StringComparison.Ordinal))
-			.ToArray();
+		var generatedTrees = GetQueryPropertyTrees(result);
 		Assert.Single(generatedTrees);
 
 		var generatedSource = generatedTrees[0].ToString();
@@ -50,10 +47,10 @@ public abstract class QueryPropertyGeneratorTestBase
 		return SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation, Array.Empty<SourceGeneratorDriver.AdditionalFile>(), assertNoCompilationErrors: false);
 	}
 
-	/// <summary>Filters out the marker attribute definition tree, returning only QueryProperty generated code trees.</summary>
+	/// <summary>Returns the QueryProperty generated code trees (filters out any non-QueryProperty trees).</summary>
 	protected static Microsoft.CodeAnalysis.SyntaxTree[] GetQueryPropertyTrees(GeneratorDriverRunResult result) =>
 		result.GeneratedTrees
-			.Where(t => !t.FilePath.Contains("QueryPropertyGeneratedAttribute", StringComparison.Ordinal))
+			.Where(t => t.FilePath.Contains("_QueryProperty.g.cs", StringComparison.Ordinal))
 			.ToArray();
 
 	protected static GeneratorDriverRunResult RunQueryPropertyGeneratorWithGlobalOptions(string sourceCode, params (string key, string value)[] globalOptions)
