@@ -1,6 +1,6 @@
 ---
 name: "Expert Code Review"
-description: "Runs the expert-reviewer agent on pull requests on-demand via /review."
+description: "Runs expert code review on pull requests on-demand via /review."
 
 on:
   slash_command:
