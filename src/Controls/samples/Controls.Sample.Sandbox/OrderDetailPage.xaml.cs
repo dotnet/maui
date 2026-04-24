@@ -8,7 +8,7 @@ public partial class OrderDetailPage : ContentPage
 		InitializeComponent();
 	}
 
-	public string OrderId
+	public string? OrderId
 	{
 		get => _orderId;
 		set
@@ -19,5 +19,5 @@ public partial class OrderDetailPage : ContentPage
 				OrderIdLabel.Text = $"Order ID: #{value}";
 		}
 	}
-	string _orderId;
+	string? _orderId;
 }
