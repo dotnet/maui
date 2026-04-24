@@ -10,6 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContentPage.OnBackButtonPressed is not invoked on iOS and MacCatalyst with NavigationPage";
 
+		protected override bool ResetAfterEachTest => true;
+
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void OnBackButtonPressedShouldBeInvokedOnIOSWithNavigationPage()
