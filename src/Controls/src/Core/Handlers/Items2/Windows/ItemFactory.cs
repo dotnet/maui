@@ -345,18 +345,23 @@ internal partial class ElementWrapper : ContentControl
 		var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
 		if (!cachedSize.IsEmpty && !IsHeaderOrFooter)
 		{
-			// For MeasureFirstItem: Enforce the cached first item size during arrangement.
-			// Even though MeasureOverride returns the cached size as DesiredSize, WinUI layouts
-			// may arrange items at a different size (e.g., UniformGridLayout with Fill stretch).
-			// Also, MAUI views with explicit HeightRequest/WidthRequest set via bindings can
-			// render larger than the measure constraint. Clipping to the cached size ensures
-			// truly uniform item sizing, matching Android's MeasureSpecMode.Exactly approach.
-			base.ArrangeOverride(cachedSize);
+			// For MeasureFirstItem: Enforce uniformity on the along-axis (scroll direction)
+			// only. The cross-axis uses finalSize so items continue to stretch across the
+			// viewport (matching non-MeasureFirstItem behavior and Android/iOS parity).
+			// Without this, items whose template has no explicit cross-axis size (e.g. a
+			// Border with only HeightRequest) would be clipped to their natural content
+			// width, producing a narrow column instead of full-width rows.
+			// See: https://github.com/dotnet/maui/issues/25191
+			bool isHorizontal = handler?.PlatformView is MauiItemsView miv && miv.IsHorizontalLayout;
+			var arrangeSize = isHorizontal
+				? new global::Windows.Foundation.Size(cachedSize.Width, finalSize.Height)
+				: new global::Windows.Foundation.Size(finalSize.Width, cachedSize.Height);
+			base.ArrangeOverride(arrangeSize);
 			Clip = new Microsoft.UI.Xaml.Media.RectangleGeometry
 			{
-				Rect = new global::Windows.Foundation.Rect(0, 0, cachedSize.Width, cachedSize.Height)
+				Rect = new global::Windows.Foundation.Rect(0, 0, arrangeSize.Width, arrangeSize.Height)
 			};
-			return cachedSize;
+			return arrangeSize;
 		}
 		// Clear any clip from a previously cached state (recycled container scenario)
 		if (Clip is not null)
