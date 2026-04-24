@@ -16,7 +16,7 @@
     The GitHub PR number (required).
 
 .PARAMETER SourceBranch
-    AzDO pipeline source branch. Defaults to feature/detect-uitest-categories.
+    AzDO pipeline source branch. Defaults to main.
 
 .PARAMETER DryRun
     Show what would be done without queuing or posting.
@@ -34,7 +34,7 @@ param(
     [int]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [string]$SourceBranch = "feature/detect-uitest-categories",
+    [string]$SourceBranch = "main",
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
