@@ -1,2 +1,2 @@
-﻿#nullable enable
+#nullable enable
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
