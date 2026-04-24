@@ -103,7 +103,7 @@ jobs:
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
             -H "Authorization: Bearer ${AZDO_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d '{}')
+            -d '{"resources":{"repositories":{"self":{"refName":"refs/heads/main"}}}}')
           HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
           RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
           echo "HTTP Status: ${HTTP_CODE}"
