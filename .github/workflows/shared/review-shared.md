@@ -33,7 +33,21 @@ steps:
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ inputs.pr_number }}
-    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+      USE_PR_SKILLS: ${{ inputs.use_pr_skills }}
+    run: |
+      # Always run the shared checkout script (security checks + PR checkout + .github/ restore from main)
+      pwsh .github/scripts/Checkout-GhAwPr.ps1
+
+      # If use_pr_skills is true, restore .github/ from the PR branch instead of main.
+      # This lets contributors iterate on skills/instructions via workflow_dispatch.
+      # Safe because workflow_dispatch is already gated to write-access collaborators.
+      if [ "$USE_PR_SKILLS" = "true" ]; then
+        echo "🔧 use_pr_skills=true — restoring .github/ from PR branch (HEAD) instead of main"
+        PR_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)
+        git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
+          && echo "✅ Restored skill/instruction files from PR branch ($PR_SHA)" \
+          || echo "⚠️ Could not restore from PR branch — using main's versions"
+      fi
 ---
 
 # Expert Code Review

@@ -12,6 +12,11 @@ on:
         description: 'PR number to review'
         required: true
         type: number
+      use_pr_skills:
+        description: 'Use skill/instruction files from the dispatching branch instead of main (for iterating on prompts in PRs)'
+        required: false
+        type: boolean
+        default: false
   roles: [admin, maintainer, write]
 
 # slash_command compiles to issue_comment; workflow_dispatch is always allowed.
