@@ -78,8 +78,14 @@ namespace Microsoft.Maui
 					// MAUI did not handle back — temporarily disable this callback so the
 					// dispatcher can proceed with default behavior (e.g., finish the activity).
 					Enabled = false;
-					_activity.OnBackPressedDispatcher.OnBackPressed();
-					Enabled = true;
+					try
+					{
+						_activity.OnBackPressedDispatcher.OnBackPressed();
+					}
+					finally
+					{
+						Enabled = true;
+					}
 				}
 			}
 		}
