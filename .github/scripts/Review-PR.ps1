@@ -508,9 +508,40 @@ $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
 $verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
-$gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
-$gateExitCode = $LASTEXITCODE
-$gateOutput | ForEach-Object { Write-Host "    $_" }
+$maxGateAttempts = 3
+$gateExitCode = 1
+$gateOutput = @()
+
+for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
+    if ($gateAttempt -gt 1) {
+        Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
+    }
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
+    $gateExitCode = $LASTEXITCODE
+    $gateOutput | ForEach-Object { Write-Host "    $_" }
+
+    # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
+    $gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+    $isEnvError = $false
+    if ($gateExitCode -ne 0 -and (Test-Path $gateContentFile)) {
+        $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
+        if ($gateContent -match 'ENV ERROR') {
+            $isEnvError = $true
+            Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
+        }
+    }
+
+    if ($gateExitCode -eq 0 -or -not $isEnvError) {
+        break  # Real pass or real failure — don't retry
+    }
+    if ($gateAttempt -lt $maxGateAttempts) {
+        Write-Host "  ⏳ Waiting 30s before retry..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 30
+    }
+}
+if ($isEnvError) {
+    Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+}
 
 # Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
 $gateResult = switch ($gateExitCode) {
