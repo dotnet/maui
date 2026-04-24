@@ -45,6 +45,9 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 	{
 		// Emit the marker attribute type into the user's compilation.
 		// ShellContent detects this by name string at runtime to skip the reflection fallback.
+		// [Embedded] prevents duplicate type errors when InternalsVisibleTo is used between
+		// two assemblies that both have the generator (Roslyn cookbook pattern).
+		// We emit the EmbeddedAttribute ourselves since AddEmbeddedAttributeDefinition requires Roslyn 4.14+.
 		context.RegisterPostInitializationOutput(static ctx =>
 		{
 			ctx.AddSource("QueryPropertyGeneratedAttribute.g.cs",
@@ -54,10 +57,28 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+namespace Microsoft.CodeAnalysis
+{
+    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+    [global::System.AttributeUsage(
+        global::System.AttributeTargets.Assembly |
+        global::System.AttributeTargets.Module |
+        global::System.AttributeTargets.Class |
+        global::System.AttributeTargets.Struct |
+        global::System.AttributeTargets.Enum |
+        global::System.AttributeTargets.Interface |
+        global::System.AttributeTargets.Delegate,
+        Inherited = false, AllowMultiple = false)]
+    internal sealed class EmbeddedAttribute : global::System.Attribute
+    {
+    }
+}
+
 namespace Microsoft.Maui.Controls
 {
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     [global::System.AttributeUsage(global::System.AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+    [global::Microsoft.CodeAnalysis.Embedded]
     internal sealed class QueryPropertyGeneratedAttribute : global::System.Attribute
     {
     }
