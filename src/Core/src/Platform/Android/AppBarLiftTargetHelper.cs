@@ -8,10 +8,18 @@ namespace Microsoft.Maui.Platform
     // to a specific scrollable view (e.g. MauiScrollView or RecyclerView).
     // Shared between MauiScrollView and MauiRecyclerView to avoid duplicating
     // the same ancestor-walk / attach / detach logic.
+    //
+    // When the scrollable view is inside a CarouselView/ViewPager2, adjacent
+    // off-screen pages are pre-cached and their views stay attached without
+    // receiving visibility callbacks during page swipes.  A ViewTreeObserver
+    // scroll-changed listener detects these transitions and transfers the
+    // lift target to whichever page's scrollable view is currently on-screen.
     internal class AppBarLiftTargetHelper
     {
         readonly View _view;
+        readonly Rect _visibleRect = new Rect();
         AppBarLayout? _liftOnScrollAppBar;
+        ScrollChangedListener? _scrollChangedListener;
 
         internal AppBarLiftTargetHelper(View view)
         {
@@ -30,15 +38,28 @@ namespace Microsoft.Maui.Platform
             // so their ScrollViews also attach. Only the on-screen page's ScrollView should
             // claim the lift target. GetGlobalVisibleRect returns false if the view is
             // entirely outside the clipped viewport (e.g. a pre-loaded carousel page).
-            if (!_view.GetGlobalVisibleRect(new Rect()))
+            if (!_view.GetGlobalVisibleRect(_visibleRect))
             {
+                // Off-screen — start listening for parent scroll changes so we
+                // can claim the lift target when the page scrolls into view.
+                StartListeningForParentScrollChanges();
                 return;
             }
 
             TrySet();
+
+            // Listen for parent scroll changes to detect when we go off-screen
+            // (e.g. user swipes to another carousel page).
+            StartListeningForParentScrollChanges();
         }
 
         internal void Clear()
+        {
+            StopListeningForParentScrollChanges();
+            ReleaseTarget();
+        }
+
+        void ReleaseTarget()
         {
             if (_liftOnScrollAppBar is null)
             {
@@ -50,9 +71,6 @@ namespace Microsoft.Maui.Platform
             if (_liftOnScrollAppBar.LiftOnScrollTargetViewId == _view.Id)
             {
                 _liftOnScrollAppBar.LiftOnScrollTargetViewId = View.NoId;
-                // Force the AppBar to re-evaluate its lifted state now that the
-                // scrollable target is gone; otherwise it stays stuck in whatever
-                // state it was last in.
                 _liftOnScrollAppBar.SetLifted(false);
             }
 
@@ -82,6 +100,68 @@ namespace Microsoft.Maui.Platform
 
             _liftOnScrollAppBar = appBar;
             appBar.LiftOnScrollTargetViewId = _view.Id;
+
+            // Force the AppBar to reflect this view's current scroll position.
+            // After a carousel swipe or visibility toggle the AppBar may be stuck
+            // in the wrong state; CanScrollVertically(-1) is true when the view
+            // has been scrolled down from the top.
+            appBar.SetLifted(_view.CanScrollVertically(-1));
+        }
+
+        void OnParentScrollChanged()
+        {
+            if (!_view.IsAttachedToWindow || _view.Visibility != ViewStates.Visible)
+            {
+                return;
+            }
+
+            bool isOnScreen = _view.GetGlobalVisibleRect(_visibleRect);
+            bool ownsTarget = _liftOnScrollAppBar is not null;
+
+            if (isOnScreen && !ownsTarget)
+            {
+                TrySet();
+            }
+            else if (!isOnScreen && ownsTarget)
+            {
+                // Release without stopping the listener — we still need to
+                // detect when the carousel swipes back to this page.
+                ReleaseTarget();
+            }
+        }
+
+        void StartListeningForParentScrollChanges()
+        {
+            if (_scrollChangedListener is not null)
+            {
+                return;
+            }
+
+            var observer = _view.ViewTreeObserver;
+            if (observer is null || !observer.IsAlive)
+            {
+                return;
+            }
+
+            _scrollChangedListener = new ScrollChangedListener(this);
+            observer.AddOnScrollChangedListener(_scrollChangedListener);
+        }
+
+        void StopListeningForParentScrollChanges()
+        {
+            if (_scrollChangedListener is null)
+            {
+                return;
+            }
+
+            var observer = _view.ViewTreeObserver;
+            if (observer is not null && observer.IsAlive)
+            {
+                observer.RemoveOnScrollChangedListener(_scrollChangedListener);
+            }
+
+            _scrollChangedListener.Dispose();
+            _scrollChangedListener = null;
         }
 
         bool HasAncestorMauiScrollView()
@@ -131,6 +211,23 @@ namespace Microsoft.Maui.Platform
             }
 
             return null;
+        }
+
+        // Lightweight Java-side listener that forwards ViewTreeObserver scroll
+        // changes back to the managed helper for carousel page-change detection.
+        sealed class ScrollChangedListener : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
+        {
+            readonly AppBarLiftTargetHelper _helper;
+
+            public ScrollChangedListener(AppBarLiftTargetHelper helper)
+            {
+                _helper = helper;
+            }
+
+            public void OnScrollChanged()
+            {
+                _helper.OnParentScrollChanged();
+            }
         }
     }
 }

@@ -10,7 +10,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
-using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Platform
 {
