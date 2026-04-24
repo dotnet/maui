@@ -184,18 +184,14 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			var propertyType = property.Type;
 			var propertyTypeName = propertyType.ToFQDisplayString();
 			string conversionTypeName = propertyTypeName;
-			bool isNullableValueType = false;
-			bool canBeNull = propertyType.IsReferenceType || propertyType.NullableAnnotation == NullableAnnotation.Annotated;
 
 			if (propertyType is INamedTypeSymbol { IsGenericType: true } namedType &&
 				namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
 			{
-				isNullableValueType = true;
-				canBeNull = true;
 				conversionTypeName = namedType.TypeArguments[0].ToFQDisplayString();
 			}
 
-			propertyMappings.Add(new PropertyMapping(propertyName!, queryId!, propertyTypeName, conversionTypeName, isNullableValueType, canBeNull));
+			propertyMappings.Add(new PropertyMapping(propertyName!, queryId!, propertyTypeName, conversionTypeName));
 		}
 
 		var propertyMappingsArray = propertyMappings.ToImmutable();
@@ -245,9 +241,6 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 		// Add ApplyQueryAttributes method
 		classMembers.Add(BuildApplyQueryAttributesMethod(classInfo));
-
-		// Add field to track query keys
-		classMembers.Add(BuildQueryPropertyKeysField());
 
 		// Build class declaration with [QueryPropertyGenerated] marker so ShellContent can detect
 		// source-generated IQueryAttributable and skip the reflection fallback.
@@ -312,31 +305,6 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 				SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)),
 			SyntaxFactory.ReturnStatement()));
 
-		// var previousKeys = __queryPropertyKeys ?? new HashSet<string>();
-		var previousKeysStatement = SyntaxFactory.LocalDeclarationStatement(
-			SyntaxFactory.VariableDeclaration(
-				SyntaxFactory.IdentifierName("var"))
-			.AddVariables(
-				SyntaxFactory.VariableDeclarator("previousKeys")
-					.WithInitializer(SyntaxFactory.EqualsValueClause(
-						SyntaxFactory.BinaryExpression(
-							SyntaxKind.CoalesceExpression,
-							SyntaxFactory.IdentifierName("__queryPropertyKeys"),
-							SyntaxFactory.ObjectCreationExpression(
-								SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>"))
-								.WithArgumentList(SyntaxFactory.ArgumentList()))))))
-			.WithLeadingTrivia(SyntaxFactory.Comment("// Track which properties were set in previous navigation"), SyntaxFactory.CarriageReturnLineFeed);
-		statements.Add(previousKeysStatement);
-
-		// __queryPropertyKeys = new HashSet<string>();
-		statements.Add(SyntaxFactory.ExpressionStatement(
-			SyntaxFactory.AssignmentExpression(
-				SyntaxKind.SimpleAssignmentExpression,
-				SyntaxFactory.IdentifierName("__queryPropertyKeys"),
-				SyntaxFactory.ObjectCreationExpression(
-					SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>"))
-					.WithArgumentList(SyntaxFactory.ArgumentList()))));
-
 		// Generate property setting code for each mapping
 		foreach (var mapping in classInfo.PropertyMappings)
 		{
@@ -390,18 +358,6 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 
 		var ifTrueStatements = new List<StatementSyntax>();
 
-		// __queryPropertyKeys.Add("queryId");
-		ifTrueStatements.Add(SyntaxFactory.ExpressionStatement(
-			SyntaxFactory.InvocationExpression(
-				SyntaxFactory.MemberAccessExpression(
-					SyntaxKind.SimpleMemberAccessExpression,
-					SyntaxFactory.IdentifierName("__queryPropertyKeys"),
-					SyntaxFactory.IdentifierName("Add")))
-				.AddArgumentListArguments(
-					SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
-						SyntaxKind.StringLiteralExpression,
-						SyntaxFactory.Literal(mapping.QueryId))))));
-
 		if (mapping.PropertyType == "string")
 		{
 			// For string properties: if (value != null) Property = UrlDecode(value); else Property = null;
@@ -413,15 +369,9 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			ifTrueStatements.Add(BuildNonStringPropertyAssignment(mapping, valueVarName));
 		}
 
-		var ifStatement = SyntaxFactory.IfStatement(
+		statements.Add(SyntaxFactory.IfStatement(
 			tryGetValueCondition,
-			SyntaxFactory.Block(ifTrueStatements));
-
-		var elseClause = BuildPropertyClearElseClause(mapping);
-		if (elseClause is not null)
-			ifStatement = ifStatement.WithElse(elseClause);
-
-		statements.Add(ifStatement);
+			SyntaxFactory.Block(ifTrueStatements)));
 
 		return statements;
 	}
@@ -493,76 +443,6 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 							SyntaxFactory.IdentifierName("convertedValue"))))));
 	}
 
-	private static ElseClauseSyntax? BuildPropertyClearElseClause(PropertyMapping mapping)
-	{
-		if (!mapping.CanBeNull)
-			return null;
-
-		// else if (previousKeys.Contains("queryId")) { Property = default; }
-		var containsCondition = SyntaxFactory.InvocationExpression(
-			SyntaxFactory.MemberAccessExpression(
-				SyntaxKind.SimpleMemberAccessExpression,
-				SyntaxFactory.IdentifierName("previousKeys"),
-				SyntaxFactory.IdentifierName("Contains")))
-			.AddArgumentListArguments(
-				SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(
-					SyntaxKind.StringLiteralExpression,
-					SyntaxFactory.Literal(mapping.QueryId))));
-
-		var clearStatement = SyntaxFactory.ExpressionStatement(
-			SyntaxFactory.AssignmentExpression(
-				SyntaxKind.SimpleAssignmentExpression,
-				SyntaxFactory.IdentifierName(mapping.PropertyName),
-				SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression)))
-			.WithLeadingTrivia(SyntaxFactory.Comment("// Clear property if it was set before but not in current query"), SyntaxFactory.CarriageReturnLineFeed);
-
-		return SyntaxFactory.ElseClause(
-			SyntaxFactory.IfStatement(
-				containsCondition,
-				SyntaxFactory.Block(clearStatement)));
-	}
-
-	private static FieldDeclarationSyntax BuildQueryPropertyKeysField()
-	{
-		// Hide the generated field from IntelliSense and debugger since it's infrastructure
-		// that lives in the user's own partial class
-		var attributes = SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(new[]
-		{
-			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.ComponentModel.EditorBrowsable"),
-				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
-					SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression("global::System.ComponentModel.EditorBrowsableState.Never"))))),
-			SyntaxFactory.Attribute(SyntaxFactory.ParseName("global::System.Diagnostics.DebuggerBrowsable"),
-				SyntaxFactory.AttributeArgumentList(SyntaxFactory.SingletonSeparatedList(
-					SyntaxFactory.AttributeArgument(SyntaxFactory.ParseExpression("global::System.Diagnostics.DebuggerBrowsableState.Never")))))
-		}));
-
-		return SyntaxFactory.FieldDeclaration(
-			SyntaxFactory.VariableDeclaration(
-				SyntaxFactory.NullableType(
-					SyntaxFactory.ParseTypeName("global::System.Collections.Generic.HashSet<string>")))
-			.AddVariables(
-				SyntaxFactory.VariableDeclarator("__queryPropertyKeys")))
-			.WithAttributeLists(SyntaxFactory.SingletonList(attributes))
-			.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PrivateKeyword)));
-	}
-
-	/// <summary>
-	/// Converts a query ID into a valid C# identifier by replacing invalid characters with underscores,
-	/// then handles C# keyword escaping.
-	/// </summary>
-	private static string SanitizeIdentifier(string queryId)
-	{
-		var chars = queryId.ToCharArray();
-		for (int i = 0; i < chars.Length; i++)
-		{
-			if (i == 0 ? !SyntaxFacts.IsIdentifierStartCharacter(chars[i]) : !SyntaxFacts.IsIdentifierPartCharacter(chars[i]))
-				chars[i] = '_';
-		}
-
-		var sanitized = new string(chars);
-		return EscapeIdentifier(sanitized);
-	}
-
 	private static IPropertySymbol? FindPropertyInHierarchy(INamedTypeSymbol type, string propertyName)
 	{
 		var current = type;
@@ -580,7 +460,7 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		return null;
 	}
 
-	private record struct PropertyMapping(string PropertyName, string QueryId, string PropertyType, string ConversionType, bool IsNullableValueType, bool CanBeNull);
+	private record struct PropertyMapping(string PropertyName, string QueryId, string PropertyType, string ConversionType);
 
 	private record struct ClassInfo(
 		string ClassName,
