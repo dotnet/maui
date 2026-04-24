@@ -70,36 +70,49 @@ jobs:
           echo "Got AzDO bearer token"
           echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
 
-      - name: Trigger AzDO Pipeline
+      - name: Trigger dnceng-public pipeline 302 (maui-pr)
         env:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
-          PIPELINE_ID: ${{ inputs.pipeline_id || '302' }}
-          PROJECT: ${{ inputs.project || 'public' }}
-          ORGANIZATION: ${{ inputs.organization || 'dnceng-public' }}
         run: |
-          API_URL="https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1"
-
-          echo "Triggering pipeline ${PIPELINE_ID} in ${ORGANIZATION}/${PROJECT}..."
-
+          echo "=== Testing dnceng-public/public pipeline 302 (maui-pr) ==="
           RESPONSE=$(curl -s -w "\n%{http_code}" \
-            -X POST "${API_URL}" \
+            -X POST "https://dev.azure.com/dnceng-public/public/_apis/pipelines/302/runs?api-version=7.1" \
             -H "Authorization: Bearer ${AZDO_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{}')
-
           HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
           RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
-
           echo "HTTP Status: ${HTTP_CODE}"
-
           if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
             RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
             PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
-            echo "Pipeline '${PIPELINE_NAME}' triggered successfully!"
-            echo "  Run ID: ${RUN_ID}"
-            echo "  View:   https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_build/results?buildId=${RUN_ID}"
+            echo "SUCCESS: Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
+            echo "View: https://dev.azure.com/dnceng-public/public/_build/results?buildId=${RUN_ID}"
           else
-            echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
+            echo "FAILED: HTTP ${HTTP_CODE}"
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
-            exit 1
+          fi
+          echo ""
+
+      - name: Trigger DevDiv pipeline 27723
+        env:
+          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
+        run: |
+          echo "=== Testing DevDiv/DevDiv pipeline 27723 ==="
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
+          RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
+          echo "HTTP Status: ${HTTP_CODE}"
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+            RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
+            PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            echo "SUCCESS: Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
+            echo "View: https://dev.azure.com/DevDiv/DevDiv/_build/results?buildId=${RUN_ID}"
+          else
+            echo "FAILED: HTTP ${HTTP_CODE}"
+            echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
           fi
