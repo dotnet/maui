@@ -1,3 +1,11 @@
+// All Maven dependencies are resolved through the dnceng Azure Artifacts feed
+// (dotnet-public-maven) for CFSClean network isolation compliance. The feed
+// proxies Maven Central, Google Maven, and Gradle Plugin Portal.
+//
+// When adding or updating dependencies, run eng/ingest-maven-deps.sh locally
+// to ensure new packages are ingested into the feed before CI can use them.
+// See: https://aka.ms/1es/netiso/CFS
+
 pluginManagement {
     repositories {
         maven {
