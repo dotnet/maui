@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 1418, "Shell top-tab unselected text should remain visible in Material 3 light theme", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 1418, "Shell top-tab colors should follow Material 3", PlatformAffected.Android)]
 public class Issue1418 : Shell
 {
 	public Issue1418()
@@ -39,7 +39,7 @@ class Issue1418PageOne : ContentPage
 		Title = "Page One";
 		Content = new Label
 		{
-			Text = "The test passes if the unselected tabs are visible in view.",
+			Text = "The test passes if the selected and unselected top-tab colors match Material 3.",
 			AutomationId = "Issue1418PageOneLabel",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
@@ -54,7 +54,7 @@ class Issue1418PageTwo : ContentPage
 		Title = "Page Two";
 		Content = new Label
 		{
-			Text = "The test passes if the unselected tabs are visible in view.",
+			Text = "The test passes if the selected and unselected top-tab colors match Material 3.",
 			AutomationId = "Issue1418PageTwoLabel",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
