@@ -383,6 +383,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor QueryPropertyContainingClassMustBePartial = new DiagnosticDescriptor(
+			id: "MAUI1205",
+			title: "Containing class must be partial for nested QueryProperty class",
+			messageFormat: "Containing class '{0}' must be declared as partial because nested class '{1}' uses [QueryProperty] source generation",
+			category: "QueryPropertyGenerator",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
 		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");

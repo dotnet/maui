@@ -117,6 +117,38 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 			return new ClassInfo(classSymbol.Name, null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
 		}
 
+		// For nested classes, verify the entire containing type chain is partial.
+		// The generator emits partial class wrappers for each containing type,
+		// which requires the original declarations to also be partial.
+		var containingType = classSymbol.ContainingType;
+		while (containingType is not null)
+		{
+			// Check all syntax declarations of the containing type for the partial modifier
+			bool containingIsPartial = false;
+			foreach (var syntaxRef in containingType.DeclaringSyntaxReferences)
+			{
+				if (syntaxRef.GetSyntax(cancellationToken) is ClassDeclarationSyntax containingDecl
+					&& containingDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+				{
+					containingIsPartial = true;
+					break;
+				}
+			}
+
+			if (!containingIsPartial)
+			{
+				var diagnostic = Diagnostic.Create(
+					Descriptors.QueryPropertyContainingClassMustBePartial,
+					classDecl.Identifier.GetLocation(),
+					containingType.Name,
+					classSymbol.Name);
+				diagnostics.Add(diagnostic);
+				return new ClassInfo(classSymbol.Name, null, ImmutableArray<string>.Empty, ImmutableArray<PropertyMapping>.Empty, diagnostics.ToImmutable());
+			}
+
+			containingType = containingType.ContainingType;
+		}
+
 		// Skip generation if the class already explicitly implements IQueryAttributable
 		var iQueryAttributable = context.SemanticModel.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IQueryAttributable");
 		if (iQueryAttributable is not null)

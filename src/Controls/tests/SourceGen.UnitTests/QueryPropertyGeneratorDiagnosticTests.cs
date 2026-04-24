@@ -295,6 +295,62 @@ namespace MyApp
 	}
 
 	[Fact]
+	public void NestedClass_NonPartialOuter_ReportsError()
+	{
+		// Reproduces the Issue17521 CI failure: nested [QueryProperty] class
+		// inside a non-partial outer class would generate broken code (CS0260).
+		// The generator must detect this and report MAUI1205 instead.
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	public class OuterPage : Shell
+	{
+		[QueryProperty(nameof(Name), ""name"")]
+		public partial class InnerPage : ContentPage
+		{
+			public string Name { get; set; }
+		}
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1205"));
+		Assert.Empty(GetQueryPropertyTrees(result));
+	}
+
+	[Fact]
+	public void NestedClass_DeeplyNested_NonPartialMiddle_ReportsError()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	public partial class Outer : ContentPage
+	{
+		public class Middle
+		{
+			[QueryProperty(nameof(Name), ""name"")]
+			public partial class Inner : ContentPage
+			{
+				public string Name { get; set; }
+			}
+		}
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.NotEmpty(result.Diagnostics);
+		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1205"));
+		Assert.Empty(GetQueryPropertyTrees(result));
+	}
+
+	[Fact]
 	public void InheritedProperty_IsFound()
 	{
 		var sourceCode = @"
