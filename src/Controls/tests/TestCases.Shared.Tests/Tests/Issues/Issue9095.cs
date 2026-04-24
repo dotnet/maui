@@ -10,6 +10,8 @@ public class Issue9095 : _IssuesUITest
 
 	public override string Issue => "Shell toolbar back button doesn't fire Shell.OnBackButtonPressed on Android and iOS";
 
+	protected override bool ResetAfterEachTest => true;
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void ShellOnBackButtonPressedShouldBeInvokedWhenPressingNavigationBarBackButton()
