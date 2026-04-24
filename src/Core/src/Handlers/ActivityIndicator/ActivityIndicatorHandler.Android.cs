@@ -18,7 +18,13 @@ namespace Microsoft.Maui.Handlers
 
 			// Defer update via Post() so it runs after the layout traversal completes,
 			// ensuring startAnimation() is not silently ignored on views still being positioned.
-			progressBar.Post(() => progressBar.UpdateIsRunning(activityIndicator));
+			progressBar.Post(() =>
+			{
+				if (progressBar.IsDisposed())
+					return;
+
+				progressBar.UpdateIsRunning(activityIndicator);
+			});
 		}
 
 		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
