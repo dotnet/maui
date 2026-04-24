@@ -4,6 +4,11 @@
 name: Trigger AzDO Pipeline
 
 on:
+  push:
+    branches:
+      - 'dev/jankrivanek/test-azdo-trigger'  # Temporary: auto-trigger for testing
+    paths:
+      - '.github/workflows/trigger-azdo-pipeline.yml'
   workflow_dispatch:
     inputs:
       pipeline_id:
@@ -59,11 +64,11 @@ jobs:
       - name: Trigger AzDO Pipeline
         env:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
-          PIPELINE_ID: ${{ inputs.pipeline_id }}
-          PROJECT: ${{ inputs.project }}
-          ORGANIZATION: ${{ inputs.organization }}
-          BRANCH: ${{ inputs.branch }}
-          TEMPLATE_PARAMS: ${{ inputs.template_parameters }}
+          PIPELINE_ID: ${{ inputs.pipeline_id || '27723' }}
+          PROJECT: ${{ inputs.project || 'DevDiv' }}
+          ORGANIZATION: ${{ inputs.organization || 'DevDiv' }}
+          BRANCH: ${{ inputs.branch || '' }}
+          TEMPLATE_PARAMS: ${{ inputs.template_parameters || '{}' }}
         run: |
           API_URL="https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1"
 
