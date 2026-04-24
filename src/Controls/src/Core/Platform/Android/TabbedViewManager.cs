@@ -42,8 +42,6 @@ internal class TabbedViewManager
     FragmentManager _fragmentManager;
     TabLayout _tabLayout;
     BottomNavigationView _bottomNavigationView;
-    ColorStateList _originalBnvItemTextColors;
-    ColorStateList _originalBnvItemIconTintColors;
     ViewPager2 _viewPager;
     int _previousTabIndex = -1;
     int[] _checkedStateSet = null;
@@ -253,9 +251,6 @@ internal class TabbedViewManager
                         Gravity = (int)GravityFlags.Bottom
                     });
 
-                // Store original colors for restoration when custom colors are cleared
-                _originalBnvItemTextColors = _bottomNavigationView.ItemTextColor;
-                _originalBnvItemIconTintColors = _bottomNavigationView.ItemIconTintList;
             }
             else
             {
@@ -431,12 +426,6 @@ internal class TabbedViewManager
 
     protected virtual void OnTabsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_managesViewPager)
-        {
-            ViewPager2 pager = _viewPager;
-            pager.Adapter?.NotifyDataSetChanged();
-        }
-
         if (IsBottomTabPlacement)
         {
             BottomNavigationView bottomNavigationView = _bottomNavigationView;
@@ -1127,38 +1116,8 @@ internal class TabbedViewManager
         _currentBarTextColor = Element.BarTextColor;
         _currentBarSelectedItemColor = BarSelectedItemColor;
 
-        if (IsBottomTabPlacement)
-        {
-            if (_bottomNavigationView is not null)
-            {
-                if (barItemColor is null && barSelectedItemColor is null)
-                {
-                    _bottomNavigationView.ItemTextColor = _originalBnvItemTextColors;
-                    _bottomNavigationView.ItemIconTintList = _originalBnvItemIconTintColors;
-                }
-                else
-                {
-                    int unselectedArgb = barItemColor?.ToPlatform().ToArgb() ?? GetDefaultColorFromTheme(_context.Context);
-                    int selectedArgb = barSelectedItemColor?.ToPlatform().ToArgb() ?? GetDefaultColorFromTheme(_context.Context);
-                    var colorStateList = GetColorStateList(unselectedArgb, selectedArgb);
-                    _bottomNavigationView.ItemTextColor = colorStateList;
-                    _bottomNavigationView.ItemIconTintList = colorStateList;
-                }
-
-                // Apply per-item icon tints so tabs with explicit FontImageSource colors
-                // are not overridden by the global ItemIconTintList set above.
-                for (int i = 0; i < _bottomNavigationView.Menu.Size(); i++)
-                {
-                    var menuItem = _bottomNavigationView.Menu.GetItem(i);
-                    SetupBottomNavigationViewIconColor(i, menuItem);
-                }
-            }
-        }
-        else
-        {
-            UpdateBarTextColor();
-            UpdateItemIconColor();
-        }
+        UpdateBarTextColor();
+        UpdateItemIconColor();
     }
 
     internal void UpdateTabItemStyle()
