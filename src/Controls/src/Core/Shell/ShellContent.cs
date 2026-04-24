@@ -385,8 +385,26 @@ namespace Microsoft.Maui.Controls
 
 			if (content is IQueryAttributable attributable)
 			{
-				attributable
-					.ApplyQueryAttributes(query.ToReadOnlyIfUsingShellNavigationQueryParameters());
+				var queryDict = query.ToReadOnlyIfUsingShellNavigationQueryParameters();
+
+				// For source-generated implementations, merge removed keys as null entries
+				// so the generated code can detect "key was present before but is now absent"
+				// without needing a per-instance tracking field.
+				if (IsQueryPropertySourceGenerated(content.GetType()))
+				{
+					// Make a mutable copy so we can add null entries for cleared keys
+					var merged = new Dictionary<string, object>(queryDict);
+					foreach (var key in oldQuery.Keys)
+					{
+						if (!merged.ContainsKey(key))
+							merged[key] = null;
+					}
+					attributable.ApplyQueryAttributes(merged);
+				}
+				else
+				{
+					attributable.ApplyQueryAttributes(queryDict);
+				}
 			}
 
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
