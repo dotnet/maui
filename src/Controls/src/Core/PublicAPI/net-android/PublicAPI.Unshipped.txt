@@ -8,5 +8,3 @@ override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? property
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
-~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> boolMicrosoft.Maui.Controls.QueryPropertyGeneratedAttribute
-Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute.QueryPropertyGeneratedAttribute() -> void

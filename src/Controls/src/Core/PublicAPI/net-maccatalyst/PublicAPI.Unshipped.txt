@@ -6,5 +6,3 @@ override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController
 ~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(UIKit.UIView platformView) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidAppear(bool animated) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.DidMoveToParentViewController(UIKit.UIViewController parent) -> void
-Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute
-Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute.QueryPropertyGeneratedAttribute() -> void

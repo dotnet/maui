@@ -41,7 +41,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class PersonDetailsPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -107,7 +106,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -167,7 +165,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -233,7 +230,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -293,7 +289,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -353,7 +348,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -417,7 +411,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -522,7 +515,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class BearDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -605,7 +597,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class ElephantDetailPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -672,7 +663,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -730,7 +720,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>
@@ -784,7 +773,6 @@ public partial class MyPage : ContentPage
 using System;
 using System.Collections.Generic;
 
-[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 {
 	/// <summary>
@@ -841,7 +829,6 @@ using System.Collections.Generic;
 
 namespace MyApp
 {
-	[global::Microsoft.Maui.Controls.QueryPropertyGenerated]
 	partial class MyPage : global::Microsoft.Maui.Controls.IQueryAttributable
 	{
 		/// <summary>

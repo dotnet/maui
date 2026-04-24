@@ -385,37 +385,24 @@ namespace Microsoft.Maui.Controls
 
 			if (content is IQueryAttributable attributable)
 			{
+				// Merge removed keys as null entries so the implementation can detect
+				// "key was present before but is now absent" and clear properties.
 				var queryDict = query.ToReadOnlyIfUsingShellNavigationQueryParameters();
-
-				// For source-generated implementations, merge removed keys as null entries
-				// so the generated code can detect "key was present before but is now absent"
-				// without needing a per-instance tracking field.
-				if (IsQueryPropertySourceGenerated(content.GetType()))
+				var merged = new Dictionary<string, object>(queryDict);
+				foreach (var key in oldQuery.Keys)
 				{
-					// Make a mutable copy so we can add null entries for cleared keys
-					var merged = new Dictionary<string, object>(queryDict);
-					foreach (var key in oldQuery.Keys)
-					{
-						if (!merged.ContainsKey(key))
-							merged[key] = null;
-					}
-					attributable.ApplyQueryAttributes(merged);
+					if (!merged.ContainsKey(key))
+						merged[key] = null;
 				}
-				else
-				{
-					attributable.ApplyQueryAttributes(queryDict);
-				}
+				attributable.ApplyQueryAttributes(merged);
 			}
 
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			// Skip reflection-based property setting when the source generator handled it.
-			// The generator emits [GeneratedCode("QueryPropertyGenerator", ...)] on the partial class,
-			// so we can detect it and avoid double-applying query properties.
-			// Manual IQueryAttributable implementations (without this attribute) still get both
-			// the interface call above AND the reflection path below, preserving existing behavior.
-			if (RuntimeFeature.IsQueryPropertyAttributeSupported && !IsQueryPropertySourceGenerated(content.GetType()))
+			// If IQueryAttributable handled it (manually or via source generation),
+			// skip the reflection-based [QueryProperty] path.
+			if (RuntimeFeature.IsQueryPropertyAttributeSupported && content is not IQueryAttributable)
 			{
 				var type = content.GetType();
 				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
@@ -477,9 +464,6 @@ namespace Microsoft.Maui.Controls
 					query.ResetToQueryParameters();
 			}
 		}
-
-		static bool IsQueryPropertySourceGenerated(Type type) =>
-			type.GetCustomAttribute<QueryPropertyGeneratedAttribute>(inherit: true) is not null;
 
 		private sealed class ShellContentConverter : TypeConverter
 		{
