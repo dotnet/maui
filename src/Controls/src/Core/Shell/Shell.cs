@@ -20,7 +20,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
+	/// <summary>
+	/// The main navigation container for .NET MAUI apps, providing flyout and tab-based navigation.
+	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[DebuggerTypeProxy(typeof(ShellDebugView))]
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
@@ -82,7 +84,56 @@ namespace Microsoft.Maui.Controls
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
 
-			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+			if (shell != null)
+			{
+				// Notify about the property change
+				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+				
+				if (shell == null)
+				{
+					return;
+				}
+
+				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+
+				if (bindable.IsSet(NavBarIsVisibleProperty))
+				{
+					// Value explicitly set — propagate down so iOS/Mac compatibility renderers
+					// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
+					if (shell is IPropertyPropagationController controller)
+					{
+						controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+					}
+				}
+				else
+				{
+					// Value was cleared — also clear the propagated copies from visual children
+					// so GetEffectiveValue and platform handlers reflect the reverted state.
+					if (bindable is IVisualTreeElement element)
+					{
+						ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
+					}
+				}
+			}
+		}
+
+		static void ClearPropagatedNavBarIsVisible(IVisualTreeElement element, bool propagatedValue)
+		{
+			foreach (var child in element.GetVisualChildren())
+			{
+				if (child is BindableObject bo
+					&& bo.IsSet(NavBarIsVisibleProperty)
+					&& (bool)bo.GetValue(NavBarIsVisibleProperty) == propagatedValue)
+				{
+					// ClearValue fires OnNavBarIsVisibleChanged on the child, which
+					// recursively clears further down the tree automatically.
+					bo.ClearValue(NavBarIsVisibleProperty);
+				}
+				else if (child is IVisualTreeElement childElement)
+				{
+					ClearPropagatedNavBarIsVisible(childElement, propagatedValue);
+				}
+			}
 		}
 
 		/// <summary>
@@ -193,8 +244,40 @@ namespace Microsoft.Maui.Controls
 		/// <param name="itemTemplate">The <see cref = "DataTemplate" /> applied to Item objects.</param>
 		public static void SetItemTemplate(BindableObject obj, DataTemplate itemTemplate) => obj.SetValue(ItemTemplateProperty, itemTemplate);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GetBackButtonBehavior']/Docs/*" />
+		/// <summary>
+		/// Gets the <see cref="BackButtonBehavior"/> for the specified <paramref name="obj"/>.
+		/// </summary>
+		/// <param name="obj">The object from which to get the back button behavior.</param>
+		/// <returns>The back button behavior for the object.</returns>
 		public static BackButtonBehavior GetBackButtonBehavior(BindableObject obj) => (BackButtonBehavior)obj.GetValue(BackButtonBehaviorProperty);
+
+		/// <summary>
+		/// Gets the BackButtonBehavior for the given page, with fallback to Shell if not set on the page.
+		/// </summary>
+		internal static BackButtonBehavior GetEffectiveBackButtonBehavior(BindableObject page)
+		{
+			if (page == null)
+				return null;
+
+			// First check if the page has its own BackButtonBehavior
+			var behavior = GetBackButtonBehavior(page);
+			if (behavior != null)
+				return behavior;
+
+			// Fallback: check if the Shell itself has a BackButtonBehavior
+			if (page is Element element)
+			{
+				var shell = element.FindParentOfType<Shell>();
+				if (shell != null)
+				{
+					behavior = GetBackButtonBehavior(shell);
+					if (behavior != null)
+						return behavior;
+				}
+			}
+
+			return null;
+		}
 
 		/// <summary>
 		/// Sets the back button behavior when the given <paramref name="obj"/> is presented.
@@ -960,6 +1043,40 @@ namespace Microsoft.Maui.Controls
 			if (result?.Location != oldState?.Location)
 			{
 				SetValueFromRenderer(CurrentStatePropertyKey, result);
+
+				// Fire NavigatingFrom after state is updated so CurrentPage is the destination.
+				// _previousPage was captured in SendNavigating before navigation started.
+				if (_previousPage is not null)
+				{
+					NavigationType navigationType = NavigationType.Replace;
+
+					switch (source)
+					{
+						case ShellNavigationSource.Pop:
+							navigationType = NavigationType.Pop;
+							break;
+						case ShellNavigationSource.Push:
+							navigationType = NavigationType.Push;
+							break;
+						case ShellNavigationSource.PopToRoot:
+							navigationType = NavigationType.PopToRoot;
+							break;
+						case ShellNavigationSource.Insert:
+							navigationType = NavigationType.Insert;
+							break;
+						case ShellNavigationSource.Remove:
+							navigationType = NavigationType.Remove;
+							break;
+						case ShellNavigationSource.ShellItemChanged:
+						case ShellNavigationSource.ShellSectionChanged:
+						case ShellNavigationSource.ShellContentChanged:
+							navigationType = NavigationType.Replace;
+							break;
+					}
+
+					_previousPage.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+				}
+
 				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 			}
 		}
@@ -972,7 +1089,9 @@ namespace Microsoft.Maui.Controls
 			remove { ((ShellItemCollection)Items).VisibleItemsChanged -= value; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Current']/Docs/*" />
+		/// <summary>
+		/// Gets the current <see cref="Shell"/> instance from the active application window.
+		/// </summary>
 		public static Shell Current
 		{
 			get
@@ -1026,13 +1145,19 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ShellNavigationManager NavigationManager => _navigationManager;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs/*" />
+
+		/// <summary>Asynchronously navigates to the specified <paramref name="state"/>.</summary>
+		/// <param name="state">The shell navigation state to navigate to.</param>
+		/// <returns>A task that represents the asynchronous navigation operation.</returns>
 		public Task GoToAsync(ShellNavigationState state)
 		{
 			return _navigationManager.GoToAsync(state, null, false);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously navigates to the specified <paramref name="state"/> with animation control.</summary>
+		/// <param name="state">The shell navigation state to navigate to.</param>
+		/// <param name="animate">Whether to animate the navigation transition.</param>
+		/// <returns>A task that represents the asynchronous navigation operation.</returns>
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
 			return _navigationManager.GoToAsync(state, animate, false);
@@ -1178,8 +1303,11 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
+		NavigationType _navigationType;
+		Page _pendingPreviousPage;
+		NavigationType _pendingNavigationType;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
 		public Shell()
 		{
 			Toolbar = new ShellToolbar(this);
@@ -1337,7 +1465,7 @@ namespace Microsoft.Maui.Controls
 		internal ShellContent CurrentContent => CurrentItem?.CurrentItem?.CurrentItem;
 		internal ShellSection CurrentSection => CurrentItem?.CurrentItem;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
+		/// <summary>Gets the current navigation state of the Shell. This is a bindable property.</summary>
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
 		/// <summary>
@@ -1470,7 +1598,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FlyoutIsPresentedProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='Items']/Docs/*" />
+		/// <summary>Gets the collection of <see cref="ShellItem"/> objects in the Shell. This is a bindable property.</summary>
 		public IList<ShellItem> Items => (IList<ShellItem>)GetValue(ItemsProperty);
 
 		/// <summary>
@@ -1542,7 +1670,7 @@ namespace Microsoft.Maui.Controls
 		protected override bool OnBackButtonPressed()
 		{
 #if WINDOWS || !PLATFORM
-			var backButtonBehavior = GetBackButtonBehavior(GetVisiblePage());
+			var backButtonBehavior = GetEffectiveBackButtonBehavior(GetVisiblePage());
 			if (backButtonBehavior != null)
 			{
 				var command = backButtonBehavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
@@ -1593,41 +1721,81 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.Replace;
+			_navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
 				case ShellNavigationSource.Pop:
-					navigationType = NavigationType.Pop;
+					_navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
-					navigationType = NavigationType.Push;
+					_navigationType = NavigationType.Push;
 					break;
 				case ShellNavigationSource.PopToRoot:
-					navigationType = NavigationType.PopToRoot;
+					_navigationType = NavigationType.PopToRoot;
 					break;
 				case ShellNavigationSource.Insert:
-					navigationType = NavigationType.Insert;
+					_navigationType = NavigationType.Insert;
 					break;
 			}
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, _navigationType));
+			PropagateSendNavigatedTo();
 			_previousPage = null;
 
 			if (CurrentPage != null)
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+		}
+
+		void OnCurrentPageLoaded(object sender, EventArgs e)
+		{
+			if (sender is Page page)
+			{
+				page.Loaded -= OnCurrentPageLoaded;
+				page.SendNavigatedTo(new NavigatedToEventArgs(_pendingPreviousPage, _pendingNavigationType));
+				_pendingPreviousPage = null;
+				_pendingNavigationType = default;
+#if ANDROID
+				// Restore flyout behavior observers after deferred NavigatedTo timing
+				// Android requires this call to maintain flyout functionality
+				CurrentContent?.EvaluateDisconnect();
+#endif
+			}
+		}
+
+		void PropagateSendNavigatedTo()
+		{
+			if (CurrentPage is null)
+			{
+				return;
+			}
+
+			// Check if the Loaded event has actually been fired (not just IsLoaded which checks platform attachment).
+			// On iOS 26.1+, IsLoaded (view attached) can be true before the Loaded event is dispatched.
+			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
+			if (CurrentPage.IsLoadedFired)
+			{
+				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
+			}
+			else
+			{
+				// Capture before _previousPage is nulled in SendNavigated() so OnCurrentPageLoaded
+				// receives the correct PreviousPage in NavigatedToEventArgs when it fires asynchronously.
+				_pendingPreviousPage = _previousPage;
+				_pendingNavigationType = _navigationType;
+				CurrentPage.Loaded += OnCurrentPageLoaded;
+			}
 		}
 
 		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
@@ -1647,35 +1815,16 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
-				NavigationType navigationType = NavigationType.Replace;
-
-				switch (args.Source)
-				{
-					case ShellNavigationSource.Pop:
-						navigationType = NavigationType.Pop;
-						break;
-					case ShellNavigationSource.ShellItemChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellSectionChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellContentChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.Push:
-						navigationType = NavigationType.Push;
-						break;
-					case ShellNavigationSource.PopToRoot:
-						navigationType = NavigationType.PopToRoot;
-						break;
-					case ShellNavigationSource.Insert:
-						navigationType = NavigationType.Insert;
-						break;
-				}
-
+				// Capture the current page now; SendNavigatingFrom will be called in
+				// UpdateCurrentState after the shell state is updated, ensuring CurrentPage
+				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+			}
+      
+      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
+			{
+				CurrentPage.Loaded -= OnCurrentPageLoaded;
 			}
 		}
 
@@ -1714,6 +1863,17 @@ namespace Microsoft.Maui.Controls
 
 			shell.ShellController.AppearanceChanged(shell, false);
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
+
+			// If the new ShellItem is a FlyoutItem or a ShellGroupItem, we need to update the QueryAttributes
+			var existing = (ShellRouteParameters)shell.CurrentContent?.GetValue(ShellContent.QueryAttributesProperty);
+			bool isRelevantShellItem = shell.CurrentItem is FlyoutItem || shell.CurrentItem is ShellGroupItem;
+			bool isNewValueDifferent = oldValue is not null && newValue is not null && existing is null;
+
+			if (isNewValueDifferent && isRelevantShellItem)
+			{
+				ShellContent currentShellContent = shell.CurrentItem.CurrentItem?.CurrentItem;
+				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
+			}
 
 			if (shell.CurrentItem?.CurrentItem != null)
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);

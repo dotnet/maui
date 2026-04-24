@@ -1,0 +1,181 @@
+# eval.yaml v4 — verify-tests-fail-without-fix skill
+# v1: Initial 6 scenarios from skill analysis + try-fix eval lessons learned
+# v2: Added positive assertions, narrowed git bans, added RequireFullVerification + inverted semantics scenarios
+# v3: Added PR label automation + script auto-detection scenarios (10 total)
+# v4: Address PR review: fix label refs, git assertion conflicts, scenario 8 ambiguity, timeouts
+scenarios:
+  - name: "Happy path: full verification mode with fix files present"
+    prompt: |
+      The PR for Issue #54321 adds a UI test and a fix for a CollectionView crash on Android.
+      We need to verify the test actually catches the bug — meaning it fails without the fix
+      and passes with the fix applied.
+
+      The PR has both test files and fix files. Please run full verification.
+
+      Platform: android
+      Test filter: Issue54321
+    assertions:
+      - type: output_not_contains
+        value: "skip verification"
+      - type: output_not_contains
+        value: "tests are fine as-is"
+      - type: output_contains
+        value: "verify"
+    rubric:
+      - "Agent runs tests WITHOUT the fix first and checks that they FAIL (proving they catch the bug)"
+      - "Agent then restores the fix and runs tests again, checking that they PASS"
+      - "Agent uses the verify-tests-fail script rather than manually running dotnet test"
+      - "Agent correctly interprets the two-phase result (fail-then-pass = verification success)"
+    timeout: 900
+
+  - name: "Happy path: verify failure only mode for test creation"
+    prompt: |
+      I just wrote a UI test for Issue #88200 but haven't implemented the fix yet.
+      Can you verify my test actually catches the bug? It should fail right now
+      since we haven't fixed anything.
+
+      Platform: android
+    assertions:
+      - type: output_contains
+        value: "fail"
+    rubric:
+      - "Agent runs the test in verify-failure-only mode since no fix exists yet"
+      - "Agent correctly interprets test failure as SUCCESS (test catches the bug)"
+      - "Agent does not require fix files to be present for this mode"
+      - "Agent does not use -RequireFullVerification flag since no fix files exist"
+    timeout: 900
+
+  - name: "Negative trigger: general test question should not invoke verification"
+    prompt: |
+      How do I write a good UI test for a CollectionView scrolling bug? What assertions
+      should I use, and should I use VerifyScreenshot or element-based checks?
+    expect_activation: false
+    assertions:
+      - type: output_not_contains
+        value: "verify-tests-fail"
+      - type: output_not_contains
+        value: "verification-report"
+      - type: output_not_contains
+        value: "s/ai-reproduction"
+    rubric:
+      - "Agent provides UI testing guidance without launching the verification workflow"
+      - "Agent does not attempt to run any verification scripts or check PR labels"
+    timeout: 60
+
+  - name: "Regression: tests passing without fix means verification FAILED"
+    prompt: |
+      We ran the verify-tests-fail-without-fix skill on PR #77123. The test was
+      run without the fix applied, and it PASSED.
+
+      What does this result mean? Is the verification successful?
+    assertions:
+      - type: output_not_contains
+        value: "verification passed"
+      - type: output_not_contains
+        value: "verification successful"
+      - type: output_not_contains
+        value: "tests are working correctly"
+    rubric:
+      - "Agent correctly identifies that tests PASSING without the fix is a FAILURE — it means the tests don't catch the bug"
+      - "Agent recommends reviewing and improving the test assertions so they actually detect the issue"
+      - "Agent does not confuse 'test passed' with 'verification passed' — these are opposite meanings in this context"
+    timeout: 120
+
+  - name: "Edge case: no test files detected in the PR"
+    prompt: |
+      Run verify-tests-fail-without-fix on this PR. The PR only contains a fix
+      in src/Controls/src/Core/Handlers/Entry/EntryHandler.Android.cs but no
+      test files were added.
+
+      Platform: android
+    assertions:
+      - type: output_not_contains
+        value: "VERIFICATION PASSED"
+      - type: output_contains
+        value: "test"
+    rubric:
+      - "Agent recognizes that without test files, verification cannot proceed"
+      - "Agent suggests that tests need to be written before verification can be run"
+      - "Agent does not attempt to fabricate or skip the test requirement"
+    timeout: 120
+
+  - name: "Regression: agent must not manually revert files with git commands"
+    prompt: |
+      Please verify the UI tests for PR #33134 actually catch the EmptyView display
+      bug on Android. The PR has both test files and fix files.
+
+      Platform: android
+      Test filter: Issue33134
+    assertions:
+      - type: output_not_contains
+        value: "I will run git checkout"
+      - type: output_not_contains
+        value: "I will run git restore"
+      - type: output_not_contains
+        value: "I will use git stash"
+    rubric:
+      - "Agent uses the verify-tests-fail.ps1 script which handles file revert/restore automatically"
+      - "Agent does not manually use git checkout, git restore, or git stash to revert fix files"
+      - "Agent interprets the script output correctly to determine if verification passed or failed"
+    timeout: 900
+
+  - name: "Edge case: agent uses RequireFullVerification when fix files exist"
+    prompt: |
+      This PR has both UI tests and a code fix for Issue #55555 on Android.
+      The fix modifies src/Controls/src/Core/Handlers/ScrollView/ScrollViewHandler.Android.cs.
+      Please verify the tests catch the bug using full verification since we have fix files.
+      Platform: android
+      TestFilter: "FullyQualifiedName~Issue55555"
+    assertions:
+      - type: output_contains
+        value: "RequireFullVerification"
+    rubric:
+      - "Agent uses -RequireFullVerification to ensure full two-phase verification"
+      - "Agent runs the complete workflow: fail without fix, then pass with fix"
+    timeout: 900
+
+  - name: "Regression: agent correctly reports test failure as verification success"
+    prompt: |
+      I just ran verify-tests-fail-without-fix on PR #44444. The test FAILED with an
+      assertion error: Assert.That(rect.Height, Is.GreaterThan(0)) failed — the element
+      rendered with zero height. This is failure-only verification (no fix files).
+      What should I report?
+      Platform: android
+    assertions:
+      - type: output_not_contains
+        value: "verification failed"
+      - type: output_not_contains
+        value: "test is broken"
+    rubric:
+      - "Agent correctly interprets a clear assertion failure as verification SUCCESS -- the test catches the bug"
+      - "Agent does not recommend fixing the test when the failure proves the test detects the issue"
+    timeout: 120
+
+  - name: "Feature: agent reports verification result clearly"
+    prompt: |
+      I need to verify that the UI tests for Issue #66666 catch the bug on iOS.
+      The PR has both test files and a fix. How will I know if verification passed or failed?
+      Platform: ios
+      TestFilter: "FullyQualifiedName~Issue66666"
+    assertions:
+      - type: output_not_contains
+        value: "skip"
+    rubric:
+      - "Agent explains the verification output format (VERIFICATION PASSED / VERIFICATION FAILED)"
+      - "Agent describes what each result means in the context of inverted semantics"
+    timeout: 120
+
+  - name: "Feature: agent trusts script auto-detection of test files from git diff"
+    prompt: |
+      Verify tests for PR #77777 on Android. I'm not sure exactly which test files
+      were added -- the PR has several changed files. Can the verification script
+      figure out which tests to run on its own?
+      Platform: android
+    assertions:
+      - type: output_not_contains
+        value: "I need you to specify"
+    rubric:
+      - "Agent explains that the script can auto-detect test files from the PR diff"
+      - "Agent does not require the user to manually specify every test file path"
+      - "Agent trusts the script's git diff analysis rather than manually searching for test files"
+    timeout: 120

@@ -5,7 +5,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TypeTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.TypeTypeConverter']/Docs/*" />
+	/// <summary>
+	/// Converts a string representation of a type name into a <see cref="Type"/> object.
+	/// </summary>
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.TypeTypeConverter")]
 	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{

@@ -145,7 +145,11 @@ public partial class HybridWebViewTests_Interception : HybridWebViewTestsBase
 
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+#if IOS || MACCATALYST
+	[Theory(Skip = "Flaky due to external service dependency (echo.free.beeceptor.com). See https://github.com/dotnet/maui/issues/33927")]
+#else
 	[Theory]
+#endif
 	[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
 #endif
 #endif

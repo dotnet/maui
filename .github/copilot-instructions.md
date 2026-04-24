@@ -6,6 +6,10 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
+## Code Review Instructions
+
+When performing a code review on PRs that change functional code, run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
+
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.
@@ -14,8 +18,7 @@ This document provides specific guidance for GitHub Copilot when working on the 
 
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
   - **main branch**: Latest stable .NET version
-  - **net10.0 branch**: .NET 10 SDK
-  - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
+  - **Feature branches**: Each `netN.0` branch targets the .NET N SDK. By convention, the highest `netN.0` branch is the current development branch for new features and API changes.
 - **Cake build system** for compilation and packaging (`dotnet cake`)
 - **MSBuild** with custom build tasks (must build `Microsoft.Maui.BuildTasks.slnf` first)
 - **Testing frameworks**:
@@ -86,6 +89,18 @@ Major test projects:
 
 Find all tests: `find . -name "*.UnitTests.csproj"`
 
+### CI Pipelines (Azure DevOps)
+
+When referencing or triggering CI pipelines, use these current pipeline names:
+
+| Pipeline | Name | Purpose |
+|----------|------|---------|
+| Overall CI | `maui-pr` | Full PR validation build |
+| Device Tests | `maui-pr-devicetests` | Helix-based device tests |
+| UI Tests | `maui-pr-uitests` | Appium-based UI tests |
+
+**⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
+
 ### Code Formatting
 
 Always format code before committing:
@@ -124,7 +139,7 @@ When working with public API changes:
 
 ### Branching
 - `main` - For bug fixes without API changes
-- `net10.0` - For new features and API changes
+- The highest `netN.0` branch (by convention) - For new features and API changes. To find it, run `git fetch origin` then: `git for-each-ref --sort=-version:refname --count=1 --format='%(refname:lstrip=3)' refs/remotes/origin/net*.0`
 
 ### Git Workflow (Copilot CLI Rules)
 
@@ -132,9 +147,9 @@ When working with public API changes:
 
 1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
 
-2. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+2. **When amending an existing PR, work on the PR's branch directly** - Do NOT create a separate branch off a PR branch. The PR branch already IS a feature branch. Creating a new branch off it means CI won't run on the original PR, defeating the purpose. Use `gh pr checkout` to switch to the PR branch, make your changes, commit, **then** ask before pushing so the user can review locally first.
 
-3. **When amending an existing PR, do NOT automatically push** - After making changes to an existing PR branch, ask the user before pushing. This allows the user to review the changes locally first. Exception: If the user's instructions explicitly include pushing, proceed without asking.
+3. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
 
 **Safe Git Workflow:**
 ```bash
@@ -153,9 +168,16 @@ git push
 ```
 
 **When asked to update an existing PR:**
-1. Make the requested changes
-2. Stage and commit the changes
-3. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+```bash
+# Check out the PR branch directly (do NOT create a new branch off it)
+gh pr checkout 12345
+
+# Make fixes and commit to the PR branch
+git add .
+git commit -m "Fix: Description of the change"
+```
+1. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+2. Exception: If the user's instructions explicitly include pushing, proceed without asking.
 
 ### Documentation
 - Update XML documentation for public APIs
@@ -177,43 +199,136 @@ Always put that at the top, without the block quotes. Without it, users will NOT
 
 
 
-## Custom Agents
+## Custom Agents and Skills
 
-The repository includes specialized custom agents for specific tasks. These agents are available to GitHub Copilot and can be invoked for their respective specializations:
+The repository includes specialized custom agents and reusable skills for specific tasks.
+
+### Skills vs Agents
+
+| Aspect | Skills | Agents |
+|--------|--------|--------|
+| **Invoke** | `/skill-name` or direct request | Delegate to agent |
+| **Output** | Analysis, recommendations | Actions, changes applied |
+| **Interaction** | Interactive discussion | Autonomous workflow |
+| **Example** | `/learn-from-pr` → recommendations | learn-from-pr agent → applies changes |
 
 ### Available Custom Agents
 
-1. **issue-resolver** - Specialized agent for investigating and resolving community-reported .NET MAUI issues through hands-on testing and implementation
-   - **Use when**: Working on bug fixes from GitHub issues
-   - **Capabilities**: Issue reproduction, root cause analysis, fix implementation, testing
-   - **Trigger phrases**: "fix issue #XXXXX", "resolve bug #XXXXX", "implement fix for #XXXXX"
+1. **pr** - Sequential 4-phase workflow for reviewing and working on PRs
+   - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
+   - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-2. **pr-reviewer** - Specialized agent for conducting thorough, constructive code reviews of .NET MAUI pull requests
-   - **Use when**: User requests code review of a pull request
-   - **Capabilities**: Code quality analysis, best practices validation, test coverage review
-   - **Trigger phrases**: "review PR #XXXXX", "review pull request #XXXXX", "code review for PR #XXXXX", "review this PR"
-   - **Do NOT use for**: Building/testing PR functionality (use Sandbox), asking about PR details (handle yourself)
+2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
+   - **Use when**: Creating new tests for issues or PRs
+   - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
+   - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
 
-3. **uitest-coding-agent** - Specialized agent for writing new UI tests for .NET MAUI with proper syntax, style, and conventions
-   - **Use when**: Creating new UI tests or updating existing ones
-   - **Capabilities**: UI test authoring, Appium WebDriver usage, NUnit test patterns
-   - **Trigger phrases**: "write UI test for #XXXXX", "create UI tests", "add test coverage"
-
-4. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
+3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
    - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
    - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
-   - **Do NOT use for**: Code review (use pr-reviewer), writing automated tests (use uitest-coding-agent)
+   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use write-tests-agent)
+
+4. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
+   - **Use when**: After complex PR, want to improve instruction files/skills based on lessons learned
+   - **Capabilities**: Analyzes PR, identifies failure modes, applies improvements to instruction files, skills, code comments
+   - **Trigger phrases**: "learn from PR #XXXXX and apply improvements", "improve repo based on what we learned", "update skills based on PR"
+   - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
+   - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
+
+### Reusable Skills
+
+Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
+
+#### User-Facing Skills
+
+1. **pr-review** (`.github/skills/pr-review/SKILL.md`)
+   - **Purpose**: End-to-end PR review orchestrator — 3 phases: pr-preflight, try-fix, pr-report. Gate runs separately before this skill via Review-PR.ps1.
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Capabilities**: Multi-model fix exploration, alternative comparison, PR review recommendation
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
+   - **Phase instructions** (in `.github/pr-review/`):
+     - `pr-preflight.md` — Context gathering from issue/PR
+     - `pr-report.md` — Final recommendation
+   - **Phase skill**: `try-fix` — Multi-model fix exploration
+   - **Note**: Gate (test verification) runs as a script step in `Review-PR.ps1` before this skill is invoked. Gate result is passed in the prompt.
+
+2. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
+   - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
+   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention"
+   - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
+
+2. **find-reviewable-pr** (`.github/skills/find-reviewable-pr/SKILL.md`)
+   - **Purpose**: Finds open PRs in dotnet/maui and dotnet/docs-maui that need review
+   - **Trigger phrases**: "find PRs to review", "show milestoned PRs", "find partner PRs"
+   - **Scripts**: `query-reviewable-prs.ps1`
+   - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
+
+3. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
+   - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
+   - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
+   - **Used by**: Before merging any PR, when description may be stale
+   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+   - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
+
+4. **code-review** (`.github/skills/code-review/SKILL.md`)
+   - **Purpose**: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Walks through a MAUI-specific checklist covering handler lifecycle, platform code, safe area, threading, public API, and test patterns.
+   - **Trigger phrases**: "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code"
+   - **Note**: Standalone skill — uses independence-first assessment (reads code before PR description to avoid anchoring bias). Can be used by any agent or invoked directly.
+   - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` — only post comments. Approval is a human decision.
+
+5. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
+   - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
+   - **Trigger phrases**: "what can we learn from PR #XXXXX?", "how can we improve agents based on PR #XXXXX?"
+   - **Used by**: After complex PRs, when agent struggled to find solution
+   - **Output**: Prioritized recommendations for instruction files, skills, code comments
+   - **Note**: For applying changes automatically, use the learn-from-pr agent instead
+
+6. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
+   - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
+   - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
+   - **Output**: Test files that fail without fix, pass with fix
+
+7. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+   - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
+   - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
+   - **Output**: Test files for Controls.Xaml.UnitTests
+
+9. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+   - **Purpose**: Verifies tests catch the bug before fix and pass with fix. Auto-detects test type (UI, device, unit, XAML) and dispatches to the appropriate runner.
+   - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
+   - **Used by**: After creating tests, before considering PR complete
+
+9. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
+   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
+   - **Used by**: When investigating CI failures
+
+10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+   - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
+   - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
+   - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
+   - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
+
+#### Internal Skills (Used by Agents)
+
+11. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+   - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
+   - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
+   - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
+   - **Output**: Updates session markdown with attempt results and failure analysis
 
 ### Using Custom Agents
 
 **Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
 
 **Examples of correct delegation**:
-- User: "Review PR #12345" → Immediately invoke **pr-reviewer** agent
+- User: "Review PR #12345" → Immediately invoke **pr** agent
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
-- User: "Fix issue #67890" → Immediately invoke **issue-resolver** agent
-- User: "Write UI test for CollectionView" → Immediately invoke **uitest-coding-agent**
+- User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
+- User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself

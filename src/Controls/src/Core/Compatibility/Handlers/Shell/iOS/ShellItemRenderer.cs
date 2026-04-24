@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -124,12 +126,81 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
 				bool accept = true;
-				var r = RendererForViewController(viewController);
-				if (r is not null)
-					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
+				var renderer = RendererForViewController(viewController);
+				if (renderer is not null)
+				{
+					// On iOS 26+, disabled tabs can still be selected by dragging.
+					// Return false to prevent selecting disabled tabs.
+					if (!renderer.ShellSection.IsEnabled && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+					{
+						return false;
+					}
+
+					accept = ((IShellItemController)ShellItem).ProposeSection(renderer.ShellSection, false);
+				}
 
 				return accept;
 			};
+		}
+
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			ApplyInitialDisabledState();
+		}
+
+		void ApplyInitialDisabledState()
+		{
+			if (TabBar.Items is null)
+				return;
+
+			var items = ShellItemController?.GetItems();
+			if (items is null)
+				return;
+
+			// When there are more tabs than iOS can display (> 5), iOS creates a "More" tab.
+			// Only iterate visible tab items, excluding the system "More" tab.
+			int visibleTabs = Math.Min(items.Count, TabBar.Items.Length);
+			if (items.Count > TabBar.Items.Length)
+				visibleTabs = TabBar.Items.Length - 1;
+
+			for (int i = 0; i < visibleTabs; i++)
+			{
+				if (!items[i].IsEnabled)
+					UpdateTabBarItemEnabled(TabBar.Items[i], false);
+			}
+		}
+
+		void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
+		{
+			tabBarItem.Enabled = isEnabled;
+
+			var disabledColor = Shell.GetTabBarDisabledColor(_context.Shell)?.ToPlatform();
+			if (disabledColor is null)
+				return;
+
+			// Per-item text attributes needed for dynamic enable/disable changes
+			var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
+			tabBarItem.SetTitleTextAttributes(textAttributes, UIControlState.Disabled);
+
+			// Tint icon image since UITabBarAppearance.Disabled.IconColor doesn't work
+			if (tabBarItem.Image is not null)
+			{
+				tabBarItem.Image = isEnabled
+					? tabBarItem.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate)
+					: CreateTintedImage(tabBarItem.Image, disabledColor).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			}
+		}
+
+		UIImage CreateTintedImage(UIImage image, UIColor color)
+		{
+			var renderer = new UIGraphicsImageRenderer(image.Size, new UIGraphicsImageRendererFormat { Opaque = false, Scale = image.CurrentScale });
+			return renderer.CreateImage(ctx =>
+			{
+				image.Draw(new CGRect(CGPoint.Empty, image.Size));
+				color.SetFill();
+				ctx.FillRect(new CGRect(CGPoint.Empty, image.Size), CGBlendMode.SourceIn);
+			});
 		}
 
 		void IDisconnectable.Disconnect()
@@ -210,6 +281,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						RemoveRenderer(renderer);
 					}
 				}
+
+				// Recalculate IsInMoreTab for remaining renderers since tab positions shifted after removal.
+				UpdateIsInMoreTabForRenderers();
 			}
 
 			if (e.NewItems != null && e.NewItems.Count > 0)
@@ -245,6 +319,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewControllers = viewControllers;
 				CustomizableViewControllers = Array.Empty<UIViewController>();
 
+				// Apply initial IsEnabled state for each tab item
+				SetTabItemsEnabledState();
+
 				if (goTo)
 					GoTo(ShellItem.CurrentItem);
 			}
@@ -267,9 +344,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var shellSection = (ShellSection)sender;
 				var renderer = RendererForShellContent(shellSection);
 				var index = ViewControllers.ToList().IndexOf(renderer.ViewController);
-				TabBar.Items[index].Enabled = shellSection.IsEnabled;
+				if (TabBar.Items is not null && index >= 0 && index < TabBar.Items.Length)
+					UpdateTabBarItemEnabled(TabBar.Items[index], shellSection.IsEnabled);
 			}
 		}
+
 
 		protected virtual void UpdateShellAppearance(ShellAppearance appearance)
 		{
@@ -287,6 +366,44 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			_sectionRenderers[renderer.ViewController] = renderer;
 			renderer.ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
+		}
+
+		void SetTabItemsEnabledState()
+		{
+			if (TabBar?.Items is null)
+			{
+				return;
+			}
+
+			var items = ShellItemController.GetItems();
+			if (items is null)
+			{
+				return;
+			}
+
+			if (TabBar.Items.Length >= items.Count)
+			{
+				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
+				{
+					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
+				}
+			}
+		}
+
+		void UpdateIsInMoreTabForRenderers()
+		{
+			const int maxTabs = 5;
+			var currentViewControllers = ViewControllers;
+			if (currentViewControllers == null)
+				return;
+
+			bool willUseMore = currentViewControllers.Length > maxTabs;
+			for (int i = 0; i < currentViewControllers.Length; i++)
+			{
+				var renderer = RendererForViewController(currentViewControllers[i]);
+				if (renderer != null)
+					renderer.IsInMoreTab = willUseMore && i >= maxTabs - 1;
+			}
 		}
 
 		void CreateTabRenderers()
@@ -313,6 +430,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			ViewControllers = viewControllers;
 			CustomizableViewControllers = Array.Empty<UIViewController>();
+
+			// Apply initial IsEnabled state for newly added tab items
+			SetTabItemsEnabledState();
 
 			UpdateTabBarHidden();
 
@@ -399,6 +519,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
 				UpdateTabBarHidden();
+				UpdateLargeTitles();
+				UpdateNavBarHidden();
 			}
 		}
 
@@ -406,6 +528,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				UpdateTabBarHidden();
+		}
+
+
+		void UpdateLargeTitles()
+		{
+			var page = _displayedPage;
+			if (page is null || !OperatingSystem.IsIOSVersionAtLeast(11))
+				return;
+
+			// Shell doesn't have the property PrefersLargeTitles, so we should not update the large titles
+			// if users doen't explicitly set the LargeTitleDisplay property on the Page.
+			// todo net 11: Add PrefersLargeTitles to Shell and use that here.
+			if (!page.IsSet(PlatformConfiguration.iOSSpecific.Page.LargeTitleDisplayProperty))
+			{
+				return;
+			}
+
+			var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
+
+			if (SelectedViewController is UINavigationController navigationController)
+			{
+				navigationController.NavigationBar.PrefersLargeTitles = largeTitleDisplayMode != LargeTitleDisplayMode.Never;
+				var top = navigationController.TopViewController;
+				if (top is not null)
+				{
+					top.NavigationItem.LargeTitleDisplayMode = largeTitleDisplayMode switch
+					{
+						LargeTitleDisplayMode.Always => UINavigationItemLargeTitleDisplayMode.Always,
+						LargeTitleDisplayMode.Automatic => UINavigationItemLargeTitleDisplayMode.Automatic,
+						_ => UINavigationItemLargeTitleDisplayMode.Never
+					};
+				}
+			}
 		}
 
 		void RemoveRenderer(IShellSectionRenderer renderer)
@@ -441,6 +596,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewWillLayoutSubviews()
 		{
 			UpdateTabBarHidden();
+			UpdateLargeTitles();
 			base.ViewWillLayoutSubviews();
 		}
 

@@ -4,11 +4,17 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that resolves a resource from a <see cref="ResourceDictionary"/>.
+	/// </summary>
 	[ContentProperty(nameof(Key))]
 	[RequireService([typeof(IXmlLineInfoProvider), typeof(IProvideParentValues), typeof(IRootObjectProvider)])]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticResourceExtension")]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
+		/// <summary>
+		/// Gets or sets the key of the resource to retrieve.
+		/// </summary>
 		public string Key { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)
@@ -24,16 +30,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
 			{
 				var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
+				var ex = new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 				if (Controls.Internals.ResourceLoader.ExceptionHandler2 is var ehandler && ehandler != null)
 				{
-					var ex = new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 					var rootObjectProvider = (IRootObjectProvider)serviceProvider.GetService(typeof(IRootObjectProvider));
 					var root = rootObjectProvider.RootObject;
 					ehandler.Invoke((ex, XamlFilePathAttribute.GetFilePathForObject(root)));
-					return null;
 				}
-				else
-					throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
+				// Throw an exception when the key is not found
+				throw ex;
 			}
 
 			Diagnostics.ResourceDictionaryDiagnostics.OnStaticResourceResolved(resourceDictionary, Key, valueProvider.TargetObject, valueProvider.TargetProperty);

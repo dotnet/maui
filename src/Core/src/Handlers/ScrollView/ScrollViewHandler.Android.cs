@@ -196,15 +196,28 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateInsetView(IScrollView scrollView, IScrollViewHandler handler, ICrossPlatformLayout crossPlatformLayout)
 		{
-			if (scrollView.PresentedContent == null || handler.MauiContext == null)
+			if (handler.MauiContext is null)
 			{
+				return;
+			}
+
+			// Find existing inset panel once
+			var currentPaddingLayer = FindInsetPanel(handler);
+
+			// If PresentedContent is null, clean up any existing content and return
+			if (scrollView.PresentedContent is null)
+			{
+				currentPaddingLayer?.RemoveAllViews();
 				return;
 			}
 
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
-			if (FindInsetPanel(handler) is ContentViewGroup currentPaddingLayer)
+			if (currentPaddingLayer is not null)
 			{
+				UpdateClipForShadow(currentPaddingLayer, handler.PlatformView, scrollView.PresentedContent);
+
+				// Only update if content has changed or is missing
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
 				{
 					currentPaddingLayer.RemoveAllViews();
@@ -230,9 +243,19 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
+			UpdateClipForShadow(paddingShim, handler.PlatformView, scrollView.PresentedContent);
+
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
+		}
+
+		static void UpdateClipForShadow(ContentViewGroup paddingShim, MauiScrollView scrollView, IView? content)
+		{
+			bool hasShadow = content?.Shadow is not null;
+			paddingShim.SetClipChildren(!hasShadow);
+			paddingShim.SetClipToPadding(!hasShadow);
+			scrollView.SetClipChildren(!hasShadow);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)

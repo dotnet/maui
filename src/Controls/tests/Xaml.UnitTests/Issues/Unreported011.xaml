@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test for OnPlatform<Brush> with Default element syntax -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Unreported011">
+	<ContentPage.Resources>
+		<!-- OnPlatform with abstract type Brush using element syntax for Default -->
+		<OnPlatform x:Key="TestBrush" x:TypeArguments="Brush">
+			<On Platform="WinUI">
+				<LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+					<LinearGradientBrush.GradientStops>
+						<GradientStop Offset="0.00" Color="Red" />
+						<GradientStop Offset="1.00" Color="Blue" />
+					</LinearGradientBrush.GradientStops>
+				</LinearGradientBrush>
+			</On>
+			<OnPlatform.Default>
+				<SolidColorBrush Color="Green" />
+			</OnPlatform.Default>
+		</OnPlatform>
+	</ContentPage.Resources>
+	<Border x:Name="testBorder" Background="{StaticResource TestBrush}" />
+</ContentPage>

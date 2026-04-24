@@ -14,8 +14,11 @@ static class MauiRippleDrawableExtensions
 	const int MauiBackgroundDrawableId = 1001;
 	const int MauiStrokeDrawableId = 1002;
 
-	// Default obtained by running on Android 34 and inspecting the default drawable
-	const int DefaultCornerRadius = 4;
+	// Default corner radius for Material Design 2
+	const int DefaultCornerRadiusMaterial2 = 4;
+
+	// Default corner radius for Material Design 3
+	const int DefaultCornerRadiusMaterial3 = 20;
 	const int DefaultStrokeThicknessWithColor = 1;
 	const int DefaultStrokeThicknessNoColor = 0;
 	static readonly Color DefaultStrokeColor = Colors.Black;
@@ -173,9 +176,14 @@ static class MauiRippleDrawableExtensions
 				: DefaultStrokeThicknessNoColor;
 		var strokeWidthPixels = (int)context.ToPixels(strokeWidth);
 
+		// Get default corner radius based on Material Design version
+		var defaultCornerRadius = RuntimeFeature.IsMaterial3Enabled
+					? DefaultCornerRadiusMaterial3
+					: DefaultCornerRadiusMaterial2;
+
 		var cornerRadius = button.CornerRadius >= 0
 			? button.CornerRadius
-			: DefaultCornerRadius;
+			: defaultCornerRadius;
 		var cornerRadiusPixels = (int)context.ToPixels(cornerRadius);
 
 		if (!defaultButtonLogic)

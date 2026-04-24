@@ -3,22 +3,25 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/UnsolvableConstraintsException.xml" path="Type[@FullName='Microsoft.Maui.Controls.UnsolvableConstraintsException']/Docs/*" />
+	/// <summary>Exception thrown when layout constraints cannot be solved.</summary>
 	[Serializable]
 	public class UnsolvableConstraintsException : Exception
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/UnsolvableConstraintsException.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Creates a new <see cref="UnsolvableConstraintsException"/>.</summary>
 		public UnsolvableConstraintsException()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UnsolvableConstraintsException.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Creates a new <see cref="UnsolvableConstraintsException"/> with a message.</summary>
+		/// <param name="message">The exception message.</param>
 		public UnsolvableConstraintsException(string message)
 			: base(message)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/UnsolvableConstraintsException.xml" path="//Member[@MemberName='.ctor'][4]/Docs/*" />
+		/// <summary>Creates a new <see cref="UnsolvableConstraintsException"/> with a message and inner exception.</summary>
+		/// <param name="message">The exception message.</param>
+		/// <param name="innerException">The inner exception.</param>
 		public UnsolvableConstraintsException(string message, Exception innerException)
 			: base(message, innerException)
 		{

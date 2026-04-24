@@ -7,7 +7,9 @@ using System.Xml.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
+	/// <summary>
+	/// Represents a view that provides context-specific swipe interactions.
+	/// </summary>
 	[ContentProperty(nameof(Content))]
 	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
@@ -15,7 +17,9 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SwipeView"/> class.
+		/// </summary>
 		public SwipeView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
@@ -55,35 +59,45 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Threshold']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the swipe threshold distance.
+		/// </summary>
 		public double Threshold
 		{
 			get { return (double)GetValue(ThresholdProperty); }
 			set { SetValue(ThresholdProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='LeftItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the left side.
+		/// </summary>
 		public SwipeItems LeftItems
 		{
 			get { return (SwipeItems)GetValue(LeftItemsProperty); }
 			set { SetValue(LeftItemsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='RightItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the right side.
+		/// </summary>
 		public SwipeItems RightItems
 		{
 			get { return (SwipeItems)GetValue(RightItemsProperty); }
 			set { SetValue(RightItemsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='TopItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the top side.
+		/// </summary>
 		public SwipeItems TopItems
 		{
 			get { return (SwipeItems)GetValue(TopItemsProperty); }
 			set { SetValue(TopItemsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='BottomItems']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the collection of swipe items on the bottom side.
+		/// </summary>
 		public SwipeItems BottomItems
 		{
 			get { return (SwipeItems)GetValue(BottomItemsProperty); }
@@ -128,6 +142,18 @@ namespace Microsoft.Maui.Controls
 			SetInheritedBindingContext(RightItems, BindingContext);
 			SetInheritedBindingContext(TopItems, BindingContext);
 			SetInheritedBindingContext(BottomItems, BindingContext);
+
+			// In Windows and Android, new cells are created when rebinding, so _isOpen is false.
+			// In iOS, CollectionView reuses cells, so SwipeView remain open (_isOpen = true).
+			// When new cells are recreated, the swipe state is reset. 
+			// When cells are reused (iOS), the open state is maintained.
+			// Fix for iOS: Close SwipeView when BindingContext changes to prevent stale open state
+#if IOS || MACCATALYST
+			if (_isOpen)
+			{
+				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(false));
+			}
+#endif
 		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)
@@ -196,7 +222,9 @@ namespace Microsoft.Maui.Controls
 			((ISwipeView)this).RequestOpen(new SwipeViewOpenRequest(openSwipeItem, animated));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='Close']/Docs/*" />
+		/// <summary>
+		/// Closes the swipe view.
+		/// </summary>
 		public void Close(bool animated = true)
 		{
 			CloseRequested?.Invoke(this, new CloseRequestedEventArgs(animated));
@@ -230,6 +258,7 @@ namespace Microsoft.Maui.Controls
 		double _previousScrollX;
 		double _previousScrollY;
 		View? _scrollParent;
+		Element? _templateParent;
 		SwipeDirection? _swipeDirection;
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
@@ -285,60 +314,83 @@ namespace Microsoft.Maui.Controls
 
 		private protected override void OnParentChangedCore()
 		{
-			if (_scrollParent != null)
-			{
-				if (_scrollParent is ScrollView scrollView)
-				{
-					scrollView.Scrolled -= OnParentScrolled;
-				}
-
-#pragma warning disable CS0618 // Type or member is obsolete
-				if (_scrollParent is ListView listView)
-				{
-					listView.Scrolled -= OnParentScrolled;
-					return;
-				}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
-				{
-					collectionView.Scrolled -= OnParentScrolled;
-				}
-
-				_scrollParent = null;
-			}
-
 			base.OnParentChangedCore();
 
-			if (_scrollParent == null)
+			if (_templateParent != null)
 			{
-				_scrollParent = this.FindParentOfType<ScrollView>();
-
-				if (_scrollParent is ScrollView scrollView)
-				{
-					scrollView.Scrolled += OnParentScrolled;
-					return;
-				}
-
-#pragma warning disable CS0618 // Type or member is obsolete
-				_scrollParent = this.FindParentOfType<ListView>();
-#pragma warning restore CS0618 // Type or member is obsolete
-
-#pragma warning disable CS0618 // Type or member is obsolete
-				if (_scrollParent is ListView listView)
-				{
-					listView.Scrolled += OnParentScrolled;
-					return;
-				}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-				_scrollParent = this.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
-
-				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
-				{
-					collectionView.Scrolled += OnParentScrolled;
-				}
+				_templateParent.ParentChanged -= OnTemplateParentChanged;
+				_templateParent = null;
 			}
+			UnsubscribeFromParentScrolledEvents();
+
+			// Try direct discovery first (works when the visual tree is already connected)
+			if (SubscribeToNearestScrollParent(this))
+				return;
+
+			// Deferred discovery for DataTemplate scenarios where the tree isn't fully connected yet
+			_templateParent = this.FindParentWith(x => x.Parent == null, false);
+			if (_templateParent != null)
+				_templateParent.ParentChanged += OnTemplateParentChanged;
+		}
+
+		void UnsubscribeFromParentScrolledEvents()
+		{
+			if (_scrollParent is ScrollView scrollView)
+			{
+				scrollView.Scrolled -= OnParentScrolled;
+			}
+#pragma warning disable CS0618 // Type or member is obsolete
+			else if (_scrollParent is ListView listView)
+			{
+				listView.Scrolled -= OnParentScrolled;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+			else if (_scrollParent is CollectionView collectionView)
+			{
+				collectionView.Scrolled -= OnParentScrolled;
+			}
+			_scrollParent = null;
+		}
+
+		void OnTemplateParentChanged(object? sender, EventArgs e)
+		{
+			UnsubscribeFromParentScrolledEvents();
+
+			if (_templateParent?.Parent != null)
+			{
+				SubscribeToNearestScrollParent(_templateParent);
+			}
+		}
+
+		bool SubscribeToNearestScrollParent(Element startElement)
+		{
+			_scrollParent = startElement.FindParentOfType<ScrollView>();
+
+			if (_scrollParent is ScrollView scrollView)
+			{
+				scrollView.Scrolled += OnParentScrolled;
+				return true;
+			}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			_scrollParent = startElement.FindParentOfType<ListView>();
+
+			if (_scrollParent is ListView listView)
+			{
+				listView.Scrolled += OnParentScrolled;
+				return true;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			_scrollParent = startElement.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
+
+			if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
+			{
+				collectionView.Scrolled += OnParentScrolled;
+				return true;
+			}
+
+			return false;
 		}
 
 		void UpdateMargin()
@@ -352,8 +404,8 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
 		{
-			var horizontalDelta = e.ScrollX - _previousScrollX;
-			var verticalDelta = e.ScrollY - _previousScrollY;
+			var horizontalDelta = Math.Abs(e.ScrollX - _previousScrollX);
+			var verticalDelta = Math.Abs(e.ScrollY - _previousScrollY);
 
 			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
@@ -364,7 +416,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ItemsViewScrolledEventArgs e)
 		{
-			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
+			if (Math.Abs(e.HorizontalDelta) > SwipeMinimumDelta || Math.Abs(e.VerticalDelta) > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
 		}
 

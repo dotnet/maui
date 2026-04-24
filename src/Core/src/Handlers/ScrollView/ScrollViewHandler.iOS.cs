@@ -108,13 +108,19 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
-				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
-				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
-				var minScrollVertical = Math.Min(request.VerticalOffset, availableScrollHeight);
-				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+				var availableScrollHeight = Math.Max(uiScrollView.ContentSize.Height - uiScrollView.Frame.Height, 0);
+				var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
+				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
+				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
+				
+				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == minScrollVertical && uiScrollView.ContentOffset.X == minScrollHorizontal;
 
-				if (request.Instant)
+				if (!alreadyAtTarget)
+				{
+    				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+				}
+
+				if (request.Instant || alreadyAtTarget)
 				{
 					scrollView.ScrollFinished();
 				}

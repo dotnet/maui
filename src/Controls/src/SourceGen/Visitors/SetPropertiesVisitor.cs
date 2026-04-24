@@ -18,6 +18,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	   XmlName.xArguments,
 		XmlName.xClass,
 		XmlName.xClassModifier,
+		XmlName.xCode,
 		XmlName.xDataType,
 		XmlName.xFactoryMethod,
 		XmlName.xFieldModifier,
@@ -148,7 +149,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			}
 			else if (parentVar.Type.CanAdd(context))
 			{
-				Writer.WriteLine($"{parentVar.ValueAccessor}.Add({Context.Variables[node].ValueAccessor});");
+				// Skip if the node was removed from Variables (e.g., Setter with no value due to OnPlatform)
+				if (Context.Variables.TryGetValue(node, out var nodeVar))
+					Writer.WriteLine($"{parentVar.ValueAccessor}.Add({nodeVar.ValueAccessor});");
 			}
 			else
 			{
@@ -196,8 +199,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 			if (propertyType.CanAdd(context))
 			{
-				Writer.WriteLine($"{variable.ValueAccessor}.Add({Context.Variables[node].ValueAccessor});");
-
+				// Skip if the node was removed from Variables (e.g., Setter with no value due to OnPlatform)
+				if (Context.Variables.TryGetValue(node, out var nodeVar))
+					Writer.WriteLine($"{variable.ValueAccessor}.Add({nodeVar.ValueAccessor});");
 			}
 			else
 			//report diagnostic: not a collection

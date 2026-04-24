@@ -40,7 +40,7 @@ static class XmlTypeExtensions
 
 	public static bool TryResolveTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyAttributes xmlnsCache, IDictionary<XmlType, INamedTypeSymbol> typeCache, out INamedTypeSymbol? symbol)
 	{
-		if (typeCache.TryGetValue(xmlType, out symbol))			
+		if (typeCache.TryGetValue(xmlType, out symbol))
 			return true;
 
 		var name = xmlType.Name.Split(':').Last(); //strip prefix
@@ -49,12 +49,12 @@ static class XmlTypeExtensions
 		if (!xmlnsCache.ClrNamespacesForXmlns.TryGetValue(xmlType.NamespaceUri, out var namespaces))
 		{
 			XmlnsHelper.ParseXmlns(xmlType.NamespaceUri, out _, out var ns, out _, out _);
-			namespaces = [ns!];						
+			namespaces = [ns!];
 		}
 
-		var extsuffixes = (name != "DataTemplate" && !name.EndsWith("Extension", StringComparison.Ordinal)) ? new [] {"Extension", string.Empty} : [string.Empty];
+		var extsuffixes = (name != "DataTemplate" && !name.EndsWith("Extension", StringComparison.Ordinal)) ? new[] { "Extension", string.Empty } : [string.Empty];
 		foreach (var suffix in extsuffixes)
-        {		
+		{
 			var types = namespaces.Select(ns => $"{ns}.{name}{suffix}{genericSuffix}").SelectMany(typeName => compilation.GetTypesByMetadataName(typeName)).Where(ts => ts.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible)).Distinct(SymbolEqualityComparer.Default).Cast<INamedTypeSymbol>().ToArray();
 
 			if (types.Length > 1)
@@ -67,6 +67,12 @@ static class XmlTypeExtensions
 			if (types.Length == 1)
 			{
 				symbol = types[0];
+				// If the match is via the "Extension" suffix but the type is static, it cannot be
+				// an IMarkupExtension (static types cannot implement interfaces). In that case, skip
+				// this match and continue to try the exact name. This prevents a static helper class
+				// like MyEnumExtension from being returned instead of the MyEnum enum type. (#34021)
+				if (suffix == "Extension" && symbol.IsStatic)
+					continue;
 				if (symbol.IsGenericType && xmlType.TypeArguments is not null)
 				{
 					var typeArgs = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache, typeCache)!).ToArray();
@@ -75,7 +81,7 @@ static class XmlTypeExtensions
 				typeCache[xmlType] = symbol;
 				return true;
 			}
-        }
+		}
 		symbol = null;
 		return false;
 	}

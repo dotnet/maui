@@ -511,6 +511,12 @@ namespace Microsoft.Maui.Controls
 
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
+
+			if (Shell.GetBackButtonBehavior(this) is { } buttonBehavior)
+				SetInheritedBindingContext(buttonBehavior, BindingContext);
+
+			if (Shell.GetSearchHandler(this) is { } searchHandler)
+				SetInheritedBindingContext(searchHandler, BindingContext);
 		}
 
 

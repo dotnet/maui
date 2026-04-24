@@ -42,6 +42,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			itemsView.RemoveLogicalChild(View);
+
+			// Disconnect the current handler and release the platform content. We keep the
+			// existing View/_selectedTemplate references so the next Bind() can decide whether
+			// it needs to re-realize the same templated view or create a new one.
+			_itemContentView.Recycle();
 		}
 
 		public void Bind(object itemBindingContext, ItemsView itemsView,
@@ -82,8 +87,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (!templateChanging)
 			{
-				// Same template, new data
+				// Same template — update binding context. If the handler was disconnected
+				// during recycle, re-realize the existing view to reconnect platform content
+				// without losing any runtime property changes (e.g. dynamic HeightRequest).
 				View.BindingContext = itemBindingContext;
+
+				if (View?.Handler is null)
+				{
+					PropertyPropagationExtensions.PropagatePropertyChanged(null, View, itemsView);
+					_itemContentView.RealizeContent(View, itemsView);
+				}
 			}
 
 			itemsView.AddLogicalChild(View);
@@ -119,7 +132,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
 					{
 						var setter = state.Setters[setterIndex];
-						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+							setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 						{
 							return true;
 						}

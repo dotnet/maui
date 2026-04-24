@@ -1,0 +1,678 @@
+# Pipeline for running GitHub Copilot PR Reviewer Agent
+# This pipeline installs the Copilot CLI and invokes the PR reviewer agent
+# to conduct automated code reviews on pull requests.
+#
+# For more information, see:
+# https://github.com/dotnet/maui/wiki/PR-Reviewer-Agent
+
+trigger: none  # Manual trigger only
+
+pr: none  # Not triggered by PRs
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: string
+    default: ''
+
+  - name: Platform
+    displayName: 'Target Platform'
+    type: string
+    default: 'android'
+    values:
+      - android
+      - ios
+      - catalyst
+      - windows
+
+  - name: androidPool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: ubuntu-22.04
+
+  - name: iosPool
+    type: object
+    default:
+      name: AcesShared
+
+  - name: macPool
+    type: object
+    default:
+      name: AcesShared
+
+  - name: windowsPool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: windows-2022
+
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true
+  - name: APPIUM_HOME
+    value: $(System.DefaultWorkingDirectory)/.appium/
+  - name: LogDirectory
+    value: $(Build.ArtifactStagingDirectory)/logs
+
+stages:
+  - stage: ReviewPR
+    displayName: 'Review Pull Request'
+    jobs:
+      - job: CopilotReview
+        displayName: 'Run Copilot PR Reviewer Agent'
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool: ${{ parameters.androidPool }}
+        ${{ elseif eq(parameters.Platform, 'ios') }}:
+          pool: ${{ parameters.iosPool }}
+        ${{ elseif eq(parameters.Platform, 'catalyst') }}:
+          pool: ${{ parameters.macPool }}
+        ${{ elseif eq(parameters.Platform, 'windows') }}:
+          pool: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          pool: ${{ parameters.windowsPool }}  # fallback — should not be reached; AzDO parameter validation prevents unknown values
+        timeoutInMinutes: 360
+        steps:
+          - checkout: self
+            fetchDepth: 0
+            persistCredentials: true
+
+          # Validate Parameters
+          - bash: |
+              echo "Validating PR Number parameter..."
+              if [ -z "${{ parameters.PRNumber }}" ]; then
+                echo "##vso[task.logissue type=error]PRNumber parameter is required"
+                exit 1
+              fi
+              echo "PR Number: ${{ parameters.PRNumber }}"
+            displayName: 'Validate Parameters'
+
+          - bash: |
+              echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
+            displayName: 'Set Pipeline Run Title'
+
+          # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - template: common/enable-kvm.yml
+
+          # Provision SDKs (same parameters as ui-tests-steps.yml)
+          - template: common/provision.yml
+            parameters:
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
+              skipProvisionator: true
+              skipJdk: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidPlatformApis: true
+              onlyAndroidPlatformDefaultApis: true
+              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCreateAvds: true
+              androidEmulatorApiLevel: '30'
+              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipCertificates: true
+
+          # Install .NET and workloads via build.ps1
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET and workloads'
+            retryCountOnTaskFailure: 2
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
+
+          # Build MSBuild tasks (required for MAUI builds)
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: 'Build MSBuild Tasks'
+            retryCountOnTaskFailure: 1
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+            
+          # Restore .NET tools (includes xharness)
+          - bash: dotnet tool restore
+            displayName: 'Restore .NET Tools'
+
+          # Set screen resolution on Windows (same as ui-tests-steps.yml)
+          - ${{ if eq(parameters.Platform, 'windows') }}:
+            - pwsh: |
+                $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+                & $scriptPath -Width 1920 -Height 1080
+              displayName: 'Set screen resolution'
+
+          # Create AVD and boot Android Emulator
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            # Free disk space on hosted agents (emulator needs ~7GB for userdata partition)
+            - script: |
+                echo "=== Disk space before cleanup ==="
+                df -h /home
+                echo "Removing unnecessary tools to free space..."
+                sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium 2>/dev/null || true
+                sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/Python 2>/dev/null || true
+                sudo rm -rf /usr/share/swift 2>/dev/null || true
+                echo "=== Disk space after cleanup ==="
+                df -h /home
+              displayName: 'Free Disk Space for Emulator'
+
+            - script: |
+                export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+                echo "=== Creating AVD ==="
+                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                
+                # Reduce userdata partition to fit on hosted agents (~4.2GB free)
+                AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
+                if [ -f "$AVD_CONFIG" ]; then
+                  sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
+                  echo "Updated disk.dataPartition.size to 2048m"
+                fi
+
+                # Pre-authorize ADB keys (mirrors android.cake HandleVirtualDevice)
+                echo "=== Pre-authorizing ADB keys ==="
+                mkdir -p "$HOME/.android"
+                if [ ! -f "$HOME/.android/adbkey" ]; then
+                  adb keygen "$HOME/.android/adbkey" 2>/dev/null || true
+                fi
+                ADB_KEY_PUB="$HOME/.android/adbkey.pub"
+                AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
+                if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+                  cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+                  echo "ADB key pre-authorized for emulator"
+                fi
+                
+                echo "=== Starting Emulator ==="
+                # Kill any stale adb server and restart
+                adb kill-server 2>/dev/null || true
+                sleep 1
+                adb start-server
+                
+                # Retry loop: emulator sometimes fails to connect ADB on first launch
+                MAX_LAUNCH_ATTEMPTS=2
+                EMULATOR_PID=""
+                for LAUNCH_ATTEMPT in $(seq 1 $MAX_LAUNCH_ATTEMPTS); do
+                  echo "--- Emulator launch attempt $LAUNCH_ATTEMPT of $MAX_LAUNCH_ATTEMPTS ---"
+
+                  if [ $LAUNCH_ATTEMPT -gt 1 ]; then
+                    echo "Cleaning up before retry..."
+                    if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                      kill "$EMULATOR_PID" 2>/dev/null || true
+                      sleep 2
+                      kill -0 "$EMULATOR_PID" 2>/dev/null && kill -9 "$EMULATOR_PID" 2>/dev/null || true
+                    fi
+                    sleep 3
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server
+                    sleep 2
+                  fi
+
+                  nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+                  EMULATOR_PID=$!
+                  echo "Emulator PID: $EMULATOR_PID"
+                  
+                  echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
+                  timeout 120 adb wait-for-device
+                  if [ $? -eq 0 ]; then
+                    echo "Device detected: $(adb devices -l | grep emulator)"
+                    break
+                  fi
+
+                  echo "##vso[task.logissue type=warning]adb wait-for-device timed out (attempt $LAUNCH_ATTEMPT)"
+                  adb devices -l
+                  tail -30 /tmp/emulator.log
+
+                  if [ $LAUNCH_ATTEMPT -eq $MAX_LAUNCH_ATTEMPTS ]; then
+                    echo "##vso[task.logissue type=error]Emulator failed to connect after $MAX_LAUNCH_ATTEMPTS attempts"
+                    exit 1
+                  fi
+                done
+
+                timeout=300
+                waited=0
+                while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Emulator did not finish booting after ${timeout}s"
+                    exit 1
+                  fi
+                  # At 90 seconds, restart ADB server to recover from auth issues (mirrors android.cake)
+                  if [ $waited -eq 90 ]; then
+                    echo "Boot taking longer than expected (90/${timeout}s). Restarting ADB server..."
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server
+                    sleep 2
+                    echo "ADB server restarted. Continuing to wait..."
+                  fi
+                  # Re-ensure ADB keys every 60s during boot (mirrors android.cake PrepareDevice)
+                  if [ $((waited % 60)) -eq 0 ] && [ $waited -gt 0 ]; then
+                    if [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ]; then
+                      cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub" 2>/dev/null || true
+                    fi
+                  fi
+                done
+                echo "Boot completed, waiting for package manager..."
+
+                timeout=120
+                waited=0
+                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                  sleep 5
+                  waited=$((waited + 5))
+                  if [ $waited -ge $timeout ]; then
+                    echo "##vso[task.logissue type=error]Package manager not ready after ${timeout}s"
+                    exit 1
+                  fi
+                done
+
+                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                echo "✅ Emulator fully booted: $DEVICE_ID"
+
+                # Prepare emulator for CI use — keeps device responsive during idle period
+                echo "=== Preparing emulator for CI ==="
+                # Wait for device to stabilize after boot (transient offline state)
+                DEVICE_READY=false
+                for i in $(seq 1 20); do
+                  if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                    DEVICE_READY=true
+                    break
+                  fi
+                  echo "Device offline, retrying ($i/20)..."
+                  sleep 5
+                done
+
+                if [ "$DEVICE_READY" = false ]; then
+                  echo "##vso[task.logissue type=error]Emulator went offline after boot — device not responsive after 100s"
+                  exit 1
+                fi
+
+                # Disable all animations (reduces CPU load and flakiness)
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                # Prevent screen from turning off (emulator simulates AC charging)
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                adb -s $DEVICE_ID shell svc power stayon true || true
+                # Wake screen and dismiss any lock screen
+                adb -s $DEVICE_ID shell input keyevent 82 || true
+                sleep 1
+                # Dismiss any "System UI has stopped" or crash dialogs
+                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                # Clear logcat buffer so agent sees only fresh logs
+                adb -s $DEVICE_ID logcat -c 2>/dev/null || true
+                echo "Emulator preparation complete"
+
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+              displayName: 'Create AVD and Boot Android Emulator'
+              retryCountOnTaskFailure: 3
+              timeoutInMinutes: 15
+
+          # Install Node.js and Appium (same as ui-tests-steps.yml)
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+            displayName: 'Install Node.js'
+
+          - pwsh: |
+              $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+              dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+            displayName: 'Install Appium'
+            retryCountOnTaskFailure: 2
+            timeoutInMinutes: 10
+            env:
+              APPIUM_HOME: $(APPIUM_HOME)
+
+          - bash: |
+              echo "Installing GitHub CLI..."
+              # gh is pre-installed on Azure Pipelines hosted images (ubuntu, macOS, windows)
+              # Attempt upgrade if available, otherwise install
+              if command -v gh &> /dev/null; then
+                echo "GitHub CLI already installed: $(gh --version | head -1)"
+              elif command -v brew &> /dev/null; then
+                brew install gh
+              else
+                echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
+                exit 1
+              fi
+              gh --version
+              echo "GitHub CLI ready"
+            displayName: 'Install GitHub CLI'
+
+          - bash: |
+              echo "Authenticating with GitHub CLI..."
+              if [ -z "$GH_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
+                exit 1
+              fi
+              gh auth status
+              if [ $? -ne 0 ]; then
+                echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
+                if ! gh auth status; then
+                  echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
+                  exit 1
+                fi
+              fi
+              echo "GitHub CLI authenticated successfully"
+            displayName: 'Authenticate GitHub CLI'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - bash: |
+              echo "Installing GitHub Copilot CLI..."
+              npm install -g @github/copilot
+              # Ensure npm global bin is on PATH for subsequent steps (Linux UseNode installs to toolcache)
+              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
+              echo "Copilot binary at: $COPILOT_BIN_DIR/copilot"
+              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
+              copilot --version || true
+              echo "Copilot CLI installed successfully"
+            displayName: 'Install GitHub Copilot CLI'
+
+
+          # Boot iOS Simulator (only for iOS platform)
+          # UI test baseline screenshots are captured on iPhone Xs - must use same device
+          - bash: |
+              echo "=== Booting iOS Simulator ==="
+              
+              # Find the latest stable iOS runtime (prefer 18.x, fallback to 17.x)
+              RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+              ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
+              echo "Selected iOS runtime: $RUNTIME"
+              
+              # Look for iPhone Xs (matches UI test baselines - required for snapshot tests)
+              UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                .devices[$rt] // [] |
+                map(select(.name == "iPhone Xs")) |
+                .[0].udid // empty
+              ')
+              
+              # If iPhone Xs doesn't exist, try iPhone 11 Pro (same 1125×2436 resolution)
+              if [ -z "$UDID" ]; then
+                UDID=$(xcrun simctl list devices available --json | jq -r --arg rt "$RUNTIME" '
+                  .devices[$rt] // [] |
+                  map(select(.name == "iPhone 11 Pro")) |
+                  .[0].udid // empty
+                ')
+                if [ -n "$UDID" ]; then
+                  echo "Found existing iPhone 11 Pro (same resolution as iPhone Xs): $UDID"
+                fi
+              else
+                echo "Found existing iPhone Xs: $UDID"
+              fi
+              
+              # If neither exists, try to create them
+              if [ -z "$UDID" ]; then
+                echo "No matching device found - attempting to create one for runtime $RUNTIME..."
+                
+                # Try iPhone Xs first
+                UDID=$(xcrun simctl create "iPhone Xs" com.apple.CoreSimulator.SimDeviceType.iPhone-Xs "$RUNTIME" 2>&1)
+                if [ $? -ne 0 ]; then
+                  echo "iPhone Xs device type unavailable: $UDID"
+                  # Try iPhone 11 Pro (same 1125×2436 resolution)
+                  UDID=$(xcrun simctl create "iPhone 11 Pro" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro "$RUNTIME" 2>&1)
+                  if [ $? -ne 0 ]; then
+                    echo "##vso[task.logissue type=warning]Failed to create iPhone 11 Pro: $UDID"
+                    # Last resort: first available iPhone
+                    UDID=$(xcrun simctl list devices available --json | jq -r '
+                      .devices | to_entries |
+                      map(.value) | flatten |
+                      map(select(.name | test("iPhone"))) |
+                      .[0].udid
+                    ')
+                  else
+                    echo "Created iPhone 11 Pro simulator: $UDID"
+                  fi
+                else
+                  echo "Created iPhone Xs simulator: $UDID"
+                fi
+              fi
+              
+              if [ -z "$UDID" ]; then
+                echo "##vso[task.logissue type=error]No iOS simulator found"
+                exit 1
+              fi
+              
+              # Shutdown any other booted simulators to avoid Appium connecting to wrong device
+              xcrun simctl list devices booted --json | jq -r '
+                .devices | to_entries | map(.value) | flatten |
+                map(select(.state == "Booted" and .udid != "'"$UDID"'")) |
+                .[].udid
+              ' | while read OTHER_UDID; do
+                echo "Shutting down other simulator: $OTHER_UDID"
+                xcrun simctl shutdown "$OTHER_UDID" 2>/dev/null || true
+              done
+              
+              echo "Booting simulator: $UDID"
+              xcrun simctl boot "$UDID" 2>/dev/null || echo "Simulator may already be booted"
+              sleep 10
+              
+              echo "Booted simulators:"
+              xcrun simctl list devices booted
+              
+              echo "##vso[task.setvariable variable=DEVICE_UDID]$UDID"
+              echo "iOS Simulator UDID: $UDID"
+            displayName: 'Boot iOS Simulator'
+            condition: eq('${{ parameters.Platform }}', 'ios')
+            timeoutInMinutes: 5
+
+          # Warm up the emulator right before the agent runs.
+          # The emulator may have been idle for 15-30 min while Appium/Node/CLI were installed.
+          # Without this, SystemUI can ANR when the agent first touches it.
+          - bash: |
+              set -e
+              DEVICE_ID="$(DEVICE_UDID)"
+              if [ -z "$DEVICE_ID" ]; then
+                echo "No DEVICE_UDID set — skipping warmup"
+                exit 0
+              fi
+
+              echo "=== Emulator warmup before agent ==="
+              # Verify device is still connected
+              if ! adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                echo "Device not responding. Restarting ADB server..."
+                adb kill-server 2>/dev/null || true
+                sleep 2
+                adb start-server
+                sleep 2
+                timeout 60 adb wait-for-device
+              fi
+
+              # Dismiss ANR dialogs and wake screen — run twice for reliability
+              for PASS in 1 2; do
+                echo "--- Warmup pass $PASS ---"
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_MENU 2>/dev/null || true
+                sleep 1
+
+                # Dismiss system dialogs (ANR, crash, etc.)
+                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_ENTER 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                sleep 1
+              done
+
+              # Check for lingering ANR in window state
+              if adb -s "$DEVICE_ID" shell dumpsys window 2>/dev/null | grep -qi "Application Not Responding\|ANR"; then
+                echo "⚠️  ANR dialog still present — force-dismissing with HOME + BACK"
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME 2>/dev/null || true
+                sleep 2
+                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                sleep 1
+              fi
+
+              # Open and close Settings to exercise the system and confirm responsiveness
+              adb -s "$DEVICE_ID" shell am start -a android.settings.SETTINGS 2>/dev/null || true
+              sleep 3
+              adb -s "$DEVICE_ID" shell am force-stop com.android.settings 2>/dev/null || true
+
+              # Final dialog sweep
+              adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+
+              # Clear logcat so agent gets clean logs
+              adb -s "$DEVICE_ID" logcat -c 2>/dev/null || true
+
+              echo "✅ Emulator warmed up and responsive"
+            displayName: 'Warm Up Android Emulator'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            timeoutInMinutes: 3
+
+          - bash: |
+              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
+              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              
+              # Ensure copilot CLI is accessible to pwsh subprocess.
+              # npm global install on Linux goes to UseNode@1 toolcache path which may not
+              # be on PATH inside pwsh even when exported from bash. Create a symlink in
+              # /usr/local/bin (Unix) or verify PATH (Windows).
+              if [[ "$(uname -o 2>/dev/null || uname -s)" == *"Msys"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"Windows"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"MINGW"* ]]; then
+                # Windows (Git Bash): npm global bin is usually already on PATH
+                echo "Windows detected — verifying copilot is on PATH..."
+                COPILOT_PATH=$(which copilot 2>/dev/null || true)
+                echo "copilot location: ${COPILOT_PATH:-not found}"
+                if [ -z "$COPILOT_PATH" ]; then
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  exit 1
+                fi
+              else
+                # Linux/macOS: symlink to /usr/local/bin
+                COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
+                if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
+                  sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
+                  echo "Symlinked copilot to /usr/local/bin/copilot"
+                fi
+                COPILOT_PATH=$(which copilot 2>/dev/null || true)
+                echo "copilot location: ${COPILOT_PATH:-not found}"
+                if [ -z "$COPILOT_PATH" ]; then
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  exit 1
+                fi
+              fi
+              # Verify pwsh can find it
+              pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
+              
+              # Configure git identity (required for merge operations on self-hosted agents)
+              git config user.email "copilot-ci@microsoft.com"
+              git config user.name "Copilot CI"
+              echo "Git identity configured"
+              
+              # Create Directory.Build.Override.props to skip Xcode version check (not needed on Windows)
+              cp Directory.Build.Override.props.in Directory.Build.Override.props
+              if [[ "$(uname)" == "Linux" ]]; then
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              elif [[ "$(uname)" == "Darwin" ]]; then
+                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              else
+                # Windows (Git Bash) — GNU sed, same as Linux
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              fi
+              
+              # Create artifacts directory for Copilot outputs
+              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
+              
+              # Invoke the PR reviewer using our PowerShell script
+              # The script will merge the PR into the current branch
+              # -PostSummaryComment and -RunFinalize handle posting comments
+              set +e
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              COPILOT_EXIT_CODE=$?
+              set -e
+              
+              echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
+              
+              # Terminate any orphaned copilot CLI processes that could hold this step's
+              # stdout fd open and prevent the bash step from exiting.
+              # Only target processes whose command line includes the copilot CLI path.
+              echo "Cleaning up orphaned copilot processes..."
+              SELF_PID=$$
+              for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
+                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
+                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
+                  if echo "$PROC_CMD" | grep -q "copilot"; then
+                    echo "  Stopping copilot process $proc: $PROC_CMD"
+                    kill "$proc" 2>/dev/null || true
+                  fi
+                fi
+              done
+              
+              # Copy any Copilot session files
+              if [ -d "$HOME/.copilot" ]; then
+                echo "Copying Copilot session state..."
+                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
+              fi
+              
+              # Copy CustomAgentLogsTmp if it exists
+              if [ -d "CustomAgentLogsTmp" ]; then
+                echo "Copying CustomAgentLogsTmp..."
+                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              
+              # Copy any Review_Feedback files
+              find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
+              
+              # Copy any .github/agent-pr-session files
+              if [ -d ".github/agent-pr-session" ]; then
+                echo "Copying agent-pr-session..."
+                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              
+              # Check for failure indicators in output
+              if [ $COPILOT_EXIT_CODE -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
+                # Don't exit yet - let artifacts be published first
+                echo "##vso[task.setvariable variable=CopilotFailed]true"
+              fi
+              
+              # Check output for common failure patterns
+              if grep -qi "error\|failed\|exception" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
+                if grep -qi "simulator.*not\|emulator.*not\|workload.*not\|sdk.*not found" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
+                  echo "##vso[task.logissue type=warning]Copilot encountered environment issues. Check artifacts for details."
+                fi
+              fi
+              
+              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
+            displayName: 'Run PR Reviewer Agent'
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              DEVICE_UDID: $(DEVICE_UDID)
+
+          # Publish Copilot logs and session artifacts
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Copilot Logs'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
+              artifact: 'CopilotLogs'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+          # Publish build logs if they exist
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Build Logs'
+            inputs:
+              targetPath: '$(LogDirectory)'
+              artifact: 'BuildLogs'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
+
+          # Fail the pipeline if Copilot failed
+          - bash: |
+              if [ "$(CopilotFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
+                exit 1
+              fi
+            displayName: 'Check Copilot Result'
+            condition: succeededOrFailed()

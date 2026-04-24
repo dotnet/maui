@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
+#if MACCATALYST
+		CGRect _previousFrameHeader;
+#endif
+
 		ShellSection ShellSection
 		{
 			get;
@@ -139,16 +143,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_didLayoutSubviews && !_isRotating)
 				LayoutHeader();
-		}
-
-		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
-		{
-#pragma warning disable CA1422 // Validate platform compatibility
-			base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422 // Validate platform compatibility
-
-			var application = _shellContext?.Shell?.FindMauiContext().Services.GetService<IApplication>();
-			application?.ThemeChanged();
 		}
 
 		void IDisconnectable.Disconnect()
@@ -378,6 +372,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					RemoveNonVisibleRenderers();
 				}
+
+				// RemoveNonVisibleRenderers was called after animation completed,which delayed page title updates. 
+				// Updating page before animation ensures immediate title display.
+				if (newContent is IShellContentController scc)
+				{
+					_tracker.Page = scc.Page;
+				}
 			}
 		}
 
@@ -445,8 +446,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					foreach (var remove in removeMe)
 						_renderers.Remove(remove);
 				}
-
-				_tracker.Page = scc.Page;
 			}
 
 			_isAnimatingOut = null;
@@ -568,6 +567,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
+#if MACCATALYST
+				if (frame.Width != _previousFrameHeader.Width || frame.Height != _previousFrameHeader.Height)
+				{
+					_previousFrameHeader = frame;
+					if (_header.ViewController is ShellSectionRootHeader rootHeader)
+					{
+    					rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+					}
+				}
+#endif
 			}
 
 			nfloat left;

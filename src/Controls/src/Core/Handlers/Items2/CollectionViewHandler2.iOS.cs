@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	public partial class CollectionViewHandler2
 	{
+		// Cache for MeasureFirstItem optimization
+		CoreGraphics.CGSize _firstItemMeasuredSize = CoreGraphics.CGSize.Empty;
 
 		public CollectionViewHandler2() : base(Mapper)
 		{
@@ -43,6 +45,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
 		{
 
+		}
+
+		/// <summary>
+		/// Gets the cached first item measured size for MeasureFirstItem optimization.
+		/// Returns CGSize.Empty if not cached or not using MeasureFirstItem strategy.
+		/// </summary>
+		internal CoreGraphics.CGSize GetCachedFirstItemSize()
+		{
+			if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				return _firstItemMeasuredSize;
+			}
+			return CoreGraphics.CGSize.Empty;
+		}
+
+		/// <summary>
+		/// Sets the cached first item measured size for MeasureFirstItem optimization.
+		/// </summary>
+		internal void SetCachedFirstItemSize(CoreGraphics.CGSize size)
+		{
+			if (VirtualView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+			{
+				_firstItemMeasuredSize = size;
+			}
 		}
 
 		public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
@@ -56,6 +82,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
+			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
 		};
@@ -159,8 +187,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
 
-			SubscribeToItemsLayoutPropertyChanged(itemsLayout);
-
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				return LayoutFactory2.CreateGrid(gridItemsLayout, groupInfo, headerFooterInfo);
@@ -192,6 +218,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemsLayout(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
+			handler.UpdateItemsLayoutSubscription(itemsView.ItemsLayout);
 			handler.UpdateLayout();
 		}
 
@@ -200,23 +227,44 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.UpdateLayout();
 		}
 
-		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
-		{
-			if (itemsLayout is not null)
-			{
-				itemsLayout.PropertyChanged += (sender, args) =>
-				{
-					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.Span) ||
-						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+		IItemsLayout _subscribedItemsLayout;
 
-					{
-						UpdateLayout();
-					}
-				};
+		protected override void DisconnectHandler(UIView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			UpdateItemsLayoutSubscription(null);
+		}
+
+		internal void UpdateItemsLayoutSubscription(IItemsLayout newLayout)
+		{
+			if (_subscribedItemsLayout == newLayout)
+			{
+				return;
+			}
+
+			if (_subscribedItemsLayout is not null)
+			{
+				_subscribedItemsLayout.PropertyChanged -= OnItemsLayoutPropertyChanged;
+			}
+
+			_subscribedItemsLayout = newLayout;
+
+			if (_subscribedItemsLayout is not null)
+			{
+				_subscribedItemsLayout.PropertyChanged += OnItemsLayoutPropertyChanged;
+			}
+		}
+
+		void OnItemsLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
+		{
+			if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+				args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+				args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
+				args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
+				args.PropertyName == nameof(GridItemsLayout.Span) ||
+				args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+			{
+				UpdateLayout();
 			}
 		}
 	}

@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.FlyoutPage)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla41842Test()
 		{
 #if MACCATALYST

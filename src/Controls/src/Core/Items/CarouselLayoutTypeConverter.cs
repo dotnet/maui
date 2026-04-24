@@ -4,7 +4,13 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselLayoutTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.CarouselLayoutTypeConverter']/Docs/*" />
+	/// <summary>
+	/// Converts string representations to <see cref="LinearItemsLayout"/> instances for use in carousel XAML.
+	/// </summary>
+	/// <remarks>
+	/// This type converter enables XAML shortcuts for carousel-specific layouts with snap point behavior.
+	/// Supported string values: "HorizontalList", "VerticalList".
+	/// </remarks>
 	public class CarouselLayoutTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
