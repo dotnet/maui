@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool DoesHeaderExist(RecyclerView.Adapter adapter)
 		{
-			if (adapter.ItemCount >= 0)
+			if (adapter.ItemCount <= 0)
 			{
 				return false;
 			}
