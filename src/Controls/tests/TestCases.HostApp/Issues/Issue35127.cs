@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.None, 0, "[Android] Shell/TabbedPage More BottomSheet should use M3 theme-aware colors when Material3 is enabled", PlatformAffected.Android, issueTestNumber: 99)]
-public class _TempM3BottomSheetStyle : Shell
+[Issue(IssueTracker.Github, 35127, "[Android] Shell/TabbedPage More BottomSheet uses hard-coded M2 colors when Material3 is enabled", PlatformAffected.Android)]
+public class Issue35127 : Shell
 {
-	public _TempM3BottomSheetStyle()
+	public Issue35127()
 	{
 		var tabBar = new TabBar();
 

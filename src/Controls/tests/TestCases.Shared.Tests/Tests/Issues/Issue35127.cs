@@ -5,11 +5,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class _TempM3BottomSheetStyle : _IssuesUITest
+public class Issue35127 : _IssuesUITest
 {
-	public override string Issue => "[Android] Shell/TabbedPage More BottomSheet should use M3 theme-aware colors when Material3 is enabled";
+	public override string Issue => "[Android] Shell/TabbedPage More BottomSheet uses hard-coded M2 colors when Material3 is enabled";
 
-	public _TempM3BottomSheetStyle(TestDevice device) : base(device) { }
+	public Issue35127(TestDevice device) : base(device) { }
 
 	[Test]
 	[Category(UITestCategories.Shell)]
