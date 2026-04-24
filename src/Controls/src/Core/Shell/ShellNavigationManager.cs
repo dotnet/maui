@@ -103,8 +103,38 @@ namespace Microsoft.Maui.Controls
 			var pathParameters = navigationRequest.Request.PathParameters;
 			if (pathParameters != null && pathParameters.Count > 0)
 			{
+				// Use "only add if not present" so caller-supplied programmatic
+				// parameters (from GoToAsync overload) take precedence over
+				// path-extracted values. Path params still win over query strings
+				// because SetQueryStringParameters also uses this semantics.
 				foreach (var kvp in pathParameters)
-					parameters[kvp.Key] = kvp.Value;
+				{
+					if (!parameters.ContainsKey(kvp.Key))
+						parameters[kvp.Key] = kvp.Value;
+				}
+
+				// Also seed route-prefixed keys so intermediate (non-last) pages
+				// receive path params through ApplyQueryAttributes prefix filtering.
+				// For a route "product/{sku}", the prefix is "product/{sku}." so
+				// the key "product/{sku}.sku" delivers "sku" to that page.
+				var globalRoutes = navigationRequest.Request.GlobalRoutes;
+				if (globalRoutes != null)
+				{
+					foreach (var routeKey in globalRoutes)
+					{
+						if (!Routing.IsTemplateRoute(routeKey))
+							continue;
+						if (!Routing.TryGetRouteTemplate(routeKey, out var tmpl))
+							continue;
+						foreach (var seg in tmpl.Segments)
+						{
+							if (!seg.IsParameter)
+								continue;
+							if (pathParameters.TryGetValue(seg.Value, out var val))
+								parameters[$"{routeKey}.{seg.Value}"] = val;
+						}
+					}
+				}
 			}
 
 			parameters.SetQueryStringParameters(queryString);

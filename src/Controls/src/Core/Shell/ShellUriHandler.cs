@@ -678,12 +678,13 @@ namespace Microsoft.Maui.Controls
 						// secondary search so templated routes still deliver
 						// their values to ApplyQueryAttributes. Only forward
 						// once (on the first iteration); subsequent
-						// AddGlobalRoute calls share the same flat dictionary.
 						possibleRoutePath.AddGlobalRoute(
 							match.GlobalRouteMatches[i],
-							match.SegmentsMatched[i],
-							i == 0 ? match.PathParameters as IDictionary<string, string> : null);
+							match.SegmentsMatched[i]);
 					}
+
+					// Merge path parameters from the secondary search
+					possibleRoutePath.MergePathParameters(pureGlobalRoutesMatch[0].PathParameters);
 				}
 			}
 		}
