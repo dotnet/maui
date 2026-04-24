@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
                 return;
             }
 
-            TrySet();
+            TrySetAppBarLiftTarget();
 
             // Listen for parent scroll changes to detect when we go off-screen
             // (e.g. user swipes to another carousel page).
@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Platform
         internal void Clear()
         {
             StopListeningForParentScrollChanges();
-            ReleaseTarget();
+            ClearAppBarLiftTarget();
         }
 
-        void ReleaseTarget()
+        void ClearAppBarLiftTarget()
         {
             if (_liftOnScrollAppBar is null)
             {
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Platform
             _liftOnScrollAppBar = null;
         }
 
-        void TrySet()
+        void TrySetAppBarLiftTarget()
         {
             // If a MauiScrollView ancestor exists, it should own the lift target instead.
             // The outermost scroll view in the page is the one whose scroll offset should
@@ -120,13 +120,13 @@ namespace Microsoft.Maui.Platform
 
             if (isOnScreen && !ownsTarget)
             {
-                TrySet();
+                TrySetAppBarLiftTarget();
             }
             else if (!isOnScreen && ownsTarget)
             {
                 // Release without stopping the listener — we still need to
                 // detect when the carousel swipes back to this page.
-                ReleaseTarget();
+                ClearAppBarLiftTarget();
             }
         }
 
