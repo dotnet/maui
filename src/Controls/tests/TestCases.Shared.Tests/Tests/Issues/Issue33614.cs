@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS // Related issue: https://github.com/dotnet/maui/issues/34772
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,4 +20,3 @@ public class Issue33614 : _IssuesUITest
         Assert.That(firstIndexText, Is.EqualTo("FirstVisibleItemIndex: 15"));
     }
 }
-#endif
