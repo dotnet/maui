@@ -291,12 +291,26 @@ internal partial class ElementWrapper : ContentControl
 		var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
 		if (!cachedSize.IsEmpty)
 		{
-			// For MeasureFirstItem: Constrain the child to the cached first item size
-			// so all items are measured uniformly. Pass the cached size as availableSize
-			// to force the content to layout within these bounds, then return the cached
-			// size so WinUI's layout (StackLayout/UniformGridLayout) sees uniform DesiredSize.
-			base.MeasureOverride(cachedSize);
-			return cachedSize;
+			// For MeasureFirstItem: pin ONLY the along-axis (scroll direction) to the
+			// cached first-item size so every item is uniform in that direction. Measure
+			// the child with the current cross-axis availableSize so its internal layout
+			// (e.g. MAUI Grid column widths) is computed against the real arrange width —
+			// without this, right-aligned content in the template would position against
+			// the cached narrow width and get truncated on later items. See #25191.
+			bool isHorizontal = handler?.PlatformView is MauiItemsView miv && miv.IsHorizontalLayout;
+			double measureWidth = isHorizontal
+				? cachedSize.Width
+				: (double.IsInfinity(availableSize.Width) ? cachedSize.Width : availableSize.Width);
+			double measureHeight = isHorizontal
+				? (double.IsInfinity(availableSize.Height) ? cachedSize.Height : availableSize.Height)
+				: cachedSize.Height;
+			var constrainedSize = new global::Windows.Foundation.Size(measureWidth, measureHeight);
+			base.MeasureOverride(constrainedSize);
+			// Return the constrained size (cross-axis = current viewport, along-axis = cached)
+			// so DesiredSize tracks viewport changes and the list re-flows when the viewport
+			// shrinks (e.g. window minimize). Along-axis uniformity is preserved via the
+			// cached value.
+			return constrainedSize;
 		}
 		// Measure normally with the original available size
 		var measuredSize = base.MeasureOverride(availableSize);
