@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Handlers
 			progressBar.Post(() =>
 			{
 				if (progressBar.IsDisposed())
+				{
 					return;
+				}
 
 				progressBar.UpdateIsRunning(activityIndicator);
 			});
