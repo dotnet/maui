@@ -583,7 +583,6 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_WINDOWS
 	[Test, Order(35)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithBackgroundColorYellow()
@@ -599,9 +598,9 @@ public class ImageButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ImageButtonControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif 
+ 
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS  
 	[Test, Order(36)]
 	[Category(UITestCategories.ImageButton)]
 	public void VerifyImageButtonWithBackgroundColorNone()
