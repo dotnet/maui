@@ -369,6 +369,10 @@ namespace Microsoft.Maui.Controls
 						// Routes match so don't do anything
 						if (navIndex < _navStack.Count && Routing.GetRoute(_navStack[navIndex]) == globalRoutes[i])
 						{
+							// Update ResolvedRoute in case the resolved value changed
+							// (e.g. navigating from product/apple to product/banana)
+							if (resolvedRoutes?.Count > i && Routing.IsTemplateRoute(globalRoutes[i]))
+								Routing.SetResolvedRoute(_navStack[navIndex], resolvedRoutes[i]);
 							continue;
 						}
 

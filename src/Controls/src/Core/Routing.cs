@@ -149,8 +149,12 @@ namespace Microsoft.Maui.Controls
 		// Shell.CurrentState.Location without leaking template tokens. The
 		// page's Route property always keeps the registered template key so
 		// that factory lookups and stack comparisons work correctly.
-		internal static readonly BindableProperty ResolvedRouteProperty =
-			BindableProperty.CreateAttached("ResolvedRoute", typeof(string), typeof(Routing), null);
+		internal static readonly BindableProperty ResolvedRouteProperty = CreateResolvedRouteProperty();
+
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
+			Justification = "Same as RouteProperty — BindableProperty only needs Get* methods, not RegisterRoute.")]
+		private static BindableProperty CreateResolvedRouteProperty()
+			=> BindableProperty.CreateAttached("ResolvedRoute", typeof(string), typeof(Routing), null);
 
 		internal static string GetResolvedRoute(BindableObject obj)
 			=> (string)obj.GetValue(ResolvedRouteProperty);
