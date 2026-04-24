@@ -1,8 +1,33 @@
 #!/bin/bash
 # Ingest Maven/Gradle dependencies into the dotnet-public-maven Azure Artifacts feed.
 #
-# Run this locally after adding or updating Maven/Gradle dependencies in
-# src/Core/AndroidNative/ to ensure they are available in the feed for CI builds.
+# WHY THIS IS NEEDED:
+#   CI builds run under CFSClean network isolation which blocks direct access to
+#   Maven Central (repo.maven.apache.org). All Maven dependencies are resolved
+#   through the dotnet-public-maven Azure Artifacts feed instead. However, this
+#   feed requires an authenticated request the FIRST time a package is pulled
+#   from upstream Maven Central — after that, anyone can read it anonymously.
+#
+#   The CI pipeline's credential provider plugin (com.microsoft.azure.artifacts.
+#   credprovider) skips authentication in Azure Pipelines (TF_BUILD=True), so
+#   new packages MUST be pre-ingested locally before CI can use them.
+#
+# WHEN TO RUN:
+#   After adding or updating any Maven/Gradle dependency in
+#   src/Core/AndroidNative/build.gradle or settings.gradle.
+#
+# HOW IT WORKS:
+#   1. Acquires an auth token via the .NET Azure Artifacts credential provider
+#   2. Runs the Gradle build with --refresh-dependencies to bypass local cache
+#      and force actual downloads through the feed (which triggers ingestion)
+#   3. For packages that Gradle's credential provider can't reach (e.g. AGP's
+#      internal detachedConfiguration scopes), falls back to curl with Bearer
+#      token to force-ingest the specific package URLs
+#
+# COMMON PITFALL:
+#   Running ./gradlew build without --refresh-dependencies may appear to succeed
+#   but actually resolves from ~/.gradle/caches/ (local cache from prior builds
+#   that used mavenCentral() directly). This does NOT ingest into the feed.
 #
 # Prerequisites:
 #   - JDK 17+
