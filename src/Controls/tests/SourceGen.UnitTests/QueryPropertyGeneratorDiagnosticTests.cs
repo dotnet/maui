@@ -322,4 +322,43 @@ namespace MyApp
 		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 		Assert.Contains(@"query.TryGetValue(""name""", generatedSource, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void MultipleClasses_GenerateSeparateFiles()
+	{
+		var sourceCode = @"
+using Microsoft.Maui.Controls;
+
+namespace MyApp
+{
+	[QueryProperty(nameof(Name), ""name"")]
+	public partial class PageA : ContentPage
+	{
+		public string Name { get; set; }
+	}
+
+	[QueryProperty(nameof(Id), ""id"")]
+	public partial class PageB : ContentPage
+	{
+		public int Id { get; set; }
+	}
+}";
+
+		var result = RunQueryPropertyGenerator(sourceCode);
+
+		Assert.Empty(result.Diagnostics);
+
+		// Should produce 2 QueryProperty files + 1 attribute definition = 3 total generated trees
+		var queryTrees = GetQueryPropertyTrees(result);
+		Assert.Equal(2, queryTrees.Length);
+
+		// Each file should be for a different class
+		var allSource = string.Join("\n", queryTrees.Select(t => t.ToString()));
+		Assert.Contains("partial class PageA", allSource, StringComparison.Ordinal);
+		Assert.Contains("partial class PageB", allSource, StringComparison.Ordinal);
+
+		// Verify hint names are unique (namespace-qualified)
+		var hintNames = result.GeneratedTrees.Select(t => t.FilePath).ToArray();
+		Assert.Equal(hintNames.Distinct(StringComparer.Ordinal).Count(), hintNames.Length);
+	}
 }
