@@ -548,30 +548,38 @@ $gateResult = switch ($gateExitCode) {
 $gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
 Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 
-# Copy the verification report to gate/content.md if it exists
+# Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
 $verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
 if (Test-Path $verificationReport) {
-    Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
+    $reportContent = Get-Content $verificationReport -Raw -ErrorAction SilentlyContinue
+    # Validate report has proper format (not the old "Test Summary" / "Passed: False" format)
+    if ($reportContent -and $reportContent -match 'Gate Result:' -and $reportContent -notmatch 'Passed: False') {
+        Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
+    } else {
+        # Report exists but has bad format — generate clean fallback
+        Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        @"
+### Gate Result: $resultIcon $gateResult
+
+**Platform:** $($gatePlatform.ToUpper())
+
+The gate verification completed with result: **$gateResult**.
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+    }
 } elseif (-not (Test-Path (Join-Path $gateOutputDir "content.md"))) {
-    # Create gate content based on result
     if ($gateResult -eq "SKIPPED") {
-        $skipContent = @"
+        @"
 ### Gate Result: ⚠️ SKIPPED
 
 No tests were detected in this PR.
 
-**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``:
-
-``````
-@copilot write tests for this PR
-``````
-
-The agent will analyze the issue, determine the appropriate test type (UI test, device test, unit test, or XAML test), and create tests that verify the fix.
-"@
-        $skipContent | Set-Content (Join-Path $gateOutputDir "content.md")
+**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``.
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
-        "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
-            Set-Content (Join-Path $gateOutputDir "content.md")
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        "### Gate Result: $resultIcon $gateResult`n`n**Platform:** $($gatePlatform.ToUpper())" |
+            Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     }
 }
 
