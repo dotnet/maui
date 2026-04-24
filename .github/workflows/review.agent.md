@@ -5,7 +5,7 @@ description: "Runs expert code review on pull requests on-demand via /review."
 on:
   slash_command:
     name: review
-    events: [pull_request_comment]
+    events: [pull_request, pull_request_comment]
   workflow_dispatch:
     inputs:
       pr_number:

@@ -58,14 +58,7 @@ You are the orchestrator. Your job is to dispatch **3 parallel expert-reviewer s
 
 ### Step 1: Gather Context
 
-Fetch the PR data using the GitHub MCP tools (not `gh` CLI — credentials are scrubbed inside the agent container). The `tools.github` configuration provides `pull_requests` and `repos` toolsets:
-
-- Use `get_pull_request` to read the PR title, body, and metadata
-- Use `list_pull_request_files` to get the list of changed files
-- Use `get_pull_request_diff` to read the full diff
-- Use `get_pull_request_reviews` to check existing reviews
-
-**Do NOT read source files yourself.** Pass only the diff and PR description to sub-agents — they will read source files independently in their own context windows. Pre-reading files wastes your token budget.
+Fetch the PR diff, changed files, description, and existing reviews using the GitHub MCP tools configured above. **Do NOT read source files yourself.** Pass only the diff and PR description to sub-agents — they will read source files independently in their own context windows.
 
 ### Step 2: Dispatch 3 Parallel Expert Reviewers
 
