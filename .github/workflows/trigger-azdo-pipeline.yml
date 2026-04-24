@@ -1,0 +1,113 @@
+# Trigger an Azure DevOps pipeline in DevDiv from GitHub Actions using OIDC (no PAT).
+# See .github/docs/trigger-azdo-pipeline-setup.md for the one-time identity setup guide.
+
+name: Trigger AzDO Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      pipeline_id:
+        description: 'AzDO pipeline definition ID (e.g. 27723)'
+        required: true
+        default: '27723'
+      project:
+        description: 'AzDO project name'
+        required: true
+        default: 'DevDiv'
+      organization:
+        description: 'AzDO organization name'
+        required: true
+        default: 'DevDiv'
+      branch:
+        description: 'Branch to build (e.g. refs/heads/main). Leave empty for pipeline default.'
+        required: false
+        default: ''
+      template_parameters:
+        description: 'JSON object of template parameters (e.g. {"param1":"value1"})'
+        required: false
+        default: '{}'
+
+permissions:
+  id-token: write   # Required for OIDC token exchange
+  contents: read
+
+jobs:
+  trigger-pipeline:
+    runs-on: ubuntu-latest
+    # Optional: use a GitHub environment for additional protection (approvals, branch policies)
+    # environment: azdo-trigger
+    steps:
+      - name: Azure Login (OIDC)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          subscription-id: ${{ secrets.AZDO_TRIGGER_SUBSCRIPTION_ID }}
+
+      - name: Get AzDO Bearer Token
+        id: token
+        run: |
+          # Request a token for the Azure DevOps resource
+          AZDO_TOKEN=$(az account get-access-token \
+            --resource "499b84ac-1321-427f-aa17-267ca6975798" \
+            --query accessToken -o tsv)
+
+          # Mask the token so it won't appear in logs
+          echo "::add-mask::${AZDO_TOKEN}"
+          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger AzDO Pipeline
+        env:
+          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
+          PIPELINE_ID: ${{ inputs.pipeline_id }}
+          PROJECT: ${{ inputs.project }}
+          ORGANIZATION: ${{ inputs.organization }}
+          BRANCH: ${{ inputs.branch }}
+          TEMPLATE_PARAMS: ${{ inputs.template_parameters }}
+        run: |
+          API_URL="https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1"
+
+          # Build the request body
+          BODY='{}'
+          if [ -n "${BRANCH}" ]; then
+            BODY=$(echo "${BODY}" | jq --arg ref "${BRANCH}" '. + {resources: {repositories: {self: {refName: $ref}}}}')
+          fi
+          if [ "${TEMPLATE_PARAMS}" != '{}' ]; then
+            BODY=$(echo "${BODY}" | jq --argjson params "${TEMPLATE_PARAMS}" '. + {templateParameters: $params}')
+          fi
+
+          echo "Triggering pipeline ${PIPELINE_ID} in ${ORGANIZATION}/${PROJECT}..."
+          echo "Request body: ${BODY}"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "${API_URL}" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "${BODY}")
+
+          HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
+          RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
+
+          echo "HTTP Status: ${HTTP_CODE}"
+
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+            RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
+            RUN_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.name')
+            RUN_URL=$(echo "${RESPONSE_BODY}" | jq -r '.url')
+            PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+
+            echo "Pipeline '${PIPELINE_NAME}' triggered successfully!"
+            echo "  Run ID:   ${RUN_ID}"
+            echo "  Run Name: ${RUN_NAME}"
+            echo "  API URL:  ${RUN_URL}"
+            echo ""
+            echo "View the run at: https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_build/results?buildId=${RUN_ID}"
+
+            # Set outputs for downstream jobs
+            echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+            echo "run_url=https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_build/results?buildId=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
+            echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
+            exit 1
+          fi
