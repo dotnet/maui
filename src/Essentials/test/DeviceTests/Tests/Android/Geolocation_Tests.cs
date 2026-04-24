@@ -43,64 +43,86 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public void ToLocation_Api34WithoutMslAltitude_FallsBackToEllipsoid()
+		public void ToLocation_HasAltitudeButNoMslAltitude_UsesEllipsoid()
 		{
-			// On API 34+ without a reported MSL altitude (HasMslAltitude == false),
-			// we must fall back to the ellipsoidal altitude rather than silently
-			// returning nothing or mis-labelling it as Geoid.
-			if (!OperatingSystem.IsAndroidVersionAtLeast(34))
-				return;
-
+			// On every API level, a location that reports an ellipsoidal altitude but no
+			// MSL altitude must resolve to Ellipsoid. On pre-34 devices that is the only
+			// code path; on API 34+ devices this exercises the HasMslAltitude == false
+			// fallback branch. Either way this assertion runs, so the test cannot silently
+			// pass if the fallback regresses.
 			var androidLocation = new AndroidLocation("test")
 			{
 				Altitude = 123.45,
-				VerticalAccuracyMeters = 5.0f,
-				// MslAltitudeMeters intentionally not set → HasMslAltitude == false
 			};
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				androidLocation.VerticalAccuracyMeters = 5.0f;
 
 			var location = androidLocation.ToLocation();
 
 			Assert.Equal(123.45, location.Altitude);
 			Assert.Equal(AltitudeReferenceSystem.Ellipsoid, location.AltitudeReferenceSystem);
-			Assert.Equal(5.0, location.VerticalAccuracy);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				Assert.Equal(5.0, location.VerticalAccuracy);
+			else
+				Assert.Null(location.VerticalAccuracy);
 		}
 
 		[Fact]
 		public void ToLocation_MslAltitude_UsesGeoidReferenceSystem()
 		{
-			// MSL altitude is only available on Android API 34+
+			var androidLocation = new AndroidLocation("test")
+			{
+				Altitude = 123.45,
+			};
+
+			// Baseline: without MSL altitude set, we must get Ellipsoid on any API level.
+			// This guarantees an assertion runs even on pre-34 devices so the test cannot
+			// silently pass if the API-34 branch is accidentally taken or the fallback
+			// regresses.
+			var baseline = androidLocation.ToLocation();
+			Assert.Equal(123.45, baseline.Altitude);
+			Assert.Equal(AltitudeReferenceSystem.Ellipsoid, baseline.AltitudeReferenceSystem);
+
+			// The remaining assertions exercise the API 34+ MSL path. MslAltitudeMeters is
+			// only meaningful on API 34+, so below that we stop after validating the
+			// fallback above.
 			if (!OperatingSystem.IsAndroidVersionAtLeast(34))
 				return;
 
-			var androidLocation = new AndroidLocation("test")
-			{
-				Altitude = 123.45,              // ellipsoidal
-				MslAltitudeMeters = 100.0,      // geoid
-				MslAltitudeAccuracyMeters = 2.5f,
-				VerticalAccuracyMeters = 5.0f,  // ellipsoidal accuracy
-			};
+			androidLocation.MslAltitudeMeters = 100.0;
+			androidLocation.MslAltitudeAccuracyMeters = 2.5f;
+			androidLocation.VerticalAccuracyMeters = 5.0f; // ellipsoidal accuracy, must NOT be surfaced
 
 			var location = androidLocation.ToLocation();
 
 			Assert.Equal(100.0, location.Altitude);
 			Assert.Equal(AltitudeReferenceSystem.Geoid, location.AltitudeReferenceSystem);
 			// VerticalAccuracy must be paired with the chosen altitude reference system,
-			// so the MSL accuracy is preferred over the ellipsoidal one.
+			// so the MSL accuracy is used rather than the ellipsoidal one.
 			Assert.Equal(2.5, location.VerticalAccuracy);
 		}
 
 		[Fact]
 		public void ToLocation_MslAltitudeWithoutMslAccuracy_ReportsNullVerticalAccuracy()
 		{
-			// MSL altitude is only available on Android API 34+
+			var androidLocation = new AndroidLocation("test");
+
+			// Baseline: a location with no altitude reports Unspecified on any API level.
+			// This keeps the test meaningful on pre-34 devices instead of silently passing.
+			var baseline = androidLocation.ToLocation();
+			Assert.Null(baseline.Altitude);
+			Assert.Equal(AltitudeReferenceSystem.Unspecified, baseline.AltitudeReferenceSystem);
+			Assert.Null(baseline.VerticalAccuracy);
+
 			if (!OperatingSystem.IsAndroidVersionAtLeast(34))
 				return;
 
-			var androidLocation = new AndroidLocation("test")
-			{
-				MslAltitudeMeters = 100.0,
-				VerticalAccuracyMeters = 5.0f,  // ellipsoidal accuracy, must NOT be surfaced alongside MSL altitude
-			};
+			// On API 34+, an MSL altitude without an MSL accuracy must NOT surface the
+			// ellipsoidal VerticalAccuracyMeters — they describe a different reference system.
+			androidLocation.MslAltitudeMeters = 100.0;
+			androidLocation.VerticalAccuracyMeters = 5.0f;
 
 			var location = androidLocation.ToLocation();
 
