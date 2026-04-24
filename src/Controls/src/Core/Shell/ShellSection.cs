@@ -421,6 +421,10 @@ namespace Microsoft.Maui.Controls
 							popCount = i + 2;
 							ShellNavigationManager.ApplyQueryAttributes(navPage, queryData, isLast, isRelativePopping);
 
+							// Update ResolvedRoute for reused template pages
+							if (resolvedRoutes?.Count > i && Routing.IsTemplateRoute(route))
+								Routing.SetResolvedRoute(navPage, resolvedRoutes[i]);
+
 							// If we're not on the last loop of the stack then continue
 							// otherwise pop the rest of the stack
 							if (!isLast)
