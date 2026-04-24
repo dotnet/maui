@@ -24,9 +24,6 @@ on:
         required: true
         default: 'dnceng-public'
 
-permissions:
-  contents: read
-
 jobs:
   trigger-pipeline:
     runs-on: ubuntu-latest
