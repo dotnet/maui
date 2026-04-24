@@ -1,4 +1,4 @@
-# Trigger an Azure DevOps pipeline in DevDiv from GitHub Actions using OIDC (no PAT).
+# Trigger an Azure DevOps pipeline from GitHub Actions using OIDC (no PAT).
 # See .github/docs/trigger-azdo-pipeline-setup.md for the one-time identity setup guide.
 
 name: Trigger AzDO Pipeline
@@ -12,25 +12,17 @@ on:
   workflow_dispatch:
     inputs:
       pipeline_id:
-        description: 'AzDO pipeline definition ID (e.g. 27723)'
+        description: 'AzDO pipeline definition ID'
         required: true
-        default: '27723'
+        default: '302'
       project:
         description: 'AzDO project name'
         required: true
-        default: 'DevDiv'
+        default: 'public'
       organization:
         description: 'AzDO organization name'
         required: true
-        default: 'DevDiv'
-      branch:
-        description: 'Branch to build (e.g. refs/heads/main). Leave empty for pipeline default.'
-        required: false
-        default: ''
-      template_parameters:
-        description: 'JSON object of template parameters (e.g. {"param1":"value1"})'
-        required: false
-        default: '{}'
+        default: 'dnceng-public'
 
 permissions:
   contents: read
@@ -39,68 +31,55 @@ jobs:
   trigger-pipeline:
     runs-on: ubuntu-latest
     permissions:
+      id-token: write
       contents: read
-    # Optional: use a GitHub environment for additional protection (approvals, branch policies)
-    # environment: azdo-trigger
     steps:
-      - name: Test OIDC token request
+      - name: Azure Login (OIDC)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          subscription-id: ${{ secrets.AZDO_TRIGGER_SUBSCRIPTION_ID }}
+
+      - name: Get AzDO Bearer Token
+        id: token
         run: |
-          echo "Checking OIDC environment variables..."
-          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
-            echo "ACTIONS_ID_TOKEN_REQUEST_URL is set"
-            echo "Requesting OIDC token..."
-            TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
-              | jq -r '.value')
-            if [ -n "$TOKEN" ] && [ "$TOKEN" != "null" ]; then
-              echo "::add-mask::${TOKEN}"
-              echo "OIDC token obtained successfully (length: ${#TOKEN})"
-              
-              # Now exchange for Azure AD token
-              AZURE_RESPONSE=$(curl -s -X POST \
-                "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
-                -d "grant_type=client_credentials" \
-                -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
-                -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
-                -d "client_assertion=${TOKEN}" \
-                -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
-              
-              AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
-              if [ -n "$AZDO_TOKEN" ] && [ "$AZDO_TOKEN" != "null" ]; then
-                echo "::add-mask::${AZDO_TOKEN}"
-                echo "Azure AD token for AzDO obtained successfully!"
-                
-                # Trigger the pipeline
-                RESPONSE=$(curl -s -w "\n%{http_code}" \
-                  -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
-                  -H "Authorization: Bearer ${AZDO_TOKEN}" \
-                  -H "Content-Type: application/json" \
-                  -d '{}')
-                
-                HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
-                RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
-                echo "AzDO API HTTP Status: ${HTTP_CODE}"
-                
-                if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
-                  RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
-                  PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
-                  echo "Pipeline '${PIPELINE_NAME}' triggered successfully! Run ID: ${RUN_ID}"
-                  echo "View: https://dev.azure.com/DevDiv/DevDiv/_build/results?buildId=${RUN_ID}"
-                else
-                  echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
-                  echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
-                  exit 1
-                fi
-              else
-                echo "::error::Failed to get Azure AD token"
-                echo "$AZURE_RESPONSE" | jq . 2>/dev/null || echo "$AZURE_RESPONSE"
-                exit 1
-              fi
-            else
-              echo "::error::Failed to get OIDC token"
-              exit 1
-            fi
+          AZDO_TOKEN=$(az account get-access-token \
+            --resource "499b84ac-1321-427f-aa17-267ca6975798" \
+            --query accessToken -o tsv)
+          echo "::add-mask::${AZDO_TOKEN}"
+          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger AzDO Pipeline
+        env:
+          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
+          PIPELINE_ID: ${{ inputs.pipeline_id || '302' }}
+          PROJECT: ${{ inputs.project || 'public' }}
+          ORGANIZATION: ${{ inputs.organization || 'dnceng-public' }}
+        run: |
+          API_URL="https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_apis/pipelines/${PIPELINE_ID}/runs?api-version=7.1"
+
+          echo "Triggering pipeline ${PIPELINE_ID} in ${ORGANIZATION}/${PROJECT}..."
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "${API_URL}" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+
+          HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
+          RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
+
+          echo "HTTP Status: ${HTTP_CODE}"
+
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+            RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
+            PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            echo "Pipeline '${PIPELINE_NAME}' triggered successfully!"
+            echo "  Run ID: ${RUN_ID}"
+            echo "  View:   https://dev.azure.com/${ORGANIZATION}/${PROJECT}/_build/results?buildId=${RUN_ID}"
           else
-            echo "::error::OIDC environment variables not available. id-token permission may be required."
+            echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
+            echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
           fi
