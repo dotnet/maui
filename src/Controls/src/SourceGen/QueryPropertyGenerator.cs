@@ -39,7 +39,6 @@ using static GeneratorHelpers;
 public class QueryPropertyGenerator : IIncrementalGenerator
 {
 	const string QueryPropertyAttributeFullName = "Microsoft.Maui.Controls.QueryPropertyAttribute";
-	const string GeneratedMarkerAttributeName = "Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute";
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -242,15 +241,8 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		// Add ApplyQueryAttributes method
 		classMembers.Add(BuildApplyQueryAttributesMethod(classInfo));
 
-		// Build class declaration with [QueryPropertyGenerated] marker so ShellContent can detect
-		// source-generated IQueryAttributable and skip the reflection fallback.
-		// This attribute is Inherited=true, so derived classes also skip reflection.
-		var markerAttribute = SyntaxFactory.Attribute(
-			SyntaxFactory.ParseName("global::Microsoft.Maui.Controls.QueryPropertyGenerated"));
-
+		// Build class declaration implementing IQueryAttributable
 		var classDeclaration = SyntaxFactory.ClassDeclaration(classInfo.ClassName)
-			.WithAttributeLists(SyntaxFactory.SingletonList(
-				SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(markerAttribute))))
 			.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PartialKeyword)))
 			.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("global::Microsoft.Maui.Controls.IQueryAttributable")))))
