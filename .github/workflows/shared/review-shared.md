@@ -43,7 +43,7 @@ steps:
       PR_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)
       git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
         && echo "✅ Restored skill/instruction files from PR branch ($PR_SHA)" \
-        || echo "⚠️ Could not restore from PR branch — using main's versions"
+        || { echo "❌ Failed to restore skill/instruction files from PR branch ($PR_SHA)"; exit 1; }
 ---
 
 # Expert Code Review
