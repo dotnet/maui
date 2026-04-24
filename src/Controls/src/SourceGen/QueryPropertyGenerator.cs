@@ -248,21 +248,15 @@ public class QueryPropertyGenerator : IIncrementalGenerator
 		// Add field to track query keys
 		classMembers.Add(BuildQueryPropertyKeysField());
 
-		// Build class declaration with [GeneratedCode] attribute so ShellContent can detect
+		// Build class declaration with [QueryPropertyGenerated] marker so ShellContent can detect
 		// source-generated IQueryAttributable and skip the reflection fallback.
-		var generatedCodeAttribute = SyntaxFactory.Attribute(
-			SyntaxFactory.ParseName("global::System.CodeDom.Compiler.GeneratedCode"),
-			SyntaxFactory.AttributeArgumentList(SyntaxFactory.SeparatedList(new[]
-			{
-				SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-					SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("QueryPropertyGenerator"))),
-				SyntaxFactory.AttributeArgument(SyntaxFactory.LiteralExpression(
-					SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("1.0.0.0")))
-			})));
+		// This attribute is Inherited=true, so derived classes also skip reflection.
+		var markerAttribute = SyntaxFactory.Attribute(
+			SyntaxFactory.ParseName("global::Microsoft.Maui.Controls.QueryPropertyGenerated"));
 
 		var classDeclaration = SyntaxFactory.ClassDeclaration(classInfo.ClassName)
 			.WithAttributeLists(SyntaxFactory.SingletonList(
-				SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(generatedCodeAttribute))))
+				SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(markerAttribute))))
 			.WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PartialKeyword)))
 			.WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
 				SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName("global::Microsoft.Maui.Controls.IQueryAttributable")))))
