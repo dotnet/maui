@@ -26,7 +26,7 @@ namespace MyApp
 
 		Assert.NotEmpty(result.Diagnostics);
 		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1200"));
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -47,7 +47,7 @@ namespace MyApp
 
 		Assert.NotEmpty(result.Diagnostics);
 		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1201"));
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -69,7 +69,7 @@ namespace MyApp
 
 		Assert.NotEmpty(result.Diagnostics);
 		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1202"));
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -91,7 +91,7 @@ namespace MyApp
 
 		Assert.NotEmpty(result.Diagnostics);
 		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1202"));
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -116,8 +116,8 @@ namespace MyApp
 		Assert.True(result.Diagnostics.Any(d => d.Id == "MAUI1201"));
 
 		// Should still generate code for the valid property
-		Assert.Single(result.GeneratedTrees);
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		Assert.Single(GetQueryPropertyTrees(result));
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 		Assert.Contains(@"query.TryGetValue(""name""", generatedSource, StringComparison.Ordinal);
 		Assert.DoesNotContain(@"query.TryGetValue(""missing""", generatedSource, StringComparison.Ordinal);
 	}
@@ -139,7 +139,7 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -166,7 +166,7 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -187,9 +187,9 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 		// The query string key "my-name" should be used as-is in TryGetValue
 		Assert.Contains(@"query.TryGetValue(""my-name""", generatedSource, StringComparison.Ordinal);
 		// Variable name uses the property name (Name), not the sanitized query ID
@@ -238,7 +238,7 @@ namespace MyApp
 		Assert.NotEmpty(result.Diagnostics);
 		var diagnostic = result.Diagnostics.Single(d => d.Id == "MAUI1204");
 		Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-		Assert.Empty(result.GeneratedTrees);
+		Assert.Empty(GetQueryPropertyTrees(result));
 	}
 
 	[Fact]
@@ -285,9 +285,9 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 		// Should emit nested partial chain: partial class OuterPage { partial class InnerPage : IQueryAttributable { ... } }
 		Assert.Contains("partial class OuterPage", generatedSource, StringComparison.Ordinal);
 		Assert.Contains("partial class InnerPage", generatedSource, StringComparison.Ordinal);
@@ -317,9 +317,9 @@ namespace MyApp
 
 		// Should find the inherited property — no MAUI1201 warning
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 		Assert.Contains(@"query.TryGetValue(""name""", generatedSource, StringComparison.Ordinal);
 	}
 }

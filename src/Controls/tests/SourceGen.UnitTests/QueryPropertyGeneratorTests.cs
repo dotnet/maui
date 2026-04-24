@@ -573,9 +573,9 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 
 		// Verify full generated output for documentation example
 		var expectedOutput = @"
@@ -667,9 +667,9 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 
 		// Verify full generated output for documentation example
 		var expectedOutput = @"
@@ -1033,10 +1033,10 @@ namespace MyApp
 		var result = SourceGeneratorDriver.RunGenerator<QueryPropertyGenerator>(compilation, Array.Empty<SourceGeneratorDriver.AdditionalFile>(), assertNoCompilationErrors: false);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		// Add the generated source to the compilation and verify it compiles
-		compilation = compilation.AddSyntaxTrees(result.GeneratedTrees[0]);
+		// Add ALL generated sources (including marker attribute) to the compilation and verify it compiles
+		compilation = compilation.AddSyntaxTrees(result.GeneratedTrees);
 
 		var compilationDiagnostics = compilation.GetDiagnostics();
 		var errors = compilationDiagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).ToArray();
@@ -1062,9 +1062,9 @@ namespace MyApp
 		var result = RunQueryPropertyGenerator(sourceCode);
 
 		Assert.Empty(result.Diagnostics);
-		Assert.Single(result.GeneratedTrees);
+		Assert.Single(GetQueryPropertyTrees(result));
 
-		var generatedSource = result.GeneratedTrees[0].ToString();
+		var generatedSource = GetQueryPropertyTrees(result)[0].ToString();
 		// Should use typeof(double) for conversion, not typeof(double?)
 		Assert.Contains("typeof(double)", generatedSource, StringComparison.Ordinal);
 		Assert.DoesNotContain("typeof(double?)", generatedSource, StringComparison.Ordinal);
