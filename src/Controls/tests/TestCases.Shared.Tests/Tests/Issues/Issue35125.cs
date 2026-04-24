@@ -5,9 +5,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue1418 : _IssuesUITest
+public class Issue35125 : _IssuesUITest
 {
-	public Issue1418(TestDevice device) : base(device)
+	public Issue35125(TestDevice device) : base(device)
 	{
 	}
 
@@ -19,7 +19,7 @@ public class Issue1418 : _IssuesUITest
 	{
 		App.WaitForElement("TAB TWO");
 		App.Tap("TAB TWO");
-		App.WaitForElement("Issue1418PageTwoLabel");
+		App.WaitForElement("Issue35125PageTwoLabel");
 
 		VerifyScreenshot();
 	}

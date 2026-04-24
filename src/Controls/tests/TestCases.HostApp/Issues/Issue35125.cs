@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 1418, "Shell top-tab unselected text should remain visible in Material 3 light theme", PlatformAffected.Android)]
-public class Issue1418 : Shell
+[Issue(IssueTracker.Github, 35125, "Shell top-tab unselected text should remain visible in Material 3 light theme", PlatformAffected.Android)]
+public class Issue35125 : Shell
 {
-	public Issue1418()
+	public Issue35125()
 	{
 		Tab shellTab = new Tab
 		{
@@ -13,18 +13,18 @@ public class Issue1418 : Shell
 		shellTab.Items.Add(new ShellContent
 		{
 			Title = "TAB ONE",
-			ContentTemplate = new DataTemplate(typeof(Issue1418PageOne))
+			ContentTemplate = new DataTemplate(typeof(Issue35125PageOne))
 		});
 
 		shellTab.Items.Add(new ShellContent
 		{
 			Title = "TAB TWO",
-			ContentTemplate = new DataTemplate(typeof(Issue1418PageTwo))
+			ContentTemplate = new DataTemplate(typeof(Issue35125PageTwo))
 		});
 
 		FlyoutItem flyoutItem = new FlyoutItem
 		{
-			Title = "Issue1418"
+			Title = "Issue35125"
 		};
 
 		flyoutItem.Items.Add(shellTab);
@@ -32,30 +32,30 @@ public class Issue1418 : Shell
 	}
 }
 
-class Issue1418PageOne : ContentPage
+class Issue35125PageOne : ContentPage
 {
-	public Issue1418PageOne()
+	public Issue35125PageOne()
 	{
 		Title = "Page One";
 		Content = new Label
 		{
 			Text = "The test passes if the unselected tabs are visible in view.",
-			AutomationId = "Issue1418PageOneLabel",
+			AutomationId = "Issue35125PageOneLabel",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
 	}
 }
 
-class Issue1418PageTwo : ContentPage
+class Issue35125PageTwo : ContentPage
 {
-	public Issue1418PageTwo()
+	public Issue35125PageTwo()
 	{
 		Title = "Page Two";
 		Content = new Label
 		{
 			Text = "The test passes if the unselected tabs are visible in view.",
-			AutomationId = "Issue1418PageTwoLabel",
+			AutomationId = "Issue35125PageTwoLabel",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
