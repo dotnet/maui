@@ -825,7 +825,7 @@ namespace Microsoft.Maui.Controls
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
 		static Color DefaultForegroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 		static Color DefaultTitleColor => ResolveThemeColor(
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
