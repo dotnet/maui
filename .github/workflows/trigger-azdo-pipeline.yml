@@ -31,20 +31,43 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Azure Login (OIDC)
-        uses: azure/login@v3
-        with:
-          client-id: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-          subscription-id: ${{ secrets.AZDO_TRIGGER_SUBSCRIPTION_ID }}
-
-      - name: Get AzDO Bearer Token
-        id: token
+      - name: Get OIDC Token
+        id: oidc
         run: |
-          AZDO_TOKEN=$(az account get-access-token \
-            --resource "499b84ac-1321-427f-aa17-267ca6975798" \
-            --query accessToken -o tsv)
+          echo "Requesting OIDC token from GitHub..."
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -r '.value')
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "::error::Failed to get OIDC token"
+            exit 1
+          fi
+          echo "::add-mask::${OIDC_TOKEN}"
+          echo "Got OIDC token (length: ${#OIDC_TOKEN})"
+          echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Exchange for AzDO Token
+        id: token
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
+        run: |
+          echo "Exchanging OIDC token for Azure AD token..."
+          AZURE_RESPONSE=$(curl -s -X POST \
+            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
+            -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
+            -d "client_assertion=${OIDC_TOKEN}" \
+            -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+
+          AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
+          if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
+            echo "::error::Failed to get Azure AD token"
+            echo "$AZURE_RESPONSE" | jq 'del(.access_token)' 2>/dev/null || echo "$AZURE_RESPONSE"
+            exit 1
+          fi
           echo "::add-mask::${AZDO_TOKEN}"
+          echo "Got AzDO bearer token"
           echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
 
       - name: Trigger AzDO Pipeline
