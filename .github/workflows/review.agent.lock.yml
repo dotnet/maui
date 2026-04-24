@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"2c45583da99e2833e143352caf19029bdfbdd72778ff2203e193512ee2eb41d0","compiler_version":"v0.69.3","strict":true,"agent_id":"copilot","agent_model":"claude-opus-4.6"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"3fd601a3b9e06de8d18dd5f2599088e55da7c7a6be506fd9d567926a46c343e0","compiler_version":"v0.69.3","strict":true,"agent_id":"copilot","agent_model":"claude-opus-4.6"}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"006ffd856b868b71df342dbe0ba082a963249b31","version":"v0.69.3"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.26"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.26"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.26"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.2.26"},{"image":"ghcr.io/github/github-mcp-server:v1.0.0"},{"image":"node:lts-alpine"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -51,6 +51,8 @@
 
 name: "Expert Code Review"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - copilot-swe-agent[bot] # Bots processed as bot check in pre-activation job
   issue_comment:
     types:
     - created
@@ -200,6 +202,7 @@ jobs:
         id: sanitized
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
+          GH_AW_ALLOWED_BOTS: "copilot-swe-agent[bot]"
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
         with:
           script: |
@@ -236,14 +239,14 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_8b9b8bcba447c859_EOF'
+          cat << 'GH_AW_PROMPT_7a117c620e77f8fb_EOF'
           <system>
-          GH_AW_PROMPT_8b9b8bcba447c859_EOF
+          GH_AW_PROMPT_7a117c620e77f8fb_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_8b9b8bcba447c859_EOF'
+          cat << 'GH_AW_PROMPT_7a117c620e77f8fb_EOF'
           <safe-output-tools>
           Tools: add_comment(max:5), create_pull_request_review_comment(max:30), submit_pull_request_review, missing_tool, missing_data, noop
           </safe-output-tools>
@@ -275,16 +278,16 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_8b9b8bcba447c859_EOF
+          GH_AW_PROMPT_7a117c620e77f8fb_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
           if [ "$GITHUB_EVENT_NAME" = "issue_comment" ] && [ -n "$GH_AW_IS_PR_COMMENT" ] || [ "$GITHUB_EVENT_NAME" = "pull_request_review_comment" ] || [ "$GITHUB_EVENT_NAME" = "pull_request_review" ]; then
             cat "${RUNNER_TEMP}/gh-aw/prompts/pr_context_prompt.md"
           fi
-          cat << 'GH_AW_PROMPT_8b9b8bcba447c859_EOF'
+          cat << 'GH_AW_PROMPT_7a117c620e77f8fb_EOF'
           </system>
           {{#runtime-import .github/workflows/shared/review-shared.md}}
           {{#runtime-import .github/workflows/review.agent.md}}
-          GH_AW_PROMPT_8b9b8bcba447c859_EOF
+          GH_AW_PROMPT_7a117c620e77f8fb_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
@@ -466,9 +469,9 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_e35bb3480ca783a4_EOF'
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_d67581ee6be5d47e_EOF'
           {"add_comment":{"hide_older_comments":true,"max":5,"target":"*"},"create_pull_request_review_comment":{"max":30,"side":"RIGHT"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{},"submit_pull_request_review":{"allowed_events":["COMMENT"],"max":1}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_e35bb3480ca783a4_EOF
+          GH_AW_SAFE_OUTPUTS_CONFIG_d67581ee6be5d47e_EOF
       - name: Write Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
@@ -713,7 +716,7 @@ jobs:
           
           mkdir -p /home/runner/.copilot
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_540565a126296643_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_89191561d06efb01_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -754,7 +757,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_540565a126296643_EOF
+          GH_AW_MCP_CONFIG_89191561d06efb01_EOF
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1287,6 +1290,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           GH_AW_REQUIRED_ROLES: "admin,maintainer,write"
+          GH_AW_ALLOWED_BOTS: "copilot-swe-agent[bot]"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

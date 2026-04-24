@@ -13,6 +13,8 @@ on:
         required: true
         type: number
   roles: [admin, maintainer, write]
+  bots:
+    - "copilot-swe-agent[bot]"
 
 # slash_command compiles to issue_comment; workflow_dispatch is always allowed.
 if: >-
