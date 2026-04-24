@@ -33,12 +33,14 @@ on:
         default: '{}'
 
 permissions:
-  id-token: write   # Required for OIDC token exchange
   contents: read
 
 jobs:
   trigger-pipeline:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC token exchange
+      contents: read
     # Optional: use a GitHub environment for additional protection (approvals, branch policies)
     # environment: azdo-trigger
     steps:
