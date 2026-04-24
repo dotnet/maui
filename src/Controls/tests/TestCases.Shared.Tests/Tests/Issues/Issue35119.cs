@@ -4,11 +4,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class IssueTempM3Dialog : _IssuesUITest
+public class Issue35119 : _IssuesUITest
 {
-	public IssueTempM3Dialog(TestDevice device) : base(device) { }
+	public Issue35119(TestDevice device) : base(device) { }
 
-	public override string Issue => "M3 dialogs (Alert, ActionSheet, Prompt) render with M2 styles on Android";
+	public override string Issue => "[Android] AlertDialog, ActionSheet, and Prompt render with Material 2 styles when Material 3 is enabled";
 
 	[Test]
 	[Category(UITestCategories.Material3)]

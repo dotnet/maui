@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 111, "M3 dialogs (Alert, ActionSheet, Prompt) render with M2 styles on Android", PlatformAffected.Android)]
-public class IssueTempM3Dialog : ContentPage
+[Issue(IssueTracker.Github, 35119, "[Android] AlertDialog, ActionSheet, and Prompt render with Material 2 styles when Material 3 is enabled", PlatformAffected.Android)]
+public class Issue35119 : ContentPage
 {
-	public IssueTempM3Dialog()
+	public Issue35119()
 	{
 		var resultLabel = new Label
 		{
