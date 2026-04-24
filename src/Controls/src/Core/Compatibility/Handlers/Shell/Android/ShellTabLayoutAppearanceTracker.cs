@@ -1,5 +1,4 @@
 #nullable disable
-using System;
 using Android.Graphics.Drawables;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -37,57 +36,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetColors(TabLayout tabLayout, Color foreground, Color background, Color title, Color unselected)
 		{
-			var selectedTitleDefault = GetDefaultSelectedTopTabColor(ShellRenderer.DefaultTitleColor);
-			var selectedIndicatorDefault = GetDefaultSelectedTopTabColor(ShellRenderer.DefaultForegroundColor);
-			var selectedTitleColor = ResolveSelectedColor(title, ShellRenderer.DefaultTitleColor, selectedTitleDefault);
-			var selectedIndicatorColor = ResolveSelectedColor(foreground, ShellRenderer.DefaultForegroundColor, selectedIndicatorDefault);
-
-			var titleArgb = selectedTitleColor.ToPlatform(selectedTitleDefault).ToArgb();
+			var titleArgb = title.ToPlatform(ShellRenderer.DefaultTitleColor).ToArgb();
 			var unselectedArgb = unselected.ToPlatform(ShellRenderer.DefaultUnselectedColor).ToArgb();
 
 			tabLayout.SetTabTextColors(unselectedArgb, titleArgb);
 			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
-			tabLayout.SetSelectedTabIndicatorColor(selectedIndicatorColor.ToPlatform(selectedIndicatorDefault));
-		}
-
-		static Color ResolveSelectedColor(Color value, Color legacyDefault, Color resolvedDefault)
-		{
-			if (!RuntimeFeature.IsMaterial3Enabled)
-			{
-				return value;
-			}
-
-			if (value is null || IsSameColor(value, legacyDefault))
-			{
-				return resolvedDefault;
-			}
-
-			return value;
-		}
-
-		static bool IsSameColor(Color first, Color second)
-		{
-			if (first is null || second is null)
-			{
-				return false;
-			}
-
-			const float tolerance = 0.001f;
-
-			return Math.Abs(first.Red - second.Red) < tolerance
-				&& Math.Abs(first.Green - second.Green) < tolerance
-				&& Math.Abs(first.Blue - second.Blue) < tolerance
-				&& Math.Abs(first.Alpha - second.Alpha) < tolerance;
-		}
-
-		static Color GetDefaultSelectedTopTabColor(Color material2Default)
-		{
-			if (RuntimeFeature.IsMaterial3Enabled)
-			{
-				return ShellRenderer.IsDarkTheme ? Color.FromArgb("#D0BCFF") : Color.FromArgb("#6750A4");
-			}
-
-			return material2Default;
+			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
 		}
 
 		#region IDisposable

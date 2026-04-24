@@ -11,11 +11,11 @@ public class Issue1418 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Shell top-tab colors should follow Material 3";
+	public override string Issue => "Shell top-tab unselected text should remain visible in Material 3 light theme";
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	public void TopTabColorsFollowMaterial3WhenSwitchingTabs()
+	public void TopTabUnselectedTextVisibleWhenSwitchingTabs()
 	{
 		App.WaitForElement("TAB TWO");
 		App.Tap("TAB TWO");
