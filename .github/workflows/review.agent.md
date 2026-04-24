@@ -30,7 +30,6 @@ engine:
 network:
   allowed:
     - defaults
-    - dotnet
 
 imports:
   - shared/review-shared.md
