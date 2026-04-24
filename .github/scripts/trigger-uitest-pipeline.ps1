@@ -16,7 +16,7 @@
     The GitHub PR number (required).
 
 .PARAMETER SourceBranch
-    AzDO pipeline source branch. Defaults to main.
+    AzDO pipeline source branch. Defaults to the PR merge ref (pull/N/merge).
 
 .PARAMETER DryRun
     Show what would be done without queuing or posting.
@@ -34,7 +34,7 @@ param(
     [int]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [string]$SourceBranch = "main",
+    [string]$SourceBranch,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
@@ -60,6 +60,12 @@ Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  UI TEST PIPELINE — PR #$PRNumber                              ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+# Default SourceBranch to the PR's merge ref so tests run the PR's actual code
+if ([string]::IsNullOrWhiteSpace($SourceBranch)) {
+    $SourceBranch = "pull/$PRNumber/merge"
+    Write-Host "  📌 Source branch: refs/$SourceBranch (PR merge ref)" -ForegroundColor Cyan
+}
 
 # ============================================================================
 # STEP 1: Read AI categories (Tier 3) from pre-flight output
@@ -137,9 +143,11 @@ if ($detectedCategories) {
     $templateParams['categories'] = $detectedCategories
 }
 
+$sourceBranchRef = if ($SourceBranch -like "pull/*") { "refs/$SourceBranch" } else { "refs/heads/$SourceBranch" }
+
 $buildBody = @{
     definition = @{ id = $PipelineDefId }
-    sourceBranch = "refs/heads/$SourceBranch"
+    sourceBranch = $sourceBranchRef
     templateParameters = $templateParams
 } | ConvertTo-Json -Depth 5
 
