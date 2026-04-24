@@ -116,7 +116,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				base.MeasureOverride(availableSize);
 				var request = view.Measure(availableSize.Width, availableSize.Height);
-				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 				return request.ToPlatform();
 			}
 
@@ -132,6 +131,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (finalSize.Width > 0 && _content is IView view)
 			{
 				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				// Clip to the final arranged size so any layout that expands to fill available
+				// width (e.g. Grid with star columns, FlexLayout, custom panels) is not
+				// clipped to its minimum measured width.
+				Clip = new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) };
 			}
 
 			return finalSize;
