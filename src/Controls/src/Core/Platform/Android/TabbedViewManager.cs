@@ -42,8 +42,6 @@ internal class TabbedViewManager
     FragmentManager _fragmentManager;
     TabLayout _tabLayout;
     BottomNavigationView _bottomNavigationView;
-    ColorStateList _originalBnvItemTextColors;
-    ColorStateList _originalBnvItemIconTintColors;
     ViewPager2 _viewPager;
     int _previousTabIndex = -1;
     int[] _checkedStateSet = null;
@@ -252,10 +250,6 @@ internal class TabbedViewManager
                     {
                         Gravity = (int)GravityFlags.Bottom
                     });
-
-                // Store original colors for restoration when custom colors are cleared
-                _originalBnvItemTextColors = _bottomNavigationView.ItemTextColor;
-                _originalBnvItemIconTintColors = _bottomNavigationView.ItemIconTintList;
             }
             else
             {
