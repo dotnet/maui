@@ -461,7 +461,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static bool IsQueryPropertySourceGenerated(Type type) =>
-			type.GetCustomAttribute<System.CodeDom.Compiler.GeneratedCodeAttribute>(inherit: false)?.Tool == "QueryPropertyGenerator";
+			type.GetCustomAttribute<QueryPropertyGeneratedAttribute>(inherit: true) is not null;
 
 		private sealed class ShellContentConverter : TypeConverter
 		{
