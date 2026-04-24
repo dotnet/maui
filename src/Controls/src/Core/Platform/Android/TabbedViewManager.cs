@@ -431,12 +431,6 @@ internal class TabbedViewManager
 
     protected virtual void OnTabsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
-        if (_managesViewPager)
-        {
-            ViewPager2 pager = _viewPager;
-            pager.Adapter?.NotifyDataSetChanged();
-        }
-
         if (IsBottomTabPlacement)
         {
             BottomNavigationView bottomNavigationView = _bottomNavigationView;
@@ -1127,38 +1121,8 @@ internal class TabbedViewManager
         _currentBarTextColor = Element.BarTextColor;
         _currentBarSelectedItemColor = BarSelectedItemColor;
 
-        if (IsBottomTabPlacement)
-        {
-            if (_bottomNavigationView is not null)
-            {
-                if (barItemColor is null && barSelectedItemColor is null)
-                {
-                    _bottomNavigationView.ItemTextColor = _originalBnvItemTextColors;
-                    _bottomNavigationView.ItemIconTintList = _originalBnvItemIconTintColors;
-                }
-                else
-                {
-                    int unselectedArgb = barItemColor?.ToPlatform().ToArgb() ?? GetDefaultColorFromTheme(_context.Context);
-                    int selectedArgb = barSelectedItemColor?.ToPlatform().ToArgb() ?? GetDefaultColorFromTheme(_context.Context);
-                    var colorStateList = GetColorStateList(unselectedArgb, selectedArgb);
-                    _bottomNavigationView.ItemTextColor = colorStateList;
-                    _bottomNavigationView.ItemIconTintList = colorStateList;
-                }
-
-                // Apply per-item icon tints so tabs with explicit FontImageSource colors
-                // are not overridden by the global ItemIconTintList set above.
-                for (int i = 0; i < _bottomNavigationView.Menu.Size(); i++)
-                {
-                    var menuItem = _bottomNavigationView.Menu.GetItem(i);
-                    SetupBottomNavigationViewIconColor(i, menuItem);
-                }
-            }
-        }
-        else
-        {
-            UpdateBarTextColor();
-            UpdateItemIconColor();
-        }
+        UpdateBarTextColor();
+        UpdateItemIconColor();
     }
 
     internal void UpdateTabItemStyle()
