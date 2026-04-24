@@ -1,2 +1,4 @@
 #nullable enable
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute
+Microsoft.Maui.Controls.QueryPropertyGeneratedAttribute.QueryPropertyGeneratedAttribute() -> void
