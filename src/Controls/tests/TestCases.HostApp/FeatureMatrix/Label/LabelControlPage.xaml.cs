@@ -34,8 +34,12 @@ public partial class LabelControlMainPage : ContentPage
 	void MainLabel_Tapped(object sender, TappedEventArgs e)
 	{
 		// Recreate the page to verify initial mappers
+		// Clear BindingContext first so old Label properly detaches the FormattedString
+		// (triggers propertyChanging which unsubscribes events and calls RemoveSpans)
 		ToolbarItems.Clear();
+		BindingContext = null;
 		Content = new ContentView();
 		InitializeComponent();
+		BindingContext = _viewModel;
 	}
 }

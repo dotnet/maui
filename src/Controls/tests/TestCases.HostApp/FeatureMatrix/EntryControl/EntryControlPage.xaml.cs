@@ -145,7 +145,17 @@ public partial class EntryControlMainPage : ContentPage
 		scope.UnregisterName("CompletedLabel");
 		scope.UnregisterName("FocusedLabel");
 		scope.UnregisterName("UnfocusedLabel");
+		scope.UnregisterName("grid");
 		InitializeComponent();
+
+		if (OperatingSystem.IsIOSVersionAtLeast(26))
+		{
+			grid.HeightRequest = 100;
+		}
+		else
+		{
+			grid.HeightRequest = 130;
+		}
 
 		// Reattach the PropertyChanged event handler after reinitialization
 		EntryControl.PropertyChanged += UpdateEntryControl;
