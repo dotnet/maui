@@ -131,7 +131,11 @@ namespace Microsoft.Maui.Controls
 							if (!seg.IsParameter)
 								continue;
 							if (pathParameters.TryGetValue(seg.Value, out var val))
-								parameters[$"{routeKey}.{seg.Value}"] = val;
+						{
+							var prefixedKey = $"{routeKey}.{seg.Value}";
+							if (!parameters.ContainsKey(prefixedKey))
+								parameters[prefixedKey] = val;
+						}
 						}
 					}
 				}
