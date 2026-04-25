@@ -274,7 +274,9 @@ stages:
 
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
-    dependsOn: build_ui_tests_material3
+    dependsOn:
+      - build_ui_tests_material3
+      - discover_ui_test_categories
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -289,6 +291,7 @@ stages:
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  DETECTED_CATEGORIES: $[ stageDependencies.discover_ui_test_categories.detect.outputs['DetectCategories.UITestCategoryList'] ]
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
