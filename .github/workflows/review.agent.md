@@ -12,6 +12,7 @@ on:
         description: 'PR number to review'
         required: true
         type: number
+  status-comment: true
   roles: [admin, maintainer, write]
   bots:
     - "copilot-swe-agent[bot]"
@@ -22,7 +23,7 @@ concurrency:
 
 # slash_command compiles to issue_comment; workflow_dispatch is always allowed.
 if: >-
-  github.event_name == 'issue_comment' && github.event.issue.pull_request ||
+  (github.event_name == 'issue_comment' && github.event.issue.pull_request) ||
   github.event_name == 'workflow_dispatch'
 
 permissions:
