@@ -69,16 +69,18 @@ echo "Token acquired."
 echo ""
 echo "Step 1/2: Running Gradle build with --refresh-dependencies..."
 cd "$ANDROID_DIR"
-./gradlew build --no-daemon --refresh-dependencies \
+if ! ./gradlew build --no-daemon --refresh-dependencies \
     -Dazure.artifacts.credprovider.nonInteractive=true \
-    -Dazure.artifacts.credprovider.isRetry=true 2>&1 | tail -3 || true
+    -Dazure.artifacts.credprovider.isRetry=true 2>&1 | tail -20; then
+    echo "WARNING: Initial Gradle build failed (expected if packages need ingestion). Continuing..."
+fi
 
 # Step 3: Loop — build, find missing packages, curl-ingest them
 echo ""
 echo "Step 2/2: Ingesting any remaining packages via REST API..."
 for i in $(seq 1 30); do
     result=$(./gradlew build --no-daemon \
-        -Dazure.artifacts.credprovider.nonInteractive=true 2>&1)
+        -Dazure.artifacts.credprovider.nonInteractive=true 2>&1 || true)
 
     if echo "$result" | grep -q "BUILD SUCCESSFUL"; then
         echo "All dependencies ingested successfully! ✅"
@@ -87,7 +89,7 @@ for i in $(seq 1 30); do
 
     # Extract failed URLs and curl them with auth
     urls=$(echo "$result" | grep "Could not GET\|Could not HEAD" \
-        | sed "s/.*'\(https:[^']*\)'.*/\1/" | sort -u | grep "pkgs.dev.azure.com")
+        | sed "s/.*'\(https:[^']*\)'.*/\1/" | sort -u | grep "pkgs.dev.azure.com" || true)
     count=$(echo "$urls" | grep -c "https" 2>/dev/null || echo "0")
 
     if [ "$count" = "0" ]; then
@@ -100,7 +102,7 @@ for i in $(seq 1 30); do
     echo "  Run $i: ingesting $count packages..."
     echo "$urls" | while read url; do
         [ -z "$url" ] && continue
-        code=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$url" 2>/dev/null)
+        code=$(curl -s -o /dev/null -w "%{http_code}" --oauth2-bearer "$TOKEN" "$url" 2>/dev/null)
         if [ "$code" = "200" ]; then
             echo "    ✅ $(basename "$url")"
         else
