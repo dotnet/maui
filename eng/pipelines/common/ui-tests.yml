@@ -86,9 +86,12 @@ stages:
     dependsOn:
       - discover_ui_test_categories
     condition: |
-      or(
-        ne(variables['Build.Reason'], 'PullRequest'),
-        in(dependencies.discover_ui_test_categories.result, 'Succeeded', 'Skipped')
+      and(
+        or(
+          ne(variables['Build.Reason'], 'PullRequest'),
+          in(dependencies.discover_ui_test_categories.result, 'Succeeded', 'Skipped')
+        ),
+        ne(dependencies.discover_ui_test_categories.outputs['detect.DetectCategories.UITestCategoryList'], 'NONE')
       )
     jobs:
       - job: build_ui_tests

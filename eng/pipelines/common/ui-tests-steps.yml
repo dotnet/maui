@@ -137,8 +137,6 @@ steps:
 
 - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
   - template: enable-kvm.yml
-    parameters:
-      extraCondition: eq(variables['SHOULD_RUN_TESTS'], 'True')
 
 - ${{ if eq(parameters.platform, 'catalyst')}}:
   - bash: |

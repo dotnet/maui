@@ -212,7 +212,9 @@ $pathToCategoryMap = @(
     @{ Pattern = 'src/Controls/src/Core/TapGesture';          Category = 'Gestures' }
     @{ Pattern = 'src/Controls/src/Core/PointerGesture';      Category = 'Gestures' }
     @{ Pattern = 'src/Controls/src/Core/DragGesture';         Category = 'DragAndDrop' }
+    @{ Pattern = 'src/Controls/src/Core/DragGesture';         Category = 'Gestures' }
     @{ Pattern = 'src/Controls/src/Core/DropGesture';         Category = 'DragAndDrop' }
+    @{ Pattern = 'src/Controls/src/Core/DropGesture';         Category = 'Gestures' }
     @{ Pattern = 'src/Controls/src/Core/Image.';              Category = 'Image' }
     @{ Pattern = 'src/Controls/src/Core/ImageButton';         Category = 'ImageButton' }
     @{ Pattern = 'src/Controls/src/Core/IndicatorView';       Category = 'IndicatorView' }
