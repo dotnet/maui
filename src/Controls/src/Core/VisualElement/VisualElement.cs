@@ -293,7 +293,10 @@ namespace Microsoft.Maui.Controls
 				if (newvalue == null)
 					return;
 
-				(bindable as VisualElement)?.NotifyBackgroundChanges();
+				if (bindable is not null)
+				{
+					(bindable as VisualElement)?.NotifyBackgroundChanges();
+				}
 			});
 
 		WeakBackgroundChangedProxy _backgroundProxy;
