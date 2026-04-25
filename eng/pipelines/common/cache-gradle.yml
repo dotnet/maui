@@ -42,11 +42,11 @@ steps:
 
 # Copy init.gradle AFTER cache restore so it is not overwritten by a stale cached copy
 - script: |
-    cp "${{ parameters.checkoutDirectory }}/eng/init.gradle" "$HOME/.gradle/init.gradle"
+    cp "${{ parameters.checkoutDirectory }}/eng/init.gradle" "$(GRADLE_USER_HOME)/init.gradle"
   displayName: install Gradle init script (Linux/macOS)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
 
 - pwsh: |
-    Copy-Item "${{ parameters.checkoutDirectory }}/eng/init.gradle" (Join-Path $env:USERPROFILE ".gradle" "init.gradle")
+    Copy-Item "${{ parameters.checkoutDirectory }}/eng/init.gradle" (Join-Path "$(GRADLE_USER_HOME)" "init.gradle")
   displayName: install Gradle init script (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
