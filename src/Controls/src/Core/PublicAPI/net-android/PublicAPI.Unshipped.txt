@@ -1,8 +1,10 @@
 #nullable enable
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
