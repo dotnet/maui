@@ -12,6 +12,7 @@
 4. **Classify files** — separate fix files from test files, identify test type (UI / Device / Unit)
 5. **Document edge cases** — from comments mentioning "what about...", "does this work with..."
 6. **Record PR's fix** in Fix Candidates table (pending validation)
+7. **Identify impacted UI test categories** — analyze which UI controls could be affected by this PR (see below)
 
 ```bash
 # Fetch PR metadata
@@ -35,15 +36,43 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
 
 ---
 
-## Part B: Code Review (Step 7)
+## Step 7: Identify Impacted UI Test Categories
+
+After classifying files, determine which UI test categories could be affected by the PR changes. This enables targeted UI test runs instead of running the full matrix (~2h).
+
+**How to identify categories:**
+1. Look at the **controls modified** in the PR (e.g., changes to `Button` handler → `Button` category)
+2. Consider **indirect impacts** (e.g., a layout change could affect `Layout`, `CollectionView`, `ListView`)
+3. Check the **issue description** for mentions of specific controls
+4. Consider **platform-specific impacts** (e.g., iOS SafeArea changes → `SafeAreaEdges`)
+
+**Available categories** (from `UITestCategories.cs`):
+`Accessibility`, `ActionSheet`, `ActivityIndicator`, `Animation`, `Border`, `BoxView`, `Brush`, `Button`, `CarouselView`, `Cells`, `CheckBox`, `CollectionView`, `ContextActions`, `DatePicker`, `Dispatcher`, `DisplayAlert`, `DragAndDrop`, `Editor`, `Effects`, `Entry`, `Essentials`, `FlyoutPage`, `Focus`, `Fonts`, `Frame`, `Gestures`, `GraphicsView`, `Image`, `ImageButton`, `IndicatorView`, `InputTransparent`, `IsEnabled`, `IsVisible`, `Label`, `Layout`, `Lifecycle`, `ListView`, `ManualReview`, `Maps`, `Navigation`, `Page`, `Performance`, `Picker`, `ProgressBar`, `RadioButton`, `RefreshView`, `SafeAreaEdges`, `ScrollView`, `SearchBar`, `Shadow`, `Shape`, `Shell`, `Slider`, `SoftInput`, `Stepper`, `Switch`, `SwipeView`, `TabbedPage`, `TableView`, `TimePicker`, `TitleView`, `ToolbarItem`, `Triggers`, `ViewBaseTests`, `VisualStateManager`, `WebView`, `Window`
+
+**Output file:**
+```bash
+mkdir -p CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/uitests
+```
+
+Write `ai-categories.md`:
+```markdown
+Button — PR modifies ButtonHandler click event logic
+Layout — Changes to StackLayout could affect child arrangement
+```
+
+One category per line, followed by ` — ` and a brief justification. Write `NONE` if the PR has no UI impact (e.g., docs-only, build scripts, backend-only changes).
+
+---
+
+## Part B: Code Review (Step 8)
 
 > **Purpose:** Perform deep code analysis using the `code-review` skill to surface correctness issues, safety concerns, and MAUI convention violations BEFORE Try-Fix explores alternatives. These findings guide Try-Fix models toward higher-quality fixes.
 
-> **🚨 Independence-first requirement:** Step 7 MUST be invoked as a **separate sub-agent** (via the `task` tool with `agent_type: "general-purpose"`) so the code-review skill can form its assessment from the code BEFORE reading any PR narrative. The sub-agent receives ONLY the PR number — not the context gathered in Part A. This prevents anchoring bias.
+> **🚨 Independence-first requirement:** Step 8 MUST be invoked as a **separate sub-agent** (via the `task` tool with `agent_type: "general-purpose"`) so the code-review skill can form its assessment from the code BEFORE reading any PR narrative. The sub-agent receives ONLY the PR number — not the context gathered in Part A. This prevents anchoring bias.
 >
-> **Validation constraint:** The Step 7 prompt MUST NOT contain issue titles, root-cause descriptions, bug summaries, or any Part A content — only `PR #XXXXX`. If you find yourself adding context "to help" the sub-agent, you are violating independence-first.
+> **Validation constraint:** The Step 8 prompt MUST NOT contain issue titles, root-cause descriptions, bug summaries, or any Part A content — only `PR #XXXXX`. If you find yourself adding context "to help" the sub-agent, you are violating independence-first.
 
-7. **Invoke the code-review skill as a sub-agent:**
+8. **Invoke the code-review skill as a sub-agent:**
 
    Use the `task` tool to launch a separate agent. The prompt MUST NOT contain issue titles, root-cause descriptions, or any Part A context — only the PR number.
 
@@ -69,7 +98,7 @@ gh pr view XXXXX --json comments --jq '.comments[] | select(.body | contains("Fi
    5. Check CI status
    6. Blast radius, failure-mode probing, and verdict
 
-**If Step 7 fails, times out, or returns malformed output:**
+**If Step 8 fails, times out, or returns malformed output:**
 - Write `pre-flight/code-review.md` with: `## Code Review: SKIPPED\n\nReason: {failure description}`
 - Set verdict to `SKIPPED` in the Code Review Summary section of `content.md`
 - Omit `hints` from Try-Fix prompts (the `hints` field becomes optional when code review is unavailable)
