@@ -999,11 +999,13 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					foreach (var swipeItem in swipeItems)
-					{
-						if (GetIsVisible(swipeItem))
-							ExecuteSwipeItem(swipeItem);
-					}
+					// Execute only the first visible item. In Execute mode, a swipe
+					// triggers a single action — matching WinUI behavior. Executing
+					// multiple items would cause side effects (e.g., visibility changes)
+					// that could trigger unintended additional executions. See #7580.
+					var itemToExecute = swipeItems.FirstOrDefault(GetIsVisible);
+					if (itemToExecute != null)
+						ExecuteSwipeItem(itemToExecute);
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 						ResetSwipe();
