@@ -31,4 +31,9 @@ public partial class ShellFeatureMainPage : ContentPage
 	{
 		this.Window.Page = new ShellControlPage();
 	}
+  
+  private void OnShellNavigationButtonClicked(object sender, EventArgs e)
+	{
+		this.Window.Page = new ShellNavigationControlPage();
+	}
 }

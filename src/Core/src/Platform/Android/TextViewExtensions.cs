@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePadding(this TextView textView, ILabel label)
 		{
-			textView.SetPadding(
+			textView.SetPaddingRelative(
 				(int)textView.ToPixels(label.Padding.Left),
 				(int)textView.ToPixels(label.Padding.Top),
 				(int)textView.ToPixels(label.Padding.Right),

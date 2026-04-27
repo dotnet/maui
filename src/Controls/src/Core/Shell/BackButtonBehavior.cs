@@ -62,13 +62,22 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IconOverrideProperty, value); }
 		}
 
+		// Tracks the value explicitly set by the user (default matches IsEnabledProperty default of true).
+		bool _userDefinedIsEnabled = true;
+		// Tracks the enabled state derived from the command's CanExecute result.
+		bool _commandEnabled = true;
+
 		/// <summary>
 		/// Gets or sets a value indicating whether the back button is enabled. This is a bindable property.
 		/// </summary>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set
+			{
+				_userDefinedIsEnabled = value;
+				SetValue(IsEnabledProperty, _userDefinedIsEnabled && _commandEnabled);
+			}
 		}
 
 		/// <summary>
@@ -89,7 +98,14 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextOverrideProperty, value); }
 		}
 
-		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value); }
+		bool IsEnabledCore
+		{
+			set
+			{
+				_commandEnabled = value;
+				SetValue(IsEnabledProperty, _userDefinedIsEnabled && value);
+			}
+		}
 
 		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
 		{

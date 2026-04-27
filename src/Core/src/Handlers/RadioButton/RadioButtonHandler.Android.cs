@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, View>
 	{
-		static AppCompatRadioButton? GetPlatformRadioButton(IRadioButtonHandler handler) => handler.PlatformView as AppCompatRadioButton;
+		internal static AppCompatRadioButton? GetPlatformRadioButton(IRadioButtonHandler handler) => handler.PlatformView as AppCompatRadioButton;
 
 		public override void PlatformArrange(Graphics.Rect frame)
 		{

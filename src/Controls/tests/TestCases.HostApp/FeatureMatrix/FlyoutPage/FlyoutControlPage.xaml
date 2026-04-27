@@ -7,7 +7,9 @@
             FlyoutLayoutBehavior="{Binding FlyoutLayoutBehavior}"
             IsEnabled="{Binding IsEnabled}"
             FlowDirection="{Binding FlowDirection}"
-            IsVisible="{Binding IsVisible }">
+            IsVisible="{Binding IsVisible }"
+            BackButtonPressed="OnBackButtonPressed"
+            IsPresentedChanged="OnIsPresentedChanged">
 
         <FlyoutPage.ToolbarItems>
                 <ToolbarItem Text="Options"
@@ -15,7 +17,8 @@
         </FlyoutPage.ToolbarItems>
 
         <FlyoutPage.Flyout>
-                <ContentPage x:Name="DefaultFlyout" Title="The Flyout"
+                <ContentPage x:Name="DefaultFlyout"
+                             Title="The Flyout"
                              BackgroundColor="Beige"
                              IconImageSource="{Binding IconImageSource}">
                         <VerticalStackLayout>
@@ -40,8 +43,8 @@
                                 <ContentPage Title="{Binding Title}"
                                              BackgroundColor="{Binding BackgroundColor}"
                                              x:Name="DetailContentPage">
-                                        <StackLayout Padding="10"
-                                                     Spacing="10">
+                                        <StackLayout Padding="5"
+                                                     Spacing="5">
                                                 <Label Text="This is the Detail Page"
                                                        AutomationId="DetailPageLabel"/>
                                                 <Button Text="Set Flyout 1"
@@ -71,7 +74,45 @@
                                                 <Label x:Name="NavigatedFromLabel"
                                                        Text="NavigatedFrom:"
                                                        AutomationId="NavigatedFromLabel"/>
+
+                                                <Grid ColumnDefinitions="Auto,*"
+                                                      RowDefinitions="Auto,Auto,Auto,Auto"
+                                                      RowSpacing="10">
+
+                                                        <Label Text="IsPresentedChanged Event : "
+                                                               Grid.Row="0"
+                                                               Grid.Column="0"/>
+                                                        <Label Text="{Binding IsPresentedChangedText}"
+                                                               AutomationId="IsPresentedChangedLabel"
+                                                               Grid.Row="0"
+                                                               Grid.Column="1"/>
+
+                                                        <Label Text="BackButtonPressed Event : "
+                                                               Grid.Row="1"
+                                                               Grid.Column="0"/>
+                                                        <Label Text="{Binding BackButtonPressedText}"
+                                                               AutomationId="BackButtonPressedLabel"
+                                                               Grid.Row="1"
+                                                               Grid.Column="1"/>
+
+                                                        <Label Text="Handled :"
+                                                               Grid.Row="2"
+                                                               Grid.Column="0"/>
+                                                        <Label Text="{Binding BackButtonHandled}"
+                                                               AutomationId="BackButtonHandledLabel"
+                                                               Grid.Row="2"
+                                                               Grid.Column="1"/>
+
+                                                        <Label Text="Handle Back Button Press"
+                                                               Grid.Row="3"
+                                                               Grid.Column="0"/>
+                                                        <Switch IsToggled="{Binding ShouldHandleBackButton}"
+                                                                AutomationId="HandleBackButtonSwitch"
+                                                                Grid.Row="3"
+                                                                Grid.Column="1"/>
+                                                </Grid>
                                         </StackLayout>
+
                                 </ContentPage>
                         </x:Arguments>
                 </NavigationPage>

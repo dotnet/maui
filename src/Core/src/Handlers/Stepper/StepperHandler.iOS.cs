@@ -69,21 +69,118 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateMinimum(stepper);
+
+			// iOS 26+ fix: Adjust stepValue for boundary handling when minimum changes
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
+			{
+				AdjustStepValueForBoundaries(stepper, platformView);
+			}
 		}
 
 		public static void MapMaximum(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateMaximum(stepper);
+
+			// iOS 26+ fix: Adjust stepValue for boundary handling when maximum changes
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
+			{
+				AdjustStepValueForBoundaries(stepper, platformView);
+			}
 		}
 
 		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateIncrement(stepper);
+
+			// iOS 26+ fix: Adjust stepValue for boundary handling when increment changes
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
+			{
+				AdjustStepValueForBoundaries(stepper, platformView);
+			}
 		}
 
 		public static void MapValue(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateValue(stepper);
+
+			// iOS 26+ fix: Adjust stepValue for boundary handling
+			if (OperatingSystem.IsIOSVersionAtLeast(26) && handler.PlatformView is UIStepper platformView
+				&& NeedsStepValueAdjustment(stepper, platformView))
+			{
+				AdjustStepValueForBoundaries(stepper, platformView);
+			}
+		}
+
+		// Checks whether the step value needs adjustment due to boundary proximity or a previously modified step value.
+		static bool NeedsStepValueAdjustment(IStepper stepper, UIStepper platformView)
+		{
+			const double epsilon = 1e-10;
+			return stepper.Value + stepper.Interval > stepper.Maximum
+				|| stepper.Value - stepper.Interval < stepper.Minimum
+				|| Math.Abs(platformView.StepValue - stepper.Interval) > epsilon;
+		}
+
+		// iOS 26+ Workaround: UIStepper behavior changed to prevent button clicks when increment would exceed boundaries
+		// instead of clamping to boundary values like previous iOS versions. This method dynamically adjusts
+		// the stepValue to match available space to boundaries, allowing users to reach exact min/max values.
+		// Reference: https://developer.apple.com/forums/thread/802452
+		static void AdjustStepValueForBoundaries(IStepper virtualView, UIStepper platformView)
+		{
+			var originalIncrement = virtualView.Interval;
+
+			// Only proceed if we have a valid positive increment
+			if (originalIncrement <= 0)
+			{
+				return;
+			}
+
+			var currentValue = virtualView.Value;
+			var minimum = virtualView.Minimum;
+			var maximum = virtualView.Maximum;
+
+			// Validate range configuration - if invalid, fallback to original increment
+			if (maximum <= minimum)
+			{
+				platformView.StepValue = originalIncrement;
+				return;
+			}
+
+			// Clamp current value to valid range if needed
+			currentValue = Math.Max(minimum, Math.Min(maximum, currentValue));
+
+			var spaceToMax = maximum - currentValue;
+			var spaceToMin = currentValue - minimum;
+
+			// Use small epsilon for floating-point comparison precision
+			const double epsilon = 1e-10;
+
+			// Store current stepValue to minimize property access
+			var currentStepValue = platformView.StepValue;
+
+			// If we're close to boundaries and increment would exceed them,
+			// temporarily reduce stepValue to allow reaching exact boundary
+			if (spaceToMax > epsilon && spaceToMax < originalIncrement && Math.Abs(currentStepValue - spaceToMax) > epsilon)
+			{
+				platformView.StepValue = spaceToMax;
+			}
+			else if (spaceToMin > epsilon && spaceToMin < originalIncrement && Math.Abs(currentStepValue - spaceToMin) > epsilon)
+			{
+				platformView.StepValue = spaceToMin;
+			}
+			else if (Math.Abs(currentStepValue - originalIncrement) > epsilon)
+			{
+				// Restore original increment when not near boundaries
+				platformView.StepValue = originalIncrement;
+			}
+		}
+
+		// TODO: Make public for .NET 11.
+		internal static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
+		{
+			handler.PlatformView?.UpdateFlowDirection(stepper);
 		}
 
 		class StepperProxy
@@ -106,7 +203,42 @@ namespace Microsoft.Maui.Handlers
 			void OnValueChanged(object? sender, EventArgs e)
 			{
 				if (VirtualView is IStepper virtualView && sender is UIStepper platformView)
-					virtualView.Value = platformView.Value;
+				{
+					var oldValue = virtualView.Value;
+					var newValue = platformView.Value;
+
+					// iOS 26+ fix: Adjust stepValue for boundary handling
+					if (OperatingSystem.IsIOSVersionAtLeast(26)
+						&& NeedsStepValueAdjustment(virtualView, platformView))
+					{
+						AdjustStepValueForBoundaries(virtualView, platformView);
+					}
+
+					// iOS 26+ fix: Correct partial steps caused by boundary adjustment.
+					// If the step was partial (stepValue was reduced for a boundary) but the
+					// full step still fits within [min, max], it was NOT an intentional
+					// boundary reach — correct to the full increment.
+					if (OperatingSystem.IsIOSVersionAtLeast(26))
+					{
+						const double epsilon = 1e-10;
+						var actualStep = newValue - oldValue;
+						var interval = virtualView.Interval;
+
+						if (Math.Abs(actualStep) > epsilon
+							&& Math.Abs(Math.Abs(actualStep) - interval) > epsilon)
+						{
+							var fullStep = oldValue + (actualStep > 0 ? interval : -interval);
+							if (fullStep >= virtualView.Minimum && fullStep <= virtualView.Maximum)
+							{
+								platformView.Value = fullStep;
+								platformView.StepValue = interval;
+								newValue = fullStep;
+							}
+						}
+					}
+
+					virtualView.Value = newValue;
+				}
 			}
 		}
 	}
