@@ -117,7 +117,7 @@ Each sub-agent prompt must include:
 Collect findings from all 3 sub-agents and apply consensus. Two findings "agree" if they identify the **same root cause** in the **same file**, even if they cite different lines or use different wording. Group by root cause, not by exact line number.
 
 1. **3/3 agree** on a finding → include immediately
-2. **2/3 agree** → include with median severity
+2. **2/3 agree** → include with the **lower** of the two severity levels (e.g., 🔴+🟢 → 🟡, 🔴+🟡 → 🟡, 🟡+🟢 → 🟢)
 3. **Only 1/3 flagged** → dispatch **exactly 2** follow-up sub-agents (the other 2 models that didn't flag it) asking: "Reviewer X found this issue: [finding]. Do you agree or disagree? Explain why." Do NOT dispatch all 3 models — only the 2 that didn't flag it.
    - If 2+ now agree → include
    - If still 1/3 → discard (note as "discarded — single reviewer only")
