@@ -325,6 +325,7 @@
     <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
     <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
     <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
+    <MauiCssEnabled Condition="'$(MauiCssEnabled)' == '' and '$(EnableDefaultCssItems)' != 'true'">false</MauiCssEnabled>
     <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
     <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
 
@@ -365,6 +366,10 @@
                                     Condition="'$(MauiHybridWebViewSupported)' != ''"
                                     Value="$(MauiHybridWebViewSupported)"
                                     Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCssEnabled"
+                                    Condition="'$(MauiCssEnabled)' != ''"
+                                    Value="$(MauiCssEnabled)"
+                                    Trim="true" />
     <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
                                     Condition="'$(MauiNamescopesSupported)' != ''"
                                     Value="$(MauiNamescopesSupported)"
@@ -384,17 +389,6 @@
   </ItemGroup>
 
   <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
-    <!-- MauiCssEnabled depends on @(MauiCss) item list which cannot be evaluated
-         in a static PropertyGroup condition (MSB4099). -->
-    <PropertyGroup Condition="'$(PublishAot)' == 'true' or '$(TrimMode)' == 'full'">
-      <MauiCssEnabled Condition="'$(MauiCssEnabled)' == '' and '@(MauiCss->Count())' == '0'">false</MauiCssEnabled>
-    </PropertyGroup>
-    <ItemGroup>
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCssEnabled"
-                                      Condition="'$(MauiCssEnabled)' != ''"
-                                      Value="$(MauiCssEnabled)"
-                                      Trim="true" />
-    </ItemGroup>
     <!-- Validate _EnableMauiAspire usage - warn when user manually sets it in optimized builds where it conflicts with intended behavior -->
     <Warning
       Code="MA002"
