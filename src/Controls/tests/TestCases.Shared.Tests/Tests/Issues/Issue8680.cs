@@ -1,4 +1,4 @@
-#if ANDROID
+#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST // https://github.com/dotnet/maui/issues/8296
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,7 +23,7 @@ public class Issue8680 : _IssuesUITest
 		App.WaitForElement("InterceptPageLabel");
 
 		// Press the device back button — should be intercepted (page stays)
-		App.Back();
+		App.TapBackArrow();
 
 		// The page should still be visible because OnBackButtonPressed returned true
 		App.WaitForElement("StatusLabel");
