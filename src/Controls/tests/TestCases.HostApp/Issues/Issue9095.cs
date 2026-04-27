@@ -1,8 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 9095,
-	"Shell toolbar back button doesn't fire Shell.OnBackButtonPressed on Android and iOS",
-	PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
+	"Shell toolbar back button doesn't fire Shell.OnBackButtonPressed on Android and iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue9095 : TestShell
 {
 	internal static bool BackButtonPressedCalledReturnFalse;

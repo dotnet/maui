@@ -233,13 +233,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			try
 			{
-				// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
-				// are invoked consistently for both the navigation bar back button and the
-				// hardware/system back button (fixes dotnet/maui#9095).
-				if (_shell?.SendBackButtonPressed() == true)
-				{
+				// Call OnBackButtonPressed to allow the page to intercept navigation
+				if (Page?.SendBackButtonPressed() == true)
 					return;
-				}
 
 				await Page.Navigation.PopAsync();
 			}
