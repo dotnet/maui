@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // On Windows, Shell flyout-item taps are not working in this scenario, so this issue test is excluded.
+#if TEST_FAILS_ON_WINDOWS // On Windows, Shell custom flyout-item taps are not working in this scenario, so this issue test is excluded.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
