@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 			}
 
-			return new DelegateAlertSubscription(alertHandler, actionSheetHandler, promptHandler, CreateSubscription(context));
+			return new DelegateAlertSubscription(alertHandler, actionSheetHandler, promptHandler, () => CreateSubscription(context));
 		}
 
 		public void Unsubscribe() =>
