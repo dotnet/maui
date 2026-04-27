@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					UpdateDefaultSupplementaryView(defaultCell, elementKind);
 					break;
 				case TemplatedCell2 templatedCell:
+					templatedCell.ScrollDirection = ScrollDirection;
 					UpdateTemplatedSupplementaryView(templatedCell, elementKind);
 					break;
 			}
