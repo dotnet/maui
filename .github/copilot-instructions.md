@@ -103,15 +103,9 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 ### Investigating CI Failures
 
-**🚨 ALWAYS use the `ci-analysis` skill when investigating CI failures or assessing merge readiness.** Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+**🚨 ALWAYS use the `azdo-build-investigator` skill when investigating CI failures or assessing merge readiness.** It provides MAUI-specific context (correct pipeline names, XHarness quirks, binlog guidance) and internally invokes the `ci-analysis` skill for the core investigation workflow.
 
-The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` plugin) aims to provide:
-- **Helix log retrieval** — downloads and parses actual test failure messages from Helix work items
-- **Known issue matching** — automatically correlates failures against `Known Build Error` labeled issues
-- **Cross-build aggregation** — aggregates relevant CI builds/checks (including maui-pr, maui-pr-uitests, maui-pr-devicetests) in one investigation
-- **Test result details** — reports actual failing test names and error messages, not just job-level pass/fail
-
-> ⚠️ **Device test caveat:** `maui-pr-devicetests` uses XHarness which exits 0 even when tests fail — the ADO job shows ✅ "Succeeded" but failures are hidden in Helix work items. If `ci-analysis` reports device tests as passing but failures are suspected (or the `s/agent-gate-failed` label is present), cross-check Helix `ResultSummaryByBuild`. See `azdo-build-investigator/SKILL.md` for details.
+Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
 
 **When to use it:**
 - "How does CI look?" / "Is CI green?" / "Can we merge?"
@@ -119,11 +113,11 @@ The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` pl
 - "Is this PR safe to merge?" / "Any CI concerns?"
 - After any PR push to verify the build
 
-**Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill. For MAUI-specific build quirks and binlog analysis, see `azdo-build-investigator`.
+**Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill.
 
-**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", always query the **actual AzDO test results** (via `ci-analysis` for failing tests, or the AzDO test runs API to search all results including passing tests) to find the test by name. Do NOT infer whether a test ran by inspecting code attributes — class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", query the **actual AzDO test results** — do NOT infer whether a test ran by inspecting code attributes. Class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
 
-**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines instead of using `ci-analysis`. Use `ci-analysis` first; manual API queries only as a fallback. Manual approaches miss Helix work item details, don't cross-reference known issues, and don't aggregate test results across runs — leading to incomplete or incorrect CI assessments.
+**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.
 
 ### Code Formatting
 
