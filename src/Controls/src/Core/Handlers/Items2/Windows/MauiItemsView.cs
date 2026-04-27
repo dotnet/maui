@@ -172,6 +172,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		ApplyLayoutOrientation();
 	}
 
+	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>
+	internal bool IsHorizontalLayout => _isHorizontalLayout;
+
 	/// <summary>Sets the layout orientation and updates the visual tree accordingly.</summary>
 	internal void SetLayoutOrientation(bool isHorizontal)
 	{
