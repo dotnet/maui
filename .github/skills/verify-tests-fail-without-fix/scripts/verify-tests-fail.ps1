@@ -1259,7 +1259,7 @@ function Write-MarkdownReport {
         $lines += "</details>"
     }
 
-    # ── Failure details (only if something went wrong) ──
+    # ── Failure details (shown directly — not collapsed) ──
     $failureLines = @()
     foreach ($r in $WithoutFixResultsList) {
         if ($r.Passed) {
@@ -1272,7 +1272,7 @@ function Write-MarkdownReport {
             $failureLines += "- ❌ **$($r.TestName)** FAILED with fix (should pass)"
             if ($r.FailureReason) { $failureLines += "  - ``$($r.FailureReason)``" }
             if ($r.FailureMessage) {
-                $msg = if ($r.FailureMessage.Length -gt 200) { $r.FailureMessage.Substring(0, 200) + "..." } else { $r.FailureMessage }
+                $msg = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
                 $failureLines += "  - ``$msg``"
             }
         }
@@ -1281,12 +1281,9 @@ function Write-MarkdownReport {
 
     if ($failureLines.Count -gt 0) {
         $lines += ""
-        $lines += "<details>"
-        $lines += "<summary>⚠️ Issues found</summary>"
+        $lines += "#### ⚠️ Failure Details"
         $lines += ""
         $lines += ($failureLines -join "`n")
-        $lines += ""
-        $lines += "</details>"
     }
 
     # ── Fix files (collapsible) ──
