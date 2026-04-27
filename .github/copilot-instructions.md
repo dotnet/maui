@@ -103,7 +103,7 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 ### Investigating CI Failures
 
-**🚨 ALWAYS use the `ci-analysis` skill when investigating CI failures or assessing merge readiness.** Do NOT manually query AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+**🚨 ALWAYS use the `ci-analysis` skill when investigating CI failures or assessing merge readiness.** Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
 
 The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` plugin) aims to provide:
 - **Helix log retrieval** — downloads and parses actual test failure messages from Helix work items
