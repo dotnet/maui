@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 31177, "ScrollView.ScrollToAsync doesn't work when called from Page.OnAppearing", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 31177, "ScrollView ScrollToAsync does not work when called from Page OnAppearing", PlatformAffected.All)]
 public class Issue31177 : ContentPage
 {
 	readonly ScrollView _scrollView;
@@ -14,7 +14,6 @@ public class Issue31177 : ContentPage
 			AutomationId = "StatusLabel"
 		};
 
-		// Tall content that forces scrolling; the success label is below the fold
 		var tallSpacer = new BoxView
 		{
 			HeightRequest = 2000,
@@ -59,7 +58,6 @@ public class Issue31177 : ContentPage
 		base.OnAppearing();
 
 		// This is the scenario from the issue: ScrollToAsync called from OnAppearing
-		// On iOS, this would fail because ContentSize was empty and the pending scroll was never executed.
 		await _scrollView.ScrollToAsync(0, 2000, false);
 		_statusLabel.Text = "Scrolled";
 	}
