@@ -1,3 +1,4 @@
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,20 +22,22 @@ public class Issue35119 : _IssuesUITest
 		// Alert Dialog
 		App.Tap("ShowAlertButton");
 		App.WaitForElement("Alert Title");
-		VerifyScreenshotOrSetException(ref exception, "AlertDialog", retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshotOrSetException(ref exception, "Material3_AlertDialog", retryTimeout: TimeSpan.FromSeconds(2));
 		App.TapDisplayAlertButton("OK");
 
 		// Action Sheet
+		App.WaitForElement("ShowActionSheetButton");
 		App.Tap("ShowActionSheetButton");
 		App.WaitForElement("Action Sheet Title");
-		VerifyScreenshotOrSetException(ref exception, "ActionSheet", retryTimeout: TimeSpan.FromSeconds(2));
-		App.TapDisplayAlertButton("Cancel", buttonIndex: 1);
+		VerifyScreenshotOrSetException(ref exception, "Material3_ActionSheet", retryTimeout: TimeSpan.FromSeconds(2));
+		App.TapDisplayAlertButton("Cancel");
 
 		// Prompt Dialog
+		App.WaitForElement("ShowPromptButton");
 		App.Tap("ShowPromptButton");
 		App.WaitForElement("Prompt Title");
 		App.DismissKeyboard();
-		VerifyScreenshotOrSetException(ref exception, "PromptDialog", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshotOrSetException(ref exception, "Material3_PromptDialog", tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		App.TapDisplayAlertButton("Cancel");
 
 		if (exception is not null)
@@ -43,3 +46,4 @@ public class Issue35119 : _IssuesUITest
 		}
 	}
 }
+#endif

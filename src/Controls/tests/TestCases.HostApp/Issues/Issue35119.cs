@@ -5,7 +5,7 @@ public class Issue35119 : ContentPage
 {
 	public Issue35119()
 	{
-		var resultLabel = new Label
+		var instructionLabel = new Label
 		{
 			Text = "Tap any button to show a dialog. When Material 3 is enabled, dialogs should render with M3 styling (rounded corners, tonal surface, M3 typography).",
 			AutomationId = "InstructionLabel",
@@ -66,7 +66,7 @@ public class Issue35119 : ContentPage
 			Padding = new Thickness(0, 20),
 			Children =
 			{
-				resultLabel,
+				instructionLabel,
 				alertButton,
 				actionSheetButton,
 				promptButton,
