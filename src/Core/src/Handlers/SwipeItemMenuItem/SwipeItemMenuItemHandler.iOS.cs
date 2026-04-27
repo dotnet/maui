@@ -88,9 +88,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			swipeView?.UpdateIsVisibleSwipeItem(view);
-
+			// Update the native view's Hidden state BEFORE calling UpdateIsVisibleSwipeItem,
+			// so LayoutSwipeItems can use the correct Hidden state when repositioning items.
 			handler.PlatformView.UpdateVisibility(view.Visibility);
+
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter

@@ -312,6 +312,7 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				UIView swipeItem = item.ToPlatform(Element.Handler.MauiContext);
+				swipeItem.Hidden = !GetIsVisible(item);
 				_actionView.AddSubview(swipeItem);
 				_swipeItems.Add(item, swipeItem);
 			}
