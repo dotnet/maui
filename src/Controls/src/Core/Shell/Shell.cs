@@ -1329,21 +1329,27 @@ namespace Microsoft.Maui.Controls
 
 			if (Application.Current is not null)
 			{
+				Color light;
+				Color dark;
+
 				if (OperatingSystem.IsAndroid() && RuntimeFeature.IsMaterial3Enabled)
 				{
-					this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-						new AppThemeBinding
-						{
-							Light = Color.FromArgb("#FEF7FF"),
-							Dark = Color.FromArgb("#141218"),
-							Mode = BindingMode.OneWay
-						});
+					light = Color.FromArgb("#FEF7FF");
+					dark = Color.FromArgb("#141218");
 				}
 				else
 				{
-					this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-						new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
+					light = Colors.White;
+					dark = Colors.Black;
 				}
+
+				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
+					new AppThemeBinding
+					{
+						Light = light,
+						Dark = dark,
+						Mode = BindingMode.OneWay
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
