@@ -1,0 +1,24 @@
+// Redirect Maven Central and Google Maven to Azure Artifacts feed
+// for CFSClean network isolation compliance.
+// See: https://aka.ms/1es/netiso/CFS
+allprojects {
+    repositories {
+        def azureFeed = findByName("dotnet-public-maven") ?: maven {
+            url "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1"
+            name "dotnet-public-maven"
+        }
+
+        all { ArtifactRepository repo ->
+            if (repo != azureFeed &&
+                repo instanceof MavenArtifactRepository &&
+                (repo.url.toString().contains(".maven.org") ||
+                    repo.url.toString().contains("maven.apache.org") ||
+                    repo.url.toString().contains("maven.google.com") ||
+                    repo.url.toString().contains("dl.google.com") ||
+                    repo.url.toString().contains("plugins.gradle.org"))) {
+                    project.logger.warn "Replacing repository ${repo.url} with Azure Artifacts feed ${azureFeed.url}."
+                    remove repo
+                }
+        }
+    }
+}
