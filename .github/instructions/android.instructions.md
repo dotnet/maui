@@ -126,30 +126,8 @@ protected override void DisconnectHandler(RecyclerView platformView)
 | Listener not working | Check lifecycle (register/unregister) |
 | Memory leak | Ensure Dispose() called on Java.Lang.Object |
 | Threading error | Use `platformView.Post()` for UI thread |
-| Gradle 401 / Maven dependency failure | Run `./eng/ingest-maven-deps.sh` (see below) |
+| Gradle 401 / Maven dependency failure | Run `./eng/ingest-maven-deps.sh` — see `copilot-instructions.md` |
 
 ## Gradle / Maven Dependency Failures
 
-### CFSClean Network Isolation
-
-The official CI build runs under CFSClean network isolation which blocks direct access to Maven Central (`repo.maven.apache.org`). All Gradle/Maven dependencies are resolved through the `dotnet-public-maven` Azure Artifacts feed instead.
-
-**Symptom:** Build fails with errors like:
-```
-error XAGRDL0000: Could not resolve com.android.tools.build:gradle:8.11.1
-  > Could not GET 'https://pkgs.dev.azure.com/.../maven/v1/...'
-  > Received status code 401: Unauthorized - No local versions of package
-```
-
-**Cause:** A new or updated Maven package hasn't been ingested into the `dotnet-public-maven` feed yet. The feed requires an authenticated first-time pull from upstream Maven Central.
-
-**Fix:** Run the ingestion script locally:
-```bash
-./eng/ingest-maven-deps.sh
-```
-
-This acquires an auth token, runs the Gradle build with `--refresh-dependencies`, and uses `curl` to force-ingest any packages that Gradle's credential provider can't reach.
-
-**When to run:** After adding or updating any dependency in `src/Core/AndroidNative/build.gradle` or `settings.gradle`.
-
-**Important:** Do NOT upgrade Gradle past 8.x — the Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (see `dotnet/android#10738`).
+CI uses CFSClean which blocks Maven Central. All deps go through the `dotnet-public-maven` Azure Artifacts feed. If a new package hasn't been ingested, CI fails with `XAGRDL0000` / 401. Run `./eng/ingest-maven-deps.sh` locally to fix. Do NOT upgrade Gradle past 8.x (`dotnet/android#10738`).

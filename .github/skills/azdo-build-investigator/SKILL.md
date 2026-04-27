@@ -73,8 +73,6 @@ If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlo
 
 ### Gradle / Maven / CFSClean Failures
 
-The official build (`dotnet-maui`, def 1095, `dnceng/internal`) runs under CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven deps resolve through the `dotnet-public-maven` Azure Artifacts feed.
-
 **Error signatures:**
 ```
 error XAGRDL0000: Could not resolve com.android.tools.build:gradle:8.11.1
@@ -85,14 +83,9 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
   > Unauthorized - Please provide authentication to save package from upstream
 ```
 
-**Root cause:** A Maven package hasn't been ingested into the `dotnet-public-maven` feed yet. The credential provider plugin skips auth in CI (`TF_BUILD=True`), so new packages must be pre-ingested locally.
-
-**Fix:** Tell the user to run locally:
-```bash
-./eng/ingest-maven-deps.sh
-```
+**Fix:** Tell the user to run `./eng/ingest-maven-deps.sh` locally to pre-ingest packages into the feed.
 
 **Do NOT:**
-- Suggest removing CFSClean from `ci-official.yml` — it's a security compliance requirement
-- Upgrade Gradle past 8.x — Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`)
-- Add `mavenCentral()` or `google()` back to `settings.gradle` or `build.gradle` — use the Azure Artifacts feed
+- Remove CFSClean from `ci-official.yml` — security compliance requirement
+- Upgrade Gradle past 8.x — `dotnet/android#10738`
+- Add `mavenCentral()` or `google()` back — use the Azure Artifacts feed
