@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class ItemsViewDelegator2<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout
+	public class ItemsViewDelegator2<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout, IScrollTrackingDelegator
 		where TItemsView : ItemsView
 		where TViewController : ItemsViewController2<TItemsView>
 	{
@@ -25,6 +25,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsViewLayout = itemsViewLayout;
 			_viewController = new(ItemsViewController2);
+		}
+
+		void IScrollTrackingDelegator.ResetScrollTracking()
+		{
+			PreviousHorizontalOffset = 0;
+			PreviousVerticalOffset = 0;
 		}
 
 		public override void Scrolled(UIScrollView scrollView)
