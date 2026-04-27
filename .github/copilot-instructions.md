@@ -111,7 +111,7 @@ The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` pl
 - **Cross-build aggregation** — aggregates relevant CI builds/checks (including maui-pr, maui-pr-uitests, maui-pr-devicetests) in one investigation
 - **Test result details** — reports actual failing test names and error messages, not just job-level pass/fail
 
-> ⚠️ **Device test caveat:** `maui-pr-devicetests` uses XHarness which exits 0 even when tests fail — the ADO job shows ✅ "Succeeded" but failures are hidden in Helix work items. If `ci-analysis` reports device tests as passing but failures are suspected (or the `s/agent-gate-failed` label is present), cross-check Helix `ResultSummaryByBuild`. See `azdo-build-investigator/SKILL.md` for details.
+> ⚠️ **Device test caveat:** `maui-pr-devicetests` uses XHarness which exits 0 even when tests fail — the ADO job shows ✅ "Succeeded" but failures are hidden in Helix work items. If `ci-analysis` reports device tests as passing but failures are suspected (or the `s/agent-gate-failed` PR label is present — check via `gh pr view --json labels`), cross-check Helix `ResultSummaryByBuild`. See `azdo-build-investigator/SKILL.md` for details.
 
 **When to use it:**
 - "How does CI look?" / "Is CI green?" / "Can we merge?"
@@ -123,7 +123,7 @@ The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` pl
 
 **Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", always query the **actual AzDO test results** (via `ci-analysis` or AzDO test runs API) to find the test by name. Do NOT infer whether a test ran by inspecting code attributes — class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
 
-**Anti-pattern:** Manually querying the AzDO REST API and writing ad-hoc scripts to parse build timelines. Use `ci-analysis` first; manual API queries only as a fallback. Manual approaches miss Helix work item details, don't cross-reference known issues, and don't aggregate test results across runs — leading to incomplete or incorrect CI assessments.
+**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines instead of using `ci-analysis`. Use `ci-analysis` first; manual API queries only as a fallback. Manual approaches miss Helix work item details, don't cross-reference known issues, and don't aggregate test results across runs — leading to incomplete or incorrect CI assessments.
 
 ### Code Formatting
 
@@ -328,7 +328,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 9. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
    - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
-   - **Used by**: When investigating CI failures
+   - **Used by**: `ci-analysis` and `azdo-build-investigator` internally. Prefer those skills for end-to-end CI investigation.
 
 10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
