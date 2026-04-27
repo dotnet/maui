@@ -150,6 +150,20 @@ namespace Microsoft.Maui.UnitTests.Extensions
 		}
 
 		[Fact]
+		public async Task ViewCaptureAsync_HookReturnsNullTask_ReturnsNull()
+		{
+			var services = new ServiceCollection();
+			services.AddKeyedSingleton<Func<object, Task<IScreenshotResult?>>>(
+				"Microsoft.Maui.ViewCapture",
+				(_, _) => _ => null!);
+
+			var (view, _) = CreateViewWithHandler(services.BuildServiceProvider());
+
+			var result = await view.CaptureAsync();
+			Assert.Null(result);
+		}
+
+		[Fact]
 		public async Task WindowCaptureAsync_NullWindow_ReturnsNull()
 		{
 			IWindow? window = null;

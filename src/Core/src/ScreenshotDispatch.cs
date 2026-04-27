@@ -19,8 +19,8 @@ namespace Microsoft.Maui
 	/// the well-known keys defined on this type. The lambda receives the handler's
 	/// <see cref="IElementHandler.PlatformView"/> object and returns a task whose
 	/// result is the screenshot (or <see langword="null"/> if capture is not
-	/// supported for that view). The returned <see cref="Task{TResult}"/> itself
-	/// is expected to be non-null.
+	/// supported for that view). A hook that returns a <see langword="null"/>
+	/// task is treated as unsupported and produces a <see langword="null"/> result.
 	/// This contract intentionally uses only BCL types so it can ship without any
 	/// MAUI public API addition.
 	/// </remarks>
@@ -45,14 +45,12 @@ namespace Microsoft.Maui
 			if (handler!.MauiContext?.Services is not IKeyedServiceProvider keyedProvider)
 				return Task.FromResult<IScreenshotResult?>(null);
 
-			var capture = keyedProvider.GetKeyedService(
-				typeof(Func<object, Task<IScreenshotResult?>>),
-				serviceKey) as Func<object, Task<IScreenshotResult?>>;
+			var capture = keyedProvider.GetKeyedService<Func<object, Task<IScreenshotResult?>>>(serviceKey);
 
 			if (capture is null)
 				return Task.FromResult<IScreenshotResult?>(null);
 
-			return capture(platformView);
+			return capture(platformView) ?? Task.FromResult<IScreenshotResult?>(null);
 		}
 	}
 }
