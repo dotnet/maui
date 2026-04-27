@@ -184,13 +184,34 @@ namespace Microsoft.Maui.Controls
 		void OnTabbedPageAppearing(object? sender, EventArgs e)
 		{
 			if (_navigationView != null)
+			{
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+
+				// Restore the correct selection when this TabbedPage re-appears (e.g. after
+				// navigating back from another TabbedPage pushed onto the NavigationPage stack).
+				if (_navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+				{
+					foreach (var item in items)
+					{
+						if (item.Data == CurrentPage)
+						{
+							_navigationView.SelectedItem = item;
+							break;
+						}
+					}
+				}
+			}
 		}
 
 		void OnTabbedPageDisappearing(object? sender, EventArgs e)
 		{
 			if (_navigationView != null)
+			{
+				// Clear stale selection so the NavigationView does not ghost-show this
+				// TabbedPage's selected tab when another TabbedPage takes over the view.
+				_navigationView.SelectedItem = null;
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			}
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
