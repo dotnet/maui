@@ -121,7 +121,7 @@ The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` pl
 
 **Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill. For MAUI-specific build quirks and binlog analysis, see `azdo-build-investigator`.
 
-**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", always query the **actual AzDO test results** (via `ci-analysis` or AzDO test runs API) to find the test by name. Do NOT infer whether a test ran by inspecting code attributes — class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", always query the **actual AzDO test results** (via `ci-analysis` for failing tests, or the AzDO test runs API to search all results including passing tests) to find the test by name. Do NOT infer whether a test ran by inspecting code attributes — class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
 
 **Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines instead of using `ci-analysis`. Use `ci-analysis` first; manual API queries only as a fallback. Manual approaches miss Helix work item details, don't cross-reference known issues, and don't aggregate test results across runs — leading to incomplete or incorrect CI assessments.
 
@@ -325,10 +325,10 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-9. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
+9. **pr-build-status**
    - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
    - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
-   - **Used by**: `ci-analysis` and `azdo-build-investigator` internally. Prefer those skills for end-to-end CI investigation.
+   - **Note**: ⚠️ This skill does not currently have a SKILL.md. Use `ci-analysis` or `azdo-build-investigator` for CI investigation.
 
 10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
