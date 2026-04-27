@@ -1037,6 +1037,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
+			searchBar.Text = SearchHandler.Query;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
