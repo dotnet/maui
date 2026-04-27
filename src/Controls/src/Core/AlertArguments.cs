@@ -9,16 +9,16 @@ namespace Microsoft.Maui.Controls.Internals
 	/// For internal use only. This API can be changed or removed without notice at any time.
 	/// <para>
 	/// Third-party platform backends may supply a custom alert implementation by registering a
-	/// <see cref="System.Func{T1, T2, TResult}"/> of
+	/// keyed <see cref="System.Func{T1, T2, TResult}"/> of
 	/// <c>Func&lt;Microsoft.Maui.Controls.Page, AlertArguments, System.Threading.Tasks.Task&gt;</c>
-	/// in the application's <see cref="System.IServiceProvider"/>. The delegate is expected to call
-	/// <see cref="SetResult(bool)"/> when the user has made a choice.
+	/// in the application's <see cref="System.IServiceProvider"/> with the service key
+	/// <c>Microsoft.Maui.Controls.DisplayAlert</c>. The delegate is expected to call
+	/// <see cref="SetResult(bool)"/> when the user has made a choice. Unkeyed delegates are not
+	/// considered by this convention.
 	/// </para>
 	/// <para>
-	/// Note: this convention uses an open <see cref="System.Func{T1, T2, TResult}"/> shape as the
-	/// service key. Only register this delegate type for MAUI alert handling; registering the same
-	/// closed generic for any other purpose in the same service collection will cause it to be
-	/// consumed as an alert handler.
+	/// Note: the keyed registration is reserved for MAUI alert handling. Do not reuse this service
+	/// key for unrelated services in the same service collection.
 	/// </para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]

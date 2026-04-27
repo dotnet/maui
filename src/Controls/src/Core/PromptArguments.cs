@@ -7,15 +7,15 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <summary>Arguments for a prompt dialog.</summary>
 	/// <remarks>
 	/// Third-party platform backends may supply a custom prompt implementation by registering a
-	/// <see cref="System.Func{T1, T2, TResult}"/> of
+	/// keyed <see cref="System.Func{T1, T2, TResult}"/> of
 	/// <c>Func&lt;Microsoft.Maui.Controls.Page, PromptArguments, System.Threading.Tasks.Task&gt;</c>
-	/// in the application's <see cref="System.IServiceProvider"/>. The delegate is expected to call
-	/// <see cref="SetResult(string)"/> when the user has submitted or cancelled the prompt.
+	/// in the application's <see cref="System.IServiceProvider"/> with the service key
+	/// <c>Microsoft.Maui.Controls.DisplayPrompt</c>. The delegate is expected to call
+	/// <see cref="SetResult(string)"/> when the user has submitted or cancelled the prompt. Unkeyed
+	/// delegates are not considered by this convention.
 	/// <para>
-	/// Note: this convention uses an open <see cref="System.Func{T1, T2, TResult}"/> shape as the
-	/// service key. Only register this delegate type for MAUI prompt handling; registering the same
-	/// closed generic for any other purpose in the same service collection will cause it to be
-	/// consumed as a prompt handler.
+	/// Note: the keyed registration is reserved for MAUI prompt handling. Do not reuse this service
+	/// key for unrelated services in the same service collection.
 	/// </para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]

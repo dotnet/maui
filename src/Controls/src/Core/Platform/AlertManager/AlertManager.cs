@@ -8,6 +8,10 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
+		internal const string DisplayAlertServiceKey = "Microsoft.Maui.Controls.DisplayAlert";
+		internal const string DisplayActionSheetServiceKey = "Microsoft.Maui.Controls.DisplayActionSheet";
+		internal const string DisplayPromptServiceKey = "Microsoft.Maui.Controls.DisplayPrompt";
+
 		readonly Window _window;
 
 		IAlertManagerSubscription? _subscription;
@@ -50,20 +54,26 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		// Looks for per-operation dialog delegates registered in DI using ONLY already-public types:
+		// Looks for per-operation keyed dialog delegates registered in DI using ONLY already-public types:
 		//   Func<Page, AlertArguments, Task>
 		//   Func<Page, ActionSheetArguments, Task>
 		//   Func<Page, PromptArguments, Task>
 		// This lets third-party backends supply alert/dialog implementations without MAUI having to
-		// expose IAlertManagerSubscription publicly. Any delegate that isn't registered falls through
-		// to the platform default (so backends can override only what they care about).
+		// expose IAlertManagerSubscription publicly. Keyed registrations make the intent explicit and
+		// avoid consuming unrelated Func<> registrations. Any delegate that isn't registered falls
+		// through to the platform default (so backends can override only what they care about).
 		IAlertManagerSubscription? TryCreateDelegateSubscription(IMauiContext context)
 		{
 			var services = context.Services;
 
-			var alertHandler = services.GetService<Func<Page, AlertArguments, Task>>();
-			var actionSheetHandler = services.GetService<Func<Page, ActionSheetArguments, Task>>();
-			var promptHandler = services.GetService<Func<Page, PromptArguments, Task>>();
+			if (services is not IKeyedServiceProvider keyedServices)
+			{
+				return null;
+			}
+
+			var alertHandler = keyedServices.GetKeyedService<Func<Page, AlertArguments, Task>>(DisplayAlertServiceKey);
+			var actionSheetHandler = keyedServices.GetKeyedService<Func<Page, ActionSheetArguments, Task>>(DisplayActionSheetServiceKey);
+			var promptHandler = keyedServices.GetKeyedService<Func<Page, PromptArguments, Task>>(DisplayPromptServiceKey);
 
 			if (alertHandler is null && actionSheetHandler is null && promptHandler is null)
 			{
