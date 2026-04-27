@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public Geocoding_Tests()
 		{
 #if WINDOWS_UWP || WINDOWS
-			ApplicationModel.Platform.MapServiceToken = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
+			var mapToken = Environment.GetEnvironmentVariable("BING_MAPS_API_KEY");
+			if (!string.IsNullOrEmpty(mapToken))
+				ApplicationModel.Platform.MapServiceToken = mapToken;
 #endif
 		}
 

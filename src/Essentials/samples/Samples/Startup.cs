@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
@@ -19,7 +20,9 @@ namespace Samples
 				{
 					essentials.UseVersionTracking();
 #if WINDOWS
-					essentials.UseMapServiceToken("RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l");
+					var mapToken = Environment.GetEnvironmentVariable("BING_MAPS_API_KEY");
+					if (!string.IsNullOrEmpty(mapToken))
+						essentials.UseMapServiceToken(mapToken);
 #endif
 					essentials.AddAppAction("app_info", "App Info", icon: "app_info_action_icon");
 					essentials.AddAppAction("battery_info", "Battery Info");
