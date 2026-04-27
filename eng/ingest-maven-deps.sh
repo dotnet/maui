@@ -33,6 +33,7 @@
 #
 # Prerequisites:
 #   - JDK 17+
+#   - python3 (for JSON parsing)
 #   - .NET Azure Artifacts credential provider installed
 #     (https://github.com/microsoft/artifacts-credprovider#installation)
 #
