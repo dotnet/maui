@@ -14,9 +14,12 @@ namespace Microsoft.Maui.Controls.Platform
 	// This is the internal backing for the "delegate convention" extensibility seam. Consumers
 	// register any of the following in their MauiAppBuilder.Services (all types are already public):
 	//
-	//     services.AddSingleton<Func<Page, AlertArguments, Task>>(ShowAlertAsync);
-	//     services.AddSingleton<Func<Page, ActionSheetArguments, Task>>(ShowActionSheetAsync);
-	//     services.AddSingleton<Func<Page, PromptArguments, Task>>(ShowPromptAsync);
+	//     services.AddKeyedSingleton<Func<Page, AlertArguments, Task>>(
+	//         AlertManager.DisplayAlertServiceKey, ShowAlertAsync);
+	//     services.AddKeyedSingleton<Func<Page, ActionSheetArguments, Task>>(
+	//         AlertManager.DisplayActionSheetServiceKey, ShowActionSheetAsync);
+	//     services.AddKeyedSingleton<Func<Page, PromptArguments, Task>>(
+	//         AlertManager.DisplayPromptServiceKey, ShowPromptAsync);
 	//
 	// The delegate is expected to complete the argument's TaskCompletionSource via SetResult(...).
 	// If the delegate's returned Task faults or is cancelled, the exception / cancellation is
