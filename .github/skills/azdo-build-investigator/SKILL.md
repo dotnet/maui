@@ -66,6 +66,33 @@ If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlo
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
+| `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see below |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+
+### Gradle / Maven / CFSClean Failures
+
+The official build (`dotnet-maui`, def 1095, `dnceng/internal`) runs under CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven deps resolve through the `dotnet-public-maven` Azure Artifacts feed.
+
+**Error signatures:**
+```
+error XAGRDL0000: Could not resolve com.android.tools.build:gradle:8.11.1
+  > Received status code 401: Unauthorized - No local versions of package
+```
+```
+error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
+  > Unauthorized - Please provide authentication to save package from upstream
+```
+
+**Root cause:** A Maven package hasn't been ingested into the `dotnet-public-maven` feed yet. The credential provider plugin skips auth in CI (`TF_BUILD=True`), so new packages must be pre-ingested locally.
+
+**Fix:** Tell the user to run locally:
+```bash
+./eng/ingest-maven-deps.sh
+```
+
+**Do NOT:**
+- Suggest removing CFSClean from `ci-official.yml` — it's a security compliance requirement
+- Upgrade Gradle past 8.x — Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`)
+- Add `mavenCentral()` or `google()` back to `settings.gradle` or `build.gradle` — use the Azure Artifacts feed
