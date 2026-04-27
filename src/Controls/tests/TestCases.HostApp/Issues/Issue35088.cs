@@ -11,7 +11,7 @@ public class Issue35088 : TestShell
 		{
 			Placeholder = "Search here...",
 			SearchBoxVisibility = SearchBoxVisibility.Expanded,
-			BackgroundColor = Colors.Red,
+			BackgroundColor = Colors.YellowGreen,
 		};
 
 		var resetColorButton = new Button
