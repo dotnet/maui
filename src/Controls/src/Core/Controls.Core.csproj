@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\Essentials\src\Types\Shared\WebUtils.shared.cs" />
+    <Compile Include="..\..\..\Essentials\src\FileSystem\FileSystemUtils.shared.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' and '$(TargetFramework)' == '$(_MauiDotNetTfm)'">

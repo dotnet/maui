@@ -6,6 +6,7 @@ using System.IO;
 using Android.Content.Res;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Maui.Storage;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -24,10 +25,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		public IDirectoryContents GetDirectoryContents(string subpath)
-			=> new AndroidMauiAssetDirectoryContents(_assets, Path.Combine(_contentRootDir, subpath));
+		{
+			var resolvedPath = FileSystemUtils.Combine(_contentRootDir, subpath);
+			if (resolvedPath is null)
+				return NotFoundDirectoryContents.Singleton;
+			return new AndroidMauiAssetDirectoryContents(_assets, resolvedPath);
+		}
 
 		public IFileInfo GetFileInfo(string subpath)
-			=> new AndroidMauiAssetFileInfo(_assets, Path.Combine(_contentRootDir, subpath));
+		{
+			var resolvedPath = FileSystemUtils.Combine(_contentRootDir, subpath);
+			if (resolvedPath is null)
+				return new NotFoundFileInfo(subpath);
+			return new AndroidMauiAssetFileInfo(_assets, resolvedPath);
+		}
 
 		public IChangeToken Watch(string filter)
 			=> NullChangeToken.Singleton;

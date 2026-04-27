@@ -22,36 +22,33 @@
 #
 # Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d671028235c1b911c7a816a257b07b02793a6b57747b4358f792af183e26ca07","compiler_version":"v0.62.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"cbfd75d7a699f76155135d83866eda6476cef647c384243c8ee991065a2b44d7","compiler_version":"v0.62.2","strict":true}
 
 name: "Evaluate PR Tests"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - copilot-swe-agent[bot] # Bots processed as bot check in pre-activation job
   issue_comment:
     types:
     - created
-  pull_request:
-    # forks: # Fork filtering applied via job conditions
-    # - "*" # Fork filtering applied via job conditions
-    paths:
-    - src/**/tests/**
-    - src/**/test/**
-    types:
-    - opened
-    - synchronize
-    - reopened
-    - ready_for_review
+    - edited
   workflow_dispatch:
     inputs:
       pr_number:
         description: PR number to evaluate
         required: true
         type: number
+      suppress_output:
+        default: false
+        description: Dry-run — evaluate but do not post output on the PR
+        required: false
+        type: boolean
 
 permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: evaluate-pr-tests-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
+  group: evaluate-pr-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}
 
 run-name: "Evaluate PR Tests"
 
@@ -59,19 +56,22 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      (needs.pre_activation.outputs.activated == 'true') && ((github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/evaluate-tests')))
+      (needs.pre_activation.outputs.activated == 'true') && (github.event_name == 'issue_comment' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-slim
     permissions:
       contents: read
+      discussions: write
+      issues: write
+      pull-requests: write
     outputs:
       body: ${{ steps.sanitized.outputs.body }}
-      comment_id: ""
-      comment_repo: ""
+      comment_id: ${{ steps.add-comment.outputs.comment-id }}
+      comment_repo: ${{ steps.add-comment.outputs.comment-repo }}
+      comment_url: ${{ steps.add-comment.outputs.comment-url }}
       lockdown_check_failed: ${{ steps.generate_aw_info.outputs.lockdown_check_failed == 'true' }}
       model: ${{ steps.generate_aw_info.outputs.model }}
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
+      slash_command: ${{ needs.pre_activation.outputs.matched_command }}
       text: ${{ steps.sanitized.outputs.text }}
       title: ${{ steps.sanitized.outputs.title }}
     steps:
@@ -105,6 +105,19 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/generate_aw_info.cjs');
             await main(core, context);
+      - name: Add eyes reaction for immediate feedback
+        id: react
+        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_REACTION: "eyes"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/add_reaction.cjs');
+            await main();
       - name: Validate COPILOT_GITHUB_TOKEN secret
         id: validate-secret
         run: ${RUNNER_TEMP}/gh-aw/actions/validate_multi_secret.sh COPILOT_GITHUB_TOKEN 'GitHub Copilot CLI' https://github.github.com/gh-aw/reference/engines/#github-copilot-default
@@ -132,17 +145,32 @@ jobs:
       - name: Compute current body text
         id: sanitized
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_ALLOWED_BOTS: copilot-swe-agent[bot]
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/compute_text.cjs');
             await main();
+      - name: Add comment with workflow run link
+        id: add-comment
+        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_WORKFLOW_NAME: "Evaluate PR Tests"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🧪 *Test evaluation by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔬 Evaluating tests on this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Test evaluation complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Test evaluation failed. [{workflow_name}]({run_url}) {status}\"}"
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/add_workflow_run_comment.cjs');
+            await main();
       - name: Create prompt with built-in context
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -151,6 +179,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
           GH_AW_IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || '' }}
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
@@ -210,8 +239,9 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -222,7 +252,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_93C755A4: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          GH_AW_EXPR_A77326CF: ${{ github.event.issue.number || inputs.pr_number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -231,8 +261,10 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
           GH_AW_IS_PR_COMMENT: ${{ github.event.issue.pull_request && 'true' || '' }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: ${{ needs.pre_activation.outputs.matched_command }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -244,7 +276,7 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_93C755A4: process.env.GH_AW_EXPR_93C755A4,
+                GH_AW_EXPR_A77326CF: process.env.GH_AW_EXPR_A77326CF,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -253,8 +285,10 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_SUPPRESS_OUTPUT: process.env.GH_AW_INPUTS_SUPPRESS_OUTPUT,
                 GH_AW_IS_PR_COMMENT: process.env.GH_AW_IS_PR_COMMENT,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND
               }
             });
       - name: Validate prompt placeholders
@@ -320,10 +354,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        if: github.event_name == 'pull_request'
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
         name: Gate — skip if no test source files in diff
-        run: "TEST_FILES=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only \\\n  | grep -E '\\.(cs|xaml)$' \\\n  | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n  || true)\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Skipping evaluation.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
+        run: "# Verify this is an open PR\nif ! STATE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state --jq .state 2>&1); then\n  echo \"❌ Failed to fetch PR #$PR_NUMBER state: $STATE\"\n  exit 1\nfi\nif [ \"$STATE\" != \"OPEN\" ]; then\n  echo \"⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation.\"\n  exit 1\nfi\n# Try gh pr diff first; fall back to REST API only on command failure\nif DIFF_OUTPUT=$(gh pr diff \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --name-only 2>/dev/null); then\n  TEST_FILES=$(echo \"$DIFF_OUTPUT\" \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nelse\n  # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API\n  if ! API_FILES=$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate --jq '.[].filename' 2>&1); then\n    echo \"❌ gh pr diff failed and REST API fallback also failed: $API_FILES\"\n    exit 1\n  fi\n  TEST_FILES=$(echo \"$API_FILES\" \\\n    | grep -E '\\.(cs|xaml)$' \\\n    | grep -iE '(tests?/|TestCases|UnitTests|DeviceTests)' \\\n    || true)\nfi\nif [ -z \"$TEST_FILES\" ]; then\n  echo \"⏭️ No test source files (.cs/.xaml) found in PR diff. Nothing to evaluate.\"\n  exit 1\nfi\necho \"✅ Found test files to evaluate:\"\necho \"$TEST_FILES\" | head -20\n"
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr_number }}
@@ -593,7 +626,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
@@ -697,6 +730,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
+          GH_AW_COMMAND: evaluate-tests
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -961,7 +995,7 @@ jobs:
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🧪 *Test evaluation by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔬 Evaluating tests on this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Test evaluation complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Test evaluation failed. [{workflow_name}]({run_url}) {status}\"}"
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
-          GH_AW_TIMEOUT_MINUTES: "15"
+          GH_AW_TIMEOUT_MINUTES: "20"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -978,7 +1012,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
-          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
+          GH_AW_NOOP_REPORT_AS_ISSUE: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -986,32 +1020,60 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
             await main();
+      - name: Update reaction comment with completion status
+        id: conclusion
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_COMMENT_ID: ${{ needs.activation.outputs.comment_id }}
+          GH_AW_COMMENT_REPO: ${{ needs.activation.outputs.comment_repo }}
+          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_AW_WORKFLOW_NAME: "Evaluate PR Tests"
+          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
+          GH_AW_DETECTION_CONCLUSION: ${{ needs.agent.outputs.detection_conclusion }}
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🧪 *Test evaluation by [{workflow_name}]({run_url})*\",\"runStarted\":\"🔬 Evaluating tests on this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Test evaluation complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Test evaluation failed. [{workflow_name}]({run_url}) {status}\"}"
+        with:
+          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/notify_comment_error.cjs');
+            await main();
 
   pre_activation:
-    if: >
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      startsWith(github.event.comment.body, '/evaluate-tests'))
+    if: github.event_name == 'issue_comment' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-slim
     outputs:
-      activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
-      matched_command: ''
+      activated: ${{ (steps.check_membership.outputs.is_team_member == 'true') && (steps.check_command_position.outputs.command_position_ok == 'true') }}
+      matched_command: ${{ steps.check_command_position.outputs.matched_command }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw-actions/setup@20045bbd5ad2632b9809856c389708eab1bd16ef # v0.62.2
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
-      - name: Check team membership for workflow
+      - name: Check team membership for command workflow
         id: check_membership
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: copilot-swe-agent[bot]
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/check_membership.cjs');
+            await main();
+      - name: Check command position
+        id: check_command_position
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_COMMANDS: "[\"evaluate-tests\"]"
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/check_command_position.cjs');
             await main();
 
   safe_outputs:
@@ -1074,7 +1136,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"*\"},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"hide_older_comments\":true,\"max\":1,\"target\":\"*\"},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

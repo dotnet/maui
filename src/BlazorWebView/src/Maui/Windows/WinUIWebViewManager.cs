@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Storage;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
 using Windows.Storage.Streams;
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				_logger.HandlingWebRequest(requestUri);
 
-				var relativePath = AppOriginUri.IsBaseOf(uri) ? AppOriginUri.MakeRelativeUri(uri).ToString() : null;
+				var relativePath = AppOriginUri.IsBaseOf(uri) ? Microsoft.Maui.WebUtils.ResolveRelativePath(AppOriginUri, uri) : null;
 
 				// Check if the uri is _framework/blazor.modules.json is a special case as the built-in file provider
 				// brings in a default implementation.
@@ -171,8 +172,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 			else
 			{
-				var path = Path.Combine(AppContext.BaseDirectory, relativePath);
-				if (File.Exists(path))
+				var path = FileSystemUtils.Combine(AppContext.BaseDirectory, relativePath);
+				if (path is not null && File.Exists(path))
 				{
 					using var contentStream = File.OpenRead(path);
 					stream = await CopyContentToRandomAccessStreamAsync(contentStream);
