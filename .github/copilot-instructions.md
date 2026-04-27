@@ -121,6 +121,8 @@ The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` pl
 
 **Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill. For MAUI-specific build quirks and binlog analysis, see `azdo-build-investigator`.
 
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", always query the **actual AzDO test results** (via `ci-analysis` or AzDO test runs API) to find the test by name. Do NOT infer whether a test ran by inspecting code attributes — class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+
 **Anti-pattern:** Manually querying the AzDO REST API and writing ad-hoc scripts to parse build timelines. Use `ci-analysis` first; manual API queries only as a fallback. Manual approaches miss Helix work item details, don't cross-reference known issues, and don't aggregate test results across runs — leading to incomplete or incorrect CI assessments.
 
 ### Code Formatting
