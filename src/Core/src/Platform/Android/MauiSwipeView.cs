@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Platform
 			else
 				swipeDirection = diffY > 0 ? SwipeDirection.Down : SwipeDirection.Up;
 
-			var items = GetSwipeItemsByDirection(swipeDirection);
+			var items = Element?.GetSwipeItemsByDirection(swipeDirection);
 
 			if (items == null || items?.Count == 0)
 				return false;
@@ -272,42 +272,6 @@ namespace Microsoft.Maui.Platform
 			emptyContentView.SetBackgroundColor(Colors.Transparent.ToPlatform());
 
 			return emptyContentView;
-		}
-
-		ISwipeItems? GetSwipeItemsByDirection()
-		{
-			if (_swipeDirection.HasValue)
-				return GetSwipeItemsByDirection(_swipeDirection.Value);
-
-			return null;
-		}
-
-		ISwipeItems? GetSwipeItemsByDirection(SwipeDirection swipeDirection)
-		{
-			ISwipeItems? swipeItems = null;
-
-			switch (swipeDirection)
-			{
-				case SwipeDirection.Left:
-					swipeItems = Element?.RightItems;
-					break;
-				case SwipeDirection.Right:
-					swipeItems = Element?.LeftItems;
-					break;
-				case SwipeDirection.Up:
-					swipeItems = Element?.BottomItems;
-					break;
-				case SwipeDirection.Down:
-					swipeItems = Element?.TopItems;
-					break;
-			}
-
-			return swipeItems;
-		}
-
-		bool IsHorizontalSwipe()
-		{
-			return _swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right;
 		}
 
 		static bool IsValidSwipeItems(ISwipeItems? swipeItems)
@@ -491,7 +455,7 @@ namespace Microsoft.Maui.Platform
 			if (_swipeDirection == null)
 				return false;
 
-			var swipeItems = GetSwipeItemsByDirection();
+			var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 			return IsValidSwipeItems(swipeItems);
 		}
 
@@ -544,7 +508,7 @@ namespace Microsoft.Maui.Platform
 			if (_contentView == null || _contentView.IsDisposed() || _actionView != null)
 				return;
 
-			ISwipeItems? items = GetSwipeItemsByDirection();
+			ISwipeItems? items = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (items?.Count == 0 || items == null)
 				return;
@@ -606,7 +570,7 @@ namespace Microsoft.Maui.Platform
 			if (_actionView == null || childs == null || _contentView == null)
 				return;
 
-			var items = GetSwipeItemsByDirection();
+			var items = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (items == null || items.Count == 0)
 				return;
@@ -987,7 +951,7 @@ namespace Microsoft.Maui.Platform
 
 			if (Math.Abs(_swipeOffset) >= swipeThresholdPercent)
 			{
-				var swipeItems = GetSwipeItemsByDirection();
+				var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 				if (swipeItems == null)
 					return;
@@ -1015,7 +979,7 @@ namespace Microsoft.Maui.Platform
 			if (Math.Abs(_swipeThreshold) > double.Epsilon)
 				return _swipeThreshold;
 
-			var swipeItems = GetSwipeItemsByDirection();
+			var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (swipeItems == null)
 				return 0;
@@ -1037,7 +1001,7 @@ namespace Microsoft.Maui.Platform
 
 			float swipeThreshold = 0;
 
-			bool isHorizontal = IsHorizontalSwipe();
+			bool isHorizontal = _swipeDirection.IsHorizontalSwipe();
 
 			if (swipeItems.Mode == SwipeMode.Reveal)
 			{
@@ -1073,7 +1037,7 @@ namespace Microsoft.Maui.Platform
 
 		float CalculateSwipeThreshold()
 		{
-			var swipeItems = GetSwipeItemsByDirection();
+			var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 			if (swipeItems == null)
 				return SwipeViewExtensions.SwipeThreshold;
 
@@ -1096,7 +1060,7 @@ namespace Microsoft.Maui.Platform
 
 			if (useSwipeItemsSize)
 			{
-				var isHorizontalSwipe = IsHorizontalSwipe();
+				var isHorizontalSwipe = _swipeDirection.IsHorizontalSwipe();
 
 				return isHorizontalSwipe ? swipeItemsWidth : swipeItemsHeight;
 			}
@@ -1117,12 +1081,12 @@ namespace Microsoft.Maui.Platform
 
 		float GetRevealModeSwipeThreshold()
 		{
-			var swipeItems = GetSwipeItemsByDirection();
+			var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (swipeItems == null)
 				return SwipeViewExtensions.SwipeThreshold;
 
-			bool isHorizontal = IsHorizontalSwipe();
+			bool isHorizontal = _swipeDirection.IsHorizontalSwipe();
 
 			float swipeItemsSize = 0;
 			bool hasSwipeItemView = false;
@@ -1171,7 +1135,7 @@ namespace Microsoft.Maui.Platform
 
 			var contentHeight = (float)_context.FromPixels(_contentView.Height);
 			var contentWidth = (float)_context.FromPixels(_contentView.Width);
-			bool isHorizontal = IsHorizontalSwipe();
+			bool isHorizontal = _swipeDirection.IsHorizontalSwipe();
 
 			if (isHorizontal)
 			{
@@ -1192,8 +1156,8 @@ namespace Microsoft.Maui.Platform
 			if (_contentView == null || Element == null)
 				return Size.Zero;
 
-			bool isHorizontal = IsHorizontalSwipe();
-			var items = GetSwipeItemsByDirection();
+			bool isHorizontal = _swipeDirection.IsHorizontalSwipe();
+			var items = Element.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (items == null)
 				return Size.Zero;
@@ -1255,7 +1219,7 @@ namespace Microsoft.Maui.Platform
 				return 0f;
 
 			var contentHeight = (float)_context.FromPixels(_contentView.Height);
-			var items = GetSwipeItemsByDirection();
+			var items = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (items == null)
 				return 0f;
@@ -1284,7 +1248,7 @@ namespace Microsoft.Maui.Platform
 			if (_isResettingSwipe)
 				return;
 
-			var swipeItems = GetSwipeItemsByDirection();
+			var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (swipeItems == null || _actionView == null)
 				return;
@@ -1377,7 +1341,7 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 
-			var swipeItems = GetSwipeItemsByDirection();
+			var swipeItems = Element?.GetSwipeItemsByDirection(_swipeDirection);
 
 			if (swipeItems == null || swipeItems.Count == 0)
 				return;
