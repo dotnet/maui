@@ -18,9 +18,11 @@
 #
 # HOW IT WORKS:
 #   1. Acquires an auth token via the .NET Azure Artifacts credential provider
-#   2. Runs the Gradle build with --refresh-dependencies to bypass local cache
+#   2. Pre-ingests platform-specific artifacts (e.g. aapt2) for all OS variants
+#      (macOS/Linux/Windows) since Gradle only resolves the local OS classifier
+#   3. Runs the Gradle build with --refresh-dependencies to bypass local cache
 #      and force actual downloads through the feed (which triggers ingestion)
-#   3. For packages that Gradle's credential provider can't reach (e.g. AGP's
+#   4. For packages that Gradle's credential provider can't reach (e.g. AGP's
 #      internal detachedConfiguration scopes), falls back to curl with Bearer
 #      token to force-ingest the specific package URLs
 #
@@ -65,9 +67,23 @@ if [ -z "$TOKEN" ]; then
 fi
 echo "Token acquired."
 
-# Step 2: Run Gradle build with refresh to ingest via credential provider
+# Step 2: Ingest platform-specific artifacts for all OS variants
+# Gradle only resolves the classifier for the current OS (e.g. aapt2-osx.jar on macOS).
+# CI builds on Windows/Linux need their variants pre-ingested too.
 echo ""
-echo "Step 1/2: Running Gradle build with --refresh-dependencies..."
+echo "Step 1/3: Ingesting cross-platform artifacts..."
+AAPT2_VERSION="8.11.1-12782657"
+for classifier in osx linux windows; do
+    for ext in jar pom; do
+        url="$FEED_URL/com/android/tools/build/aapt2/$AAPT2_VERSION/aapt2-$AAPT2_VERSION-$classifier.$ext"
+        code=$(curl -s -o /dev/null -w "%{http_code}" --oauth2-bearer "$TOKEN" "$url" 2>/dev/null)
+        echo "  aapt2-$AAPT2_VERSION-$classifier.$ext: $code"
+    done
+done
+
+# Step 3: Run Gradle build with refresh to ingest via credential provider
+echo ""
+echo "Step 2/3: Running Gradle build with --refresh-dependencies..."
 cd "$ANDROID_DIR"
 if ! ./gradlew build --no-daemon --refresh-dependencies \
     -Dazure.artifacts.credprovider.nonInteractive=true \
@@ -75,9 +91,9 @@ if ! ./gradlew build --no-daemon --refresh-dependencies \
     echo "WARNING: Initial Gradle build failed (expected if packages need ingestion). Continuing..."
 fi
 
-# Step 3: Loop — build, find missing packages, curl-ingest them
+# Step 4: Loop — build, find missing packages, curl-ingest them
 echo ""
-echo "Step 2/2: Ingesting any remaining packages via REST API..."
+echo "Step 3/3: Ingesting any remaining packages via REST API..."
 for i in $(seq 1 30); do
     result=$(./gradlew build --no-daemon \
         -Dazure.artifacts.credprovider.nonInteractive=true 2>&1 || true)
