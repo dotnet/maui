@@ -9,9 +9,15 @@ namespace Microsoft.Maui.Platform
 	{
 		internal MauiBorderAutomationPeer(Panel owner) : base(owner) { }
 
-		// Control Type: Returns "Pane" as the control type for the border automation peer
+		// Control Type: Returns "Custom" when the border is interactive (has tap gestures / IsTabStop),
+		// so screen readers announce it as actionable. Returns "Pane" for non-interactive borders.
 		protected override AutomationControlType GetAutomationControlTypeCore()
 		{
+			if ((Owner as ContentPanel)?.IsTabStop == true)
+			{
+				return AutomationControlType.Custom;
+			}
+
 			return AutomationControlType.Pane;
 		}
 
@@ -19,6 +25,18 @@ namespace Microsoft.Maui.Platform
 		protected override string GetClassNameCore()
 		{
 			return nameof(Panel);
+		}
+
+		// Localized Control Type: When the border is interactive, screen readers announce it as "border"
+		// instead of the generic "custom" or "pane" text, giving users context about the element.
+		protected override string GetLocalizedControlTypeCore()
+		{
+			if ((Owner as ContentPanel)?.IsTabStop == true)
+			{
+				return "border";
+			}
+
+			return base.GetLocalizedControlTypeCore();
 		}
 
 		// Keyboard Focusable: Allows border to receive keyboard focus only when it has gesture recognizers (IsTabStop = true)
