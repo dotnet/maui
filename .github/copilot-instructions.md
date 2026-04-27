@@ -325,11 +325,6 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-9. **pr-build-status**
-   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
-   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
-   - **Note**: ⚠️ This skill does not currently have a SKILL.md. Use `ci-analysis` or `azdo-build-investigator` for CI investigation.
-
 10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
    - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
