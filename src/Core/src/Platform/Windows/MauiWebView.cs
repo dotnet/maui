@@ -46,58 +46,65 @@ namespace Microsoft.Maui.Platform
 
 		public async void LoadHtml(string? html, string? baseUrl)
 		{
-			var mapBaseDirectory = false;
-			if (string.IsNullOrEmpty(baseUrl))
+			try
 			{
-				baseUrl = LocalScheme;
-				mapBaseDirectory = true;
+				var mapBaseDirectory = false;
+				if (string.IsNullOrEmpty(baseUrl))
+				{
+					baseUrl = LocalScheme;
+					mapBaseDirectory = true;
+				}
+
+				await EnsureCoreWebView2Async();
+
+				if (mapBaseDirectory)
+				{
+					CoreWebView2.SetVirtualHostNameToFolderMapping(
+						LocalHostName,
+						ApplicationPath,
+						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+				}
+
+				// Insert script to set the base tag
+				var script = GetBaseTagInsertionScript(baseUrl);
+				var htmlWithScript = $"{script}\n{html}";
+
+				NavigateToString(htmlWithScript);
 			}
-
-			await EnsureCoreWebView2Async();
-
-			if (mapBaseDirectory)
+			catch (Exception ex)
 			{
-				CoreWebView2.SetVirtualHostNameToFolderMapping(
-					LocalHostName,
-					ApplicationPath,
-					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+				Debug.WriteLine(nameof(MauiWebView), $"Failed to load HTML: {ex}");
 			}
-
-			// Insert script to set the base tag
-			var script = GetBaseTagInsertionScript(baseUrl);
-			var htmlWithScript = $"{script}\n{html}";
-
-			NavigateToString(htmlWithScript);
 		}
 
 		public async void LoadUrl(string? url)
 		{
-			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
-
-			if (!uri.IsAbsoluteUri ||
-				IsUriWithLocalScheme(uri.AbsoluteUri))
-			{
-				await EnsureCoreWebView2Async();
-
-				CoreWebView2.SetVirtualHostNameToFolderMapping(
-					LocalHostName,
-					ApplicationPath,
-					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-
-				if (!uri.IsAbsoluteUri)
-					uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
-			}
-
-			if (_handler?.TryGetTarget(out var handler) ?? false)
-				await handler.SyncPlatformCookies(uri.AbsoluteUri);
-
 			try
 			{
+				Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
+
+				if (!uri.IsAbsoluteUri ||
+					IsUriWithLocalScheme(uri.AbsoluteUri))
+				{
+					await EnsureCoreWebView2Async();
+
+					CoreWebView2.SetVirtualHostNameToFolderMapping(
+						LocalHostName,
+						ApplicationPath,
+						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+
+					if (!uri.IsAbsoluteUri)
+						uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
+				}
+
+				if (_handler?.TryGetTarget(out var handler) ?? false)
+					await handler.SyncPlatformCookies(uri.AbsoluteUri);
+
 				Source = uri;
 			}
 			catch (Exception exc)
 			{
-				Debug.WriteLine(nameof(MauiWebView), $"Failed to load: {uri} {exc}");
+				Debug.WriteLine(nameof(MauiWebView), $"Failed to load: {url} {exc}");
 			}
 		}
 
