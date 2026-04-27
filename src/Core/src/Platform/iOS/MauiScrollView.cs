@@ -340,10 +340,6 @@ namespace Microsoft.Maui.Platform
 					// but when the content size changes, we need to invalidate the ancestors
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
-
-					// Execute any scroll-to request deferred because ContentSize was empty
-					// when ScrollToAsync was first called (e.g., from OnAppearing).
-					(CrossPlatformLayout as ScrollViewHandler)?.ExecutePendingScrollToRequest();
 				}
 			}
 
