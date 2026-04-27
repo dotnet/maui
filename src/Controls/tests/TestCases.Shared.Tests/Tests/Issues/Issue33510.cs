@@ -22,7 +22,6 @@ public class Issue33510 : _IssuesUITest
 	[Test]
 	public void PullToRefreshShouldNotTriggerWhenWebViewIsScrolledDown()
 	{
-		VerifyInternetConnectivity();
 		var androidApp = WaitForAndroidApp();
 		var refreshViewRect = App.WaitForElement(TestRefreshView).GetRect();
 		var x = refreshViewRect.CenterX();
