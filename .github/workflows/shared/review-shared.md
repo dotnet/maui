@@ -14,7 +14,7 @@ safe-outputs:
   create-pull-request-review-comment:
     max: 30
   submit-pull-request-review:
-    max: 1
+    max: 2
     allowed-events: [COMMENT]
   add-comment:
     max: 5
@@ -24,6 +24,9 @@ safe-outputs:
     report-as-issue: false
 
 steps:
+  - name: Record workflow start time
+    run: date +%s > .workflow-start-time
+
   - name: Checkout target PR (for workflow_dispatch)
     if: github.event_name == 'workflow_dispatch'
     env:
@@ -62,7 +65,7 @@ Fetch the PR diff, changed files, description, and existing reviews using the Gi
 
 > ⚠️ **Large diff guard**: After fetching the diff, count the changed files. If the PR has more than 50 changed files, do NOT embed the full diff in sub-agent prompts. Instead, split the changed files into 3 roughly equal batches and assign each reviewer a different batch (with the full PR description). In Step 3, skip cross-reviewer agreement checks for findings on files only one reviewer saw — include them directly but **downgrade severity by one level** (CRITICAL→MODERATE, MODERATE→MINOR) and annotate with "low confidence — single reviewer (batch split)".
 
-> ⚠️ **Pre-flight**: Before dispatching sub-agents, verify `.github/skills/code-review/SKILL.md` exists using the `view` tool. If missing, call `add-comment` with: "❌ Expert Code Review: Cannot run — `.github/skills/code-review/SKILL.md` not found. Fork PRs must be rebased on main." and exit.
+> ⚠️ **Pre-flight**: Before dispatching sub-agents, verify `.github/skills/code-review/SKILL.md` exists using the `view` tool. If missing, call `add-comment` with: "❌ Expert Code Review: Cannot run — `.github/skills/code-review/SKILL.md` not found. For slash_command on fork PRs, rebase on main. For workflow_dispatch, verify the skill file exists in the PR branch." and exit.
 
 ### Step 2: Dispatch 3 Parallel Expert Reviewers
 
@@ -107,7 +110,7 @@ Each sub-agent prompt must include:
 
 ### Step 3: Adversarial Consensus
 
-> ⚠️ **Time budget**: Before dispatching any follow-up agents, check elapsed time. If more than 60 minutes have elapsed since the workflow started, skip all follow-ups — include 1/3 findings as "low confidence — single reviewer" instead of discarding them.
+> ⚠️ **Time budget**: Before dispatching any follow-up agents, read `.workflow-start-time` (written by the pre-agent step) and compare against current time (`date +%s`). If more than 60 minutes have elapsed, skip all follow-ups — include 1/3 findings as "low confidence — single reviewer" instead of discarding them.
 
 Collect findings from all 3 sub-agents and apply consensus. Two findings "agree" if they identify the **same root cause** in the **same file**, even if they cite different lines or use different wording. Group by root cause, not by exact line number.
 
