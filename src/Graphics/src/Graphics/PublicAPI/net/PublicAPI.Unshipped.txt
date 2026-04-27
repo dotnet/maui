@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Maui.Graphics.Rect.EqualsApproximately(Microsoft.Maui.Graphics.Rect other, double epsilon) -> bool

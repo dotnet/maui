@@ -307,5 +307,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, heightMapperCalled);
 			Assert.Equal(2, widthMapperCalled);
 		}
+
+		// Regression test for dotnet/maui#35142: on iOS, ULP-level non-determinism in
+		// VerticalStackLayout/Label measurement (CoreText subpixel rounding) propagates through
+		// Grid("*,Auto") star-row arithmetic into a child's Frame. The bit-exact Rect equality
+		// in the Frame setter then re-runs UpdateBoundsComponents, which fires Width/Height
+		// PropertyChanged on every ~10 ULP delta. UIKit reschedules layoutSubviews and the loop
+		// never converges. The values below are the actual border heights captured in the repro
+		// trace (see https://github.com/dotnet/maui/issues/35142).
+		[Fact]
+		public void FrameAssignmentIgnoresSubPixelDifferences()
+		{
+			var rectA = new Rect(0, 0, 390, 556.00000063578295);
+			var rectB = new Rect(0, 0, 390, 556.00000063578273); // ~22 ULP different from rectA
+
+			var element = new Label();
+			element.Frame = rectA;
+
+			int sizeChangedCount = 0;
+			int heightPropertyChangedCount = 0;
+			int widthPropertyChangedCount = 0;
+			element.SizeChanged += (_, _) => sizeChangedCount++;
+			element.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == VisualElement.HeightProperty.PropertyName)
+				{
+					heightPropertyChangedCount++;
+				}
+				else if (e.PropertyName == VisualElement.WidthProperty.PropertyName)
+				{
+					widthPropertyChangedCount++;
+				}
+			};
+
+			element.Frame = rectB;
+
+			Assert.Equal(0, sizeChangedCount);
+			Assert.Equal(0, heightPropertyChangedCount);
+			Assert.Equal(0, widthPropertyChangedCount);
+		}
 	}
 }

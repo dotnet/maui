@@ -1866,6 +1866,17 @@ namespace Microsoft.Maui.Controls
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
 		Rect _frame = new Rect(0, 0, -1, -1);
+
+		// Tolerance used by the Frame setter to absorb ULP-level non-determinism in measured/arranged
+		// bounds (e.g. iOS UILabel.SizeThatFits returning bit-different doubles across consecutive
+		// passes). Without this tolerance, sub-ULP differences propagate as Width/Height
+		// PropertyChanged and SizeChanged events, which can drive iOS layoutSubviews into a
+		// non-converging 2-cycle. See https://github.com/dotnet/maui/issues/35142. The threshold is
+		// well above ~10⁻¹³ ULP at typical layout magnitudes and well below sub-pixel resolution on
+		// any current device (a 3× display's pixel is ~0.333pt). Mirrors the precedent set by
+		// SafeAreaPadding.EqualsAtPixelLevel for issues #32586 and #33934.
+		const double FrameEqualityEpsilon = 1e-9;
+
 		event EventHandler? _windowChanged;
 		event EventHandler? _platformContainerViewChanged;
 
@@ -1878,7 +1889,7 @@ namespace Microsoft.Maui.Controls
 			get => _frame;
 			set
 			{
-				if (_frame == value)
+				if (_frame.EqualsApproximately(value, FrameEqualityEpsilon))
 					return;
 
 				UpdateBoundsComponents(value);

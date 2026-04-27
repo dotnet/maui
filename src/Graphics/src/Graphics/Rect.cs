@@ -76,6 +76,22 @@ namespace Microsoft.Maui.Graphics
 			return X.Equals(other.X) && Y.Equals(other.Y) && Width.Equals(other.Width) && Height.Equals(other.Height);
 		}
 
+		/// <summary>
+		/// Determines whether each component of this rectangle is within <paramref name="epsilon"/>
+		/// of the corresponding component of <paramref name="other"/>. Use this to compare rectangles
+		/// produced by floating-point arithmetic where bit-exact equality would treat ULP-level
+		/// differences as material changes.
+		/// </summary>
+		/// <param name="other">The rectangle to compare against.</param>
+		/// <param name="epsilon">The maximum absolute difference, per component, that is treated as equal.</param>
+		public bool EqualsApproximately(Rect other, double epsilon)
+		{
+			return Math.Abs(X - other.X) <= epsilon
+				&& Math.Abs(Y - other.Y) <= epsilon
+				&& Math.Abs(Width - other.Width) <= epsilon
+				&& Math.Abs(Height - other.Height) <= epsilon;
+		}
+
 		public override bool Equals(object obj)
 		{
 			if (obj is null)
