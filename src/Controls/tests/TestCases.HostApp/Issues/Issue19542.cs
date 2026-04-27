@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 19542, "Flyout item didnt take full width", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 19542, "Flyout item didnot take full width", PlatformAffected.UWP)]
 public class Issue19542 : TestShell
 {
 	protected override void Init()

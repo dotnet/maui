@@ -10,7 +10,7 @@ public class Issue19542 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Flyout item didnt take full width";
+	public override string Issue => "Flyout item didnot take full width";
 
 	[Test]
 	[Category(UITestCategories.Shell)]
