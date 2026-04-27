@@ -1,16 +1,40 @@
+// All Maven dependencies are resolved through the dnceng Azure Artifacts feed
+// (dotnet-public-maven) for CFSClean network isolation compliance. The feed
+// proxies Maven Central, Google Maven, and Gradle Plugin Portal.
+//
+// IMPORTANT: New packages must be ingested into the feed before CI can use them.
+// The CI credential provider plugin skips auth in Azure Pipelines, so packages
+// that aren't already in the feed will fail with 401. After adding or updating
+// dependencies, run:
+//
+//   ./eng/ingest-maven-deps.sh
+//
+// See: https://aka.ms/1es/netiso/CFS
+
 pluginManagement {
     repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+        maven {
+            url = 'https://pkgs.dev.azure.com/artifacts-public/PublicTools/_packaging/AzureArtifacts/maven/v1'
+            name = 'AzureArtifacts'
+        }
+        maven {
+            url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+            name = 'dotnet-public-maven'
+        }
     }
+}
+
+plugins {
+    id 'com.microsoft.azure.artifacts.credprovider' version '1.1.1'
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
-        google()
-        mavenCentral()
+        maven {
+            url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+            name = 'dotnet-public-maven'
+        }
     }
 }
 
