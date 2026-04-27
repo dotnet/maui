@@ -111,7 +111,7 @@ The `ci-analysis` skill (loaded from the `dotnet-dnceng@dotnet-arcade-skills` pl
 - **Cross-build aggregation** — aggregates relevant CI builds/checks (including maui-pr, maui-pr-uitests, maui-pr-devicetests) in one investigation
 - **Test result details** — reports actual failing test names and error messages, not just job-level pass/fail
 
-> ⚠️ **Device test caveat:** `maui-pr-devicetests` uses XHarness which exits 0 even when tests fail — the ADO job shows ✅ "Succeeded" but failures are hidden in Helix work items. If `ci-analysis` reports device tests as passing but failures are suspected (or the `s/agent-gate-failed` PR label is present — check via `gh pr view --json labels`), cross-check Helix `ResultSummaryByBuild`. See `azdo-build-investigator/SKILL.md` for details.
+> ⚠️ **Device test caveat:** `maui-pr-devicetests` uses XHarness which exits 0 even when tests fail — the ADO job shows ✅ "Succeeded" but failures are hidden in Helix work items. If `ci-analysis` reports device tests as passing but failures are suspected (or the `s/agent-gate-failed` label is present), cross-check Helix `ResultSummaryByBuild`. See `azdo-build-investigator/SKILL.md` for details.
 
 **When to use it:**
 - "How does CI look?" / "Is CI green?" / "Can we merge?"
