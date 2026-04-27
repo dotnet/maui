@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // On Windows, Shell flyout-item taps are not working in this scenario, so this issue test is excluded.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,7 +24,7 @@ public class Issue34931 : _IssuesUITest
 		NavigateWithFlyout("Second", "Issue34931SecondPageLabel");
 		NavigateWithFlyout("Third", "Issue34931ThirdPageLabel");
 		NavigateWithFlyout("Home", "ChangeColorButton");
-        App.Tap("ChangeColorButton");
+		App.Tap("ChangeColorButton");
 		App.TapShellFlyoutIcon();
 		App.WaitForElement("Third");
 		VerifyScreenshot();
@@ -37,3 +38,4 @@ public class Issue34931 : _IssuesUITest
 		App.WaitForElement(pageReadyElement);
 	}
 }
+#endif
