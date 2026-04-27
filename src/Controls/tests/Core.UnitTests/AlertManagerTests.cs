@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		private static Window CreateWindow(Action<IServiceProvider> builder = null)
 		{
-			var services = Substitute.For<IServiceProvider>();
+			var services = Substitute.For<IServiceProvider, IKeyedServiceProvider>();
 			builder?.Invoke(services);
 
 			var mauiContext = Substitute.For<IMauiContext>();
@@ -44,6 +44,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window.Parent = app;
 
 			return window;
+		}
+
+		private static void RegisterKeyedService<TService>(IServiceProvider services, object serviceKey, TService service)
+			where TService : class
+		{
+			((IKeyedServiceProvider)services)
+				.GetKeyedService(Arg.Is<Type>(x => x == typeof(TService)), Arg.Is<object>(x => Equals(x, serviceKey)))
+				.Returns(service);
 		}
 
 		[Fact]
@@ -219,7 +227,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -230,6 +238,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var result = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
 
 			Assert.True(result);
+		}
+
+		[Fact]
+		public void UnkeyedDelegateFuncDoesNotUseDelegateConvention()
+		{
+			bool alertDelegateInvoked = false;
+			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
+			{
+				alertDelegateInvoked = true;
+				args.SetResult(true);
+				return Task.CompletedTask;
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var resultTask = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			Assert.False(alertDelegateInvoked);
+			Assert.False(resultTask.IsCompleted);
 		}
 
 		[Fact]
@@ -249,7 +281,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -279,7 +311,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, ActionSheetArguments, Task>))).Returns(actionSheetFunc);
+				RegisterKeyedService(services, AlertManager.DisplayActionSheetServiceKey, actionSheetFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -302,7 +334,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, PromptArguments, Task>))).Returns(promptFunc);
+				RegisterKeyedService(services, AlertManager.DisplayPromptServiceKey, promptFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -327,7 +359,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var window = CreateWindow(services =>
 			{
 				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription))).Returns(stub);
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -351,7 +383,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -375,7 +407,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -392,7 +424,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -410,7 +442,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -430,7 +462,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
