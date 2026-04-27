@@ -438,18 +438,15 @@ namespace Microsoft.Maui.Controls.Platform
 						recognizer.NumberOfTapsRequired == 1 &&
 						(recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
 
-					if (tapGestures is null)
-					{
-						return;
-					}
-
 					bool handled = false;
 
 					foreach (var recognizer in tapGestures)
 					{
 						recognizer.SendTapped(view, (relativeTo) =>
 						{
-							return new Point(view.X, view.Y);
+							// Keyboard taps have no physical position, use Point.Zero
+							// consistent with Android keyboard behavior.
+							return Point.Zero;
 						});
 						handled = true;
 					}
@@ -1038,7 +1035,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
-			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
+			bool hasSelfTapGestures = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1);
+
+			if (hasSelfTapGestures
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
@@ -1055,8 +1054,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_container.RightTapped += OnTap;
 
-				// Set tab stop state when adding gesture handlers for border layouts
-				UpdateContentPanelIsTapStop(true);
+				// Only enable tab stop when the border itself has tap gestures (not just children).
+				// Children should handle their own keyboard focus independently.
+				UpdateContentPanelIsTapStop(hasSelfTapGestures);
 			}
 			else
 			{
