@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ExplicitSubscriptionWinsOverDelegateFuncs()
+		public async Task ExplicitSubscriptionWinsOverDelegateFuncs()
 		{
 			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
 			{
@@ -333,9 +333,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Same(stub, window.AlertManager.Subscription);
 
-			page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+			AlertArguments args = null;
+			stub.When(x => x.OnAlertRequested(Arg.Any<Page>(), Arg.Any<AlertArguments>())).Do(x => args = x.Arg<AlertArguments>());
 
-			stub.Received().OnAlertRequested(Arg.Is(page), Arg.Any<AlertArguments>());
+			var resultTask = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			stub.Received().OnAlertRequested(Arg.Is(page), Arg.Is(args));
+			args.SetResult(true);
+			Assert.True(await resultTask);
 		}
 
 		[Fact]

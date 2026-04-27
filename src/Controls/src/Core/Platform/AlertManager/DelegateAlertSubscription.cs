@@ -26,25 +26,26 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly Func<Page, AlertArguments, Task>? _alertHandler;
 		readonly Func<Page, ActionSheetArguments, Task>? _actionSheetHandler;
 		readonly Func<Page, PromptArguments, Task>? _promptHandler;
-		readonly AlertManager.IAlertManagerSubscription _fallback;
+		readonly Lazy<AlertManager.IAlertManagerSubscription> _fallback;
 
 		public DelegateAlertSubscription(
 			Func<Page, AlertArguments, Task>? alertHandler,
 			Func<Page, ActionSheetArguments, Task>? actionSheetHandler,
 			Func<Page, PromptArguments, Task>? promptHandler,
-			AlertManager.IAlertManagerSubscription fallback)
+			Func<AlertManager.IAlertManagerSubscription> createFallback)
 		{
 			_alertHandler = alertHandler;
 			_actionSheetHandler = actionSheetHandler;
 			_promptHandler = promptHandler;
-			_fallback = fallback ?? throw new ArgumentNullException(nameof(fallback));
+			_fallback = new Lazy<AlertManager.IAlertManagerSubscription>(
+				createFallback ?? throw new ArgumentNullException(nameof(createFallback)));
 		}
 
 		public void OnAlertRequested(Page sender, AlertArguments arguments)
 		{
 			if (_alertHandler is null)
 			{
-				_fallback.OnAlertRequested(sender, arguments);
+				_fallback.Value.OnAlertRequested(sender, arguments);
 				return;
 			}
 
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_actionSheetHandler is null)
 			{
-				_fallback.OnActionSheetRequested(sender, arguments);
+				_fallback.Value.OnActionSheetRequested(sender, arguments);
 				return;
 			}
 
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_promptHandler is null)
 			{
-				_fallback.OnPromptRequested(sender, arguments);
+				_fallback.Value.OnPromptRequested(sender, arguments);
 				return;
 			}
 
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// OnPageBusy is obsolete and is not part of the delegate convention - always
 			// route to the platform fallback so busy-indicator behavior is unchanged.
-			_fallback.OnPageBusy(sender, enabled);
+			_fallback.Value.OnPageBusy(sender, enabled);
 		}
 
 		static void Invoke<T>(Func<Task> invoker, TaskCompletionSource<T> completion)
@@ -122,9 +123,9 @@ namespace Microsoft.Maui.Controls.Platform
 			// task completed successfully but never called SetResult, surface that as an
 			// InvalidOperationException instead of letting the caller hang forever.
 			// All paths use Try* so a delegate that did call SetResult is unaffected.
-			if (task.IsFaulted && task.Exception is not null)
+			if (task.IsFaulted)
 			{
-				completion.TrySetException(task.Exception.InnerExceptions);
+				completion.TrySetException(task.Exception!.InnerExceptions);
 			}
 			else if (task.IsCanceled)
 			{
