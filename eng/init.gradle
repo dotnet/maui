@@ -1,5 +1,5 @@
-// Redirect Maven Central and Google Maven to Azure Artifacts feed
-// for CFSClean network isolation compliance.
+// Redirect Maven Central, Google Maven, and the Gradle Plugin Portal
+// to Azure Artifacts feed for CFSClean network isolation compliance.
 // See: https://aka.ms/1es/netiso/CFS
 allprojects {
     repositories {

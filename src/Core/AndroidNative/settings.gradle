@@ -1,6 +1,7 @@
-// All Maven dependencies are resolved through the dnceng Azure Artifacts feed
-// (dotnet-public-maven) for CFSClean network isolation compliance. The feed
-// proxies Maven Central, Google Maven, and Gradle Plugin Portal.
+// Project Maven dependencies are resolved through the dnceng Azure Artifacts
+// feed (dotnet-public-maven) for CFSClean network isolation compliance. The feed
+// proxies Maven Central, Google Maven, and Gradle Plugin Portal. The credential
+// provider plugin is fetched from a separate Azure Artifacts feed (artifacts-public).
 //
 // IMPORTANT: New packages must be ingested into the feed before CI can use them.
 // The CI credential provider plugin skips auth in Azure Pipelines, so packages
