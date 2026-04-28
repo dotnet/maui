@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		AView _control;
 		InputTypes _inputType;
-		global::Android.Graphics.Drawables.Drawable _defaultBackground;
 
 		IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
@@ -36,12 +35,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
 			_editText.FocusChange += EditTextFocusChange;
-
-			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
-			if (linearLayout is not null)
-			{
-				_defaultBackground = linearLayout.Background;
-			}
 
 			UpdateSearchBarColors();
 			UpdateFont();
@@ -164,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_searchHandler.BackgroundColor is null)
 			{
-				linearLayout.Background = _defaultBackground;
+				linearLayout.Background = null;
 			}
 			else
 			{
