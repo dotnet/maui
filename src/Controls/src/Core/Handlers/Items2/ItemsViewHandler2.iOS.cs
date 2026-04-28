@@ -163,9 +163,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift
 #if MACCATALYST
-			if (!args.IsAnimated && Controller?.CollectionView is MauiCollectionView mauiCV)
+			if (Controller?.CollectionView is MauiCollectionView mauiCV)
 			{
-				mauiCV.SetPendingScrollRestore(section, item, scrollPosition);
+				mauiCV.ClearPendingScrollRestore();
+
+				if (!args.IsAnimated)
+				{
+					mauiCV.SetPendingScrollRestore(section, item, scrollPosition);
+				}
 			}
 #endif
 
