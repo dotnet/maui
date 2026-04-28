@@ -18,7 +18,7 @@ When performing a code review on PRs that change functional code, run the pr-fin
 
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
   - **main branch**: Latest stable .NET version
-  - **net10.0 branch**: .NET 10 SDK
+  - **net11.0 branch**: .NET 11 SDK
   - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
 - **Cake build system** for compilation and packaging (`dotnet cake`)
 - **MSBuild** with custom build tasks (must build `Microsoft.Maui.BuildTasks.slnf` first)
@@ -140,7 +140,7 @@ When working with public API changes:
 
 ### Branching
 - `main` - For bug fixes without API changes
-- `net10.0` - For new features and API changes
+- `net11.0` - For new features and API changes
 
 ### Git Workflow (Copilot CLI Rules)
 
