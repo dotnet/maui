@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST // PR link: https://github.com/dotnet/maui/pull/35072
+#if ANDROID // iOS/Mac fix pending in https://github.com/dotnet/maui/pull/35072
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
