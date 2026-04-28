@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -151,7 +152,17 @@ namespace Microsoft.Maui.Handlers
 #endif
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
+			// Per Apple/WebKit docs, calling any completion method (DidReceiveResponse,
+			// DidReceiveData, DidFinish, DidFailWithError) on a task after WKWebView has
+			// invoked StopUrlSchemeTask throws NSInternalInconsistencyException, which
+			// would crash the process from this `async void` method. We track stopped
+			// tasks here and check before every completion call. The native handle is
+			// used as the key to avoid keeping the task object alive longer than needed.
+			private static readonly NSString HybridWebViewErrorDomain = new NSString("com.microsoft.maui.hybridwebview");
+
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
+			private readonly HashSet<IntPtr> _stoppedTasks = new();
+			private readonly object _stoppedTasksLock = new();
 
 			public SchemeHandler(HybridWebViewHandler webViewHandler)
 			{
@@ -160,6 +171,27 @@ namespace Microsoft.Maui.Handlers
 
 			private HybridWebViewHandler? Handler => _webViewHandler is not null && _webViewHandler.TryGetTarget(out var h) ? h : null;
 
+			private static IntPtr GetTaskHandle(IWKUrlSchemeTask urlSchemeTask) =>
+				((NSObject)urlSchemeTask).Handle;
+
+			private bool IsTaskStopped(IWKUrlSchemeTask urlSchemeTask)
+			{
+				var handle = GetTaskHandle(urlSchemeTask);
+				lock (_stoppedTasksLock)
+				{
+					return _stoppedTasks.Contains(handle);
+				}
+			}
+
+			private void ForgetTask(IWKUrlSchemeTask urlSchemeTask)
+			{
+				var handle = GetTaskHandle(urlSchemeTask);
+				lock (_stoppedTasksLock)
+				{
+					_stoppedTasks.Remove(handle);
+				}
+			}
+
 			// The `async void` is intentional here, as this is an event handler that represents the start
 			// of a request for some data from the webview. Once the task is complete, the `IWKUrlSchemeTask`
 			// object is used to send the response back to the webview.
@@ -167,20 +199,26 @@ namespace Microsoft.Maui.Handlers
 			[SupportedOSPlatform("ios11.0")]
 			public async void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+				ILogger? logger = null;
 				try
 				{
+					// If the handler/virtual view is gone, the task is being torn down. WebKit will (or
+					// already has) call StopUrlSchemeTask, so any completion call here would throw.
+					// Returning without completion is safe in this teardown scenario.
 					if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 					{
 						return;
 					}
 
-					var url = urlSchemeTask.Request.Url.AbsoluteString;
+					logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
+
+					var url = urlSchemeTask.Request.Url?.AbsoluteString;
 					if (string.IsNullOrEmpty(url))
 					{
+						logger?.LogDebug("Received URL scheme task with empty URL; failing the request.");
+						SafeFailTask(urlSchemeTask, "The request URL was empty.");
 						return;
 					}
-
-					var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
 
 					logger?.LogDebug("Intercepting request for {Url}.", url);
 
@@ -198,6 +236,16 @@ namespace Microsoft.Maui.Handlers
 						// 2.a. Check if the request is for a local resource
 						var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
 
+						// The await above is a yield point: WebKit may have called StopUrlSchemeTask
+						// while we were loading the resource. If so, the task object is no longer
+						// valid and any completion call will throw.
+						if (IsTaskStopped(urlSchemeTask))
+						{
+							logger?.LogDebug("URL scheme task for {Url} was stopped before the response could be sent.", url);
+							ForgetTask(urlSchemeTask);
+							return;
+						}
+
 						// 2.b. Return the response header
 						using var dic = new NSMutableDictionary<NSString, NSString>();
 						if (contentType is not null)
@@ -211,33 +259,67 @@ namespace Microsoft.Maui.Handlers
 							dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
 						}
 
-						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-						urlSchemeTask.DidReceiveResponse(response);
+						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url!, statusCode, "HTTP/1.1", dic);
+						SafeInvoke(urlSchemeTask, t => t.DidReceiveResponse(response));
 
 						// 2.c. Return the body
 						if (bytes?.Length > 0)
 						{
-							urlSchemeTask.DidReceiveData(bytes);
+							SafeInvoke(urlSchemeTask, t => t.DidReceiveData(bytes));
 						}
 
-						// 2.d. Finish the task
-						urlSchemeTask.DidFinish();
+						// 2.d. Finish the task and return immediately so no later code can
+						//      try to complete the task again.
+						SafeInvoke(urlSchemeTask, t => t.DidFinish());
+						return;
 					}
 
-					// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
-					//    handle the request as it would normally do. This means that it will try to load the resource
-					//    from the internet or from the local cache.
-
-					logger?.LogDebug("Request for {Url} was not handled.", url);
+					// 3. The 'app' scheme is registered exclusively to this handler — WebKit will not
+					//    fall back to any other loader. If we don't complete the task here it will hang,
+					//    so fail it explicitly.
+					logger?.LogDebug("Request for {Url} was not handled by the app; failing the URL scheme task.", url);
+					SafeFailTask(urlSchemeTask, $"Request for '{url}' was not handled.");
 				}
 				catch (Exception ex)
 				{
-					var userInfo = NSDictionary<NSString, NSObject>.FromObjectsAndKeys(
-						[new NSString(ex.Message)],
-						[NSError.LocalizedDescriptionKey]);
-
-					urlSchemeTask.DidFailWithError(new NSError(new NSString("com.microsoft.maui.hybridwebview"), 500, userInfo));
+					logger?.LogError(ex, "Unhandled exception while servicing URL scheme task.");
+					SafeFailTask(urlSchemeTask, ex.Message);
 				}
+				finally
+				{
+					ForgetTask(urlSchemeTask);
+				}
+			}
+
+			private void SafeInvoke(IWKUrlSchemeTask urlSchemeTask, Action<IWKUrlSchemeTask> action)
+			{
+				if (IsTaskStopped(urlSchemeTask))
+				{
+					return;
+				}
+
+				try
+				{
+					action(urlSchemeTask);
+				}
+				catch (Exception)
+				{
+					// The task was stopped by WKWebView between our check and the call (race),
+					// or the native side rejected the call. Either way we must swallow the
+					// exception — we are inside an `async void` and any throw crashes the app.
+				}
+			}
+
+			private void SafeFailTask(IWKUrlSchemeTask urlSchemeTask, string message)
+			{
+				SafeInvoke(urlSchemeTask, t =>
+				{
+					using var userInfo = NSDictionary<NSString, NSObject>.FromObjectsAndKeys(
+						[new NSString(message ?? string.Empty)],
+						[NSError.LocalizedDescriptionKey]);
+					using var error = new NSError(HybridWebViewErrorDomain, 500, userInfo);
+					t.DidFailWithError(error);
+				});
 			}
 
 			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, NSUrlRequest request, ILogger? logger)
@@ -342,6 +424,14 @@ namespace Microsoft.Maui.Handlers
 			[Export("webView:stopURLSchemeTask:")]
 			public void StopUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+				// WebKit is telling us it no longer cares about this task. After this call,
+				// any completion method invoked on the task will throw — record it so the
+				// in-flight StartUrlSchemeTask handler can bail out cleanly.
+				var handle = GetTaskHandle(urlSchemeTask);
+				lock (_stoppedTasksLock)
+				{
+					_stoppedTasks.Add(handle);
+				}
 			}
 		}
 	}
