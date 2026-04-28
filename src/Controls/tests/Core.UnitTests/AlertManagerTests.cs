@@ -401,7 +401,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task DelegateFuncCancellationPropagatesToCaller()
 		{
-			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromCanceled<bool>(new CancellationToken(canceled: true));
+			using var cancellationTokenSource = new CancellationTokenSource();
+			cancellationTokenSource.Cancel();
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromCanceled<bool>(cancellationTokenSource.Token);
 
 			var window = CreateWindow(services =>
 			{
@@ -410,8 +412,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
 
-			await Assert.ThrowsAsync<TaskCanceledException>(() =>
+			var ex = await Assert.ThrowsAsync<TaskCanceledException>(() =>
 				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Equal(cancellationTokenSource.Token, ex.CancellationToken);
+		}
+
+		[Fact]
+		public async Task DelegateFuncSynchronousCancellationCompletesCallerAsCanceled()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			cancellationTokenSource.Cancel();
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => throw new OperationCanceledException(cancellationTokenSource.Token);
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var resultTask = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			var ex = await Assert.ThrowsAsync<TaskCanceledException>(() => resultTask);
+			Assert.True(resultTask.IsCanceled);
+			Assert.False(resultTask.IsFaulted);
+			Assert.Equal(cancellationTokenSource.Token, ex.CancellationToken);
 		}
 
 		[Fact]

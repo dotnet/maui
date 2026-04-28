@@ -92,6 +92,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				task = invoker();
 			}
+			catch (OperationCanceledException ex)
+			{
+				completion.TrySetCanceled(ex.CancellationToken);
+				return;
+			}
 			catch (Exception ex)
 			{
 				completion.TrySetException(ex);
@@ -127,6 +132,16 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else if (task.IsCanceled)
 			{
+				try
+				{
+					task.GetAwaiter().GetResult();
+				}
+				catch (OperationCanceledException ex)
+				{
+					completion.TrySetCanceled(ex.CancellationToken);
+					return;
+				}
+
 				completion.TrySetCanceled();
 			}
 			else
