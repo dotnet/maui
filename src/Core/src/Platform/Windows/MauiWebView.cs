@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
@@ -73,7 +73,8 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(nameof(MauiWebView), $"Failed to load HTML: {ex}");
+				if (_handler?.TryGetTarget(out var handler) ?? false)
+					handler.MauiContext?.CreateLogger<MauiWebView>()?.LogWarning(ex, "Failed to load HTML");
 			}
 		}
 
@@ -104,7 +105,8 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception exc)
 			{
-				Debug.WriteLine(nameof(MauiWebView), $"Failed to load: {url} {exc}");
+				if (_handler?.TryGetTarget(out var handler) ?? false)
+					handler.MauiContext?.CreateLogger<MauiWebView>()?.LogWarning(exc, "Unable to Load Url {url}", url);
 			}
 		}
 
