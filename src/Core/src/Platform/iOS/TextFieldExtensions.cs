@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				UIImage defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
+				UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
 
 				if (entry.TextColor is null)
 				{
@@ -247,8 +247,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
+		internal static UIImage? GetClearButtonTintImage(UIImage? image, UIColor color)
 		{
+			if (image is null)
+			{
+				return null;
+			}
+
 			var size = image.Size;
 
 			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
