@@ -98,6 +98,7 @@ namespace Microsoft.Maui.Controls
 #endif
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
+			BackButtonAccessibilityLabel = _backButtonBehavior?.AccessibilityLabel;
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 
 			UpdateTitle();
