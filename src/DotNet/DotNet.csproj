@@ -210,7 +210,20 @@
       <_WorkloadRestoreEnvVars Condition="$([MSBuild]::IsOSPlatform('osx'))">$(_WorkloadRestoreEnvVars);DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true</_WorkloadRestoreEnvVars>
     </PropertyGroup>
     <ItemGroup>
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
+      <!-- Only remove the specific manifests we are about to re-provision.
+           Do NOT remove the entire sdk-manifests/<band>/ directory, as that
+           would delete SDK-bundled manifests (e.g. emscripten.net6) that we
+           don't re-provision via Workloads.csproj. -->
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.android" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.ios" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.maccatalyst" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.macos" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.tvos" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.mono.toolchain.current" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.mono.toolchain.net10" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.emscripten.current" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.emscripten.net10" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/samsung.net.sdk.tizen" />
       <_WorkloadDirectoriesToRemove Include="@(_PacksToRemove->'$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/%(Identity)')" />
     </ItemGroup>
     <RemoveDir Directories="$(_WorkloadManifestDir);@(_WorkloadDirectoriesToRemove)" />
