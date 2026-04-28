@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
 				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
 				BridgeIfRegistered<IWebAuthenticator>(services, WebAuthenticator.SetDefault);
-#if WINDOWS || __IOS__
+#if WINDOWS || __IOS__ || MACCATALYST
 				BridgeIfRegistered<IWindowStateManager>(services, WindowStateManager.SetDefault);
 #endif
 				BridgeIfRegistered<IAppleSignInAuthenticator>(services, AppleSignInAuthenticator.SetDefault);

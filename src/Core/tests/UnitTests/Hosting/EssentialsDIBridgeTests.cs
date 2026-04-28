@@ -239,11 +239,10 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void DIRegistration_TakesPrecedenceOverConfigureEssentials()
+		public void DIRegistration_WorksAlongsideConfigureEssentials()
 		{
-			// When both DI and ConfigureEssentials could set the same type,
-			// the DI bridge runs during Initialize and wins because it calls
-			// SetDefault/SetCurrent, overwriting the static field.
+			// ConfigureEssentials configures options and AppActions, so this verifies
+			// DI bridging continues to work when those options are also configured.
 			var diMock = new StubPreferences();
 			var builder = MauiApp.CreateBuilder();
 			builder.Services.AddSingleton<IPreferences>(diMock);
