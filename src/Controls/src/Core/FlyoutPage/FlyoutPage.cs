@@ -5,6 +5,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+#if ANDROID
+using Microsoft.Maui.Handlers;
+#endif
 
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -401,6 +404,14 @@ namespace Microsoft.Maui.Controls
 		}
 #else
 		double IFlyoutView.FlyoutWidth => -1;
+#endif
+
+#if ANDROID
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (Handler is FlyoutViewHandler handler)
+				handler.ReleaseDrawerCallbackBeforePageChange();
+		}
 #endif
 		private protected override string GetDebuggerDisplay()
 		{
