@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateIndicatorShape()
 		{
-			if (!(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 			{
 				UpdateCornerRadius();
 				return;
@@ -130,30 +130,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UIImageView imageView)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				{
-					imageView.Image = UIImage.GetSystemImage(isSquare ? SquareSymbol : CircleSymbol);
-					return;
-				}
-			}
-
-			if (view.Subviews is null || view.Subviews.Length == 0)
-			{
-				return;
-			}
-
-			foreach (var child in view.Subviews)
-			{
-				SetIndicatorShape(child, isSquare);
-			}
-		}
-
-		// Recursively find UIImageView and set its image
-		static void SetIndicatorShape(UIView view, bool isSquare)
-		{
-			if (view is UIImageView imageView)
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 				{
 					imageView.Image = UIImage.GetSystemImage(isSquare ? SquareSymbol : CircleSymbol);
 					return;
@@ -187,7 +164,7 @@ namespace Microsoft.Maui.Platform
 			indicatorView.Position = (int)CurrentPage;
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.
-			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
+			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 				LayoutSubviews();
 
 		}
