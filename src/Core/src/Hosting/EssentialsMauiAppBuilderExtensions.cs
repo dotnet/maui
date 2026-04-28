@@ -99,9 +99,7 @@ namespace Microsoft.Maui.Hosting
 #endif
 			});
 
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
-#endif
 
 			return builder;
 		}
@@ -142,7 +140,6 @@ namespace Microsoft.Maui.Hosting
 		/// on custom platform backends / external TFMs where no native
 		/// MainThread implementation exists.
 		/// </summary>
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 		class MainThreadBridgeInitializer : IMauiInitializeService
 		{
 			public void Initialize(IServiceProvider services)
@@ -156,7 +153,6 @@ namespace Microsoft.Maui.Hosting
 					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
 			}
 		}
-#endif
 
 		class EssentialsInitializer : IMauiInitializeService
 		{
