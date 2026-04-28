@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _insertAfter = false;
 		bool _canReorderItems = true;
 
-		// Auto-scroll fields - Smooth scrolling based on drag position
+		// Auto-scroll fields
 		Microsoft.UI.Dispatching.DispatcherQueueTimer? _autoScrollTimer;
 		double _targetScrollVelocity;
 		double _currentScrollVelocity;
@@ -116,9 +116,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (args.Element is ItemContainer itemContainer)
 			{
 				itemContainer.Tag = args.Index;
-				itemContainer.CanDrag = true;
+
+				// Don't allow dragging group headers or footers
+				bool isHeaderOrFooter = false;
+				if (ItemsSource is IList flatList && args.Index >= 0 && args.Index < flatList.Count)
+				{
+					var templateItem = flatList[args.Index];
+					if (templateItem is ItemTemplateContext2 itc && (itc.IsHeader || itc.IsFooter))
+					{
+						isHeaderOrFooter = true;
+					}
+				}
+
+				itemContainer.CanDrag = !isHeaderOrFooter;
 				itemContainer.DragStarting -= ItemContainer_DragStarting;
-				itemContainer.DragStarting += ItemContainer_DragStarting;
+				if (!isHeaderOrFooter)
+				{
+					itemContainer.DragStarting += ItemContainer_DragStarting;
+				}
 			}
 		}
 
@@ -237,35 +252,74 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			System.Diagnostics.Debug.WriteLine($"  _draggedItem: {_draggedItem}");
 			System.Diagnostics.Debug.WriteLine($"  _insertionIndex: {_insertionIndex}");
 
-			// Use the original MAUI ItemsView's ItemsSource (not the wrapped WinUI ItemsSource)
-			if (!_canReorderItems || _mauiItemsView?.ItemsSource is not IList itemsList || _draggedItem is null || _insertionIndex < 0)
+			if (!_canReorderItems || _draggedItem is null || _insertionIndex < 0 || _mauiItemsView is null)
 			{
 				System.Diagnostics.Debug.WriteLine($"  DROP CANCELLED - Validation failed");
 				CleanupDragState();
 				return;
 			}
 
-			System.Diagnostics.Debug.WriteLine($"  Proceeding with reorder...");
+			// Check if we're in grouped mode
+			bool isGrouped = _mauiItemsView is GroupableItemsView giv && giv.IsGrouped;
 
-			try
+			if (isGrouped)
 			{
-				bool reordered = PerformReorder(itemsList);
-
-				System.Diagnostics.Debug.WriteLine($"  Reorder result: {reordered}");
-
-				if (reordered)
+				if (_mauiItemsView.ItemsSource is not IList groupsList)
 				{
-					// Send reorder completed notification through the MAUI ItemsView
-					if (_mauiItemsView is ReorderableItemsView reorderableItemsView)
+					CleanupDragState();
+					return;
+				}
+
+				try
+				{
+					bool reordered = PerformGroupedReorder(groupsList);
+					System.Diagnostics.Debug.WriteLine($"  Grouped reorder result: {reordered}");
+
+					if (reordered)
 					{
-						reorderableItemsView.SendReorderCompleted();
+						if (_mauiItemsView is ReorderableItemsView reorderableItemsView)
+						{
+							reorderableItemsView.SendReorderCompleted();
+						}
+						ReorderCompleted?.Invoke(this, EventArgs.Empty);
 					}
-					ReorderCompleted?.Invoke(this, EventArgs.Empty);
+				}
+				finally
+				{
+					CleanupDragState();
 				}
 			}
-			finally
+			else
 			{
-				CleanupDragState();
+				// Use the original MAUI ItemsView's ItemsSource (not the wrapped WinUI ItemsSource)
+				if (_mauiItemsView.ItemsSource is not IList itemsList)
+				{
+					System.Diagnostics.Debug.WriteLine($"  DROP CANCELLED - ItemsSource is not IList");
+					CleanupDragState();
+					return;
+				}
+
+				System.Diagnostics.Debug.WriteLine($"  Proceeding with reorder...");
+
+				try
+				{
+					bool reordered = PerformReorder(itemsList);
+
+					System.Diagnostics.Debug.WriteLine($"  Reorder result: {reordered}");
+
+					if (reordered)
+					{
+						if (_mauiItemsView is ReorderableItemsView reorderableItemsView)
+						{
+							reorderableItemsView.SendReorderCompleted();
+						}
+						ReorderCompleted?.Invoke(this, EventArgs.Empty);
+					}
+				}
+				finally
+				{
+					CleanupDragState();
+				}
 			}
 		}
 
@@ -321,6 +375,166 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				var container = FindContainerByIndex(adjustedInsertionIndex);
 				container?.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = true });
+			});
+
+			return true;
+		}
+
+		/// <summary>
+		/// Performs a reorder operation on grouped data, respecting CanMixGroups.
+		/// Maps the flat insertion index to the correct group and position within the group.
+		/// </summary>
+		bool PerformGroupedReorder(IList groupsList)
+		{
+			if (_draggedItem is null || _mauiItemsView is not GroupableItemsView groupableView)
+			{
+				return false;
+			}
+
+			bool hasHeaders = groupableView.GroupHeaderTemplate is not null;
+			bool hasFooters = groupableView.GroupFooterTemplate is not null;
+
+			// Find which group the dragged item belongs to
+			int sourceGroupIndex = -1;
+			int sourceItemIndex = -1;
+			IList? sourceGroup = null;
+
+			for (int g = 0; g < groupsList.Count; g++)
+			{
+				if (groupsList[g] is IList group)
+				{
+					for (int i = 0; i < group.Count; i++)
+					{
+						if (Equals(group[i], _draggedItem))
+						{
+							sourceGroupIndex = g;
+							sourceItemIndex = i;
+							sourceGroup = group;
+							break;
+						}
+					}
+					if (sourceGroup is not null)
+						break;
+				}
+			}
+
+			if (sourceGroup is null || sourceGroupIndex < 0 || sourceItemIndex < 0)
+			{
+				System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: could not find dragged item in any group");
+				return false;
+			}
+
+			System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: sourceGroup={sourceGroupIndex}, sourceItem={sourceItemIndex}");
+
+			// Map the flat _insertionIndex to a target group and position within that group
+			int targetGroupIndex = -1;
+			int targetItemIndex = -1;
+			IList? targetGroup = null;
+			int flatPos = 0;
+
+			for (int g = 0; g < groupsList.Count; g++)
+			{
+				if (groupsList[g] is IList group)
+				{
+					int groupStart = flatPos;
+					if (hasHeaders)
+						flatPos++; // skip header
+
+					int itemsStart = flatPos;
+					flatPos += group.Count; // items
+
+					if (hasFooters)
+						flatPos++; // skip footer
+
+					// Check if insertion index falls within this group's range (including just past the last item)
+					if (_insertionIndex >= itemsStart && _insertionIndex <= itemsStart + group.Count)
+					{
+						targetGroupIndex = g;
+						targetItemIndex = _insertionIndex - itemsStart;
+						targetGroup = group;
+						break;
+					}
+
+					// If insertion is on the header, target the beginning of this group
+					if (hasHeaders && _insertionIndex == groupStart)
+					{
+						targetGroupIndex = g;
+						targetItemIndex = 0;
+						targetGroup = group;
+						break;
+					}
+				}
+			}
+
+			// If we didn't find a target (e.g., dragged past the end), use the last group
+			if (targetGroup is null && groupsList.Count > 0)
+			{
+				for (int g = groupsList.Count - 1; g >= 0; g--)
+				{
+					if (groupsList[g] is IList group)
+					{
+						targetGroupIndex = g;
+						targetItemIndex = group.Count;
+						targetGroup = group;
+						break;
+					}
+				}
+			}
+
+			if (targetGroup is null || targetGroupIndex < 0)
+			{
+				System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: could not determine target group");
+				return false;
+			}
+
+			System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: targetGroup={targetGroupIndex}, targetItem={targetItemIndex}");
+
+			// Check CanMixGroups
+			if (sourceGroupIndex != targetGroupIndex)
+			{
+				if (_mauiItemsView is ReorderableItemsView riv && !riv.CanMixGroups)
+				{
+					System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: CanMixGroups is false, rejecting cross-group move");
+					return false;
+				}
+			}
+
+			// Same group, same position - no move needed
+			if (sourceGroupIndex == targetGroupIndex)
+			{
+				// Adjust target index when removing from same group before the target position
+				int adjustedTargetIndex = targetItemIndex;
+				if (sourceItemIndex < adjustedTargetIndex)
+					adjustedTargetIndex--;
+
+				if (sourceItemIndex == adjustedTargetIndex)
+				{
+					System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: same position in same group, no move needed");
+					return false;
+				}
+
+				var item = sourceGroup[sourceItemIndex];
+				sourceGroup.RemoveAt(sourceItemIndex);
+				adjustedTargetIndex = Math.Clamp(adjustedTargetIndex, 0, sourceGroup.Count);
+				sourceGroup.Insert(adjustedTargetIndex, item);
+
+				System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: moved within group {sourceGroupIndex} from {sourceItemIndex} to {adjustedTargetIndex}");
+			}
+			else
+			{
+				// Cross-group move
+				var item = sourceGroup[sourceItemIndex];
+				sourceGroup.RemoveAt(sourceItemIndex);
+				targetItemIndex = Math.Clamp(targetItemIndex, 0, targetGroup.Count);
+				targetGroup.Insert(targetItemIndex, item);
+
+				System.Diagnostics.Debug.WriteLine($"  PerformGroupedReorder: moved from group {sourceGroupIndex}[{sourceItemIndex}] to group {targetGroupIndex}[{targetItemIndex}]");
+			}
+
+			DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+			{
+				_itemsRepeater?.UpdateLayout();
+				UpdateAllContainerIndices();
 			});
 
 			return true;
