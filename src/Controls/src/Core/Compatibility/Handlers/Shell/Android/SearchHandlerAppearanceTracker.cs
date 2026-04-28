@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
 			_editText.FocusChange += EditTextFocusChange;
-
 			UpdateSearchBarColors();
 			UpdateFont();
 			UpdateHorizontalTextAlignment();
@@ -149,7 +148,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateBackgroundColor()
 		{
-			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
+			var linearLayout = (_control as ViewGroup)?.GetFirstChildOfType<LinearLayout>();
 			if (linearLayout is null)
 			{
 				return;
