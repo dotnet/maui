@@ -133,6 +133,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		/// <summary>
+		/// Returns the effective stroke thickness: <see cref="StrokeThickness"/> when a <see cref="Stroke"/> is set, otherwise 0.
+		/// </summary>
+		internal double EffectiveStrokeThickness => Stroke is not null ? StrokeThickness : 0;
+
+		/// <summary>
 		/// Gets or sets the collection of values that specify the pattern of dashes and gaps in the shape's outline. This is a bindable property.
 		/// </summary>
 		public DoubleCollection StrokeDashArray
@@ -317,10 +322,17 @@ namespace Microsoft.Maui.Controls.Shapes
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = path.GetBoundsByFlattening(1);
 
-			viewBounds.X += StrokeThickness / 2;
-			viewBounds.Y += StrokeThickness / 2;
-			viewBounds.Width -= StrokeThickness;
-			viewBounds.Height -= StrokeThickness;
+			// Only apply stroke inset if there is an actual stroke. 
+			// For shapes with no stroke shrinking the bounds by StrokeThickness was
+			// effectively collapsing very small heights into a barely visible line.
+			var strokeThickness = EffectiveStrokeThickness;
+			if (strokeThickness > 0)
+			{
+				viewBounds.X += strokeThickness / 2;
+				viewBounds.Y += strokeThickness / 2;
+				viewBounds.Width -= strokeThickness;
+				viewBounds.Height -= strokeThickness;
+			}
 
 			Matrix3x2 transform;
 
@@ -436,8 +448,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
-			widthConstraint -= StrokeThickness;
-			heightConstraint -= StrokeThickness;
+			widthConstraint -= EffectiveStrokeThickness;
+			heightConstraint -= EffectiveStrokeThickness;
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
@@ -485,8 +497,8 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			result.Height += StrokeThickness;
-			result.Width += StrokeThickness;
+			result.Height += EffectiveStrokeThickness;
+			result.Width += EffectiveStrokeThickness;
 			return result;
 		}
 

@@ -142,25 +142,34 @@ namespace Microsoft.Maui.DeviceTests
 			var colors = new Color[16];
 			int index = 0;
 
-			// To calculate the x and y offsets (from the center) for a 45-45-90 triangle, we can use the radius as the hypotenuse
-			// which means that the x and y offsets would be radius / sqrt(2).
+			// To calculate the x and y offsets (from the corner) for the 45° point on a circular arc,
+			// use the formula: offset = radius - radius / sqrt(2).
 			var xy = radius - (radius / Math.Sqrt(2));
+
+			// The inner stroke edge follows a concentric arc with radius (radius - strokeThickness).
+			// At 45°, the inner edge offset from the corner is: radius - (radius - strokeThickness) / sqrt(2).
+			// Note: this is NOT outerXY + strokeThickness, because the stroke width is measured radially
+			// (perpendicular to the arc), not linearly along both X and Y axes.
+			var innerXY = radius - ((radius - strokeThickness) / Math.Sqrt(2));
 
 			for (int i = 0; i < corners.Length; i++)
 			{
 				int xdir = i == 0 || i == 2 ? 1 : -1;
 				int ydir = i == 0 || i == 1 ? 1 : -1;
 
-				// This marks the outside edge of the rounded corner.
+				// This marks the outside edge of the rounded corner (path line at 45°).
 				var outerX = corners[i].X + (xdir * xy);
 				var outerY = corners[i].Y + (ydir * xy);
 
-				// Add stroke thickness to find the inner edge of the rounded corner.
-				var innerX = outerX + (xdir * strokeThickness);
-				var innerY = outerY + (ydir * strokeThickness);
+				// Inner edge of the stroke at 45° (concentric arc).
+				var innerX = corners[i].X + (xdir * innerXY);
+				var innerY = corners[i].Y + (ydir * innerXY);
 
-				// Verify that the color outside of the rounded corner is the parent's color (White)
-				points[index] = new Point(outerX - (xdir * 0.25), outerY - (ydir * 0.25));
+				// Verify that the color outside of the rounded corner is the parent's color (White).
+				// Use 1.5dp margin (not 0.25) to stay clear of antialiasing at the stroke edge:
+				// at density=2 the stroke outer edge is at ~11.7px, and 0.25dp gives only ~0.7px
+				// clearance — inside the 1px antialiasing blend zone, causing intermittent failures.
+				points[index] = new Point(outerX - (xdir * 1.5), outerY - (ydir * 1.5));
 				colors[index] = Colors.White;
 				index++;
 
@@ -173,8 +182,11 @@ namespace Microsoft.Maui.DeviceTests
 				colors[index] = stroke;
 				index++;
 
-				// Verify that the background color starts where we'd expect it to start
-				points[index] = new Point(innerX + (xdir * 0.25), innerY + (ydir * 0.25));
+				// Verify that the background color starts where we'd expect it to start.
+				// Use 1.5dp margin to stay clear of antialiasing at the inner stroke edge:
+				// on iOS @1x context (1pt=1px), innerX+0.25 gives only ~0.14px clearance from the
+				// 9.858pt inner edge — inside the antialiasing blend zone (near-zero tolerance on iOS).
+				points[index] = new Point(innerX + (xdir * 1.5), innerY + (ydir * 1.5));
 				colors[index] = border.BackgroundColor;
 				index++;
 			}
