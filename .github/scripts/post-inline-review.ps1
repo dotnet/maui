@@ -105,7 +105,7 @@ if (Test-Path $SummaryFile) {
 Write-Host "Fetching PR #$PRNumber head commit..." -ForegroundColor Cyan
 $prJson = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '{sha: .head.sha}' 2>&1
 if ($LASTEXITCODE -ne 0) {
-    throw "Failed to fetch PR #$PRNumber: $prJson"
+    throw "Failed to fetch PR #${PRNumber}: $prJson"
 }
 $prData = $prJson | ConvertFrom-Json
 $commitSha = $prData.sha
