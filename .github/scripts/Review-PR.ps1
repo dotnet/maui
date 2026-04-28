@@ -499,8 +499,11 @@ The agent will analyze the issue, determine the appropriate test type (UI test, 
     }
 }
 
-# Post gate result as a separate PR comment
-$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
+# Post gate result by updating (or creating) the unified AI Summary comment.
+# The same script is called again in STEP 3 once the review phases finish; here
+# it runs early so the PR author sees the gate outcome without waiting for the
+# full review.
+$postGateScript = Join-Path $PSScriptRoot "post-ai-summary-comment.ps1"
 if (Test-Path $postGateScript) {
     try {
         if ($DryRun) {
@@ -509,10 +512,10 @@ if (Test-Path $postGateScript) {
             & $postGateScript -PRNumber $PRNumber
         }
     } catch {
-        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Failed to post gate section (non-fatal): $_" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
+    Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found" -ForegroundColor Yellow
 }
 
 # Apply gate result label

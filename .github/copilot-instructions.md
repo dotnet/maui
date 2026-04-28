@@ -18,8 +18,7 @@ When performing a code review on PRs that change functional code, run the pr-fin
 
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
   - **main branch**: Latest stable .NET version
-  - **net10.0 branch**: .NET 10 SDK
-  - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
+  - **Feature branches**: Each `netN.0` branch targets the .NET N SDK. By convention, the highest `netN.0` branch is the current development branch for new features and API changes.
 - **Cake build system** for compilation and packaging (`dotnet cake`)
 - **MSBuild** with custom build tasks (must build `Microsoft.Maui.BuildTasks.slnf` first)
 - **Testing frameworks**:
@@ -102,6 +101,14 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 **⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
 
+### Gradle / Maven Dependency Failures (CFSClean)
+
+The official CI build uses CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven dependencies resolve through the `dotnet-public-maven` Azure Artifacts feed.
+
+**If CI fails with Gradle 401 errors** like `"No local versions of package"` or `"Please provide authentication to save package from upstream"`, it means a Maven package hasn't been ingested into the feed yet. **Fix:** run `./eng/ingest-maven-deps.sh` locally to pre-populate the feed. See `src/Core/AndroidNative/settings.gradle` for details.
+
+**Do NOT upgrade Gradle past 8.x** — the Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`).
+
 ### Code Formatting
 
 Always format code before committing:
@@ -140,7 +147,7 @@ When working with public API changes:
 
 ### Branching
 - `main` - For bug fixes without API changes
-- `net10.0` - For new features and API changes
+- The highest `netN.0` branch (by convention) - For new features and API changes. To find it, run `git fetch origin` then: `git for-each-ref --sort=-version:refname --count=1 --format='%(refname:lstrip=3)' refs/remotes/origin/net*.0`
 
 ### Git Workflow (Copilot CLI Rules)
 

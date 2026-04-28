@@ -13,9 +13,16 @@
     After posting, the PR author is @-mentioned so they know to review.
 
     Content is auto-loaded from PRAgent phase files:
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/gate/content.md          (always shown first, open)
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md
 
-    Gate is posted separately by post-gate-comment.ps1.
+    Gate is included as a section inside this unified comment — the script may
+    be called by Review-PR.ps1 twice per run: once after the gate completes
+    (gate-only update) and once after the review phases finish (full update).
+
+    Any standalone legacy "<!-- AI Gate -->" comment from older versions of
+    the script is deleted after a successful post to avoid duplicates.
 
 .PARAMETER PRNumber
     The pull request number (required)
@@ -60,9 +67,34 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "pre-flight" = @{ File = "pre-flight/content.md"; Icon = "🔍"; Title = "Pre-Flight — Context & Validation" }
-    "try-fix"    = @{ File = "try-fix/content.md";    Icon = "🔧"; Title = "Fix — Analysis & Comparison" }
-    "report"     = @{ File = "report/content.md";     Icon = "📋"; Title = "Report — Final Recommendation" }
+    "pre-flight"  = @{ File = "pre-flight/content.md";     Icon = "🔍"; Title = "Pre-Flight — Context & Validation" }
+    "code-review" = @{ File = "pre-flight/code-review.md"; Icon = "🔬"; Title = "Code Review — Deep Analysis" }
+    "try-fix"     = @{ File = "try-fix/content.md";        Icon = "🔧"; Title = "Fix — Analysis & Comparison" }
+    "report"      = @{ File = "report/content.md";         Icon = "📋"; Title = "Report — Final Recommendation" }
+}
+
+# ─── Gate content (rendered first, always open) ───
+$gateSection = $null
+$gateFilePath = Join-Path $PRAgentDir "gate/content.md"
+if (Test-Path $gateFilePath) {
+    $gateContent = Get-Content $gateFilePath -Raw -Encoding UTF8
+    if (-not [string]::IsNullOrWhiteSpace($gateContent)) {
+        Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
+        $gateSection = @"
+<details open>
+<summary>🚦 <strong>Gate — Test Before & After Fix</strong></summary>
+
+---
+
+$gateContent
+
+</details>
+"@
+    } else {
+        Write-Host "  ⏭️  gate (empty)" -ForegroundColor Gray
+    }
+} else {
+    Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
 }
 
 $phaseSections = @()
@@ -93,8 +125,8 @@ $content
     }
 }
 
-if ($phaseSections.Count -eq 0) {
-    throw "No phase content found. Ensure at least one content.md exists in $PRAgentDir."
+if (-not $gateSection -and $phaseSections.Count -eq 0) {
+    throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
 
 # ============================================================================
@@ -123,7 +155,13 @@ $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
 # BUILD NEW SESSION BLOCK
 # ============================================================================
 
-$phaseContent = $phaseSections -join "`n`n---`n`n"
+# Combine gate (always first, open) with phases (collapsed). When only one
+# kind of content is available, the session still renders cleanly.
+$sessionParts = @()
+if ($gateSection)            { $sessionParts += $gateSection }
+if ($phaseSections.Count -gt 0) { $sessionParts += ($phaseSections -join "`n`n---`n`n") }
+$phaseContent = $sessionParts -join "`n`n---`n`n"
+
 $sessionMarkerStart = "<!-- SESSION:$commitSha7 START -->"
 $sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
 
@@ -176,12 +214,17 @@ function Merge-Sessions {
     foreach ($sha in $orderedKeys) {
         $block = $sessions[$sha]
         if ($isFirst) {
-            # Ensure latest session has <details open>
-            $block = $block -replace '<details(?:\s+open)?>', '<details open>'
+            # Ensure ONLY the outer (session-wrapping) details tag is open. Inner
+            # phase tags must keep their original open/collapsed state — we used
+            # to re-open all of them via a global regex replace, which forced
+            # every phase to expand on each new session.
+            $rx = [regex]::new('<details(?:\s+open)?>')
+            $block = $rx.Replace($block, '<details open>', 1)
             $isFirst = $false
         } else {
-            # Collapse older sessions
-            $block = $block -replace '<details\s+open>', '<details>'
+            # Collapse the outer details of older sessions; leave inner phases alone.
+            $rx = [regex]::new('<details\s+open>')
+            $block = $rx.Replace($block, '<details>', 1)
         }
         $allSessions += $block
     }
@@ -299,4 +342,26 @@ try {
     }
 } finally {
     Remove-Item $tempFile -ErrorAction SilentlyContinue
+}
+
+# ============================================================================
+# CLEAN UP LEGACY STANDALONE GATE COMMENTS
+# ============================================================================
+# Earlier versions of this workflow posted gate results in a separate comment
+# marked with <!-- AI Gate -->. Now that the gate is included as a section in
+# this unified comment, those legacy comments are duplicates and should go.
+
+try {
+    $legacyMarker = "<!-- AI Gate -->"
+    $allRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+    if ($allRaw) {
+        $allComments = $allRaw | ConvertFrom-Json
+        $legacy = @($allComments | Where-Object { $_.body -and $_.body.Contains($legacyMarker) })
+        foreach ($lc in $legacy) {
+            Write-Host "🧹 Deleting legacy gate comment (ID: $($lc.id))..." -ForegroundColor Gray
+            gh api --method DELETE "repos/dotnet/maui/issues/comments/$($lc.id)" 2>&1 | Out-Null
+        }
+    }
+} catch {
+    Write-Host "⚠️ Legacy gate-comment cleanup failed (non-fatal): $_" -ForegroundColor Yellow
 }
