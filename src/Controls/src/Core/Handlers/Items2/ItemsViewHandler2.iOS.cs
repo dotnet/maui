@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
@@ -138,6 +139,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
+			int section = 0, item = 0;
+			UICollectionViewScrollPosition scrollPosition = UICollectionViewScrollPosition.None;
+
 			using (var indexPath = DetermineIndex(args))
 			{
 				if (!IsIndexPathValid(indexPath))
@@ -147,11 +151,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				var scrollDirection = Controller.GetScrollDirection();
-				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
+				scrollPosition = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
+
+				// Capture section and item as ints before the using block disposes the indexPath
+				section = (int)indexPath.Section;
+				item = (int)indexPath.Item;
 
 				Controller.CollectionView.ScrollToItem(indexPath,
-					position, args.IsAnimated);
+					scrollPosition, args.IsAnimated);
 			}
+
+			// After non-animated scroll, arm KVO restore to recover from silent Mac Catalyst contentOffset shift
+#if MACCATALYST
+			if (Controller?.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.ClearPendingScrollRestore();
+
+				if (!args.IsAnimated)
+				{
+					mauiCV.SetPendingScrollRestore(section, item, scrollPosition);
+				}
+			}
+#endif
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 			{
