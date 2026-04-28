@@ -33,6 +33,10 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// The last observed Y offset while tracking — used as the reference to detect a sudden drop.
 	nfloat _lastKnownOffsetY;
 
+	// Threshold (in points) for detecting a silent UIKit contentOffset reset.
+	// Any Y-offset drop larger than this is treated as a silent reset rather than normal movement.
+	static readonly nfloat SilentResetThreshold = 10f;
+
 	// KVO observer token for contentOffset — active while the view is attached to a window.
 	IDisposable? _contentOffsetObserver;
 
@@ -64,7 +68,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		// DraggingStarted clears _isTrackingScrollRestore before any user drag fires KVO,
 		// so any drop > 10px here is a silent UIKit reset.
 		// This handles both Y≈0 resets AND non-zero clamp resets (e.g., Y=713→Y=300).
-		if (y >= _lastKnownOffsetY - 10.0f)
+		if (y >= _lastKnownOffsetY - SilentResetThreshold)
 		{
 			_lastKnownOffsetY = y;
 			return;
@@ -85,6 +89,11 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		DispatchQueue.MainQueue.DispatchAsync(() =>
 		{
 			if (Handle == IntPtr.Zero || Window is null)
+			{
+				return;
+			}
+
+			if (Tracking || Dragging || Decelerating)
 			{
 				return;
 			}
@@ -114,6 +123,16 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	{
 		_contentOffsetObserver?.Dispose();
 		_contentOffsetObserver = null;
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			StopContentOffsetObserver();
+			ClearPendingScrollRestore();
+		}
+		base.Dispose(disposing);
 	}
 
 	/// <summary>
