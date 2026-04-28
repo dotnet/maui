@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 #if WINDOWS_UWP || WINDOWS
 			var mapToken = Environment.GetEnvironmentVariable("BING_MAPS_API_KEY");
-			if (!string.IsNullOrEmpty(mapToken))
+			if (!string.IsNullOrWhiteSpace(mapToken))
 				ApplicationModel.Platform.MapServiceToken = mapToken;
 #endif
 		}
