@@ -69,3 +69,12 @@ If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlo
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+
+## Test Count Deduplication
+
+When querying AzDO test results directly (e.g., via the `/test/runs/{id}/results` API), **always deduplicate by test name** before reporting counts. MAUI UI tests produce multiple test runs per test because each test executes across:
+- **Runtime variants**: CoreCLR and Mono
+- **Platform versions**: e.g., iOS 18.5 and iOS latest, Android API 30 and API 36
+- **Retry attempts**: failed jobs are retried, each attempt publishes a new test run
+
+A single failing test can appear in 4–8+ test runs. Summing raw `totalTests - passedTests` across all runs inflates failure counts by 4–8x. Always report **unique failing test names**, not raw result counts.
