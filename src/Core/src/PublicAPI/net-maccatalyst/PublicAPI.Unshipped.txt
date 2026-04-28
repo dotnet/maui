@@ -5,6 +5,7 @@ override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConst
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
+static Microsoft.Maui.Handlers.RadioButtonHandler.MapBackground(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapBackground(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapBackground(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.DatePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
