@@ -34,7 +34,7 @@ variables:
 - name: provisionator.xcode
   value: 'eng/provisioning/xcode.csx'
 - name: internalProvisioning
-  value: false
+  value: true
 - name: provisionator.extraArguments
   value: '-vvvv'
 - name: DotNet.Dir
