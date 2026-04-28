@@ -311,6 +311,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
 			{
@@ -327,6 +330,31 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is IToolbarElement te)
 			{
 				te.Toolbar?.Handler?.DisconnectHandler();
+			}
+		}
+
+		// Called from Window.OnPageChanging before page replacement so the DrawerLayout
+		// releases its system back callback synchronously, preventing it from shadowing
+		// the new page's callbacks on Android 16 (API 36+).
+		// NOTE: This method must only be called immediately before page replacement, which
+		// always triggers DisconnectHandler. The LockModeLockedClosed set below is transient
+		// and is reset by LayoutViews() if this handler is ever reconnected.
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+				return;
+
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+
+			if (PlatformView is DrawerLayout dl)
+			{
+				if (_flyoutView is not null && _flyoutView.Parent == dl)
+					dl.CloseDrawer(_flyoutView, false);
+				else
+					dl.CloseDrawers();
+
+				dl.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 			}
 		}
 
