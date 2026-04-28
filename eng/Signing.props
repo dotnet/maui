@@ -29,7 +29,7 @@
     <FileSignInfo Include="ReconnectModal.razor.js" CertificateName="Microsoft400" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Label="MSI workload cab signing">
     <!-- Sign cab files embedded inside MSI workload packs -->
     <FileExtensionSignInfo Include=".cab" CertificateName="Microsoft400" />
   </ItemGroup>
