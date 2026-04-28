@@ -24,7 +24,6 @@ public class Issue34993 : ContentPage
             new Point(1, 1)
         );
 
-
         var resetButton = new Button
         {
             Text = "Set Background to Blue",
