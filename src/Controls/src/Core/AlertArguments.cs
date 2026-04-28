@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <para>
 	/// Third-party platform backends may supply a custom alert implementation by registering a
 	/// keyed <see cref="System.Func{T1, T2, TResult}"/> of
-	/// <c>Func&lt;Microsoft.Maui.Controls.Page, AlertArguments, System.Threading.Tasks.Task&gt;</c>
+	/// <c>Func&lt;Microsoft.Maui.Controls.Page, AlertArguments, System.Threading.Tasks.Task&lt;bool&gt;&gt;</c>
 	/// in the application's <see cref="System.IServiceProvider"/> with the service key
-	/// <c>Microsoft.Maui.Controls.DisplayAlert</c>. The delegate is expected to call
-	/// <see cref="SetResult(bool)"/> when the user has made a choice. Unkeyed delegates are not
-	/// considered by this convention.
+	/// <c>Microsoft.Maui.Controls.DisplayAlert</c>. The delegate should return <see langword="true"/>
+	/// when the user accepts the alert, or <see langword="false"/> when the user cancels or dismisses
+	/// it. Unkeyed delegates are not considered by this convention.
 	/// </para>
 	/// <para>
 	/// Note: the keyed registration is reserved for MAUI alert handling. Do not reuse this service

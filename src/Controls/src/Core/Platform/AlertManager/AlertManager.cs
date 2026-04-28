@@ -58,9 +58,9 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		// Looks for per-operation keyed dialog delegates registered in DI using ONLY already-public types:
-		//   Func<Page, AlertArguments, Task>
-		//   Func<Page, ActionSheetArguments, Task>
-		//   Func<Page, PromptArguments, Task>
+		//   Func<Page, AlertArguments, Task<bool>>
+		//   Func<Page, ActionSheetArguments, Task<string>>
+		//   Func<Page, PromptArguments, Task<string>>
 		// This lets third-party backends supply alert/dialog implementations without MAUI having to
 		// expose IAlertManagerSubscription publicly. Keyed registrations make the intent explicit and
 		// avoid consuming unrelated Func<> registrations. Any delegate that isn't registered falls
@@ -74,9 +74,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 			}
 
-			var alertHandler = keyedServices.GetKeyedService<Func<Page, AlertArguments, Task>>(DisplayAlertServiceKey);
-			var actionSheetHandler = keyedServices.GetKeyedService<Func<Page, ActionSheetArguments, Task>>(DisplayActionSheetServiceKey);
-			var promptHandler = keyedServices.GetKeyedService<Func<Page, PromptArguments, Task>>(DisplayPromptServiceKey);
+			var alertHandler = keyedServices.GetKeyedService<Func<Page, AlertArguments, Task<bool>>>(DisplayAlertServiceKey);
+			var actionSheetHandler = keyedServices.GetKeyedService<Func<Page, ActionSheetArguments, Task<string>>>(DisplayActionSheetServiceKey);
+			var promptHandler = keyedServices.GetKeyedService<Func<Page, PromptArguments, Task<string>>>(DisplayPromptServiceKey);
 
 			if (alertHandler is null && actionSheetHandler is null && promptHandler is null)
 			{
