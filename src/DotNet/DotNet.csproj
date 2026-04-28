@@ -337,21 +337,7 @@
               if (index != -1) {
                   name = name.Substring(0, index);
               }
-              // When Name is NOT set, files come from NuGet restore layout:
-              //   <package>/<version>/data/<file>
-              // The SDK preview.4+ requires the version subdir in the manifest path.
-              // When Name IS set (Install target), files come from an unzipped nupkg
-              // with flat data/<file> layout — no version segment available.
-              string directory;
-              if (string.IsNullOrEmpty(Name))
-              {
-                  var version = Directory.GetParent(file).Parent.Name;
-                  directory = Path.Combine(WorkloadDirectory, name, version);
-              }
-              else
-              {
-                  directory = Path.Combine(WorkloadDirectory, name);
-              }
+              var directory = Path.Combine(WorkloadDirectory, name);
               Directory.CreateDirectory(directory);
               var destination = Path.Combine(directory, Path.GetFileName(file));
               Log.LogMessage($"Copying {file} to {destination}");
