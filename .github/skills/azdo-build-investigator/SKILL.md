@@ -72,9 +72,11 @@ If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlo
 
 ## Test Count Deduplication
 
-When querying AzDO test results directly (e.g., via the `/test/runs/{id}/results` API), **always deduplicate by test name** before reporting counts. MAUI UI tests produce multiple test runs per test because each test executes across:
+When querying AzDO test results directly (e.g., via the `/test/runs/{id}/results` API), **always deduplicate before reporting counts**. MAUI UI tests produce multiple test runs per test because each test executes across:
 - **Runtime variants**: CoreCLR and Mono
 - **Platform versions**: e.g., iOS 18.5 and iOS latest, Android API 30 and API 36
 - **Retry attempts**: failed jobs are retried, each attempt publishes a new test run
 
-A single failing test can appear in 4–8+ test runs. Summing raw `totalTests - passedTests` across all runs inflates failure counts by 4–8x. Always report **unique failing test names**, not raw result counts.
+A single failing test can appear in 4–8+ test runs. Summing raw `totalTests - passedTests` across all runs inflates failure counts dramatically.
+
+**How to deduplicate**: Group by **test name + platform** (e.g., "DatePicker_Format_D on iOS" vs "DatePicker_Format_D on Android" are distinct failures worth reporting separately). Collapse retries and runtime variants (coreclr/mono) of the same test on the same platform — if a test fails on both coreclr and mono for the same iOS version, that's one issue, not two. The test run name encodes the variant (e.g., `_ios_ui_tests_coreclr_controls_latest`) — use the platform portion for grouping and ignore the runtime/attempt suffix.
