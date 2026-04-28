@@ -381,14 +381,15 @@ namespace Microsoft.Maui.Handlers
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-			if (arg is not EvaluateJavaScriptAsyncRequest request ||
-				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
+			if (arg is not EvaluateJavaScriptAsyncRequest request)
 			{
 				return;
 			}
 
-			if (handler.PlatformView is null)
+			if (handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
 			{
+				// PlatformView is not available (e.g. handler was disconnected or never connected to the
+				// expected platform view). Cancel the request so the caller's await does not hang forever.
 				request.SetCanceled();
 				return;
 			}
@@ -416,6 +417,12 @@ namespace Microsoft.Maui.Handlers
 				var innerRequest = new EvaluateJavaScriptAsyncRequest(script);
 				EvaluateJavaScript(handler, hybridWebView, innerRequest);
 
+				// NOTE: If the platform-specific EvaluateJavaScript implementation never completes
+				// innerRequest (e.g. the underlying WebView was torn down or failed to initialize and
+				// the platform silently skips the evaluation without throwing), this await will hang.
+				// All current platform implementations either complete the request or throw, but new
+				// platform paths must take care to always complete innerRequest. A future improvement
+				// could add a CancellationToken-based timeout here.
 				var result = await innerRequest.Task;
 
 				//if the js function errored or returned null/undefined treat it as null
