@@ -1,31 +1,34 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts or updates the agent review comment on a GitHub Pull Request with validation.
+    Posts or updates the AI review summary comment on a GitHub Pull Request.
 
 .DESCRIPTION
-    Creates ONE comment for the entire PR review with all phases wrapped in an expandable section.
-    Uses HTML marker <!-- AI Summary --> for identification.
-    
-    Content is always auto-loaded from PRAgent phase files
-    (CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/*/content.md).
-    
-    **Validates that phases marked as COMPLETE actually have content.**
-    
-    Format:
-    ## 🤖 AI Summary — ✅ APPROVE
-    <details><summary>📊 Expand Full Review</summary>
-      Status table + all 4 phases as nested details
-    </details>
+    Maintains ONE comment per PR, identified by <!-- AI Summary --> marker.
+    Each review run adds an expandable session keyed by HEAD commit SHA.
+    - Same commit SHA → replaces that session in-place.
+    - New commit SHA  → prepends a new session (latest first).
+    Older sessions stay collapsed; the newest is expanded by default.
+
+    After posting, the PR author is @-mentioned so they know to review.
+
+    Content is auto-loaded from PRAgent phase files:
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/gate/content.md          (always shown first, open)
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md
+
+    Gate is included as a section inside this unified comment — the script may
+    be called by Review-PR.ps1 twice per run: once after the gate completes
+    (gate-only update) and once after the review phases finish (full update).
+
+    Any standalone legacy "<!-- AI Gate -->" comment from older versions of
+    the script is deleted after a successful post to avoid duplicates.
 
 .PARAMETER PRNumber
     The pull request number (required)
 
 .PARAMETER DryRun
     Print comment instead of posting
-
-.PARAMETER SkipValidation
-    Skip validation checks (not recommended)
 
 .EXAMPLE
     ./post-ai-summary-comment.ps1 -PRNumber 12345
@@ -35,31 +38,21 @@
 #>
 
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $true)]
     [int]$PRNumber,
 
-    [Parameter(Mandatory=$false)]
-    [switch]$DryRun,
-
-    [Parameter(Mandatory=$false)]
-    [switch]$SkipValidation,
-
-    [Parameter(Mandatory=$false)]
-    [string]$PreviewFile
+    [Parameter(Mandatory = $false)]
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
+$MARKER = "<!-- AI Summary -->"
 
 # ============================================================================
-# INPUT VALIDATION
+# LOAD PHASE CONTENT
 # ============================================================================
 
-if ($PRNumber -eq 0) {
-    throw "PRNumber is required."
-}
-
-# Auto-load from PRAgent phase files
-Write-Host "ℹ️  Auto-loading from PRAgent phase files..." -ForegroundColor Cyan
+Write-Host "ℹ️  Loading phase content for PR #$PRNumber..." -ForegroundColor Cyan
 
 $PRAgentDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
 if (-not (Test-Path $PRAgentDir)) {
@@ -70,671 +63,114 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 if (-not (Test-Path $PRAgentDir)) {
-    Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║  ⛔ No PRAgent directory found                            ║" -ForegroundColor Red
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Expected directory: $PRAgentDir" -ForegroundColor Yellow
-    Write-Host "Ensure PRAgent phase files exist." -ForegroundColor Yellow
-    throw "No PRAgent directory found. Ensure PRAgent/*/content.md files exist."
+    throw "No PRAgent directory found at: $PRAgentDir"
 }
 
-# Load each phase content file
-$phaseFiles = @{
-    "pre-flight" = Join-Path $PRAgentDir "pre-flight/content.md"
-    "gate" = Join-Path $PRAgentDir "gate/content.md"
-    "try-fix" = Join-Path $PRAgentDir "try-fix/content.md"
-    "report" = Join-Path $PRAgentDir "report/content.md"
+$phases = [ordered]@{
+    "pre-flight"  = @{ File = "pre-flight/content.md";     Icon = "🔍"; Title = "Pre-Flight — Context & Validation" }
+    "code-review" = @{ File = "pre-flight/code-review.md"; Icon = "🔬"; Title = "Code Review — Deep Analysis" }
+    "try-fix"     = @{ File = "try-fix/content.md";        Icon = "🔧"; Title = "Fix — Analysis & Comparison" }
+    "report"      = @{ File = "report/content.md";         Icon = "📋"; Title = "Report — Final Recommendation" }
 }
 
-$loadedPhases = @()
-$phaseContentMap = @{}
-
-foreach ($phase in $phaseFiles.GetEnumerator()) {
-    if (Test-Path $phase.Value) {
-        $phaseContentMap[$phase.Key] = Get-Content $phase.Value -Raw -Encoding UTF8
-        $loadedPhases += $phase.Key
-        Write-Host "  ✅ Loaded: $($phase.Key) ($((Get-Item $phase.Value).Length) bytes)" -ForegroundColor Green
-    } else {
-        Write-Host "  ⏭️  Skipped: $($phase.Key) (no content.md)" -ForegroundColor Gray
-    }
-}
-
-if ($loadedPhases.Count -eq 0) {
-    throw "No phase content files found in $PRAgentDir. Ensure at least one phase has a content.md file."
-}
-
-Write-Host "  📦 Loaded $($loadedPhases.Count) phase(s): $($loadedPhases -join ', ')" -ForegroundColor Cyan
-
-# Build synthetic Content from phase files in the expected <details> format
-$syntheticParts = @()
-
-# Determine phase statuses based on which files exist and content
-$phaseStatusMap = @{}
-foreach ($phase in @("pre-flight", "gate", "try-fix", "report")) {
-    if ($phaseContentMap.ContainsKey($phase)) {
-        $phaseStatusMap[$phase] = "✅ COMPLETE"
-    } else {
-        $phaseStatusMap[$phase] = "⏳ PENDING"
-    }
-}
-
-# Build status table
-$statusTable = @"
-| Phase | Status |
-|-------|--------|
-| Pre-Flight | $($phaseStatusMap['pre-flight']) |
-| Gate | $($phaseStatusMap['gate']) |
-| Fix | $($phaseStatusMap['try-fix']) |
-| Report | $($phaseStatusMap['report']) |
-"@
-$syntheticParts += $statusTable
-
-# Build phase sections
-if ($phaseContentMap.ContainsKey('pre-flight')) {
-    $syntheticParts += @"
-<details><summary><strong>📋 Pre-Flight — Issue Summary</strong></summary>
-
-$($phaseContentMap['pre-flight'])
-
-</details>
-"@
-}
-
-if ($phaseContentMap.ContainsKey('gate')) {
-    $syntheticParts += @"
-<details><summary><strong>🚦 Gate — Test Verification</strong></summary>
-
-$($phaseContentMap['gate'])
-
-</details>
-"@
-}
-
-if ($phaseContentMap.ContainsKey('try-fix')) {
-    $syntheticParts += @"
-<details><summary><strong>🔧 Fix — Analysis & Comparison</strong></summary>
-
-$($phaseContentMap['try-fix'])
-
-</details>
-"@
-}
-
-if ($phaseContentMap.ContainsKey('report')) {
-    $syntheticParts += @"
-<details><summary><strong>📋 Report — Final Recommendation</strong></summary>
-
-$($phaseContentMap['report'])
-
-</details>
-"@
-}
-
-$Content = $syntheticParts -join "`n`n---`n`n"
-Write-Host "  ✅ Built synthetic content ($($Content.Length) chars)" -ForegroundColor Green
-
-# Final validation
-if ([string]::IsNullOrWhiteSpace($Content)) {
-    Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║  ⛔ No content loaded from phase files                    ║" -ForegroundColor Red
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Usage:" -ForegroundColor Yellow
-    Write-Host "  ./post-ai-summary-comment.ps1 -PRNumber 12345  # auto-loads from PRAgent/*/content.md" -ForegroundColor Gray
-    Write-Host ""
-    throw "No content loaded from PRAgent phase files."
-}
-
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  AI Summary Comment (with Validation)                    ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-
-# ============================================================================
-# VALIDATION FUNCTIONS
-# ============================================================================
-
-function Test-PhaseContentComplete {
-    param(
-        [string]$PhaseContent,
-        [string]$PhaseName,
-        [string]$PhaseStatus,
-        [switch]$Debug
-    )
-    
-    # Skip validation if phase is not marked COMPLETE or PASSED
-    if ($PhaseStatus -notmatch '✅\s*(COMPLETE|PASSED)') {
-        return @{ IsValid = $true; Errors = @(); Warnings = @() }
-    }
-    
-    $validationErrors = @()
-    $validationWarnings = @()
-    
-    # Check if content exists
-    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
-        $validationErrors += "Phase $PhaseName is marked as '$PhaseStatus' but has NO content"
-        if ($Debug) {
-            Write-Host "  [DEBUG] Content is null or whitespace for phase: $PhaseName" -ForegroundColor DarkGray
-        }
-        return @{ IsValid = $false; Errors = $validationErrors; Warnings = @() }
-    }
-    
-    if ($Debug) {
-        Write-Host "  [DEBUG] $PhaseName content length: $($PhaseContent.Length) chars" -ForegroundColor DarkGray
-        Write-Host "  [DEBUG] First 100 chars: $($PhaseContent.Substring(0, [Math]::Min(100, $PhaseContent.Length)))" -ForegroundColor DarkGray
-    }
-    
-    # Check for PENDING markers - only match [PENDING] placeholder markers.
-    # ⏳ PENDING is a status indicator (redundant with phase table), not an unfilled placeholder.
-    $pendingMatches = [regex]::Matches($PhaseContent, '\[PENDING\]')
-    if ($pendingMatches.Count -gt 0) {
-        $validationErrors += "Phase $PhaseName is marked as '$PhaseStatus' but contains $($pendingMatches.Count) PENDING markers"
-    }
-    
-    # Phase-specific validation (relaxed for better UX)
-    switch ($PhaseName) {
-        "Pre-Flight" {
-            if ($PhaseContent -notmatch 'Platforms Affected:') {
-                $validationWarnings += "Pre-Flight missing 'Platforms Affected' section (non-critical)"
-            }
-        }
-        "Gate" {
-            if ($PhaseContent -notmatch 'Result:') {
-                $validationWarnings += "Gate phase missing 'Result' field (non-critical)"
-            }
-        }
-        "Fix" {
-            if ($PhaseContent -notmatch 'Selected Fix:') {
-                $validationErrors += "Fix phase missing 'Selected Fix' field"
-            }
-            if ($PhaseContent -notmatch 'Exhausted:') {
-                $validationWarnings += "Fix phase missing 'Exhausted' field (non-critical)"
-            }
-        }
-        "Report" {
-            # Relaxed validation - only check for substantive content
-            $hasRecommendation = $PhaseContent -match '(Final Recommendation|Verdict|Recommendation:|APPROVE|REQUEST CHANGES)'
-            $hasAnalysis = $PhaseContent -match '(Summary|Fix Quality|Test Quality|Why|Analysis)'
-            
-            if (-not $hasRecommendation) {
-                $validationWarnings += "Report phase missing clear recommendation (non-critical)"
-            }
-            if (-not $hasAnalysis) {
-                $validationWarnings += "Report phase missing analysis sections (non-critical)"
-            }
-            
-            # Only error if content is extremely short
-            if ($PhaseContent.Length -lt 200) {
-                $validationErrors += "Report phase content is too short ($($PhaseContent.Length) chars) - expected comprehensive final report"
-            }
-        }
-    }
-    
-    return @{
-        IsValid = ($validationErrors.Count -eq 0)
-        Errors = $validationErrors
-        Warnings = $validationWarnings
-    }
-}
-
-# ============================================================================
-# EXTRACTION FUNCTIONS
-# ============================================================================
-
-# Extract recommendation from content
-$recommendation = "IN PROGRESS"
-if ($Content -match '##\s+✅\s+Final Recommendation:\s+APPROVE') {
-    $recommendation = "✅ APPROVE"
-} elseif ($Content -match '##\s+⚠️\s+Final Recommendation:\s+REQUEST CHANGES') {
-    $recommendation = "⚠️ REQUEST CHANGES"
-} elseif ($Content -match 'Final Recommendation:\s+APPROVE') {
-    $recommendation = "✅ APPROVE"
-} elseif ($Content -match 'Final Recommendation:\s+REQUEST CHANGES') {
-    $recommendation = "⚠️ REQUEST CHANGES"
-}
-
-# Extract phase statuses from content
-$phaseStatuses = @{
-    "Pre-Flight" = "⏳ PENDING"
-    "Gate" = "⏳ PENDING"
-    "Fix" = "⏳ PENDING"
-    "Report" = "⏳ PENDING"
-}
-
-# Parse phase status table - match any status format
-if ($Content -match '(?s)\|\s*Phase\s*\|\s*Status\s*\|.*?\n\|[\s-]+\|[\s-]+\|(.*?)(?=\n\n|---|\z)') {
-    $tableContent = $Matches[1]
-    $tableContent -split '\n' | ForEach-Object {
-        if ($_ -match '\|\s*(.+?)\s*\|\s*(.+?)\s*\|') {
-            $phaseName = $Matches[1].Trim() -replace '^🔍\s*', '' -replace '^🧪\s*', '' -replace '^🚦\s*', '' -replace '^🔧\s*', '' -replace '^📋\s*', ''
-            $status = $Matches[2].Trim()
-            if ($phaseStatuses.ContainsKey($phaseName)) {
-                $phaseStatuses[$phaseName] = $status
-            }
-        }
-    }
-}
-
-# ============================================================================
-# DYNAMIC SECTION EXTRACTION
-# ============================================================================
-
-# Extract ALL sections from content dynamically
-function Extract-AllSections {
-    param(
-        [string]$StateContent,
-        [switch]$Debug
-    )
-    
-    $sections = @{}
-    
-    # Pattern to find all <details><summary><strong>TITLE</strong></summary>...content...</details> blocks
-    # Note: [^>]* handles optional attributes like "open" in <details open>
-    $pattern = '(?s)<details[^>]*>\s*<summary><strong>([^<]+)</strong></summary>(.*?)</details>'
-    $matches = [regex]::Matches($StateContent, $pattern)
-    
-    if ($Debug) {
-        Write-Host "  [DEBUG] Found $($matches.Count) section(s) in content" -ForegroundColor Cyan
-    }
-    
-    foreach ($match in $matches) {
-        $title = $match.Groups[1].Value.Trim()
-        $content = $match.Groups[2].Value.Trim()
-        
-        $sections[$title] = $content
-        
-        if ($Debug) {
-            Write-Host "  [DEBUG] Section: '$title' (${content.Length} chars)" -ForegroundColor DarkGray
-        }
-    }
-    
-    return $sections
-}
-
-# Extract all sections dynamically
-$debugMode = $false  # Set to $true for debugging
-if ($DebugPreference -eq 'Continue') { $debugMode = $true }
-
-$allSections = Extract-AllSections -StateContent $Content -Debug:$debugMode
-
-# Map sections to phase content using flexible matching
-function Get-SectionByPattern {
-    param(
-        [hashtable]$Sections,
-        [string[]]$Patterns,
-        [switch]$Debug
-    )
-    
-    foreach ($pattern in $Patterns) {
-        foreach ($key in $Sections.Keys) {
-            if ($key -match $pattern) {
-                if ($Debug) {
-                    Write-Host "  [DEBUG] Matched '$key' with pattern '$pattern'" -ForegroundColor Green
-                }
-                return $Sections[$key]
-            }
-        }
-    }
-    
-    if ($Debug) {
-        Write-Host "  [DEBUG] No match for patterns: $($Patterns -join ', ')" -ForegroundColor Yellow
-        Write-Host "  [DEBUG] Available sections: $($Sections.Keys -join ', ')" -ForegroundColor Yellow
-    }
-    
-    return $null
-}
-
-# Map to phase content with flexible patterns (regex)
-$preFlightContent = Get-SectionByPattern -Sections $allSections -Patterns @(
-    '📋.*Issue Summary',
-    '📋.*Pre-Flight',
-    '🔍.*Pre-Flight'
-) -Debug:$debugMode
-
-$gateContent = Get-SectionByPattern -Sections $allSections -Patterns @(
-    '🚦.*Gate',
-    '📋.*Gate'
-) -Debug:$debugMode
-
-$fixContent = Get-SectionByPattern -Sections $allSections -Patterns @(
-    '🔧.*Fix',
-    '📋.*Fix'
-) -Debug:$debugMode
-
-$reportContent = Get-SectionByPattern -Sections $allSections -Patterns @(
-    '📋.*Report',
-    'Phase 4.*Report',
-    'Final Report'
-) -Debug:$debugMode
-
-# Fallback: If Report content not found in <details> blocks, look for
-# "## Final Recommendation" section directly in the markdown (agent sometimes
-# writes Report as a top-level heading instead of a <details> block)
-if ([string]::IsNullOrWhiteSpace($reportContent)) {
-    # Look for "## Final Recommendation" heading - capture up to the first --- separator
-    # or <details> block to avoid including content from other phases
-    if ($Content -match '(?s)##\s+[✅⚠️❌\uFE0F]*\s*Final Recommendation[:\s].+?(?=\n---|\n<details|$)') {
-        $reportContent = $Matches[0].Trim()
-        if ($debugMode) {
-            Write-Host "  [DEBUG] Report extracted from '## Final Recommendation' heading ($($reportContent.Length) chars)" -ForegroundColor Green
-        }
-    }
-    # Broader fallback: look for any top-level recommendation/status heading
-    elseif ($Content -match '(?s)##\s+[✅⚠️❌\uFE0F]*\s*(?:Final\s+)?Recommendation[:\s].+?(?=\n---|\n<details|$)') {
-        $reportContent = $Matches[0].Trim()
-        if ($debugMode) {
-            Write-Host "  [DEBUG] Report extracted from '## Recommendation' heading ($($reportContent.Length) chars)" -ForegroundColor Green
-        }
-    }
-}
-
-# ============================================================================
-# VALIDATION
-# ============================================================================
-
-if (-not $SkipValidation) {
-    Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-    Write-Host "║  Phase Content Validation                                 ║" -ForegroundColor Yellow
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
-    
-    $allValidationErrors = @()
-    $allValidationWarnings = @()
-    
-    # Validate each phase
-    $phases = @(
-        @{ Name = "Pre-Flight"; Content = $preFlightContent; Status = $phaseStatuses["Pre-Flight"] },
-        @{ Name = "Tests"; Content = $testsContent; Status = $phaseStatuses["Tests"] },
-        @{ Name = "Gate"; Content = $gateContent; Status = $phaseStatuses["Gate"] },
-        @{ Name = "Fix"; Content = $fixContent; Status = $phaseStatuses["Fix"] },
-        @{ Name = "Report"; Content = $reportContent; Status = $phaseStatuses["Report"] }
-    )
-    
-    foreach ($phase in $phases) {
-        $result = Test-PhaseContentComplete -PhaseContent $phase.Content -PhaseName $phase.Name -PhaseStatus $phase.Status -Debug:$debugMode
-        
-        if ($result.IsValid) {
-            Write-Host "  ✅ $($phase.Name): Valid" -ForegroundColor Green
-        } else {
-            Write-Host "  ❌ $($phase.Name): INVALID" -ForegroundColor Red
-            foreach ($err in $result.Errors) {
-                Write-Host "     - $err" -ForegroundColor Red
-                $allValidationErrors += "$($phase.Name): $err"
-            }
-        }
-        
-        # Show warnings
-        if ($result.Warnings -and $result.Warnings.Count -gt 0) {
-            foreach ($warning in $result.Warnings) {
-                Write-Host "     ⚠️  $warning" -ForegroundColor Yellow
-                $allValidationWarnings += "$($phase.Name): $warning"
-            }
-        }
-    }
-    
-    # Show warnings summary if any
-    if ($allValidationWarnings.Count -gt 0) {
-        Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-        Write-Host "║  ⚠️  VALIDATION WARNINGS                                  ║" -ForegroundColor Yellow
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
-        Write-Host ""
-        Write-Host "Found $($allValidationWarnings.Count) warning(s) (non-critical):" -ForegroundColor Yellow
-        foreach ($warning in $allValidationWarnings) {
-            Write-Host "  - $warning" -ForegroundColor Yellow
-        }
-        Write-Host ""
-        Write-Host "💡 These are suggestions for improvement but won't block posting." -ForegroundColor Cyan
-    }
-    
-    # Only fail on errors
-    if ($allValidationErrors.Count -gt 0) {
-        Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║  ⛔ VALIDATION FAILED                                     ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "Found $($allValidationErrors.Count) validation error(s):" -ForegroundColor Red
-        foreach ($err in $allValidationErrors) {
-            Write-Host "  - $err" -ForegroundColor Red
-        }
-        Write-Host ""
-        Write-Host "💡 Fix these issues in the content before posting the review comment." -ForegroundColor Cyan
-        Write-Host "   Or use -SkipValidation to bypass these checks (not recommended)." -ForegroundColor Cyan
-        Write-Host ""
-        Write-Host "🐛 Debug tip: Run with `$DebugPreference = 'Continue' for detailed extraction info" -ForegroundColor DarkGray
-        exit 1
-    }
-    
-    if ($allValidationWarnings.Count -eq 0) {
-        Write-Host ""
-        Write-Host "✅ All validation checks passed!" -ForegroundColor Green
-    }
-}
-
-# ============================================================================
-# BUILD COMMENT (Rest of the original script logic)
-# ============================================================================
-
-# Get latest commit for NEW Review Session header
-Write-Host "`nFetching latest commit info..." -ForegroundColor Yellow
-$commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' | ConvertFrom-Json
-$latestCommitTitle = ($commitJson.message -split "`n")[0]
-$latestCommitSha = $commitJson.sha.Substring(0, 7)
-$latestCommitUrl = "https://github.com/dotnet/maui/commit/$($commitJson.sha)"
-
-# Helper function to create content for a review session (no wrapper <details>)
-function New-ReviewSession {
-    param([string]$PhaseContent, [string]$CommitTitle, [string]$CommitSha, [string]$CommitUrl)
-    
-    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
-        return ""
-    }
-    
-    # Return raw content — the commit info is shown on the top-level summary
-    return $PhaseContent
-}
-
-# Helper function to extract existing review sessions from a phase
-function Get-ExistingReviewSessions {
-    param([string]$PhaseContent)
-    
-    if ([string]::IsNullOrWhiteSpace($PhaseContent)) {
-        return @()
-    }
-    
-    $sessions = @()
-    # Try old format first (wrapped in <details><summary>📝 ...)
-    $pattern = '(?s)<details>\s*<summary>📝.*?</summary>.*?</details>'
-    $matches = [regex]::Matches($PhaseContent, $pattern)
-    
-    if ($matches.Count -gt 0) {
-        # Old format: extract the inner content from each session wrapper
-        foreach ($match in $matches) {
-            $inner = $match.Value
-            if ($inner -match '(?s)<summary>📝.*?</summary>\s*---\s*(.*?)\s*</details>') {
-                $sessions += ($Matches[1].Trim() -replace '(?m)^---\s*$', '').Trim()
-            } else {
-                $sessions += $inner
-            }
-        }
-    } else {
-        # New format: content is directly in the phase section (no wrapper)
-        # Strip leading/trailing --- separators that may remain from old format
-        $cleaned = ($PhaseContent.Trim() -replace '(?m)^---\s*$', '').Trim()
-        $sessions += $cleaned
-    }
-    
-    return $sessions
-}
-
-# Helper function to combine existing sessions with new session
-function Merge-ReviewSessions {
-    param(
-        [string[]]$ExistingSessions,
-        [string]$NewSession,
-        [string]$NewCommitSha
-    )
-    
-    if ([string]::IsNullOrWhiteSpace($NewSession)) {
-        return ""
-    }
-    
-    # Check if any existing session is for the same commit
-    $allSessions = @()
-    $replaced = $false
-    
-    foreach ($existingSession in $ExistingSessions) {
-        # Check if this session contains the new commit SHA
-        if ($existingSession -match "<code>$NewCommitSha</code>") {
-            # Replace this session with the new one (only once)
-            if (-not $replaced) {
-                $allSessions += $NewSession
-                $replaced = $true
-            }
-            # Skip the old session with same commit SHA
-        } else {
-            # Keep the existing session
-            $allSessions += $existingSession
-        }
-    }
-    
-    # If we didn't replace any session, add the new one
-    if (-not $replaced) {
-        $allSessions += $NewSession
-    }
-    
-    return ($allSessions -join "`n`n---`n`n")
-}
-
-# Fetch existing comment to preserve old review sessions
-Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
-$existingComment = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | {id: .id, body: .body}' | ConvertFrom-Json
-
-$existingPreFlightSessions = @()
-$existingTestsSessions = @()
-$existingGateSessions = @()
-$existingFixSessions = @()
-$existingReportSessions = @()
-
-if ($existingComment) {
-    Write-Host "✓ Found existing review comment (ID: $($existingComment.id)) - extracting review sessions..." -ForegroundColor Green
-    
-    # Helper function to extract phase content with fallback patterns
-    function Extract-PhaseFromComment {
-        param(
-            [string]$CommentBody,
-            [string]$Emoji,
-            [string]$PhaseName
-        )
-        
-        # Try patterns in order of specificity (most specific first)
-        $patterns = @(
-            # Pattern 1: Phase name anywhere in the header
-            "(?s)<summary><strong>.*?$PhaseName.*?</strong></summary>(.*?)</details>"
-            # Pattern 2: Just emoji (most lenient fallback)
-            "(?s)<summary><strong>$Emoji[^<]*</strong></summary>(.*?)</details>"
-        )
-        
-        foreach ($pattern in $patterns) {
-            if ($CommentBody -match $pattern) {
-                return $Matches[1]
-            }
-        }
-        
-        return $null
-    }
-    
-    # Extract existing sessions from each phase with fallback
-    $preFlightMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "🔍" -PhaseName "Pre-Flight"
-    if ($preFlightMatch) { $existingPreFlightSessions = Get-ExistingReviewSessions -PhaseContent $preFlightMatch }
-    
-    $gateMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "🚦" -PhaseName "Gate"
-    if ($gateMatch) { $existingGateSessions = Get-ExistingReviewSessions -PhaseContent $gateMatch }
-    
-    $fixMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "🔧" -PhaseName "Fix"
-    if ($fixMatch) { $existingFixSessions = Get-ExistingReviewSessions -PhaseContent $fixMatch }
-    
-    $reportMatch = Extract-PhaseFromComment -CommentBody $existingComment.body -Emoji "📋" -PhaseName "Report"
-    if ($reportMatch) { $existingReportSessions = Get-ExistingReviewSessions -PhaseContent $reportMatch }
-} else {
-    Write-Host "✓ No existing comment found - creating new..." -ForegroundColor Yellow
-}
-
-# Create NEW review sessions from current content
-$newPreFlightSession = New-ReviewSession -PhaseContent $preFlightContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
-$newGateSession = New-ReviewSession -PhaseContent $gateContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
-$newFixSession = New-ReviewSession -PhaseContent $fixContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
-$newReportSession = New-ReviewSession -PhaseContent $reportContent -CommitTitle $latestCommitTitle -CommitSha $latestCommitSha -CommitUrl $latestCommitUrl
-
-# Merge existing sessions with new session (if new content exists)
-$allPreFlightSessions = if ($newPreFlightSession) { Merge-ReviewSessions -ExistingSessions $existingPreFlightSessions -NewSession $newPreFlightSession -NewCommitSha $latestCommitSha } else { $existingPreFlightSessions -join "`n`n---`n`n" }
-$allGateSessions = if ($newGateSession) { Merge-ReviewSessions -ExistingSessions $existingGateSessions -NewSession $newGateSession -NewCommitSha $latestCommitSha } else { $existingGateSessions -join "`n`n---`n`n" }
-$allFixSessions = if ($newFixSession) { Merge-ReviewSessions -ExistingSessions $existingFixSessions -NewSession $newFixSession -NewCommitSha $latestCommitSha } else { $existingFixSessions -join "`n`n---`n`n" }
-$allReportSessions = if ($newReportSession) { Merge-ReviewSessions -ExistingSessions $existingReportSessions -NewSession $newReportSession -NewCommitSha $latestCommitSha } else { $existingReportSessions -join "`n`n---`n`n" }
-
-# Build phase sections dynamically - only include phases with content
-$phaseSections = @()
-
-# Helper to create phase section
-function New-PhaseSection {
-    param(
-        [string]$Icon,
-        [string]$PhaseName,
-        [string]$Subtitle,
-        [string]$Content,
-        [string]$Status
-    )
-    
-    # Skip phases with no content
-    if ([string]::IsNullOrWhiteSpace($Content) -or $Content -eq "_No review sessions yet_") {
-        return $null
-    }
-    
-    return @"
-<details>
-<summary><strong>$Icon $PhaseName — $Subtitle</strong></summary>
+# ─── Gate content (rendered first, always open) ───
+$gateSection = $null
+$gateFilePath = Join-Path $PRAgentDir "gate/content.md"
+if (Test-Path $gateFilePath) {
+    $gateContent = Get-Content $gateFilePath -Raw -Encoding UTF8
+    if (-not [string]::IsNullOrWhiteSpace($gateContent)) {
+        Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
+        $gateSection = @"
+<details open>
+<summary>🚦 <strong>Gate — Test Before & After Fix</strong></summary>
 
 ---
 
-$Content
+$gateContent
 
 </details>
 "@
-}
-
-# Build phase sections (only non-empty ones)
-$preFlightSection = New-PhaseSection -Icon "🔍" -PhaseName "Pre-Flight" -Subtitle "Context & Validation" -Content $allPreFlightSessions -Status $phaseStatuses['Pre-Flight']
-$gateSection = New-PhaseSection -Icon "🚦" -PhaseName "Gate" -Subtitle "Test Verification" -Content $allGateSessions -Status $phaseStatuses['Gate']
-$fixSection = New-PhaseSection -Icon "🔧" -PhaseName "Fix" -Subtitle "Analysis & Comparison" -Content $allFixSessions -Status $phaseStatuses['Fix']
-$reportSection = New-PhaseSection -Icon "📋" -PhaseName "Report" -Subtitle "Final Recommendation" -Content $allReportSessions -Status $phaseStatuses['Report']
-
-# Collect non-null sections
-if ($preFlightSection) { $phaseSections += $preFlightSection }
-if ($gateSection) { $phaseSections += $gateSection }
-if ($fixSection) { $phaseSections += $fixSection }
-if ($reportSection) { $phaseSections += $reportSection }
-
-# Join sections with separators
-$phaseContent = if ($phaseSections.Count -gt 0) {
-    $phaseSections -join "`n`n---`n`n"
+    } else {
+        Write-Host "  ⏭️  gate (empty)" -ForegroundColor Gray
+    }
 } else {
-    "_No phases completed yet_"
+    Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
+}
+
+$phaseSections = @()
+
+foreach ($key in $phases.Keys) {
+    $phase = $phases[$key]
+    $filePath = Join-Path $PRAgentDir $phase.File
+
+    if (Test-Path $filePath) {
+        $content = Get-Content $filePath -Raw -Encoding UTF8
+        if (-not [string]::IsNullOrWhiteSpace($content)) {
+            Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
+            $phaseSections += @"
+<details>
+<summary><strong>$($phase.Icon) $($phase.Title)</strong></summary>
+
+---
+
+$content
+
+</details>
+"@
+        } else {
+            Write-Host "  ⏭️  $key (empty)" -ForegroundColor Gray
+        }
+    } else {
+        Write-Host "  ⏭️  $key (not found)" -ForegroundColor Gray
+    }
+}
+
+if (-not $gateSection -and $phaseSections.Count -eq 0) {
+    throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
 
 # ============================================================================
-# UNIFIED COMMENT HANDLING
-# Uses single <!-- AI Summary --> comment with section markers
+# FETCH PR METADATA (commit + author)
 # ============================================================================
 
-$MAIN_MARKER = "<!-- AI Summary -->"
-$SECTION_START = "<!-- SECTION:PR-REVIEW -->"
-$SECTION_END = "<!-- /SECTION:PR-REVIEW -->"
+try {
+    $commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>$null | ConvertFrom-Json
+} catch {
+    Write-Host "⚠️ Failed to fetch commit info: $_" -ForegroundColor Yellow
+    $commitJson = $null
+}
+$commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
+$commitTitle = $commitTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
+$commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
+$commitFull = if ($commitJson) { $commitJson.sha } else { "" }
+$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
 
-# Build the PR review section with markers
-$prReviewSection = @"
-$SECTION_START
-<details>
-<summary>📊 <strong>Expand Full Review</strong> — <a href="$latestCommitUrl"><code>$latestCommitSha</code></a> · <strong>$latestCommitTitle</strong></summary>
+try {
+    $prAuthor = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '.user.login' 2>$null
+} catch { $prAuthor = $null }
+
+$timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
+
+# ============================================================================
+# BUILD NEW SESSION BLOCK
+# ============================================================================
+
+# Combine gate (always first, open) with phases (collapsed). When only one
+# kind of content is available, the session still renders cleanly.
+$sessionParts = @()
+if ($gateSection)            { $sessionParts += $gateSection }
+if ($phaseSections.Count -gt 0) { $sessionParts += ($phaseSections -join "`n`n---`n`n") }
+$phaseContent = $sessionParts -join "`n`n---`n`n"
+
+$sessionMarkerStart = "<!-- SESSION:$commitSha7 START -->"
+$sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
+
+# The latest session is built with <details open>; when merged into existing
+# sessions the script re-tags only the newest as "open".
+$newSessionBlock = @"
+$sessionMarkerStart
+<details open>
+<summary>📊 <strong>Review Session</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$commitTitle</strong> · <em>$timestamp</em></summary>
 
 ---
 
@@ -743,131 +179,189 @@ $phaseContent
 ---
 
 </details>
-$SECTION_END
+$sessionMarkerEnd
 "@
 
-# Check if there are other sections in the existing comment that we need to preserve
-$existingOtherSections = ""
-if ($existingComment) {
-    $body = $existingComment.body
-    
-    # Extract all non-PR-REVIEW sections
-    $sectionTypes = @("TRY-FIX", "WRITE-TESTS", "PR-FINALIZE")
-    foreach ($sectionType in $sectionTypes) {
-        $sStart = [regex]::Escape("<!-- SECTION:$sectionType -->")
-        $sEnd = [regex]::Escape("<!-- /SECTION:$sectionType -->")
-        if ($body -match "(?s)($sStart.*?$sEnd)") {
-            $existingOtherSections += "`n`n" + $Matches[1]
+# ============================================================================
+# MERGE WITH EXISTING SESSIONS
+# ============================================================================
+
+function Merge-Sessions {
+    param(
+        [string]$ExistingBody,
+        [string]$NewSession,
+        [string]$CommitSha7
+    )
+
+    # Extract all session blocks from existing body
+    $sessionPattern = '(?s)<!-- SESSION:([a-f0-9]+) START -->.*?<!-- SESSION:\1 END -->'
+    $existingSessions = [regex]::Matches($ExistingBody, $sessionPattern)
+
+    $sessions = [ordered]@{}
+    foreach ($match in $existingSessions) {
+        $sha = $match.Groups[1].Value
+        $sessions[$sha] = $match.Value
+    }
+
+    # Replace or prepend new session
+    $sessions[$CommitSha7] = $NewSession
+
+    # Rebuild: newest session first (the one we just added/replaced)
+    $orderedKeys = @($CommitSha7) + @($sessions.Keys | Where-Object { $_ -ne $CommitSha7 })
+
+    $allSessions = @()
+    $isFirst = $true
+    foreach ($sha in $orderedKeys) {
+        $block = $sessions[$sha]
+        if ($isFirst) {
+            # Ensure ONLY the outer (session-wrapping) details tag is open. Inner
+            # phase tags must keep their original open/collapsed state — we used
+            # to re-open all of them via a global regex replace, which forced
+            # every phase to expand on each new session.
+            $rx = [regex]::new('<details(?:\s+open)?>')
+            $block = $rx.Replace($block, '<details open>', 1)
+            $isFirst = $false
+        } else {
+            # Collapse the outer details of older sessions; leave inner phases alone.
+            $rx = [regex]::new('<details\s+open>')
+            $block = $rx.Replace($block, '<details>', 1)
         }
+        $allSessions += $block
+    }
+
+    return ($allSessions -join "`n`n---`n`n")
+}
+
+# ============================================================================
+# FIND EXISTING COMMENT & BUILD FINAL BODY
+# ============================================================================
+
+Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
+$existingCommentId = $null
+$existingBody = $null
+
+$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+$existingObj = $null
+if ($existingRaw) {
+    try {
+        $allComments = $existingRaw | ConvertFrom-Json
+        $existingObj = @($allComments | Where-Object { $_.body -and $_.body.Contains($MARKER) }) | Select-Object -Last 1
+    } catch {
+        Write-Host "⚠️ Could not parse comments: $_" -ForegroundColor Yellow
     }
 }
 
-# Build aggregated comment body
-$commentBody = @"
-$MAIN_MARKER
+if ($existingObj -and $existingObj.id) {
+    $existingCommentId = $existingObj.id
+    $existingBody = $existingObj.body
+    Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
+}
+
+$authorPing = ""
+if ($prAuthor) {
+    $authorPing = "> 👋 @$prAuthor — new AI review results are available. Please review the latest session below."
+}
+
+if ($existingBody) {
+    # Merge new session into existing body
+    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
+
+    # Preserve any PR-FINALIZE section that may already exist
+    $finalizeSection = ""
+    $finalizePattern = '(?s)(<!-- SECTION:PR-FINALIZE -->.*?<!-- /SECTION:PR-FINALIZE -->)'
+    if ($existingBody -match $finalizePattern) {
+        $finalizeSection = "`n`n" + $Matches[1]
+    }
+
+    $commentBody = @"
+$MARKER
 
 ## 🤖 AI Summary
 
-$prReviewSection
-$existingOtherSections
-"@
+$authorPing
 
-# Clean up any double newlines
+$mergedSessions$finalizeSection
+"@
+} else {
+    $commentBody = @"
+$MARKER
+
+## 🤖 AI Summary
+
+$authorPing
+
+$newSessionBlock
+"@
+}
+
+# Clean up excessive blank lines
 $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 
+Write-Host "  ✅ Built comment ($($commentBody.Length) chars)" -ForegroundColor Green
+
+# ============================================================================
+# DRY RUN
+# ============================================================================
+
 if ($DryRun) {
-    # File-based DryRun: mirrors GitHub comment behavior using a local file
-    if ([string]::IsNullOrWhiteSpace($PreviewFile)) {
-        $PreviewFile = "CustomAgentLogsTmp/PRState/$PRNumber/ai-summary-comment-preview.md"
-    }
-    
-    # Ensure directory exists
-    $previewDir = Split-Path $PreviewFile -Parent
-    if (-not (Test-Path $previewDir)) {
-        New-Item -ItemType Directory -Path $previewDir -Force | Out-Null
-    }
-    
-    # Read existing preview file
-    $existingPreview = ""
-    if (Test-Path $PreviewFile) {
-        $existingPreview = Get-Content $PreviewFile -Raw -Encoding UTF8
-        Write-Host "ℹ️  Updating existing preview file: $PreviewFile" -ForegroundColor Cyan
-    } else {
-        Write-Host "ℹ️  Creating new preview file: $PreviewFile" -ForegroundColor Cyan
-    }
-    
-    # Update or insert the PR-REVIEW section
-    $PR_REVIEW_MARKER = "<!-- SECTION:PR-REVIEW -->"
-    $PR_REVIEW_END_MARKER = "<!-- /SECTION:PR-REVIEW -->"
-    
-    if ($existingPreview -match [regex]::Escape($PR_REVIEW_MARKER)) {
-        # Replace existing PR-REVIEW section
-        $pattern = [regex]::Escape($PR_REVIEW_MARKER) + "[\s\S]*?" + [regex]::Escape($PR_REVIEW_END_MARKER)
-        $finalComment = $existingPreview -replace $pattern, $prReviewSection
-    } elseif (-not [string]::IsNullOrWhiteSpace($existingPreview)) {
-        # Append PR-REVIEW section to existing content
-        $finalComment = $existingPreview.TrimEnd() + "`n`n" + $prReviewSection
-    } else {
-        # New file - use full comment body
-        $finalComment = $commentBody
-    }
-    
-    # Write to preview file
-    Set-Content -Path $PreviewFile -Value "$($finalComment.TrimEnd())`n" -Encoding UTF8 -NoNewline
-    
-    Write-Host "`n=== COMMENT PREVIEW ===" -ForegroundColor Yellow
-    Write-Host $finalComment
-    Write-Host "`n=== END PREVIEW ===" -ForegroundColor Yellow
-    Write-Host "`n✅ Preview saved to: $PreviewFile" -ForegroundColor Green
-    Write-Host "   Run 'open $PreviewFile' to view in editor" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "=== COMMENT PREVIEW ===" -ForegroundColor Cyan
+    Write-Host $commentBody
+    Write-Host "=== END PREVIEW ===" -ForegroundColor Cyan
     exit 0
 }
 
-# Post or update comment (reuse $existingComment from earlier check)
-if ($existingComment) {
-    Write-Host "✓ Updating existing review comment (ID: $($existingComment.id))..." -ForegroundColor Green
-    
-    # Create temp file for update
-    $tempFile = [System.IO.Path]::GetTempFileName()
+# ============================================================================
+# POST OR UPDATE COMMENT
+# ============================================================================
+
+$tempFile = [System.IO.Path]::GetTempFileName()
+try {
     @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
 
-    $patchResult = $null
-    $commentId = $existingComment.id
-    try {
-        $patchResult = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($existingComment.id)" --input $tempFile 2>&1
-        if ($LASTEXITCODE -ne 0) { throw "PATCH failed (exit code $LASTEXITCODE): $patchResult" }
-        Write-Host "✅ Review comment updated successfully" -ForegroundColor Green
-    } catch {
-        Write-Host "⚠️ Could not update comment (no edit permission?) — creating new comment instead: $_" -ForegroundColor Yellow
-
-        $newTempFile = [System.IO.Path]::GetTempFileName()
+    if ($existingCommentId) {
+        Write-Host "Updating comment (ID: $existingCommentId)..." -ForegroundColor Yellow
         try {
-            @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $newTempFile -Encoding UTF8
-            $newCommentJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $newTempFile
-            $commentId = ($newCommentJson | ConvertFrom-Json).id
-            Write-Host "✅ Review comment posted as new (ID: $commentId)" -ForegroundColor Green
-        } finally {
-            Remove-Item $newTempFile -ErrorAction SilentlyContinue
+            gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input $tempFile 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "PATCH failed" }
+            Write-Host "✅ Review comment updated" -ForegroundColor Green
+            Write-Output "COMMENT_ID=$existingCommentId"
+        } catch {
+            Write-Host "⚠️ Could not update comment $existingCommentId : $_" -ForegroundColor Yellow
+            $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
+            $newId = ($newJson | ConvertFrom-Json).id
+            Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green
+            Write-Output "COMMENT_ID=$newId"
         }
-    } finally {
-        Remove-Item $tempFile -ErrorAction SilentlyContinue
+    } else {
+        Write-Host "Creating new review comment..." -ForegroundColor Yellow
+        $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
+        $newId = ($newJson | ConvertFrom-Json).id
+        Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green
+        Write-Output "COMMENT_ID=$newId"
     }
+} finally {
+    Remove-Item $tempFile -ErrorAction SilentlyContinue
+}
 
-    # Output the comment ID so callers can pass it to subsequent scripts
-    Write-Output "COMMENT_ID=$commentId"
-} else {
-    Write-Host "Creating new review comment..." -ForegroundColor Yellow
-    
-    # Create temp file for new comment
-    $tempFile = [System.IO.Path]::GetTempFileName()
-    @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
-    
-    $newCommentJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
-    Remove-Item $tempFile
-    
-    # Extract and output the new comment ID so callers can pass it to subsequent scripts
-    $newCommentId = ($newCommentJson | ConvertFrom-Json).id
-    Write-Host "✅ Review comment posted successfully (ID: $newCommentId)" -ForegroundColor Green
+# ============================================================================
+# CLEAN UP LEGACY STANDALONE GATE COMMENTS
+# ============================================================================
+# Earlier versions of this workflow posted gate results in a separate comment
+# marked with <!-- AI Gate -->. Now that the gate is included as a section in
+# this unified comment, those legacy comments are duplicates and should go.
 
-    Write-Output "COMMENT_ID=$newCommentId"
+try {
+    $legacyMarker = "<!-- AI Gate -->"
+    $allRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+    if ($allRaw) {
+        $allComments = $allRaw | ConvertFrom-Json
+        $legacy = @($allComments | Where-Object { $_.body -and $_.body.Contains($legacyMarker) })
+        foreach ($lc in $legacy) {
+            Write-Host "🧹 Deleting legacy gate comment (ID: $($lc.id))..." -ForegroundColor Gray
+            gh api --method DELETE "repos/dotnet/maui/issues/comments/$($lc.id)" 2>&1 | Out-Null
+        }
+    }
+} catch {
+    Write-Host "⚠️ Legacy gate-comment cleanup failed (non-fatal): $_" -ForegroundColor Yellow
 }

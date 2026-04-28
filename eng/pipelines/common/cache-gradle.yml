@@ -1,0 +1,52 @@
+# Shared Gradle dependency cache template
+# Caches ~/.gradle (caches + wrapper distributions) between pipeline runs to
+# avoid transient network failures when resolving Maven dependencies and
+# downloading the Gradle distribution during Android binding builds.
+#
+# Adapted from dotnet/android: https://github.com/dotnet/android/commit/0a681023
+# See: https://learn.microsoft.com/azure/devops/pipelines/release/caching
+#
+# To manually bust the cache (e.g. poisoned or bloated), bump the version
+# segment below from "v1" to "v2".
+
+parameters:
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+
+steps:
+- script: |
+    mkdir -p "$HOME/.gradle"
+    echo "##vso[task.setvariable variable=GRADLE_USER_HOME]$HOME/.gradle"
+  displayName: prepare Gradle cache variables (Linux/macOS)
+  condition: ne(variables['Agent.OS'], 'Windows_NT')
+
+- pwsh: |
+    $gradleHome = Join-Path $env:USERPROFILE ".gradle"
+    New-Item -ItemType Directory -Path $gradleHome -Force | Out-Null
+    Write-Host "##vso[task.setvariable variable=GRADLE_USER_HOME]$gradleHome"
+  displayName: prepare Gradle cache variables (Windows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+- task: Cache@2
+  displayName: cache Gradle downloads
+  inputs:
+    key: >-
+      "gradle" | "v1" | "$(Agent.OS)"
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/settings.gradle
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle.properties
+      | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/**/build.gradle
+    restoreKeys: |
+      "gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
+      "gradle" | "v1" | "$(Agent.OS)"
+    path: $(GRADLE_USER_HOME)
+
+# Copy init.gradle AFTER cache restore so it is not overwritten by a stale cached copy
+- script: |
+    cp "${{ parameters.checkoutDirectory }}/eng/init.gradle" "$(GRADLE_USER_HOME)/init.gradle"
+  displayName: install Gradle init script (Linux/macOS)
+  condition: ne(variables['Agent.OS'], 'Windows_NT')
+
+- pwsh: |
+    Copy-Item "${{ parameters.checkoutDirectory }}/eng/init.gradle" (Join-Path "$(GRADLE_USER_HOME)" "init.gradle")
+  displayName: install Gradle init script (Windows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')

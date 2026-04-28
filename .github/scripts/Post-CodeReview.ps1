@@ -4,9 +4,14 @@
     Posts a formatted code review comment on a GitHub Pull Request, matching the AI Summary style.
 
 .DESCRIPTION
-    Takes review content (from a file or string) and wraps it in a collapsible HTML
-    <details>/<summary> section with PR metadata. Supports create-or-update via HTML marker.
-    
+    Maintains ONE comment per PR, identified by <!-- Code Review --> marker.
+    Each review run adds an expandable session keyed by HEAD commit SHA.
+    - Same commit SHA → replaces that session in-place.
+    - New commit SHA  → prepends a new session (latest first).
+    Older sessions stay collapsed; the newest is expanded by default.
+
+    After posting, the PR author is @-mentioned so they know to review.
+
     Auto-detects verdict from content by scanning for "Verdict: LGTM", "Verdict: NEEDS_CHANGES",
     or "Verdict: NEEDS_DISCUSSION" and sets the appropriate colored status dot.
 
@@ -23,16 +28,14 @@
     Print the formatted comment to stdout instead of posting
 
 .PARAMETER Update
-    Update an existing code review comment instead of creating a new one
+    Update an existing code review comment instead of creating a new one.
+    This is now the default behavior — the flag is kept for backward compatibility.
 
 .EXAMPLE
     ./Post-CodeReview.ps1 -PRNumber 12345 -ReviewFile /tmp/review.md
 
 .EXAMPLE
     ./Post-CodeReview.ps1 -PRNumber 12345 -ReviewFile /tmp/review.md -DryRun
-
-.EXAMPLE
-    ./Post-CodeReview.ps1 -PRNumber 12345 -ReviewFile /tmp/review.md -Update
 #>
 
 param(
@@ -88,13 +91,16 @@ if ($LASTEXITCODE -ne 0) {
 
 $pr = $prJson | ConvertFrom-Json
 $prTitle = $pr.title
-$commitSha = $pr.headRefOid.Substring(0, 7)
+$prTitle = $prTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
+$commitSha7 = $pr.headRefOid.Substring(0, 7)
 $commitFull = $pr.headRefOid
 $prAuthor = $pr.author.login
 $prUrl = $pr.url
 
 Write-Host "  PR: #$PRNumber - $prTitle" -ForegroundColor Gray
-Write-Host "  Author: $prAuthor | HEAD: $commitSha" -ForegroundColor Gray
+Write-Host "  Author: $prAuthor | HEAD: $commitSha7" -ForegroundColor Gray
+
+$timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
 
 # ============================================================================
 # DETERMINE VERDICT
@@ -116,31 +122,125 @@ elseif ($Content -match 'Verdict:\s*\*?\*?NEEDS_DISCUSSION') {
 }
 
 # ============================================================================
-# BUILD FORMATTED COMMENT
+# BUILD NEW SESSION BLOCK
 # ============================================================================
 
-$sb = [System.Text.StringBuilder]::new()
+$sessionMarkerStart = "<!-- SESSION:$commitSha7 START -->"
+$sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
 
-# Marker for find/update
-[void]$sb.AppendLine($COMMENT_MARKER)
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine("## $verdictDot .NET MAUI Review - $verdictLabel")
-[void]$sb.AppendLine("")
+$newSessionBlock = @"
+$sessionMarkerStart
+<details open>
+<summary>$verdictDot <strong>Review Session — $verdictLabel</strong> — <a href="https://github.com/dotnet/maui/commit/$commitFull"><code>$commitSha7</code></a> · <strong>$prTitle</strong> · <em>$timestamp</em></summary>
 
-# Single collapsible section with all content inside
-[void]$sb.AppendLine("<details>")
-[void]$sb.AppendLine("<summary><strong>Expand Full Review</strong> - <a href=`"https://github.com/dotnet/maui/commit/$commitFull`"><code>$commitSha</code></a> - <strong>$prTitle</strong></summary>")
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine("---")
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine($Content)
-[void]$sb.AppendLine("")
-[void]$sb.AppendLine("</details>")
+---
 
-$formattedComment = $sb.ToString()
+$Content
+
+---
+
+</details>
+$sessionMarkerEnd
+"@
 
 # ============================================================================
-# POST OR DRY-RUN
+# MERGE WITH EXISTING SESSIONS
+# ============================================================================
+
+function Merge-Sessions {
+    param(
+        [string]$ExistingBody,
+        [string]$NewSession,
+        [string]$CommitSha7
+    )
+
+    $sessionPattern = '(?s)<!-- SESSION:([a-f0-9]+) START -->.*?<!-- SESSION:\1 END -->'
+    $existingSessions = [regex]::Matches($ExistingBody, $sessionPattern)
+
+    $sessions = [ordered]@{}
+    foreach ($match in $existingSessions) {
+        $sha = $match.Groups[1].Value
+        $sessions[$sha] = $match.Value
+    }
+
+    $sessions[$CommitSha7] = $NewSession
+
+    $orderedKeys = @($CommitSha7) + @($sessions.Keys | Where-Object { $_ -ne $CommitSha7 })
+
+    $allSessions = @()
+    $isFirst = $true
+    foreach ($sha in $orderedKeys) {
+        $block = $sessions[$sha]
+        if ($isFirst) {
+            $block = $block -replace '<details(?:\s+open)?>', '<details open>'
+            $isFirst = $false
+        } else {
+            $block = $block -replace '<details\s+open>', '<details>'
+        }
+        $allSessions += $block
+    }
+
+    return ($allSessions -join "`n`n---`n`n")
+}
+
+# ============================================================================
+# FIND EXISTING COMMENT & BUILD FINAL BODY
+# ============================================================================
+
+Write-Host "🔍 Checking for existing code review comment..." -ForegroundColor Cyan
+$existingCommentId = $null
+$existingBody = $null
+
+$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+$existingObj = $null
+if ($existingRaw) {
+    try {
+        $allComments = $existingRaw | ConvertFrom-Json
+        $existingObj = @($allComments | Where-Object { $_.body -and $_.body.Contains($COMMENT_MARKER) }) | Select-Object -Last 1
+    } catch {
+        Write-Host "  ⚠️ Could not parse comments: $_" -ForegroundColor Yellow
+    }
+}
+
+if ($existingObj -and $existingObj.id) {
+    $existingCommentId = $existingObj.id
+    $existingBody = $existingObj.body
+    Write-Host "  ✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
+}
+
+$authorPing = ""
+if ($prAuthor) {
+    $authorPing = "> 👋 @$prAuthor — new code review results are available. Please review the latest session below."
+}
+
+if ($existingBody) {
+    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
+
+    $commentBody = @"
+$COMMENT_MARKER
+
+## $verdictDot .NET MAUI Code Review — $verdictLabel
+
+$authorPing
+
+$mergedSessions
+"@
+} else {
+    $commentBody = @"
+$COMMENT_MARKER
+
+## $verdictDot .NET MAUI Code Review — $verdictLabel
+
+$authorPing
+
+$newSessionBlock
+"@
+}
+
+$commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
+
+# ============================================================================
+# DRY RUN
 # ============================================================================
 
 if ($DryRun) {
@@ -149,56 +249,49 @@ if ($DryRun) {
     Write-Host "  DRY RUN — Comment preview (not posted)" -ForegroundColor Yellow
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host $formattedComment
+    Write-Host $commentBody
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Yellow
-    Write-Host "  Comment length: $($formattedComment.Length) chars" -ForegroundColor Gray
+    Write-Host "  Comment length: $($commentBody.Length) chars" -ForegroundColor Gray
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Yellow
     return
 }
 
-# Write to temp file for posting (avoids shell escaping issues)
+# ============================================================================
+# POST OR UPDATE COMMENT
+# ============================================================================
+
 $tempFile = [System.IO.Path]::GetTempFileName()
+$tempBodyFile = [System.IO.Path]::GetTempFileName()
 try {
-    Set-Content -Path $tempFile -Value $formattedComment -Encoding UTF8 -NoNewline
+    # JSON format for gh api --input (PATCH)
+    @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+    # Plain text for gh pr comment --body-file (fallback/new)
+    $commentBody | Set-Content -Path $tempBodyFile -Encoding UTF8
 
-    if ($Update) {
-        # Find existing comment with marker
-        Write-Host "🔍 Searching for existing code review comment..." -ForegroundColor Cyan
-        $existingComments = gh pr view $PRNumber --json comments --jq ".comments[] | select(.body | startswith(`"$COMMENT_MARKER`")) | .url" 2>&1
-
-        if ($LASTEXITCODE -eq 0 -and $existingComments) {
-            $commentUrl = ($existingComments -split "`n" | Select-Object -Last 1).Trim()
-            if ($commentUrl -match '#issuecomment-(\d+)$') {
-                $commentId = $Matches[1]
-                Write-Host "  Found existing comment: $commentId — updating..." -ForegroundColor Gray
-                $result = gh api "repos/dotnet/maui/issues/comments/$commentId" -X PATCH -F "body=@$tempFile" 2>&1
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Host "⚠️  Update failed, creating new comment instead..." -ForegroundColor Yellow
-                    $result = gh pr comment $PRNumber --body-file $tempFile 2>&1
-                }
-            }
-            else {
-                $result = gh pr comment $PRNumber --body-file $tempFile 2>&1
-            }
+    if ($existingCommentId) {
+        Write-Host "  Updating comment (ID: $existingCommentId)..." -ForegroundColor Gray
+        try {
+            gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input $tempFile 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "PATCH failed" }
+            Write-Host ""
+            Write-Host "✅ Code review comment updated on PR #$PRNumber" -ForegroundColor Green
+        } catch {
+            Write-Host "⚠️  Update failed, creating new comment instead..." -ForegroundColor Yellow
+            $result = gh pr comment $PRNumber --body-file $tempBodyFile 2>&1
+            if ($LASTEXITCODE -ne 0) { throw "Failed to post comment: $result" }
+            Write-Host ""
+            Write-Host "✅ Code review comment posted on PR #$PRNumber" -ForegroundColor Green
+            Write-Host "   $result" -ForegroundColor Gray
         }
-        else {
-            Write-Host "  No existing comment found — creating new..." -ForegroundColor Gray
-            $result = gh pr comment $PRNumber --body-file $tempFile 2>&1
-        }
+    } else {
+        $result = gh pr comment $PRNumber --body-file $tempBodyFile 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "Failed to post comment: $result" }
+        Write-Host ""
+        Write-Host "✅ Code review comment posted on PR #$PRNumber" -ForegroundColor Green
+        Write-Host "   $result" -ForegroundColor Gray
     }
-    else {
-        $result = gh pr comment $PRNumber --body-file $tempFile 2>&1
-    }
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to post comment: $result"
-    }
-
-    Write-Host ""
-    Write-Host "✅ Code review comment posted on PR #$PRNumber" -ForegroundColor Green
-    Write-Host "   $result" -ForegroundColor Gray
-}
-finally {
+} finally {
     Remove-Item -Path $tempFile -ErrorAction SilentlyContinue
+    Remove-Item -Path $tempBodyFile -ErrorAction SilentlyContinue
 }

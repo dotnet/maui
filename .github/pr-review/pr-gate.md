@@ -1,8 +1,9 @@
-# PR Gate — Test Verification
+# PR Gate - Test Before and After Fix
 
 > **⛔ This phase MUST pass before continuing to Try-Fix. If it fails, stop and inform user.**
 
-> 🚨 Gate verification MUST run via task agent — never inline.
+> In CI (Review-PR.ps1), the gate runs `verify-tests-fail.ps1` directly as a script step.
+> For manual usage, you can invoke it yourself or via a task agent.
 
 ---
 
@@ -26,40 +27,31 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
 ## Steps
 
-1. **Check if tests exist:**
+1. **Detect tests in PR** using the shared detection script:
    ```bash
-   gh pr view XXXXX --json files --jq '.files[].path' | grep -E "TestCases\.(HostApp|Shared\.Tests)"
+   pwsh .github/scripts/shared/Detect-TestsInDiff.ps1 -PRNumber XXXXX
    ```
-   If NO tests exist → inform user, suggest `write-tests-agent`. Gate is ⚠️ SKIPPED.
+   This auto-detects all test types: UI tests, device tests, unit tests, XAML tests.
+   If NO tests detected → inform user, suggest `write-tests-agent`. Gate is ⚠️ SKIPPED.
 
-2. **Select platform** — must be affected by bug AND available on host (see Platform Selection above).
+2. **Select platform** — must be affected by bug AND available on host (see table above).
 
-3. **Run verification via task agent** (MUST use task agent — never inline):
+3. **Run verification** via `verify-tests-fail.ps1`:
+   ```bash
+   pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 \
+     -Platform {platform} -RequireFullVerification
+   ```
+   In CI, `Review-PR.ps1` calls this script directly. For manual usage, you can also invoke
+   it via a task agent for isolation:
    ```
    Invoke the `task` agent with this prompt:
 
    "Invoke the verify-tests-fail-without-fix skill for this PR:
    - Platform: {platform}
-   - TestFilter: 'IssueXXXXX'
    - RequireFullVerification: true
 
    Report back: Did tests FAIL without fix? Did tests PASS with fix? Final status?"
    ```
-
-**Why task agent?** Running inline allows substituting commands and fabricating results. Task agent runs in isolation.
-
----
-
-## Expected Result
-
-```
-╔═══════════════════════════════════════════════════════════╗
-║              VERIFICATION PASSED ✅                       ║
-╠═══════════════════════════════════════════════════════════╣
-║  - FAIL without fix (as expected)                         ║
-║  - PASS with fix (as expected)                            ║
-╚═══════════════════════════════════════════════════════════╝
-```
 
 ---
 
@@ -72,25 +64,44 @@ Choose a platform that is BOTH affected by the bug AND available on the current 
 
 ## Output File
 
+> 🚨 **CRITICAL OUTPUT RULES:**
+> - Write gate results ONLY to `gate/content.md` — NEVER copy gate results into other phases (pre-flight, try-fix, report)
+> - Use the EXACT template below — no extra explanations, no "Reason:" paragraphs, no "Notes:" sections
+> - Keep it SHORT — the template is the complete output
+
 ```bash
 mkdir -p CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/gate
 ```
 
-Write `content.md`:
+Write `content.md` using this **exact** template (fill in values, don't add anything else):
+
 ```markdown
 ### Gate Result: {✅ PASSED / ❌ FAILED / ⚠️ SKIPPED}
 
 **Platform:** {platform}
-**Mode:** Full Verification
 
-- Tests FAIL without fix: {✅/❌}
-- Tests PASS with fix: {✅/❌}
+| # | Type | Test Name | Filter |
+|---|------|-----------|--------|
+| 1 | {type} | {name} | `{filter}` |
+
+| Step | Expected | Actual | Result |
+|------|----------|--------|--------|
+| Without fix | FAIL | {FAIL/PASS} | {✅/❌} |
+| With fix | PASS | {FAIL/PASS} | {✅/❌} |
+```
+
+If gate is SKIPPED (no tests found), write only:
+
+```markdown
+### Gate Result: ⚠️ SKIPPED
+
+No tests detected in PR. Suggest adding tests via `write-tests-agent`.
 ```
 
 ---
 
 ## Common Mistakes
 
-- ❌ Running inline — MUST use task agent
-- ❌ Using `BuildAndRunHostApp.ps1` — that runs ONE direction; the skill does TWO
-- ❌ Claiming results from a single test run — script does TWO runs automatically
+- ❌ Adding verbose explanations to gate/content.md — use the exact template above
+- ❌ Copying gate results into try-fix/content.md or report/content.md — gate results belong ONLY in gate/content.md
+- ❌ Skipping gate because tests are device tests, not UI tests — the skill supports all test types

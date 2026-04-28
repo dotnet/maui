@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private readonly WebView2Control _webview;
 		private readonly Task<bool> _webviewReadyTask;
 		private readonly string _contentRootRelativeToAppRoot;
+		volatile bool _isDisposing;
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 		private protected CoreWebView2Environment? _coreWebView2Environment;
@@ -196,7 +197,42 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 
 		/// <inheritdoc />
 		protected override void SendMessage(string message)
-			=> _webview.CoreWebView2.PostWebMessageAsString(message);
+		{
+			// Check disposal flag first (prevents most calls after disposal)
+			if (_isDisposing)
+			{
+				return;
+			}
+
+			// CoreWebView2 is null until WebView2 initialization completes
+			var coreWebView = _webview.CoreWebView2;
+			if (coreWebView is null)
+			{
+				return;
+			}
+
+			// CoreWebView2 can be disposed between the check above and the call below.
+			// Catching InvalidOperationException is the Microsoft-documented pattern for COM objects
+			// that don't expose disposal state.
+			try
+			{
+				coreWebView.PostWebMessageAsString(message);
+			}
+			catch (InvalidOperationException)
+			{
+				// Set flag so subsequent calls use the fast path
+				_isDisposing = true;
+			}
+		}
+
+		/// <summary>
+		/// Marks the manager as disposing to prevent further operations.
+		/// This should be called by the owning control before starting disposal.
+		/// </summary>
+		internal void MarkAsDisposing()
+		{
+			_isDisposing = true;
+		}
 
 		private async Task<bool> TryInitializeWebView2()
 		{

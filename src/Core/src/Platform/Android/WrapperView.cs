@@ -12,6 +12,14 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : PlatformWrapperView
 	{
+		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
+		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
+		// children. Return false only when semi-transparent so Android applies alpha
+		// per-child instead, avoiding the implicit clip.
+		// When fully opaque (Alpha >= 1), preserve the base class behavior so any
+		// future or subclass override is respected rather than hardcoding true.
+		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
+
 		APath _currentPath;
 		SizeF _lastPathSize;
 		bool _invalidateClip;

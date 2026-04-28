@@ -6,6 +6,34 @@ applyTo:
 
 # gh-aw (GitHub Agentic Workflows) Guidelines
 
+## 🚨 Before You Build: Prefer Built-in gh-aw Features
+
+**CRITICAL RULE:** Before implementing any trigger, output, scheduling, or interaction mechanism in a gh-aw workflow, check whether gh-aw has a built-in feature that does it. gh-aw extends GitHub Actions with many convenience features — manually reimplementing them is always worse (more code, more bugs, missing platform integration like emoji reactions, sanitized inputs, and noise reduction).
+
+### Step 1: Check the anti-patterns table below
+### Step 2: If not listed, check the [triggers reference](https://github.github.com/gh-aw/reference/triggers/), [frontmatter reference](https://github.github.com/gh-aw/reference/frontmatter/), and [safe-outputs reference](https://github.github.com/gh-aw/reference/safe-outputs/)
+### Step 3: If a built-in exists, use it. If not, proceed with manual implementation.
+
+### Anti-Patterns: Manual Reimplementations to Avoid
+
+| If you're about to implement... | Use this built-in instead | Docs |
+|---------------------------------|--------------------------|------|
+| `issue_comment` + `startsWith(comment.body, '/cmd')` | `slash_command:` trigger | [Command Triggers](https://github.github.com/gh-aw/reference/command-triggers/) |
+| Manual emoji reaction on triggering comment | `reaction:` field under `on:` | [Frontmatter](https://github.github.com/gh-aw/reference/frontmatter/) |
+| Posting "workflow started/completed" status comments | `status-comment: true` under `on:` | [Frontmatter](https://github.github.com/gh-aw/reference/frontmatter/) |
+| Fixed cron schedule (`0 9 * * 1`) for non-critical timing | `schedule: weekly on monday around 9:00` (fuzzy) | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+| Manual `if:` to skip bot-authored PRs | `skip-bots:` under `on:` | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+| Manual `if:` to skip by author role | `skip-roles:` under `on:` | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+| Manual label check + removal for one-shot commands | `label_command:` trigger | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+| Editing old comments to collapse them | `hide-older-comments: true` on `add-comment:` | [Safe Outputs](https://github.github.com/gh-aw/reference/safe-outputs/) |
+| Creating no-op report issues | `noop: report-as-issue: false` | [Safe Outputs / Monitoring](https://github.github.com/gh-aw/patterns/monitoring/) |
+| Auto-closing older issues from same workflow | `close-older-issues: true` on `create-issue:` | [Safe Outputs](https://github.github.com/gh-aw/reference/safe-outputs/) |
+| Disabling workflow after a date | `stop-after:` under `on:` | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+| Manual approval gating | `manual-approval:` under `on:` | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+| Search-based skip logic in `steps:` | `skip-if-match:` / `skip-if-no-match:` under `on:` | [Triggers](https://github.github.com/gh-aw/reference/triggers/) |
+
+**Note:** gh-aw is actively developed. If a capability feels like something a framework would provide natively, check the reference docs — it probably exists even if it's not in this table yet.
+
 ## Architecture
 
 gh-aw workflows are authored as `.md` files with YAML frontmatter, compiled to `.lock.yml` via `gh aw compile`. The lock file is auto-generated — **never edit it manually**.
@@ -29,6 +57,8 @@ agent job:
 | Platform steps | ✅ Yes | ✅ Yes | ✅ Yes | Platform-controlled |
 | Agent container | ❌ Scrubbed | ❌ Scrubbed | ❌ Scrubbed | ✅ But sandboxed |
 
+**⚠️ Agent container credential nuance:** `GITHUB_TOKEN` and `gh` CLI credentials are scrubbed inside the agent container. However, `COPILOT_TOKEN` (used for LLM inference) is present in the environment via `--env-all`. Any subprocess (e.g., `dotnet build`, `npm install`) inherits this variable. The AWF network firewall, `redact_secrets.cjs` (post-agent log scrubbing), and the threat detection agent limit the blast radius. See [Security Boundaries](#security-boundaries) below.
+
 ### Step Ordering (Critical)
 
 User `steps:` **always run before** platform-generated steps. You cannot insert user steps after platform steps.
@@ -48,6 +78,41 @@ By default, `gh aw compile` automatically injects a fork guard into the activati
 
 To **allow fork PRs**, add `forks: ["*"]` to the `pull_request` trigger in the `.md` frontmatter. The compiler removes the auto-injected guard from the compiled `if:` conditions. This is safe when the workflow uses the `Checkout-GhAwPr.ps1` pattern (checkout + trusted-infra restore) and the agent is sandboxed.
 
+## Security Boundaries
+
+### Key Principles (from [GitHub Security Lab](https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/))
+
+1. **Never execute untrusted PR code with elevated credentials.** The classic "pwn-request" attack is `pull_request_target` + checkout PR + run build scripts with `GITHUB_TOKEN`. The attack surface includes build scripts (`make`, `build.ps1`), package manager hooks (`npm postinstall`, MSBuild targets), and test runners.
+
+2. **Treating PR contents as passive data is safe.** Reading, analyzing, or diffing PR code is fine — the danger is *executing* it. Our gh-aw workflows read code for evaluation; they never build or run it.
+
+3. **`pull_request_target` grants write permissions and secrets access.** This is by design — the workflow YAML comes from the base branch (trusted). But any step that checks out and runs fork code in this context creates a vulnerability.
+
+4. **`pull_request` from forks has no secrets access.** GitHub withholds secrets because the workflow YAML comes from the fork (untrusted). This is the safe default for CI builds on fork PRs.
+
+5. **The `workflow_run` pattern separates privilege from code execution.** Build in an unprivileged `pull_request` job → pass artifacts → process in a privileged `workflow_run` job. This is architecturally what gh-aw does: agent runs read-only, `safe_outputs` job has write permissions.
+
+### gh-aw Defense Layers
+
+| Layer | What it does | What it doesn't do |
+|-------|-------------|-------------------|
+| **AWF network firewall** | Restricts outbound to allowlisted domains | Doesn't prevent reading env vars inside the container |
+| **`redact_secrets.cjs`** | Scrubs known secret values from logs/artifacts post-agent | Doesn't catch encoded/obfuscated values |
+| **Threat detection agent** | Reviews agent outputs before safe-outputs publishes them | Can miss novel exfiltration techniques |
+| **Safe-outputs permission separation** | Write operations happen in separate job, not the agent | Agent can still request writes via safe-output tools |
+| **`max: 1` on `add-comment`** | Limits agent to one comment | That one comment could contain sensitive data (mitigated by redaction) |
+| **XPIA prompt** | Instructs LLM to resist prompt injection from untrusted content | LLM compliance is probabilistic, not guaranteed |
+| **`pre_activation` role check** | Gates on write-access collaborators | Does not apply if `roles: all` is set |
+
+### Rules for gh-aw Workflow Authors
+
+- ✅ **DO** treat PR contents as passive data (read, analyze, diff)
+- ✅ **DO** run data-gathering scripts in `steps:` (pre-agent, trusted context) not inside the agent
+- ✅ **DO** use `Checkout-GhAwPr.ps1` for `workflow_dispatch` to restore trusted `.github/` from base
+- ❌ **DO NOT** run `dotnet build`, `npm install`, or any build command on untrusted PR code inside the agent — build tool hooks (MSBuild targets, postinstall scripts) can read `COPILOT_TOKEN` from the environment
+- ❌ **DO NOT** execute workspace scripts (`.ps1`, `.sh`, `.py`) after checking out a fork PR in `steps:` — those run with `GITHUB_TOKEN`
+- ❌ **DO NOT** set `roles: all` on workflows that process PR content — this allows any user to trigger the workflow
+
 ## Fork PR Handling
 
 ### The "pwn-request" Threat Model
@@ -65,12 +130,13 @@ Reference: https://securitylab.github.com/resources/github-actions-preventing-pw
 | `workflow_dispatch` | ❌ Skipped | ✅ Works — user steps handle checkout and restore is final |
 | `issue_comment` (same-repo) | ✅ Yes | ✅ Works — files already on PR branch |
 | `issue_comment` (fork) | ✅ Yes | ⚠️ Works — `checkout_pr_branch.cjs` re-checks out fork branch after user steps, potentially overwriting restored infra. Acceptable because agent is sandboxed (no credentials, max 1 comment via safe-outputs). Pre-flight check catches missing `SKILL.md` if fork isn't rebased. |
+| `slash_command` | ✅ Yes (compiles to `issue_comment` internally) | Same behavior as `issue_comment` above, but with platform-managed command matching, emoji reactions, and sanitized input. Prefer `slash_command:` over manual `issue_comment` + `startsWith()`. |
 
 ### The `issue_comment` + Fork Problem
 
 For `/slash-command` triggers on fork PRs, `checkout_pr_branch.cjs` runs AFTER all user steps and re-checks out the fork branch. This overwrites any files restored by user steps (e.g., `.github/skills/`). A fork could include a crafted `SKILL.md` that alters the agent's evaluation behavior.
 
-**Accepted residual risk:** The agent runs in a sandboxed container with all credentials scrubbed. The worst outcome is a manipulated evaluation comment (`safe-outputs: add-comment: max: 1`). The agent has no ability to push code, access secrets, or exfiltrate data. The pre-flight check in the agent prompt catches the case where `SKILL.md` is missing entirely (fork not rebased on `main`).
+**Accepted residual risk:** The agent runs in a sandboxed container with `GITHUB_TOKEN` and `gh` CLI credentials scrubbed. `COPILOT_TOKEN` (for LLM inference) remains in the environment but the AWF network firewall restricts outbound connections to an allowlist of domains, `redact_secrets.cjs` scrubs known secret values from logs/outputs post-agent, and the threat detection agent reviews outputs before they are published. The worst practical outcome is a manipulated evaluation comment (`safe-outputs: add-comment: max: 1`). The pre-flight check in the agent prompt catches the case where `SKILL.md` is missing entirely (fork not rebased on `main`).
 
 **Upstream issue:** [github/gh-aw#18481](https://github.com/github/gh-aw/issues/18481) — "Using gh-aw in forks of repositories"
 
@@ -88,17 +154,15 @@ steps:
 ```
 
 The script:
-1. Captures the base branch SHA before checkout
-2. Checks out the PR branch via `gh pr checkout`
-3. Deletes `.github/skills/` and `.github/instructions/` (prevents fork-added files)
-4. Restores them from the base branch SHA (best-effort, non-fatal)
+1. Verifies the PR author has write access and rejects fork PRs
+2. Captures the base branch SHA before checkout
+3. Checks out the PR branch via `gh pr checkout`
+4. Restores `.github/skills/`, `.github/instructions/`, and `.github/copilot-instructions.md` from the base branch SHA (fatal on failure)
 
 **Behavior by trigger:**
 - **`workflow_dispatch`**: Platform checkout is skipped, so the restore IS the final workspace state (trusted files from base branch)
-- **`pull_request`** (same-repo): User step restores trusted infra. `checkout_pr_branch.cjs` runs after and re-checks out PR branch — for same-repo PRs, skill files typically match main unless the PR modified them.
-- **`pull_request`** (fork with `forks: ["*"]`): Same as above, but fork's skill files may differ. Same residual risk as `issue_comment` fork case — agent is sandboxed, pre-flight catches missing `SKILL.md`.
-- **`issue_comment`** (same-repo): Platform re-checks out PR branch — files already match, effectively a no-op
-- **`issue_comment`** (fork): Platform re-checks out fork branch after us, overwriting restored files. Agent is sandboxed; pre-flight in the prompt catches missing `SKILL.md`
+- **`slash_command`** (same-repo): Platform's `checkout_pr_branch.cjs` handles checkout. Skill files typically match main unless the PR modified them.
+- **`slash_command`** (fork): Platform re-checks out fork branch after user steps, overwriting restored files. Agent is sandboxed; pre-flight in the prompt catches missing `SKILL.md`
 
 ### Anti-Patterns
 

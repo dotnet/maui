@@ -52,7 +52,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Input | Required | Description |
 |-------|----------|-------------|
 | Problem | Yes | Description of the bug/issue to fix |
-| Test command | Yes | **Repository-specific script** to build, deploy, and test (e.g., `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue12345"`). **ALWAYS use this script - NEVER manually build/compile.** |
+| Test command | Yes | **Repository-specific script** to build and test. Use `BuildAndRunHostApp.ps1` for UI tests, `Run-DeviceTests.ps1` for device tests, or `dotnet test` for unit tests. The correct command is determined by the test type detected in the PR. **ALWAYS use the appropriate script - NEVER manually build/compile.** |
 | Target files | Yes | Files to investigate for the fix |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
@@ -265,15 +265,21 @@ Implement your fix. Use `git status --short` and `git diff` to track changes.
 
 🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
 
-**For .NET MAUI repository:** Use `BuildAndRunHostApp.ps1` which handles:
-- Building the project
-- Deploying to device/simulator
-- Running tests
-- Capturing logs
+**For .NET MAUI repository:** Use the test script matching the test type:
+
+| Test Type | Command |
+|-----------|---------|
+| UITest | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>"` |
+| DeviceTest | `pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <project> -Platform <platform> -TestFilter "<filter>"` |
+| UnitTest | `dotnet test <project.csproj> --filter "<filter>"` |
 
 ```powershell
 # Capture output to test-output.log while also displaying it
+# Example for UI tests:
 pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
+
+# Example for device tests:
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <project> -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
 ```
 
 **Testing Loop (Iterate until SUCCESS or exhausted):**

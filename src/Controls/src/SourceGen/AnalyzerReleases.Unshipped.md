@@ -30,3 +30,5 @@ MAUIX2010 | XamlParsing | Info | ExpressionNotSettable
 MAUIX2011 | XamlParsing | Warning | AmbiguousMemberWithStaticType
 MAUIX2012 | XamlParsing | Error | CSharpExpressionsRequirePreviewFeatures
 MAUIX2013 | XamlParsing | Error | AsyncLambdaNotSupported
+MAUIX2015 | XamlParsing | Error | XCodeNotChildOfRoot
+MAUIX2016 | XamlParsing | Error | XCodeRequiresXClass

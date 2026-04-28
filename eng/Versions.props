@@ -3,7 +3,7 @@
     <!-- The .NET product branding version -->
     <MajorVersion>10</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>60</PatchVersion>
+    <PatchVersion>70</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
@@ -125,7 +125,7 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.1.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>17.9.5</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>17.9.5</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MonoApiToolsMSBuildTasksPackageVersion>0.4.0</MonoApiToolsMSBuildTasksPackageVersion>
+    <MonoApiToolsMSBuildTasksPackageVersion>0.5.0</MonoApiToolsMSBuildTasksPackageVersion>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
        - NuGet versions below
