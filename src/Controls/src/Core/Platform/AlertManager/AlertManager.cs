@@ -8,6 +8,9 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
+		// These string values are documented in the XML remarks for AlertArguments,
+		// ActionSheetArguments, and PromptArguments. Third-party backends may depend
+		// on them as literal strings; do not change without breaking-change consideration.
 		internal const string DisplayAlertServiceKey = "Microsoft.Maui.Controls.DisplayAlert";
 		internal const string DisplayActionSheetServiceKey = "Microsoft.Maui.Controls.DisplayActionSheet";
 		internal const string DisplayPromptServiceKey = "Microsoft.Maui.Controls.DisplayPrompt";
