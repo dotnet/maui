@@ -36,6 +36,15 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
+	/// <summary>
+	/// Returns true if the node is an x:Code element, which is handled by the x:Code pipeline
+	/// and should be ignored by IC visitors.
+	/// </summary>
+	internal static bool IsXCodeElement(INode node)
+		=> node is ElementNode en
+			&& en.XmlType.Name == "Code"
+			&& (en.NamespaceURI == XamlParser.X2006Uri || en.NamespaceURI == XamlParser.X2009Uri);
+
 	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
@@ -69,14 +78,12 @@ static class GeneratorHelpers
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(xaml),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 		{
 			while (reader.Read())
@@ -156,19 +163,91 @@ static class GeneratorHelpers
 		return new XamlProjectItemForCB(projectItem, root, nsmgr);
 	}
 
+	/// <summary>
+	/// Extracts x:Code blocks from a XAML file. Returns null if no x:Code elements are found
+	/// or if the XAML doesn't meet the requirements (x:Class, EnablePreviewFeatures).
+	/// </summary>
+	public static (ProjectItem ProjectItem, string Source, List<Diagnostic> Diagnostics)? ComputeXCodeSource(
+		(XamlProjectItemForCB?, AssemblyAttributes) input,
+		CancellationToken cancellationToken)
+	{
+		var (xamlItem, xmlnsCache) = input;
+		if (xamlItem?.Root == null || xamlItem.ProjectItem == null)
+			return null;
+
+		var root = xamlItem.Root;
+		var nsmgr = xamlItem.Nsmgr;
+		var projItem = xamlItem.ProjectItem;
+		var diagnostics = new List<Diagnostic>();
+
+		// Find all x:Code child elements of the root
+		var codeBlocks = new List<string>();
+
+		foreach (XmlNode child in root.ChildNodes)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (child.LocalName != "Code")
+				continue;
+			if (child.NamespaceURI != XamlParser.X2006Uri && child.NamespaceURI != XamlParser.X2009Uri)
+				continue;
+
+			codeBlocks.Add(child.InnerText);
+		}
+
+		if (codeBlocks.Count == 0)
+			return null;
+
+		// Gate: EnablePreviewFeatures required
+		if (!projItem.EnablePreviewFeatures)
+		{
+			if (projItem.RelativePath is string path)
+			{
+				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
+				diagnostics.Add(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
+			}
+			return (projItem, string.Empty, diagnostics);
+		}
+
+		// Gate: x:Class must be present
+		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
+						?? root.Attributes["Class", XamlParser.X2009Uri];
+		if (rootClass == null)
+		{
+			if (projItem.RelativePath is string path)
+			{
+				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
+				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
+			}
+			return (projItem, string.Empty, diagnostics);
+		}
+
+		XmlnsHelper.ParseXmlns(rootClass.Value, out var rootType, out var rootClrNamespace, out _, out _);
+		if (rootType == null || rootClrNamespace == null)
+		{
+			if (projItem.RelativePath is string path)
+			{
+				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
+				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
+			}
+			return (projItem, string.Empty, diagnostics);
+		}
+
+		var source = XCodeCodeWriter.GenerateXCode(rootClrNamespace, rootType, codeBlocks.ToArray());
+		return (projItem, source, diagnostics);
+	}
+
 	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyAttributes assemblyCaches, CancellationToken cancellationToken)
 	{
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(text.ToString()),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 
 
@@ -200,10 +279,6 @@ static class GeneratorHelpers
 		INamedTypeSymbol? xmlnsPrefixAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsPrefixAttribute).FullName)
 			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
-		// [assembly: AllowImplicitXmlnsDeclaration]
-		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
-			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
-
 		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 			return AssemblyAttributes.Empty;
 
@@ -211,10 +286,6 @@ static class GeneratorHelpers
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
 		var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
-		var allowImplicitXmlns = compilation.Assembly.GetAttributes()
-			.Any(a =>
-				   SymbolEqualityComparer.Default.Equals(a.AttributeClass, allowImplicitXmlnsAttribute)
-				&& (a.ConstructorArguments.Length == 0 || a.ConstructorArguments[0].Value is bool b && b));
 		internalsVisible.Add(compilation.Assembly);
 
 		IList<IAssemblySymbol> assemblies = [compilation.Assembly];
@@ -294,7 +365,7 @@ static class GeneratorHelpers
 			}
 		}
 
-		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, allowImplicitXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
@@ -393,16 +464,63 @@ static class GeneratorHelpers
 
 	/// <summary>
 	/// Formats a value as a culture-independent C# literal for source generation.
-	/// Uses SymbolDisplay.FormatPrimitive to ensure proper handling of special values like NaN and Infinity
-	/// but also numeric types and makes sure they are formatted correctly.
+	/// Handles special floating-point values (NaN, Infinity) and uses SymbolDisplay.FormatPrimitive
+	/// for regular numeric types to ensure they are formatted correctly.
 	/// </summary>
 	/// <param name="value">The value to format</param>
 	/// <param name="quoted">Whether to include quotes around the formatted value</param>
 	/// <returns>A culture-independent string representation suitable for source generation</returns>
 	public static string FormatInvariant(object value, bool quoted = false)
 	{
+		// Handle special floating-point values that SymbolDisplay.FormatPrimitive doesn't prefix correctly
+		if (value is double d)
+		{
+			if (double.IsNaN(d))
+				return "double.NaN";
+			if (double.IsPositiveInfinity(d))
+				return "double.PositiveInfinity";
+			if (double.IsNegativeInfinity(d))
+				return "double.NegativeInfinity";
+		}
+		else if (value is float f)
+		{
+			if (float.IsNaN(f))
+				return "float.NaN";
+			if (float.IsPositiveInfinity(f))
+				return "float.PositiveInfinity";
+			if (float.IsNegativeInfinity(f))
+				return "float.NegativeInfinity";
+		}
+
 		return SymbolDisplay.FormatPrimitive(value, quoteStrings: quoted, useHexadecimalNumbers: false);
 	}
 
+	/// <summary>
+	/// Tries to parse a double value, including special values like NaN, Infinity, -Infinity.
+	/// </summary>
+	public static bool TryParseDouble(string value, out double result)
+	{
+		value = value.Trim();
+
+		// Handle special values that NumberStyles.Number doesn't parse
+		if (value.Equals("NaN", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NaN;
+			return true;
+		}
+		if (value.Equals("Infinity", StringComparison.OrdinalIgnoreCase) ||
+			value.Equals("+Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.PositiveInfinity;
+			return true;
+		}
+		if (value.Equals("-Infinity", StringComparison.OrdinalIgnoreCase))
+		{
+			result = double.NegativeInfinity;
+			return true;
+		}
+
+		return double.TryParse(value, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out result);
+	}
 
 }

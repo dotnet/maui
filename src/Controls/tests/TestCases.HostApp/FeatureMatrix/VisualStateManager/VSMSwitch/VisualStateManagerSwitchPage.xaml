@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualStateManagerSwitchPage"
+             Title="VisualStateManagerSwitchPage">
+    <ContentPage.Resources>
+        <!-- Switch VSM demo -->
+        <Style TargetType="Switch" x:Key="VsmSwitchStyle">
+            <Setter Property="ThumbColor" Value="#FFFFFF" />
+            <Setter Property="OnColor" Value="#FF858688" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="1" />
+                                <Setter Property="Scale" Value="1.0" />
+                                <Setter Property="ThumbColor" Value="#1141a7" />
+                                <Setter Property="OnColor" Value="#6295ec" />
+                                <Setter Property="OffColor" Value="#FF9EBDF4"  />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="Scale" Value="1.0" />
+                                <Setter Property="ThumbColor" Value="#FF575858" />
+                                <Setter Property="OnColor" Value="#FF9CA3AF" />
+                                <Setter Property="OffColor" Value="Gray" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="OnOffStates">
+                        <VisualState x:Name="On">
+                            <VisualState.Setters>
+                                <Setter Property="ThumbColor" Value="#0f5027" />
+                                <Setter Property="OnColor" Value="#86EFAC" />
+                                <Setter Property="Scale" Value="1.5" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Off">
+                            <VisualState.Setters>
+                                <Setter Property="ThumbColor" Value="#ff2e2e" />
+                                <Setter Property="OffColor" Value="#FFDB8787" />
+                                <Setter Property="Scale" Value="1.3" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+            <Label Text="VisualStateManager Feature Matrix" FontSize="20" />
+
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="Switch States (On / Off / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="20" VerticalOptions="Center">
+                    <Switch x:Name="VSMSwitch" AutomationId="VSMSwitch" Style="{StaticResource VsmSwitchStyle}" Toggled="OnSwitchToggled" />
+                    <Label x:Name="SwitchState" AutomationId="SwitchState" Text="State: Off" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button x:Name="SwitchDisableButton" Text="Disable" AutomationId="SwitchDisable" Clicked="OnToggleSwitchDisabled" />
+                    <Button Text="Reset" AutomationId="SwitchReset" Clicked="OnResetSwitch" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

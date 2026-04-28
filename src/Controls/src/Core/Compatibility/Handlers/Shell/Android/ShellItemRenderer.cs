@@ -13,6 +13,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -141,6 +142,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			// Apply background color from appearance, fallback to default if unavailable
+			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
+			{
+				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+			}
 			_appearanceSet = true;
 			_appearanceTracker.SetAppearance(_bottomView, appearance);
 		}
@@ -176,7 +182,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// handle the more tab
 			var items = ((IShellItemController)ShellItem).GetItems();
-			for (int i = _bottomView.MaxItemCount - 1; i < items.Count; i++)
+			var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
+			for (int i = maxItems - 1; i < items.Count; i++)
 			{
 				var closure_i = i;
 				var shellContent = items[i];
@@ -280,11 +287,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDisplayedPageChanged(newPage, oldPage);
 
-			if (oldPage is not null)
-				oldPage.PropertyChanged -= OnDisplayedElementPropertyChanged;
+			oldPage?.PropertyChanged -= OnDisplayedElementPropertyChanged;
 
-			if (newPage is not null)
-				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
+			newPage?.PropertyChanged += OnDisplayedElementPropertyChanged;
 
 			if (newPage is not null && !_menuSetup)
 			{
@@ -376,7 +381,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
 
 				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
-				var maxItems = _bottomView.MaxItemCount;
+				var maxItems = Math.Min(_bottomView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems);
 				IMenuItem menuItem = null;
 
 				if (!(itemCount > maxItems && index > maxItems - 2))
@@ -418,6 +423,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 				}
 			}
+			else if (e.IsOneOf(BaseShellItem.BadgeTextProperty, BaseShellItem.BadgeColorProperty, BaseShellItem.BadgeTextColorProperty))
+			{
+				var shellSection = (ShellSection)sender;
+				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
+
+				if (index < 0)
+					return;
+
+				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
+				var maxItems = _bottomView.MaxItemCount;
+
+				if (!(itemCount > maxItems && index > maxItems - 2))
+				{
+					UpdateShellSectionBadge(shellSection, index);
+				}
+			}
 		}
 
 		protected virtual void OnTabReselected(ShellSection shellSection)
@@ -456,7 +477,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (DisplayedPage is null)
+			if (DisplayedPage is null && !_menuSetup)
 				return;
 
 			if (ShellItemController.ShowTabs)
@@ -472,6 +493,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					currentIndex,
 					_bottomView,
 					MauiContext);
+
+				UpdateAllBadges();
 			}
 
 			UpdateTabBarVisibility();
@@ -494,6 +517,79 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bool tabEnabled = shellSection.IsEnabled;
 			if (menuItem.IsEnabled != tabEnabled)
 				menuItem.SetEnabled(tabEnabled);
+		}
+
+		/// <summary>
+		/// Updates the badge on a bottom navigation tab for the given shell section.
+		/// </summary>
+		protected virtual void UpdateShellSectionBadge(ShellSection shellSection, int index)
+		{
+			if (_bottomView is null || !_bottomView.IsAlive())
+				return;
+
+			var badgeText = shellSection.BadgeText;
+			var menuItemId = index;
+
+			if (badgeText is null)
+			{
+				_bottomView.RemoveBadge(menuItemId);
+			}
+			else
+			{
+				var badgeColor = shellSection.BadgeColor;
+
+				// Remove and recreate badge when clearing color to reset to platform default
+				if (badgeColor is null)
+				{
+					_bottomView.RemoveBadge(menuItemId);
+				}
+
+				var badge = _bottomView.GetOrCreateBadge(menuItemId);
+				if (badgeText.Length > 0)
+					badge.Text = badgeText;
+				else
+					badge.ClearNumber(); // Empty string shows as dot indicator
+
+				if (badgeColor is not null)
+				{
+					badge.BackgroundColor = badgeColor.ToPlatform();
+				}
+
+				var badgeTextColor = shellSection.BadgeTextColor;
+				if (badgeTextColor is not null)
+				{
+					badge.BadgeTextColor = badgeTextColor.ToPlatform();
+				}
+			}
+		}
+
+		void UpdateAllBadges()
+		{
+			if (_bottomView is null || !_bottomView.IsAlive())
+				return;
+
+			var items = ((IShellItemController)ShellItem).GetItems();
+			var maxItems = _bottomView.MaxItemCount;
+
+			if (items.Count == 0 || maxItems <= 0)
+				return;
+
+			var hasOverflow = items.Count > maxItems;
+
+			// When overflow exists, index maxItems - 1 is the "More" tab.
+			// Only update badges for actual sections shown as tabs.
+			var lastIndexToUpdate = hasOverflow ? maxItems - 2 : Math.Min(items.Count, maxItems) - 1;
+
+			for (int i = 0; i <= lastIndexToUpdate; i++)
+			{
+				UpdateShellSectionBadge(items[i], i);
+			}
+
+			// Ensure the "More" tab itself does not display a badge
+			if (hasOverflow)
+			{
+				_bottomView.RemoveBadge(maxItems - 1);
+			}
 		}
 
 		void OnDisplayedElementPropertyChanged(object sender, PropertyChangedEventArgs e)

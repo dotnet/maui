@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
+    x:Class="Maui.Controls.Sample.Pages.TripPlanningPage"
+    x:DataType="viewModels:TripPlanningViewModel"
+    SafeAreaEdges="None"
+    Shell.NavBarIsVisible="False"
+    Title="{Binding Landmark.Name}">
+
+    <Grid SafeAreaEdges="None">
+
+        <!-- Background Header Image -->
+        <Image
+            IsVisible="{Binding IsNotErrorState}"
+            VerticalOptions="Start" HeightRequest="380" Aspect="AspectFill"
+            Source="{Binding Landmark.BackgroundImageName, StringFormat='Images/Backgrounds/{0}.jpg'}" />
+
+        <!-- Fixed fade overlay (hides image edge on overscroll) -->
+        <BoxView IsVisible="{Binding IsNotErrorState}" VerticalOptions="Start" HeightRequest="380">
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{AppThemeBinding Light=#00FFFFFF, Dark=#001C1C1E}" Offset="0.5" />
+                    <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="1.0" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <!-- Main Content -->
+        <ScrollView IsVisible="{Binding IsNotErrorState}">
+            <VerticalStackLayout>
+
+                <!-- Gradient that scrolls over image -->
+                <BoxView HeightRequest="120" Margin="0,180,0,0">
+                    <BoxView.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="{AppThemeBinding Light=#00FFFFFF, Dark=#001C1C1E}" Offset="0.0" />
+                            <GradientStop Color="{AppThemeBinding Light=White, Dark=#1C1C1E}" Offset="1.0" />
+                        </LinearGradientBrush>
+                    </BoxView.Background>
+                </BoxView>
+
+                <!-- Content area with solid background -->
+                <VerticalStackLayout
+                    Spacing="20"
+                    Padding="0,0,0,20"
+                    Background="{AppThemeBinding Light=White, Dark=#1C1C1E}">
+
+                    <views:ItineraryPlanningView 
+                        Margin="0,-80,0,0"
+                        IsVisible="{Binding IsGeneratingState}" />
+
+                    <views:ItineraryView 
+                        Margin="0,-80,0,0"
+                        IsVisible="{Binding HasItinerary}" />
+
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Error state -->
+        <views:MessageView IsVisible="{Binding IsErrorState}" />
+        
+        <!-- Floating Back Button -->
+        <Grid SafeAreaEdges="Container" VerticalOptions="Start" HorizontalOptions="Start">
+            <Button
+                Text="{x:Static f:FluentUI.arrow_left_24_regular}" FontFamily="FluentUI"
+                Clicked="OnBackButtonClicked"
+                VerticalOptions="Start" HorizontalOptions="Start" Margin="20,8,0,0" 
+                HeightRequest="44" WidthRequest="44" CornerRadius="22" Padding="0"
+                FontSize="24" Background="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+                TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark=White}" />
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

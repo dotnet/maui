@@ -1,10 +1,12 @@
 trigger:
+  batch: true
   branches:
     include:
     - main
     - release/*
     - net*.0
     - inflight/*
+    - darc-*
   tags:
     include:
     - '*'
@@ -88,21 +90,21 @@ parameters:
 - name: macOSTestPoolPublic
   type: object
   default:
-    name: Azure Pipelines
-    vmImage: macOS-15-arm64
+    name: AcesShared
+    demands:
+      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 - name: macOSPoolPublic
   type: object
   default:
-    name: MAUI
-    vmImage: MAUI
+    name: AcesShared
     demands:
-      - Agent.OSArchitecture -equals ARM64
+      - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net10.0
+  - tfm: net11.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:

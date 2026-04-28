@@ -111,7 +111,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
 				var type = module.GetTypeDefinition(cache, (typeInfo.assemblyName, typeInfo.clrNamespace, typeName));
 				if (type is not null && type.IsPublicOrVisibleInternal(module))
+				{
+					// Skip static classes found via the "Extension" suffix expansion when they shadow
+					// the exact name (e.g. MyEnumExtension shadowing MyEnum). Static types cannot
+					// implement IMarkupExtension, so they are never valid markup extensions. (#34021)
+					if (typeInfo.typeName != xmlType.Name && type.IsAbstract && type.IsSealed)
+						return null;
 					return type;
+				}
 				return null;
 			}, expandToExtension: expandToExtension);
 

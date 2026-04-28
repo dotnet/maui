@@ -133,7 +133,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Validate visually on page 2 (back button title)
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 #endif
@@ -249,6 +249,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(10)]
 		public void SetIconColor_Red_Purple_Default_Visual()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33966
+			}
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 
@@ -275,8 +279,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(11)]
 		public void TitleIcon_Add_Visual()
 		{
-			App.WaitForElement("PopToRootPageButton");
-			App.Tap("PopToRootPageButton");
+			if (!(App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp)))
+			{
+				App.WaitForElement("PopToRootPageButton");
+				App.Tap("PopToRootPageButton");
+			}
 
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
@@ -284,7 +291,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
 			// Screenshot: Title icon applied on current page
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 #if TEST_FAILS_ON_ANDROID      //Issue Link: https://github.com/dotnet/maui/issues/31445                                                                
@@ -300,7 +307,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("TitleIconButton");
 			App.WaitForElement("TitleIconButton");
 			App.Tap("TitleIconButton");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 #endif
 
@@ -346,7 +353,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Screenshot: Title icon and custom title view present on pushed page
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(15)]

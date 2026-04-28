@@ -1,0 +1,10 @@
+// Update MergeToBranch when cutting a new release.
+{
+    "merge-flow-configurations": {
+        "net11.0": {
+            "MergeToBranch": "release/11.0.1xx-preview3",
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
+        }
+    }
+}

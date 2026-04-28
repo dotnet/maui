@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (IsNullOrEmpty(member) || !member.Contains("."))
 				throw new BuildException(BuildExceptionCode.XStaticSyntax, node as IXmlLineInfo, null);
 
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 			var dotIdx = member.LastIndexOf('.');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 

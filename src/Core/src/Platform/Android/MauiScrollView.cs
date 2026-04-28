@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Platform
 
 			_hScrollView.HorizontalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
 			_hScrollView.ScrollbarFadingEnabled = _horizontalScrollVisibility != ScrollBarVisibility.Always;
-			PlatformInterop.RequestLayoutIfNeeded(this);
+			PlatformInterop.RequestLayoutIfNeeded(_hScrollView);
 		}
 
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)

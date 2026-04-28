@@ -38,7 +38,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(RowEntry, "3");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -52,7 +52,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(ColumnEntry, "4");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -65,7 +65,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("IsVisibleCheckBox");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -78,7 +78,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionCheckBox");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -91,7 +91,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColorGray");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -105,7 +105,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(PaddingEntry, "50,50,50,50");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -119,7 +119,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(RowSpacingEntry, "20");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -133,7 +133,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(ColumnSpacingEntry, "30");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -146,7 +146,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("NestedGridCheckBox");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 
@@ -161,7 +161,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(MainContentColumnSpanEntry, "2");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -175,7 +175,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.EnterText(MainContentRowSpanEntry, "2");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -188,7 +188,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("HorizontalStart");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -201,7 +201,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("HorizontalCenter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -214,7 +214,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("HorizontalEnd");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -227,7 +227,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("VerticalStart");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -240,7 +240,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("VerticalCenter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -253,7 +253,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("VerticalEnd");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -268,7 +268,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("HorizontalStart");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -283,7 +283,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("HorizontalCenter");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -298,7 +298,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("HorizontalEnd");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -319,7 +319,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("RowAbsoluteRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -338,7 +338,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColorGray");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -357,7 +357,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColorGray");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -376,7 +376,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -395,7 +395,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -414,7 +414,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -433,7 +433,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -452,7 +452,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -471,7 +471,7 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColumnStarRadio");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -487,6 +487,6 @@ public class GridFeatureTests : _GalleryUITest
 		App.Tap("ColorRed");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

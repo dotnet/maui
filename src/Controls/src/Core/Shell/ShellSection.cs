@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
-	/// Represents a group of tabs within a <see cref="ShellItem"/>. Contains <see cref="ShellContent"/> items.
+	/// Represents a group of tabs within a <see cref="Controls.ShellItem"/>. Contains <see cref="ShellContent"/> items.
 	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls
 			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ShellSection>()?.LogWarning("Failed to Create Content For: {route}", route);
+				MauiLogger<ShellSection>.Log(LogLevel.Warning, $"Failed to Create Content For: {route}");
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
@@ -524,9 +524,9 @@ namespace Microsoft.Maui.Controls
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
-					await OnPopAsync(animate ?? false);
+					await OnPopAsync(animate ?? true);
 				else
-					await OnPopToRootAsync(animate ?? false);
+					await OnPopToRootAsync(animate ?? true);
 
 				return;
 			}
@@ -844,9 +844,20 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			InvokeNavigationRequest(args);
+			PresentedPageDisappearing();
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
+
+			// NOTE:
+			// We intentionally raise PresentedPageAppearing (and thus SendPageAppearing/OnAppearing)
+			// before issuing the platform navigation request and awaiting its completion. This matches
+			// the behavior used for single-level Pop navigation and keeps Shell lifecycle events
+			// consistent across navigation patterns. At this point the root page may not yet be
+			// visually presented by the native stack (the pop-to-root animation can still be in
+			// progress), but Shell-level state (e.g., tab bar visibility) must already be updated
+			// so the platform reads the correct value when it commits the native navigation.
+			PresentedPageAppearing();
+			InvokeNavigationRequest(args);
 
 			if (args.Task != null)
 				await args.Task;
@@ -856,11 +867,14 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
-				oldStack[i].SendDisappearing();
+				// RemovePage is called for all pages. SendDisappearing is only called for
+				// intermediate pages; the top page's disappearing event was already fired
+				// by PresentedPageDisappearing() above to avoid duplicate lifecycle events.
+				if (i < oldStack.Count - 1)
+					oldStack[i].SendDisappearing();
 				RemovePage(oldStack[i]);
 			}
 
-			PresentedPageAppearing();
 		}
 
 		protected virtual Task OnPushAsync(Page page, bool animated)

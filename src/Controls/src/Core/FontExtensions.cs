@@ -34,5 +34,20 @@ namespace Microsoft.Maui.Controls
 
 			return Font.OfSize(element.FontFamily, size, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
 		}
+
+		internal static Font GetEffectiveFont(this Span span, double defaultFontSize, Font? defaultFont)
+		{
+			var fontFamily = span.IsSet(Span.FontFamilyProperty) ? span.FontFamily : defaultFont?.Family;
+			var fontSize = span.IsSet(Span.FontSizeProperty) ? span.FontSize : defaultFontSize;
+			var fontAttributes = span.IsSet(Span.FontAttributesProperty)
+				? span.FontAttributes
+				: (defaultFont?.GetFontAttributes() ?? FontAttributes.None);
+			var autoScaling = span.IsSet(Span.FontAutoScalingEnabledProperty)
+				? span.FontAutoScalingEnabled
+				: (defaultFont?.AutoScalingEnabled ?? true);
+
+			return Font.OfSize(fontFamily, fontSize, enableScaling: autoScaling)
+				.WithAttributes(fontAttributes);
+		}
 	}
 }

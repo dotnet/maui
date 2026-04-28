@@ -232,6 +232,28 @@ if ($Category) {
 if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
+
+    # Dismiss any ANR dialogs that may have appeared during build/deploy.
+    # The emulator can sit idle during long builds, causing SystemUI ANR.
+    Write-Info "Dismissing any system dialogs before test..."
+    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_ENTER 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+    Start-Sleep -Seconds 1
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_MENU 2>$null
+    Start-Sleep -Seconds 1
+
+    # Check for lingering ANR dialogs via window dump
+    $windowDump = & adb -s $DeviceUdid shell dumpsys window 2>$null | Select-String "Application Not Responding|ANR"
+    if ($windowDump) {
+        Write-Warn "ANR dialog detected — force-dismissing..."
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+        Start-Sleep -Seconds 2
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+        Start-Sleep -Seconds 1
+    }
 }
 
 # Capture test start time for iOS logs
@@ -260,10 +282,12 @@ if ($Platform -eq "catalyst") {
             & chmod +x $executablePath
         }
         
-        Write-Success "MacCatalyst app prepared (Appium will launch with test name)"
+        # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
+        $env:MAC_APP_PATH = $appPath
+        Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
     } else {
-        Write-Warning "MacCatalyst app not found at: $appPath"
-        Write-Warning "Test may use wrong app bundle if another version is registered"
+        Write-Warn "MacCatalyst app not found at: $appPath"
+        Write-Warn "Test may use wrong app bundle if another version is registered"
     }
     
     # Set log file path directly - app will write ILogger output here
@@ -277,6 +301,11 @@ Write-Host ""
 $env:DEVICE_UDID = $DeviceUdid
 Write-Info "Set DEVICE_UDID environment variable: $DeviceUdid"
 
+# Set APPIUM_LOG_FILE so UITestBase saves screenshots/page-source to our log directory
+$appiumLogFile = Join-Path $HostAppLogsDir "appium.log"
+$env:APPIUM_LOG_FILE = $appiumLogFile
+Write-Info "Set APPIUM_LOG_FILE: $appiumLogFile (screenshots will be saved here)"
+
 try {
     # Run dotnet test and capture output
     $testOutput = & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1
@@ -284,8 +313,9 @@ try {
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
     
-    # Display test output
-    $testOutput | ForEach-Object { Write-Host $_ }
+    # Output test results to the output stream so callers can capture them
+    # (Write-Host goes to the Information stream which is not captured by 2>&1)
+    $testOutput | ForEach-Object { Write-Output $_ }
     
     $testExitCode = $LASTEXITCODE
     
@@ -311,6 +341,38 @@ try {
 
 #endregion
 
+#region Collect Test Artifacts (screenshots, page source)
+
+Write-Step "Collecting test artifacts (screenshots, page source)..."
+
+# Collect any screenshots/page source from the test assembly output directory
+# UITestBase saves these via TestContext.AddTestAttachment to the assembly dir
+$testAssemblyDirs = @(
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net10.0"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net10.0"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net10.0"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net10.0-windows10.0.19041.0")
+)
+
+$copiedCount = 0
+foreach ($dir in $testAssemblyDirs) {
+    if (Test-Path $dir) {
+        $artifacts = Get-ChildItem -Path $dir -File -Include "*.png","*.txt" -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match "ScreenShot|PageSource" }
+        foreach ($artifact in $artifacts) {
+            Copy-Item -Path $artifact.FullName -Destination $HostAppLogsDir -Force
+            $copiedCount++
+        }
+    }
+}
+
+# Also check the HostAppLogsDir itself for screenshots saved via APPIUM_LOG_FILE
+$screenshotCount = (Get-ChildItem -Path $HostAppLogsDir -Filter "*.png" -ErrorAction SilentlyContinue).Count
+$pageSourceCount = (Get-ChildItem -Path $HostAppLogsDir -Filter "*PageSource*" -ErrorAction SilentlyContinue).Count
+Write-Info "Test artifacts collected: $screenshotCount screenshot(s), $pageSourceCount page source(s) (copied $copiedCount from assembly dir)"
+
+#endregion
+
 #region Capture Device Logs
 
 Write-Step "Capturing device logs..."
@@ -323,7 +385,7 @@ if ($Platform -eq "android") {
     & adb -s $DeviceUdid logcat -d | Select-String "com.microsoft.maui.uitests|DOTNET" > $deviceLogFile
     
     if ((Get-Item $deviceLogFile).Length -eq 0) {
-        Write-Warning "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
+        Write-Warn "No logs found for com.microsoft.maui.uitests, dumping entire logcat..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
     }
     
@@ -381,6 +443,8 @@ if (Test-Path $deviceLogFile) {
         Write-Host "  iOS Simulator Logs (Last 100 lines)" -ForegroundColor Cyan
     } elseif ($Platform -eq "catalyst") {
         Write-Host "  MacCatalyst App Logs (Last 100 lines)" -ForegroundColor Cyan
+    } elseif ($Platform -eq "windows") {
+        Write-Host "  Windows App Logs (Last 100 lines)" -ForegroundColor Cyan
     }
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
     
@@ -397,7 +461,7 @@ if (Test-Path $deviceLogFile) {
         Write-Host ""
         Write-Info "Full device log: $deviceLogFile"
     } else {
-        Write-Warning "Could not read device log file"
+        Write-Warn "Could not read device log file"
     }
     
     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan

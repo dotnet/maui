@@ -34,7 +34,8 @@ public partial class Maui2418 : ContentPage
 			Assert.NotNull(page);
 			var label0 = page.label0;
 			var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
-			Assert.Equal($"Issues{System.IO.Path.DirectorySeparatorChar}Maui2418.rtsg.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", sourceInfo.SourceUri.OriginalString);
+			// Normalize path separators for cross-platform comparison (compiled on Windows, may run on macOS/Linux via Helix)
+			Assert.Equal("Issues/Maui2418.rtsg.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", sourceInfo.SourceUri.OriginalString.Replace('\\', '/'));
 		}
 	}
 #endif

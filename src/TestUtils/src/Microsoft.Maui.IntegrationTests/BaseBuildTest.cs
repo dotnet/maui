@@ -6,6 +6,7 @@ namespace Microsoft.Maui.IntegrationTests
 	public enum RuntimeVariant
 	{
 		Mono,
+		CoreCLR,
 		NativeAOT
 	}
 
@@ -102,6 +103,33 @@ namespace Microsoft.Maui.IntegrationTests
 				FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
 				FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 
+				// Create a Directory.Build.props in the test directory root to prevent MSBuild from
+				// walking up and inheriting the MAUI repo's Arcade SDK settings. This ensures test
+				// projects use their own local obj/bin folders instead of the repo's artifacts folder.
+				var testDirBuildProps = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "Directory.Build.props");
+				if (!File.Exists(testDirBuildProps))
+				{
+					File.WriteAllText(testDirBuildProps, """
+						<Project>
+						  <!-- This file stops MSBuild from walking up the directory tree and inheriting
+						       the MAUI repo's Directory.Build.props and Arcade SDK settings.
+						       This ensures test projects use their own local obj/bin folders. -->
+						</Project>
+						""");
+				}
+
+				// Also create Directory.Build.targets to prevent target inheritance
+				var testDirBuildTargets = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "Directory.Build.targets");
+				if (!File.Exists(testDirBuildTargets))
+				{
+					File.WriteAllText(testDirBuildTargets, """
+						<Project>
+						  <!-- This file stops MSBuild from walking up the directory tree and inheriting
+						       the MAUI repo's Directory.Build.targets. -->
+						</Project>
+						""");
+				}
+
 				_isSetupComplete = true;
 			}
 		}
@@ -114,8 +142,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public abstract class BaseBuildTest : IClassFixture<IntegrationTestFixture>, IDisposable
 	{
-		public const string DotNetCurrent = "net10.0";
-		public const string DotNetPrevious = "net9.0";
+		public const string DotNetCurrent = "net11.0";
+		public const string DotNetPrevious = "net10.0";
 
 		// Versions of .NET MAUI that are used when testing the <MauiVersion> property. These should preferrably
 		// different to the defaults in the SDKs such that the tests can test what would happen if the user puts
@@ -131,7 +159,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 		// as this would result in the tests not testing anything. If the .NET 9 version of MAUI pulls in 8.0.100
 		// of the .NET 8 MAUI, then this should be 8.0.80 for example.
-		public const string MauiVersionPrevious = "9.0.82";
+		public const string MauiVersionPrevious = "10.0.30";
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
@@ -275,8 +303,15 @@ namespace Microsoft.Maui.IntegrationTests
 
 				if (Directory.Exists(TestDirectory))
 				{
-					// Copy all log, binlog, and txt files from test directory to publish directory
-					var logPatterns = new[] { "*.log", "*.binlog", "*.txt" };
+					// Copy all log, binlog, and specific txt files from test directory to publish directory
+					var logPatterns = new[] { 
+						"*.log", 
+						"*.binlog", 
+						"acw-map.txt",
+						"custom-linker-options*.txt",
+						"aot-compiler-path*.txt",
+						"customview-map.txt"
+					};
 					foreach (var pattern in logPatterns)
 					{
 						var files = Directory.GetFiles(TestDirectory, pattern, SearchOption.AllDirectories);

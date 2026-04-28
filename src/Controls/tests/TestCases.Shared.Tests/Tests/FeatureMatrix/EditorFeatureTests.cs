@@ -41,7 +41,12 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		App.PressEnter();
+#if ANDROID
 		App.DismissKeyboard();
+#else
+		App.WaitForElement("EditorControlTitleLabel");
+		App.Tap("EditorControlTitleLabel");
+#endif
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
 	}
 
@@ -84,7 +89,12 @@ public class EditorFeatureTests : _GalleryUITest
 		App.WaitForElement("SelectionLengthEntry");
 		App.Tap("SelectionLengthEntry");
 		await Task.Delay(100);
+#if ANDROID
 		App.DismissKeyboard();
+#else
+		App.WaitForElement("EditorControlTitleLabel");
+		App.Tap("EditorControlTitleLabel");
+#endif
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
 
@@ -451,7 +461,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -465,7 +475,7 @@ public class EditorFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #endif

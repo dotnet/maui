@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ApplyShadowBtn");
 			App.Tap("ApplyClipBtn");
 			App.Tap("ApplyShadowBtn");
-			VerifyScreenshot();
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

@@ -8,8 +8,10 @@
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
     <!-- default MauiXaml inflators  -->
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
-    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' == 'Debug' ">Runtime</_MauiXamlInflator>
-    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' And '$(Configuration)' != 'Debug' ">XamlC</_MauiXamlInflator>
+    <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
+
+    <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->
+    <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == ''">Legacy</MauiXamlHotReload>
 
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' And '$(Configuration)' == 'Debug' ">$(EnableDiagnostics)</EnableMauiXamlDiagnostics>
@@ -47,6 +49,19 @@
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
+	<!--
+		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
+	-->
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs) --partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+	</ItemGroup>
+
 	<!-- Check Tasks ABI and other validations -->
 	<PropertyGroup>
 		<_MauiTargetsImportedAgain Condition="'$(_MauiTargetsImported)'=='True'">True</_MauiTargetsImportedAgain>
@@ -59,6 +74,23 @@
 		<Error Code="XF001"
 			Text="Microsoft.Maui targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
 			Condition="'$(_MauiTargetsImportedAgain)' == 'True'" />
+	</Target>
+
+	<!-- Validate MauiXamlHotReload values (case-insensitive) -->
+	<Target Name="_ValidateMauiXamlHotReload" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+		<PropertyGroup>
+			<_MauiXamlHotReloadUpper>$([System.String]::Copy('$(MauiXamlHotReload)').Trim().ToUpperInvariant())</_MauiXamlHotReloadUpper>
+		</PropertyGroup>
+
+		<Warning
+			Code="MAUI1002"
+			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk."
+			Condition="'$(_MauiXamlHotReloadUpper)' == 'SOURCEGEN'" />
+
+		<Warning
+			Code="MAUI1003"
+			Text="MauiXamlHotReload is set to an unrecognized value '$(MauiXamlHotReload)'. Supported values are 'Legacy' and 'SourceGen'."
+			Condition="'$(_MauiXamlHotReloadUpper)' != '' and '$(_MauiXamlHotReloadUpper)' != 'SOURCEGEN' and '$(_MauiXamlHotReloadUpper)' != 'LEGACY'" />
 	</Target>
 
 	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
@@ -86,14 +118,8 @@
 
   <Target Name="_MauiXamlComputeInflator">
   	<ItemGroup>
-      <!-- Compute the configuration-based default inflator (independent of MauiXamlInflator property) -->
-      <_MauiXamlDefaultInflator Condition=" '$(Configuration)' == 'Debug' " Include="Runtime" />
-      <_MauiXamlDefaultInflator Condition=" '$(Configuration)' != 'Debug' " Include="XamlC" />
-      
-      <!-- Assign the default inflator to MauiXaml that don't have any -->
+      <!-- Assign the default inflator (SourceGen) to MauiXaml that don't have any -->
       <!-- there's a roslyn bug that stops parsing value at the first semicolon. replace them all https://github.com/dotnet/roslyn/issues/43970 -->
-      <!-- Special value 'Default' reverts to configuration-based defaults (Runtime in Debug, XamlC in Release) -->
-      <MauiXaml Condition="'%(MauiXaml.Inflator)' == 'Default'" Inflator="@(_MauiXamlDefaultInflator)" />
       <MauiXaml Inflator="$([MSBuild]::ValueOrDefault('%(MauiXaml.Inflator)','$(_MauiXamlInflator)').Replace(';', ','))"/>
       <MauiXaml NoWarn="$([MSBuild]::ValueOrDefault('%(MauiXaml.NoWarn)','').Replace(';', ','))"/>
 
@@ -107,17 +133,11 @@
       <_MauiXaml_AsEmbeddedResource Include="@(_MauiXaml_XC)" KeepDuplicates="false" />      
 	</ItemGroup>
 	
-	<!-- Inform when XAML source generation is enabled -->
-	<Message 
-		Text="XAML source generation is enabled (MauiXamlInflator=SourceGen). This generates C# code from XAML at compile time for better performance. To disable, remove the MauiXamlInflator line from your .csproj file (reverts to configuration-based defaults: Runtime in Debug, XamlC in Release)." 
-		Importance="high" 
-		Condition="'$(MauiXamlInflator)' != '' And $([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('sourcegen'))" />
-	
-	<!-- Warn when Runtime or XamlC inflator is explicitly set -->
+	<!-- Warn when using deprecated Runtime or XamlC inflator -->
 	<Warning 
 		Code="MAUI1001"
-		Text="MauiXamlInflator is explicitly set to '$(MauiXamlInflator)'. The 'Runtime' inflator negatively impacts runtime performance and is only recommended for Debug builds. The 'XamlC' inflator prevents debugging capabilities like XAML Hot Reload. Consider setting it to 'SourceGen' for optimal performance and debugging experience, or remove it to use configuration-based defaults (Runtime in Debug, XamlC in Release)." 
-		Condition="'$(MauiXamlInflator)' != '' And ($([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('runtime')) Or $([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('xamlc')))" />
+		Text="MauiXamlInflator is set to '$(MauiXamlInflator)'. The 'Runtime' and 'XamlC' inflators are deprecated. Consider removing the MauiXamlInflator property to use the default 'SourceGen' inflator for optimal performance and debugging experience." 
+		Condition="'$(MauiXamlInflator)' != '' And !$([System.String]::new('$(MauiXamlInflator)').ToLowerInvariant().Contains('sourcegen'))" />
   </Target>
 
   <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
@@ -286,7 +306,7 @@
            Text="The %24(TargetFrameworkVersion) for $(ProjectName) ($(TargetFrameworkVersion)) is less than the minimum required %24(TargetFrameworkVersion) for Microsoft.Maui ($(MinTargetFrameworkVersionForMaui)). You need to increase the %24(TargetFrameworkVersion) for $(ProjectName)."   />
   </Target>
 
-  <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
+  <Target Name="_MauiPrepareForILLink" BeforeTargets="_PrepareTrimConfiguration;_GenerateRuntimeConfigurationFilesInputCache;XamlC">
     <PropertyGroup>
       <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>
@@ -303,6 +323,7 @@
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
+      <MauiCssEnabled Condition="'$(MauiCssEnabled)' == '' and '@(MauiCss->Count())' == '0'">false</MauiCssEnabled>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
       
@@ -339,10 +360,14 @@
                                       Condition="'$(MauiHybridWebViewSupported)' != ''"
                                       Value="$(MauiHybridWebViewSupported)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCssEnabled"
+                                      Condition="'$(MauiCssEnabled)' != ''"
+                                      Value="$(MauiCssEnabled)"
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreNamescopesSupported"
                                       Condition="'$(MauiNamescopesSupported)' != ''"
                                       Value="$(MauiNamescopesSupported)"
-                                      Trim="true" />      
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.EnableDiagnostics"
                                       Condition="'$(EnableDiagnostics)' != ''"
                                       Value="$(EnableDiagnostics)"
@@ -355,6 +380,20 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Workaround for Android SDK bug: Microsoft.Android.Sdk.ILLink.targets uses %(RootMode) without
+    fully qualifying it as %(TrimmerRootAssembly.RootMode), which causes MSB4096 when user-defined
+    TrimmerRootAssembly items don't have the RootMode metadata.
+    See: https://github.com/dotnet/android/issues/10758
+  -->
+  <Target Name="_MauiFixTrimmerRootAssemblyMetadata"
+          BeforeTargets="PrepareForILLink"
+          Condition="'$(UsingAndroidNETSdk)' == 'true'">
+    <ItemGroup>
+      <TrimmerRootAssembly Update="@(TrimmerRootAssembly)" Condition="'%(TrimmerRootAssembly.RootMode)' == ''" RootMode="All" />
     </ItemGroup>
   </Target>
 

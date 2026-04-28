@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using ImageMagick;
+using ImageMagick.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using UITest.Appium;
@@ -25,6 +26,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		string _defaultiOSVersion = "18.5";
 
 		protected const int SetupMaxRetries = 1;
+		protected const int InstrumentationCrashMaxRetries = 1;
+
+		/// <summary>
+		/// Detects if an exception indicates an Android UiAutomator2 instrumentation crash
+		/// or other infrastructure failure that requires session recreation.
+		/// </summary>
+		private static bool IsInstrumentationCrash(Exception e)
+		{
+			var message = e.ToString(); // Includes InnerException
+			return
+				message.Contains("instrumentation process is not running", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("socket hang up", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Can't find service: package", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Could not proxy command to remote server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNRESET", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("ECONNREFUSED", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("Connection refused", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("InvalidSessionIdException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("NoSuchDriverException", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("session is either terminated or not started", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("UiAutomator2 server", StringComparison.OrdinalIgnoreCase) ||
+				message.Contains("device offline", StringComparison.OrdinalIgnoreCase);
+		}
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
@@ -79,6 +103,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					}
 					
 					config.SetProperty("Headless", bool.Parse(Environment.GetEnvironmentVariable("HEADLESS") ?? "false"));
+					break;
+				case TestDevice.Mac:
+					var macAppPath = Environment.GetEnvironmentVariable("MAC_APP_PATH") ?? "";
+					if (!string.IsNullOrEmpty(macAppPath))
+					{
+						config.SetProperty("AppPath", macAppPath);
+					}
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
@@ -316,9 +347,9 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 
 						if (!((deviceApiLevel == 30 && (deviceScreenSize.Equals("1080x1920", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("1920x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420) ||
-								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1080x2424", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2424x1080", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 420)))
+								(deviceApiLevel == 36 && (deviceScreenSize.Equals("1440x2960", StringComparison.OrdinalIgnoreCase) || deviceScreenSize.Equals("2960x1440", StringComparison.OrdinalIgnoreCase)) && deviceScreenDensity == 560)))
 						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1080x2424 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen or API36 emulator image with 1440x2960 560dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
@@ -389,7 +420,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 95 : 60,
+					TestDevice.Android => environmentName == "android-notch-36" ? 112 : 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -408,7 +439,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => environmentName == "android-notch-36" ? 40 : 125,
+					TestDevice.Android => environmentName == "android-notch-36" ? 52 : 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
@@ -533,6 +564,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
+			int instrumentationCrashRetries = 0;
 			while (true)
 			{
 				try
@@ -548,6 +580,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				catch (Exception e)
 				{
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+
+					// Check for instrumentation/infrastructure crash that requires session recreation
+					if (IsInstrumentationCrash(e) && instrumentationCrashRetries++ < InstrumentationCrashMaxRetries)
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash, attempting session recreation (attempt {instrumentationCrashRetries}/{InstrumentationCrashMaxRetries})...");
+						try
+						{
+							// Call base.Reset() which disposes and recreates the driver
+							// (NOT this.Reset() which just does App.ResetApp())
+							base.Reset();
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful, retrying FixtureSetup...");
+							continue; // Retry the whole FixtureSetup with fresh session
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed: {resetEx.Message}");
+							// Fall through to standard retry logic
+						}
+					}
+
 					if (retries++ < SetupMaxRetries)
 					{
 						App.Back();
@@ -574,10 +626,27 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					App.SetOrientationPortrait();
 				}
-				catch
+				catch (Exception e)
 				{
-					// The app might not be ready
-					// Probably reduce this value if this works
+					// Check for instrumentation crash that requires session recreation
+					if (IsInstrumentationCrash(e))
+					{
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Detected instrumentation crash in TestSetup, attempting session recreation...");
+						try
+						{
+							base.Reset(); // Recreate the driver session
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation successful in TestSetup");
+							App.SetOrientationPortrait();
+							return;
+						}
+						catch (Exception resetEx)
+						{
+							TestContext.Error.WriteLine($">>>>> {DateTime.Now} Session recreation failed in TestSetup: {resetEx.Message}");
+							throw;
+						}
+					}
+
+					// The app might not be ready - original retry logic
 					Thread.Sleep(1000);
 					App.SetOrientationPortrait();
 				}
@@ -600,8 +669,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Take the screenshot
 			var bytes = App.Screenshot();
 
+			if (width <= 0 || height <= 0)
+				return bytes;
+
 			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
 			new Drawables()
 				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
 				.FillColor(MagickColors.Black)

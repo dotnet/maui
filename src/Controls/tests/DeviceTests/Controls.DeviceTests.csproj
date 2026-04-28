@@ -17,6 +17,8 @@
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.props" />
+
   <PropertyGroup>
     <ApplicationTitle>Controls Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.controls.devicetests</ApplicationId>
@@ -38,7 +40,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,9 +49,13 @@
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\..\..\Core\maps\src\Maps.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
   </ItemGroup>
 
   <!-- include/exclude the *.<platform>.cs files -->

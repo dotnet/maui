@@ -1505,7 +1505,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected void InvokeMeasureInvalidated(InvalidationTrigger trigger)
 		{
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			MeasureInvalidated?.Invoke(this, InvalidationEventArgs.GetCached(trigger));
 		}
 
 		/// <summary>
@@ -1627,6 +1627,114 @@ namespace Microsoft.Maui.Controls
 				OnResourcesChanged(changedResources);
 		}
 
+		internal override void OnParentResourcesChangedKeys(IEnumerable<string> keys)
+		{
+			if (keys == null)
+				return;
+
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			{
+				base.OnParentResourcesChangedKeys(keys);
+				return;
+			}
+
+			// Build a set of keys we already have in our resources (child takes precedence)
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (KeyValuePair<string, object> c in Resources)
+				innerKeys.Add(c.Key);
+
+			// Filter parent keys - only include keys we don't have, except style classes which get merged
+			var filteredKeys = new List<string>();
+			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
+			
+			foreach (string key in keys)
+			{
+				if (innerKeys.Add(key))
+				{
+					// Key doesn't exist in our resources, include it
+					filteredKeys.Add(key);
+				}
+				else if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+				{
+					// Style classes need to be merged - child's styles combined with parent's styles
+					// For the keys-only path, we need to look up the parent's styles
+					var childStyles = Resources[key] as List<Style>;
+					if (childStyles != null && this.TryGetResource(key, out var parentValue) && parentValue is List<Style> parentStyles)
+					{
+						// Only merge if parent actually has different styles
+						// The parent's styles come from the merged resources lookup
+						var mergedClassStyles = new List<Style>(childStyles);
+						// Get styles from parent chain (excluding our own resources)
+						var parent = ((IElementDefinition)this).Parent;
+						if (parent?.TryGetResource(key, out var pValue) == true && pValue is List<Style> pStyles)
+						{
+							mergedClassStyles.AddRange(pStyles);
+							mergedStyleClasses.Add(new KeyValuePair<string, object>(key, mergedClassStyles));
+						}
+					}
+				}
+			}
+			
+			if (mergedStyleClasses.Count > 0)
+				OnResourcesChanged(mergedStyleClasses);
+			
+			if (filteredKeys.Count != 0)
+				OnResourcesChangedKeys(filteredKeys);
+		}
+
+		internal override void OnParentResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			if (keys == null)
+				return;
+
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			{
+				base.OnParentResourcesChangedKeys(keys, resolver);
+				return;
+			}
+
+			// Build a set of keys we already have in our resources (child takes precedence)
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (KeyValuePair<string, object> c in Resources)
+				innerKeys.Add(c.Key);
+
+			// Filter parent keys - only include keys we don't have, except style classes which get merged
+			var filteredKeys = new List<string>();
+			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
+			
+			foreach (string key in keys)
+			{
+				if (innerKeys.Add(key))
+				{
+					// Key doesn't exist in our resources, include it
+					filteredKeys.Add(key);
+				}
+				else if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+				{
+					// Style classes need to be merged - child's styles combined with parent's styles
+					var parentStyles = resolver?.Invoke(key) as List<Style>;
+					var childStyles = Resources[key] as List<Style>;
+					if (parentStyles != null && childStyles != null)
+					{
+						var mergedClassStyles = new List<Style>(childStyles);
+						mergedClassStyles.AddRange(parentStyles);
+						mergedStyleClasses.Add(new KeyValuePair<string, object>(key, mergedClassStyles));
+					}
+					else if (parentStyles != null)
+					{
+						// Child has the key but it's not a style list - just include parent styles
+						mergedStyleClasses.Add(new KeyValuePair<string, object>(key, parentStyles));
+					}
+				}
+			}
+			
+			if (mergedStyleClasses.Count > 0)
+				OnResourcesChanged(mergedStyleClasses);
+			
+			if (filteredKeys.Count != 0)
+				OnResourcesChangedKeys(filteredKeys, resolver);
+		}
+
 		internal void UnmockBounds() => _mockX = _mockY = _mockWidth = _mockHeight = -1;
 
 		void PropagateBindingContextToStateTriggers()
@@ -1672,13 +1780,13 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
-			else if (IsPointerOver)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			}
 			else
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				bool isSelected = this.IsElementInSelectedState();
+				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+
+				VisualStateManager.GoToState(this, targetState);
 			}
 
 			if (IsEnabled)
@@ -1861,6 +1969,7 @@ namespace Microsoft.Maui.Controls
 #nullable enable
 		Semantics? _semantics;
 		bool _isLoadedFired;
+		internal bool IsLoadedFired => _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;

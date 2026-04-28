@@ -1,12 +1,15 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Drawing;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -14,6 +17,13 @@ namespace UITest.Appium
 	public static class HelperExtensions
 	{
 		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+
+		// Maximum time to wait for a single Appium command before assuming the app is unresponsive.
+		// This prevents tests from hanging indefinitely when the app enters an infinite loop
+		// (e.g., layout cycle) that blocks the UI thread and makes WDA wait forever for app idle.
+		// 45 seconds balances avoiding false positives on slow CI (normal operations: 10-30s)
+		// while still failing reasonably fast when the app is truly frozen.
+		static readonly TimeSpan AppiumCommandTimeout = TimeSpan.FromSeconds(45);
 
 		/// <summary>
 		/// For desktop, this will perform a mouse click on the target element.
@@ -23,7 +33,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			FindElement(app, element).Click();
+			RunWithTimeout(() => FindElement(app, element).Click());
 		}
 
 		/// <summary>
@@ -34,7 +44,7 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Tap(this IApp app, IQuery query)
 		{
-			app.FindElement(query).Tap();
+			RunWithTimeout(() => app.FindElement(query).Tap());
 		}
 
 		/// <summary>
@@ -44,7 +54,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
 		{
-			FindElement(app, element).Click();
+			RunWithTimeout(() => FindElement(app, element).Click());
 		}
 
 		/// <summary>
@@ -54,7 +64,7 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Click(this IApp app, IQuery query)
 		{
-			app.FindElement(query).Click();
+			RunWithTimeout(() => app.FindElement(query).Click());
 		}
 
 		public static void RightClick(this IApp app, string element)
@@ -111,11 +121,14 @@ namespace UITest.Appium
 
 		public static string? GetText(this IUIElement element)
 		{
-			var response = element.Command.Execute("getText", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
+				var response = element.Command.Execute("getText", new Dictionary<string, object>()
+				{
+					{ "element", element },
+				});
+				return (string?)response.Value;
 			});
-			return (string?)response.Value;
 		}
 
 		public static bool TryGetText(this IUIElement element, [NotNullWhen(true)] out string? text)
@@ -137,27 +150,33 @@ namespace UITest.Appium
 
 		public static T? GetAttribute<T>(this IUIElement element, string attributeName)
 		{
-			var response = element.Command.Execute("getAttribute", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
-				{ "attributeName", attributeName },
+				var response = element.Command.Execute("getAttribute", new Dictionary<string, object>()
+				{
+					{ "element", element },
+					{ "attributeName", attributeName },
+				});
+				return (T?)response.Value;
 			});
-			return (T?)response.Value;
 		}
 
 		public static Rectangle GetRect(this IUIElement element)
 		{
-			var response = element.Command.Execute("getRect", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
-			});
+				var response = element.Command.Execute("getRect", new Dictionary<string, object>()
+				{
+					{ "element", element },
+				});
 
-			if (response?.Value != null)
-			{
-				return (Rectangle)response.Value;
-			}
+				if (response?.Value != null)
+				{
+					return (Rectangle)response.Value;
+				}
 
-			throw new InvalidOperationException($"Could not get Rect of element");
+				throw new InvalidOperationException($"Could not get Rect of element");
+			})!;
 		}
 
 		/// <summary>
@@ -167,17 +186,20 @@ namespace UITest.Appium
 		/// <returns>Whether the element is selected (boolean).</returns>
 		public static bool IsSelected(this IUIElement element)
 		{
-			var response = element.Command.Execute("getSelected", new Dictionary<string, object>()
+			return RunWithTimeout(() =>
 			{
-				{ "element", element },
+				var response = element.Command.Execute("getSelected", new Dictionary<string, object>()
+				{
+					{ "element", element },
+				});
+
+				if (response?.Value != null)
+				{
+					return (bool)response.Value;
+				}
+
+				throw new InvalidOperationException($"Could not get Selected of element");
 			});
-
-			if (response?.Value != null)
-			{
-				return (bool)response.Value;
-			}
-
-			throw new InvalidOperationException($"Could not get Selected of element");
 		}
 
 		/// <summary>
@@ -771,6 +793,102 @@ namespace UITest.Appium
 			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
 
 			return results;
+		}
+
+		public static void TapMinimizeButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return;
+
+			try
+			{
+				var minimizeButton = FindSystemButton(windowsDriver, "Minimize", "MinimizeButton", "PART_Min");
+
+				if (minimizeButton != null && minimizeButton.Displayed && minimizeButton.Enabled)
+				{
+					minimizeButton.Click();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing minimize button: {ex.Message}");
+			}
+		}
+
+		/// <summary>
+		/// Tests if the Windows maximize/restore button is accessible and responsive
+		/// </summary>
+		/// <param name="app">The Windows app instance</param>
+		/// <param name="clickButton">Whether to actually click the maximize button (default: false)</param>
+		/// <returns>True if the maximize/restore button is accessible and responsive</returns>
+		public static void TapMaximizeButton(this IApp app)
+		{
+			if (app is not AppiumWindowsApp windowsApp)
+				return;
+
+			var windowsDriver = windowsApp.Driver as WindowsDriver;
+			if (windowsDriver == null)
+				return;
+
+			try
+			{
+				var maximizeButton = FindSystemButton(windowsDriver, "Maximize", "MaximizeButton", "PART_Max", "Restore");
+
+				if (maximizeButton != null && maximizeButton.Displayed && maximizeButton.Enabled)
+				{
+					maximizeButton.Click();
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"UITest: Error testing maximize button: {ex.Message}");
+			}
+		}
+
+		static IWebElement? FindSystemButton(WindowsDriver driver, params string[] identifiers)
+		{
+			foreach (var identifier in identifiers)
+			{
+				try
+				{
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@Name='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[@AutomationId='{identifier}']"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+
+					//By XPath with partial name match (for localized systems)
+					try
+					{
+						var element = driver.FindElement(By.XPath($"//*[contains(@Name, '{identifier}')]"));
+						if (element != null)
+							return element;
+					}
+					catch { }
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"UITest: Exception searching for {identifier}: {ex.Message}");
+				}
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -1596,7 +1714,7 @@ namespace UITest.Appium
 				{ "isResetAfterEachTest", isResetAfterEachTest }
 			});
 		}
-		
+
 		/// <summary>
 		/// Send the currently running app for this session to the background.
 		/// </summary>
@@ -2229,11 +2347,32 @@ namespace UITest.Appium
 			return app switch
 			{
 				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
-				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumIOSApp iOSApp => IsIOS26OrHigher(iOSApp) ? AppiumQuery.ByAccessibilityId("BackButton") : AppiumQuery.ByAccessibilityId("Back"),
 				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
 				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
 				_ => throw new ArgumentException("Unsupported app type", nameof(app))
 			};
+		}
+
+		/// <summary>
+		/// Checks if the iOS app is running on iOS 26 or higher.
+		/// </summary>
+		/// <param name="iOSApp">The iOS app instance.</param>
+		/// <returns>True if running on iOS 26 or higher, false otherwise.</returns>
+		public static bool IsIOS26OrHigher(AppiumIOSApp iOSApp)
+		{
+			var platformVersion = (string?)iOSApp.Driver.Capabilities.GetCapability("platformVersion");
+			if (string.IsNullOrEmpty(platformVersion))
+				return false;
+
+			// Parse major version from strings like "26.0", "26", "17.2", etc.
+			var versionParts = platformVersion.Split('.');
+			if (versionParts.Length > 0 && int.TryParse(versionParts[0], out int majorVersion))
+			{
+				return majorVersion >= 26;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -2625,6 +2764,18 @@ namespace UITest.Appium
 			return result!;
 		}
 
+		/// <summary>
+		/// Returns the smaller of the remaining time and <see cref="AppiumCommandTimeout"/>,
+		/// with a minimum floor of 2 seconds to avoid near-zero timeouts on edge cases.
+		/// </summary>
+		static TimeSpan CapTimeout(TimeSpan totalTimeout, DateTime start)
+		{
+			var remaining = totalTimeout - (DateTime.Now - start);
+			if (remaining < TimeSpan.FromSeconds(2))
+				remaining = TimeSpan.FromSeconds(2);
+			return remaining < AppiumCommandTimeout ? remaining : AppiumCommandTimeout;
+		}
+
 		static IUIElement WaitForAtLeastOne(Func<IUIElement> query,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null,
@@ -2712,6 +2863,33 @@ namespace UITest.Appium
 			}
 
 			return element;
+		}
+
+		/// <summary>
+		/// Taps the clear button in a search bar control with platform-specific implementations.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="automationId">The automation ID of the search bar.</param>
+		/// <param name="timeout">Optional timeout for waiting for the clear button. Default is null, which uses the default timeout.</param>
+		public static void TapSearchBarClearButton(this IApp app, string automationId, TimeSpan? timeout = null)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"), timeout: timeout);
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("Clear text", timeout: timeout);
+				app.Tap("Clear text");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				var searchBar = app.WaitForElement(AppiumQuery.ByAccessibilityId(automationId), timeout: timeout);
+				var rect = searchBar.GetRect();
+				app.Tap(automationId);
+				app.TapCoordinates(rect.Right - 84, rect.Y + rect.Height / 2);
+			}
 		}
 
 		/// <summary>
@@ -2813,6 +2991,88 @@ namespace UITest.Appium
 			}
 
 			return 1.0;
+		}
+
+		/// Enters text into the search handler element for the shell.
+		/// This method is used to enter the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static void EnterTextInShellSearchHandler(this IApp app, string text)
+		{
+			if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement("TextBox");
+				app.EnterText("TextBox", text);
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
+			{
+				IQuery query;
+				if (app is AppiumAndroidApp)
+				{
+					query = AppiumQuery.ByXPath("//android.widget.EditText");
+				}
+				else
+				{
+					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+				}
+
+				app.WaitForElement(query);
+				app.EnterText(query, text);
+			}
+		}
+
+		/// <summary>
+		/// Executes a function with a timeout to prevent tests from hanging indefinitely
+		/// when the application becomes unresponsive (e.g., due to an infinite layout loop).
+		/// WDA (WebDriverAgent) waits for the app's main thread to be idle before executing
+		/// commands — if the app is stuck in an infinite loop, WDA blocks forever. This wrapper
+		/// runs the command on a background thread and enforces a hard timeout.
+		/// </summary>
+		static T? RunWithTimeout<T>(Func<T?> action, TimeSpan? timeout = null)
+		{
+			timeout ??= AppiumCommandTimeout;
+			using var cts = new CancellationTokenSource();
+			var task = Task.Run(action, cts.Token);
+			try
+			{
+				if (!task.Wait(timeout.Value))
+				{
+					// Signal cancellation (Appium driver won't respect it, but good hygiene)
+					cts.Cancel();
+					
+					// Warn about orphaned thread - the background task will continue blocking until
+					// the underlying Appium/WDA call times out or the process is killed
+					Debug.WriteLine($">>>>> Appium command timed out after {timeout.Value.TotalSeconds}s. Background thread may remain blocked until app is force-terminated.");
+					
+					// Observe any future exception from the orphaned task to prevent unobserved task exceptions
+					task.ContinueWith(t =>
+					{
+						if (t.Exception is not null)
+							Debug.WriteLine($">>>>> Orphaned Appium task faulted: {t.Exception.InnerException?.Message}");
+					}, TaskContinuationOptions.OnlyOnFaulted);
+					
+					throw new TimeoutException(
+						$"An Appium command did not complete within {timeout.Value.TotalSeconds}s. " +
+						"The application may be unresponsive (e.g., due to an infinite layout loop).");
+				}
+			}
+			catch (AggregateException ex) when (ex.InnerExceptions.Count == 1)
+			{
+				ExceptionDispatchInfo.Capture(ex.InnerExceptions[0]).Throw();
+			}
+			// Use GetAwaiter().GetResult() to unwrap AggregateException if the task faulted
+			return task.GetAwaiter().GetResult();
+		}
+
+		/// <summary>
+		/// Executes an action with a timeout to prevent tests from hanging indefinitely
+		/// when the application becomes unresponsive.
+		/// </summary>
+		static void RunWithTimeout(Action action, TimeSpan? timeout = null)
+		{
+			RunWithTimeout<object?>(() => { action(); return null; }, timeout);
 		}
 	}
 }

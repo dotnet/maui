@@ -1,47 +1,53 @@
 ---
 name: pr-finalize
-description: Finalizes any PR for merge by verifying title and description match actual implementation. Reviews existing description quality before suggesting changes. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use pr-build-status).
+description: Finalizes any PR for merge by verifying title/description match implementation AND performing code review for best practices. Use when asked to "finalize PR", "check PR description", "review commit message", before merging any PR, or when PR implementation changed during review. Do NOT use for extracting lessons (use learn-from-pr), writing tests (use write-tests-agent), or investigating build failures (use azdo-build-investigator and ci-analysis).
 ---
 
 # PR Finalize
 
-Ensures PR title and description accurately reflect the implementation for a good commit message.
+Ensures PR title and description accurately reflect the implementation, and performs a **code review** for best practices before merge.
 
-**Standalone skill** - Can be used on any PR, not just PRs created by the pr agent.
+**Standalone skill** - Can be used on any PR, not just PRs reviewed by the pr-review skill.
 
----
+## Two-Phase Workflow
 
-## 🚨 MANDATORY: Save Summary File
-
-**This is NOT optional. Complete this step EVERY time you run this skill.**
-
-Before presenting results to the user, you MUST save the summary:
-
-```bash
-# Create directory
-mkdir -p CustomAgentLogsTmp/PRState/<PRNumber>/pr-finalize
-
-# Save summary to: CustomAgentLogsTmp/PRState/<PRNumber>/pr-finalize/pr-finalize-summary.md
-```
-
-**The summary file must include:**
-- PR number, title, author, date reviewed
-- Verdict (✅ No Changes Needed / ⚠️ Needs Updates)
-- Title assessment (current vs recommended)
-- Description quality assessment with table
-- Issues found table
-- Changed files coverage
-- Recommended description (if changes needed)
-- Action items checklist
-
-**Why this matters:** Skills are complete workflows, not just reference material. Saving the summary ensures:
-1. Traceability of what was reviewed
-2. User can reference findings later
-3. Consistent output format across runs
+1. **Title & Description Review** - Verify PR metadata matches implementation
+2. **Code Review** - Review code for best practices and potential issues
 
 ---
 
-## Core Principle: Preserve Quality
+## 🚨 CRITICAL RULES
+
+### 1. NEVER Approve or Request Changes
+
+**AI agents must NEVER use `--approve` or `--request-changes` flags.**
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --approve` | ❌ **NEVER** | Approval is a human decision |
+| `gh pr review --request-changes` | ❌ **NEVER** | Blocking PRs is a human decision |
+
+### 2. NEVER Post Comments Directly
+
+**This skill is ANALYSIS ONLY.** Never post comments using `gh` commands.
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| Analyze and report findings | ✅ **YES** | This is the skill's purpose |
+
+**Correct workflow:**
+1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
+2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
+
+**Only humans control when comments are posted.** Your job is to analyze and present findings.
+
+---
+
+## Phase 1: Title & Description
+
+### Core Principle: Preserve Quality
 
 **Review existing description BEFORE suggesting changes.** Many PR authors write excellent, detailed descriptions. Your job is to:
 
@@ -121,16 +127,10 @@ Examples:
 ## Description Requirements
 
 PR description should:
-1. Start with the required NOTE block (so users can test PR artifacts)
-2. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
-3. Match the actual implementation
+1. Include the base sections from `.github/PULL_REQUEST_TEMPLATE.md` ("Description of Change" and "Issues Fixed"). The skill adds additional structured fields (Root cause, Fix, Key insight, etc.) as recommended enhancements for better agent context.
+2. Match the actual implementation
 
 ```markdown
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
 ### Description of Change
 [Must match actual implementation]
 
@@ -223,11 +223,6 @@ Example: "Before: Safe area applied by default (opt-out). After: Only views impl
 Use structured template only when existing description is inadequate:
 
 ```markdown
-<!-- Please let the below note in for people that find this PR -->
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
 ### Root Cause
 
 [Why the bug occurred - be specific about the code path]
@@ -309,6 +304,73 @@ Fixed the issue mentioned in #30897
 ```
 
 **Verdict:** Inadequate - no detail on what changed. Use template.
+
+---
+
+## Phase 2: Code Review
+
+After verifying title/description, perform a **code review** to catch best practice violations and potential issues before merge.
+
+### Review Focus Areas
+
+When reviewing code changes, focus on:
+
+1. **Code quality and maintainability** - Clean code, good naming, appropriate abstractions
+2. **Error handling and edge cases** - Null checks, exception handling, boundary conditions
+3. **Performance implications** - Unnecessary allocations, N+1 queries, blocking calls
+4. **Platform-specific concerns** - iOS/Android/Windows differences, platform APIs
+5. **Breaking changes** - API changes, behavior changes that affect existing code
+
+### How to Review
+
+```bash
+# Get the PR diff
+gh pr diff XXXXX
+
+# Review specific files
+gh pr diff XXXXX -- path/to/file.cs
+```
+
+### Output Format
+
+```markdown
+## Code Review Findings
+
+### 🔴 Critical Issues
+
+**[Issue Title]**
+- **File:** [path/to/file.cs]
+- **Problem:** [Description]
+- **Recommendation:** [Code fix or approach]
+
+### 🟡 Suggestions
+
+- [Suggestion 1]
+- [Suggestion 2]
+
+### ✅ Looks Good
+
+- [Positive observation 1]
+- [Positive observation 2]
+```
+
+### 🚨 CRITICAL: Do NOT Post Comments Directly
+
+**The pr-finalize skill is ANALYSIS ONLY.** Never post comments using `gh pr review` or `gh pr comment`.
+
+| Action | Allowed? | Why |
+|--------|----------|-----|
+| `gh pr review --comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| `gh pr comment` | ❌ **NEVER** | Review-PR.ps1 handles posting via scripts |
+| Analyze and report findings | ✅ **YES** | This is the skill's purpose |
+
+**Workflow:**
+1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
+2. **Review-PR.ps1** calls `post-pr-finalize-comment.ps1` to post the summary
+
+The user controls when comments are posted. Your job is to analyze and present findings.
+
+---
 
 ## Complete Example
 

@@ -319,5 +319,70 @@ namespace Microsoft.Maui.DeviceTests
 
 			return cellContent.ToPlatform().GetParentOfType<UIKit.UICollectionViewCell>().GetBoundingBox();
 		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/34635
+		[Fact("CollectionView cell MauiViews should be treated as UIScrollView descendants and not apply safe area independently")]
+		[Category(TestCategory.CollectionView)]
+		public async Task CollectionViewCellContentShouldBeScrollViewDescendant()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = Enumerable.Range(0, 5).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var grid = new Grid { Padding = new Thickness(10) };
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					grid.Add(label);
+					return grid;
+				}),
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await Task.Delay(500);
+
+				var platformCV = collectionView.ToPlatform();
+				Assert.NotNull(platformCV);
+
+				var uiCollectionView = platformCV as UICollectionView
+					?? platformCV.GetParentOfType<UICollectionView>();
+
+				if (uiCollectionView is null && platformCV is UIView pv)
+					uiCollectionView = pv.Subviews.OfType<UICollectionView>().FirstOrDefault();
+
+				Assert.NotNull(uiCollectionView);
+
+				var visibleCells = uiCollectionView.VisibleCells;
+				Assert.NotEmpty(visibleCells);
+
+				foreach (var cell in visibleCells)
+				{
+					foreach (var mv in FindAllSubviews<MauiView>(cell))
+					{
+						mv.SetNeedsLayout();
+						mv.LayoutIfNeeded();
+
+						Assert.False(mv.AppliesSafeAreaAdjustments,
+							$"CollectionView cell MauiView '{mv.View?.GetType().Name}' should not apply safe area adjustments. " +
+							"Cell views inside UICollectionView must be treated as scroll view descendants.");
+					}
+				}
+			});
+		}
+
+		static List<T> FindAllSubviews<T>(UIView root) where T : UIView
+		{
+			var result = new List<T>();
+			foreach (var subview in root.Subviews)
+			{
+				if (subview is T match)
+					result.Add(match);
+				result.AddRange(FindAllSubviews<T>(subview));
+			}
+			return result;
+		}
 	}
 }

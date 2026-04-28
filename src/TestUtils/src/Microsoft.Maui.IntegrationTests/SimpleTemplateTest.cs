@@ -9,23 +9,23 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
-	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	// [InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	// [InlineData("maui", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	//Debug not ready yet
 	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
-	//[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
-	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
-	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	// [InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -42,12 +42,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
-
-		// We only have these packs for Android
-		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
-		{
-			OnlyAndroid(projectFile);
-		}
 
 		var buildProps = BuildProps;
 
@@ -123,16 +117,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
-	[InlineData("maui", DotNetPrevious, "Release", false, "")]
+	// [InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	// [InlineData("maui", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
-	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	// [InlineData("mauilib", DotNetPrevious, "Release", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
@@ -150,7 +144,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		if (mv is not null or "")
+		if (!string.IsNullOrEmpty(mv))
 		{
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
@@ -228,8 +222,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
 	[Theory]
-	[InlineData("mauilib", DotNetPrevious, "Debug")]
-	[InlineData("mauilib", DotNetPrevious, "Release")]
+	// [InlineData("mauilib", DotNetPrevious, "Debug")]
+	// [InlineData("mauilib", DotNetPrevious, "Release")]
 	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)

@@ -5,6 +5,7 @@ using System.IO;
 using Foundation;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Maui.Storage;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -17,14 +18,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public iOSMauiAssetFileProvider(string contentRootDir)
 		{
-			_bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, contentRootDir);
+			_bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath!, contentRootDir);
 		}
 
 		public IDirectoryContents GetDirectoryContents(string subpath)
-			=> new iOSMauiAssetDirectoryContents(Path.Combine(_bundleRootDir, subpath));
+		{
+			var resolvedPath = FileSystemUtils.Combine(_bundleRootDir, subpath);
+			if (resolvedPath is null)
+				return NotFoundDirectoryContents.Singleton;
+			return new iOSMauiAssetDirectoryContents(resolvedPath);
+		}
 
 		public IFileInfo GetFileInfo(string subpath)
-			=> new iOSMauiAssetFileInfo(Path.Combine(_bundleRootDir, subpath));
+		{
+			var resolvedPath = FileSystemUtils.Combine(_bundleRootDir, subpath);
+			if (resolvedPath is null)
+				return new NotFoundFileInfo(subpath);
+			return new iOSMauiAssetFileInfo(resolvedPath);
+		}
 
 		public IChangeToken Watch(string filter)
 			=> NullChangeToken.Singleton;

@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
@@ -78,6 +79,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		SearchHandlerAppearanceTracker? _searchHandlerAppearanceTracker;
 		IFontManager _fontManager;
 		bool _isVisiblePage;
+		NSObject? _keyboardWillHideObserver;
+		bool _pendingKeyboardNavigation;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -92,6 +95,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 
 			_fontManager = context.Shell.RequireFontManager();
+
+			_keyboardWillHideObserver = UIKeyboard.Notifications.ObserveWillHide(OnKeyboardWillHide);
 		}
 
 		public void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -107,7 +112,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
 			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
+			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
+			}
 		}
 
 #nullable disable
@@ -133,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 			if (e.PropertyName == Shell.BackButtonBehaviorProperty.PropertyName)
 			{
-				SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+				SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			}
 			else if (e.PropertyName == Shell.SearchHandlerProperty.PropertyName)
 			{
@@ -154,6 +162,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
 			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
 			}
 		}
 
@@ -217,7 +226,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
+			SetBackButtonBehavior(Shell.GetEffectiveBackButtonBehavior(Page));
 			SearchHandler = Shell.GetSearchHandler(Page);
 			UpdateTitleView();
 			UpdateTitle();
@@ -275,7 +284,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
-		
+
 		internal void UpdateTitleViewInternal()
 		{
 			UpdateTitleView();
@@ -455,7 +464,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			NavigationItem.SetRightBarButtonItems(primaries is null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
+			UpdateRightBarButtonItemTintColors();
 			UpdateLeftToolbarItems();
+		}
+
+		/// iOS 26+: LiquidGlass no longer inherits the foreground color from the navigation bar's TintColor.
+		/// Explicitly set TintColor on each right bar button item to ensure the Shell.ForegroundColor is applied.
+		void UpdateRightBarButtonItemTintColors()
+		{
+			if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+			{
+				return;
+			}
+
+			if (NavigationItem?.RightBarButtonItems is not { Length: > 0 } rightItems)
+			{
+				return;
+			}
+
+			var foregroundColor = _context?.Shell?.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+								_context?.Shell?.GetValue(Shell.ForegroundColorProperty);
+
+			var platformColor = foregroundColor is Graphics.Color shellForegroundColor
+				? shellForegroundColor.ToPlatform()
+				: null;
+
+			foreach (var item in rightItems)
+			{
+				item.TintColor = platformColor;
+			}
 		}
 
 		void UpdateLeftToolbarItems()
@@ -498,12 +535,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UIImage? icon = null;
 
+				var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) as Color ??
+					_context?.Shell.GetValue(Shell.ForegroundColorProperty) as Color;
+
 				if (image is not null)
 				{
 					icon = result?.Value;
-
-					var foregroundColor = _context?.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
-					_context?.Shell.GetValue(Shell.ForegroundColorProperty);
 
 					if (foregroundColor is null)
 					{
@@ -533,7 +570,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						}
 					}
 				}
-				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
+				// Show hamburger icon if it's the root page, or if the back button is not visible.
+				else if (String.IsNullOrWhiteSpace(text) && (IsRootPage || !backButtonVisible) && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
 					icon = DrawHamburger();
 				}
@@ -541,7 +579,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (icon != null)
 				{
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, (IsRootPage || !backButtonVisible))) { Enabled = enabled };
+						
+					// For iOS 26+, explicitly set the tint color on the bar button item
+					// because the navigation bar's tint color is not automatically inherited
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						if (foregroundColor is not null)
+						{
+							NavigationItem.LeftBarButtonItem.TintColor = foregroundColor.ToPlatform();
+						}
+					}
 				}
 				else
 				{
@@ -553,7 +601,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
-						if (IsRootPage)
+						if (IsRootPage || !backButtonVisible)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
 							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
@@ -1108,6 +1156,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			// Set flag when page is loaded during navigation - this is when the keyboard issue can occur
+			_pendingKeyboardNavigation = true;
+
 			UpdateToolbarItemsInternal();
 
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
@@ -1164,6 +1215,51 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 		}
 
+		void OnKeyboardWillHide(object? sender, UIKeyboardEventArgs e)
+		{
+			// Keyboard dismissal during page load can cause iOS to misposition the view behind the navigation bar.
+			// Detect and correct this by repositioning the view below the navigation bar when needed.
+
+			if (_disposed || ViewController?.View is null || ViewController.NavigationController is null)
+				return;
+
+			// Only apply fix during the problematic timing window (page load with navigation)
+			if (!_pendingKeyboardNavigation)
+				return;
+
+			var navController = ViewController.NavigationController;
+			var navBar = navController.NavigationBar;
+
+			if (navBar.Hidden || navBar.Frame.Height <= 0)
+				return;
+
+			// Don't interfere with SearchHandler's keyboard management when it's active
+			if (_searchController?.Active == true)
+				return;
+
+			var currentFrame = ViewController.View.Frame;
+			var navBarBottom = navBar.Frame.Bottom;
+
+			if (currentFrame.Y == 0 && navBarBottom > 0 &&
+				navController.ViewControllers?.Length > 1 &&
+				ViewController == navController.TopViewController)
+			{
+				// Adjust height to fit available space after Y position change
+				var yOffset = navBarBottom - currentFrame.Y;
+				var correctFrame = new CGRect(
+					currentFrame.X,
+					navBarBottom,
+					currentFrame.Width,
+					currentFrame.Height - yOffset
+				);
+
+				ViewController.View.Frame = correctFrame;
+			}
+
+			// Clear flag after handling keyboard dismissal once
+			_pendingKeyboardNavigation = false;
+		}
+
 		#endregion SearchHandler
 
 		#region IDisposable Support
@@ -1210,6 +1306,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
 					tvc.Disconnect();
+
+				_keyboardWillHideObserver?.Dispose();
+				_keyboardWillHideObserver = null;
 			}
 
 			_context = null;

@@ -17,7 +17,11 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapIsTrafficEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
+		public static void MapMapStyle(IMapHandler handler, IMap map) => throw new NotImplementedException();
+
 		public static void MapIsShowingUser(IMapHandler handler, IMap map) => throw new NotImplementedException();
+
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg) => throw new NotImplementedException();
 
@@ -26,5 +30,9 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapElements(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 		public void UpdateMapElement(IMapElement element) => throw new NotImplementedException();
+
+		void ShowInfoWindow(IMapPin pin) { }
+
+		void HideInfoWindow(IMapPin pin) { }
 	}
 }

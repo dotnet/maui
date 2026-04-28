@@ -114,6 +114,31 @@ stages:
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
 
+    - ${{ if eq(platform, 'ios') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              platform: ios
+              timeoutInMinutes: 120
+              pool: ${{ parameters.iOSPool }}
+              versions: ${{ parameters.iosVersions }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.ios }}
+                versionsExclude: ${{ project.iosVersionsCoreClrExclude }}
+                configuration: ${{ project.iOSConfiguration }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              useCoreClr: true
+
     - ${{ if eq(platform, 'catalyst') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.catalyst, '') }}:
@@ -136,6 +161,31 @@ stages:
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
+
+    - ${{ if eq(platform, 'catalyst') }}:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.catalyst, '') }}:
+          - template: device-tests-jobs.yml
+            parameters:
+              platform: catalyst
+              timeoutInMinutes: 240
+              pool: ${{ parameters.catalystPool }}
+              versions: ${{ parameters.catalystVersions }}
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              project:
+                name: ${{ project.name }}
+                desc: ${{ project.desc }}
+                path: ${{ project.catalyst }}
+                versionsExclude: ${{ project.catalystVersionsCoreClrExclude }}
+                configuration: ${{ project.iOSConfiguration }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              useCoreClr: true
 
     - ${{ if eq(platform, 'windows') }}:
       - ${{ each project in parameters.projects }}:

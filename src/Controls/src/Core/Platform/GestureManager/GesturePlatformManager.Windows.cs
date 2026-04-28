@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement? _element;
 		TappedEventHandler? _tappedEventHandler;
 		DoubleTappedEventHandler? _doubleTappedEventHandler;
+		LongPressGestureHandler? _longPressGestureHandler;
 
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending event");
+					MauiLogger<DropGestureRecognizer>.Log(LogLevel.Warning, dropExc, "Error sending event");
 				}
 			});
 		}
@@ -418,6 +419,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 
+			_longPressGestureHandler?.Dispose();
+			_longPressGestureHandler = null;
+
 			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
 				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
@@ -452,7 +456,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (SwipeGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)recognizer).SendSwipe(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y);
+				((ISwipeGestureController)recognizer).SendSwipe(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y);
+				e.Handled = true;
 			}
 		}
 
@@ -471,7 +476,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
+				recognizer.SendPan(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
+				e.Handled = true;
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -497,6 +503,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
+					e.Handled = true;
 				}
 
 				_wasPinchGestureStartedSent = true;
@@ -554,7 +561,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SwipeComplete(true);
 
-			if (!_isPanning)
+			if (!_isPanning && !_isPinching && !_isSwiping)
 			{
 				_fingers.Remove(e.Pointer.PointerId);
 			}
@@ -678,7 +685,7 @@ namespace Microsoft.Maui.Controls.Platform
 			catch (Exception ex)
 			{
 				// Log the exception for diagnostics
-				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
+				MauiLogger<GesturePlatformManager>.Log(LogLevel.Error, ex, "An error occurred while validating pointer event relevance.");
 				return false;
 			}
 		}
@@ -955,6 +962,18 @@ namespace Microsoft.Maui.Controls.Platform
 			ClearContainerEventHandlers();
 			UpdateDragAndDropGestureRecognizers();
 
+			// Handle LongPressGestureRecognizer
+			bool hasLongPressGesture = gestures.HasAnyGesturesFor<LongPressGestureRecognizer>();
+			if (hasLongPressGesture)
+			{
+				_longPressGestureHandler ??= new LongPressGestureHandler(_handler);
+				_longPressGestureHandler.SubscribeEvents();
+			}
+			else
+			{
+				_longPressGestureHandler?.UnsubscribeEvents();
+			}
+
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
 			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
@@ -1029,17 +1048,17 @@ namespace Microsoft.Maui.Controls.Platform
 				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>();
 				if (hasPinchGesture)
 				{
-					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				if (hasPanGesture)
 				{
-					logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				if (hasSwipeGesture)
 				{
-					logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				return;

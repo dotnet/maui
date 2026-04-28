@@ -31,6 +31,11 @@
         <!-- These categories run as individual work items; skipped from the "Other" work item -->
         <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;Shell;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
     </PropertyGroup>
+
+    <!-- AI test categories to skip on CI (Apple Intelligence models are not available on Helix machines) -->
+    <PropertyGroup Condition="'$(TargetOS)' == 'ios' or '$(TargetOS)' == 'maccatalyst'">
+        <AITestCategoriesToSkipOnCI>AppleIntelligenceChatClient</AITestCategoriesToSkipOnCI>
+    </PropertyGroup>
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
         <ControlsTestCategoriesToRunIndividually Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
     </ItemGroup>
@@ -119,6 +124,15 @@
             <WindowsPackageId>Microsoft.Maui.MauiBlazorWebView.DeviceTests</WindowsPackageId>
             <WindowsProjectPath>src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
+
+        <MAUIScenario Include="EssentialsAI">
+            <ScenarioDirectoryName>Essentials.AI.DeviceTests</ScenarioDirectoryName>
+            <PayloadDirectory>$(ScenariosDir)Essentials.AI.DeviceTests</PayloadDirectory>
+            <IPAName>Microsoft.Maui.Essentials.AI.DeviceTests</IPAName>
+            <PackageName>com.microsoft.maui.ai.devicetests</PackageName>
+            <WindowsPackageId>com.microsoft.maui.ai.devicetests</WindowsPackageId>
+            <WindowsProjectPath>src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj</WindowsProjectPath>
+        </MAUIScenario>
     </ItemGroup>
 
     <!-- Process each test scenario individually using direct path construction -->
@@ -173,15 +187,33 @@
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
             </XHarnessAppBundleToTest>
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.AI.DeviceTests/Release/$(TargetFrameworkToTest)-ios/', '*.app', System.IO.SearchOption.AllDirectories))">
+                <TestTarget>ios-simulator-64</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=SkipCategories=$(AITestCategoriesToSkipOnCI)"</CustomCommands>
+            </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <!-- MacCatalyst and Android: Use the original MAUIScenario approach (no category splitting) -->
+        <!-- MacCatalyst: Use the original MAUIScenario approach, except EssentialsAI which needs custom test filtering -->
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
-            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
+            <!-- Exclude EssentialsAI from batch - it needs custom test filter to skip Apple Intelligence on CI -->
+            <_MAUIScenarioSearchMacCatalyst Include="@(_MAUIScenarioSearch)" />
+            <_MAUIScenarioSearchMacCatalyst Remove="EssentialsAI" />
+
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearchMacCatalyst.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>maccatalyst</TestTarget>
                 <WorkItemTimeout>02:00:00</WorkItemTimeout>
                 <TestTimeout>01:00:00</TestTimeout>
-                <WorkItemPrefix>%(_MAUIScenarioSearch.ScenarioDirectoryName)</WorkItemPrefix>
+                <WorkItemPrefix>%(_MAUIScenarioSearchMacCatalyst.ScenarioDirectoryName)</WorkItemPrefix>
+            </XHarnessAppBundleToTest>
+
+            <!-- EssentialsAI MacCatalyst - skip Apple Intelligence tests on CI (model not available on Helix machines) -->
+            <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('$(ScenariosDir)Essentials.AI.DeviceTests/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
+                <TestTarget>maccatalyst</TestTarget>
+                <WorkItemTimeout>02:00:00</WorkItemTimeout>
+                <TestTimeout>01:00:00</TestTimeout>
+                <CustomCommands>xharness apple test --target "$target" --app "$app" --output-directory "$output_directory" --timeout "$timeout" --launch-timeout "$launch_timeout" --set-env="TestFilter=SkipCategories=$(AITestCategoriesToSkipOnCI)"</CustomCommands>
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
@@ -209,8 +241,7 @@
             </HelixWorkItem>
         </ItemGroup>
         
-        <!-- TODO: Unpackaged tests disabled - crash with 0xC000027B (Windows App SDK Bootstrap failure)
-             on Helix. Investigating root cause. See PR #33328 for context.
+        <!-- Windows Unpackaged tests -->
         <ItemGroup Condition="'$(TargetOS)' == 'windows'">
             <HelixWorkItem Include="%(_MAUIScenarioSearch.ScenarioDirectoryName)-unpackaged">
                 <PayloadArchive>%(_MAUIScenarioSearch.PayloadDirectory).zip</PayloadArchive>
@@ -218,7 +249,6 @@
                 <Timeout>02:00:00</Timeout>
             </HelixWorkItem>
         </ItemGroup>
-        -->
 
         <Message Text="Created @(XHarnessAppBundleToTest->Count()) iOS work items" Importance="high" Condition="'$(TargetOS)' == 'ios'" />
         <Message Text="Created @(HelixWorkItem->Count()) Windows work items" Importance="high" Condition="'$(TargetOS)' == 'windows'" />

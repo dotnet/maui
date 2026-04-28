@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
@@ -30,12 +31,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
-			if (!visibleItems)
-				return;
-
 			var contentInset = scrollView.ContentInset;
-			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
-			var contentOffsetY = scrollView.ContentOffset.Y + contentInset.Top;
+			var contentOffsetX = !visibleItems ? 0 : scrollView.ContentOffset.X + contentInset.Left;
+			var contentOffsetY = !visibleItems ? 0 : scrollView.ContentOffset.Y + contentInset.Top;
 
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
@@ -58,6 +56,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PreviousHorizontalOffset = (float)contentOffsetX;
 			PreviousVerticalOffset = (float)contentOffsetY;
+
+			if (!visibleItems)
+			{
+				return;
+			}
 
 			switch (itemsView.RemainingItemsThreshold)
 			{
@@ -118,14 +121,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (collectionView is null)
 				return default;
 
-			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Row).ToList();
+			// Sort visible item index paths by section and then by row for consistent order in both grouped and ungrouped sources
+			var indexPathsForVisibleItems = collectionView.IndexPathsForVisibleItems.OrderBy(x => x.Section).ThenBy(x => x.Row).ToList();
 
 			var visibleItems = indexPathsForVisibleItems.Count > 0;
 			NSIndexPath firstVisibleItemIndex = null, centerItemIndex = null, lastVisibleItemIndex = null;
 
 			if (visibleItems)
 			{
-				firstVisibleItemIndex = indexPathsForVisibleItems.First();
+				firstVisibleItemIndex = GetFirstVisibleIndexPathUsingLayoutAttributes(collectionView, indexPathsForVisibleItems);
 				centerItemIndex = GetCenteredIndexPath(collectionView);
 				lastVisibleItemIndex = indexPathsForVisibleItems.Last();
 			}
@@ -161,6 +165,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return index;
+		}
+
+		static NSIndexPath GetFirstVisibleIndexPathUsingLayoutAttributes(UICollectionView collectionView, IEnumerable<NSIndexPath> indexPathsForVisibleItems)
+		{
+			if (!indexPathsForVisibleItems.Any())
+				return null;
+
+			var layout = collectionView.CollectionViewLayout;
+			if (layout is null)
+				return indexPathsForVisibleItems.First();
+
+			var visibleRect = new CGRect(collectionView.ContentOffset, collectionView.Bounds.Size);
+			var layoutAttributes = layout.LayoutAttributesForElementsInRect(visibleRect);
+			if (layoutAttributes is null || layoutAttributes.Length == 0)
+				return indexPathsForVisibleItems.First();
+
+			var flowLayout = layout as UICollectionViewFlowLayout;
+			bool isVertical = flowLayout?.ScrollDirection != UICollectionViewScrollDirection.Horizontal;
+			// Find the first visible cell (not headers/footers) based on scroll direction
+			NSIndexPath firstVisibleIndexPath = null;
+			nfloat minPosition = nfloat.MaxValue;
+
+			for (int i = 0; i < layoutAttributes.Length; i++)
+			{
+				var attr = layoutAttributes[i];
+				// Skip non-cell elements (headers, footers, decorations)
+				if (attr.RepresentedElementCategory != UICollectionElementCategory.Cell)
+					continue;
+
+				// Skip items that don't intersect with visible rect
+				if (!attr.Frame.IntersectsWith(visibleRect))
+					continue;
+
+				nfloat position = isVertical ? attr.Frame.Y : attr.Frame.X;
+				if (position < minPosition)
+				{
+					minPosition = position;
+					firstVisibleIndexPath = attr.IndexPath;
+				}
+			}
+
+			return firstVisibleIndexPath ?? indexPathsForVisibleItems.First();
 		}
 
 		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)
