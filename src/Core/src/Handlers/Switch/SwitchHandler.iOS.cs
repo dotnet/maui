@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CoreFoundation;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -69,6 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 			NSObject? _willEnterForegroundObserver;
 			NSObject? _windowDidBecomeKeyObserver;
+			IUITraitChangeRegistration? _traitChangeRegistration;
 
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
@@ -83,6 +85,10 @@ namespace Microsoft.Maui.Handlers
 						if (PlatformView is not null)
 						{
 							UpdateTrackOffColor(PlatformView);
+							if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
+							{
+								UpdateThumbColor(PlatformView);
+							}
 						}
 					});
 #elif IOS
@@ -95,6 +101,28 @@ namespace Microsoft.Maui.Handlers
 						}
 					});
 #endif
+
+				// iOS/MacCatalyst 26+ resets ThumbTintColor when theme changes (light/dark mode).
+				// Register for trait changes to re-apply ThumbColor after UIKit completes its styling.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					if (_traitChangeRegistration is not null)
+					{
+						platformView.UnregisterForTraitChanges(_traitChangeRegistration);
+					}
+
+					_traitChangeRegistration = platformView.RegisterForTraitChanges<UITraitUserInterfaceStyle>(
+						(IUITraitEnvironment view, UITraitCollection _) =>
+						{
+							if (view is UISwitch uiSwitch)
+							{
+								UpdateThumbColor(uiSwitch);
+							}
+						});
+
+					// iOS 26+ resets ThumbTintColor after initial layout, so re-apply the custom ThumbColor here.
+					UpdateThumbColor(platformView);
+				}
 			}
 
 			// Ensures the Switch track "OFF" color is updated correctly after system-level UI resets.
@@ -116,6 +144,22 @@ namespace Microsoft.Maui.Handlers
 				});
 			}
 
+			void UpdateThumbColor(UISwitch platformView)
+			{
+				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				{
+					if (VirtualView is null || PlatformView is null)
+						return;
+
+					await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
+
+					if (VirtualView is ISwitch view && view.ThumbColor is not null)
+					{
+						platformView.UpdateThumbColor(view);
+					}
+				});
+			}
+
 			public void Disconnect(UISwitch platformView)
 			{
 				platformView.ValueChanged -= OnControlValueChanged;
@@ -129,6 +173,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserver);
 					_windowDidBecomeKeyObserver = null;
+				}
+				if (_traitChangeRegistration is not null)
+				{
+					platformView.UnregisterForTraitChanges(_traitChangeRegistration);
+					_traitChangeRegistration = null;
 				}
 			}
 

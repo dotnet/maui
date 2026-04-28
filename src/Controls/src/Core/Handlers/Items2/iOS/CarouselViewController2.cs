@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -15,9 +16,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		bool _isRotating = false;
 		bool _isUpdating = false;
+		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
+		CancellationTokenSource _scrollDebounce;
 
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
@@ -207,6 +210,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
 			_isRotating = false;
+			_isInternalCollectionUpdate = false;
 		}
 
 		internal void UpdateScrollingConstraints()
@@ -295,7 +299,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			int carouselPosition = carousel.Position;
 			_positionAfterUpdate = carouselPosition;
-			var currentItemPosition = ItemsSource.GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = ItemsSource.GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
+
+			if (currentItemPosition < 0)
+			{
+				return;
+			}
 
 			if (e.Action == NotifyCollectionChangedAction.Remove)
 			{
@@ -311,14 +321,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_positionAfterUpdate = GetPositionWhenAddingItems(carouselPosition, currentItemPosition);
 			}
+
+			// Suppress any scroll-driven SetPosition calls that UIKit fires during the batch update
+			_isInternalCollectionUpdate = true;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			// Clear before anything else so SetPosition/SetCurrentItem called from this method are not suppressed
+			_isInternalCollectionUpdate = false;
+
 			int targetPosition;
 			if (_positionAfterUpdate == -1)
 			{
+				_isUpdating = false;
 				return;
 			}
 
@@ -345,7 +362,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-
 			_isUpdating = false;
 			ScrollToPosition(targetPosition, targetPosition, false, true);
 		}
@@ -356,7 +372,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return currentItemPosition != -1 ? currentItemPosition : carouselPosition;
 		}
 
-		private int GetTargetPosition()
+		int GetTargetPosition()
 		{
 			if (ItemsSource.ItemCount == 0)
 			{
@@ -457,7 +473,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (ItemsSource is null || ItemsSource.ItemCount == 0)
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
 			{
 				return;
 			}
@@ -478,6 +494,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void SetPosition(int position)
 		{
+			// Suppress spurious calls from UIKit scroll callbacks during a collection batch update
+			if (_isInternalCollectionUpdate)
+			{
+				return;
+			}
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -530,14 +552,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			if (currentItemIndex.Row < 0)
+			{
+				return;
+			}
 
-			ScrollToPosition(currentItemPosition, carousel.Position, carousel.AnimateCurrentItemChanges);
+			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
 
 			UpdateVisualStates();
 		}
 
-		internal void UpdateFromPosition()
+		internal async void UpdateFromPosition()
 		{
 			if (!InitialPositionSet)
 			{
@@ -554,10 +580,60 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
 
-			ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				var old = _scrollDebounce;
+				_scrollDebounce = new CancellationTokenSource();
+				// Cancel any pending position update to prevent race conditions
+				old?.Cancel();
+				old?.Dispose();
+				var token = _scrollDebounce.Token;
+
+				try
+				{
+					// On iOS 26, UICollectionView can emit intermediate scroll callbacks before settling.
+					// A slightly longer delay than UpdateInitialPosition's 100ms was empirically chosen
+					// to ensure the scroll operation runs after those intermediate callbacks complete.
+					await Task.Delay(100, token).ContinueWith(_ =>
+					{
+						MainThread.BeginInvokeOnMainThread(() =>
+						{
+							// Re-validate state after the delay to avoid operating on stale or disposed views
+							if (!InitialPositionSet)
+							{
+								return;
+							}
+
+							if (ItemsView is not CarouselView currentCarousel)
+							{
+								return;
+							}
+
+							if (ItemsSource is null || ItemsSource.ItemCount == 0)
+							{
+								return;
+							}
+
+							var updatedCurrentItemPosition = GetIndexForItem(currentCarousel.CurrentItem).Row;
+							var updatedCarouselPosition = currentCarousel.Position;
+
+							ScrollToPosition(updatedCarouselPosition, updatedCurrentItemPosition, currentCarousel.AnimatePositionChanges);
+						});
+					}, token);
+				}
+				catch (OperationCanceledException)
+				{
+					// Expected when a newer UpdateFromPosition call cancels this one
+				}
+			}
+			else
+			{
+				ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
+			}
 
 			// SetCurrentItem(carouselPosition);
 		}
@@ -717,6 +793,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				CollectionView.Hidden = true;
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_scrollDebounce?.Cancel();
+				_scrollDebounce?.Dispose();
+				_scrollDebounce = null;
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 

@@ -156,7 +156,7 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 
 	[RelayCommand]
 	private Task? NavigateToProject(Project project)
-		=> project is null ? null : Shell.Current.GoToAsync($"project?id={project.ID}");
+		=> project is null ? Task.CompletedTask : Shell.Current.GoToAsync($"project?id={project.ID}");
 
 	[RelayCommand]
 	private Task NavigateToTask(ProjectTask task)

@@ -29,6 +29,7 @@ namespace Maui.Controls.Sample
 		{
 			BindingContext = _viewModel = new SliderViewModel();
 			ReInitializeSlider();
+			_viewModel.ValueChangedStatus = "Not Raised";
 			await Navigation.PushAsync(new SliderOptionsPage(_viewModel));
 		}
 
@@ -57,7 +58,19 @@ namespace Maui.Controls.Sample
 			slider.SetBinding(Slider.DragStartedCommandProperty, new Binding("DragStartedCommand"));
 			slider.SetBinding(Slider.DragCompletedCommandProperty, new Binding("DragCompletedCommand"));
 
+			slider.ValueChanged += OnSliderValueChanged;
+
 			SliderGrid.Children.Add(slider);
+		}
+
+		private void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
+		{
+			if (BindingContext is SliderViewModel vm)
+			{
+				vm.ValueChangedStatus = "Raised";
+				vm.OldValue = e.OldValue;
+				vm.NewValue = e.NewValue;						
+			}
 		}
 	}
 }

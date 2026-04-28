@@ -16,7 +16,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override int GetSpanSize(int position)
 		{
-			var itemViewType = _recyclerView.GetAdapter().GetItemViewType(position);
+			var adapter = _recyclerView.GetAdapter();
+
+			// EmptyViewAdapter uses private incrementing view type IDs that never match
+			// the static ItemViewType constants. All items it contains (header, empty view,
+			// footer) should span the full grid width.
+			if (adapter is EmptyViewAdapter)
+			{
+				return _gridItemsLayout.Span;
+			}
+
+			var itemViewType = adapter.GetItemViewType(position);
 
 			if (itemViewType == ItemViewType.Header || itemViewType == ItemViewType.Footer
 				|| itemViewType == ItemViewType.GroupHeader || itemViewType == ItemViewType.GroupFooter)
