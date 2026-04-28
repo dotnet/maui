@@ -649,6 +649,7 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
+              COMMENTS_VIA_FILE: "true"
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1

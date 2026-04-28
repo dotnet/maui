@@ -499,11 +499,8 @@ The agent will analyze the issue, determine the appropriate test type (UI test, 
     }
 }
 
-# Post gate result by updating (or creating) the unified AI Summary comment.
-# The same script is called again in STEP 3 once the review phases finish; here
-# it runs early so the PR author sees the gate outcome without waiting for the
-# full review.
-$postGateScript = Join-Path $PSScriptRoot "post-ai-summary-comment.ps1"
+# Post gate result as a separate PR comment
+$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
 if (Test-Path $postGateScript) {
     try {
         if ($DryRun) {
@@ -512,10 +509,10 @@ if (Test-Path $postGateScript) {
             & $postGateScript -PRNumber $PRNumber
         }
     } catch {
-        Write-Host "  ⚠️ Failed to post gate section (non-fatal): $_" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found" -ForegroundColor Yellow
+    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
 }
 
 # Apply gate result label
@@ -559,7 +556,8 @@ $gateStatusForPrompt = switch ($gateResult) {
 }
 
 $step2Prompt = @"
-Use a skill to review PR #$PRNumber.
+First, use the code-review skill for dimensional code analysis with the maui-expert-reviewer agent — this writes inline-findings.json.
+Then, use the pr-review skill to review PR #$PRNumber. The pr-review Report phase should account for any code quality issues found by the expert reviewer.
 
 $platformInstruction
 $autonomousRules
@@ -568,6 +566,7 @@ $autonomousRules
 Do NOT re-run gate verification. The gate phase is handled separately.
 
 📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
+📁 Also write inline review findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json``
 "@
 
 Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
@@ -610,6 +609,27 @@ if (Test-Path $reviewScript) {
     }
 } else {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
+}
+
+# Post inline review comments (file:line findings from expert-reviewer agent)
+$inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+$findingsFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json"
+if ((Test-Path $inlineScript) -and (Test-Path $findingsFile)) {
+    try {
+        Write-Host "  📝 Posting inline review comments..." -ForegroundColor Cyan
+        if ($DryRun) {
+            & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun
+        } else {
+            & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile
+        }
+        Write-Host "  ✅ Inline review comments posted" -ForegroundColor Green
+    } catch {
+        Write-Host "  ⚠️ Inline review posting failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    if (-not (Test-Path $findingsFile)) {
+        Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
+    }
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
