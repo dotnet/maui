@@ -14,7 +14,7 @@ The table below outlines the different docs in this folder and what they are hel
 | [Code Documentation Guidelines](CodeDocumentationGuidelines.md) | Overview of the guidelines for the inline code documentation | Community members and collaborators looking to understand how to add good inline code comments that fuel our IntelliSense and online API docs |
 | [Development Tips](DevelopmentTips.md) | Development tips including debugging, building, and device testing on Helix | Contributors who need guidance on development workflows, including running device tests on cloud infrastructure |
 | [Issue management](IssueManagementPolicies.md) | Overview of policies in place to manage issues| Community members and collaborators looking to understand how we handle closed issues, issues that need author feedback, etc. |
-| [Release Planning](ReleasePlanning.md) | Links to the .NET MAUI roadmap | Anyone interested in the project roadmap and future plans |
+| [Release Planning](ReleasePlanning.md) | Link to the .NET MAUI roadmap | Anyone interested in the project roadmap and future plans |
 | [Release Process](ReleaseProcess.md) | Describes the release process using the Arcade SDK for building, signing, and publishing packages | Contributors and maintainers involved in releasing .NET MAUI |
 | [Release Schedule](ReleaseSchedule.md) | Overview of .NET MAUI version releases | Anyone who is interested in .NET MAUI versions and release dates |
 | [Triage process](TriageProcess.md)| Overview of the issue triage process used in the repo     | Anyone looking to understand the triage process on the repo  |
