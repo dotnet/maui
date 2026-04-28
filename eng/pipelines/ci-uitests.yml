@@ -150,6 +150,11 @@ stages:
 
   - template: common/ui-tests.yml
     parameters:
+      # Enable provisioning on internal so Xcode gets selected/installed correctly
+      ${{ if eq(variables['internalProvisioning'], 'true') }}:
+        skipProvisioning: false
+      ${{ else }}:
+        skipProvisioning: true
       # Select pools based on pipeline - internal vs public
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         androidPool: ${{ parameters.androidPoolInternal }}
