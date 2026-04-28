@@ -307,6 +307,7 @@ namespace Tests
 		[InlineData(1, 1609.344)]
 		[InlineData(0.5, 804.672)]
 		[InlineData(2, 3218.688)]
+		[InlineData(-1, -1609.344)]
 		public void MilesToMeters(double miles, double meters)
 		{
 			Assert.Equal(meters, UnitConverters.MilesToMeters(miles), 4);
@@ -318,6 +319,7 @@ namespace Tests
 		[InlineData(180, 0.5)]
 		[InlineData(720, 2)]
 		[InlineData(1, 0.0028)]
+		[InlineData(-360, -1)]
 		public void DegreesPerSecondToHertz(double degrees, double hertz)
 		{
 			Assert.Equal(hertz, UnitConverters.DegreesPerSecondToHertz(degrees), 4);
@@ -327,6 +329,8 @@ namespace Tests
 		[InlineData(0, 0)]
 		[InlineData(6.2832, 1.0000)]
 		[InlineData(3.1416, 0.5000)]
+		[InlineData(12.5664, 2.0000)]
+		[InlineData(-6.2832, -1.0000)]
 		public void RadiansPerSecondToHertz(double radians, double hertz)
 		{
 			Assert.Equal(hertz, UnitConverters.RadiansPerSecondToHertz(radians), 4);
@@ -337,6 +341,7 @@ namespace Tests
 		[InlineData(1, 360)]
 		[InlineData(0.5, 180)]
 		[InlineData(2, 720)]
+		[InlineData(-1, -360)]
 		public void HertzToDegreesPerSecond(double hertz, double degrees)
 		{
 			Assert.Equal(degrees, UnitConverters.HertzToDegreesPerSecond(hertz), 4);
@@ -347,6 +352,7 @@ namespace Tests
 		[InlineData(1, 6.2832)]
 		[InlineData(0.5, 3.1416)]
 		[InlineData(2, 12.5664)]
+		[InlineData(-1, -6.2832)]
 		public void HertzToRadiansPerSecond(double hertz, double radians)
 		{
 			Assert.Equal(radians, UnitConverters.HertzToRadiansPerSecond(hertz), 4);
