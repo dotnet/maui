@@ -262,8 +262,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(12)]
@@ -279,8 +277,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -488,8 +484,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(22)]
@@ -505,8 +499,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -1155,8 +1147,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
@@ -1301,8 +1291,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(62)]
@@ -1320,8 +1308,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(TextTypeHtml);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 

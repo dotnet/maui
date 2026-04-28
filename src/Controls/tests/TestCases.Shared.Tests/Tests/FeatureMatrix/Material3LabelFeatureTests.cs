@@ -24,6 +24,10 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFormattedText()
 	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement("This is a Basic Label");
 		App.WaitForElement("Options");
 		App.Tap("Options");
