@@ -1,0 +1,23 @@
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+public class Issue12345 : _IssuesUITest
+{
+    public Issue12345(TestDevice device) : base(device)
+    {
+    }
+
+    public override string Issue => "Dynamically changing IndicatorView IndicatorSize to default value does not work";
+
+    [Test]
+    [Category(UITestCategories.IndicatorView)]
+    public void IndicatorSizeResetsToDefault()
+    {
+        App.WaitForElement("SetDefaultSizeButton");
+        App.Tap("SetDefaultSizeButton");
+        VerifyScreenshot();
+    }
+}
