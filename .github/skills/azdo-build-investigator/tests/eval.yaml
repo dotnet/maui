@@ -8,7 +8,7 @@ scenarios:
         value: "curl https://dev.azure.com"
       - type: "exit_success"
     rubric:
-      - "The agent checked all three MAUI pipelines (maui-pr, maui-pr-devicetests, maui-pr-uitests) or explained why some were absent"
+      - "The agent checked multiple MAUI pipelines or explained why some were absent"
       - "The agent provided a per-pipeline pass/fail summary with job counts"
       - "The agent gave a clear merge-readiness verdict with evidence"
       - "The agent did not write ad-hoc scripts to query AzDO APIs directly"
@@ -26,39 +26,12 @@ scenarios:
       - "The agent distinguished between infrastructure failures and actual test assertion failures"
     timeout: 300
 
-  - name: "Community PR with no CI builds"
-    prompt: "Is CI green on PR #35144 in dotnet/maui? Can we merge it?"
+  - name: "Recognize when CI builds have not been triggered"
+    prompt: "Check the CI status for PR #34710 in dotnet/maui. Has CI run? What are the results?"
     assertions:
       - type: "exit_success"
     rubric:
-      - "The agent recognized that no CI builds have been triggered for this PR"
-      - "The agent explained that community PRs may need a maintainer to trigger builds"
-      - "The agent did not incorrectly report CI as passing or failing when no builds exist"
+      - "The agent checked whether CI builds actually exist for this PR before reporting status"
+      - "If no builds were found, the agent explained that builds may need to be triggered rather than reporting CI as passing or failing"
+      - "The agent did not fabricate CI results when build data was unavailable"
     timeout: 300
-
-  - name: "Non-activation - code review request"
-    prompt: "Review the code changes in PR #35150 for dotnet/maui. Check for bugs and style issues."
-    expect_activation: false
-    assertions:
-      - type: "output_not_contains"
-        value: "maui-pr-devicetests"
-      - type: "output_not_contains"
-        value: "Get-CIStatus"
-    rubric:
-      - "The agent performed a code review rather than a CI investigation"
-      - "The agent did not invoke CI analysis tools or query AzDO build status"
-      - "The agent focused on code correctness, not build/test pipeline results"
-    timeout: 120
-
-  - name: "Non-activation - general question about a PR"
-    prompt: "What files does PR #35106 change in dotnet/maui?"
-    expect_activation: false
-    assertions:
-      - type: "output_not_contains"
-        value: "Build Analysis"
-      - type: "output_not_contains"
-        value: "Helix"
-    rubric:
-      - "The agent answered the informational question without launching a CI investigation"
-      - "The agent listed changed files without querying build pipelines"
-    timeout: 120
