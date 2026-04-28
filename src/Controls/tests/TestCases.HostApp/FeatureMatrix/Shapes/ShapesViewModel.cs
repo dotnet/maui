@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 
@@ -8,6 +9,7 @@ public enum ShapeType
 {
 	Line,
 	Rectangle,
+	RoundRectangle,
 	Polygon,
 	Polyline,
 	Ellipse,
@@ -22,11 +24,37 @@ public class ShapesViewModel : INotifyPropertyChanged
 	private double _strokeThickness = 1.0;
 	private double _width = 300;
 	private double _height = 150;
-	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private bool _hasShadow = false;
 	private Shadow _boxShadow = null;
-	private PathGeometryConverter _pathGeometryConverter = new PathGeometryConverter();
+	private readonly PathGeometryConverter _pathGeometryConverter = new PathGeometryConverter();
 
+	public void ResetToDefaults()
+	{
+		SelectedShapeType = ShapeType.Rectangle;
+		FillColor = null;
+		HasFillColor = false;
+		StrokeColor = Colors.Black;
+		StrokeThickness = 1.0;
+		Width = 300;
+		Height = 150;
+		HasShadow = false;
+		StrokeDashArray = "0,0";
+		StrokeDashOffset = 0;
+		Aspect = Stretch.None;
+		StrokeLineCap = PenLineCap.Flat;
+		StrokeLineJoin = PenLineJoin.Miter;
+		FillRule = FillRule.EvenOdd;
+		CornerRadius = 0;
+		RadiusX = 0;
+		RadiusY = 0;
+		X1 = 0;
+		Y1 = 0;
+		X2 = 280;
+		Y2 = 0;
+		Points = null;
+		PolylinePoints = null;
+		PathData = null;
+	}
 	public bool HasShadow
 	{
 		get => _hasShadow;
@@ -61,19 +89,6 @@ public class ShapesViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	public FlowDirection FlowDirection
-	{
-		get => _flowDirection;
-		set
-		{
-			if (_flowDirection != value)
-			{
-				_flowDirection = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
 	public ShapeType SelectedShapeType
 	{
 		get => _selectedShapeType;
@@ -95,7 +110,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 			{
 				if (!value)
 				{
-					_fillColor = null;
+					FillColor = null;
 				}
 			}
 		}
@@ -145,6 +160,41 @@ public class ShapesViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _strokeDashOffset, value);
 	}
 
+	private Stretch _aspect = Stretch.None;
+	public Stretch Aspect
+	{
+		get => _aspect;
+		set => SetProperty(ref _aspect, value);
+	}
+
+	private FillRule _fillRule = FillRule.EvenOdd;
+	public FillRule FillRule
+	{
+		get => _fillRule;
+		set => SetProperty(ref _fillRule, value);
+	}
+
+	private PenLineCap _strokeLineCap = PenLineCap.Flat;
+	public PenLineCap StrokeLineCap
+	{
+		get => _strokeLineCap;
+		set => SetProperty(ref _strokeLineCap, value);
+	}
+
+	private PenLineJoin _strokeLineJoin = PenLineJoin.Miter;
+	public PenLineJoin StrokeLineJoin
+	{
+		get => _strokeLineJoin;
+		set => SetProperty(ref _strokeLineJoin, value);
+	}
+
+	private double _cornerRadius = 0;
+	public double CornerRadius
+	{
+		get => _cornerRadius;
+		set => SetProperty(ref _cornerRadius, value);
+	}
+
 	private double _radiusX = 0;
 	public double RadiusX
 	{
@@ -173,7 +223,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 		set => SetProperty(ref _y1, value);
 	}
 
-	private double _x2 = 0;
+	private double _x2 = 280;
 	public double X2
 	{
 		get => _x2;
@@ -188,7 +238,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Polygon/Polyline Points
-	private string _points = "100,50 150,100 100,150 50,100";
+	private string _points = "100,20 170,75 100,130 30,75";
 	public string Points
 	{
 		get => _points;
@@ -216,7 +266,7 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Path Data
-	private string _pathData = "M 10,100 L 100,100 100,50Z";
+	private string _pathData = "M 10,84 C 10,84 40,15 100,55 C 160,15 190,84 190,84 C 190,84 100,135 100,135 C 100,135 10,84 10,84 Z";
 
 	public string PathData
 	{
@@ -231,50 +281,26 @@ public class ShapesViewModel : INotifyPropertyChanged
 	}
 
 	// Computed properties for proper data types
-	public PointCollection PolygonPointCollection
-	{
-		get
-		{
-			var points = new PointCollection();
-			if (!string.IsNullOrWhiteSpace(_points))
-			{
-				var pointPairs = _points.Split(' ');
-				foreach (var pointPair in pointPairs)
-				{
-					var coords = pointPair.Split(',');
-					if (coords.Length == 2 &&
-						double.TryParse(coords[0], out double x) &&
-						double.TryParse(coords[1], out double y))
-					{
-						points.Add(new Point(x, y));
-					}
-				}
-			}
-			return points;
-		}
-	}
+	public PointCollection PolygonPointCollection => ParsePointCollection(_points);
 
-	public PointCollection PolylinePointCollection
+	public PointCollection PolylinePointCollection => ParsePointCollection(_polylinePoints);
+
+	static PointCollection ParsePointCollection(string input)
 	{
-		get
-		{
-			var points = new PointCollection();
-			if (!string.IsNullOrWhiteSpace(_polylinePoints))
-			{
-				var pointPairs = _polylinePoints.Split(' ');
-				foreach (var pointPair in pointPairs)
-				{
-					var coords = pointPair.Split(',');
-					if (coords.Length == 2 &&
-						double.TryParse(coords[0], out double x) &&
-						double.TryParse(coords[1], out double y))
-					{
-						points.Add(new Point(x, y));
-					}
-				}
-			}
+		var points = new PointCollection();
+		if (string.IsNullOrWhiteSpace(input))
 			return points;
+		foreach (var pair in input.Split(' '))
+		{
+			var coords = pair.Split(',');
+			if (coords.Length == 2 &&
+				double.TryParse(coords[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
+				double.TryParse(coords[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
+			{
+				points.Add(new Point(x, y));
+			}
 		}
+		return points;
 	}
 
 	public DoubleCollection StrokeDashCollection
@@ -308,9 +334,9 @@ public class ShapesViewModel : INotifyPropertyChanged
 					return (Geometry)_pathGeometryConverter.ConvertFromInvariantString(_pathData);
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
-				// Return a simple default path if parsing fails
+				System.Diagnostics.Debug.WriteLine($"PathGeometry parse failed: {ex.Message}");
 			}
 			return (Geometry)_pathGeometryConverter.ConvertFromInvariantString("M 10,100 L 100,100");
 		}
