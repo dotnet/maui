@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample.Pages
 			);
 		}
 
-		void ItemClicked(object sender, EventArgs e)
+		void ItemClicked(object? sender, EventArgs e)
 		{
 			if (sender is MenuFlyoutItem mfi)
 			{
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnToggleMenuBarItem(object sender, EventArgs e)
+		void OnToggleMenuBarItem(object? sender, EventArgs e)
 		{
 			var barItem =
 				MenuBarItems.FirstOrDefault(x => x.Text == "Added Menu");

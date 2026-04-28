@@ -48,7 +48,7 @@ public class NewTaskSceneDelegate : UIWindowSceneDelegate
 		var titlebar = Window.WindowScene.Titlebar;
 		titlebar.Toolbar = toolbar;
 
-		if (OperatingSystem.IsMacOSVersionAtLeast(12, 0))
+		if (OperatingSystem.IsMacOSVersionAtLeast(14, 0))
 		{
 			titlebar.ToolbarStyle = UITitlebarToolbarStyle.Automatic;
 		}

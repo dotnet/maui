@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			catch (Exception exc)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "Failed to Navigate Back");
+				MauiLogger<Shell>.Log(LogLevel.Warning, exc, "Failed to Navigate Back");
 			}
 		}
 

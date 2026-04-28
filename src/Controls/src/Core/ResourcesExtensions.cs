@@ -55,6 +55,42 @@ namespace Microsoft.Maui.Controls
 			return resources;
 		}
 
+		/// <summary>
+		/// Gets all merged resource keys without resolving lazy values.
+		/// Used for resource change propagation where values are looked up on-demand.
+		/// </summary>
+		public static IEnumerable<string> GetMergedResourceKeys(this IElementDefinition element)
+		{
+			HashSet<string> keys = null;
+			while (element != null)
+			{
+				var ve = element as IResourcesProvider;
+				if (ve != null && ve.IsResourcesCreated)
+				{
+					keys = keys ?? new(StringComparer.Ordinal);
+					foreach (string key in ve.Resources.MergedResourcesKeys)
+					{
+						keys.Add(key);
+					}
+				}
+				var app = element as Application;
+				if (app != null && app.SystemResources != null)
+				{
+					keys = keys ?? new(StringComparer.Ordinal);
+					foreach (var kvp in app.SystemResources)
+						keys.Add(kvp.Key);
+				}
+				if (app != null)
+				{
+					keys = keys ?? new(StringComparer.Ordinal);
+					keys.Add(AppThemeBinding.AppThemeResource);
+				}
+
+				element = element.Parent;
+			}
+			return keys;
+		}
+
 		public static bool TryGetResource(this IElementDefinition element, string key, out object value)
 		{
 			while (element != null)
@@ -72,6 +108,30 @@ namespace Microsoft.Maui.Controls
 
 			value = null;
 			return false;
+		}
+
+		/// <summary>
+		/// Merges style class resources across the entire parent chain.
+		/// Style classes with the same key at different levels must be combined into a single list.
+		/// </summary>
+		public static object GetMergedStyleClassResource(this IElementDefinition element, string key)
+		{
+			List<Style> merged = null;
+			while (element != null)
+			{
+				if (element is IResourcesProvider ve && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out var value) && value is IList<Style> styles)
+				{
+					merged ??= new List<Style>();
+					merged.AddRange(styles);
+				}
+				if (element is Application app && app.SystemResources != null && app.SystemResources.TryGetValue(key, out var sysValue) && sysValue is IList<Style> sysStyles)
+				{
+					merged ??= new List<Style>();
+					merged.AddRange(sysStyles);
+				}
+				element = element.Parent;
+			}
+			return merged;
 		}
 	}
 }

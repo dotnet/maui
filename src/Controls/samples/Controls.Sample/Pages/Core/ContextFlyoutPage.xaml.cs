@@ -92,23 +92,23 @@ namespace Maui.Controls.Sample.Pages
 		int count;
 		private bool _isDynamicCommandEnabled;
 
-		void OnIncrementByOneClicked(object sender, EventArgs e)
+		void OnIncrementByOneClicked(object? sender, EventArgs e)
 		{
 			count++;
 			OnPropertyChanged(nameof(CounterValue));
 		}
 
-		void OnIncrementMenuItemClicked(object sender, EventArgs e)
+		void OnIncrementMenuItemClicked(object? sender, EventArgs e)
 		{
-			var menuItem = (MenuFlyoutItem)sender;
-			var incrementAmount = int.Parse((string)menuItem.CommandParameter);
+			var menuItem = (MenuFlyoutItem)sender!;
+			var incrementAmount = int.Parse((string)menuItem.CommandParameter!);
 			count += incrementAmount;
 			OnPropertyChanged(nameof(CounterValue));
 		}
 
 		public string CounterValue => count.ToString("N0");
 
-		async void OnEntryShowTextClicked(object sender, EventArgs e)
+		async void OnEntryShowTextClicked(object? sender, EventArgs e)
 		{
 			await DisplayAlertAsync(
 				title: "Entry",
@@ -116,17 +116,17 @@ namespace Maui.Controls.Sample.Pages
 				cancel: "OK");
 		}
 
-		void OnEntryAddTextClicked(object sender, EventArgs e)
+		void OnEntryAddTextClicked(object? sender, EventArgs e)
 		{
 			EntryWithContextFlyout.Text += " more text!";
 		}
 
-		void OnEntryClearTextClicked(object sender, EventArgs e)
+		void OnEntryClearTextClicked(object? sender, EventArgs e)
 		{
 			EntryWithContextFlyout.Text = "";
 		}
 
-		async void OnImageContextClicked(object sender, EventArgs e)
+		async void OnImageContextClicked(object? sender, EventArgs e)
 		{
 			await DisplayAlertAsync(
 				title: "Image",
@@ -134,33 +134,33 @@ namespace Maui.Controls.Sample.Pages
 				cancel: "OK");
 		}
 
-		void OnWebViewGoToSiteClicked(object sender, EventArgs e)
+		void OnWebViewGoToSiteClicked(object? sender, EventArgs e)
 		{
 			ContextMenuWebView.Source = new UrlWebViewSource() { Url = "https://github.com/dotnet/maui", };
 		}
 
-		async void OnWebViewInvokeJSClicked(object sender, EventArgs e)
+		async void OnWebViewInvokeJSClicked(object? sender, EventArgs e)
 		{
 			await ContextMenuWebView.EvaluateJavaScriptAsync(@"alert('help, i\'m being invoked!');");
 		}
 
 		int newMenuItemCount = 0;
 
-		void OnAddMenuClicked(object sender, EventArgs e)
+		void OnAddMenuClicked(object? sender, EventArgs e)
 		{
-			var contextFlyout = (((MenuFlyoutItem)sender).Parent as MenuFlyout)!;
+			var contextFlyout = (((MenuFlyoutItem)sender!).Parent as MenuFlyout)!;
 			AddNewMenu(contextFlyout, "top-level");
 		}
 
-		void OnAddSubMenuClicked(object sender, EventArgs e)
+		void OnAddSubMenuClicked(object? sender, EventArgs e)
 		{
-			var subMenu = (MenuFlyoutSubItem)((MenuFlyoutItem)sender).Parent;
+			var subMenu = (MenuFlyoutSubItem)((MenuFlyoutItem)sender!).Parent!;
 			AddNewMenu(subMenu, "sub-menu", subMenu.Count - 2, subMenu.Count % 2 == 0);
 			CheckSubMenu();
 		}
-		void OnRemoveSubMenuClicked(object sender, EventArgs e)
+		void OnRemoveSubMenuClicked(object? sender, EventArgs e)
 		{
-			var subMenu = (MenuFlyoutSubItem)((MenuFlyoutItem)sender).Parent;
+			var subMenu = (MenuFlyoutSubItem)((MenuFlyoutItem)sender!).Parent!;
 			subMenu.RemoveAt(subMenu.Count - 3);
 			CheckSubMenu();
 		}
