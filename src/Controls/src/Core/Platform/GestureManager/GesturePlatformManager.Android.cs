@@ -77,13 +77,29 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var eventConsumed = false;
-			if (ViewHasPinchGestures())
+
+			bool hasPinchGestures = ViewHasPinchGestures();
+			bool hasNonPointerTouchGestures = ViewHasNonPointerTouchGestures();
+
+			bool hasOnlyPointer =
+				!hasPinchGestures &&
+				!hasNonPointerTouchGestures;
+
+			if (hasPinchGestures)
 			{
 				eventConsumed = _scaleDetector.Value.OnTouchEvent(e);
 			}
 
-			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
-				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
+			if (!hasPinchGestures || !_scaleDetector.Value.IsInProgress)
+			{
+				var detectorHandled = _tapAndPanAndSwipeDetector?.Value.OnTouchEvent(e) ?? false;
+
+				// If only pointer gestures → do not consume the event
+				if (hasOnlyPointer)
+					eventConsumed = false;
+				else
+					eventConsumed = detectorHandled || eventConsumed;
+			}
 
 			return eventConsumed;
 		}
@@ -405,6 +421,24 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_isEnabled = Element.IsEnabled;
+		}
+
+		bool ViewHasNonPointerTouchGestures()
+		{
+			if (View is null)
+				return false;
+
+			var recognizers = View.GetCompositeGestureRecognizers();
+			if (recognizers is null || recognizers.Count == 0)
+				return false;
+
+			foreach (var recognizer in recognizers)
+			{
+				if (recognizer is not PointerGestureRecognizer)
+					return true;
+			}
+
+			return false;
 		}
 	}
 }
