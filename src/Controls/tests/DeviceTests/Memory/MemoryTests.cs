@@ -104,6 +104,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(NavigationPage))]
 	// Issue #27411 (partially) and #33918 have been fixed - NavigationPage no longer leaks on Android
 	[InlineData(typeof(TabbedPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ContentPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NavigationPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TabbedPage))]
 	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
@@ -349,7 +352,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #if IOS || MACCATALYST
 	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
 #endif
-	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
+	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -420,7 +423,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(PointerGestureRecognizer))]
 	[InlineData(typeof(SwipeGestureRecognizer))]
 	[InlineData(typeof(TapGestureRecognizer))]
-	public async Task GestureDoesNotLeak(Type type)
+	public async Task GestureDoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -478,7 +481,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
 #pragma warning restore CS0618 // Type or member is obsolete
-	public async Task CellsDoNotLeak(Type type)
+	public async Task CellsDoNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 

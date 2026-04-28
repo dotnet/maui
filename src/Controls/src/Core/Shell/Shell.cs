@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -1308,6 +1309,15 @@ namespace Microsoft.Maui.Controls
 		NavigationType _pendingNavigationType;
 
 		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
+		// Preserve MenuShellItem which is reached through event-driven and interface-dispatch
+		// code paths that the trimmer cannot statically trace.
+		// The IL2026/IL2111/IL3050 diagnostics originate from the TypeConverter base class hierarchy
+		// (ShellItemConverter : TypeConverter) whose inherited members like GetProperties/GetEditor
+		// carry RequiresUnreferencedCode. These base methods are never called by MAUI.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2111:ReflectionToDynamicallyAccessedMembers", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
 		public Shell()
 		{
 			Toolbar = new ShellToolbar(this);

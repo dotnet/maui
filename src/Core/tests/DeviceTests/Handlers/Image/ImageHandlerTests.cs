@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 	}
 
-	public abstract partial class ImageHandlerTests<TImageHandler, TStub> : CoreHandlerTestBase<TImageHandler, TStub>
+	public abstract partial class ImageHandlerTests<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImageHandler, TStub> : CoreHandlerTestBase<TImageHandler, TStub>
 		where TImageHandler : class, IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
