@@ -14,27 +14,27 @@ namespace Microsoft.Maui.Controls.Platform
 	// This is the internal backing for the "delegate convention" extensibility seam. Consumers
 	// register any of the following in their MauiAppBuilder.Services (all types are already public):
 	//
-	//     services.AddKeyedSingleton<Func<Page, AlertArguments, Task>>(
+	//     services.AddKeyedSingleton<Func<Page, AlertArguments, Task<bool>>>(
 	//         AlertManager.DisplayAlertServiceKey, ShowAlertAsync);
-	//     services.AddKeyedSingleton<Func<Page, ActionSheetArguments, Task>>(
+	//     services.AddKeyedSingleton<Func<Page, ActionSheetArguments, Task<string>>>(
 	//         AlertManager.DisplayActionSheetServiceKey, ShowActionSheetAsync);
-	//     services.AddKeyedSingleton<Func<Page, PromptArguments, Task>>(
+	//     services.AddKeyedSingleton<Func<Page, PromptArguments, Task<string>>>(
 	//         AlertManager.DisplayPromptServiceKey, ShowPromptAsync);
 	//
-	// The delegate is expected to complete the argument's TaskCompletionSource via SetResult(...).
-	// If the delegate's returned Task faults or is cancelled, the exception / cancellation is
-	// forwarded to the TaskCompletionSource so that the calling DisplayXyzAsync() call observes it.
+	// The delegate returns the dialog result. This wrapper completes the argument's
+	// TaskCompletionSource so that the calling DisplayXyzAsync() call observes the result,
+	// exception, or cancellation.
 	internal sealed class DelegateAlertSubscription : AlertManager.IAlertManagerSubscription
 	{
-		readonly Func<Page, AlertArguments, Task>? _alertHandler;
-		readonly Func<Page, ActionSheetArguments, Task>? _actionSheetHandler;
-		readonly Func<Page, PromptArguments, Task>? _promptHandler;
+		readonly Func<Page, AlertArguments, Task<bool>>? _alertHandler;
+		readonly Func<Page, ActionSheetArguments, Task<string>>? _actionSheetHandler;
+		readonly Func<Page, PromptArguments, Task<string>>? _promptHandler;
 		readonly Lazy<AlertManager.IAlertManagerSubscription> _fallback;
 
 		public DelegateAlertSubscription(
-			Func<Page, AlertArguments, Task>? alertHandler,
-			Func<Page, ActionSheetArguments, Task>? actionSheetHandler,
-			Func<Page, PromptArguments, Task>? promptHandler,
+			Func<Page, AlertArguments, Task<bool>>? alertHandler,
+			Func<Page, ActionSheetArguments, Task<string>>? actionSheetHandler,
+			Func<Page, PromptArguments, Task<string>>? promptHandler,
 			Func<AlertManager.IAlertManagerSubscription> createFallback)
 		{
 			_alertHandler = alertHandler;
@@ -85,9 +85,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_fallback.Value.OnPageBusy(sender, enabled);
 		}
 
-		static void Invoke<T>(Func<Task> invoker, TaskCompletionSource<T> completion)
+		static void Invoke<T>(Func<Task<T>> invoker, TaskCompletionSource<T> completion)
 		{
-			Task? task;
+			Task<T>? task;
 			try
 			{
 				task = invoker();
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (task is null)
 			{
 				completion.TrySetException(new InvalidOperationException(
-					"Alert delegate returned a null Task. The delegate must return a non-null Task and call SetResult(...) on the provided arguments."));
+					"Dialog delegate returned a null Task. The delegate must return a non-null Task containing the dialog result."));
 				return;
 			}
 
@@ -119,13 +119,8 @@ namespace Microsoft.Maui.Controls.Platform
 				TaskScheduler.Default);
 		}
 
-		static void ForwardCompletion<T>(Task task, TaskCompletionSource<T> completion)
+		static void ForwardCompletion<T>(Task<T> task, TaskCompletionSource<T> completion)
 		{
-			// The delegate is responsible for calling SetResult(...) on successful completion.
-			// Forward faults and cancellations so the caller observes them. If the delegate's
-			// task completed successfully but never called SetResult, surface that as an
-			// InvalidOperationException instead of letting the caller hang forever.
-			// All paths use Try* so a delegate that did call SetResult is unaffected.
 			if (task.IsFaulted)
 			{
 				completion.TrySetException(task.Exception!.InnerExceptions);
@@ -134,10 +129,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				completion.TrySetCanceled();
 			}
-			else if (!completion.Task.IsCompleted)
+			else
 			{
-				completion.TrySetException(new InvalidOperationException(
-					"Alert delegate completed without calling SetResult(...) on the provided arguments. The delegate must call SetResult before its returned Task completes."));
+				completion.TrySetResult(task.Result);
 			}
 		}
 	}

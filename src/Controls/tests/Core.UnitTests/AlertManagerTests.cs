@@ -218,11 +218,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task DelegateFuncInterceptsDisplayAlert()
 		{
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
-			{
-				args.SetResult(true);
-				return Task.CompletedTask;
-			};
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(true);
 
 			var window = CreateWindow(services =>
 			{
@@ -243,16 +239,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void UnkeyedDelegateFuncDoesNotUseDelegateConvention()
 		{
 			bool alertDelegateInvoked = false;
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) =>
 			{
 				alertDelegateInvoked = true;
-				args.SetResult(true);
-				return Task.CompletedTask;
+				return Task.FromResult(true);
 			};
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task>))).Returns(alertFunc);
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task<bool>>))).Returns(alertFunc);
 			});
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
@@ -271,11 +266,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// invoke the alert delegate. We assert that deterministically by tracking invocation
 			// of the alert delegate rather than racing a wall-clock timer against the prompt task.
 			bool alertDelegateInvoked = false;
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) =>
 			{
 				alertDelegateInvoked = true;
-				args.SetResult(true);
-				return Task.CompletedTask;
+				return Task.FromResult(true);
 			};
 
 			var window = CreateWindow(services =>
@@ -302,11 +296,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task DelegateFuncInterceptsDisplayActionSheet()
 		{
-			Func<Page, ActionSheetArguments, Task> actionSheetFunc = (page, args) =>
-			{
-				args.SetResult("Other 1");
-				return Task.CompletedTask;
-			};
+			Func<Page, ActionSheetArguments, Task<string>> actionSheetFunc = (page, args) => Task.FromResult("Other 1");
 
 			var window = CreateWindow(services =>
 			{
@@ -325,11 +315,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task DelegateFuncInterceptsDisplayPrompt()
 		{
-			Func<Page, PromptArguments, Task> promptFunc = (page, args) =>
-			{
-				args.SetResult("user input");
-				return Task.CompletedTask;
-			};
+			Func<Page, PromptArguments, Task<string>> promptFunc = (page, args) => Task.FromResult("user input");
 
 			var window = CreateWindow(services =>
 			{
@@ -348,11 +334,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task ExplicitSubscriptionWinsOverDelegateFuncs()
 		{
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) =>
-			{
-				args.SetResult(true);
-				return Task.CompletedTask;
-			};
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(true);
 
 			var stub = Substitute.For<AlertManager.IAlertManagerSubscription>();
 			var window = CreateWindow(services =>
@@ -378,7 +360,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task DelegateFuncExceptionPropagatesToCaller()
 		{
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) => throw new InvalidOperationException("boom");
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => throw new InvalidOperationException("boom");
 
 			var window = CreateWindow(services =>
 			{
@@ -398,7 +380,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Delegate returns a Task that faults asynchronously (after a yield), exercising the
 			// ContinueWith path in DelegateAlertSubscription.Invoke rather than the synchronous
 			// throw path covered by DelegateFuncExceptionPropagatesToCaller.
-			Func<Page, AlertArguments, Task> alertFunc = async (page, args) =>
+			Func<Page, AlertArguments, Task<bool>> alertFunc = async (page, args) =>
 			{
 				await Task.Yield();
 				throw new InvalidOperationException("async boom");
@@ -419,7 +401,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task DelegateFuncCancellationPropagatesToCaller()
 		{
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) => Task.FromCanceled(new CancellationToken(canceled: true));
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromCanceled<bool>(new CancellationToken(canceled: true));
 
 			var window = CreateWindow(services =>
 			{
@@ -437,7 +419,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			// A delegate that returns null is a contract violation; the caller must observe it as
 			// an InvalidOperationException rather than hang forever waiting on the TCS.
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) => null;
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => null;
 
 			var window = CreateWindow(services =>
 			{
@@ -452,12 +434,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task DelegateFuncCompletingWithoutSetResultFaultsTheCaller()
+		public async Task DelegateFuncReturningResultCompletesCallerWithoutSetResult()
 		{
-			// A delegate whose Task completes successfully without ever calling SetResult is also
-			// a contract violation; the caller must observe an InvalidOperationException rather
-			// than hang forever waiting on the TCS.
-			Func<Page, AlertArguments, Task> alertFunc = (page, args) => Task.CompletedTask;
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(false);
 
 			var window = CreateWindow(services =>
 			{
@@ -466,9 +445,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
 			window.Page = page;
 
-			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
-			Assert.Contains("SetResult", ex.Message, StringComparison.Ordinal);
+			var result = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			Assert.False(result);
 		}
 	}
 }
