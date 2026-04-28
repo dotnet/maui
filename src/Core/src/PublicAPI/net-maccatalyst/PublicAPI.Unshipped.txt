@@ -2,3 +2,8 @@
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+Microsoft.Maui.MauiWidgetCenter
+static Microsoft.Maui.MauiWidgetCenter.ReloadTimelines(string! kind) -> void
+static Microsoft.Maui.MauiWidgetCenter.ReloadAllTimelines() -> void
+static Microsoft.Maui.MauiWidgetCenter.GetSharedContainerUrl(string! appGroupId) -> Foundation.NSUrl?
+static Microsoft.Maui.MauiWidgetCenter.GetSharedDefaults(string! appGroupId) -> Foundation.NSUserDefaults!
