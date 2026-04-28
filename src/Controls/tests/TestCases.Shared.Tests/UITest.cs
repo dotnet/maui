@@ -654,8 +654,32 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if MACUITEST
+		/// <summary>
+		/// Dismiss any macOS system dialogs (e.g., Setup Assistant "Sign In to Apple Account")
+		/// that may be covering the app and interfering with screenshots or tap interactions.
+		/// </summary>
+		static void DismissSystemDialogs()
+		{
+			try
+			{
+				// Kill Setup Assistant which shows Apple Sign-In dialogs
+				ShellHelper.ExecuteShellCommand("killall 'Setup Assistant' 2>/dev/null || true");
+				// Kill other common system dialog processes
+				ShellHelper.ExecuteShellCommand("killall 'UserNotificationCenter' 2>/dev/null || true");
+				ShellHelper.ExecuteShellCommand("killall 'CoreServicesUIAgent' 2>/dev/null || true");
+			}
+			catch
+			{
+				// Best effort — don't fail the test if dismissal doesn't work
+			}
+		}
+
 		byte[] TakeScreenshot()
 		{
+			// Dismiss any system dialogs that may be covering the app window,
+			// since Mac screenshots capture the entire screen.
+			DismissSystemDialogs();
+
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
 			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
