@@ -1,12 +1,13 @@
 {
   "tools": {
-    "dotnet": "11.0.100-preview.4.26224.122"
+    "dotnet": "11.0.100-preview.4.26215.121"
   },
   "sdk": {
     "paths": [
       ".dotnet",
       "$host$"
-    ]
+    ],
+    "version": "11.0.100-preview.4.26215.121"
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
