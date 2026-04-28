@@ -127,6 +127,70 @@ foreach ($f in $findings) {
     $comments += $comment
 }
 
+# ============================================================================
+# FILTER COMMENTS TO LINES PRESENT IN THE PR DIFF
+# GitHub returns 422 "Line could not be resolved" if ANY comment targets a
+# line outside the diff. Pre-validate to avoid losing the entire review.
+# ============================================================================
+
+Write-Host "Fetching PR diff for line validation..." -ForegroundColor Cyan
+$filesJson = gh api --paginate "repos/dotnet/maui/pulls/$PRNumber/files" 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ⚠️ Could not fetch PR files for validation: $filesJson" -ForegroundColor Yellow
+    Write-Host "  Posting all findings without pre-validation." -ForegroundColor Yellow
+} else {
+    $files = $filesJson | ConvertFrom-Json
+    # Build map: path -> set of new-file line numbers commentable on RIGHT side
+    $diffLines = @{}
+    foreach ($file in $files) {
+        $path = $file.filename
+        $patch = $file.patch
+        if (-not $patch) { continue }
+        $lineSet = New-Object System.Collections.Generic.HashSet[int]
+        $newLine = 0
+        foreach ($pl in ($patch -split "`n")) {
+            if ($pl -match '^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@') {
+                $newLine = [int]$Matches[1]
+                continue
+            }
+            if ($pl.StartsWith('+') -and -not $pl.StartsWith('+++')) {
+                [void]$lineSet.Add($newLine)
+                $newLine++
+            } elseif ($pl.StartsWith('-') -and -not $pl.StartsWith('---')) {
+                # deletion — does not advance new-file line
+            } elseif ($pl.StartsWith(' ')) {
+                # context — also commentable (RIGHT side)
+                [void]$lineSet.Add($newLine)
+                $newLine++
+            }
+        }
+        $diffLines[$path] = $lineSet
+    }
+
+    $kept = @()
+    $dropped = @()
+    foreach ($c in $comments) {
+        if ($diffLines.ContainsKey($c.path) -and $diffLines[$c.path].Contains([int]$c.line)) {
+            $kept += $c
+        } else {
+            $dropped += $c
+        }
+    }
+    if ($dropped.Count -gt 0) {
+        Write-Host "  ⚠️ Dropping $($dropped.Count) finding(s) whose lines aren't in the PR diff:" -ForegroundColor Yellow
+        foreach ($d in $dropped) {
+            Write-Host "      $($d.path):$($d.line)" -ForegroundColor Gray
+        }
+    }
+    Write-Host "  ✅ $($kept.Count) of $($comments.Count) findings target lines in the diff" -ForegroundColor Gray
+    $comments = $kept
+}
+
+if ($comments.Count -eq 0) {
+    Write-Host "No inline-commentable findings remain after diff validation. Skipping review post." -ForegroundColor Yellow
+    exit 0
+}
+
 $reviewPayload = @{
     commit_id = $commitSha
     body      = $summaryBody
