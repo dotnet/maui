@@ -44,6 +44,15 @@ namespace Microsoft.Maui.Controls
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
 
+		// Margin space required for Mac Catalyst window traffic light controls when not in fullscreen
+		const int MacCatalystMargin = 80;
+		const int MacCatalystMarginLiquidGlass = 90; // Mac Catalyst 26+ (Liquid Glass UI)
+
+#if MACCATALYST
+		static int GetMacCatalystLeadingMargin() =>
+			OperatingSystem.IsMacCatalystVersionAtLeast(26) ? MacCatalystMarginLiquidGlass : MacCatalystMargin;
+#endif
+
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
@@ -253,6 +262,9 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+#if MACCATALYST
+			SizeChanged += OnSizeChanged;
+#endif
 
 			if (ControlTemplate is null)
 			{
@@ -260,9 +272,34 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#if MACCATALYST
+		void OnSizeChanged(object? sender, EventArgs e)
+		{
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			{
+				if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+				{
+					var windowScene = uiwindow.WindowScene;
+					if (windowScene != null)
+					{
+						var fullScreen = windowScene.FullScreen;
+						if (_templateRoot is Grid contentGrid)
+						{
+							// If in fullscreen, remove left margin, otherwise set version-appropriate margin
+							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0);
+						}
+					}
+				}
+			}
+		}
+#endif
+
 		internal void Cleanup()
 		{
 			PropertyChanged -= TitleBar_PropertyChanged;
+#if MACCATALYST
+			SizeChanged -= OnSizeChanged;
+#endif
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
@@ -349,9 +386,7 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = OperatingSystem.IsMacCatalystVersionAtLeast(26)
-					? new Thickness(90, 0, 0, 0)
-					: new Thickness(80, 0, 0, 0),
+				Margin = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
