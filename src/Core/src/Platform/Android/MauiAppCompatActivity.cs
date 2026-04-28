@@ -34,9 +34,10 @@ namespace Microsoft.Maui
 				this.CreatePlatformWindow(IPlatformApplication.Current.Application, savedInstanceState);
 			}
 
-			// Register with the AndroidX OnBackPressedDispatcher (all API levels 21+).
-			// On Android 13+/API 33+, AndroidX automatically bridges this to OnBackInvokedDispatcher,
-			// enabling the predictive back gesture without separate registration.
+			// Register a single back-press callback for all API levels (21+).
+			// On API 33+, AndroidX bridges this to OnBackInvokedDispatcher so the
+			// system-rendered predictive-back preview continues to work.
+			// (Gesture-progress callbacks are not currently surfaced to MAUI lifecycle.)
 			// See: https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture
 			OnBackPressedDispatcher.AddCallback(this, new MauiOnBackPressedCallback(this));
 		}
