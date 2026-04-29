@@ -137,7 +137,46 @@ Before posting inline comments, validate **both**:
 
 **Cap inline comments at 30** (the safe-output limit). If more than 30 findings, post the 30 most severe inline and include the rest in the review summary body.
 
-The review body must include:
+#### Collapsible formatting (required)
+
+Wrap **both** the review summary body and every inline comment body in `<details>` blocks so reviewers see one-line headers in the timeline by default and only expand what's relevant. This keeps low-severity findings out of the way without filtering them.
+
+**Review summary body** (passed to `submit_pull_request_review`) — must follow this exact structure:
+
+```html
+## 🤖 Expert Code Review
+
+<details>
+<summary>{verdictDot} <strong>{verdictLabel}</strong> — <a href="https://github.com/{owner}/{repo}/commit/{commitFull}"><code>{commitSha7}</code></a> · <strong>{prTitle}</strong></summary>
+
+[full review body: methodology, overall assessment, findings table, discarded findings, test coverage, summary]
+
+</details>
+```
+
+Where:
+- `{verdictDot}` / `{verdictLabel}` is one of: `🟢 LGTM` (no 🔴/🟡 findings), `🟡 Changes Suggested` (any 🟡 MODERATE), `🔴 Changes Required` (any 🔴 CRITICAL), `🟠 Discussion Needed` (architectural concerns flagged).
+- `{commitSha7}` is the 7-character short SHA of the head commit being reviewed; `{commitFull}` is the full SHA used in the link.
+- `{prTitle}` is the PR title at the time of review.
+- Use `<details open>` (open by default) when the verdict is 🔴 or 🟡 so reviewers see findings without an extra click. Use `<details>` (closed) for 🟢 LGTM.
+- Do **not** include a timestamp or finding-count tally in the summary line.
+
+**Inline comment bodies** (each `create_pull_request_review_comment` call) — must follow this exact structure:
+
+```html
+<details>
+<summary>{severityDot} <strong>{severityLabel}</strong> — {one-line headline} ({N}/3 reviewers)</summary>
+
+[full finding body: explanation, references, recommendation]
+
+</details>
+```
+
+Where `{severityDot}` / `{severityLabel}` is `🔴 CRITICAL`, `🟡 MODERATE`, or `🟢 MINOR`. Always closed by default — the summary line carries enough information to decide whether to expand.
+
+#### Required body content
+
+The review body inside the `<details>` block must include:
 - All findings ranked by severity (🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR)
 - Consensus markers (e.g., "3/3 reviewers", "2/3 reviewers") for each finding
 - Methodology note: "3 independent reviewers with adversarial consensus"
