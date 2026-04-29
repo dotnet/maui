@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Platform
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
+		ViewOutlineProvider? _originalOutlineProvider;
+		bool _outlineProviderSaved;
 
 		public bool InputTransparent { get; set; }
 
@@ -155,10 +157,45 @@ namespace Microsoft.Maui.Platform
 				_clipRect.Right = r - l;
 				_clipRect.Bottom = b - t;
 				ClipBounds = _clipRect;
+				TranslationZ = 0f;
+
+				if (_outlineProviderSaved)
+				{
+					OutlineProvider = _originalOutlineProvider;
+					_outlineProviderSaved = false;
+				}
 			}
 			else
 			{
 				ClipBounds = null;
+
+				// When children are allowed to overflow this layout's bounds, we raise the
+				// translationZ of this view so that its overflowing children render on top of
+				// any sibling views that would otherwise be drawn over them due to z-order.
+				// Convert the content area to physical pixels for an exact integer comparison
+				// that avoids floating-point rounding artefacts from the DIU→pixel round-trip.
+				int contentWidthPx = (int)_context.ToPixels(destination.Width);
+				int contentHeightPx = (int)_context.ToPixels(destination.Height);
+				
+				if (HasChildrenOutsideBounds(contentWidthPx, contentHeightPx))
+				{
+					if (!_outlineProviderSaved)
+					{
+						_originalOutlineProvider = OutlineProvider;
+						_outlineProviderSaved = true;
+					}
+					OutlineProvider = null;  // Prevent elevation shadow from background
+					TranslationZ = 1f;
+				}
+				else
+				{
+					if (_outlineProviderSaved)
+					{
+						OutlineProvider = _originalOutlineProvider;
+						_outlineProviderSaved = false;
+					}
+					TranslationZ = 0f;
+				}
 			}
 
 			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
@@ -166,6 +203,35 @@ namespace Microsoft.Maui.Platform
 				ViewCompat.RequestApplyInsets(this);
 				_didSafeAreaEdgeConfigurationChange = false;
 			}
+		}
+
+		/// <summary>
+		/// Determines whether any child view within this layout is positioned outside the
+		/// layout's bounds. Used to decide whether to raise translationZ so that overflowing
+		/// children render on top of sibling views.
+		/// </summary>
+		bool HasChildrenOutsideBounds(int widthPx, int heightPx)
+		{
+			if (CrossPlatformLayout is not ILayout layout)
+				return false;
+
+			for (int i = 0; i < layout.Count; i++)
+			{
+				var frame = layout[i].Frame;
+
+				// Compare in physical pixels to avoid floating-point rounding between
+				// device-independent units and physical pixels. Allow 1-pixel tolerance
+				// for sub-pixel alignment differences at various screen densities.
+				if ((int)_context.ToPixels(frame.Right) > widthPx + 1
+					|| (int)_context.ToPixels(frame.Bottom) > heightPx + 1
+					|| (int)_context.ToPixels(frame.Left) < -1
+					|| (int)_context.ToPixels(frame.Top) < -1)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		protected override void OnConfigurationChanged(Configuration? newConfig)
