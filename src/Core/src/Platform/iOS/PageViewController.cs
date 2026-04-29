@@ -56,6 +56,19 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override UIStatusBarStyle PreferredStatusBarStyle()
+		{
+			var window = CurrentView?.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow();
+			var theme = window?.StatusBarTheme ?? StatusBarTheme.Default;
+
+			return theme switch
+			{
+				StatusBarTheme.Light => UIStatusBarStyle.DarkContent,
+				StatusBarTheme.Dark => UIStatusBarStyle.LightContent,
+				_ => base.PreferredStatusBarStyle()
+			};
+		}
+
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 		{
 			if (CurrentView?.Handler is ElementHandler handler)

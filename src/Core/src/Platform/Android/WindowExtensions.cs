@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 		}
 
 		//TODO : Make it public in NET 11.
-		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
+		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity, StatusBarTheme statusBarTheme = StatusBarTheme.Default)
 		{
 			if (window is null)
 			{
@@ -54,13 +54,24 @@ namespace Microsoft.Maui
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{
-				// Automatically adjust icon/text colors based on app theme
-				var configuration = activity.Resources?.Configuration;
-				var isLightTheme = configuration is null ||
-					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
+				bool isLightStatusBar;
+				switch (statusBarTheme)
+				{
+					case StatusBarTheme.Light:
+						isLightStatusBar = true;
+						break;
+					case StatusBarTheme.Dark:
+						isLightStatusBar = false;
+						break;
+					default:
+						var configuration = activity.Resources?.Configuration;
+						isLightStatusBar = configuration is null ||
+							(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
+						break;
+				}
 
-				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
-				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
+				windowInsetsController.AppearanceLightStatusBars = isLightStatusBar;
+				windowInsetsController.AppearanceLightNavigationBars = isLightStatusBar;
 			}
 		}
 	}
