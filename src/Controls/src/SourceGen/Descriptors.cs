@@ -317,6 +317,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor LambdaMethodGroupReference = new DiagnosticDescriptor(
+			id: "MAUIX2017",
+			title: "Lambda body is a method group reference",
+			messageFormat: "Lambda body '{0}' is a method group reference, not a method invocation. Did you mean '{0}({1})'?",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		// x:Code diagnostics
 		public static DiagnosticDescriptor XCodeNotChildOfRoot = new DiagnosticDescriptor(
 			id: "MAUIX2015",
