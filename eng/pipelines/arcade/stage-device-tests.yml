@@ -122,7 +122,7 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/DotNet/DotNet.csproj' /bl:ProvisionWorkloads.binlog $(_OfficialBuildIdArgs)
+        - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) /bl:ProvisionWorkloads.binlog $(_OfficialBuildIdArgs)
           displayName: Provision Workloads
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
@@ -337,7 +337,7 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/src/DotNet/DotNet.csproj' /bl:ProvisionWorkloads.binlog $(_OfficialBuildIdArgs)
+        - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) /bl:ProvisionWorkloads.binlog $(_OfficialBuildIdArgs)
           displayName: Provision Workloads
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
@@ -554,7 +554,7 @@ stages:
             retryCountOnTaskFailure: 3
 
           # Install .NET SDK and workloads using Arcade build script
-          - script: ./build.cmd -restore -build -configuration Release -projects src/DotNet/DotNet.csproj
+          - script: ./build.cmd -restore -configuration Release
             displayName: 'Install .NET'
             retryCountOnTaskFailure: 3
             env:
@@ -565,7 +565,7 @@ stages:
             displayName: 'Add .NET to PATH'
 
           # Build BuildTasks first (need -restore to ensure SDK is available)
-          - script: ./build.cmd -restore -build -configuration Release -projects src/DotNet/DotNet.csproj
+          - script: ./build.cmd -restore -configuration Release
             displayName: Provision Workloads
           - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
             displayName: Build the MSBuild Tasks
