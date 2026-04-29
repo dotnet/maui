@@ -192,15 +192,6 @@
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
-  <!-- Standalone target to remove stale manifest band directories.
-       Called separately from Tools.props before the main build to ensure
-       cleanup happens before MSBuild caches workload manifest state. -->
-  <Target Name="_CleanStaleManifests">
-    <RemoveDir Directories="$(DotNetDirectory)sdk-manifests/11.0.100-preview.1" Condition="Exists('$(DotNetDirectory)sdk-manifests/11.0.100-preview.1')" />
-    <RemoveDir Directories="$(DotNetDirectory)sdk-manifests/11.0.100-preview.2" Condition="Exists('$(DotNetDirectory)sdk-manifests/11.0.100-preview.2')" />
-    <RemoveDir Directories="$(DotNetDirectory)sdk-manifests/11.0.100-preview.3" Condition="Exists('$(DotNetDirectory)sdk-manifests/11.0.100-preview.3')" />
-  </Target>
-
   <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
@@ -219,29 +210,7 @@
       <_WorkloadRestoreEnvVars Condition="$([MSBuild]::IsOSPlatform('osx'))">$(_WorkloadRestoreEnvVars);DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true</_WorkloadRestoreEnvVars>
     </PropertyGroup>
     <ItemGroup>
-      <!-- Remove stale manifest directories from other preview bands that may
-           have been left behind from previous SDK installs (e.g. preview.1).
-           The SDK resolver picks these up and references old pack versions.
-           Note: Include="*" only matches files, so we use "*/*" to find entries
-           inside band dirs, then take the directory to get the band paths. -->
-      <_StaleBandEntries Include="$(DotNetDirectory)sdk-manifests/*/*" Exclude="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/**" />
-      <_StaleManifestBands Include="@(_StaleBandEntries->'%(RootDir)%(Directory)'->Distinct())" />
-      <_WorkloadDirectoriesToRemove Include="@(_StaleManifestBands)" />
-      <!-- Only remove the specific manifests we are about to re-provision.
-           Do NOT remove the entire sdk-manifests/<band>/ directory, as that
-           would delete SDK-bundled manifests (e.g. emscripten.net6) that we
-           don't re-provision via Workloads.csproj. -->
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.android" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.ios" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.maccatalyst" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.macos" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.tvos" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.maui" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.mono.toolchain.current" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.mono.toolchain.net10" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.emscripten.current" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.emscripten.net10" />
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/samsung.net.sdk.tizen" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
       <_WorkloadDirectoriesToRemove Include="@(_PacksToRemove->'$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/%(Identity)')" />
     </ItemGroup>
     <RemoveDir Directories="$(_WorkloadManifestDir);@(_WorkloadDirectoriesToRemove)" />
@@ -368,21 +337,7 @@
               if (index != -1) {
                   name = name.Substring(0, index);
               }
-              // When Name is NOT set, files come from NuGet restore layout:
-              //   <package>/<version>/data/<file>
-              // The SDK preview.4+ requires the version subdir in the manifest path.
-              // When Name IS set (Install target), files come from an unzipped nupkg
-              // with flat data/<file> layout — no version segment available.
-              string directory;
-              if (string.IsNullOrEmpty(Name))
-              {
-                  var version = Directory.GetParent(file).Parent.Name;
-                  directory = Path.Combine(WorkloadDirectory, name, version);
-              }
-              else
-              {
-                  directory = Path.Combine(WorkloadDirectory, name);
-              }
+              var directory = Path.Combine(WorkloadDirectory, name);
               Directory.CreateDirectory(directory);
               var destination = Path.Combine(directory, Path.GetFileName(file));
               Log.LogMessage($"Copying {file} to {destination}");
