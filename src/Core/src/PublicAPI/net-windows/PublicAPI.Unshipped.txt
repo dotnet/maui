@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Maui.Platform.PickerExtensions.UpdateTitleColor(this Microsoft.UI.Xaml.Controls.ComboBox! nativeComboBox, Microsoft.Maui.IPicker! picker) -> void
