@@ -69,6 +69,13 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
+        - script: dotnet cake --target=dotnet --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Workloads
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
+
         - script: $(_buildScriptMacOS) -restore -pack -configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)/$(_BuildConfig)/pack-mac.binlog $(_OfficialBuildIdArgs)
           displayName: Pack
 
@@ -135,6 +142,13 @@ stages:
           inputs:
             artifact: MacNativeArtifacts
             path: '$(Build.SourcesDirectory)/artifacts/bin'
+
+        - script: dotnet cake --target=dotnet --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Workloads
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
 
         # Run on public pipeline
         - ${{ if not(parameters.enableMicrobuild) }}:
