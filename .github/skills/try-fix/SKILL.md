@@ -26,7 +26,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
-**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
+**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Invoke @maui-expert-reviewer and ask it to return all findings to you (do not post or write to .json). Fix every violation it reports, then re-run your tests to confirm build and tests still pass → Report results
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
