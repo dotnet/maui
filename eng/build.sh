@@ -158,6 +158,38 @@ if [[ "${TreatWarningsAsErrors:-}" == "false" ]]; then
 fi
 
 arguments="$arguments $extraargs"
+
+# Remove stale workload manifest band directories before MSBuild starts.
+# The SDK ships with manifests for multiple preview bands (e.g. preview.1 and preview.4).
+# If MSBuild sees the older band's manifests, the workload SDK resolver will use them
+# (referencing old pack versions like net11.0_26.2 instead of net11.0_26.4), causing
+# NETSDK1178 errors. This must happen before MSBuild starts since the resolver caches
+# its state at evaluation time.
+repo_root="$( cd -P "$( dirname "$scriptroot" )" && pwd )"
+dotnet_dir="$repo_root/.dotnet"
+if [[ -d "$dotnet_dir/sdk-manifests" ]]; then
+  sdk_version=$(python3 -c "import json; print(json.load(open('$repo_root/global.json'))['tools']['dotnet'])" 2>/dev/null || true)
+  if [[ -n "$sdk_version" ]]; then
+    # Extract version band: e.g. "11.0.100-preview.4.26224.122" -> "11.0.100-preview.4"
+    version_band=$(python3 -c "
+import re, sys
+v = '$sdk_version'
+m = re.match(r'(\d+\.\d+\.)(\d)(\d{2})(.*)', v)
+patch = m.group(2) + '00'
+pre = re.match(r'^(-(?:preview|rc|alpha)\.\d+)', m.group(4))
+band = m.group(1) + patch + (pre.group(1) if pre else '')
+print(band)
+" 2>/dev/null || true)
+    for band_dir in "$dotnet_dir/sdk-manifests"/*/; do
+      band_name=$(basename "$band_dir")
+      if [[ "$band_name" != "$version_band" && "$band_name" != "." ]]; then
+        echo "Removing stale workload manifest band: $band_name (current band: $version_band)"
+        rm -rf "$band_dir"
+      fi
+    done
+  fi
+fi
+
 "$scriptroot/common/build.sh" $arguments
 
 
