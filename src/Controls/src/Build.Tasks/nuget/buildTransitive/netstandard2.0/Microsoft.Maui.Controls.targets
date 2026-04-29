@@ -255,6 +255,7 @@
 	</Target>
 
 	<PropertyGroup>
+		<EmitPartialR2RXamlProfile Condition=" '$(EmitPartialR2RXamlProfile)' == '' ">false</EmitPartialR2RXamlProfile>
 		<_MauiMibcProfilePath>$(IntermediateOutputPath)$(TargetName).mibc</_MauiMibcProfilePath>
 		<_MibcProfileGeneratorPath>$(MSBuildThisFileDirectory)MibcProfileGenerator.dll</_MibcProfileGeneratorPath>
 		<_MibcInputListPath>$(IntermediateOutputPath)_mibc_inputs.txt</_MibcInputListPath>
@@ -264,11 +265,11 @@
 	     Scans all assemblies in PublishReadyToRunExclude for InitializeComponent* methods,
 	     generates a single MIBC profile, then moves those assemblies from the exclude list
 	     to partial R2R compilation (guided by the MIBC profile).
-	     Enabled when FilterReadyToRunAssemblies=true (set by the .NET for iOS SDK).
-	     Runs after all XAML inflators and R2R assembly selection. -->
+	     Enabled by setting EmitPartialR2RXamlProfile=true.
+	     Runs after R2R assembly selection. -->
 	<Target Name="_MauiGenerateMibcProfile"
 		AfterTargets="_SelectR2RAssemblies"
-		Condition=" '$(FilterReadyToRunAssemblies)' == 'true' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
+		Condition=" '$(EmitPartialR2RXamlProfile)' == 'true' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
 		DependsOnTargets="_MauiWriteMibcInputList;_MauiRunMibcProfileGenerator">
 
 		<ItemGroup>
