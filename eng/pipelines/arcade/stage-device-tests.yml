@@ -122,15 +122,6 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - pwsh: |
-            $sdk_version = (Get-Content global.json | ConvertFrom-Json).tools.dotnet
-            & bash eng/common/dotnet-install.sh --install-dir .dotnet --version $sdk_version
-            foreach ($band in @('11.0.100-preview.1','11.0.100-preview.2','11.0.100-preview.3')) {
-              $dir = ".dotnet/sdk-manifests/$band"
-              if (Test-Path $dir) { Write-Host "Removing stale: $band"; Remove-Item -Recurse -Force $dir }
-            }
-          displayName: Install SDK and clean stale manifests
-
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
 
@@ -344,15 +335,6 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - pwsh: |
-            $sdk_version = (Get-Content global.json | ConvertFrom-Json).tools.dotnet
-            & bash eng/common/dotnet-install.sh --install-dir .dotnet --version $sdk_version
-            foreach ($band in @('11.0.100-preview.1','11.0.100-preview.2','11.0.100-preview.3')) {
-              $dir = ".dotnet/sdk-manifests/$band"
-              if (Test-Path $dir) { Write-Host "Removing stale: $band"; Remove-Item -Recurse -Force $dir }
-            }
-          displayName: Install SDK and clean stale manifests
-
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
 
@@ -579,15 +561,6 @@ stages:
             displayName: 'Add .NET to PATH'
 
           # Build BuildTasks first (need -restore to ensure SDK is available)
-          - pwsh: |
-              $sdk_version = (Get-Content global.json | ConvertFrom-Json).tools.dotnet
-              & eng/common/dotnet-install.ps1 -InstallDir .dotnet -Version $sdk_version
-              foreach ($band in @('11.0.100-preview.1','11.0.100-preview.2','11.0.100-preview.3')) {
-                $dir = ".dotnet/sdk-manifests/$band"
-                if (Test-Path $dir) { Write-Host "Removing stale: $band"; Remove-Item -Recurse -Force $dir }
-              }
-            displayName: Install SDK and clean stale manifests
-
           - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
             displayName: Build the MSBuild Tasks
 

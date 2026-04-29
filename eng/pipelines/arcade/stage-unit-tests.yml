@@ -35,27 +35,6 @@ stages:
           base64Encode: true
           outputVariableName: dotnetbuilds-internal-container-read-token-base64
       
-      # Install the .NET SDK to .dotnet/ and clean stale workload manifests
-      # before MSBuild starts. MSBuild caches workload resolver state at evaluation
-      # time, so stale preview.1 manifests must be removed before any MSBuild invocation.
-      - pwsh: |
-          $sdk_version = (Get-Content global.json | ConvertFrom-Json).tools.dotnet
-          Write-Host "Installing SDK $sdk_version"
-          if ($IsWindows) {
-            & eng/common/dotnet-install.ps1 -InstallDir .dotnet -Version $sdk_version
-          } else {
-            & bash eng/common/dotnet-install.sh --install-dir .dotnet --version $sdk_version
-          }
-          # Remove stale preview band manifests
-          foreach ($band in @('11.0.100-preview.1','11.0.100-preview.2','11.0.100-preview.3')) {
-            $dir = ".dotnet/sdk-manifests/$band"
-            if (Test-Path $dir) {
-              Write-Host "Removing stale manifest band: $band"
-              Remove-Item -Recurse -Force $dir
-            }
-          }
-        displayName: 🔧 Install SDK and clean stale manifests
-
       - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks.binlog $(_OfficialBuildIdArgs)
         displayName: 🛠️ Build BuildTasks
 
