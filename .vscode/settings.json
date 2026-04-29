@@ -1,3 +1,16 @@
 {
-    "dotnet.defaultSolution": "Microsoft.Maui-vscode.sln"
+    "dotnet.defaultSolution": "Microsoft.Maui-vscode.sln",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#05284A",
+        "titleBar.activeBackground": "#063867",
+        "titleBar.activeForeground": "#F8FBFF",
+        "titleBar.inactiveBackground": "#05284A",
+        "titleBar.inactiveForeground": "#F8FBFF",
+        "statusBar.background": "#05284A",
+        "statusBar.foreground": "#F8FBFF",
+        "statusBar.debuggingBackground": "#05284A",
+        "statusBar.debuggingForeground": "#F8FBFF",
+        "statusBar.noFolderBackground": "#05284A",
+        "statusBar.noFolderForeground": "#F8FBFF"
+    }
 }
