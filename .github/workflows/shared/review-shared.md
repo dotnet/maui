@@ -33,6 +33,9 @@ safe-outputs:
     max: 1
     hide-older-comments: true
     target: "*"
+  resolve-pull-request-review-thread:
+    max: 50
+    target: "*"
   noop:
     report-as-issue: false
 
@@ -64,6 +67,8 @@ Fetch the PR diff, changed files, description, and existing reviews using the Gi
 > ⚠️ **Large diff guard**: After fetching the diff, count the changed files. If the PR has more than 50 changed files, do NOT embed the full diff in sub-agent prompts. Instead, split the changed files into 3 roughly equal batches and assign each reviewer a different batch (with the full PR description). In Step 3, skip cross-reviewer agreement checks for findings on files only one reviewer saw — include them directly but **downgrade severity by one level** (🔴→🟡, 🟡→🟢, 🟢 stays 🟢) and annotate with "low confidence — single reviewer (batch split)". These batch-only findings follow the batch-split rule, NOT the 1/3 discard or 2-reviewer fallback rules.
 
 > ⚠️ **Pre-flight**: Before dispatching sub-agents, verify `.github/skills/code-review/SKILL.md` exists using the `view` tool. If missing, call `add_comment` with: "❌ Expert Code Review: Cannot run — `.github/skills/code-review/SKILL.md` not found. For slash_command on fork PRs, rebase on main. For workflow_dispatch, verify the skill file exists in the PR branch." and exit.
+
+> ⚠️ **Resolve prior review threads**: After gathering context, check for existing review threads from previous runs by listing pull request reviews and review threads. Resolve ALL review threads authored by `github-actions[bot]` using `resolve_pull_request_review_thread` with each thread's `thread_id`. This prevents stale findings from previous runs cluttering the PR. Always pass `pull_request_number` explicitly.
 
 ### Step 2: Dispatch 3 Parallel Expert Reviewers
 
