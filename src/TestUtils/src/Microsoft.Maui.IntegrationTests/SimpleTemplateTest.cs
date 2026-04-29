@@ -43,6 +43,24 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
+		// Workaround for https://github.com/dotnet/maui/issues/34303
+		// CoreCLR R2R (ReadyToRun) compilation is broken for certain TFMs:
+		// - macCatalyst: R2R objects target version 15.2 but the linker expects 15.0 (fails on macOS)
+		// - iOS and macCatalyst: crossgen2 is missing for Apple cross-compilation (fails on Windows)
+		// Remove the broken TFMs per platform so the test still validates R2R for the working ones.
+		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
+		{
+			var replacements = new Dictionary<string, string>()
+			{
+				{ ";net11.0-maccatalyst", "" },
+			};
+			if (OperatingSystem.IsWindows())
+			{
+				replacements[";net11.0-ios"] = "";
+			}
+			FileUtilities.ReplaceInFile(projectFile, replacements);
+		}
+
 		var buildProps = BuildProps;
 
 		if (additionalDotNetBuildParams is not "" and not null)
