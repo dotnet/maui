@@ -1,40 +1,41 @@
-// Project Maven dependencies are resolved through the dnceng Azure Artifacts
-// feed (dotnet-public-maven) for CFSClean network isolation compliance. The feed
-// proxies Maven Central, Google Maven, and Gradle Plugin Portal. The credential
-// provider plugin is fetched from a separate Azure Artifacts feed (artifacts-public).
+// In CI (CFSClean network isolation), Maven dependencies resolve through the
+// dnceng Azure Artifacts feed (dotnet-public-maven). Locally, standard Maven
+// Central and Google Maven are used for faster builds.
 //
-// IMPORTANT: New packages must be ingested into the feed before CI can use them.
-// The CI credential provider plugin skips auth in Azure Pipelines, so packages
-// that aren't already in the feed will fail with 401. After adding or updating
-// dependencies, run:
+// IMPORTANT: New packages must be ingested before CI can use them.
+// If CI fails with "Could not GET ... 401", the package is not yet in the feed.
+// Run ./eng/ingest-maven-deps.sh after adding or updating any Maven dependency.
 //
-//   ./eng/ingest-maven-deps.sh
-//
+// In CI, eng/init.gradle (injected by cache-gradle.yml) also handles
+// project-level repo substitution for Android SDK binding targets.
 // See: https://aka.ms/1es/netiso/CFS
 
 pluginManagement {
     repositories {
-        maven {
-            url = 'https://pkgs.dev.azure.com/artifacts-public/PublicTools/_packaging/AzureArtifacts/maven/v1'
-            name = 'AzureArtifacts'
-        }
-        maven {
-            url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
-            name = 'dotnet-public-maven'
+        if ((System.getenv('TF_BUILD') ?: '').equalsIgnoreCase('true')) {
+            maven {
+                url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+                name = 'dotnet-public-maven'
+            }
+        } else {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
         }
     }
-}
-
-plugins {
-    id 'com.microsoft.azure.artifacts.credprovider' version '1.1.1'
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
-        maven {
-            url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
-            name = 'dotnet-public-maven'
+        if ((System.getenv('TF_BUILD') ?: '').equalsIgnoreCase('true')) {
+            maven {
+                url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+                name = 'dotnet-public-maven'
+            }
+        } else {
+            google()
+            mavenCentral()
         }
     }
 }
