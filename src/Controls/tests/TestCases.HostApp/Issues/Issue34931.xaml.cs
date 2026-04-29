@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34931, "Shell flyout item template does not update selected visuals after DynamicResource changes", PlatformAffected.Android | PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 34931, "Shell flyout item template does not update selected visuals after DynamicResource changes", PlatformAffected.All)]
 public partial class Issue34931 : TestShell
 {
 	internal const string InitialPrimaryColor = "#512BD4";

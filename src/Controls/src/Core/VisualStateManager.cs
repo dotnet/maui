@@ -114,10 +114,6 @@ namespace Microsoft.Maui.Controls
 					// We're already in the target state; nothing else to do
 					return true;
 				}
-				if (target == null)
-				{
-					continue;
-				}
 
 				// If we've got a new state to transition to, unapply the setters from the current state
 				if (group.CurrentState != null)

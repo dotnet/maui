@@ -345,7 +345,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (disposing)
 				{
 					_itemView.Click -= OnClicked;
-					((IElementDefinition)View)?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 
 					Element = null;
 					_itemView = null;

@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateVisualState()
 		{
-			if (_content?.BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
+			if (_content?.BindingContext is BaseShellItem baseShellItem)
 			{
 				VisualStateManager.GoToState(_content, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 			}
