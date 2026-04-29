@@ -13,7 +13,8 @@
 #   2. Add supersede-older-reviews: true (auto-dismisses old blocking reviews)
 #   3. Update Step 4 to use REQUEST_CHANGES when findings exist (enables fix button)
 #   4. Remove add-comment summary — the review body replaces it
-#   5. Recompile and test with /review slash command on a PR
+#   5. Add resolve-pull-request-review-thread safe-output to auto-resolve prior threads
+#   6. Recompile and test with /review slash command on a PR
 
 description: "Shared configuration for expert-review workflows"
 
@@ -33,40 +34,12 @@ safe-outputs:
     max: 1
     hide-older-comments: true
     target: "*"
-  resolve-pull-request-review-thread:
-    max: 50
-    target: "*"
   noop:
     report-as-issue: false
 
 steps:
   - name: Record workflow start time
     run: date +%s > .workflow-start-time
-
-  - name: Fetch prior review thread IDs for resolution
-    env:
-      GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-    run: |
-      if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "0" ]; then
-        echo "No PR number — skipping thread fetch"
-        touch .prior-review-thread-ids
-        exit 0
-      fi
-      OWNER="${GITHUB_REPOSITORY%%/*}"
-      REPO="${GITHUB_REPOSITORY##*/}"
-      gh api graphql -f query="
-        { repository(owner: \"$OWNER\", name: \"$REPO\") {
-            pullRequest(number: $PR_NUMBER) {
-              reviewThreads(last: 100) {
-                nodes { id isResolved comments(first:1) { nodes { author { login } } } }
-              }
-            }
-          }
-        }" --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | select(.comments.nodes[0].author.login == "github-actions") | .id' \
-        > .prior-review-thread-ids 2>/dev/null || touch .prior-review-thread-ids
-      COUNT=$(wc -l < .prior-review-thread-ids | tr -d ' ')
-      echo "Found $COUNT unresolved bot review thread(s) to resolve"
 ---
 
 # Expert Code Review
@@ -92,8 +65,6 @@ Fetch the PR diff, changed files, description, and existing reviews using the Gi
 > ⚠️ **Large diff guard**: After fetching the diff, count the changed files. If the PR has more than 50 changed files, do NOT embed the full diff in sub-agent prompts. Instead, split the changed files into 3 roughly equal batches and assign each reviewer a different batch (with the full PR description). In Step 3, skip cross-reviewer agreement checks for findings on files only one reviewer saw — include them directly but **downgrade severity by one level** (🔴→🟡, 🟡→🟢, 🟢 stays 🟢) and annotate with "low confidence — single reviewer (batch split)". These batch-only findings follow the batch-split rule, NOT the 1/3 discard or 2-reviewer fallback rules.
 
 > ⚠️ **Pre-flight**: Before dispatching sub-agents, verify `.github/skills/code-review/SKILL.md` exists using the `view` tool. If missing, call `add_comment` with: "❌ Expert Code Review: Cannot run — `.github/skills/code-review/SKILL.md` not found. For slash_command on fork PRs, rebase on main. For workflow_dispatch, verify the skill file exists in the PR branch." and exit.
-
-> ⚠️ **Resolve prior review threads**: After gathering context, resolve all existing review threads from previous bot runs. Read the file `.prior-review-thread-ids` (written by the pre-agent step). For each thread ID in that file, call `resolve_pull_request_review_thread` with that `thread_id` and `pull_request_number`. If the file is empty or missing, skip this step — there are no prior threads to resolve.
 
 ### Step 2: Dispatch 3 Parallel Expert Reviewers
 
