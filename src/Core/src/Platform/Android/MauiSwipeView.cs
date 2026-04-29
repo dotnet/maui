@@ -108,6 +108,11 @@ namespace Microsoft.Maui.Platform
 			var diffX = interceptPoint.X - _initialPoint.X;
 			var diffY = interceptPoint.Y - _initialPoint.Y;
 
+			if (diffX == 0 && diffY == 0)
+			{
+				return _isOpen && TouchInsideContent(new APointF((float)interceptPoint.X, (float)interceptPoint.Y));
+			}
+
 			SwipeDirection swipeDirection;
 
 			if (Math.Abs(diffX) > Math.Abs(diffY))
@@ -654,10 +659,12 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
+					// AtMost lets custom SwipeItemView content size itself; Exactly forces precise dimensions for default SwipeItems.
+					var measureMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
+
 					child.Measure(
-						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
-					);
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, measureMode),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, measureMode));
 
 					child.Layout(l, t, r, b);
 

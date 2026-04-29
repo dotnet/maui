@@ -53,8 +53,19 @@ public class Issue29261 : ContentPage
 			label.Text = $"CarouselView Position - {carousel.Position}";
 		};
 
+		var goToLastButton = new Button
+		{
+			Text = "Go to Last",
+			AutomationId = "goToLastButton",
+		};
+		goToLastButton.Clicked += (s, e) =>
+		{
+			carousel.Position = carouselItems.Count - 1;
+		};
+
 		verticalStackLayout.Children.Add(carousel);
 		verticalStackLayout.Children.Add(label);
+		verticalStackLayout.Children.Add(goToLastButton);
 		Content = verticalStackLayout;
 	}
 }
