@@ -577,7 +577,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateUseLargeTitles();
 			}
-			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 			{
 				var pack = (ParentingViewController)TopViewController;
 				pack?.UpdateTitleArea(pack.Child);
@@ -1637,7 +1637,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
-				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+				else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.BackButtonAccessibilityLabelProperty.PropertyName)
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
@@ -1788,18 +1788,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIconImageSource(page) != null || NavigationPage.GetTitleView(page) != null;
 
-			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
+			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page), NavigationPage.GetBackButtonAccessibilityLabel(page));
 
-			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
+			internal void UpdateBackButtonTitle(string title, string backButtonTitle, string backButtonAccessibilityLabel = null)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
+				{
 					NavigationItem.Title = title;
+				}
 
-				if (backButtonTitle != null)
+				if (backButtonTitle is not null || !string.IsNullOrEmpty(backButtonAccessibilityLabel))
+				{
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
-					NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
+					var barButtonItem = new UIBarButtonItem { Style = UIBarButtonItemStyle.Plain };
+					barButtonItem.Title = backButtonTitle ?? title;
+					if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+					{
+						barButtonItem.AccessibilityLabel = backButtonAccessibilityLabel;
+					}
+					NavigationItem.BackBarButtonItem = barButtonItem;
+				}
 				else
+				{
 					NavigationItem.BackBarButtonItem = null;
+				}
 			}
 
 			internal void UpdateTitleArea(Page page)
@@ -1819,11 +1831,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
+				string backButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(page);
+
 				_navigation.TryGetTarget(out NavigationRenderer n);
 
 				// First page and we have a flyout detail to contend with
 				UpdateLeftBarButtonItem();
-				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText);
+				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText, backButtonAccessibilityLabel);
 
 				//var hadTitleView = NavigationItem.TitleView != null;
 				ClearTitleViewContainer();

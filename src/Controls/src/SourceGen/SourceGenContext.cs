@@ -38,10 +38,14 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		var noWarn = ProjectItem?.NoWarn;
 		if (!string.IsNullOrEmpty(noWarn))
 		{
-			var suppressedIds = noWarn!.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+			var suppressedIds = noWarn!.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var id in suppressedIds)
 			{
-				if (diagnostic.Id.Equals(id.Trim(), StringComparison.OrdinalIgnoreCase))
+				var code = id.Trim();
+				// Match full ID (e.g., "MAUIX2015") or bare numeric suffix (e.g., "2015")
+				if (code.Equals(diagnostic.Id, StringComparison.OrdinalIgnoreCase) ||
+					(diagnostic.Id.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
+					 code == diagnostic.Id.Substring("MAUIX".Length)))
 				{
 					return; // Suppress this diagnostic
 				}

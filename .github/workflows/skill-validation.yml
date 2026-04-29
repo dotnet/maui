@@ -1,0 +1,1174 @@
+# Skill & agent validation for PRs touching .github/skills/ or .github/agents/.
+#
+# Two modes:
+#   1. Static checks  — run automatically on every PR that touches skills/agents.
+#   2. LLM evaluation — runs automatically for contributor PRs, or can be
+#      triggered by a repo contributor posting "/evaluate-skills" on any PR.
+#      Requires COPILOT_GITHUB_TOKEN secret (Copilot API access).
+#
+# Trigger model:
+#   - pull_request_target: runs in the base repo context with full permissions
+#     and secret access, even for fork PRs. Workflow YAML is always from the
+#     default branch (not the PR), ensuring security.
+#   - issue_comment (/evaluate-skills): same security model as pull_request_target.
+#     Always runs workflow YAML from the default branch.
+#
+# Security model:
+#   - Workflow YAML: always from the default branch (enforced by both triggers)
+#   - Validator binary: downloaded from dotnet/skills releases (trusted)
+#   - Skill/test content: checked out from the PR via sparse-checkout
+#     (only .github/skills and .github/agents — markdown/YAML data files)
+#   - No PR code is compiled or executed
+#   - LLM evaluation: only runs for PRs from contributors with write+ access,
+#     or when explicitly triggered via /evaluate-skills by a contributor
+
+name: Skill Validation
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.github/plugin.json'
+      - '.github/workflows/skill-validation.yml'
+
+  issue_comment:
+    types: [created]
+
+  workflow_dispatch:
+
+concurrency:
+  group: >-
+    skill-validation-${{
+      github.event_name == 'issue_comment'
+        && startsWith(github.event.comment.body, '/evaluate-skills')
+        && format('eval-{0}', github.event.issue.number)
+      || github.event_name == 'issue_comment'
+        && format('noop-{0}-{1}', github.event.issue.number, github.event.comment.id)
+      || github.event_name == 'pull_request_target'
+        && format('pr-{0}', github.event.pull_request.number)
+      || github.run_id
+    }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+  checks: write
+
+env:
+  VALIDATOR_CACHE_PREFIX: skill-validator-linux-x64
+
+jobs:
+  # ==========================================================================
+  # PR GATE (pull_request_target)
+  # Determine PR source, author permissions, and changed files.
+  # ==========================================================================
+  pr-gate:
+    name: PR gate
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      head_sha: ${{ github.event.pull_request.head.sha }}
+      head_repo: ${{ github.event.pull_request.head.repo.full_name }}
+      pr_number: ${{ github.event.pull_request.number }}
+      is_contributor: ${{ steps.perms.outputs.is_contributor }}
+      is_fork: ${{ steps.info.outputs.is_fork }}
+      changed_skills: ${{ steps.discover.outputs.changed_skills }}
+      has_skill_changes: ${{ steps.discover.outputs.has_skill_changes }}
+      has_agent_changes: ${{ steps.discover.outputs.has_agent_changes }}
+    steps:
+      - name: Determine fork status
+        id: info
+        env:
+          HEAD: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE: ${{ github.event.pull_request.base.repo.full_name }}
+        run: |
+          IS_FORK=$([[ "$HEAD" != "$BASE" ]] && echo true || echo false)
+          echo "is_fork=$IS_FORK" >> $GITHUB_OUTPUT
+          echo "PR from $HEAD → $BASE (fork=$IS_FORK)"
+
+      - name: Check PR author permissions
+        id: perms
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          AUTHOR="$AUTHOR"
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${AUTHOR}/permission" \
+            --jq '.permission' 2>/dev/null || echo "none")
+          echo "PR author $AUTHOR has permission: $PERMISSION"
+          if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "write" || "$PERMISSION" == "maintain" ]]; then
+            echo "is_contributor=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_contributor=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Discover changed files
+        id: discover
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
+            --paginate --jq '.[].filename')
+
+          SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
+            sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
+          AGENT_FILES=$(echo "$CHANGED" | grep '^\.github/agents/' || true)
+
+          echo "has_skill_changes=$( [ -n "$SKILL_DIRS" ] && echo true || echo false )" >> $GITHUB_OUTPUT
+          echo "has_agent_changes=$( [ -n "$AGENT_FILES" ] && echo true || echo false )" >> $GITHUB_OUTPUT
+
+          DELIM="EOF_$(openssl rand -hex 8)"
+          echo "changed_skills<<$DELIM" >> $GITHUB_OUTPUT
+          echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
+
+          echo "Changed skills: $SKILL_DIRS"
+          echo "Changed agents: $AGENT_FILES"
+
+  # ==========================================================================
+  # SLASH COMMAND GATE (/evaluate-skills)
+  # ==========================================================================
+  slash-gate:
+    name: Gate (/evaluate-skills)
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/evaluate-skills')
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.pr.outputs.head_sha }}
+      head_repo: ${{ steps.pr.outputs.head_repo }}
+      pr_number: ${{ steps.pr.outputs.pr_number }}
+    steps:
+      - name: Check commenter permissions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${COMMENTER}/permission" \
+            --jq '.permission')
+          echo "Commenter $COMMENTER has permission: $PERMISSION"
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
+            echo "::error::User does not have write access"
+            exit 1
+          fi
+
+      - name: Get PR details
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          PR_NUMBER="$ISSUE_NUMBER"
+          PR_DATA=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}")
+          HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
+          HEAD_REPO=$(echo "$PR_DATA" | jq -r '.head.repo.full_name')
+          echo "head_sha=${HEAD_SHA}" >> $GITHUB_OUTPUT
+          echo "head_repo=${HEAD_REPO}" >> $GITHUB_OUTPUT
+          echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+
+      - name: Add reaction to comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions" \
+            -X POST -f content='eyes' || true
+
+      - name: Set pending commit status
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state=pending \
+            -f context="skill-validation" \
+            -f description="Skill evaluation in progress..." \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # ==========================================================================
+  # STATIC VALIDATION
+  # Always runs for PRs (all types) and slash-commands.
+  # ==========================================================================
+  static-check:
+    name: Static validation
+    needs: [pr-gate, slash-gate]
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      exit_code: ${{ steps.check.outputs.exit_code }}
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || '' }}
+          sparse-checkout: |
+            .github/skills
+            .github/agents
+            .github/plugin.json
+          persist-credentials: false
+
+      # ── Download & cache skill-validator ──────────────────────────
+      - name: Get cache key date
+        id: cache-date
+        run: echo "date=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore skill-validator from cache
+        id: cache-sv
+        uses: actions/cache/restore@v4
+        with:
+          path: skill-validator-bin
+          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            ${{ env.VALIDATOR_CACHE_PREFIX }}-
+
+      - name: Download skill-validator
+        if: steps.cache-sv.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p skill-validator-bin
+          curl -fsSL --retry 3 --retry-all-errors -o skill-validator.tar.gz \
+            https://github.com/dotnet/skills/releases/download/skill-validator-nightly/skill-validator-linux-x64.tar.gz
+          tar -xzf skill-validator.tar.gz -C skill-validator-bin
+          if [ ! -f skill-validator-bin/skill-validator ]; then
+            echo "::error::skill-validator binary not found after extraction"
+            exit 1
+          fi
+          chmod +x skill-validator-bin/skill-validator
+
+      - name: Save skill-validator to cache
+        if: steps.cache-sv.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: skill-validator-bin
+          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
+
+      # ── Run skill-validator check ─────────────────────────────────
+      - name: Run skill-validator check
+        id: check
+        shell: bash
+        env:
+          CHANGED_SKILLS: ${{ needs.pr-gate.outputs.changed_skills }}
+        run: |
+          rc=0
+
+          if [ -d .github/skills ]; then
+            echo "::group::Validate skills"
+
+            # For PR path: validate only changed skills for efficiency
+            # For slash-command or workflow_dispatch: validate all
+            PR_GATE="${{ needs.pr-gate.result }}"
+            if [[ "$PR_GATE" == "success" ]]; then
+              SKILLS_ARG=""
+              while IFS= read -r skill; do
+                [ -z "$skill" ] && continue
+                SKILL_DIR=".github/skills/$skill"
+                if [ -d "$SKILL_DIR" ]; then
+                  SKILLS_ARG="$SKILLS_ARG --skills $SKILL_DIR"
+                fi
+              done <<< "$CHANGED_SKILLS"
+              # Fallback to all if no specific skills found
+              [ -z "$SKILLS_ARG" ] && SKILLS_ARG="--skills .github/skills"
+            else
+              SKILLS_ARG="--skills .github/skills"
+            fi
+
+            set +e
+            skill-validator-bin/skill-validator check $SKILLS_ARG --allow-repo-traversal --verbose 2>&1 | tee skill-check-skills.txt
+            skills_rc=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+            if [ "$skills_rc" -ne 0 ]; then rc=1; fi
+          fi
+
+          if [ -d .github/agents ]; then
+            echo "::group::Validate agents"
+            set +e
+            skill-validator-bin/skill-validator check --agents .github/agents --verbose 2>&1 | tee skill-check-agents.txt
+            agents_rc=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+            if [ "$agents_rc" -ne 0 ]; then rc=1; fi
+          fi
+
+          cat skill-check-skills.txt skill-check-agents.txt > sv-output.txt 2>/dev/null || true
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+          # Step summary
+          {
+            echo "## skill-validator check"
+            echo ""
+            skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+            agent_count=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l)
+            if [ "$rc" -eq 0 ]; then
+              echo "All checks passed."
+              echo ""
+              echo "Validated **${skill_count}** skill(s) and **${agent_count}** agent(s)."
+            else
+              for f in skill-check-skills.txt skill-check-agents.txt; do
+                if [ -f "$f" ]; then
+                  echo "### ${f}"
+                  echo '```'
+                  head -n 200 "$f"
+                  echo '```'
+                  echo ""
+                fi
+              done
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Upload results for comment job ────────────────────────────
+      - name: Save results artifact
+        if: always()
+        run: |
+          mkdir -p sv-results
+          skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+          agent_count=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l)
+          echo "$skill_count" > sv-results/skill-count.txt
+          echo "$agent_count" > sv-results/agent-count.txt
+          echo "${{ steps.check.outputs.exit_code }}" > sv-results/exit-code.txt
+          if [ -f sv-output.txt ]; then
+            cp sv-output.txt sv-results/sv-output.txt
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-check-results
+          path: sv-results/
+          retention-days: 1
+
+      - name: Fail if checks failed
+        if: steps.check.outputs.exit_code != '0'
+        run: exit 1
+
+  # ==========================================================================
+  # DISCOVER EVALUATABLE SKILLS
+  # Only runs when LLM eval should happen (contributor PR or slash-command).
+  # ==========================================================================
+  discover-eval:
+    name: Discover skills to evaluate
+    needs: [pr-gate, slash-gate]
+    if: >-
+      always() && !cancelled() && (
+        (needs.pr-gate.result == 'success' && needs.pr-gate.outputs.is_contributor == 'true') ||
+        needs.slash-gate.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      entries: ${{ steps.find.outputs.entries }}
+      has_entries: ${{ steps.find.outputs.has_entries }}
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          sparse-checkout: |
+            .github/skills
+            .github/plugin.json
+          persist-credentials: false
+
+      - name: Discover changed files
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
+        run: |
+          CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
+            --paginate --jq '.[].filename')
+
+          SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
+            sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
+
+          # Check for workflow changes (evaluate all skills with tests)
+          WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
+
+          DELIM="EOF_$(openssl rand -hex 8)"
+          echo "skill_dirs<<$DELIM" >> $GITHUB_OUTPUT
+          echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
+          echo "$DELIM" >> $GITHUB_OUTPUT
+
+          if [ -n "$WORKFLOW_CHANGES" ]; then
+            echo "eval_all=true" >> $GITHUB_OUTPUT
+          else
+            echo "eval_all=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Find skills with eval tests
+        id: find
+        shell: pwsh
+        env:
+          SKILL_DIRS: ${{ steps.changed.outputs.skill_dirs }}
+          EVAL_ALL: ${{ steps.changed.outputs.eval_all }}
+        run: |
+          $entries = @()
+          $evalAll = $env:EVAL_ALL -eq "true"
+
+          if ($evalAll) {
+            Write-Host "Workflow changes detected - evaluating all skills with tests"
+            $skills = @(Get-ChildItem -Path ".github/skills" -Directory |
+              Select-Object -ExpandProperty Name)
+          } else {
+            $raw = $env:SKILL_DIRS
+            $skills = @($raw.Split("`n", [StringSplitOptions]::RemoveEmptyEntries) |
+              ForEach-Object { $_.Trim() } |
+              Where-Object { $_ })
+          }
+
+          foreach ($skill in $skills) {
+            $evalFile = ".github/skills/$skill/tests/eval.yaml"
+            if (Test-Path $evalFile) {
+              Write-Host "  -> $skill has eval tests"
+              $entries += @{
+                name = $skill
+                skills_path = ".github/skills/$skill"
+                tests_path = ".github/skills/$skill/tests"
+              }
+            } else {
+              Write-Host "  -> $skill has NO eval tests (static-only)"
+            }
+          }
+
+          if ($entries.Count -eq 0) {
+            Write-Host "No skills with eval tests to evaluate"
+            echo "entries=[]" >> $env:GITHUB_OUTPUT
+            echo "has_entries=false" >> $env:GITHUB_OUTPUT
+          } else {
+            $json = $entries | ConvertTo-Json -Compress -AsArray
+            Write-Host "Entries to evaluate: $json"
+            echo "entries=$json" >> $env:GITHUB_OUTPUT
+            echo "has_entries=true" >> $env:GITHUB_OUTPUT
+          }
+
+  # ==========================================================================
+  # LLM EVALUATION (matrix)
+  # Runs skill-validator evaluate for each changed skill with eval tests.
+  # ==========================================================================
+  evaluate:
+    name: evaluate (${{ matrix.entry.name }})
+    needs: [pr-gate, slash-gate, discover-eval]
+    if: >-
+      always() && !cancelled() &&
+      needs.discover-eval.result == 'success' &&
+      needs.discover-eval.outputs.has_entries == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: ${{ fromJson(needs.discover-eval.outputs.entries || '[]') }}
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          sparse-checkout: |
+            .github/skills
+            .github/plugin.json
+          persist-credentials: false
+
+      # ── Prepare test directory layout ─────────────────────────────
+      # skill-validator evaluate expects tests at <tests-dir>/<skill>/eval.yaml
+      # but maui keeps them co-located at .github/skills/<skill>/tests/eval.yaml.
+      # Create a flat tests directory by copying files to match the expected layout.
+      - name: Prepare test directory
+        run: |
+          mkdir -p eval-tests
+          for dir in .github/skills/*/tests; do
+            [ -d "$dir" ] || continue
+            [ -f "$dir/eval.yaml" ] || continue
+            skill=$(basename $(dirname "$dir"))
+            mkdir -p "eval-tests/$skill"
+            # Copy eval.yaml and any fixture files
+            cp -r "$dir"/* "eval-tests/$skill/"
+          done
+          echo "Prepared test directories:"
+          find eval-tests -name 'eval.yaml' | sort
+
+      # ── Download & cache skill-validator ──────────────────────────
+      - name: Get cache key date
+        id: cache-date
+        run: echo "date=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore skill-validator from cache
+        id: cache-sv
+        uses: actions/cache/restore@v4
+        with:
+          path: skill-validator-bin
+          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            ${{ env.VALIDATOR_CACHE_PREFIX }}-
+
+      - name: Download skill-validator
+        if: steps.cache-sv.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p skill-validator-bin
+          curl -fsSL --retry 3 --retry-all-errors -o skill-validator.tar.gz \
+            https://github.com/dotnet/skills/releases/download/skill-validator-nightly/skill-validator-linux-x64.tar.gz
+          tar -xzf skill-validator.tar.gz -C skill-validator-bin
+          if [ ! -f skill-validator-bin/skill-validator ]; then
+            echo "::error::skill-validator binary not found after extraction"
+            exit 1
+          fi
+          chmod +x skill-validator-bin/skill-validator
+
+      - name: Save skill-validator to cache
+        if: steps.cache-sv.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: skill-validator-bin
+          key: ${{ env.VALIDATOR_CACHE_PREFIX }}-${{ steps.cache-date.outputs.date }}
+
+      # ── Select Copilot token ──────────────────────────────────────
+      - name: Select Copilot token
+        id: select-token
+        env:
+          TOKEN_1: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          TOKEN_2: ${{ secrets.COPILOT_GITHUB_TOKEN_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_GITHUB_TOKEN_3 }}
+        run: |
+          TOKENS=()
+          NAMES=()
+          for i in 1 2 3; do
+            var="TOKEN_$i"
+            val="${!var}"
+            if [ -n "$val" ]; then
+              TOKENS+=("$val")
+              if [ "$i" -eq 1 ]; then
+                NAMES+=("COPILOT_GITHUB_TOKEN")
+              else
+                NAMES+=("COPILOT_GITHUB_TOKEN_$i")
+              fi
+            fi
+          done
+
+          if [ ${#TOKENS[@]} -eq 0 ]; then
+            echo "::error::No COPILOT_GITHUB_TOKEN secrets are configured"
+            exit 1
+          fi
+
+          JOB_INDEX="${{ strategy.job-index }}"
+          RUN_ID="${{ github.run_id }}"
+          if [ -n "$JOB_INDEX" ] && [ ${#TOKENS[@]} -gt 1 ]; then
+            IDX=$(( (JOB_INDEX + RUN_ID) % ${#TOKENS[@]} ))
+          elif [ -n "$JOB_INDEX" ]; then
+            IDX=0
+          else
+            IDX=$((RANDOM % ${#TOKENS[@]}))
+          fi
+          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available tokens, job-index=${JOB_INDEX:-random})"
+
+          echo "::add-mask::${TOKENS[$IDX]}"
+          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+
+      # ── Run LLM evaluation ───────────────────────────────────────
+      - name: Run skill-validator evaluate
+        id: eval-run
+        env:
+          COPILOT_TOKEN: ${{ steps.select-token.outputs.token }}
+          RESULTS_PATH: eval-results/${{ matrix.entry.name }}
+          SKILLS_PATH: ${{ matrix.entry.skills_path }}
+        run: |
+          # skill-validator reads GITHUB_TOKEN for API access
+          export GITHUB_TOKEN="$COPILOT_TOKEN"
+
+          ARGS="--verdict-warn-only --verbose"
+          ARGS="$ARGS --results-dir $RESULTS_PATH --reporter console --reporter json --reporter markdown"
+          ARGS="$ARGS --model claude-opus-4.6"
+          ARGS="$ARGS --judge-model claude-opus-4.6"
+          ARGS="$ARGS --runs 3"
+          ARGS="$ARGS --parallel-skills 2"
+          ARGS="$ARGS --parallel-scenarios 3"
+          ARGS="$ARGS --parallel-runs 3"
+
+          set +e
+          skill-validator-bin/skill-validator evaluate $ARGS \
+            --tests-dir eval-tests \
+            "$SKILLS_PATH"
+          EVAL_RC=$?
+          set -e
+
+          echo "eval_exit_code=$EVAL_RC" >> $GITHUB_OUTPUT
+
+          # Determine actual pass/fail from results.json (the source of truth)
+          RESULTS_JSON=$(find "$RESULTS_PATH" -name 'results.json' -type f | head -1)
+          if [ -n "$RESULTS_JSON" ]; then
+            ALL_PASSED=$(jq 'if .verdicts | length == 0 then false else all(.verdicts[]; .passed) end' "$RESULTS_JSON")
+            echo "eval_passed=$ALL_PASSED" >> $GITHUB_OUTPUT
+          else
+            echo "eval_passed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-eval-results-${{ matrix.entry.name }}
+          path: eval-results/${{ matrix.entry.name }}/
+          include-hidden-files: true
+          retention-days: 14
+
+  # ==========================================================================
+  # POST PR COMMENT
+  # Consolidated results (static + eval) posted directly to the PR.
+  # pull_request_target has write permissions, so no separate workflow needed.
+  # ==========================================================================
+  comment:
+    name: Post results comment
+    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate]
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    outputs:
+      eval_passed: ${{ steps.post-comment.outputs.eval_passed }}
+    steps:
+      - name: Download static check results
+        uses: actions/download-artifact@v4
+        with:
+          name: static-check-results
+          path: static-results/
+        continue-on-error: true
+
+      - name: Download eval result artifacts
+        if: needs.evaluate.result == 'success' || needs.evaluate.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: skill-eval-results-*
+          path: eval-results/
+          merge-multiple: false
+        continue-on-error: true
+
+      - name: Post comment
+        id: post-comment
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
+          STATIC_RESULT: ${{ needs.static-check.result }}
+          EVAL_RESULT: ${{ needs.evaluate.result }}
+          HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
+          DISCOVER_RESULT: ${{ needs.discover-eval.result }}
+          IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const prNumber = parseInt(process.env.PR_NUMBER, 10);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const marker = '<!-- skill-validation-results -->';
+
+            const staticResult = process.env.STATIC_RESULT;
+            const evalResult = process.env.EVAL_RESULT;
+            const hasEntries = process.env.HAS_ENTRIES === 'true';
+            const discoverResult = process.env.DISCOVER_RESULT;
+            const isContributor = process.env.IS_CONTRIBUTOR === 'true';
+            const evalRan = discoverResult === 'success';
+
+            const lines = [marker, '## 🔍 Skill Validation Results', ''];
+
+            // ── Static check section ──────────────────────────────
+            let staticOutput = '';
+            try {
+              if (fs.existsSync('static-results/sv-output.txt')) {
+                staticOutput = fs.readFileSync('static-results/sv-output.txt', 'utf8')
+                  .replace(/\x1b\[[0-9;]*m/g, '').trim();
+              }
+            } catch (e) { /* ignore */ }
+
+            const exitCode = (() => {
+              try { return fs.readFileSync('static-results/exit-code.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+            const skillCount = (() => {
+              try { return fs.readFileSync('static-results/skill-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+            const agentCount = (() => {
+              try { return fs.readFileSync('static-results/agent-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
+
+            if (staticResult === 'success') {
+              lines.push('### ✅ Static Checks Passed');
+            } else if (staticResult === 'failure') {
+              lines.push('### ❌ Static Checks Failed');
+            } else {
+              lines.push(`### ⚠️ Static Checks: ${staticResult}`);
+            }
+            lines.push(`Skills checked: ${skillCount} | Agents checked: ${agentCount}`);
+            lines.push('');
+
+            if (staticOutput) {
+              const findings = staticOutput.split('\n')
+                .map(l => l.trim())
+                .filter(l => /^[❌⚠ℹ]/.test(l))
+                .slice(0, 10);
+
+              if (findings.length > 0) {
+                lines.push('| Level | Finding |');
+                lines.push('|---|---|');
+                for (const line of findings) {
+                  const level = line.startsWith('❌') ? '❌'
+                    : line.startsWith('⚠') ? '⚠️'
+                    : 'ℹ️';
+                  const text = line.replace(/^[❌⚠ℹ️\s]+/, '').replace(/\|/g, '\\|');
+                  lines.push(`| ${level} | ${text} |`);
+                }
+                lines.push('');
+              }
+
+              lines.push('<details>');
+              lines.push('<summary>Full validator output</summary>');
+              lines.push('');
+              lines.push('```text');
+              lines.push(staticOutput.replace(/```/g, '` ` `'));
+              lines.push('```');
+              lines.push('');
+              lines.push('</details>');
+              lines.push('');
+            }
+
+            // ── Parse eval results from JSON ──────────────────────
+            // Read results.json files from downloaded artifacts to determine
+            // actual pass/fail (the source of truth, not the job exit code
+            // which uses --verdict-warn-only).
+            let allVerdicts = [];
+            let evalPassed = true;
+            let hasResults = false;
+            const footnotes = [];
+
+            if (fs.existsSync('eval-results')) {
+              try {
+                const resultDirs = fs.readdirSync('eval-results').filter(d =>
+                  fs.statSync(path.join('eval-results', d)).isDirectory()
+                );
+
+                for (const dir of resultDirs) {
+                  const dirPath = path.join('eval-results', dir);
+                  // Recursively find results.json
+                  const allFiles = [];
+                  function walkDir(d) {
+                    for (const f of fs.readdirSync(d)) {
+                      const fp = path.join(d, f);
+                      if (fs.statSync(fp).isDirectory()) walkDir(fp);
+                      else allFiles.push(path.relative(dirPath, fp));
+                    }
+                  }
+                  walkDir(dirPath);
+
+                  const jsonFile = allFiles.find(f => f.endsWith('results.json'));
+                  if (jsonFile) {
+                    hasResults = true;
+                    const data = JSON.parse(
+                      fs.readFileSync(path.join(dirPath, jsonFile), 'utf8')
+                    );
+                    if (data.verdicts && data.verdicts.length > 0) {
+                      allVerdicts.push(...data.verdicts);
+                      for (const v of data.verdicts) {
+                        if (!v.passed) evalPassed = false;
+                      }
+                    } else {
+                      evalPassed = false; // no verdicts = not passed
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log('Error reading eval results JSON:', e.message);
+              }
+            }
+
+            // ── LLM evaluation section ────────────────────────────
+            if (!evalRan && !isContributor) {
+              lines.push('### ⏭️ LLM Evaluation: Skipped');
+              lines.push('');
+              lines.push('> 💡 LLM evaluation was not run for this external PR.');
+              lines.push('> A repository contributor can post `/evaluate-skills` on this PR to trigger full evaluation.');
+              lines.push('');
+            } else if (!hasEntries) {
+              lines.push('### ⏭️ LLM Evaluation: Skipped');
+              lines.push('_No changed skills with eval tests found._');
+              lines.push('');
+            } else if (hasResults) {
+              // Use actual results from JSON to determine status
+              if (evalPassed) {
+                lines.push('### ✅ LLM Evaluation Passed');
+              } else {
+                lines.push('### ❌ LLM Evaluation Failed');
+              }
+              const passedCount = allVerdicts.filter(v => v.passed).length;
+              lines.push(`${passedCount}/${allVerdicts.length} skill(s) passed validation`);
+              lines.push('');
+
+              // ── Build results table ─────────────────────────────
+              if (allVerdicts.length > 0) {
+                lines.push('| Skill | Scenario | Baseline | Skilled | Verdict |');
+                lines.push('|-------|----------|----------|---------|---------|');
+
+                let fnIndex = 0;
+                for (const verdict of allVerdicts) {
+                  const scenarios = verdict.scenarios || [];
+                  for (const sc of scenarios) {
+                    const baseScore = sc.baseline?.judgeResult?.overallScore;
+                    const isolatedScore = sc.skilledIsolated?.judgeResult?.overallScore;
+                    const pluginScore = sc.skilledPlugin?.judgeResult?.overallScore;
+
+                    // Format scores
+                    const baseStr = baseScore != null ? `${baseScore.toFixed(1)}/5` : '—';
+
+                    // Pick the best skilled score (isolated or plugin)
+                    let skilledStr;
+                    if (isolatedScore != null && pluginScore != null) {
+                      skilledStr = `${isolatedScore.toFixed(1)}/5 (iso) · ${pluginScore.toFixed(1)}/5 (plug)`;
+                    } else if (isolatedScore != null) {
+                      skilledStr = `${isolatedScore.toFixed(1)}/5`;
+                    } else if (pluginScore != null) {
+                      skilledStr = `${pluginScore.toFixed(1)}/5`;
+                    } else {
+                      skilledStr = '—';
+                    }
+
+                    // Timeout indicator
+                    const timeoutFlag = sc.timedOut ? ' ⏳' : '';
+
+                    // Verdict icon — per-scenario: improvement >= 0 means not regressed
+                    const improvement = sc.improvementScore || 0;
+                    const scenarioIcon = improvement >= 0 ? '✅' : '⚠️';
+
+                    // Footnote for high variance or timeout
+                    let footRef = '';
+                    if (sc.highVariance || sc.timedOut) {
+                      fnIndex++;
+                      const parts = [];
+                      if (sc.highVariance) parts.push(`High run-to-run variance (CV=${(sc.varianceCV || 0).toFixed(2)})`);
+                      if (sc.timedOut) parts.push(`Timeout at ${sc.timeoutSeconds || '?'}s`);
+                      footRef = ` <a href="#user-content-fn-${fnIndex}" id="ref-${fnIndex}">[${fnIndex}]</a>`;
+                      footnotes.push(`<a href="#user-content-ref-${fnIndex}" id="fn-${fnIndex}"><strong>[${fnIndex}]</strong></a> ${parts.join('. ')}`);
+                    }
+
+                    const safeSkillName = (verdict.skillName || '').replace(/\|/g, '\\|');
+                    const safeScenarioName = (sc.scenarioName || '').replace(/\|/g, '\\|');
+                    lines.push(`| ${safeSkillName} | ${safeScenarioName} | ${baseStr}${timeoutFlag} | ${skilledStr}${timeoutFlag} | ${scenarioIcon}${footRef} |`);
+                  }
+                }
+                lines.push('');
+
+                // Overall verdict line per skill
+                for (const verdict of allVerdicts) {
+                  const icon = verdict.passed ? '✅' : '❌';
+                  const reason = (verdict.reason || '').replace(/\|/g, '\\|');
+                  const safeSkillNameSummary = (verdict.skillName || '').replace(/\|/g, '\\|');
+                  lines.push(`${icon} **${safeSkillNameSummary}**: ${reason}`);
+                  lines.push('');
+                }
+
+                // Footnotes
+                if (footnotes.length > 0) {
+                  for (const fn of footnotes) {
+                    lines.push(fn);
+                  }
+                  lines.push('');
+                }
+
+                // Timeout warning
+                const hasTimeout = allVerdicts.some(v =>
+                  (v.scenarios || []).some(s => s.timedOut)
+                );
+                if (hasTimeout) {
+                  lines.push('> ⏳ **timeout** — run(s) hit the scenario timeout limit; scoring may be impacted');
+                  lines.push('');
+                }
+              }
+            } else if (evalResult === 'success') {
+              lines.push('### ✅ LLM Evaluation Passed');
+              lines.push('');
+            } else if (evalResult === 'failure') {
+              lines.push('### ❌ LLM Evaluation Failed');
+              lines.push('');
+            } else if (evalResult === 'skipped') {
+              lines.push('### ⏭️ LLM Evaluation: Skipped');
+              lines.push('');
+            } else {
+              lines.push(`### ⚠️ LLM Evaluation: ${evalResult}`);
+              lines.push('');
+            }
+
+            // Detailed judge reports in collapsible sections
+            if (fs.existsSync('eval-results')) {
+              try {
+                const resultDirs = fs.readdirSync('eval-results').filter(d =>
+                  fs.statSync(path.join('eval-results', d)).isDirectory()
+                );
+
+                for (const dir of resultDirs) {
+                  const skillName = dir.replace('skill-eval-results-', '');
+                  const dirPath = path.join('eval-results', dir);
+                  const allFiles = [];
+                  function walkDir2(d) {
+                    for (const f of fs.readdirSync(d)) {
+                      const fp = path.join(d, f);
+                      if (fs.statSync(fp).isDirectory()) walkDir2(fp);
+                      else allFiles.push(path.relative(dirPath, fp));
+                    }
+                  }
+                  walkDir2(dirPath);
+
+                  // Include per-scenario judge reports (not summary.md which duplicates the table)
+                  const mdFiles = allFiles.filter(f =>
+                    f.endsWith('.md') && !f.endsWith('summary.md')
+                  );
+                  for (const mdFile of mdFiles) {
+                    const mdContent = fs.readFileSync(
+                      path.join(dirPath, mdFile), 'utf8'
+                    ).trim();
+                    if (mdContent.length > 0) {
+                      const scenarioName = path.basename(mdFile, '.md');
+                      lines.push(`<details>`);
+                      lines.push(`<summary>📊 ${skillName} / ${scenarioName}</summary>`);
+                      lines.push('');
+                      lines.push(mdContent.replace(/```/g, '` ` `').replace(/<\/details>/gi, '&lt;/details&gt;'));
+                      lines.push('');
+                      lines.push('</details>');
+                      lines.push('');
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log('Error reading eval result details:', e.message);
+              }
+            }
+
+            // ── Investigation prompt for failures ─────────────────
+            // When any evaluated skill failed, build a copy-paste prompt
+            // that tells the user how to download artifacts and investigate
+            // with their AI coding agent (same pattern as dotnet/skills).
+            let investigatePrompt = '';
+            if (hasResults && !evalPassed) {
+              const runId = context.runId;
+              const repo = `${context.repo.owner}/${context.repo.repo}`;
+              investigatePrompt = [
+                '',
+                '> **To investigate failures**, paste this to your AI coding agent:',
+                '>',
+                `> _For PR #${prNumber} in ${repo}, download eval artifacts with ` +
+                `\`gh run download ${runId} --repo ${repo} --pattern "skill-eval-results-*" --dir ./eval-results\`, ` +
+                `then fetch https://raw.githubusercontent.com/dotnet/skills/main/eng/skill-validator/src/docs/InvestigatingResults.md ` +
+                `and follow it to analyze the results.json files. Diagnose each failure, suggest fixes to the eval.yaml ` +
+                `and skill content, and tell me what to fix first._`,
+              ].join('\n');
+            }
+
+            // ── Pipeline link (styled like dotnet/skills) ─────────
+            lines.push(`[🔍 Full results and investigation steps](${runUrl})`);
+
+            const body = lines.join('\n');
+
+            // ── Write step summary with investigation prompt ──────
+            const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+            if (summaryPath) {
+              const summaryLines = ['## Skill Validation Results', ''];
+              summaryLines.push(body.replace(marker, '').trim());
+              if (investigatePrompt) {
+                summaryLines.push(investigatePrompt);
+              }
+              fs.appendFileSync(summaryPath, summaryLines.join('\n') + '\n');
+            }
+
+            // Upsert comment (find existing with marker, update or create)
+            // Paginate to handle PRs with 100+ comments
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              }
+            );
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+              console.log(`Updated existing comment ${existing.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+              console.log('Created new PR comment');
+            }
+
+            // Save eval pass/fail for downstream jobs
+            const outputPath = process.env.GITHUB_OUTPUT;
+            if (outputPath) {
+              fs.appendFileSync(outputPath, `eval_passed=${hasResults ? evalPassed : 'na'}\n`);
+            }
+
+  # ==========================================================================
+  # REPORT STATUS
+  # Post final commit status on PR head SHA.
+  # ==========================================================================
+  report-status:
+    name: Report status
+    needs: [pr-gate, slash-gate, static-check, discover-eval, evaluate, comment]
+    if: >-
+      always() && !cancelled() && (
+        needs.pr-gate.result == 'success' ||
+        needs.slash-gate.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+      checks: write
+      issues: write
+    steps:
+      - name: Set commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HEAD_SHA="${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}"
+          if [ -z "$HEAD_SHA" ]; then
+            echo "No head SHA (workflow_dispatch?) — skipping status"
+            exit 0
+          fi
+
+          STATIC="${{ needs.static-check.result }}"
+          EVAL="${{ needs.evaluate.result }}"
+          DISCOVER="${{ needs.discover-eval.result }}"
+          HAS_ENTRIES="${{ needs.discover-eval.outputs.has_entries }}"
+          EVAL_PASSED="${{ needs.comment.outputs.eval_passed }}"
+
+          if [[ "$STATIC" == "success" ]]; then
+            if [[ "$DISCOVER" != "success" || "$HAS_ENTRIES" != "true" ]]; then
+              STATE="success"
+              DESC="Skill validation passed (static only)"
+            elif [[ "$EVAL_PASSED" == "true" ]]; then
+              STATE="success"
+              DESC="Skill validation passed"
+            elif [[ "$EVAL_PASSED" == "false" ]]; then
+              STATE="failure"
+              DESC="LLM evaluation failed"
+            elif [[ "$EVAL" == "failure" ]]; then
+              STATE="failure"
+              DESC="LLM evaluation failed"
+            else
+              STATE="error"
+              DESC="Evaluation incomplete ($EVAL)"
+            fi
+          elif [[ "$STATIC" == "failure" ]]; then
+            STATE="failure"
+            DESC="Static validation failed"
+          else
+            STATE="error"
+            DESC="Validation incomplete (static: $STATIC)"
+          fi
+
+          # Post commit status (appears in PR status checks)
+          gh api "repos/${{ github.repository }}/statuses/${HEAD_SHA}" \
+            -f state="$STATE" \
+            -f context="skill-validation" \
+            -f description="$DESC" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      # Create a Check Run on the PR head SHA so it shows in the PR Checks tab.
+      # pull_request_target runs are associated with the base branch, not the PR,
+      # so without this the workflow link won't appear on the PR.
+      - name: Create check run
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const headSha = '${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}';
+            if (!headSha) return;
+
+            const staticResult = '${{ needs.static-check.result }}';
+            const evalPassed = '${{ needs.comment.outputs.eval_passed }}';
+            const evalResult = '${{ needs.evaluate.result }}';
+            const hasEntries = '${{ needs.discover-eval.outputs.has_entries }}' === 'true';
+
+            let conclusion, title;
+            if (staticResult !== 'success') {
+              conclusion = 'failure';
+              title = 'Static validation failed';
+            } else if (!hasEntries) {
+              conclusion = 'success';
+              title = 'Skill validation passed (static only)';
+            } else if (evalPassed === 'true') {
+              conclusion = 'success';
+              title = 'Skill validation passed';
+            } else if (evalPassed === 'false') {
+              conclusion = 'failure';
+              title = 'LLM evaluation failed';
+            } else if (evalResult === 'failure') {
+              conclusion = 'failure';
+              title = 'LLM evaluation failed';
+            } else {
+              conclusion = 'neutral';
+              title = `Evaluation: ${evalResult}`;
+            }
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Skill Validation',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title,
+                summary: `[View full results](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              },
+              details_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            });
+            console.log(`Created check run: ${conclusion} - ${title}`);
+
+      # Remove eyes reaction (slash command only)
+      - name: Remove reaction
+        if: needs.slash-gate.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COMMENT_ID="${{ github.event.comment.id }}"
+          REACTION_ID=$(gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions" \
+            --jq '.[] | select(.content == "eyes" and .user.login == "github-actions[bot]") | .id' \
+            | head -1 || echo "")
+          if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}/reactions/${REACTION_ID}" \
+              -X DELETE || true
+          fi

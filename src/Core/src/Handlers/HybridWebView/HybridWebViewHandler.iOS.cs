@@ -56,12 +56,12 @@ namespace Microsoft.Maui.Handlers
 			if (DeveloperTools.Enabled)
 			{
 				// Legacy Developer Extras setting.
-				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
+				config.Preferences.SetValueForKey(NSObject.FromObject(true)!, new NSString("developerExtrasEnabled"));
 
 				if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
 				{
 					// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
-					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
+					webview.SetValueForKey(NSObject.FromObject(true)!, new NSString("inspectable"));
 				}
 			}
 
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Handlers
 						return (null, ContentType: null, StatusCode: 404);
 					}
 
-					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
+					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath!, Handler.VirtualView.HybridRoot!);
 
 					// 1.a. Try the special "_framework/hybridwebview.js" path
 					if (relativePath == HybridWebViewDotJsPath)

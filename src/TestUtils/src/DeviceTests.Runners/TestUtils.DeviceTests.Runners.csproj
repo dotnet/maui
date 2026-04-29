@@ -7,10 +7,15 @@
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runners</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
     <NoWarn>$(NoWarn);CA1416;XC0022;XC0023</NoWarn>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
+    <!-- XC0618 (obsolete warning) and XC0619 (obsolete error) are suppressed here because this project
+         intentionally uses deprecated APIs. XC0619 uses raw LogError (not the warning-promotion path),
+         so WarningsNotAsErrors is defensive only. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023;XC0618;XC0619</WarningsNotAsErrors>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <!-- This project uses deprecated Frame controls - use Runtime inflation -->
+    <MauiXamlInflator>Runtime</MauiXamlInflator>
   </PropertyGroup>
 
   <ItemGroup>

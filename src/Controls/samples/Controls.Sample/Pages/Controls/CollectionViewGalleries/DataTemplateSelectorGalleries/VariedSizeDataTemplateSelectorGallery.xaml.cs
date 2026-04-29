@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 			set => SetValue(ref _shouldTriggerReset, value);
 		}
 
-		void Insert_OnClicked(object sender, EventArgs e)
+		void Insert_OnClicked(object? sender, EventArgs e)
 		{
 			if (!IsValid(out var index))
 				return;
@@ -72,7 +72,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 			Items.Insert(index, CreateDrink());
 		}
 
-		void Add_OnClicked(object sender, EventArgs e)
+		void Add_OnClicked(object? sender, EventArgs e)
 		{
 			if (!IsValid(out var _))
 				return;
@@ -89,7 +89,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 			OnPropertyChanged(callerName);
 		}
 
-		void Remove_OnClicked(object sender, EventArgs e)
+		void Remove_OnClicked(object? sender, EventArgs e)
 		{
 			if (!IsValid(out var index))
 				return;

@@ -1,8 +1,89 @@
 #nullable enable
-override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 *REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
-~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(UIKit.UIView platformView) -> void
+*REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+Microsoft.Maui.Controls.AppThemeBinding
+Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
+Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer
+Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
+Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.Command.get -> System.Windows.Input.ICommand?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.Command.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameter.get -> object?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameter.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.LongPressGestureRecognizer() -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.LongPressed -> System.EventHandler<Microsoft.Maui.Controls.LongPressedEventArgs!>?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.LongPressing -> System.EventHandler<Microsoft.Maui.Controls.LongPressingEventArgs!>?
+Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.get -> int
+Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.get -> int
+Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.State.get -> Microsoft.Maui.GestureStatus
+Microsoft.Maui.Controls.LongPressedEventArgs
+Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter) -> void
+Microsoft.Maui.Controls.LongPressedEventArgs.Parameter.get -> object?
+Microsoft.Maui.Controls.LongPressingEventArgs
+Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
+Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
+Microsoft.Maui.Controls.Span.InvalidateStyle() -> void
+Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidAppear(bool animated) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDurationProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequiredProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Dark.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Default.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Default.set -> void
+~Microsoft.Maui.Controls.AppThemeBinding.Light.get -> object
+~Microsoft.Maui.Controls.AppThemeBinding.Light.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeText.get -> string
+~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
+~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
+~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
+~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
+~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
+~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
+~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResourcesChangedEventArgs(System.Collections.Generic.IEnumerable<string> keys, System.Func<string, object> resolver) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(System.Type targetType, System.Func<Microsoft.Maui.Controls.Style> factory, bool shared = true) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddFactory(string key, System.Func<object> factory, bool shared = true) -> void
+~Microsoft.Maui.Controls.ToolbarItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ToolbarItem.BadgeColor.set -> void
+~Microsoft.Maui.Controls.ToolbarItem.BadgeText.get -> string
+~Microsoft.Maui.Controls.ToolbarItem.BadgeText.set -> void
+~Microsoft.Maui.Controls.ToolbarItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ToolbarItem.BadgeTextColor.set -> void
+~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
+~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(UIKit.UIView platformView) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.DidMoveToParentViewController(UIKit.UIViewController parent) -> void
+~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> Microsoft.Maui.Controls.VisualStateGroupList
+~static Microsoft.Maui.Controls.VisualStateManager.InvalidateVisualStates(Microsoft.Maui.Controls.VisualElement visualElement) -> void
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
+~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
+~static readonly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
+~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
+~static readonly Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.get -> string
+~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.set -> void
