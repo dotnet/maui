@@ -123,6 +123,9 @@ stages:
 
         # Run on public pipeline
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
+        - script: rm -rf .dotnet/sdk-manifests/11.0.100-preview.1 .dotnet/sdk-manifests/11.0.100-preview.2 .dotnet/sdk-manifests/11.0.100-preview.3
+          displayName: Clean stale workload manifests
+          condition: succeededOrFailed()
           displayName: Build BuildTasks
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog
@@ -336,6 +339,9 @@ stages:
 
         # Run on public pipeline
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
+        - script: rm -rf .dotnet/sdk-manifests/11.0.100-preview.1 .dotnet/sdk-manifests/11.0.100-preview.2 .dotnet/sdk-manifests/11.0.100-preview.3
+          displayName: Clean stale workload manifests
+          condition: succeededOrFailed()
           displayName: Build BuildTasks
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
@@ -562,6 +568,8 @@ stages:
 
           # Build BuildTasks first (need -restore to ensure SDK is available)
           - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
+          - script: if exist .dotnet\sdk-manifests\11.0.100-preview.1 rd /s /q .dotnet\sdk-manifests\11.0.100-preview.1 && if exist .dotnet\sdk-manifests\11.0.100-preview.2 rd /s /q .dotnet\sdk-manifests\11.0.100-preview.2 && if exist .dotnet\sdk-manifests\11.0.100-preview.3 rd /s /q .dotnet\sdk-manifests\11.0.100-preview.3
+            displayName: Clean stale workload manifests
             displayName: Build the MSBuild Tasks
 
           # Build Unpackaged tests FIRST (self-contained .exe for direct execution)

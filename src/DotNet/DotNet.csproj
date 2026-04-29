@@ -192,6 +192,15 @@
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
+  <!-- Standalone target to remove stale manifest band directories.
+       Called separately from Tools.props before the main build to ensure
+       cleanup happens before MSBuild caches workload manifest state. -->
+  <Target Name="_CleanStaleManifests">
+    <RemoveDir Directories="$(DotNetDirectory)sdk-manifests/11.0.100-preview.1" Condition="Exists('$(DotNetDirectory)sdk-manifests/11.0.100-preview.1')" />
+    <RemoveDir Directories="$(DotNetDirectory)sdk-manifests/11.0.100-preview.2" Condition="Exists('$(DotNetDirectory)sdk-manifests/11.0.100-preview.2')" />
+    <RemoveDir Directories="$(DotNetDirectory)sdk-manifests/11.0.100-preview.3" Condition="Exists('$(DotNetDirectory)sdk-manifests/11.0.100-preview.3')" />
+  </Target>
+
   <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
