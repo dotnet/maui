@@ -26,4 +26,17 @@ public class Issue35113 : _IssuesUITest
 			$"Header width {rect.Width} should be > 100 when fully expanded. " +
 			"If ~30, ScrollDirection was not set on the supplementary TemplatedCell2.");
 	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void HorizontalGridFooterExpandsToContentWidth()
+	{
+		App.WaitForElement("Issue35113CollectionView");
+		App.ScrollTo("Issue35113Footer");
+		App.WaitForElement("Issue35113Footer");
+		var rect = App.FindElement("Issue35113Footer").GetRect();
+		Assert.That(rect.Width, Is.GreaterThan(100),
+			$"Footer width {rect.Width} should be > 100 when fully expanded. " +
+			"If ~30, ScrollDirection was not set on the supplementary TemplatedCell2.");
+	}
 }

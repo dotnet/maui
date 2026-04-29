@@ -8,7 +8,7 @@ public class Issue35113 : ContentPage
 	public Issue35113()
 	{
 		var items = new ObservableCollection<string>();
-		for (int i = 0; i < 12; i++)
+		for (int i = 0; i < 2; i++)
 			items.Add($"Item {i}");
 
 		// Header label with no explicit WidthRequest so it must self-size to its content width.
@@ -26,6 +26,14 @@ public class Issue35113 : ContentPage
 				Text = "This Is A Header",
 				AutomationId = "Issue35113Header",
 				BackgroundColor = Colors.LightBlue,
+				FontSize = 24,
+				Padding = new Thickness(8),
+			},
+			Footer = new Label
+			{
+				Text = "This Is A Footer",
+				AutomationId = "Issue35113Footer",
+				BackgroundColor = Colors.LightGreen,
 				FontSize = 24,
 				Padding = new Thickness(8),
 			},
