@@ -13,7 +13,7 @@ on:
         required: true
         type: number
   status-comment: true
-  roles: [admin, maintainer, write]
+  roles: [admin, maintain, write]
   bots:
     - "copilot-swe-agent[bot]"
 
