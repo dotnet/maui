@@ -26,12 +26,14 @@ scenarios:
       - "The agent distinguished between infrastructure failures and actual test assertion failures"
     timeout: 300
 
-  - name: "Recognize when CI builds have not been triggered"
-    prompt: "Check the CI status for PR #34710 in dotnet/maui. Has CI run? What are the results?"
+  - name: "Classify failures across multiple pipeline types"
+    prompt: "Give me a breakdown of the CI failures on PR #35151 in dotnet/maui. Which are build errors, which are test failures, and which are infrastructure issues?"
     assertions:
+      - type: "output_matches"
+        pattern: "(build.*error|test.*fail|infra)"
       - type: "exit_success"
     rubric:
-      - "The agent checked whether CI builds actually exist for this PR before reporting status"
-      - "If no builds were found, the agent explained that builds may need to be triggered rather than reporting CI as passing or failing"
-      - "The agent did not fabricate CI results when build data was unavailable"
+      - "The agent categorized failures into distinct types rather than treating all red checks the same"
+      - "The agent identified which pipelines had real test assertion failures versus Cake/infrastructure crashes"
+      - "The agent correlated failure patterns to determine whether they are PR-related or pre-existing on the target branch"
     timeout: 300
