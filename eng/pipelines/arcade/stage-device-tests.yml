@@ -122,6 +122,9 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
+        - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) $(_OfficialBuildIdArgs)
+          displayName: Install .NET SDK
+
         - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
           displayName: Clean stale workload manifests
 
@@ -338,6 +341,9 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
+        - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) $(_OfficialBuildIdArgs)
+          displayName: Install .NET SDK
+
         - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
           displayName: Clean stale workload manifests
 
@@ -567,6 +573,9 @@ stages:
             displayName: 'Add .NET to PATH'
 
           # Build BuildTasks first (need -restore to ensure SDK is available)
+          - script: ./build.cmd -restore -configuration Release
+            displayName: Install .NET SDK
+
           - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
             displayName: Clean stale workload manifests
 

@@ -84,6 +84,9 @@ stages:
             - ${{ each pair in step }}:
                 ${{ pair.key }}: ${{ pair.value }}
 
+          - script: $(_buildScript) -restore -configuration ${{ BuildConfiguration }} $(_OfficialBuildIdArgs)
+            displayName: 🔧 Install .NET SDK
+
           - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
             displayName: 🧹 Clean stale workload manifests
 
