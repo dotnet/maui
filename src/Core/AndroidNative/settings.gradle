@@ -2,8 +2,12 @@
 // dnceng Azure Artifacts feed (dotnet-public-maven). Locally, standard Maven
 // Central and Google Maven are used for faster builds.
 //
-// When adding or updating dependencies, run eng/ingest-maven-deps.sh to
-// pre-populate the Azure Artifacts feed for CI.
+// IMPORTANT: New packages must be ingested before CI can use them.
+// If CI fails with "Could not GET ... 401", the package is not yet in the feed.
+// Run ./eng/ingest-maven-deps.sh after adding or updating any Maven dependency.
+//
+// In CI, eng/init.gradle (injected by cache-gradle.yml) also handles
+// project-level repo substitution for Android SDK binding targets.
 // See: https://aka.ms/1es/netiso/CFS
 
 pluginManagement {
