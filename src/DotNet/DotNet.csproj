@@ -224,6 +224,7 @@
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.maccatalyst" />
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.macos" />
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.tvos" />
+      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.sdk.maui" />
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.mono.toolchain.current" />
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.mono.toolchain.net10" />
       <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/microsoft.net.workload.emscripten.current" />
