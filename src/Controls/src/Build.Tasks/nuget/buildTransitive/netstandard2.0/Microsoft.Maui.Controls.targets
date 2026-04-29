@@ -380,6 +380,10 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled"
+                                      Condition="'$(EnableMauiIncrementalHotReload)' != ''"
+                                      Value="$(EnableMauiIncrementalHotReload)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 

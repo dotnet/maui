@@ -95,10 +95,34 @@ static class InitializeComponentCodeWriter
 			codeWriter.WriteLine($"{accessModifier} partial class {rootType.Name}");
 			using (newblock())
 			{
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
+				{
+					codeWriter.WriteLine("#pragma warning disable CS0414 // __version is read by UpdateComponent (generated on XAML edit)");
+					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+					codeWriter.WriteLine("private int __version = 0;");
+					codeWriter.WriteLine("#pragma warning restore CS0414");
+					codeWriter.WriteLine();
+				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
+
+				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
+				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.
+				Dictionary<ElementNode, string>? nodeIds = null;
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
+				{
+					var asmName = compilation.AssemblyName ?? string.Empty;
+					var relPath = xamlItem.ProjectItem.RelativePath ?? string.Empty;
+					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, relPath);
+					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, relPath);
+					if (cachedRoot != null && cachedIds != null)
+						nodeIds = NodeIdHelper.TransferIds(root, cachedIds, cachedRoot);
+					else
+						nodeIds = NodeIdHelper.AssignIds(root);
+				}
+
 				using (newblock())
 				{
 					if (xamlItem.ProjectItem.EnableDiagnostics)
@@ -126,7 +150,7 @@ $$"""
 
 		if (rlr?.ResourceContent != null)
 		{
-			this.InitializeComponentRuntime();
+			this.InitializeComponentRuntime();{{(nodeIds != null ? "\n\t\t\tglobal::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);\n\t\t\t__version = 0;" : "")}}
 			return;
 		}
 
@@ -140,12 +164,212 @@ $$"""
 						WriteMultiLineString(codeWriter, localMethod);
 						codeWriter.WriteLine();
 					}
+
+					// Emit Register calls and __version bump for incremental hot reload
+					if (nodeIds != null)
+					{
+						codeWriter.WriteLine();
+						foreach (var kvp in sgcontext.Variables)
+						{
+							if (kvp.Key is ElementNode en
+								&& nodeIds.TryGetValue(en, out var nodeId)
+								&& !string.IsNullOrEmpty(nodeId))
+							{
+								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
+							}
+						}
+						// Register resource keys for hot reload (so UC can remove stale keys)
+						var resourceKeys = new System.Collections.Generic.List<string>();
+						var xKeyName = new XmlName("x", "Key");
+						if (root!.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
+						{
+							var elements = resourcesNode is ListNode ln ? ln.CollectionItems.OfType<ElementNode>() :
+								resourcesNode is ElementNode singleEn ? new[] { singleEn } : System.Array.Empty<ElementNode>();
+							foreach (var elem in elements)
+							{
+								if (elem.Properties.TryGetValue(xKeyName, out var keyNode)
+									&& keyNode is ValueNode kv && kv.Value is string keyStr)
+								{
+									// Register keys for resources we can encode in UC:
+									// Value-type resources have a single ValueNode child (Color, String, etc.)
+									if (elem.CollectionItems.Count == 1 && elem.CollectionItems[0] is ValueNode)
+									{
+										resourceKeys.Add(keyStr);
+									}
+									// Custom types (converters, etc.) with a public parameterless constructor
+									else if (elem.CollectionItems.Count == 0 || elem.CollectionItems.All(c => c is not ValueNode))
+									{
+										if (elem.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resTypeSymbol)
+											&& resTypeSymbol != null
+											&& resTypeSymbol.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public))
+										{
+											resourceKeys.Add(keyStr);
+										}
+									}
+								}
+							}
+						}
+						if (resourceKeys.Count > 0)
+						{
+							var keysArray = string.Join(", ", resourceKeys.Select(k => $"\"{k}\""));
+							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
+						}
+
+						// Set __version to the latest version from state (so fresh instances skip all UC patches)
+						var assemblyName = compilation.AssemblyName ?? string.Empty;
+						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, xamlItem.ProjectItem.RelativePath ?? string.Empty);
+						codeWriter.WriteLine($"__version = {latestVersion};");
+						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
+					}
 				}
 			}
 		exit:
 			codeWriter.Flush();
 			return codeWriter.InnerWriter.ToString();
 		}
+	}
+
+	/// <summary>
+	/// Extracts the <see cref="INamedTypeSymbol"/> and access modifier for a XAML item.
+	/// Returns <see langword="false"/> when the item has no <c>x:Class</c> or the type cannot be resolved.
+	/// </summary>
+	public static bool TryGetRootType(
+		XamlProjectItemForIC xamlItem,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		out INamedTypeSymbol? rootType,
+		out string accessModifier)
+	{
+		accessModifier = "public";
+		rootType = null;
+
+		if (xamlItem.Xaml is null)
+			return false;
+
+		SGRootNode root;
+		try
+		{
+			root = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache)!;
+		}
+		catch
+		{
+			return false;
+		}
+
+		if (!root.Properties.TryGetValue(XmlName.xClass, out var classNode))
+			return false;
+
+		if ((classNode as ValueNode)?.Value is not string rootClass)
+			return false;
+
+		if (root.Properties.TryGetValue(XmlName.xClassModifier, out var classModifierNode))
+		{
+			var classModifier = (classModifierNode as ValueNode)?.Value as string;
+			accessModifier = classModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "public";
+		}
+
+		XmlnsHelper.ParseXmlns(rootClass, out var rootTypeName, out var rootClrNamespace, out _, out _);
+		rootType = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootTypeName}");
+		return rootType != null;
+	}
+
+	/// <summary>
+	/// Generates a single patch body (the code for an <c>if (__version == fromVersion) { ... }</c> block)
+	/// from two XAML versions. Returns <see langword="null"/> when the diff is structural, empty, or on parse error.
+	/// </summary>
+	/// <param name="cachedOldRoot">The cached parsed tree from the previous generation (may be null on first diff).</param>
+	/// <summary>
+	/// Attempts to generate a patch body for an incremental XAML change.
+	/// </summary>
+	/// <param name="cachedOldRoot">The cached parsed tree from the previous successful generation, or null for first diff.</param>
+	/// <param name="cachedOldIds">The cached node-ID dictionary for the old tree, or null for first diff.</param>
+	/// <param name="nextNodeId">The next available node-ID counter value.</param>
+	/// <param name="oldXaml">Fallback: raw old XAML string, used only when <paramref name="cachedOldRoot"/> is null.</param>
+	/// <param name="newXaml">The new XAML text to parse and diff against.</param>
+	/// <param name="parsedNewRoot">On success, the parsed tree for the new XAML (caller should cache it).</param>
+	/// <param name="effectiveNewIds">On success, the effective node-ID dictionary for the new tree (caller should cache it).</param>
+	/// <param name="newNextNodeId">On success, the next available counter value after assigning new-tree IDs.</param>
+	/// <param name="parseError">
+	/// Set to <see langword="true"/> when the new XAML fails to parse.
+	/// The caller must NOT update <see cref="XamlHotReloadState"/> (keep last-good state).
+	/// </param>
+	public static string? TryGeneratePatchBody(
+		SGRootNode? cachedOldRoot,
+		Dictionary<ElementNode, string>? cachedOldIds,
+		int nextNodeId,
+		string oldXaml,
+		string newXaml,
+		int fromVersion,
+		int toVersion,
+		INamedTypeSymbol rootType,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem projectItem,
+		out SGRootNode? parsedNewRoot,
+		out Dictionary<ElementNode, string>? effectiveNewIds,
+		out int newNextNodeId,
+		out bool parseError)
+	{
+		parseError = false;
+		parsedNewRoot = null;
+		effectiveNewIds = null;
+		newNextNodeId = nextNodeId;
+
+		// Parse old tree only if we don't have a cached one (first diff after seed)
+		SGRootNode? oldRoot = cachedOldRoot;
+		Dictionary<ElementNode, string>? oldIds = cachedOldIds;
+		if (oldRoot is null)
+		{
+			try
+			{
+				oldRoot = GeneratorHelpers.ParseXaml(oldXaml, xmlnsCache);
+			}
+			catch
+			{
+				parseError = true;
+				return null;
+			}
+			if (oldRoot is null)
+			{
+				parseError = true;
+				return null;
+			}
+			oldIds = NodeIdHelper.AssignIds(oldRoot);
+		}
+		oldIds ??= NodeIdHelper.AssignIds(oldRoot);
+
+		// Always parse new XAML against current compilation
+		SGRootNode? newRoot;
+		try
+		{
+			newRoot = GeneratorHelpers.ParseXaml(newXaml, xmlnsCache);
+		}
+		catch
+		{
+			parseError = true;
+			return null;
+		}
+		if (newRoot is null)
+		{
+			parseError = true;
+			return null;
+		}
+
+		parsedNewRoot = newRoot;
+
+		// Set Parent pointers on all nodes (needed for x:DataType resolution in UC)
+		newRoot.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
+
+		// Assign fresh IDs to the new tree (starting from nextNodeId to avoid collision with old IDs)
+		var newIds = NodeIdHelper.AssignIds(newRoot, nextNodeId, out newNextNodeId);
+
+		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out effectiveNewIds);
+		if (diff is null || diff.IsEmpty)
+			return null;
+
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

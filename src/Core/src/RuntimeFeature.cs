@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 		const bool EnableAspireByDefault = true;
 		const bool IsMaterial3EnabledByDefault = false;
 		const bool IsCssEnabledByDefault = true;
+		const bool IsIncrementalHotReloadEnabledByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -156,6 +157,14 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsMaterial3Enabled)}", out bool isEnabled)
 				? isEnabled
 				: IsMaterial3EnabledByDefault;
+
+#if NET10_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsIncrementalHotReloadEnabled)}")]
+#endif
+		internal static bool IsIncrementalHotReloadEnabled =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsIncrementalHotReloadEnabled)}", out bool isEnabled)
+				? isEnabled
+				: IsIncrementalHotReloadEnabledByDefault;
 
 #pragma warning restore IL4000
 

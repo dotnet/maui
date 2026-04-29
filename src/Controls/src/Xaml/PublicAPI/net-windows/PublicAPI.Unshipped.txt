@@ -1,1 +1,11 @@
 #nullable enable
+Microsoft.Maui.Controls.Xaml.XamlComponentRegistry
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetInstances(System.Type! pageType) -> System.Collections.Generic.IReadOnlyList<object!>!
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(object! page, string! nodeId, object! component) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(object! page, string! nodeId, out object? component) -> bool
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page, string! nodeId) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.ReRoot(object! page, string! oldPrefix, string! newPrefix) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.UnregisterSubtree(object! page, string! nodeIdPrefix) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetComponent(object! page, string! nodeId) -> object?
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterComponent(object! element, string! nodeId) -> void

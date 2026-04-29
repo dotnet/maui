@@ -13,7 +13,7 @@ class ExpandMarkupsVisitor(SourceGenContext context) : IXamlNodeVisitor
 	{
 	}
 
-	record SGContextProvider(SourceGenContext Context)
+	internal record SGContextProvider(SourceGenContext Context)
 	{
 	}
 
