@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateHasFooter();
 				NotifyDataSetChanged();
 			}
-
 		}
 
 		public override int GetItemViewType(int position)
@@ -96,6 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Footer);
 				}
+
 				return;
 			}
 
