@@ -39,38 +39,6 @@ safe-outputs:
 steps:
   - name: Record workflow start time
     run: date +%s > .workflow-start-time
-
-  - name: Checkout target PR (for workflow_dispatch)
-    if: github.event_name == 'workflow_dispatch'
-    env:
-      GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ inputs.pr_number }}
-    run: |
-      set -euo pipefail
-      # workflow_dispatch is already write-gated — no fork/permission checks needed.
-      gh pr checkout "$PR_NUMBER"
-      # Restore trusted .github/ from base branch (defense-in-depth)
-      PR_INFO=$(gh pr view "$PR_NUMBER" --json baseRefOid,isCrossRepository)
-      BASE_SHA=$(echo "$PR_INFO" | jq -r '.baseRefOid')
-      git checkout "$BASE_SHA" -- .github/ 2>&1 \
-        && echo "✅ Restored .github/ from base ($BASE_SHA)" \
-        || { echo "❌ Could not restore .github/ from base"; exit 1; }
-      # .agents/ may not exist at base — guard separately to avoid aborting
-      git checkout "$BASE_SHA" -- .agents/ 2>/dev/null \
-        && echo "✅ Restored .agents/ from base ($BASE_SHA)" \
-        || echo "ℹ️ No .agents/ in base branch (expected)"
-      # Re-overlay skill/instruction files from PR branch so maintainers can
-      # iterate on review criteria via workflow_dispatch without merging first.
-      # Skip for fork PRs — their skill files are untrusted.
-      IS_FORK=$(echo "$PR_INFO" | jq -r '.isCrossRepository')
-      if [ "$IS_FORK" != "true" ]; then
-        PR_SHA=$(git rev-parse HEAD)
-        git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
-          && echo "✅ Restored skill/instruction files from PR branch ($PR_SHA)" \
-          || echo "ℹ️ No skill/instruction overrides in PR branch"
-      else
-        echo "ℹ️ Fork PR — using base branch skills (no re-overlay)"
-      fi
 ---
 
 # Expert Code Review
