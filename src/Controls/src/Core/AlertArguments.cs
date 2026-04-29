@@ -5,7 +5,22 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <summary>Contains configuration arguments for displaying platform-specific alert dialogs.</summary>
-	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+	/// <remarks>
+	/// For internal use only. This API can be changed or removed without notice at any time.
+	/// <para>
+	/// Third-party platform backends may supply a custom alert implementation by registering a
+	/// keyed <see cref="System.Func{T1, T2, TResult}"/> of
+	/// <c>Func&lt;Microsoft.Maui.Controls.Page, AlertArguments, System.Threading.Tasks.Task&lt;bool&gt;&gt;</c>
+	/// in the application's <see cref="System.IServiceProvider"/> with the service key
+	/// <c>Microsoft.Maui.Controls.DisplayAlert</c>. The delegate should return <see langword="true"/>
+	/// when the user accepts the alert, or <see langword="false"/> when the user cancels or dismisses
+	/// it. Unkeyed delegates are not considered by this convention.
+	/// </para>
+	/// <para>
+	/// Note: the keyed registration is reserved for MAUI alert handling. Do not reuse this service
+	/// key for unrelated services in the same service collection.
+	/// </para>
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class AlertArguments
 	{
