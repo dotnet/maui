@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"a61008bc77843c08ead8ba88cfe3c6498f07c470e098eeb07a4808e262c45c87","compiler_version":"v0.68.3","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c5d6884f0d9dbe5cfb7d776e0734c7f58c47a55d097f556241a3c8782c9b3bd6","compiler_version":"v0.68.3","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"373c709c69115d41ff229c7e5df9f8788daa9553","version":"v9"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba90f2186d7ad780ec640f364005fa24e797b360","version":"v0.68.3"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.20"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.20"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.20"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.2.19"},{"image":"ghcr.io/github/github-mcp-server:v0.32.0"},{"image":"node:lts-alpine"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -230,14 +230,14 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_cc1fd3ec96df37e5_EOF'
+          cat << 'GH_AW_PROMPT_b1eca495ae2f9d24_EOF'
           <system>
-          GH_AW_PROMPT_cc1fd3ec96df37e5_EOF
+          GH_AW_PROMPT_b1eca495ae2f9d24_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_cc1fd3ec96df37e5_EOF'
+          cat << 'GH_AW_PROMPT_b1eca495ae2f9d24_EOF'
           <safe-output-tools>
           Tools: add_comment, missing_tool, missing_data, noop
           </safe-output-tools>
@@ -269,15 +269,15 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_cc1fd3ec96df37e5_EOF
+          GH_AW_PROMPT_b1eca495ae2f9d24_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
           if [ "$GITHUB_EVENT_NAME" = "issue_comment" ] && [ -n "$GH_AW_IS_PR_COMMENT" ] || [ "$GITHUB_EVENT_NAME" = "pull_request_review_comment" ] || [ "$GITHUB_EVENT_NAME" = "pull_request_review" ]; then
             cat "${RUNNER_TEMP}/gh-aw/prompts/pr_context_prompt.md"
           fi
-          cat << 'GH_AW_PROMPT_cc1fd3ec96df37e5_EOF'
+          cat << 'GH_AW_PROMPT_b1eca495ae2f9d24_EOF'
           </system>
           {{#runtime-import .github/workflows/copilot-evaluate-tests.md}}
-          GH_AW_PROMPT_cc1fd3ec96df37e5_EOF
+          GH_AW_PROMPT_b1eca495ae2f9d24_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
@@ -419,7 +419,7 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
         if: github.event_name == 'workflow_dispatch'
         name: Checkout PR and restore agent infrastructure
-        run: "set -euo pipefail\n# workflow_dispatch is already write-gated — no fork/permission checks needed.\ngh pr checkout \"$PR_NUMBER\"\n# Restore trusted .github/ from base branch (defense-in-depth)\nBASE_SHA=$(gh pr view \"$PR_NUMBER\" --json baseRefOid --jq '.baseRefOid')\ngit checkout \"$BASE_SHA\" -- .github/ .agents/ 2>&1 \\\n  && echo \"✅ Restored .github/ and .agents/ from base ($BASE_SHA)\" \\\n  || { echo \"❌ Could not restore trusted infra from base\"; exit 1; }"
+        run: "set -euo pipefail\n# workflow_dispatch is already write-gated — no fork/permission checks needed.\ngh pr checkout \"$PR_NUMBER\"\n# Restore trusted .github/ from base branch (defense-in-depth)\nBASE_SHA=$(gh pr view \"$PR_NUMBER\" --json baseRefOid --jq '.baseRefOid')\ngit checkout \"$BASE_SHA\" -- .github/ 2>&1 \\\n  && echo \"✅ Restored .github/ from base ($BASE_SHA)\" \\\n  || { echo \"❌ Could not restore .github/ from base\"; exit 1; }\n# .agents/ may not exist at base — guard separately to avoid aborting\ngit checkout \"$BASE_SHA\" -- .agents/ 2>/dev/null \\\n  && echo \"✅ Restored .agents/ from base ($BASE_SHA)\" \\\n  || echo \"ℹ️ No .agents/ in base branch (expected)\""
 
       - name: Configure Git credentials
         env:
@@ -471,9 +471,9 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_4f8d976ede6b1474_EOF'
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_359dac49c747cf4b_EOF'
           {"add_comment":{"hide_older_comments":true,"max":1,"target":"*"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_4f8d976ede6b1474_EOF
+          GH_AW_SAFE_OUTPUTS_CONFIG_359dac49c747cf4b_EOF
       - name: Write Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
@@ -657,7 +657,7 @@ jobs:
           export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.19'
           
           mkdir -p /home/runner/.copilot
-          cat << GH_AW_MCP_CONFIG_8ab7b98de990b6db_EOF | bash "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh"
+          cat << GH_AW_MCP_CONFIG_4fd637eeb1ea6a61_EOF | bash "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh"
           {
             "mcpServers": {
               "github": {
@@ -698,7 +698,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_8ab7b98de990b6db_EOF
+          GH_AW_MCP_CONFIG_4fd637eeb1ea6a61_EOF
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
