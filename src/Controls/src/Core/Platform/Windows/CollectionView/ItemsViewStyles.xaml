@@ -360,8 +360,13 @@
                                                         VerticalAlignment="Stretch"
                                                         XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
 
-
+                                <!-- EmptyView sits between the items and the footer in the StackPanel
+                                     so the natural Header → Items → EmptyView → Footer order is preserved.
+                                     Its MinHeight/MinWidth is set in code-behind so it fills the remaining
+                                     viewport space (matching CV1's "fill available space" behavior). -->
                                 <ContentControl x:Name="EmptyViewContentControl"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
                                                 HorizontalContentAlignment="Stretch"
                                                 VerticalContentAlignment="Stretch"/>
 
@@ -373,15 +378,15 @@
 
         </ControlTemplate>
 
-  <!-- A minimal ItemContainer template with no selection visuals (no checkbox,
+        <!-- A minimal ItemContainer template with no selection visuals (no checkbox,
          no selection indicator, no highlight). Applied to group header/footer
          containers in CV2 so they are never selectable. -->
-  <ControlTemplate x:Key="NonSelectableItemContainerTemplate"
-                     TargetType="controls:ItemContainer">
-    <ContentPresenter Content="{TemplateBinding Child}"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch" />
-  </ControlTemplate>
+        <ControlTemplate x:Key="NonSelectableItemContainerTemplate"
+                         TargetType="controls:ItemContainer">
+                <ContentPresenter Content="{TemplateBinding Child}"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"/>
+        </ControlTemplate>
 
 
 </ResourceDictionary>

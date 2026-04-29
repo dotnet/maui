@@ -44,10 +44,10 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
-		
+
 		// Set the control's CornerRadius property directly
 		CornerRadius = zeroCornerRadius;
-		
+
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
@@ -74,6 +74,15 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			if (_emptyViewContentControl is not null)
 			{
 				_emptyViewContentControl.Visibility = value;
+
+				// When transitioning to/from visible, MinHeight/MinWidth need to be
+				// recomputed so the EmptyView fills (or releases) the remaining viewport.
+				if (value != WVisibility.Visible)
+				{
+					_emptyViewContentControl.ClearValue(MinHeightProperty);
+					_emptyViewContentControl.ClearValue(MinWidthProperty);
+				}
+				InvalidateMeasure();
 			}
 		}
 	}
@@ -243,6 +252,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 	{
+		// Whether the EmptyView is currently driving the layout (visible AND will stretch
+		// to fill the remaining viewport). When true, we skip the ItemsRepeater MinWidth
+		// inflation below, because there are no items to stretch and inflating the
+		// repeater to viewport width would leave 0 width for the EmptyView to fill.
+		bool emptyViewWillFill = _emptyViewContentControl is not null
+			&& _emptyViewVisibility == WVisibility.Visible;
+
 		// For horizontal layouts, the ScrollViewer provides infinite width to its content,
 		// which prevents UniformGridLayout's ItemsStretch=Fill from stretching items to fill
 		// the viewport when there are few items. Setting MinWidth on the ItemsRepeater
@@ -252,9 +268,15 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// still sees the full content extent for many-item scenarios.
 		if (_isHorizontalLayout && _itemsRepeater is not null)
 		{
-			if (!double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
+			if (!emptyViewWillFill && !double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
 			{
 				_itemsRepeater.MinWidth = availableSize.Width;
+			}
+			else
+			{
+				// Empty state: don't inflate the repeater — let the EmptyView take the
+				// remaining viewport width.
+				_itemsRepeater.ClearValue(MinWidthProperty);
 			}
 		}
 		else if (_itemsRepeater is not null)
@@ -264,7 +286,79 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_itemsRepeater.ClearValue(MinWidthProperty);
 		}
 
-		return base.MeasureOverride(availableSize);
+		var measured = base.MeasureOverride(availableSize);
+
+		// When the EmptyView is visible, stretch it to fill the remaining viewport
+		// space (after Header/Footer/Items) so it occupies the entire available area.
+		// The EmptyView is laid out inside the StackPanel between the items repeater
+		// and the footer; setting MinHeight/MinWidth here pushes the Footer to the
+		// far edge of the viewport when empty.
+		if (SizeEmptyViewToFillViewport(availableSize))
+		{
+			// MinHeight/MinWidth changed — re-measure so the StackPanel picks it up.
+			measured = base.MeasureOverride(availableSize);
+		}
+
+		return measured;
+	}
+
+	bool SizeEmptyViewToFillViewport(global::Windows.Foundation.Size availableSize)
+	{
+		if (_emptyViewContentControl is null || _emptyViewVisibility != WVisibility.Visible)
+		{
+			return false;
+		}
+
+		if (_isHorizontalLayout)
+		{
+			_emptyViewContentControl.ClearValue(MinHeightProperty);
+
+			if (double.IsInfinity(availableSize.Width) || availableSize.Width <= 0)
+			{
+				_emptyViewContentControl.ClearValue(MinWidthProperty);
+				return false;
+			}
+
+			var headerWidth = _headerContentControl?.DesiredSize.Width ?? 0;
+			var footerWidth = _footerContentControl?.DesiredSize.Width ?? 0;
+			var itemsWidth = (_itemsRepeater is not null && _itemsRepeater.Visibility == WVisibility.Visible)
+				? _itemsRepeater.DesiredSize.Width
+				: 0;
+
+			var remaining = availableSize.Width - headerWidth - footerWidth - itemsWidth;
+			var newMin = remaining > 0 ? remaining : 0;
+			if (_emptyViewContentControl.MinWidth == newMin)
+			{
+				return false;
+			}
+			_emptyViewContentControl.MinWidth = newMin;
+			return true;
+		}
+		else
+		{
+			_emptyViewContentControl.ClearValue(MinWidthProperty);
+
+			if (double.IsInfinity(availableSize.Height) || availableSize.Height <= 0)
+			{
+				_emptyViewContentControl.ClearValue(MinHeightProperty);
+				return false;
+			}
+
+			var headerHeight = _headerContentControl?.DesiredSize.Height ?? 0;
+			var footerHeight = _footerContentControl?.DesiredSize.Height ?? 0;
+			var itemsHeight = (_itemsRepeater is not null && _itemsRepeater.Visibility == WVisibility.Visible)
+				? _itemsRepeater.DesiredSize.Height
+				: 0;
+
+			var remaining = availableSize.Height - headerHeight - footerHeight - itemsHeight;
+			var newMin = remaining > 0 ? remaining : 0;
+			if (_emptyViewContentControl.MinHeight == newMin)
+			{
+				return false;
+			}
+			_emptyViewContentControl.MinHeight = newMin;
+			return true;
+		}
 	}
 
 }
