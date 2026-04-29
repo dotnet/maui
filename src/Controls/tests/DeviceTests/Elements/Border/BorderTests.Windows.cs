@@ -78,6 +78,36 @@ namespace Microsoft.Maui.DeviceTests
 			   });
 		}
 
+		[Theory(DisplayName = "Border ContentPanel IsTabStop reflects TapGestureRecognizer state")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ContentPanelIsTabStopReflectsTapGestureRecognizer(bool hasTapGestureRecognizer)
+		{
+			SetupBuilder();
+
+			var border = new Border()
+			{
+				Content = new Label
+				{
+					Text = "Focusable Border"
+				},
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100
+			};
+
+			if (hasTapGestureRecognizer)
+			{
+				border.GestureRecognizers.Add(new TapGestureRecognizer());
+			}
+
+			await AttachAndRun(border, handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+				Assert.Equal(hasTapGestureRecognizer, contentPanel.IsTabStop);
+			});
+		}
+
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 
