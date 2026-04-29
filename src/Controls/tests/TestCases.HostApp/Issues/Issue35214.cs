@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12345, "Dynamically changing IndicatorView IndicatorSize to default value does not work", PlatformAffected.iOS | PlatformAffected.macOS)]
-public class Issue12345 : ContentPage
+[Issue(IssueTracker.Github, 35214, "Dynamically changing IndicatorView IndicatorSize to default value does not work", PlatformAffected.iOS | PlatformAffected.macOS)]
+public class Issue35214 : ContentPage
 {
-    public Issue12345()
+    public Issue35214()
     {
         var carouselItems = new List<string> { "Item 0", "Item 1", "Item 2" };
 
@@ -38,7 +38,8 @@ public class Issue12345 : ContentPage
         var setDefaultSizeButton = new Button
         {
             AutomationId = "SetDefaultSizeButton",
-            Text = "Set IndicatorSize = 6 (Default)"
+            Text = "Set IndicatorSize = 6 (Default)",
+            Margin = new Thickness(0, 20, 0, 0)
         };
 
         setDefaultSizeButton.Clicked += (s, e) =>
