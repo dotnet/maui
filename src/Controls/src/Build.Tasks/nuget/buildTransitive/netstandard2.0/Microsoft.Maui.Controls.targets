@@ -257,14 +257,15 @@
 	<PropertyGroup>
 		<EmitPartialR2RXamlProfile Condition=" '$(EmitPartialR2RXamlProfile)' == '' ">false</EmitPartialR2RXamlProfile>
 		<_MauiMibcProfilePath>$(IntermediateOutputPath)$(TargetName).mibc</_MauiMibcProfilePath>
+		<_MauiMibcMatchedListPath>$(IntermediateOutputPath)$(TargetName).mibc.matched</_MauiMibcMatchedListPath>
 		<_MibcProfileGeneratorPath>$(MSBuildThisFileDirectory)MibcProfileGenerator.dll</_MibcProfileGeneratorPath>
 		<_MibcInputListPath>$(IntermediateOutputPath)_mibc_inputs.txt</_MibcInputListPath>
 	</PropertyGroup>
 
 	<!-- Generate MIBC profile listing all InitializeComponent* methods for PGO.
 	     Scans all assemblies in PublishReadyToRunExclude for InitializeComponent* methods,
-	     generates a single MIBC profile, then moves those assemblies from the exclude list
-	     to partial R2R compilation (guided by the MIBC profile).
+	     generates a single MIBC profile, then moves only the assemblies that contributed
+	     methods from the exclude list to partial R2R compilation.
 	     Enabled by setting EmitPartialR2RXamlProfile=true.
 	     Runs after R2R assembly selection. -->
 	<Target Name="_MauiGenerateMibcProfile"
@@ -272,13 +273,18 @@
 		Condition=" '$(EmitPartialR2RXamlProfile)' == 'true' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
 		DependsOnTargets="_MauiWriteMibcInputList;_MauiRunMibcProfileGenerator">
 
+		<!-- Read the list of assemblies that had InitializeComponent* methods -->
+		<ReadLinesFromFile File="$(_MauiMibcMatchedListPath)">
+			<Output TaskParameter="Lines" ItemName="_MibcMatchedAssemblies" />
+		</ReadLinesFromFile>
+
 		<ItemGroup>
 			<PublishReadyToRunPgoFiles Include="$(_MauiMibcProfilePath)" />
-			<FileWrites Include="$(_MauiMibcProfilePath);$(_MibcInputListPath)" />
-			<!-- Move all excluded assemblies to partial R2R with composite exclusion -->
-			<PublishReadyToRunPartialAssemblies Include="@(PublishReadyToRunExclude)" />
-			<PublishReadyToRunCompositeExclusions Include="@(PublishReadyToRunExclude)" />
-			<PublishReadyToRunExclude Remove="@(PublishReadyToRunExclude)" />
+			<FileWrites Include="$(_MauiMibcProfilePath);$(_MauiMibcMatchedListPath);$(_MibcInputListPath)" />
+			<!-- Only promote assemblies that contributed methods to the MIBC profile -->
+			<PublishReadyToRunPartialAssemblies Include="@(_MibcMatchedAssemblies)" />
+			<PublishReadyToRunCompositeExclusions Include="@(_MibcMatchedAssemblies)" />
+			<PublishReadyToRunExclude Remove="@(_MibcMatchedAssemblies)" />
 		</ItemGroup>
 	</Target>
 

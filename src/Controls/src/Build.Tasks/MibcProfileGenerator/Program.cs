@@ -66,6 +66,7 @@ static class MibcProfileGenerator
 		}
 
 		var methods = new List<DiscoveredMethod>();
+		var matchedInputPaths = new List<string>();
 
 		foreach (string inputPath in inputPaths)
 		{
@@ -80,6 +81,8 @@ static class MibcProfileGenerator
 				var discovered = DiscoverInitializeComponentMethods(inputPath);
 				methods.AddRange(discovered);
 				Console.WriteLine($"Found {discovered.Count} InitializeComponent* method(s) in {Path.GetFileName(inputPath)}");
+				if (discovered.Count > 0)
+					matchedInputPaths.Add(inputPath);
 			}
 			catch (Exception ex)
 			{
@@ -99,6 +102,11 @@ static class MibcProfileGenerator
 		{
 			EmitMibcFile(outputPath, methods, uncompressed);
 			Console.WriteLine($"Successfully wrote MIBC profile to {outputPath}");
+
+			// Write companion file listing input assemblies that contributed methods
+			string matchedListPath = outputPath + ".matched";
+			File.WriteAllLines(matchedListPath, matchedInputPaths);
+			Console.WriteLine($"Wrote {matchedInputPaths.Count} matched assembly path(s) to {matchedListPath}");
 		}
 		catch (Exception ex)
 		{
