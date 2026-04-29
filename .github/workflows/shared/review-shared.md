@@ -46,16 +46,20 @@ steps:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ inputs.pr_number }}
     run: |
-      # Security checks + PR checkout + .github/ restore from main
-      pwsh .github/scripts/Checkout-GhAwPr.ps1
-
-      # Restore skill/instruction files from the PR branch so maintainers
-      # can iterate on review criteria via workflow_dispatch without merging
-      # to main first. Safe because workflow_dispatch is already write-access gated.
+      set -euo pipefail
+      # workflow_dispatch is already write-gated — no fork/permission checks needed.
+      gh pr checkout "$PR_NUMBER"
+      # Restore trusted .github/ from base branch (defense-in-depth)
+      BASE_SHA=$(gh pr view "$PR_NUMBER" --json baseRefOid --jq '.baseRefOid')
+      git checkout "$BASE_SHA" -- .github/ 2>&1 \
+        && echo "✅ Restored .github/ from base ($BASE_SHA)" \
+        || { echo "⚠️ Could not restore .github/ from base — continuing with PR branch files"; }
+      # Re-overlay skill/instruction files from PR branch so maintainers can
+      # iterate on review criteria via workflow_dispatch without merging first.
       PR_SHA=$(git rev-parse HEAD)
       git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
         && echo "✅ Restored skill/instruction files from PR branch ($PR_SHA)" \
-        || { echo "❌ Failed to restore skill/instruction files from PR branch ($PR_SHA)"; exit 1; }
+        || echo "ℹ️ No skill/instruction overrides in PR branch"
 ---
 
 # Expert Code Review

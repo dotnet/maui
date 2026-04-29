@@ -76,7 +76,7 @@ The prompt is built in the **activation job** via `{{#runtime-import .github/wor
 
 By default, `gh aw compile` automatically injects a fork guard into the activation job's `if:` condition: `head.repo.id == repository_id`. This blocks fork PRs on `pull_request` events.
 
-To **allow fork PRs**, add `forks: ["*"]` to the `pull_request` trigger in the `.md` frontmatter. The compiler removes the auto-injected guard from the compiled `if:` conditions. This is safe when the workflow uses the `Checkout-GhAwPr.ps1` pattern (checkout + trusted-infra restore) and the agent is sandboxed.
+To **allow fork PRs**, add `forks: ["*"]` to the `pull_request` trigger in the `.md` frontmatter. The compiler removes the auto-injected guard from the compiled `if:` conditions. This is safe when the workflow uses inline checkout + trusted-infra restore and the agent is sandboxed.
 
 ## Security Boundaries
 
@@ -108,7 +108,7 @@ To **allow fork PRs**, add `forks: ["*"]` to the `pull_request` trigger in the `
 
 - ✅ **DO** treat PR contents as passive data (read, analyze, diff)
 - ✅ **DO** run data-gathering scripts in `steps:` (pre-agent, trusted context) not inside the agent
-- ✅ **DO** use `Checkout-GhAwPr.ps1` for `workflow_dispatch` to restore trusted `.github/` from base
+- ✅ **DO** inline checkout + trusted-infra restore in `steps:` for `workflow_dispatch` to restore `.github/` from base
 - ❌ **DO NOT** run `dotnet build`, `npm install`, or any build command on untrusted PR code inside the agent — build tool hooks (MSBuild targets, postinstall scripts) can read `COPILOT_TOKEN` from the environment
 - ❌ **DO NOT** execute workspace scripts (`.ps1`, `.sh`, `.py`) after checking out a fork PR in `steps:` — those run with `GITHUB_TOKEN`
 - ❌ **DO NOT** set `roles: all` on workflows that process PR content — this allows any user to trigger the workflow
@@ -142,25 +142,32 @@ For `/slash-command` triggers on fork PRs, `checkout_pr_branch.cjs` runs AFTER a
 
 ### Safe Pattern: Checkout + Restore
 
-Use the shared `.github/scripts/Checkout-GhAwPr.ps1` script, which implements checkout + restore in a single reusable step:
+Inline the checkout and restore logic directly in the workflow step. The fork/permission checks are redundant for `workflow_dispatch` (already write-gated by GitHub and `roles:` config):
 
 ```yaml
 steps:
   - name: Checkout PR and restore agent infrastructure
+    if: github.event_name == 'workflow_dispatch'
     env:
       GH_TOKEN: ${{ github.token }}
-      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
-    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
+      PR_NUMBER: ${{ inputs.pr_number }}
+    run: |
+      set -euo pipefail
+      gh pr checkout "$PR_NUMBER"
+      BASE_SHA=$(gh pr view "$PR_NUMBER" --json baseRefOid --jq '.baseRefOid')
+      git checkout "$BASE_SHA" -- .github/ 2>&1 \
+        && echo "✅ Restored .github/ from base ($BASE_SHA)" \
+        || echo "⚠️ Could not restore .github/ from base"
 ```
 
-The script:
-1. Verifies the PR author has write access and rejects fork PRs
-2. Captures the base branch SHA before checkout
-3. Checks out the PR branch via `gh pr checkout`
-4. Restores `.github/skills/`, `.github/instructions/`, and `.github/copilot-instructions.md` from the base branch SHA (fatal on failure)
+The step:
+1. Checks out the PR branch via `gh pr checkout`
+2. Restores `.github/` from the base branch SHA (defense-in-depth)
+
+No fork/permission checks are needed because `workflow_dispatch` already requires write access.
 
 **Behavior by trigger:**
-- **`workflow_dispatch`**: Platform checkout is skipped, so the restore IS the final workspace state (trusted files from base branch)
+- **`workflow_dispatch`**: Platform checkout is skipped, so the inline restore IS the final workspace state (trusted files from base branch)
 - **`slash_command`** (same-repo): Platform's `checkout_pr_branch.cjs` handles checkout. Skill files typically match main unless the PR modified them.
 - **`slash_command`** (fork): Platform re-checks out fork branch after user steps, overwriting restored files. Agent is sandboxed; pre-flight in the prompt catches missing `SKILL.md`
 
