@@ -122,6 +122,8 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
+        - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) /bl:ProvisionWorkloads.binlog $(_OfficialBuildIdArgs)
+          displayName: Provision Workloads
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
 
@@ -335,6 +337,8 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
+        - script: $(_buildScriptMacOS) -restore -configuration $(_BuildConfig) /bl:ProvisionWorkloads.binlog $(_OfficialBuildIdArgs)
+          displayName: Provision Workloads
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
           displayName: Build BuildTasks
 
@@ -561,6 +565,8 @@ stages:
             displayName: 'Add .NET to PATH'
 
           # Build BuildTasks first (need -restore to ensure SDK is available)
+          - script: ./build.cmd -restore -configuration Release
+            displayName: Provision Workloads
           - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
             displayName: Build the MSBuild Tasks
 
