@@ -17,6 +17,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -66,6 +67,16 @@ public static partial class AppHostBuilderExtensions
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
+#elif WINDOWS
+		if (RuntimeFeature.IsWindowsCollectionView2HandlerEnabled)
+		{
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+		}
+		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #else
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();

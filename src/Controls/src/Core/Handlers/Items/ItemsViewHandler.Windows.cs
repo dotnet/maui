@@ -351,10 +351,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					};
 					break;
 				case View view:
-					_emptyView = RealizeEmptyView(view);
+					_emptyView = ItemsViewExtensions.RealizeEmptyView(view, MauiContext, ref _formsEmptyView);
 					break;
 				default:
-					_emptyView = RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate);
+					_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate, MauiContext, ref _formsEmptyView);
 					break;
 			}
 
@@ -472,35 +472,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void ScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
 			HandleScroll(_scrollViewer);
-		}
-
-		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
-		{
-			if (emptyViewTemplate == null)
-			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext.ToString()
-				};
-			}
-
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
-			var view = template.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeEmptyView(view);
-		}
-
-		FrameworkElement RealizeEmptyView(View view)
-		{
-			_formsEmptyView = view ?? throw new ArgumentNullException(nameof(view));
-
-			var handler = view.ToHandler(MauiContext);
-			var platformView = handler.ContainerView ?? handler.PlatformView;
-
-			return platformView as FrameworkElement;
 		}
 
 		internal void HandleScroll(ScrollViewer scrollViewer)
