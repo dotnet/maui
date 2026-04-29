@@ -122,6 +122,12 @@ namespace Maui.Controls.Sample
 
 		public App()
 		{
+#if MACCATALYST
+			// Force light mode for consistent screenshots on macOS 26+
+			// where CI VMs default to dark mode. Info.plist UIUserInterfaceStyle
+			// is not respected by Mac Catalyst on macOS 26.
+			UserAppTheme = AppTheme.Light;
+#endif
 		}
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
