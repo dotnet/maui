@@ -36,6 +36,7 @@
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
       _InstallDotNet;
+      _RemoveStaleManifestBands;
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
     </_ProvisionDependsOn>
@@ -192,6 +193,19 @@
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
+  <!-- Unconditional target: always remove stale manifest band directories
+       left behind from previous SDK installs (e.g. preview.1 when building
+       preview.4). This must NOT be inside an incremental target because
+       _AcquireWorkloadManifests may be skipped when its stamp is up to date,
+       leaving stale manifests that the SDK resolver picks up. -->
+  <Target Name="_RemoveStaleManifestBands"
+      Condition=" '$(InstallDotNet)' == 'true' and Exists('$(DotNetDirectory)sdk-manifests') ">
+    <ItemGroup>
+      <_StaleManifestBands Include="$(DotNetDirectory)sdk-manifests/*" Exclude="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
+    </ItemGroup>
+    <RemoveDir Directories="@(_StaleManifestBands)" />
+  </Target>
+
   <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
@@ -210,11 +224,6 @@
       <_WorkloadRestoreEnvVars Condition="$([MSBuild]::IsOSPlatform('osx'))">$(_WorkloadRestoreEnvVars);DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true</_WorkloadRestoreEnvVars>
     </PropertyGroup>
     <ItemGroup>
-      <!-- Remove stale manifest directories from other preview bands that may
-           have been left behind from previous SDK installs (e.g. preview.1).
-           The SDK resolver picks these up and references old pack versions. -->
-      <_StaleManifestBands Include="$(DotNetDirectory)sdk-manifests/*" Exclude="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
-      <_WorkloadDirectoriesToRemove Include="@(_StaleManifestBands)" />
       <!-- Only remove the specific manifests we are about to re-provision.
            Do NOT remove the entire sdk-manifests/<band>/ directory, as that
            would delete SDK-bundled manifests (e.g. emscripten.net6) that we
