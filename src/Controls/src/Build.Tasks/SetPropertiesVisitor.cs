@@ -1342,7 +1342,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (methodDef.IsVirtual)
 			{
-				yield return Create(Ldarg_0);
+				// ldvirtftn needs the object whose vtable drives virtual dispatch.
+				// In a DataTemplate context, Ldarg_0 is the anonymous nested class, not the root
+				// XAML element — using it causes iOS/Mac Full AOT to crash on virtual handlers.
+				// The delegate target (already on the stack) IS the correct vtable object, so
+				// dup it: stack goes [target] → [target, target], ldvirtftn pops one, leaving
+				// [target, ftn] for the delegate ctor.
+				if (!methodDef.IsStatic)
+					yield return Create(Dup);
 				yield return Create(Ldvirtftn, handlerRef);
 			}
 			else
