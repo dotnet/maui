@@ -18,16 +18,19 @@ function InitializeToolset {
   $dotnetDir = Join-Path $RepoRoot '.dotnet'
   $manifestsDir = Join-Path $dotnetDir 'sdk-manifests'
   if (Test-Path $manifestsDir) {
-    $sdkVersion = $GlobalJson.tools.dotnet
+    $gjson = Get-Content -Raw -Path (Join-Path $RepoRoot 'global.json') | ConvertFrom-Json
+    $sdkVersion = $gjson.tools.dotnet
     $versionBand = [System.Text.RegularExpressions.Regex]::Match($sdkVersion, '^\d+\.\d+\.\d').Value + '00'
     $previewSuffix = [System.Text.RegularExpressions.Regex]::Match($sdkVersion, '\-(preview|rc|alpha)\.\d+').Value
     $currentBand = "${versionBand}${previewSuffix}"
 
-    Get-ChildItem -Path $manifestsDir -Directory |
-      Where-Object { $_.Name -ne $currentBand } |
-      ForEach-Object {
-        Write-Host "Removing stale workload manifest band: $($_.Name)"
-        Remove-Item -Recurse -Force $_.FullName
-      }
+    if ($currentBand -and $currentBand -ne '00') {
+      Get-ChildItem -Path $manifestsDir -Directory |
+        Where-Object { $_.Name -ne $currentBand } |
+        ForEach-Object {
+          Write-Host "Removing stale workload manifest band: $($_.Name)"
+          Remove-Item -Recurse -Force $_.FullName
+        }
+    }
   }
 }

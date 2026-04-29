@@ -24,14 +24,22 @@ function InitializeToolset {
   local manifests_dir="$dotnet_dir/sdk-manifests"
   if [[ -d "$manifests_dir" ]]; then
     local sdk_version
-    sdk_version=$(jq -r '.tools.dotnet' "$repo_root/global.json")
+    sdk_version=$(python3 -c "import json; print(json.load(open('$repo_root/global.json'))['tools']['dotnet'])" 2>/dev/null || true)
+    if [[ -z "$sdk_version" ]]; then
+      return
+    fi
     local version_band
     version_band=$(echo "$sdk_version" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9])[0-9]*/\100/')
     local preview_suffix
     preview_suffix=$(echo "$sdk_version" | grep -oE '\-(preview|rc|alpha)\.[0-9]+' || true)
     local current_band="${version_band}${preview_suffix}"
 
+    if [[ -z "$current_band" || "$current_band" == "00" ]]; then
+      return
+    fi
+
     for band_dir in "$manifests_dir"/*/; do
+      [[ -d "$band_dir" ]] || continue
       local band_name
       band_name=$(basename "$band_dir")
       if [[ "$band_name" != "$current_band" ]]; then
